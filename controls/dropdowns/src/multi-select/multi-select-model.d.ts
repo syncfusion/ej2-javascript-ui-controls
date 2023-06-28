@@ -1,4 +1,4 @@
-import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings, ResultData } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType, Input } from '@syncfusion/ej2-inputs';import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
+import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings, ResultData } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType, Input } from '@syncfusion/ej2-inputs';import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate, JsonAdaptor } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
 import {visualMode,MultiSelectChangeEventArgs,RemoveEventArgs,ISelectAllEventArgs,TaggingEventArgs,CustomValueEventArgs} from "./multi-select";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -43,24 +43,27 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Accepts the template design and assigns it to the group headers present in the MultiSelect popup list.
      *
      * @default null
+     * @aspType string
      */
-    groupTemplate?: string;
+    groupTemplate?: string | Function;
 
     /**
      * Accepts the template design and assigns it to popup list of MultiSelect component
      * when no data is available on the component.
      *
      * @default 'No records found'
+     * @aspType string
      */
-    noRecordsTemplate?: string;
+    noRecordsTemplate?: string | Function;
 
     /**
      * Accepts the template and assigns it to the popup list content of the MultiSelect component
      * when the data fetch request from the remote server fails.
      *
      * @default 'Request failed'
+     * @aspType string
      */
-    actionFailureTemplate?: string;
+    actionFailureTemplate?: string | Function;
 
     /**
      * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
@@ -240,24 +243,27 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * For EX: We have expression evolution as like ES6 expression string literals.
      *
      * @default null
+     * @aspType string
      */
-    valueTemplate?: string;
+    valueTemplate?: string | Function;
 
     /**
      * Accepts the template design and assigns it to the header container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
      *
      * @default null
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * Accepts the template design and assigns it to the footer container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
      *
      * @default null
+     * @aspType string
      */
-    footerTemplate?: string;
+    footerTemplate?: string | Function;
 
     /**
      * Accepts the template design and assigns it to each list item present in the popup.
@@ -268,8 +274,9 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * For EX: We have expression evolution as like ES6 expression string literals.
      *
      * @default null
+     * @aspType string
      */
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
 
     /**
      * To enable the filtering option in this component.

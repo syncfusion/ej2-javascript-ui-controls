@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, ChartType, ChartTheme, AutoFillType } from './enum';import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';import { CellModel } from '../base';import { LabelPosition, LegendPosition } from './enum';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, ChartType, ChartTheme, AutoFillType } from './enum';import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';import { CellModel } from '../base';import { LabelPosition, LegendPosition, ChartShape } from './enum';
 
 /**
  * Interface for a class CellStyle
@@ -494,6 +494,82 @@ export interface DataLabelSettingsModel {
 }
 
 /**
+ * Interface for a class Border
+ */
+export interface BorderModel {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default ''
+     */
+    color?: string;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 1
+     */
+    width?: number;
+
+}
+
+/**
+ * Interface for a class MarkerSettings
+ */
+export interface MarkerSettingsModel {
+
+    /**
+     * If set to true the marker for series is rendered. This is applicable only for line and area type series.
+     *
+     * @default false
+     */
+    visible?: boolean;
+
+    /**
+     * The different shape of a marker:
+     * * Circle
+     * * Triangle
+     * * Diamond
+     * * Plus
+     * * None
+     *
+     * @default 'Circle'
+     */
+    shape?: ChartShape;
+
+    /**
+     * The size of the marker in pixels.
+     *
+     * @default 5
+     */
+    size?: number;
+
+    /**
+     * The fill color of the marker that accepts value in hex and rgba as a valid CSS color string. By default, it will take series color.
+     * This property will work only if the `isFilled` property is set to true.
+     *
+     * @default null
+     */
+    fill?: string;
+
+    /**
+     * By default, the marker gets filled with the fill color. If set to false, the marker background will be transparent.
+     *
+     * @default true
+     */
+    isFilled?: boolean;
+
+    /**
+     * Options for customizing the border of a marker.
+     * 
+     * @default {}
+     */
+    border?: BorderModel;
+
+}
+
+/**
  * Interface for a class MajorGridLines
  */
 export interface MajorGridLinesModel {
@@ -581,6 +657,13 @@ export interface ChartModel {
      * @default false
      */
     isSeriesInRows?: boolean;
+
+    /**
+     * Options to configure the marker
+     *
+     * @default {}
+     */
+    markerSettings?: MarkerSettingsModel;
 
     /**
      * Specifies the selected range or specified range.

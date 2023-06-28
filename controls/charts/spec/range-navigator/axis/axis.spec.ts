@@ -177,7 +177,7 @@ describe('Range navigator', () => {
         it('checking with label position inside', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_AxisLabel_0');
-                expect(element.getAttribute('y') === '102').toBe(true);
+                expect(element.getAttribute('y') === '107').toBe(true);
                 done();
             };
             range.labelPosition = 'Inside';

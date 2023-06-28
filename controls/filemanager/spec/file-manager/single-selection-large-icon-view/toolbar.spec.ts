@@ -38,6 +38,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
+                showItemCheckBoxes: false
             });
             feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();

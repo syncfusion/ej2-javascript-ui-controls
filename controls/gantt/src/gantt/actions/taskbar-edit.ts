@@ -61,7 +61,12 @@ export class TaskbarEdit extends DateProcessor {
     public topValue: number = 0;
     public draggedRecordMarginTop: number = 0;
     public dragMoveY: number;
-
+    private realTaskbarElement :Element;
+    private cloneTaskbarElement : HTMLElement ;
+    private taskbarElement:HTMLElement;
+    private taskbarResizer :HTMLElement;
+    private currentIndex :string;
+    private currentData :IGanttData;
     constructor(ganttObj?: Gantt) {
         super(ganttObj);
         this.parent = ganttObj;
@@ -261,8 +266,7 @@ export class TaskbarEdit extends DateProcessor {
         if (target.classList.contains(cls.manualParentRightResizer) || target.classList.contains(cls.manualParentMainContainer)
             || target.classList.contains(cls.manualParentTaskBar)) {
             element = parentsUntil(target, cls.manualParentMainContainer);
-        } else if (target.classList.contains(cls.manualParentMilestoneTop) || target.classList.contains(cls.manualParentMilestoneBottom)
-            || target.classList.contains(cls.manualParentMilestone)) {
+        } else if (target.classList.contains(cls.manualParentMilestone)) {
             element = parentsUntil(target, cls.manualParentMilestone);
         } else {
             element = parentsUntil(target, cls.taskBarMainContainer);
@@ -277,17 +281,63 @@ export class TaskbarEdit extends DateProcessor {
         if (this.parent.editSettings.allowTaskbarEditing && element) {
             this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
             this.editElement = element;
-            this.taskBarEditElement = element as HTMLElement;
-            const index: string = this.taskBarEditElement.getAttribute('data-segment-index');
+            this.realTaskbarElement = this.editElement;
+            const index: string = this.editElement.getAttribute('data-segment-index');
             if (!isNullOrUndefined(index)) {
                 this.segmentIndex = Number(index);
             } else {
                 this.segmentIndex = -1;
             }
-            this.taskBarEditRecord = this.parent.ganttChartModule.getRecordByTaskBar(this.taskBarEditElement);
+            this.taskBarEditRecord = this.parent.ganttChartModule.getRecordByTaskBar(this.editElement);
             if (e.type === 'mousedown' || e.type === 'touchstart' || e.type === 'click') {
-                this.roundOffDuration = true;
                 this.taskBarEditAction = this.getTaskBarAction(e);
+                const index: string = this.editElement.getAttribute('data-segment-index')
+                const currentRecord: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
+                const ganttprop: ITaskData = currentRecord.ganttProperties
+                const parentleft: number = this.editElement.parentElement.offsetLeft
+                this.currentData = currentRecord;
+                const resizeElement = createElement(
+                    'div', { styles: 'height:100%;border-style:dashed;border-bottom:none;border-top:none;border-width:1px;position:absolute;z-index:10000' });
+                addClass([resizeElement as HTMLElement], 'e-taskbar-resize-div');
+                (resizeElement as HTMLElement).style.setProperty("width", ganttprop.width + "px");
+                const currentindex: string = this.editElement.getAttribute('data-segment-index');
+                (resizeElement as HTMLElement).style.setProperty("left", ((!isNullOrUndefined(ganttprop.segments) ? parentleft + ganttprop.segments[Number(currentindex)].left + "px" : (ganttprop.left) + "px")));
+                const resizeTable = this.parent.createElement('table');
+                const resizetableBody = this.parent.createElement("tbody");
+                resizetableBody.appendChild(resizeElement)
+                resizeTable.appendChild(resizetableBody);
+                var Check = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+                let createTable: Element = null;
+                if ((this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'LeftResizing') && !isNullOrUndefined(index) && !isNullOrUndefined(index) ? Number(index) === 0 : false) {
+                    var cloneTaskBar = this.editElement.parentElement.cloneNode(true);
+                } else {
+                    var cloneTaskBar = this.editElement.cloneNode(true);
+                }
+
+                if (!Check) {
+                    addClass([cloneTaskBar as HTMLElement], 'e-clone-taskbar');
+                    (cloneTaskBar as HTMLElement).style.setProperty("position", "absolute");
+                    (cloneTaskBar as HTMLElement).style.setProperty("top", 0 + "px");
+                    createTable = this.parent.createElement('table');
+                    const tableBody = this.parent.createElement("tbody");
+                    tableBody.appendChild(cloneTaskBar);
+                    createTable.appendChild(tableBody);
+                }
+                if ((this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'LeftResizing') && !isNullOrUndefined(index) && !isNullOrUndefined(index) ? Number(index) === 0 : false) {
+
+                    const segmentedTasks: HTMLCollectionOf<HTMLElement> =
+                        (cloneTaskBar as Element).getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
+                    this.cloneTaskbarElement = segmentedTasks[Number(index)]
+                }
+                else {
+
+                    this.cloneTaskbarElement = (cloneTaskBar as HTMLElement)
+                }
+                this.taskBarEditElement = this.cloneTaskbarElement;
+               (this.taskbarElement as any) = createTable;
+               (this.taskbarResizer as any) = resizeTable;
+                this.currentIndex = index
+                this.roundOffDuration = true;          
                 if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') &&
                     isNullOrUndefined(this.parent.taskFields.dependency)) {
                     this.taskBarEditAction = null;
@@ -315,7 +365,7 @@ export class TaskbarEdit extends DateProcessor {
                 }
                 this.initPublicProp();
             } else {
-                this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
+                this.showHideTaskBarEditingElements(element, this.editElement);
             }
         }
     }
@@ -351,9 +401,10 @@ export class TaskbarEdit extends DateProcessor {
                 addClass([element.querySelector('.' + cls.taskBarLeftResizer)], [cls.leftResizeGripper]);
                 addClass([element.querySelector('.' + cls.taskBarRightResizer)], [cls.rightResizeGripper]);
                 if (isShowProgressResizer) {
-                    const progresElement: boolean = !isNullOrUndefined(element.querySelector('.' + cls.childProgressResizer)) ? true : false;
-                    if (progresElement) {
-                        addClass([element.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
+                    const progressElement = element.querySelector('.' + cls.childProgressResizer) as HTMLElement;
+                    if (!isNullOrUndefined(progressElement)) {
+                        addClass([progressElement], [cls.progressResizeGripper]);
+                        progressElement.style.top = '3px';
                     }
                 }
             } else if (this.parent.isAdaptive && isShowProgressResizer) {
@@ -433,9 +484,6 @@ export class TaskbarEdit extends DateProcessor {
             action = 'ParentResizing';
         } else if (mouseDownElement.classList.contains(cls.manualParentTaskBar) ||
             mouseDownElement.classList.contains(cls.manualParentMainContainer) ||
-            mouseDownElement.classList.contains(cls.manualParentMilestone) ||
-            mouseDownElement.classList.contains(cls.manualParentMilestoneTop) ||
-            mouseDownElement.classList.contains(cls.manualParentMilestoneBottom) ||
             mouseDownElement.classList.contains(cls.manualParentMilestone)
         ) {
             action = 'ManualParentDrag';
@@ -536,6 +584,20 @@ export class TaskbarEdit extends DateProcessor {
         this.dragMouseLeave = false;
         this.isMouseDragCheck();
         if (this.isMouseDragged && this.taskBarEditAction) {
+            if (!isNullOrUndefined(this.taskbarElement) && !isNullOrUndefined(this.editElement) && (this.taskBarEditAction !== "ConnectorPointRightDrag" && this.taskBarEditAction !== "ConnectorPointLeftDrag") && !(this.parent.viewType === 'ResourceView' && this.currentData.hasChildRecords)) {
+                var currentElement = this.editElement.parentElement
+                currentElement.style.setProperty("position", "absolute");
+                if ((this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'LeftResizing') && !isNullOrUndefined(this.currentIndex) && !isNullOrUndefined(this.currentIndex) ? Number(this.currentIndex) === 0 : false) {
+                   (this.taskbarElement.childNodes[0].childNodes[0] as HTMLLIElement).style.setProperty("top", currentElement.parentElement.offsetTop + "px");
+                    currentElement.parentElement.appendChild(this.taskbarElement)
+                } else {
+                    currentElement.appendChild(this.taskbarElement)
+                }
+                if(this.taskBarEditAction!=='ProgressResizing'){
+                const rootElement = this.parent.ganttChartModule.chartBodyContainer.querySelectorAll(".e-chart-rows-container")
+                rootElement[0].appendChild(this.taskbarResizer)
+                }
+            }
             const args: IActionBeginEventArgs = {
                 cancel: false,
                 requestType: 'taskbarediting',
@@ -635,17 +697,6 @@ export class TaskbarEdit extends DateProcessor {
                 }
 
             });
-            this.parent.flatData.map((data) => {
-                if ((!isNullOrUndefined(this.taskBarEditRecord.parentItem)) && data.ganttProperties.taskId === this.taskBarEditRecord.parentItem.taskId) {
-                    data.childRecords.map((s) => {
-                        if (isNullOrUndefined(s.ganttProperties.startDate) || isNullOrUndefined(s.ganttProperties.endDate) ||
-                            isNullOrUndefined(s.ganttProperties.duration)) {
-                            this.parent.dataOperation.updateGanttData()
-                        }
-                    })
-                }
-            })
-
         }
 
 }
@@ -1470,6 +1521,15 @@ export class TaskbarEdit extends DateProcessor {
      * @private
      */
     private setItemPosition(): void {
+        if(!isNullOrUndefined(this.editElement)){
+            var currentElement = this.editElement.parentElement
+            if (this.parent.viewType == 'ResourceView' && this.parent.allowTaskbarDragAndDrop && this.taskBarEditAction === 'ChildDrag') {
+                currentElement.style.position = null;
+            }
+            else {
+                currentElement.style.setProperty("position", "absolute");
+            }
+        }
         const item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let position: string = this.parent.enableRtl ? "right" : "left";
         const segment: ITaskSegment = !isNullOrUndefined(item.segments) ? item.segments[this.segmentIndex] : null;
@@ -1479,13 +1539,10 @@ export class TaskbarEdit extends DateProcessor {
         if (!isNullOrUndefined(segment)) {
             rightResizer = this.parent.isAdaptive ? (segment.width - 2) : (segment.width - 10);
         }
-        const taskBarMainContainer: HTMLElement = (!this.taskBarEditElement.classList.contains(cls.taskBarMainContainer)) ? closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
+        this.taskBarEditElement.style.setProperty("opacity",'.75');
+        const taskBarMainContainer: HTMLElement = (!this.taskBarEditElement.classList.contains(cls.taskBarMainContainer)) ? ((this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'LeftResizing') && this.segmentIndex === 0 )?this.taskBarEditElement.parentElement  :  closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
             .querySelector('.' + cls.taskBarMainContainer) : this.taskBarEditElement;
         const segmentedTaskBarContainer: boolean = this.taskBarEditElement.classList.contains('e-segmented-taskbar');
-        const leftLabelContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
-            .querySelector('.' + cls.leftLabelContainer);
-        const rightLabelContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
-            .querySelector('.' + cls.rightLabelContainer);
         const traceChildProgressBar: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.traceChildProgressBar);
         const traceChildTaskBar: HTMLElement =
@@ -1506,29 +1563,35 @@ export class TaskbarEdit extends DateProcessor {
             this.taskBarEditElement.querySelector('.' + cls.manualParentRightResizer);
         const manualParentLeft: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.manualParentLeftResizer);
+            const resizeLine: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div') 
         if (this.taskBarEditAction !== 'ConnectorPointRightDrag' &&
             this.taskBarEditAction !== 'ConnectorPointLeftDrag') {
             if (this.taskBarEditAction !== 'ParentResizing' && this.taskBarEditAction !== 'ManualParentDrag') {
                 if (segmentedTaskBarContainer && !isNullOrUndefined(item.segments)
                     && (this.taskBarEditAction === 'RightResizing' || this.segmentIndex !== 0)) {
-
+                     if(! isNullOrUndefined(resizeLine)){
+                        resizeLine.style.width = (segment.width) + "px";
+                        }
                     (this.taskBarEditElement as HTMLElement).style.width = (segment.width) + 'px';
                     if (this.parent.enableRtl) {
                         (this.taskBarEditElement as HTMLElement).style.right = (segment.left) + 'px';
                     }
                     else {
                         (this.taskBarEditElement as HTMLElement).style.left = (segment.left) + 'px';
+                        if (!isNullOrUndefined(resizeLine)) {
+                        resizeLine.style.left = (segment.left + this.editElement.parentElement.offsetLeft) + "px";
+                        }
                     }
                 }
-                taskBarMainContainer.style.width = (width) + 'px';
-                leftLabelContainer.style.width = (item.left) + 'px';
-                taskBarMainContainer.style.setProperty(position, (item.left) + 'px');
+                    taskBarMainContainer.style.setProperty(position, (item.left) + 'px');
+                    taskBarMainContainer.style.width = (width) + 'px';
                 if (this.parent.viewType === 'ResourceView' && this.parent.allowTaskbarDragAndDrop && this.parent.rowDragAndDropModule &&
                    (this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'MilestoneDrag')) {
                     taskBarMainContainer.style.setProperty('top', (this.topValue) + 'px');
                     taskBarMainContainer.style.zIndex = '4';
-                }
+                }      
                 if (this.taskBarEditAction === 'LeftResizing' && this.segmentIndex === 0) {
+                    this.taskBarEditElement.style.setProperty("opacity",'.75');
                     const parent: HTMLElement = this.taskBarEditElement.parentElement;
                     const segmentedTasks: HTMLCollectionOf<HTMLElement> =
                         parent.getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
@@ -1536,6 +1599,10 @@ export class TaskbarEdit extends DateProcessor {
                         const segment: ITaskSegment = item.segments[i as number];
                         const segmentElement: HTMLElement = segmentedTasks[i as number] as HTMLElement;
                         (segmentElement as HTMLElement).style.width = (segment.width) + 'px';
+                        if(i===0){
+                            resizeLine.style.width = (segment.width) + "px";
+                            resizeLine.style.left = (segment.left+item.left) + "px";
+                        }
                         if (this.parent.enableRtl) {
                             (segmentElement as HTMLElement).style.right = (segment.left) + 'px';
                         }
@@ -1544,9 +1611,10 @@ export class TaskbarEdit extends DateProcessor {
                         }
                     }
                 }
-
-                if (!isNullOrUndefined(rightLabelContainer)) {
-                    rightLabelContainer.style.setProperty(position, (item.left + width) + 'px');
+                if (this.taskBarEditAction === 'ChildDrag' && this.segmentIndex === 0) {
+                    resizeLine.style.width = (width) + "px";
+                    resizeLine.style.left = (item.left) + "px";
+                    taskBarMainContainer.style.setProperty("opacity",'.75');
                 }
             }
             if (traceConnectorPointRight) {
@@ -1559,10 +1627,8 @@ export class TaskbarEdit extends DateProcessor {
             }
             if (this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone) {
                 taskBarMainContainer.style.setProperty(position, (item.left - (width / 2)) + 'px');
-                leftLabelContainer.style.width = (item.left - (width / 2)) + 'px';
-                if (!isNullOrUndefined(rightLabelContainer)) {
-                    rightLabelContainer.style.setProperty(position, (item.left + (width / 2)) + 'px');
-                }
+                resizeLine.style.left = (item.left - (width / 2)) + 'px';
+                resizeLine.style.width = (width) + "px";
             } else if (this.taskBarEditAction === 'ProgressResizing') {
                 if (this.segmentIndex === -1) {
                     traceChildTaskBar.style.setProperty(position, (item.left + item.progressWidth - 10) + 'px');
@@ -1583,6 +1649,7 @@ export class TaskbarEdit extends DateProcessor {
                     childProgressResizer.style.setProperty(position, width + 'px');
                 }
             } else if (this.taskBarEditAction === 'RightResizing' && !isNullOrUndefined(traceChildTaskBar)) {
+                resizeLine.style.width = (width) + 'px';
                 traceChildTaskBar.style.width = (width) + 'px';
                 if (!isNullOrUndefined(traceChildProgressBar)) {
                     traceChildProgressBar.style.width = (item.progressWidth) + 'px';
@@ -1592,20 +1659,33 @@ export class TaskbarEdit extends DateProcessor {
                     }
                 }
             } else if (this.taskBarEditAction === 'ParentDrag') {
+                resizeLine.style.left = (item.left) + 'px';
+                resizeLine.style.width = (width) + "px";
+                resizeLine.style.width = (item.width) + 'px'
                 if (!isNullOrUndefined(traceParentTaskBar)) {
                     traceParentTaskBar.style.width = (width) + 'px';
+                    resizeLine.style.width = (item.width) + 'px'
                 }
                 if (!isNullOrUndefined(traceChildProgressBar)) {
                     traceParentProgressBar.style.width = (item.progressWidth) + 'px';
                 }
             } else if (this.taskBarEditAction === 'ParentResizing') {
+                resizeLine.style.width = (item.width) + 'px';
+                resizeLine.style.left = item.left + 'px';
                 manualParentTaskbar.style.width = manualTaskbar.style.width = (item.width) + 'px';
                 manualParentRight.style.setProperty(position, item.width - manualParentLeft.offsetLeft + 'px');
             } else if (this.taskBarEditAction === 'ManualParentDrag') {
+                resizeLine.style.width = (item.width) + 'px';
+                resizeLine.style.left = item.left + 'px';
                 manualParentTaskbar.style.setProperty(position, item.left - item.autoLeft + 'px');
             } else {
                 if (!isNullOrUndefined(traceChildTaskBar) && !segmentedTaskBarContainer) {
-                    traceChildTaskBar.style.width = (width) + 'px';
+                    traceChildTaskBar.style.width = (item.width) + 'px';
+                    traceChildTaskBar.style.left = (item.left) + 'px';
+                    this.taskBarEditElement.style.width = (item.width) + 'px';
+                    this.taskBarEditElement.style.left =(item.left)+"px";
+                    resizeLine.style.left = (item.left) + 'px';
+                    resizeLine.style.width = (item.width) + "px";
                 }
                 if (!isNullOrUndefined(traceChildProgressBar)) {
                     taskBarRightResizer.style.setProperty(position, rightResizer + 'px');
@@ -1686,8 +1766,13 @@ export class TaskbarEdit extends DateProcessor {
             this.dependencyCancel = true;
         }
         if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
-            this.taskBarEditAction === 'ConnectorPointRightDrag') && this.drawPredecessor) {
+            this.taskBarEditAction === 'ConnectorPointRightDrag') && this.drawPredecessor && (!this.connectorSecondRecord.hasChildRecords || 
+                    this.connectorSecondRecord.hasChildRecords && this.parent.allowParentDependency)) {
             this.parent.connectorLineEditModule.updatePredecessor(this.connectorSecondRecord, this.finalPredecessor);
+            if(this.parent.UpdateOffsetOnTaskbarEdit)
+            {
+                this.parent.connectorLineEditModule['calculateOffset'](this.connectorSecondRecord);
+            }
         } else {
             if (x1 !== x2 || (Math.abs(y1 - resMouseY) >= (this.parent.rowHeight - this.parent.taskbarHeight) / 2)) {
                 if (item !== null) {
@@ -2011,25 +2096,27 @@ export class TaskbarEdit extends DateProcessor {
             if ((this.parent.virtualScrollModule && this.parent.enableVirtualization &&
                 !this.elementOffsetLeft) || !this.parent.enableVirtualization) {
                 if (!this.parent.allowParentDependency) {
-                    this.elementOffsetLeft = this.taskBarEditElement.offsetLeft;
-                    this.elementOffsetTop = this.taskBarEditElement.offsetTop + scrollTop;
+                    this.elementOffsetLeft = (this.realTaskbarElement as HTMLElement).offsetLeft;
+                    this.elementOffsetTop = (this.realTaskbarElement as HTMLElement).parentElement.offsetTop+(this.realTaskbarElement as HTMLElement).offsetHeight/3 + scrollTop;
                 }
                 else {
                     if (this.taskBarEditElement.children[0].classList.contains('e-manualparent-main-container')) {
-                        this.elementOffsetLeft = this.taskBarEditElement.children[0]['offsetLeft'] + this.taskBarEditElement.offsetLeft;
-                        this.elementOffsetTop = ((this.taskBarEditElement.offsetTop - 5) + this.taskBarEditElement.children[0]['offsetTop']) + scrollTop;
+                        this.elementOffsetLeft = (this.realTaskbarElement as HTMLElement).children[0]['offsetLeft'] +(this.realTaskbarElement as HTMLElement).offsetLeft;
+                        this.elementOffsetTop = (((this.realTaskbarElement as HTMLElement).parentElement.offsetTop+(this.realTaskbarElement as HTMLElement).offsetHeight/3 - 5) + this.taskBarEditElement.children[0]['offsetTop']) + scrollTop;
                     }
                     else {
-                        this.elementOffsetLeft = this.taskBarEditElement.offsetLeft;
-                        this.elementOffsetTop = this.taskBarEditElement.offsetTop + scrollTop;
+                        this.elementOffsetLeft = (this.realTaskbarElement as HTMLElement).offsetLeft;
+                        this.elementOffsetTop = (this.realTaskbarElement as HTMLElement).parentElement.offsetTop+(this.realTaskbarElement as HTMLElement).offsetHeight/3 + scrollTop;
                     }
                 }
-                this.elementOffsetWidth = this.taskBarEditElement.offsetWidth;
-                this.elementOffsetHeight = this.taskBarEditElement.offsetHeight;
+                this.elementOffsetWidth = (this.realTaskbarElement as HTMLElement).offsetWidth;
+                this.elementOffsetHeight =(this.realTaskbarElement as HTMLElement).offsetHeight;
             }
             this.showHideTaskBarEditingElements(element, this.highlightedSecondElement, true);
         }
-        if (isNullOrUndefined(this.connectorSecondAction) && !isNullOrUndefined(this.connectorSecondElement)) {
+        if (isNullOrUndefined(this.connectorSecondAction) && !isNullOrUndefined(this.connectorSecondElement) &&
+                (!this.connectorSecondRecord.hasChildRecords || this.connectorSecondRecord.hasChildRecords &&
+                this.parent.allowParentDependency)) {
             this.editTooltip.showHideTaskbarEditTooltip(false, this.segmentIndex);
             removeClass([this.connectorSecondElement.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointAllowBlock]);
             removeClass([this.connectorSecondElement.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointAllowBlock]);

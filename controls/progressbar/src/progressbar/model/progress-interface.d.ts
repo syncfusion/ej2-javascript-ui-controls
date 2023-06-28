@@ -1,5 +1,6 @@
 import { ProgressBar } from '../progressbar';
 import { Size, ProgressLocation } from '../utils/helper';
+import { FontModel } from './progress-base-model';
 export interface ITooltipRenderEventArgs extends IProgressEventArgs {
     /** Defines tooltip text collections */
     text?: string;
@@ -65,13 +66,6 @@ export interface IProgressStyle {
     circularTrackColor: string;
     circularProgressColor: string;
     backgroundColor: string;
-    fontColor: string;
-    linearFontFamily: string;
-    linearFontStyle: string;
-    linearFontSize: string;
-    circularFontFamily: string;
-    circularFontStyle: string;
-    circularFontSize: string;
     progressOpacity: number;
     trackOpacity: number;
     bufferOpacity: number;
@@ -87,6 +81,9 @@ export interface IProgressStyle {
     info: string;
     warning: string;
     danger: string;
+    tooltipLabelFont: FontModel;
+    linearLabelFont: FontModel;
+    circularLabelFont: FontModel;
 }
 export interface IProgressEventArgs {
     /** Defines the name of the event */

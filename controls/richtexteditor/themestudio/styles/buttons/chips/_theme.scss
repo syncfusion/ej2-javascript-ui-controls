@@ -1,6 +1,11 @@
 @mixin chip-color($bg-color, $border-color, $color, $icon-color, $avatar-bg-color, $avatar-font-color, $delete-icon-color: null) {
-  background-color: $bg-color;
-  border-color: $border-color;
+  background: $bg-color;
+  @if $skin-name != 'Material3' {
+    border-color: $border-color;
+  }
+  @else {
+    border-image: $border-color;
+  }
   color: $color;
 
   .e-chip-icon,

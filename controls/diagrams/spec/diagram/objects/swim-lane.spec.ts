@@ -15,11 +15,11 @@ import { Selector } from '../../../src/diagram/objects/node';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PhaseModel, LaneModel } from '../../../src/diagram/objects/node-model';
-import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index';
+import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index'; 
 import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints, CommandHandler, DiagramEventHandler, UserHandleModel, ISelectionChangeEventArgs, ScrollSettingsModel, SnapSettingsModel, LayoutModel, BpmnSequenceFlows, SnapConstraints, SelectorConstraints, IDraggingEventArgs, IHistoryChangeArgs } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Annotation } from '../../../src/diagram/objects/annotation';
-import { ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
+import {  ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo, LineRouting);
 
@@ -179,12 +179,12 @@ describe('Diagram Control', () => {
                     id: 'node1', offsetX: 600, offsetY: 250,
                     shape: {
                         type: 'SwimLane', orientation: 'Horizontal',
-                        phases: [{ header: { annotation: { content: 'phase1' } as Annotation }, addInfo: { name: 'phase1 info' }, style: { fill: 'blue', opacity: .5 }, offset: 300 },
+                        phases: [{ header: { annotation: {content: 'phase1'}  as Annotation },addInfo:{name:'phase1 info'}, style: { fill: 'blue', opacity: .5 }, offset: 300 },
                         { headers: { content: 'phase1' }, style: { fill: 'blue', opacity: .5 }, width: 300 }],
                         lanes: [
                             {
                                 id: 'lane1',
-                                addInfo: { name: 'lane1 info' },
+                                addInfo:{name:'lane1 info'},
                                 children: [{
                                     id: 'node111',
                                     width: 50, height: 50,
@@ -235,38 +235,38 @@ describe('Diagram Control', () => {
             expect((diagram.nameTable['node1'].shape as SwimLaneModel).lanes.length === 1).toBe(true);
             done();
         });
-
+        
         it('Checking remove phase at runtime', (done: Function) => {
             var lane = (diagram.nodes[0].shape as SwimLaneModel).phases[0];
             diagram.removePhase(diagram.nameTable['node1'], lane);
             expect((diagram.nameTable['node1'].shape as SwimLaneModel).phases.length === 1).toBe(true);
             done();
         });
-        it('Checking addInfo in lanes at initial rendering', (done: Function) => {
+        it('Checking addInfo in lanes at initial rendering',(done:Function)=>{
             let shape = diagram.nodes[0].shape as SwimLaneModel;
             console.log('addInfo for lanes')
-            expect(shape.lanes[0].addInfo !== null).toBe(true);
+            expect(shape.lanes[0].addInfo!==null).toBe(true);
             done();
         });
-        it('Changing addInfo value in lanes at runtime', (done: Function) => {
+        it('Changing addInfo value in lanes at runtime',(done:Function)=>{
             let shape = diagram.nodes[0].shape as SwimLaneModel;
-            shape.lanes[0].addInfo = { name: "lane1 info changed" }
+            shape.lanes[0].addInfo={name:"lane1 info changed"}
             console.log('addInfo for lanes changed')
-            expect(shape.lanes[0].addInfo).toEqual({ name: 'lane1 info changed' });
+            expect(shape.lanes[0].addInfo).toEqual({name:'lane1 info changed'});
             done();
         });
-
-        it('Checking addInfo in phases at initial rendering', (done: Function) => {
+    
+        it('Checking addInfo in phases at initial rendering',(done:Function)=>{
             let shape = diagram.nodes[0].shape as SwimLaneModel;
             console.log('addInfo for phases')
-            expect(shape.phases[0].addInfo !== null).toBe(true);
+            expect(shape.phases[0].addInfo!==null).toBe(true);
             done();
         });
-        it('Changing addInfo value in phases at runtime', (done: Function) => {
+        it('Changing addInfo value in phases at runtime',(done:Function)=>{
             let shape = diagram.nodes[0].shape as SwimLaneModel;
-            shape.phases[0].addInfo = { name: "phase1 info changed" }
+            shape.phases[0].addInfo={name:"phase1 info changed"}
             console.log('addInfo for phases changed')
-            expect(shape.phases[0].addInfo).toEqual({ name: 'phase1 info changed' });
+            expect(shape.phases[0].addInfo).toEqual({name:'phase1 info changed'});
             done();
         });
 
@@ -312,7 +312,7 @@ describe('Diagram Control', () => {
                                     width: 50, height: 50,
                                     margin: { left: 50, top: 150 }
                                 }],
-                                style: { fill: 'red', opacity: .4 }, header: { annotation: { content: 'lane1' } as Annotation, style: { fill: 'red' } }
+                                style: { fill: 'red', opacity: .4 },header: { annotation: { content: 'lane1' }  as Annotation, style: { fill: 'red' } }
                             }]
                     }
                 },
@@ -334,7 +334,7 @@ describe('Diagram Control', () => {
             diagram.select([diagram.nameTable['node1lane10']])
             diagram.remove();
             diagram.select([diagram.nameTable['node1lane20']])
-            expect(diagram.selectedItems.nodes.length === 1).toBe(true);
+            expect(diagram.selectedItems.nodes.length===1).toBe(true);
             done();
         });
 
@@ -950,7 +950,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 30, bounds.top + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 30, bounds.top + diagram.element.offsetTop + 20);
 
-                expect((node.offsetX == 370 || node.offsetX == 365) && (node.offsetY == 310 || node.offsetY == 320)).toBe(true);
+                expect((node.offsetX == 370||node.offsetX == 365  )&& (node.offsetY == 310|| node.offsetY == 320)).toBe(true);
                 done();
             }, 1000);
         });
@@ -968,7 +968,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 80, bounds.top + diagram.element.offsetTop + 70);
                 mouseEvents.mouseUpEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 50, bounds.top + diagram.element.offsetTop + 50);
                 let swimlane = diagram.nameTable["swimlane"];
-                expect((swimlane.offsetX == 402.5 || swimlane.offsetX == 397.5 || swimlane.offsetX == 395) && (swimlane.offsetY == 330 || swimlane.offsetY == 335) && (swimlane.shape.phases[0].offset == 265 || swimlane.shape.phases[0].offset == 260)).toBe(true);
+                expect((swimlane.offsetX == 402.5 || swimlane.offsetX == 397.5|| swimlane.offsetX == 395) && (swimlane.offsetY == 330||swimlane.offsetY == 335) && (swimlane.shape.phases[0].offset == 265 || swimlane.shape.phases[0].offset == 260)).toBe(true);
                 done();
             }, 1000);
         });
@@ -1041,7 +1041,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseUpEvent(diagramCanvas, x1 + diagram.element.offsetLeft - 80, y1 + diagram.element.offsetTop);
             target = document.getElementById('swimlane');
             bounds1 = target.getBoundingClientRect();
-            expect(diagram.nameTable["swimlane"].shape.phases[1].offset == 635 || diagram.nameTable["swimlane"].shape.phases[1].offset == 640).toBe(true);
+            expect(diagram.nameTable["swimlane"].shape.phases[1].offset == 635||diagram.nameTable["swimlane"].shape.phases[1].offset == 640).toBe(true);
             done();
         });
 
@@ -1059,7 +1059,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseUpEvent(diagramCanvas, x1 + diagram.element.offsetLeft, y1 + diagram.element.offsetTop - 80);
             target = document.getElementById('swimlane');
             bounds1 = target.getBoundingClientRect();
-            expect(bounds1.height == 360 || bounds1.height == 350 || bounds1.height == 340).toBe(true);
+            expect(bounds1.height == 360 || bounds1.height == 350||bounds1.height == 340).toBe(true);
             done();
         });
 
@@ -2067,10 +2067,10 @@ describe('Diagram Control', () => {
 
 
             it('Check-Connector selection', (done: Function) => {
-                let connector = diagram.connectors[0];
-                diagram.select([connector]);
-                expect(diagram.selectedItems.connectors[0].id == 'connector1').toBe(true);
-                done();
+                    let connector = diagram.connectors[0];
+                    diagram.select([connector]);
+                    expect(diagram.selectedItems.connectors[0].id == 'connector1').toBe(true);
+                    done();
             });
 
             it('Check-Connector z index', (done: Function) => {
@@ -2078,7 +2078,7 @@ describe('Diagram Control', () => {
                 diagram.select([connector]);
                 expect(diagram.selectedItems.connectors[0].zIndex == 16).toBe(true);
                 done();
-            });
+        });
 
             it('check connector z index after save and load operation', (done: Function) => {
                 let save: string = diagram.saveDiagram();
@@ -2087,48 +2087,48 @@ describe('Diagram Control', () => {
                 diagram.select([connector]);
                 expect(diagram.selectedItems.connectors[0].zIndex == 16).toBe(true);
                 done();
-            });
-
-            it('Checking connector is drag and drop without selecting', (done: Function) => {
-                palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: any;
-                    let position: PointModel = palette['getMousePosition'](e.sender);
-                    let symbols: IElement = palette.symbolTable['connector1a'];
-                    palette['selectedSymbols'] = symbols;
-                    if (symbols !== undefined) {
-                        clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                        clonedElement.setAttribute('paletteId', palette.element.id);
-                    }
-                    return clonedElement;
-                };
-                let events: MouseEvents = new MouseEvents();
-                events.mouseDownEvent(palette.element, 75, 100, false, false);
-                events.mouseMoveEvent(palette.element, 100, 100, false, false);
-                events.mouseMoveEvent(palette.element, 200, 200, false, false);
-                expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-                events.mouseMoveEvent(diagram.element, 500, 300, false, false);
-                events.mouseUpEvent(diagram.element, 500, 300, false, false);
-                expect(diagram.connectors.length).toBe(2);
-                //dragging the node
-                events.mouseDownEvent(diagram.element, 326, 426, false, false);
-                events.mouseMoveEvent(diagram.element, 360, 470, false, false);
-                events.mouseUpEvent(diagram.element, 360, 470, false, false);
-                //dragging the connector
-                events.mouseDownEvent(diagram.element, 500, 300, false, false);
-                events.mouseMoveEvent(diagram.element, 540, 340, false, false);
-                events.mouseMoveEvent(diagram.element, 600, 400, false, false);
-                events.mouseUpEvent(diagram.element, 600, 400, false, false);
-                expect(diagram.connectors[7].id == 'Link1').toBe(true);
-                expect(diagram.connectors[7].type == 'Orthogonal').toBe(true);
-                expect(diagram.connectors[7].sourcePoint.x != 0).toBe(true);
-                expect(diagram.connectors[7].sourcePoint.y != 0).toBe(true);
-                expect(diagram.connectors[7].targetPoint.x != 40).toBe(true);
-                expect(diagram.connectors[7].targetPoint.y != 40).toBe(true);
-                done();
-            });
-
         });
 
+        it('Checking connector is drag and drop without selecting', (done : Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['connector1a'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 500, 300, false, false);
+            events.mouseUpEvent(diagram.element, 500, 300, false, false);
+            expect(diagram.connectors.length).toBe(2);
+            //dragging the node
+            events.mouseDownEvent(diagram.element, 326, 426, false, false);
+            events.mouseMoveEvent(diagram.element, 360, 470, false, false);
+            events.mouseUpEvent(diagram.element, 360, 470, false, false);
+           //dragging the connector
+            events.mouseDownEvent(diagram.element, 500, 300, false, false);
+            events.mouseMoveEvent(diagram.element, 540, 340, false, false);
+            events.mouseMoveEvent(diagram.element, 600, 400, false, false);
+            events.mouseUpEvent(diagram.element, 600, 400, false, false);
+            expect(diagram.connectors[7].id == 'Link1').toBe(true);
+            expect(diagram.connectors[7].type == 'Orthogonal').toBe(true);
+            expect(diagram.connectors[7].sourcePoint.x != 0).toBe(true);
+            expect(diagram.connectors[7].sourcePoint.y != 0).toBe(true);
+            expect(diagram.connectors[7].targetPoint.x != 40).toBe(true);
+            expect(diagram.connectors[7].targetPoint.y != 40).toBe(true);
+            done();
+        });
+
+        });
+        
     });
     describe('Swimlane interaction', () => {
         describe('Horizontal Orientation', () => {
@@ -2663,7 +2663,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, targetPointY - 5);
                 mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, targetPointY - 15);
                 mouseEvents.mouseUpEvent(diagramCanvas, sourcePointX, targetPointY - 15);
-                expect(node.offsetX == 250 && (node.offsetY == 310 || node.offsetY == 320)).toBe(true);
+                expect(node.offsetX == 250 && (node.offsetY == 310||node.offsetY == 320)).toBe(true);
                 let lane = Number(document.getElementById('swimlanestackCanvas20').getAttribute('height'));
                 expect(lane > 100).toBe(true);
                 done();
@@ -2684,7 +2684,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX, sourcePointY);
                 mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 5, sourcePointY);
                 mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 5, sourcePointY);
-                expect((node.offsetX == 370 || node.offsetX == 380) && (node.offsetY == 310 || node.offsetY == 320)).toBe(true);
+                expect((node.offsetX == 370 || node.offsetX == 380) && (node.offsetY == 310||node.offsetY == 320)).toBe(true);
                 let lane = Number(document.getElementById('swimlanestackCanvas20').getAttribute('width'));
                 expect(lane === 330 || lane === 340).toBe(true);
                 done();
@@ -3464,9 +3464,9 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 5, sourcePointY);
                 mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 5, sourcePointY);
 
-                expect((node.wrapper.offsetX == 655 || node.wrapper.offsetX == 650) && node.wrapper.offsetY == 400).toBe(true);
+                expect((node.wrapper.offsetX == 655||node.wrapper.offsetX == 650) && node.wrapper.offsetY == 400).toBe(true);
                 let lane = Number(document.getElementById('swimlanestackCanvas20').getAttribute('width'));
-                expect(lane === 385 || lane === 380).toBe(true);
+                expect(lane === 385||lane === 380).toBe(true);
                 done();
             });
             it('Drag and drop the node from palette to lane', (done: Function) => {
@@ -3585,7 +3585,7 @@ describe('Diagram Control', () => {
                 diagram.undo();
                 expect(diagram.nodes.length > 0).toBe(true);
                 diagram.clear();
-                var x = 100, y = 200;
+                var x=100, y=200;
                 mouseEvents.mouseDownEvent(diagramCanvas, x, y);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 20);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 40);
@@ -3997,7 +3997,7 @@ describe('Diagram Control', () => {
                             title: 'Swimlane Shapes',
                             symbols: [
                                 {
-                                    id: 'stackCanvas1', addInfo: 'add',
+                                    id: 'stackCanvas1',addInfo:'add',
                                     shape: {
                                         type: 'SwimLane', lanes: [
                                             {
@@ -4103,7 +4103,7 @@ describe('Diagram Control', () => {
                     done();
                 }, 10);
             });
-
+            
             it('undo, redo action after add swimlane', (done: Function) => {
                 expect(diagram.nodes.length > 0).toBe(true);
                 diagram.undo();
@@ -4181,7 +4181,7 @@ describe('Diagram Control', () => {
                 done();
             });
             it('Copy, paste the swimlane', (done: Function) => {
-                debugger
+                
                 expect(diagram.nodes.length == 10).toBe(true);
                 let swimlane = diagram.nodes[0];
                 diagram.select([swimlane]);
@@ -4270,20 +4270,20 @@ describe('Diagram Control', () => {
             it('EJ2-47034 Exception occurs when drag and drop a lane on connector in swimlane', (done: Function) => {
                 diagram.collectionChange = function (args) {
                     if (args.state === "Changing" && args.type === "Addition") {
-                        if (
-                            args.element &&
-                            args.element.shape &&
-                            args.element.shape.type === "SwimLane"
-                        ) {
-                            args.cancel = true;
-                        } else {
-                            args.cancel = true;
-                        }
+                      if (
+                        args.element &&
+                        args.element.shape &&
+                        args.element.shape.type === "SwimLane"
+                      ) {
+                        args.cancel = true;
+                      }else{
+                        args.cancel = true;
+                      }
                     }
-                }
-
+                  }
+                
                 setTimeout(() => {
-                    var connector: any = { type: 'Orthogonal', sourcePortID: "node1" };
+                    var connector:any = { type: 'Orthogonal', sourcePortID: "node1" };
                     diagram.drawingObject = connector as any;
                     paletteInitalize('stackCanvas1');
                     let events: MouseEvents = new MouseEvents();
@@ -4301,7 +4301,7 @@ describe('Diagram Control', () => {
                     events.mouseMoveEvent(diagram.element, 105 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop, false, false);
                     events.mouseMoveEvent(diagram.element, 120 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
                     events.mouseUpEvent(diagram.element, 120 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
-                    console.log("EJ2-47034 Exception occurs when drag and drop a lane on connector in swimlane" + diagram.nodes.length)
+                    console.log("EJ2-47034 Exception occurs when drag and drop a lane on connector in swimlane"+diagram.nodes.length)
                     expect(diagram.nodes.length === 0).toBe(true);
                     done();
                 }, 10);
@@ -7494,7 +7494,7 @@ describe('Diagram Control', () => {
             events.mouseMoveEvent(diagramCanvas, 835, 163.5, false, false);
             var bounds = document.getElementById("borderRect_symbol").getBoundingClientRect() as DOMRect;
             expect(bounds.x == 836.5 && bounds.y == 164.5).toBe(true);
-            events.mouseMoveEvent(diagramCanvas, laneX, laneY, false, false);
+            events.mouseMoveEvent(diagramCanvas, laneX, laneY, false, false);            
             events.mouseMoveEvent(diagramCanvas, laneX + 10, laneY, false, false);
             events.mouseMoveEvent(diagramCanvas, laneX + 10, laneY + 10, false, false);
             events.mouseUpEvent(diagramCanvas, laneX + 10, laneY + 10, false, false);
@@ -7502,7 +7502,7 @@ describe('Diagram Control', () => {
             console.log("diagram.nodes[diagram.nodes.length - 1].parentId:" + (diagram.nodes[diagram.nodes.length - 1] as Node).parentId);
             done();
         });
-    });
+    }); 
 });
 describe('Swimlane - Enable Line Routing', () => {
     describe('(CR Issue) EJ2-37841 - Node dragging in swimlane is not working properly when line routing is enabled', () => {
@@ -7698,7 +7698,7 @@ describe('Swimlane - Enable Line Routing', () => {
         // });
 
         it('Drag node inside the lane', (done: Function) => {
-            debugger
+            
             console.log('(CR Issue) EJ2-37841');
 
             // Connector Segments - Line Routing
@@ -7731,8 +7731,8 @@ describe('Swimlane - Enable Line Routing', () => {
             expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 295 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 245).toBe(true);
             expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 245 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 245).toBe(true);
             expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 455 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 245 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 430 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 430 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 360 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 360).toBe(true);
-            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 460 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 360 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 360 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[4].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[4].y ==425).toBe(true);
             expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445).toBe(true);
             expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 555 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 605.52 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 445).toBe(true);
 
@@ -7758,23 +7758,23 @@ describe('Swimlane - Enable Line Routing', () => {
 
             // Connector Segments - Line Routing
             for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
-            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 295 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 245).toBe(true);
-            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 245 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 410 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 410 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 160 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 160).toBe(true);
-            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 460 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 360 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 360).toBe(true);
-
-            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 460
-                && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 360
-                && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450
-                && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 360
-                && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450
-                && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410
-                && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345
-                && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410
-                && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345
-                && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
-
-
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==165&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==245&&(diagram.connectors[0] as Connector).intermediatePoints[2].x ==295&&(diagram.connectors[0] as Connector).intermediatePoints[2].y ==245).toBe(true);
+            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==245&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==410&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==245&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==410&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==160&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==160).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==345&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==345).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            
+            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 460 
+            && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 360 
+            && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 
+            && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 360 
+            && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 
+            && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 
+            && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345
+            && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 
+            && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 
+            && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
+            
+            
             expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445).toBe(true);
             expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 555 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 605.52 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 445).toBe(true);
 
@@ -7800,14 +7800,14 @@ describe('Swimlane - Enable Line Routing', () => {
 
             // Connector Segments - Line Routing
             for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
-
-            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 240).toBe(true);
-            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 260 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 260 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 160 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 160).toBe(true);
-            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 460 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 360 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 360).toBe(true);
-            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 460 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 360 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 360 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
-            expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445).toBe(true);
-            expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 555 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 605.52 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 445).toBe(true);
+            
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==165&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==240).toBe(true);
+            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==160&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==160).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==345&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==345).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[4].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[4].y ==425).toBe(true);
+            expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==455&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==445).toBe(true);
+            expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==555&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==605.52&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==445).toBe(true);
             done();
         });
         it('deliveryonthataddress node from swimlane to outside', function (done) {
@@ -7825,13 +7825,13 @@ describe('Swimlane - Enable Line Routing', () => {
                 for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
 
                 // Connector Segments - Line Routing
-                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 240).toBe(true);
-                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 260 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 260 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 160 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 160).toBe(true);
-                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 460 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 360 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 360).toBe(true);
-                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 460 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 360 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 360 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
-                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 410 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[2].x == 410 && (diagram.connectors[5] as Connector).intermediatePoints[2].y == 280 && (diagram.connectors[5] as Connector).intermediatePoints[3].x == 720 && (diagram.connectors[5] as Connector).intermediatePoints[3].y == 280).toBe(true);
-                expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 720 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 280 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 710 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 280 && (diagram.connectors[6] as Connector).intermediatePoints[2].x == 710 && (diagram.connectors[6] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[6] as Connector).intermediatePoints[3].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[6] as Connector).intermediatePoints[4].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[4].y == 425).toBe(true);
+                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==165&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==240).toBe(true);
+                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==160&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==160).toBe(true);
+                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==345&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==345).toBe(true);
+                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[4].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[4].y ==425).toBe(true);
+                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==410&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[2].x ==410&&(diagram.connectors[5] as Connector).intermediatePoints[2].y ==280&&(diagram.connectors[5] as Connector).intermediatePoints[3].x ==720&&(diagram.connectors[5] as Connector).intermediatePoints[3].y ==280).toBe(true);
+                expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==720&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==280&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==710&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==280&&(diagram.connectors[6] as Connector).intermediatePoints[2].x ==710&&(diagram.connectors[6] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[3].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[4].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[4].y ==425).toBe(true);
                 done();
             }, 300);
         });
@@ -7853,19 +7853,19 @@ describe('Swimlane - Enable Line Routing', () => {
 
             // Connector Segments - Line Routing
             for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
-            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 240).toBe(true);
-            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 260 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 260 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 160 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 160).toBe(true);
-            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 460 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 360 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 360).toBe(true);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 360 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 360).toBe(true);
-            expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 295 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[5] as Connector).intermediatePoints[2].y == 360 && (diagram.connectors[5] as Connector).intermediatePoints[3].x == 255 && (diagram.connectors[5] as Connector).intermediatePoints[3].y == 360).toBe(true);
-            expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 380 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 410 && (diagram.connectors[6] as Connector).intermediatePoints[2].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[6] as Connector).intermediatePoints[3].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[3].y == 425).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==165&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==240).toBe(true);
+            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==160&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==160).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==345&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==345).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==295&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[5] as Connector).intermediatePoints[3].x ==255&&(diagram.connectors[5] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==380&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[2].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[3].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[3].y ==425).toBe(true);
             done();
         });
 
         it('Lane Interchange', function (done) {
             setTimeout(function () {
-                debugger
+                
                 console.log("test case flure")
                 var node = diagram.nameTable["swimlanestackCanvas40"];
                 var target = diagram.nameTable["swimlanestackCanvas10"];
@@ -7880,13 +7880,13 @@ describe('Swimlane - Enable Line Routing', () => {
 
                 // Connector Segments - Line Routing
                 for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
-                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 265 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 340).toBe(true);
-                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 360 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 360 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 260 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 260).toBe(true);
-                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 460 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 260 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 260 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 445 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 445).toBe(true);
-                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 445 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 440 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 460 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 460 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 460).toBe(true);
-                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 460 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 460 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 460 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 145 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 145).toBe(true);
-                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 295 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 145 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 145 && (diagram.connectors[5] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[5] as Connector).intermediatePoints[2].y == 460 && (diagram.connectors[5] as Connector).intermediatePoints[3].x == 255 && (diagram.connectors[5] as Connector).intermediatePoints[3].y == 460).toBe(true);
-                expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 460 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 460 && (diagram.connectors[6] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[6] as Connector).intermediatePoints[2].y == 190 && (diagram.connectors[6] as Connector).intermediatePoints[3].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[3].y == 190 && (diagram.connectors[6] as Connector).intermediatePoints[4].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[4].y == 165).toBe(true);
+                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==265&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==340).toBe(true);
+                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==260).toBe(true);
+                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==260&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==260&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==445&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==445).toBe(true);
+                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==445&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==460).toBe(true);
+                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==460&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==460&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==145&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==145).toBe(true);
+                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==295&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==145&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==145&&(diagram.connectors[5] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[2].y ==460&&(diagram.connectors[5] as Connector).intermediatePoints[3].x ==255&&(diagram.connectors[5] as Connector).intermediatePoints[3].y ==460).toBe(true);
+                expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==460&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==460&&(diagram.connectors[6] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[6] as Connector).intermediatePoints[2].y ==190&&(diagram.connectors[6] as Connector).intermediatePoints[3].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[3].y ==190&&(diagram.connectors[6] as Connector).intermediatePoints[4].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[4].y ==165).toBe(true);
                 done();
             }, 300);
         });
@@ -8048,7 +8048,7 @@ describe('Swimlane - Enable Line Routing', () => {
                             lanes: [
                                 {
                                     id: "lane1", width: 140,
-                                    header: { annotation: { content: "Customer" } as Annotation }
+                                    header: { annotation: { content: "Customer" } as Annotation }                                    
                                 },
                                 {
                                     id: "lane2",
@@ -8057,7 +8057,7 @@ describe('Swimlane - Enable Line Routing', () => {
                                         annotation: { id: "annotation2", content: "Business" } as Annotation
                                     }
                                 }
-                            ],
+                            ],                            
                         }
                     }
                 ];
@@ -8073,7 +8073,7 @@ describe('Swimlane - Enable Line Routing', () => {
 
             it("Checking swimlane header - while lane interchange(phaseSize - 20)", (done: Function) => {
                 setTimeout(function () {
-                    debugger
+                    
                     var node = diagram.nameTable["Businessworkflowlane10"];
                     var target = diagram.nameTable["Businessworkflowlane20"];
                     var beforeX = document.getElementById('BusinessworkflowswimHeader').getAttribute('x');
@@ -8107,7 +8107,7 @@ describe('Swimlane - Enable Line Routing', () => {
                     done();
                 }, 300);
             });
-
+            
             it("Checking swimlane header - while lane interchange(phaseSize - 20)", (done: Function) => {
                 setTimeout(function () {
                     (diagram.nodes[0].shape as SwimLaneModel).phaseSize = 0;
@@ -8170,7 +8170,7 @@ describe('Swimlane - Enable Line Routing', () => {
                                     header: { annotation: { content: 'Phase' } }
 
                                 },
-                            ],
+                                ],
                             phaseSize: 20,
                         },
                         offsetX: 420, offsetY: 270,
@@ -8185,26 +8185,26 @@ describe('Swimlane - Enable Line Routing', () => {
                 diagram.destroy();
                 ele.remove();
             });
-
+    
             it('Preventing Phase Copy in diagram', (done: Function) => {
                 let diagramCanvas = document.getElementById(diagram.element.id + 'content');
                 let phase = diagram.nameTable["swimlanephase1_header"];
-                let mouseEvents: MouseEvents = new MouseEvents();
-                mouseEvents.mouseDownEvent(diagramCanvas, phase.wrapper.offsetX + diagram.element.offsetLeft, phase.wrapper.offsetY + diagram.element.offsetTop);
-                mouseEvents.mouseUpEvent(diagramCanvas, phase.wrapper.offsetX + diagram.element.offsetLeft, phase.wrapper.offsetY + diagram.element.offsetTop);
+                let mouseEvents : MouseEvents = new MouseEvents();
+                mouseEvents.mouseDownEvent(diagramCanvas,phase.wrapper.offsetX + diagram.element.offsetLeft, phase.wrapper.offsetY + diagram.element.offsetTop);
+                mouseEvents.mouseUpEvent(diagramCanvas,phase.wrapper.offsetX + diagram.element.offsetLeft, phase.wrapper.offsetY + diagram.element.offsetTop);
                 diagram.copy();
                 diagram.paste();
                 expect(diagram.nodes.length === 4).toBe(true);
                 done();
             });
-
+    
         });
-        describe('swimlane delete constraints ', () => {
+         describe('swimlane delete constraints ', () => {
             let diagram: Diagram;
             let mouseEvents: MouseEvents = new MouseEvents();
             let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
-                ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
-                '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
             let ele: HTMLElement;
             beforeAll((): void => {
                 ele = createElement('div', { id: 'diagramSwimlane1' });
@@ -8237,7 +8237,7 @@ describe('Swimlane - Enable Line Routing', () => {
                                                     style: { fontSize: 11 }
                                                 }
                                             ],
-                                            constraints: NodeConstraints.Default & ~NodeConstraints.Delete,
+                                            constraints: NodeConstraints.Default &~ NodeConstraints.Delete,
                                             margin: { left: 60, top: 20 },
                                             height: 40, width: 100
                                         }
@@ -8356,289 +8356,289 @@ describe('Swimlane - Enable Line Routing', () => {
             it('node constraint node not deleted', (done: Function) => {
                 let diagramCanvas = document.getElementById(diagram.element.id + 'content');
                 let phase = diagram.nameTable["swimlanephase1_header"];
-                let mouseEvents: MouseEvents = new MouseEvents();
-                mouseEvents.mouseDownEvent(diagramCanvas, 275.5, 35.5 + diagram.element.offsetTop);
-                mouseEvents.mouseUpEvent(diagramCanvas, 275.5, 35.5 + diagram.element.offsetTop);
+                let mouseEvents : MouseEvents = new MouseEvents();
+                mouseEvents.mouseDownEvent(diagramCanvas,275.5, 35.5 + diagram.element.offsetTop);
+                mouseEvents.mouseUpEvent(diagramCanvas,275.5, 35.5  + diagram.element.offsetTop);
                 diagram.remove()
                 expect(diagram.nodes.length === 1).toBe(true);
                 done();
             });
-
+    
         });
         describe('render multiple swimlane  ', () => {
-            let diagram: Diagram;
-            let mouseEvents: MouseEvents = new MouseEvents();
-            let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
-                ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
-                '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
-            let ele: HTMLElement;
-            beforeAll((): void => {
-                ele = createElement('div', { id: 'diagramSwimlane1' });
-                document.body.appendChild(ele);
-                let nodes: NodeModel[] = [
-                    {
-                        id: 'swimlane',
-                        shape: {
-                            type: 'SwimLane',
-                            header: {
-                                annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
-                                height: 50, style: { fontSize: 11 },
-                                orientation: 'Horizontal',
-                            },
-                            lanes: [
-                                {
-                                    id: 'stackCanvas1',
-                                    header: {
-                                        annotation: { content: 'CUSTOMER' }, width: 50,
-                                        style: { fontSize: 11 }
-                                    },
-                                    height: 100,
-                                    children: [
-                                        {
-                                            id: 'Order',
-                                            shape: { type: 'Path', data: pathData },
-                                            annotations: [
-                                                {
-                                                    content: 'ORDER',
-                                                    style: { fontSize: 11 }
-                                                }
-                                            ],
-                                            constraints: NodeConstraints.Default & ~NodeConstraints.Delete,
-                                            margin: { left: 60, top: 20 },
-                                            height: 40, width: 100
-                                        }
-                                    ],
-                                },
-                                {
-                                    id: 'stackCanvas2',
-                                    header: {
-                                        annotation: { content: 'ONLINE' }, width: 50,
-                                        style: { fontSize: 11 }
-                                    },
-                                    height: 100,
-                                    children: [
-                                        {
-                                            id: 'selectItemaddcart',
-                                            annotations: [{ content: 'Select item\nAdd cart' }],
-                                            margin: { left: 190, top: 20 },
-                                            height: 40, width: 100
-                                        },
-                                        {
-                                            id: 'paymentondebitcreditcard',
-                                            annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
-                                            margin: { left: 350, top: 20 },
-                                            height: 40, width: 100
-                                        }
-                                    ],
-                                },
-                                {
-                                    id: 'stackCanvas3',
-                                    header: {
-                                        annotation: { content: 'SHOP' }, width: 50,
-                                        style: { fontSize: 11 }
-                                    },
-                                    height: 100,
-                                    children: [
-                                        {
-                                            id: 'getmaildetailaboutorder',
-                                            annotations: [{ content: 'Get mail detail\nabout order' }],
-                                            margin: { left: 190, top: 20 },
-                                            height: 40, width: 100
-                                        },
-                                        {
-                                            id: 'pakingitem',
-                                            annotations: [{ content: 'Paking item' }],
-                                            margin: { left: 350, top: 20 },
-                                            height: 40, width: 100
-                                        }
-                                    ],
-                                },
-                                {
-                                    id: 'stackCanvas4',
-                                    header: {
-                                        annotation: { content: 'DELIVERY' }, width: 50,
-                                        style: { fontSize: 11 }
-                                    },
-                                    height: 100,
-                                    children: [
-                                        {
-                                            id: 'sendcourieraboutaddress',
-                                            annotations: [{ content: 'Send Courier\n about Address' }],
-                                            margin: { left: 190, top: 20 },
-                                            height: 40, width: 100
-                                        },
-                                        {
-                                            id: 'deliveryonthataddress',
-                                            annotations: [{ content: 'Delivery on that\n Address' }],
-                                            margin: { left: 350, top: 20 },
-                                            height: 40, width: 100
-                                        },
-                                        {
-                                            id: 'getitItem',
-                                            shape: { type: 'Path', data: pathData },
-                                            annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
-                                            margin: { left: 500, top: 20 },
-                                            height: 40, width: 100
-                                        }
-                                    ],
-                                },
-                            ],
-                            phases: [
-                                {
-                                    id: 'phase1', offset: 170,
-                                    header: { content: { content: 'Phase' } }
-                                },
-                                {
-                                    id: 'phase2', offset: 450,
-                                    header: { content: { content: 'Phase' } }
-                                },
-                            ],
-                            phaseSize: 20,
+           let diagram: Diagram;
+           let mouseEvents: MouseEvents = new MouseEvents();
+           let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+           ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+           '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+           let ele: HTMLElement;
+           beforeAll((): void => {
+               ele = createElement('div', { id: 'diagramSwimlane1' });
+               document.body.appendChild(ele);
+               let nodes: NodeModel[] =  [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
                         },
-                        offsetX: 420, offsetY: 270,
-                        height: 100,
-                        width: 650
-                    }, {
-                        id: 'swimlane1',
-                        shape: {
-                            type: 'SwimLane',
-                            header: {
-                                annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
-                                height: 50, style: { fontSize: 11 },
-                                orientation: 'Horizontal',
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'Order',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [
+                                            {
+                                                content: 'ORDER',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        constraints: NodeConstraints.Default &~ NodeConstraints.Delete,
+                                        margin: { left: 60, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
                             },
-                            lanes: [
-                                {
-                                    id: 'stackCanvas11',
-                                    header: {
-                                        annotation: { content: 'CUSTOMER' }, width: 50,
-                                        style: { fontSize: 11 }
+                            {
+                                id: 'stackCanvas2',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
                                     },
-                                    height: 100,
-                                    children: [
-                                        {
-                                            id: 'Order1',
-                                            shape: { type: 'Path', data: pathData },
-                                            annotations: [
-                                                {
-                                                    content: 'ORDER',
-                                                    style: { fontSize: 11 }
-                                                }
-                                            ],
-                                            constraints: NodeConstraints.Default & ~NodeConstraints.Delete,
-                                            margin: { left: 60, top: 20 },
-                                            height: 40, width: 100
-                                        }
-                                    ],
+                                    {
+                                        id: 'paymentondebitcreditcard',
+                                        annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas3',
+                                header: {
+                                    annotation: { content: 'SHOP' }, width: 50,
+                                    style: { fontSize: 11 }
                                 },
-                                {
-                                    id: 'stackCanvas21',
-                                    header: {
-                                        annotation: { content: 'ONLINE' }, width: 50,
-                                        style: { fontSize: 11 }
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'getmaildetailaboutorder',
+                                        annotations: [{ content: 'Get mail detail\nabout order' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
                                     },
-                                    height: 100,
-                                    children: [
-                                        {
-                                            id: 'selectItemaddcart1',
-                                            annotations: [{ content: 'Select item\nAdd cart' }],
-                                            margin: { left: 190, top: 20 },
-                                            height: 40, width: 100
-                                        },
-                                        {
-                                            id: 'paymentondebitcreditcard1',
-                                            annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
-                                            margin: { left: 350, top: 20 },
-                                            height: 40, width: 100
-                                        }
-                                    ],
+                                    {
+                                        id: 'pakingitem',
+                                        annotations: [{ content: 'Paking item' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas4',
+                                header: {
+                                    annotation: { content: 'DELIVERY' }, width: 50,
+                                    style: { fontSize: 11 }
                                 },
-                                {
-                                    id: 'stackCanvas31',
-                                    header: {
-                                        annotation: { content: 'SHOP' }, width: 50,
-                                        style: { fontSize: 11 }
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'sendcourieraboutaddress',
+                                        annotations: [{ content: 'Send Courier\n about Address' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
                                     },
-                                    height: 100,
-                                    children: [
-                                        {
-                                            id: 'getmaildetailaboutorder1',
-                                            annotations: [{ content: 'Get mail detail\nabout order' }],
-                                            margin: { left: 190, top: 20 },
-                                            height: 40, width: 100
-                                        },
-                                        {
-                                            id: 'pakingitem1',
-                                            annotations: [{ content: 'Paking item' }],
-                                            margin: { left: 350, top: 20 },
-                                            height: 40, width: 100
-                                        }
-                                    ],
-                                },
-                                {
-                                    id: 'stackCanvas41',
-                                    header: {
-                                        annotation: { content: 'DELIVERY' }, width: 50,
-                                        style: { fontSize: 11 }
+                                    {
+                                        id: 'deliveryonthataddress',
+                                        annotations: [{ content: 'Delivery on that\n Address' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
                                     },
-                                    height: 100,
-                                    children: [
-                                        {
-                                            id: 'sendcourieraboutaddress1',
-                                            annotations: [{ content: 'Send Courier\n about Address' }],
-                                            margin: { left: 190, top: 20 },
-                                            height: 40, width: 100
-                                        },
-                                        {
-                                            id: 'deliveryonthataddress1',
-                                            annotations: [{ content: 'Delivery on that\n Address' }],
-                                            margin: { left: 350, top: 20 },
-                                            height: 40, width: 100
-                                        },
-                                        {
-                                            id: 'getitItem1',
-                                            shape: { type: 'Path', data: pathData },
-                                            annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
-                                            margin: { left: 500, top: 20 },
-                                            height: 40, width: 100
-                                        }
-                                    ],
-                                },
-                            ],
-                            phases: [
-                                {
-                                    id: 'phase11', offset: 170,
-                                    header: { content: { content: 'Phase' } }
-                                },
-                                {
-                                    id: 'phase21', offset: 450,
-                                    header: { content: { content: 'Phase' } }
-                                },
-                            ],
-                            phaseSize: 20,
-                        },
-                        offsetX: 420, offsetY: 270,
-                        height: 100,
-                        width: 650
+                                    {
+                                        id: 'getitItem',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                        margin: { left: 500, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { content: { content: 'Phase' } }
+                            },
+                            {
+                                id: 'phase2', offset: 450,
+                                header: { content: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
                     },
-                ];
-                diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
-                diagram.appendTo('#diagramSwimlane1');
-            });
-            afterAll((): void => {
-                diagram.destroy();
-                ele.remove();
-            });
-
-            it('check with two swimlane', (done: Function) => {
-
-                expect(diagram.nodes.length === 48).toBe(true);
-                done();
-                let savedString: string = diagram.saveDiagram();
-                diagram.loadDiagram(savedString);
-                expect(diagram.nodes.length === 48).toBe(true);
-                done();
-            });
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650
+                }, {
+                    id: 'swimlane1',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas11',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'Order1',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [
+                                            {
+                                                content: 'ORDER',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        constraints: NodeConstraints.Default &~ NodeConstraints.Delete,
+                                        margin: { left: 60, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas21',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart1',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'paymentondebitcreditcard1',
+                                        annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas31',
+                                header: {
+                                    annotation: { content: 'SHOP' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'getmaildetailaboutorder1',
+                                        annotations: [{ content: 'Get mail detail\nabout order' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'pakingitem1',
+                                        annotations: [{ content: 'Paking item' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas41',
+                                header: {
+                                    annotation: { content: 'DELIVERY' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'sendcourieraboutaddress1',
+                                        annotations: [{ content: 'Send Courier\n about Address' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'deliveryonthataddress1',
+                                        annotations: [{ content: 'Delivery on that\n Address' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'getitItem1',
+                                        shape: { type: 'Path', data: pathData },
+                                        annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                        margin: { left: 500, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase11', offset: 170,
+                                header: { content: { content: 'Phase' } }
+                            },
+                            {
+                                id: 'phase21', offset: 450,
+                                header: { content: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650
+                },
+            ];
+               diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
+               diagram.appendTo('#diagramSwimlane1');
+           });
+           afterAll((): void => {
+               diagram.destroy();
+               ele.remove();
+           });
+   
+           it('check with two swimlane', (done: Function) => {
+            
+               expect(diagram.nodes.length === 48).toBe(true);
+               done();
+               let savedString: string = diagram.saveDiagram();
+               diagram.loadDiagram(savedString);
+               expect(diagram.nodes.length === 48).toBe(true);
+               done();
+           });
 
         });
 
@@ -8693,7 +8693,7 @@ describe('Swimlane - Enable Line Routing', () => {
                         height: 360, width: 650
                     },
                 ];
-                diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes, selectionChange: selectionChangee });
+                diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes,selectionChange:selectionChangee });
                 diagram.appendTo('#diagramSwimlane1');
             });
             afterAll((): void => {
@@ -8701,7 +8701,7 @@ describe('Swimlane - Enable Line Routing', () => {
                 ele.remove();
             });
 
-            function selectionChangee(args: ISelectionChangeEventArgs) {
+            function selectionChangee(args: ISelectionChangeEventArgs){
                 if (args.state === 'Changed' && args.type === 'Addition') {
                     if ((args.newValue[0].shape as any).header.length > 0) {
                         isHeaderPresent = true;
@@ -8720,7 +8720,7 @@ describe('Swimlane - Enable Line Routing', () => {
     });
     describe('Infinite loop ', () => {
         let diagram: Diagram;
-
+        
         let ele: HTMLElement;
         beforeAll((): void => {
             ele = createElement('div', { id: 'diagramSwimlane1' });
@@ -8732,227 +8732,227 @@ describe('Swimlane - Enable Line Routing', () => {
                 getOrdinaryNode('node3', 'Activity 3', 350, 100),
                 getOrdinaryNode('node4', 'Activity 4', 500, 200),
                 getEndNode('node5', 650, 200)
-            ];
-
-            let connectors: ConnectorModel[] = [
+              ];
+            
+              let connectors: ConnectorModel[] = [
                 get01Connector('connector1', 'node0', 'node1'),
                 get01Connector('connector2', 'node0', 'node2'),
                 get03Connector('connector3', 'node1', 'node2', 'Conditional'),
                 get03Connector('connector4', 'node1', 'node3', 'Default'),
                 get01Connector('connector5', 'node2', 'node4'),
-            ];
-            function getOrdinaryNode(nodeId: string, label: string, x: number, y: number): NodeModel {
+              ];
+            function getOrdinaryNode(nodeId:string, label:string, x:number, y:number): NodeModel {
                 return {
-                    id: nodeId,
-                    offsetX: x,
-                    offsetY: y,
-                    width: 90,
-                    height: 60,
-                    annotations: [
+                  id: nodeId,
+                  offsetX: x,
+                  offsetY: y,
+                  width: 90,
+                  height: 60,
+                  annotations: [
+                    {
+                      content: label,
+                      style: {
+                        fontSize: 11,
+                        textWrapping: 'WrapWithOverflow',
+                        textOverflow: 'Ellipsis'
+                      },
+                      offset: { x: 0.5, y: 0.5 },
+                      margin: { top: 7, right: 0, bottom: -8, left: 0 },
+                    }
+                  ],
+                  /*borderColor: '#78BE83',*/
+                  borderWidth: 4,
+                  shape: {
+                    type: 'Bpmn',
+                    shape: 'Activity',
+                    activity: {
+                      activity: 'Task',
+                      task: {
+                        type: 'Service'
+                      }
+                    }
+                  },
+                  style: {
+                    fill: '#d8ecdc',
+                    strokeColor: '#78BE83',
+                    strokeWidth: 3,
+                    gradient: {
+                      // Start point of linear gradient
+                      x1: 0,
+                      y1: 0,
+                      // End point of linear gradient
+                      x2: 1,
+                      y2: 1,
+                      // Sets an array of stop objects
+                      stops: [
                         {
-                            content: label,
-                            style: {
-                                fontSize: 11,
-                                textWrapping: 'WrapWithOverflow',
-                                textOverflow: 'Ellipsis'
-                            },
-                            offset: { x: 0.5, y: 0.5 },
-                            margin: { top: 7, right: 0, bottom: -8, left: 0 },
-                        }
-                    ],
-                    /*borderColor: '#78BE83',*/
-                    borderWidth: 4,
-                    shape: {
-                        type: 'Bpmn',
-                        shape: 'Activity',
-                        activity: {
-                            activity: 'Task',
-                            task: {
-                                type: 'Service'
-                            }
-                        }
-                    },
-                    style: {
-                        fill: '#d8ecdc',
-                        strokeColor: '#78BE83',
-                        strokeWidth: 3,
-                        gradient: {
-                            // Start point of linear gradient
-                            x1: 0,
-                            y1: 0,
-                            // End point of linear gradient
-                            x2: 1,
-                            y2: 1,
-                            // Sets an array of stop objects
-                            stops: [
-                                {
-                                    color: 'white',
-                                    offset: x,
-                                    opacity: 0.1
-                                },
-                                {
-                                    color: '#d8ecdc',
-                                    offset: y,
-                                    opacity: 0.1
-                                }
-                            ],
-                            type: 'Linear'
-                        }
-                    },
-                    ports: [
-                        {
-                            id: 'left',
-                            offset: { x: 0, y: 0.5 }
+                            color: 'white',
+                            offset: x,
+                            opacity: 0.1
                         },
                         {
-                            id: 'right',
-                            offset: { x: 1, y: 0.5 }
-                        },
-                        {
-                            id: 'top',
-                            offset: { x: 0.5, y: 0 }
-                        },
-                        {
-                            id: 'bottom',
-                            offset: { x: 0.5, y: 1 }
+                            color: '#d8ecdc',
+                            offset: y,
+                            opacity: 0.1
                         }
-                    ]
+                      ],
+                      type: 'Linear'
+                    }
+                  },
+                  ports: [
+                    {
+                      id: 'left',
+                      offset: { x: 0, y: 0.5 }
+                    },
+                    {
+                      id: 'right',
+                      offset: { x: 1, y: 0.5 }
+                    },
+                    {
+                      id: 'top',
+                      offset: { x: 0.5, y: 0 }
+                    },
+                    {
+                      id: 'bottom',
+                      offset: { x: 0.5, y: 1 }
+                    }
+                  ]
                 };
-            }
-            function getStartNode(): NodeModel {
+              }
+              function getStartNode(): NodeModel {
                 return {
-                    id: 'node0',
-                    offsetX: 100,
-                    offsetY: 300,
-                    width: 30,
-                    height: 30,
-                    annotations: [{
-                        content: 'Start',
-                        margin: { bottom: -30 }
-                    }],
-                    shape: {
-                        type: 'Bpmn',
-                        shape: 'Event',
-                        event: {
-                            event: 'Start',
-                            trigger: 'None'
-                        }
-                    },
-                    style: {
-                        strokeColor: '#62A716',
-                        strokeWidth: 1
-                    },
-                    ports: [
-                        { id: 'right', offset: { x: 1, y: 0.5 } },
-                        { id: 'bottom', offset: { x: 0.5, y: 1 } }
-                    ]
+                  id: 'node0',
+                  offsetX: 100,
+                  offsetY: 300,
+                  width: 30,
+                  height: 30,
+                  annotations: [{
+                    content: 'Start',
+                    margin: { bottom: -30 }
+                  }],
+                  shape: {
+                    type: 'Bpmn',
+                    shape: 'Event',
+                    event: {
+                      event: 'Start',
+                      trigger: 'None'
+                    }
+                  },
+                  style: {
+                    strokeColor: '#62A716',
+                    strokeWidth: 1
+                  },
+                  ports: [
+                    { id: 'right', offset: { x: 1, y: 0.5 } },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 } }
+                  ]
                 };
-            }
-            function getEndNode(nodeId: string, x: number, y: number): NodeModel {
+              }
+              function getEndNode(nodeId: string, x: number, y: number): NodeModel {
                 return {
-                    id: nodeId,
-                    offsetX: x,
-                    offsetY: y,
-                    width: 30,
-                    height: 30,
-                    annotations: [{
-                        content: 'End',
-                        margin: { bottom: -30 }
-                    }],
-                    shape: {
-                        type: 'Bpmn',
-                        shape: 'Event',
-                        event: {
-                            event: 'End',
-                            trigger: 'None'
-                        }
-                    },
-                    style: {
-                        strokeColor: '#FF0000',
-                        strokeWidth: 1
-                    },
-                    ports: [
-                        { id: 'left', offset: { x: 0, y: 0.5 } },
-                        { id: 'top', offset: { x: 0.5, y: 0 } }
-                    ]
+                  id: nodeId,
+                  offsetX: x,
+                  offsetY: y,
+                  width: 30,
+                  height: 30,
+                  annotations: [{
+                    content: 'End',
+                    margin: { bottom: -30 }
+                  }],
+                  shape: {
+                    type: 'Bpmn',
+                    shape: 'Event',
+                    event: {
+                      event: 'End',
+                      trigger: 'None'
+                    }
+                  },
+                  style: {
+                    strokeColor: '#FF0000',
+                    strokeWidth: 1
+                  },
+                  ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 } },
+                    { id: 'top', offset: { x: 0.5, y: 0 } }
+                  ]
                 };
-            }
-            function get01Connector(conId: string, source: string, target: string): ConnectorModel {
+              }
+              function get01Connector(conId:string, source:string, target:string): ConnectorModel {
                 return {
-                    id: conId,
-                    sourceID: source,
-                    targetID: target,
-                    sourcePortID: 'right',
-                    targetPortID: 'left',
-                    /*shape: {
-                      type: 'Bpmn',
-                      flow: 'Sequence',
-                      sequence: 'Default'
-                    },*/
+                  id: conId,
+                  sourceID: source,
+                  targetID: target,
+                  sourcePortID: 'right',
+                  targetPortID: 'left',
+                  /*shape: {
+                    type: 'Bpmn',
+                    flow: 'Sequence',
+                    sequence: 'Default'
+                  },*/
+                  style: {
+                    strokeColor: '#888888',
+                    fill: '#555555',
+                    strokeWidth: 1
+                  },
+                  targetDecorator: {
                     style: {
-                        strokeColor: '#888888',
                         fill: '#555555',
-                        strokeWidth: 1
-                    },
-                    targetDecorator: {
-                        style: {
-                            fill: '#555555',
-                            strokeColor: '#888888'
-                        }
-                    },
-                    type: 'Orthogonal',
-                    cornerRadius: 10
+                        strokeColor: '#888888'
+                    }
+                  },
+                  type: 'Orthogonal',
+                  cornerRadius: 10
                 };
-            }
-            function get03Connector(conId: string, source: string, target: string, sequence: BpmnSequenceFlows): ConnectorModel {
+              }
+              function get03Connector(conId:string, source:string, target:string, sequence:BpmnSequenceFlows): ConnectorModel {
                 return {
-                    id: conId,
-                    sourceID: source,
-                    targetID: target,
-                    sourcePortID: 'right',
-                    targetPortID: 'left',
-                    shape: {
-                        type: 'Bpmn',
-                        flow: 'Sequence',
-                        sequence: sequence
-                    },
+                  id: conId,
+                  sourceID: source,
+                  targetID: target,
+                  sourcePortID: 'right',
+                  targetPortID: 'left',
+                  shape: {
+                    type: 'Bpmn',
+                    flow: 'Sequence',
+                    sequence: sequence
+                  },
+                  style: {
+                    strokeColor: '#888888',
+                    fill: '#555555',
+                    strokeWidth: 1
+                  },
+                  targetDecorator: {
                     style: {
-                        strokeColor: '#888888',
                         fill: '#555555',
-                        strokeWidth: 1
-                    },
-                    targetDecorator: {
-                        style: {
-                            fill: '#555555',
-                            strokeColor: '#888888'
-                        }
-                    },
-                    type: 'Orthogonal',
-                    cornerRadius: 10
+                        strokeColor: '#888888'
+                    }
+                  },
+                  type: 'Orthogonal',
+                  cornerRadius: 10
                 };
-            }
-            let layout: LayoutModel = {
+              }
+              let layout: LayoutModel = {
                 horizontalAlignment: 'Left',
                 verticalAlignment: 'Top',
                 orientation: 'LeftToRight',
                 type: 'ComplexHierarchicalTree'
-            };
-
-            let snapSettings: SnapSettingsModel = {
+              };
+            
+              let snapSettings: SnapSettingsModel = {
                 constraints: SnapConstraints.None,
                 horizontalGridlines: {
                     lineDashArray: '2 2',
                     lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75,
-                        0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
+                     0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
                 },
                 verticalGridlines: {
                     lineDashArray: '2 2',
                     lineIntervals: [1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75,
-                        0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
+                     0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75],
                 }
-            };
-
-            let scrollSettings: ScrollSettingsModel = {
+              };
+            
+              let scrollSettings: ScrollSettingsModel = {
                 canAutoScroll: true,
                 scrollLimit: 'Infinity',
 
@@ -8961,19 +8961,19 @@ describe('Swimlane - Enable Line Routing', () => {
             let constraints: DiagramConstraints = DiagramConstraints.Default | DiagramConstraints.LineRouting | DiagramConstraints.Bridging;
             let handles: UserHandleModel[] = [
                 {
-                    name: 'arrow',
-                    pathData: 'M4,11v2h8v7l8-8L12,4v7Z',
-                    visible: true,
-                    offset: 0.5,
-                    side: 'Top',
-                    pathColor: 'black',
-                    backgroundColor: 'transparent',
-                    size: 32,
-                    margin: { top: 12, bottom: 0, left: 0, right: 0 }
+                  name: 'arrow',
+                  pathData: 'M4,11v2h8v7l8-8L12,4v7Z',
+                  visible: true,
+                  offset: 0.5,
+                  side: 'Top',
+                  pathColor: 'black',
+                  backgroundColor: 'transparent',
+                  size: 32,
+                  margin: {top: 12, bottom: 0, left: 0, right: 0}
                 },
                 {
-                    name: 'Delete',
-                    pathData: `M 0, 0 c -3.201999999999998,-2.8130000000000006,-8.105999999999995,-2.455,-11.119,
+                  name: 'Delete',
+                  pathData: `M 0, 0 c -3.201999999999998,-2.8130000000000006,-8.105999999999995,-2.455,-11.119,
                           0.5579999999999998l-34.179,34.205l-34.337,-34.362c-3.093,-3.0920000000000005,-8.108,-3.0920000000000005,-11.201,
                           0l-0.11299999999999956,0.11299999999999956c-3.093,3.093,-3.093,8.107,0,11.201l34.341,34.366l-34.34,34.366c-3.093,
                           3.0930000000000035,-3.093,8.108000000000004,0,11.201000000000008l0.11299999999999956,0.11299999999999956c3.093,
@@ -8981,106 +8981,106 @@ describe('Swimlane - Enable Line Routing', () => {
                           3.0130000000000052,7.917000000000002,3.3700000000000045,11.119,0.5580000000000069c3.507000000000005,
                           -3.081000000000003,3.6370000000000005,-8.429000000000002,0.38800000000000534,-11.677999999999997l-34.37899999999999,
                           -34.403l34.37700000000001,-34.404c3.25,-3.2489999999999988,3.1200000000000045,-8.596,-0.38800000000000534,-11.677Z`,
-                    visible: true,
-                    offset: 1,
-                    side: 'Top',
-                    pathColor: 'black',
-                    backgroundColor: 'none',
-                    size: 30,
-                    margin: { top: 12, bottom: 0, left: 0, right: 0 }
+                  visible: true,
+                  offset: 1,
+                  side: 'Top',
+                  pathColor: 'black',
+                  backgroundColor: 'none',
+                  size: 30,
+                  margin: {top: 12, bottom: 0, left: 0, right: 0}
                 },
                 {
-                    name: 'node',
-                    pathData: 'M17.75,13.89H2.5a2,2,0,0,1-2-2V2.5a2,2,0,0,1,2-2H17.75a2,2,0,0,1,2,2v9.39A2,2,0,0,1,17.75,13.89Z',
-                    visible: true,
-                    offset: 0,
-                    side: 'Right',
-                    pathColor: '#e9f8ff',
-                    backgroundColor: 'none',
-                    size: 35,
-                    margin: { top: 0, bottom: 0, left: 0, right: 12 }
+                  name: 'node',
+                  pathData: 'M17.75,13.89H2.5a2,2,0,0,1-2-2V2.5a2,2,0,0,1,2-2H17.75a2,2,0,0,1,2,2v9.39A2,2,0,0,1,17.75,13.89Z',
+                  visible: true,
+                  offset: 0,
+                  side: 'Right',
+                  pathColor: '#e9f8ff',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 0, left: 0, right: 12}
                 },
                 {
-                    name: 'decision',
-                    pathData: 'M19.94,11.93l-8,8a2,2,0,0,1-2.83,0l-8-8a2,2,0,0,1,0-2.83l8-8a2,2,0,0,1,2.83,0l8,8A2,2,0,0,1,19.94,11.93Z',
-                    visible: true,
-                    offset: 0.5,
-                    side: 'Right',
-                    pathColor: '#fff6df',
-                    backgroundColor: 'none',
-                    size: 35,
-                    margin: { top: 0, bottom: 0, left: 0, right: 12 }
+                  name: 'decision',
+                  pathData: 'M19.94,11.93l-8,8a2,2,0,0,1-2.83,0l-8-8a2,2,0,0,1,0-2.83l8-8a2,2,0,0,1,2.83,0l8,8A2,2,0,0,1,19.94,11.93Z',
+                  visible: true,
+                  offset: 0.5,
+                  side: 'Right',
+                  pathColor: '#fff6df',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 0, left: 0, right: 12}
                 },
                 {
-                    name: 'end',
-                    pathData: 'M16.92,8.71A8.21,8.21,0,1,1,8.71.5,8.21,8.21,0,0,1,16.92,8.71Z',
-                    visible: true,
-                    offset: 1,
-                    side: 'Right',
-                    pathColor: '#ffedef',
-                    backgroundColor: 'none',
-                    size: 35,
-                    margin: { top: 0, bottom: 0, left: 0, right: 12 }
+                  name: 'end',
+                  pathData: 'M16.92,8.71A8.21,8.21,0,1,1,8.71.5,8.21,8.21,0,0,1,16.92,8.71Z',
+                  visible: true,
+                  offset: 1,
+                  side: 'Right',
+                  pathColor: '#ffedef',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 0, left: 0, right: 12}
                 },
                 {
-                    name: 'attachment',
-                    pathData: 'M11,9h5.5L11,3.5V9M4,2h8l6,6V20a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V4A2,2,0,0,1,4,2M9,4H4V20H16V11H9Z',
-                    visible: true,
-                    offset: 0.5,
-                    side: 'Bottom',
-                    pathColor: '#5a5a64',
-                    backgroundColor: 'none',
-                    size: 35,
-                    margin: { top: 0, bottom: 12, left: 0, right: 0 }
+                  name: 'attachment',
+                  pathData: 'M11,9h5.5L11,3.5V9M4,2h8l6,6V20a2,2,0,0,1-2,2H4a2,2,0,0,1-2-2V4A2,2,0,0,1,4,2M9,4H4V20H16V11H9Z',
+                  visible: true,
+                  offset: 0.5,
+                  side: 'Bottom',
+                  pathColor: '#5a5a64',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 12, left: 0, right: 0}
                 },
                 {
-                    name: 'annotation',
-                    pathData: `M8,11h8v2H8Zm8-4H8V9h8Zm0,8H8v2h8ZM18,2H10V4h8V20H10v2h8a2,2,0,0,0,2-2V4A2,2,0,0,0,18,2ZM6,4H8V2H6A2,2,0,0,0,4,4v6L2,12l2,
+                  name: 'annotation',
+                  pathData: `M8,11h8v2H8Zm8-4H8V9h8Zm0,8H8v2h8ZM18,2H10V4h8V20H10v2h8a2,2,0,0,0,2-2V4A2,2,0,0,0,18,2ZM6,4H8V2H6A2,2,0,0,0,4,4v6L2,12l2,
                             2v6a2,2,0,0,0,2,2H8V20H6Z`,
-                    visible: true,
-                    offset: 1,
-                    side: 'Bottom',
-                    pathColor: '#5a5a64',
-                    backgroundColor: 'none',
-                    size: 35,
-                    margin: { top: 0, bottom: 12, left: 0, right: 0 }
+                  visible: true,
+                  offset: 1,
+                  side: 'Bottom',
+                  pathColor: '#5a5a64',
+                  backgroundColor: 'none',
+                  size: 35,
+                  margin: {top: 0, bottom: 12, left: 0, right: 0}
                 }
-            ];
-            let selectedItems: SelectorModel = {
+              ];
+              let selectedItems: SelectorModel = {
                 constraints: SelectorConstraints.UserHandle,
                 userHandles: handles
-            };
-            let commandManager: any;
-
-            let _userHandles: UserHandleModel[] = JSON.parse(JSON.stringify(handles));
-            function selectionChanged(event: ISelectionChangeEventArgs): void {
+              };
+              let commandManager: any;
+              
+              let _userHandles: UserHandleModel[] = JSON.parse(JSON.stringify(handles));
+              function selectionChanged(event: ISelectionChangeEventArgs): void {
                 if (event.state === 'Changed') {
-                    if (event.newValue.length > 0) {
-                        let node = null;
-                        if (event.newValue[0].addInfo) {
-                            node = (event.newValue[0].addInfo as any).getDiagramNode();
-                        }
-
-                        if (event.newValue[0].id === '0') {
-                            handles[1].visible = false;
-                            handles[3].offset = 1;
-                            handles[4].visible = false;
-                            handles[6].offset = 0;
-                        } else {
-                            // tslint:disable
-                            event.newValue[0].constraints = NodeConstraints.Default & ~NodeConstraints.Rotate;
-                            // tslint:enable
-                            handles = JSON.parse(JSON.stringify(_userHandles));
-                        }
+                  if (event.newValue.length > 0) {
+                    let node = null;
+                    if (event.newValue[0].addInfo) {
+                      node = (event.newValue[0].addInfo as any).getDiagramNode();
                     }
-
-                    selectedItems = {
-                        constraints: SelectorConstraints.UserHandle,
-                        userHandles: handles
-                    };
+            
+                    if (event.newValue[0].id === '0') {
+                      handles[1].visible = false;
+                    handles[3].offset = 1;
+                      handles[4].visible = false;
+                      handles[6].offset = 0;
+                    } else {
+                      // tslint:disable
+                      event.newValue[0].constraints = NodeConstraints.Default & ~NodeConstraints.Rotate;
+                      // tslint:enable
+                      handles = JSON.parse(JSON.stringify(_userHandles));
+                    }
+                  }
+            
+                  selectedItems = {
+                    constraints: SelectorConstraints.UserHandle,
+                    userHandles: handles
+                  };
                 }
-            }
-            function loadJson(): void {
+              }
+              function loadJson(): void {
                 // this.diagram.clear();
                 diagram.loadDiagram(`{
                   "enableRtl": false,
@@ -10416,13 +10416,13 @@ describe('Swimlane - Enable Line Routing', () => {
                   "bridgeDirection": "Top",
                   "version": 17.1
               }`);
-
+            
                 setTimeout(() => diagram.resetSegments(), 100);
-            }
-            diagram = new Diagram({
-                width: '100%', height: '600px', nodes: nodes, connectors: connectors,
-                selectedItems: selectedItems, constraints: constraints, snapSettings: snapSettings,
-                scrollSettings: scrollSettings, commandManager: commandManager, selectionChange: selectionChanged
+              }
+              diagram = new Diagram({
+                width: '100%',height: '600px',nodes: nodes,connectors: connectors,
+                selectedItems: selectedItems,constraints: constraints,snapSettings: snapSettings,
+                scrollSettings: scrollSettings,commandManager: commandManager,selectionChange: selectionChanged
             });
             diagram.appendTo('#diagramSwimlane1');
             loadJson();
@@ -10434,9 +10434,9 @@ describe('Swimlane - Enable Line Routing', () => {
         });
 
         it('While setting delete constraints for node in swimlane and clear the diagram', (done: Function) => {
-            diagram.clear();
-            expect(diagram.nodes.length === 0 && diagram.connectors.length === 0).toBe(true);
-            done();
+        diagram.clear();
+        expect(diagram.nodes.length === 0 && diagram.connectors.length === 0).toBe(true);
+        done();
         });
     });
     describe('Horizontal Swimlane', () => {
@@ -10488,10 +10488,10 @@ describe('Swimlane - Enable Line Routing', () => {
                                         margin: { left: 200, top: 20 },
                                         height: 60, width: 120, ports: this.port
                                     },
-
+                                    
                                 ],
                             },
-
+                            
                         ],
                         phases: [
                             {
@@ -10512,22 +10512,22 @@ describe('Swimlane - Enable Line Routing', () => {
                     targetID: 'node2'
                 },
             ];
-            diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes, connectors: connectors, created: created });
+            diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes, connectors:connectors, created: created });
             diagram.appendTo('#diagramSwimlane1');
             function created() {
                 const lane: LaneModel[] = [
                     {
-                        id: 'lane1',
-                        height: 100,
-                        header: {
-                            annotation: { content: 'Online Consumer 2' },
-                            width: 50,
-                            style: { fontSize: 11, fill: 'blue' },
-                        },
+                      id: 'lane1',
+                      height: 100,
+                      header: {
+                        annotation: { content: 'Online Consumer 2' },
+                        width: 50,
+                        style: { fontSize: 11, fill: 'blue' },
+                      },                      
                     },
-                ];
+                  ];
                 diagram.addLanes(diagram.nodes[0], lane);
-                let node1: NodeModel =
+                let node1: NodeModel = 
                 {
                     id: 'newNode', width: 50, height: 60, shape: { type: 'Flow', shape: 'Process' },
                     style: { strokeWidth: 1, fill: 'red' }, margin: { left: 400, top: 25 }
@@ -10686,19 +10686,19 @@ describe('Swimlane - Enable Line Routing', () => {
                 offsetX: 720, offsetY: 270,
                 height: 100,
                 width: 650,
-
+    
             },
         ];
         beforeAll((): void => {
             ele = createElement('div', { id: 'diagramSwimlane1' });
             document.body.appendChild(ele);
             var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
-                ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
-                '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
-            var darkColor = '#C7D4DF';
-            var lightColor = '#f5f5f5';
-
-
+            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+        var darkColor = '#C7D4DF';
+        var lightColor = '#f5f5f5';
+            
+        
             var node = [
                 {
                     id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 600,
@@ -10708,17 +10708,17 @@ describe('Swimlane - Enable Line Routing', () => {
                 },
             ]
             diagram = new Diagram({
-                width: '100%', height: 900,
-                drop: drop,
+                width: '100%', height: 900, 
+                drop:drop,
                 constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting,
-                nodes: node,
+                 nodes: node,
                 connectors: [
                     {
-                        id: 'conn1',
-                        sourceID: "node1", targetID: "node2"
+                        id:'conn1',
+                        sourceID:"node1",targetID:"node2"
                     }
                 ]
-
+        
             });
             diagram.appendTo('#diagramSwimlane1');
             function drop() {
@@ -10747,12 +10747,12 @@ describe('Swimlane - Enable Line Routing', () => {
         });
 
         it('Swim lane zindex update issue and line routing issue', (done: Function) => {
-            debugger
+            
             console.log("Test case failure  ")
             diagram.add(nodes[0] as any)
-            diagram.select([diagram.nodes[0], diagram.nodes[1], diagram.connectors[0]]);
+            diagram.select([diagram.nodes[0],diagram.nodes[1],diagram.connectors[0]]);
             var mouseEvents = new MouseEvents();
-            var diagramCanvas = document.getElementById('diagramSwimlane1' + 'content');
+            var diagramCanvas = document.getElementById('diagramSwimlane1'+ 'content');
             let node = diagram.nameTable["node1"];
             let targetNode = diagram.nameTable["swimlane"];
             let sourcePointX = node.wrapper.offsetX + diagram.element.offsetLeft;
@@ -10760,46 +10760,46 @@ describe('Swimlane - Enable Line Routing', () => {
             let targetPointX = targetNode.wrapper.offsetX + diagram.element.offsetLeft;
             let targetPointY = targetNode.wrapper.offsetY + diagram.element.offsetTop;
             mouseEvents.mouseDownEvent(diagramCanvas, sourcePointX, sourcePointY);
-            mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 20);
-            mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 40);
-            mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX, targetPointY - 20);
-            mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX, targetPointY);
-            mouseEvents.mouseUpEvent(diagramCanvas, targetPointX, targetPointY);
-            setTimeout(
-                () => {
-                    console.log("Swim lane zindex update issue and line routing issue")
-                    expect(diagram.nameTable["swimlane"].wrapper.actualSize.width === 715 && diagram.nameTable["swimlane"].wrapper.actualSize.height === 510 && diagram.nameTable["swimlane"].zIndex === 16).toBe(true);
-                    done();
-                },
-                1000);
+                mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 20);
+                mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 40);
+                mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX, targetPointY - 20);
+                mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX, targetPointY);
+                mouseEvents.mouseUpEvent(diagramCanvas, targetPointX, targetPointY);
+                setTimeout(
+                    () => {
+                       console.log("Swim lane zindex update issue and line routing issue")
+                       expect(diagram.nameTable["swimlane"].wrapper.actualSize.width===715&&diagram.nameTable["swimlane"].wrapper.actualSize.height ===510&&diagram.nameTable["swimlane"].zIndex ===16).toBe(true);
+                       done();
+                    },
+                    1000);
         });
         it('Snapping issue test cases', function (done) {
-            console.log("Snapping issue test cases")
-            var mouseEvents = new MouseEvents();
-            var diagramCanvas = document.getElementById('diagramSwimlane1' + 'content');
-            var node = diagram.nameTable["Order"];
-            var targetNode = diagram.nameTable["selectItemaddcart"];
-            var sourcePointX = node.wrapper.offsetX + diagram.element.offsetLeft;
-            var sourcePointY = node.wrapper.offsetY + diagram.element.offsetTop;
-            var targetPointX = targetNode.wrapper.offsetX + diagram.element.offsetLeft;
-            var targetPointY = targetNode.wrapper.offsetY + diagram.element.offsetTop;
-            mouseEvents.mouseDownEvent(diagramCanvas, sourcePointX, sourcePointY);
-            mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 20);
-            mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 40);
-            mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY - 20);
-            mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY);
-            var snappingLineObject = document.getElementById("_SnappingLines");
-            mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 150, targetPointY);
-            expect(snappingLineObject.children[0].getAttribute("fill") === "#07EDE1"
-                && snappingLineObject.children[0].getAttribute("x1") === "440"
-                && snappingLineObject.children[0].getAttribute("y1") === "242.5"
-                && snappingLineObject.children[0].getAttribute("x2") === "695"
-                && snappingLineObject.children[0].getAttribute("y2") === "242.5").toBe(true);
-            done();
-
-        });
+           console.log("Snapping issue test cases")
+           var mouseEvents = new MouseEvents();
+           var diagramCanvas = document.getElementById('diagramSwimlane1' + 'content');
+           var node = diagram.nameTable["Order"];
+           var targetNode = diagram.nameTable["selectItemaddcart"];
+           var sourcePointX = node.wrapper.offsetX + diagram.element.offsetLeft;
+           var sourcePointY = node.wrapper.offsetY + diagram.element.offsetTop;
+           var targetPointX = targetNode.wrapper.offsetX + diagram.element.offsetLeft;
+           var targetPointY = targetNode.wrapper.offsetY + diagram.element.offsetTop;
+           mouseEvents.mouseDownEvent(diagramCanvas, sourcePointX, sourcePointY);
+           mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 20);
+           mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 40);
+           mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY - 20);
+           mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY);
+           var snappingLineObject = document.getElementById("_SnappingLines");
+           mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 150, targetPointY);
+           expect(snappingLineObject.children[0].getAttribute("fill") === "#07EDE1"
+               && snappingLineObject.children[0].getAttribute("x1") === "440"
+               && snappingLineObject.children[0].getAttribute("y1") === "242.5"
+               && snappingLineObject.children[0].getAttribute("x2") === "695"
+               && snappingLineObject.children[0].getAttribute("y2") === "242.5").toBe(true);
+               done();
+          
+       });
     });
-
+    
 });
 
 
@@ -10940,62 +10940,62 @@ describe('Swimlane interaction from different lane', () => {
             done();
         });
         it('swimlane with lower Zindex children', function (done) {
-            console.log("swimlane with lower Zindex children")
-            diagram.clear();
-            diagram.add({
-                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
-            });
-            diagram.add({
-                id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 100,
-            });
-            diagram.add({
-                id: 'conn1',
-                sourceID: "node1", targetID: "node2"
-            });
-            diagram.add({
-                id: 'swimlane',
-                shape: {
-                    type: 'SwimLane',
-                    orientation: 'Horizontal',
-                    header: {
-                        annotation: { content: 'ONLINE PURCHASE STATUS' },
-                        height: 50,
-                    },
-                    lanes: [
-                        {
-                            id: 'stackCanvas1',
-                            header: {
-                                annotation: { content: 'CUSTOMER' }, width: 50,
-                                style: { fontSize: 11 }
-                            },
-                            height: 100,
-                        }
-                    ],
-                },
-                offsetX: 720, offsetY: 270,
-                height: 100,
-                width: 650,
-            });
-            diagram.select([diagram.nodes[0], diagram.nodes[1]]);
-            mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 300, 300);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 300, 400);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 700, 300);
-            mouseEvents.mouseUpEvent(diagramCanvas, 700, 300);
-            setTimeout(function () {
-                console.log("Swim lane zindex update issue ");
-
-                expect(diagram.nodes[0].zIndex === 19 && diagram.nodes[1].zIndex === 20 && diagram.connectors[0].zIndex === 21).toBe(true);
-                done();
-            }, 1000);
-        });
-        it('swimlane with lower Zindex unde', function (done) {
-            diagram.undo();
-            expect(diagram.nodes.length !== 0).toBe(true);
-            done();
-            diagram.redo();
-        });
-
+         console.log("swimlane with lower Zindex children")
+         diagram.clear();
+         diagram.add({
+             id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+         });
+         diagram.add({
+             id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 100,
+         });
+         diagram.add({
+             id: 'conn1',
+             sourceID: "node1", targetID: "node2"
+         });
+         diagram.add({
+             id: 'swimlane',
+             shape: {
+                 type: 'SwimLane',
+                 orientation: 'Horizontal',
+                 header: {
+                     annotation: { content: 'ONLINE PURCHASE STATUS' },
+                     height: 50,
+                 },
+                 lanes: [
+                     {
+                         id: 'stackCanvas1',
+                         header: {
+                             annotation: { content: 'CUSTOMER' }, width: 50,
+                             style: { fontSize: 11 }
+                         },
+                         height: 100,
+                     }
+                 ],
+             },
+             offsetX: 720, offsetY: 270,
+             height: 100,
+             width: 650,
+         });
+         diagram.select([diagram.nodes[0], diagram.nodes[1]]);
+         mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
+         mouseEvents.mouseMoveEvent(diagramCanvas, 300, 300);
+         mouseEvents.mouseMoveEvent(diagramCanvas, 300, 400);
+         mouseEvents.mouseMoveEvent(diagramCanvas, 700, 300);
+         mouseEvents.mouseUpEvent(diagramCanvas, 700, 300);
+         setTimeout(function () {
+             console.log("Swim lane zindex update issue ");
+              
+             expect(diagram.nodes[0].zIndex === 19 && diagram.nodes[1].zIndex === 20 && diagram.connectors[0].zIndex === 21).toBe(true);
+             done();
+         }, 1000);
+     });
+     it('swimlane with lower Zindex unde', function (done) {
+       diagram.undo();
+       expect(diagram.nodes.length !==0).toBe(true);
+             done();
+             diagram.redo();
+    });
+     
     });
 });
 
@@ -11287,12 +11287,12 @@ describe('Bug(EJ2-49326): An exception raised when send the swimlane back to the
 
     it('Remove - Swimlane', (done: Function) => {
         setTimeout(function () {
-            debugger
+            
             diagram.selectAll();
             diagram.remove();
             expect(diagram.nodes.length == 0 && diagram.connectors.length == 0).toBe(true);
             done();
-        }, 10);
+        }, 10);        
     });
 
     it('Add Swimlane using symbol palette', (done: Function) => {
@@ -11318,7 +11318,7 @@ describe('Bug(EJ2-49326): An exception raised when send the swimlane back to the
         }, 10);
     });
 
-
+    
     it('Add Swimlane using symbol palette', (done: Function) => {
         setTimeout(() => {
             paletteInitalize('stackCanvas1');
@@ -11341,15 +11341,15 @@ describe('Bug(EJ2-49326): An exception raised when send the swimlane back to the
             done();
         }, 10);
     });
-
+    
 
     it('send the swimlane back to the normal node', (done: Function) => {
         setTimeout(() => {
             diagram.select([diagram.nodes[1]]);
             diagram.sendToBack();
             expect(
-                (document.getElementById(diagram.element.id + "_diagramLayer").childNodes[0] as HTMLElement).id == diagram.nodes[1].id + "_groupElement" &&
-                (document.getElementById(diagram.element.id + "_diagramLayer").childNodes[1] as HTMLElement).id == diagram.nodes[0].id + "_groupElement"
+                (document.getElementById(diagram.element.id+"_diagramLayer").childNodes[0] as HTMLElement).id == diagram.nodes[1].id +"_groupElement" &&
+                (document.getElementById(diagram.element.id+"_diagramLayer").childNodes[1] as HTMLElement).id == diagram.nodes[0].id +"_groupElement"
             );
             done();
         }, 10);
@@ -11378,7 +11378,7 @@ describe('Swimlane Save and Load', () => {
                                 shape: {
                                     type: 'Bpmn', shape: 'Event',
                                     event: { event: 'End', trigger: 'None' }
-                                },
+                               },
                             }, {
                                 id: 'node113rr',
                                 width: 50, height: 50,
@@ -11391,10 +11391,10 @@ describe('Swimlane Save and Load', () => {
                                     },
                                 },
                             }
-                            ],
+                        ],
                             style: { fill: 'red', opacity: .4 }, height: 100, header: { annotation: { content: 'lane1' } }
                         }
-
+                    
                     ]
                 }
             },
@@ -11425,8 +11425,8 @@ describe('Checking annotation updation at runtime for swimlane children', () => 
         ele = createElement('div', { id: 'diagramSwimlaneObject' });
         document.body.appendChild(ele);
         var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
-            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
-            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
         let nodes: NodeModel[] = [
             {
                 id: 'swimlane',
@@ -11449,7 +11449,7 @@ describe('Checking annotation updation at runtime for swimlane children', () => 
                                 {
                                     id: 'Order',
                                     shape: { type: 'Path', data: pathData },
-                                    addInfo: [{ text: "orderaddinfo", typeId: "adefcd75-3613-4417-9dd6-424cd8bdb882" }],
+                                    addInfo : [{text : "orderaddinfo",typeId :"adefcd75-3613-4417-9dd6-424cd8bdb882" }],
                                     annotations: [
                                         {
                                             content: 'ORDER',
@@ -11487,27 +11487,335 @@ describe('Checking annotation updation at runtime for swimlane children', () => 
     it('Changing annotation for swimlane child', (done: Function) => {
         diagram.select([diagram.nameTable['Order']]);
         var node = diagram.selectedItems.nodes[0];
-        if (node.annotations && node.annotations.length > 0) {
-            if (node.annotations[0].content) {
-                node.annotations[0].content = node.annotations[0].content + ' changed';
+        if(node.annotations && node.annotations.length>0)
+        {
+            if(node.annotations[0].content)
+            {
+                node.annotations[0].content = node.annotations[0].content+' changed';
             }
         }
         var nodeAnn1 = node.annotations[0].content;
-        diagram.drag(node, 0, 100);
+        diagram.drag(node,0,100);
         (node as Node).parentId = '';
-        node.annotations[0].content = node.annotations[0].content + ' changed again';
+        node.annotations[0].content = node.annotations[0].content+' changed again';
         var nodeAnn2 = node.annotations[0].content;
         expect(nodeAnn1 === 'ORDER changed' && nodeAnn2 === 'ORDER changed changed again').toBe(true);
         done();
     });
-    describe('EJ2-69852 and EJ2-824712 Swmilane - Header click triggers position change and history change event', () => {
-        let diagram: Diagram;
-        let ele: HTMLElement;
-        let btn: HTMLButtonElement;
-        beforeAll((): void => {
-            ele = createElement('div', { id: 'diagram_swimlane_header' });
-            document.body.appendChild(ele);
-            let node: NodeModel[] = [{
+
+});
+
+describe('EJ2-69852 and EJ2-824712 Swmilane - Header click triggers position change and history change event', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram_swimlane_header' });
+        document.body.appendChild(ele);
+        let node: NodeModel[] = [{
+            shape: {
+                type: 'SwimLane',
+                orientation: 'Horizontal',
+                //Intialize header to swimlane
+                header: {
+                    annotation: { content: 'SwimLane Header', },
+                    height: 50, style: { fontSize: 11 },
+                },
+                lanes: [
+                    {
+                        id: 'stackCanvas1',
+                        height: 100,
+                        header: {
+                            annotation: { content: 'CUSTOMER' }, width: 50,
+                            style: { fontSize: 11 }
+                        },
+                        children: [
+                            {
+                                id: 'node1',
+                                annotations: [
+                                    {
+                                        content: 'Consumer learns \n of product',
+                                        style: { fontSize: 11 }
+                                    }
+                                ],
+                                margin: { left: 60, top: 30 },
+                                height: 40, width: 100,
+                            }, {
+                                id: 'node2',
+                                shape: { type: 'Flow', shape: 'Decision' },
+                                annotations: [
+                                    {
+                                        content: 'Does \n Consumer want \nthe product',
+                                        style: { fontSize: 11 }
+                                    }
+                                ],
+                                margin: { left: 200, top: 20 },
+                                height: 60, width: 120,
+                            },
+                        ],
+                    },
+
+                ],
+                phases: [
+                    {
+                        id: 'phase1', offset: 120,
+                        // set the phase info
+                        addInfo: { name: 'phase1' },
+                        header: { annotation: { content: 'Phase' } }
+                    }, {
+                        id: 'phase2', offset: 200,
+                        header: { annotation: { content: 'Phase' } }
+                    },
+                ],
+                phaseSize: 20,
+            },
+            offsetX: 300, offsetY: 150,
+            height: 200,
+            width: 350
+        },
+        {
+            id: 'sample node',
+            offsetX: 600,
+            offsetY: 100,
+        }];
+
+        let connector: ConnectorModel = {
+            id: "connector1",
+            type: 'Orthogonal',
+            sourcePoint: {
+                x: 700,
+                y: 300
+            },
+            targetPoint: {
+                x: 800,
+                y: 300
+            },
+        }
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            nodes: node,
+            connectors: [connector],
+        });
+        diagram.appendTo('#diagram_swimlane_header');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it(' header triggers Position change when clicked issue', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
+        
+        let positionChangeCheck: boolean = false;
+        diagram.positionChange = (args: IDraggingEventArgs) => {
+            positionChangeCheck = true;
+        };
+        mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
+        mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
+
+        expect(positionChangeCheck).toBe(false);
+        done();
+    });
+    it('Checking history change event while selectin swimlane header second time', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
+        let historyEntry: boolean = false;
+        diagram.historyChange = (args: IHistoryChangeArgs) => {
+            historyEntry = true
+        }
+        mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
+        mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
+        expect(historyEntry).toBe(false);
+        done();
+    });
+    it('Single Node Position change trigger', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
+        
+        let positionChangeCheck: boolean = false;
+        diagram.positionChange = (args: IDraggingEventArgs) => {
+            positionChangeCheck = true;
+        };
+        mouseEvents.clickEvent(diagramCanvas, 600, 100, true)
+        mouseEvents.mouseDownEvent(diagramCanvas, 600, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 605, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 605, 110);
+        mouseEvents.mouseUpEvent(diagramCanvas, 605, 110);
+
+        expect(positionChangeCheck).toBe(true);
+        
+        done();
+    });
+
+    it('connector Position change trigger', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
+        
+        let positionChangeCheck: boolean = false;
+        diagram.positionChange = (args: IDraggingEventArgs) => {
+            positionChangeCheck = true;
+        };
+        mouseEvents.clickEvent(diagramCanvas, 750, 300, true)
+        mouseEvents.mouseDownEvent(diagramCanvas, 750, 300);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 755, 300);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 755, 305);
+        mouseEvents.mouseUpEvent(diagramCanvas, 755, 305);
+        expect(positionChangeCheck).toBe(true);
+        done();
+        
+    });
+});
+describe('Swimlane child nodes are not selectable after save and load with prevent defaults as true', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwim_select' });
+        document.body.appendChild(ele);
+        let node: NodeModel[] = [{
+            id:'swimlane',
+            shape: {
+                type: 'SwimLane',
+                orientation: 'Horizontal',
+                //Intialize header to swimlane
+                header: {
+                    annotation: { content: 'SwimLane Header', },
+                    height: 50, style: { fontSize: 11 },
+                },
+                lanes: [
+                    {
+                        id: 'stackCanvas1',
+                        height: 100,
+                        header: {
+                            annotation: { content: 'CUSTOMER' }, width: 50,
+                            style: { fontSize: 11 }
+                        },
+                        children: [
+                            {
+                                id: 'node1',
+                                annotations: [
+                                    {
+                                        content: 'Consumer learns \n of product',
+                                        style: { fontSize: 11 }
+                                    }
+                                ],
+                                margin: { left: 60, top: 30 },
+                                height: 40, width: 100,
+                            },
+                        ],
+                    },
+                    {
+                        id: 'stackCanvas2',
+                        height: 100,
+                        header: {
+                            annotation: { content: 'PRODUCT' }, width: 50,
+                            style: { fontSize: 11 }
+                        },
+                        children: [
+                            {
+                                id: 'node2',
+                                annotations: [
+                                    {
+                                        content: 'product',
+                                        style: { fontSize: 11 }
+                                    }
+                                ],
+                                margin: { left: 60, top: 30 },
+                                height: 40, width: 100,
+                            },
+                        ],
+                    },
+                    {
+                        id: 'stackCanvas3',
+                        height: 100,
+                        header: {
+                            annotation: { content: 'SALES' }, width: 50,
+                            style: { fontSize: 11 }
+                        },
+                        children: [
+                            {
+                                id: 'node3',
+                                annotations: [
+                                    {
+                                        content: 'sales',
+                                        style: { fontSize: 11 }
+                                    }
+                                ],
+                                margin: { left: 60, top: 30 },
+                                height: 40, width: 100,
+                            },
+                        ],
+                    },
+                ],
+                phases: [
+                    {
+                        id: 'phase1', offset: 120,
+                        // set the phase info
+                        addInfo: { name: 'phase1' },
+                        header: { annotation: { content: 'Phase' } }
+                    },
+                ],
+                phaseSize: 20,
+            },
+            offsetX: 300, offsetY: 250,
+            height: 200,
+            width: 350
+        },];
+
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            serializationSettings:{preventDefaults:true},
+            nodes: node,
+        });
+        diagram.appendTo('#diagramSwim_select');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Add child nodes into lane and check the nodes is selectable or not after save and load', (done: Function) => {
+        let newNode = {id:'newNode',width:70,height:50,margin:{left:200,top:20}};
+        diagram.addChild(diagram.nameTable['swimlanestackCanvas10'],newNode);
+        diagram.select([diagram.nameTable['newNode']]);
+        let newNodeZIndex = diagram.selectedItems.nodes[0].zIndex;
+        let data = diagram.saveDiagram();
+        diagram.loadDiagram(data);
+        let newNode1 = {id:'newNode1',width:70,height:50,margin:{left:200,top:20}};
+        diagram.addChild(diagram.nameTable['swimlanestackCanvas20'],newNode1);
+        diagram.select([diagram.nameTable['newNode1']]);
+        let newNode1ZIndex = diagram.selectedItems.nodes[0].zIndex;
+        expect(newNodeZIndex === 12 && newNode1ZIndex === 13).toBe(true);
+        let saveData = diagram.saveDiagram(); 
+        diagram.loadDiagram(saveData);
+        let newNode2 = {id:'newNode2',width:70,height:50,margin:{left:200,top:20}};
+        diagram.addChild(diagram.nameTable['swimlanestackCanvas30'],newNode2);
+        diagram.select([diagram.nameTable['newNode2']]);
+        let newNode2Zindex = diagram.selectedItems.nodes[0].zIndex;
+        expect(newNode2Zindex === 14).toBe(true);
+    });
+});
+describe('828495- Exception occurs while dragging swimlane after adding shape then undo action is performed', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwim_select' });
+        document.body.appendChild(ele);
+        let node: NodeModel[] = [
+            {
+                id: 'nodesample',
+                height: 50,
+                width: 50,
+                offsetX: 520,
+                offsetY: 250,
+                constraints: NodeConstraints.Default || NodeConstraints.AllowDrop
+            },
+            {
+                constraints: NodeConstraints.Default || NodeConstraints.AllowDrop,
+                id: 'swimlane',
                 shape: {
                     type: 'SwimLane',
                     orientation: 'Horizontal',
@@ -11535,21 +11843,51 @@ describe('Checking annotation updation at runtime for swimlane children', () => 
                                     ],
                                     margin: { left: 60, top: 30 },
                                     height: 40, width: 100,
-                                }, {
-                                    id: 'node2',
-                                    shape: { type: 'Flow', shape: 'Decision' },
-                                    annotations: [
-                                        {
-                                            content: 'Does \n Consumer want \nthe product',
-                                            style: { fontSize: 11 }
-                                        }
-                                    ],
-                                    margin: { left: 200, top: 20 },
-                                    height: 60, width: 120,
                                 },
                             ],
                         },
-
+                        {
+                            id: 'stackCanvas2',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'PRODUCT' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node2',
+                                    annotations: [
+                                        {
+                                            content: 'product',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'SALES' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node3',
+                                    annotations: [
+                                        {
+                                            content: 'sales',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
                     ],
                     phases: [
                         {
@@ -11557,109 +11895,37 @@ describe('Checking annotation updation at runtime for swimlane children', () => 
                             // set the phase info
                             addInfo: { name: 'phase1' },
                             header: { annotation: { content: 'Phase' } }
-                        }, {
-                            id: 'phase2', offset: 200,
-                            header: { annotation: { content: 'Phase' } }
                         },
                     ],
                     phaseSize: 20,
                 },
-                offsetX: 300, offsetY: 150,
+                offsetX: 300, offsetY: 250,
                 height: 200,
                 width: 350
-            },
-            {
-                id: 'sample node',
-                offsetX: 600,
-                offsetY: 100,
-            }];
+            },];
 
-            let connector: ConnectorModel = {
-                id: "connector1",
-                type: 'Orthogonal',
-                sourcePoint: {
-                    x: 700,
-                    y: 300
-                },
-                targetPoint: {
-                    x: 800,
-                    y: 300
-                },
-            }
-            diagram = new Diagram({
-                width: '80%',
-                height: '600px',
-                nodes: node,
-                connectors: [connector],
-            });
-            diagram.appendTo('#diagram_swimlane_header');
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            serializationSettings: { preventDefaults: true },
+            nodes: node,
         });
-        afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
-        });
-
-        it(' header triggers Position change when clicked issue', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
-            let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
-            debugger
-            let positionChangeCheck: boolean = false;
-            diagram.positionChange = (args: IDraggingEventArgs) => {
-                positionChangeCheck = true;
-            };
-            mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
-            mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
-
-            expect(positionChangeCheck).toBe(false);
-            done();
-        });
-        it('Checking history change event while selectin swimlane header second time', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
-            let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
-            let historyEntry: boolean = false;
-            diagram.historyChange = (args: IHistoryChangeArgs) => {
-                historyEntry = true
-            }
-            mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
-            mouseEvents.clickEvent(diagramCanvas, 300, 75, true);
-            expect(historyEntry).toBe(false);
-        });
-        it('Single Node Position change trigger', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
-            let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
-            debugger
-            let positionChangeCheck: boolean = false;
-            diagram.positionChange = (args: IDraggingEventArgs) => {
-                positionChangeCheck = true;
-            };
-            mouseEvents.clickEvent(diagramCanvas, 600, 100, true)
-            mouseEvents.mouseDownEvent(diagramCanvas, 600, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 605, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 605, 110);
-            mouseEvents.mouseUpEvent(diagramCanvas, 605, 110);
-
-            expect(positionChangeCheck).toBe(true);
-            debugger
-            done();
-        });
-
-        it('connector Position change trigger', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
-            let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
-            debugger
-            let positionChangeCheck: boolean = false;
-            diagram.positionChange = (args: IDraggingEventArgs) => {
-                positionChangeCheck = true;
-            };
-            mouseEvents.clickEvent(diagramCanvas, 750, 300, true)
-            mouseEvents.mouseDownEvent(diagramCanvas, 750, 300);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 755, 300);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 755, 305);
-            mouseEvents.mouseUpEvent(diagramCanvas, 755, 305);
-            expect(positionChangeCheck).toBe(true);
-            done();
-            debugger
-        });
+        diagram.appendTo('#diagramSwim_select');
     });
-
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Add shape to swimlane and Undo then drag swmilane', (done: Function) => {
+        debugger
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: Element = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.dragAndDropEvent(diagramCanvas, 520, 250, 340, 250, false, false)
+        mouseEvents.clickEvent(diagramCanvas, 600, 300, false, false)
+        diagram.undo();
+        diagram.select(diagram.nodes);
+        diagram.drag(diagram.nodes[1], 100, 100);
+        expect(diagram.nodes[1].offsetX == 400 && diagram.nodes[1].offsetY == 350).toBe(true);
+        done();
+    });
 });

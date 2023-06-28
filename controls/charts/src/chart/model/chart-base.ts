@@ -397,7 +397,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
     /**
      * Options to customize the strip line text.
      */
-    @Complex<FontModel>(Theme.stripLineLabelFont, Font)
+    @Complex<FontModel>({ size: '12px', color: null, fontStyle: 'Normal', fontWeight: '400', fontFamily: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -417,6 +417,14 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      */
     @Property(1)
     public opacity: number;
+  
+    /**
+     * The URL of the background image for the strip line.
+     *
+     * @default ''
+     */
+    @Property('')
+    public imageUrl : string;
 }
 
 /**
@@ -448,7 +456,7 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
     /**
      * Options to customize the multi level labels.
      */
-    @Complex<FontModel>(Theme.axisLabelFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public textStyle: FontModel;
     /**
      * Border of the multi level labels.
@@ -515,4 +523,60 @@ export class ScrollbarSettings extends ChildProperty<ScrollbarSettings> {
      */
     @Complex<ScrollbarSettingsRangeModel>({}, ScrollbarSettingsRange)
     public range: ScrollbarSettingsRangeModel;
+
+    /**
+     * Defines the color of the back track.
+     *
+     * @default null
+     */
+    @Property(null)
+    public trackColor: string;
+
+    /**
+     * Defines the border radius for the scroll bar.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public scrollbarRadius: number;
+
+    /**
+     * Defines the color for the scroll bar.
+     *
+     * @default null
+     */
+    @Property(null)
+    public scrollbarColor: string;
+
+    /**
+     * Defines the border radius for back rect.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public trackRadius: number;
+
+    /**
+     * Defines the color for thumb grip.
+     *
+     * @default null
+     */
+    @Property(null)
+    public gripColor: string;
+
+    /**
+     * Defines the height of the back rect and scroll bar.
+     *
+     * @default 16
+     */
+    @Property(16)
+    public height: number;
+
+    /**
+     * Defines enable or disable of zoom by scroll bar.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableZoom: boolean;
 }

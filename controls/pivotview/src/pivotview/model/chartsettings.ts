@@ -94,7 +94,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 }
 
 /**
- * Allows to customize the apprearance of the text in the chart such as font style, font size, font weight, font color, font family, text alignment, opacity, text overflow.
+ * Allows to customize the appearance of the text in the chart such as font style, font size, font weight, font color, font family, text alignment, opacity, text overflow.
  */
 export class Font extends ChildProperty<Font> {
 
@@ -358,7 +358,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
 }
 
 /**
- * Allows to configure the data label with different settings such as name, fill color, opacity, rotation angle, border, marging, etc in the chart.
+ * Allows to configure the data label with different settings such as name, fill color, opacity, rotation angle, border, margins, etc in the chart.
  */
 
 export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
@@ -474,9 +474,10 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
 }
 
@@ -608,9 +609,10 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
      * text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Allows custom connector of the pie, funnel, pyramid and doughnut chart data label.
@@ -636,7 +638,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public visible: boolean;
 
     /**
-     * Allows to spcify the shape of a marker.They are
+     * Allows to specify the shape of a marker.They are
      * * Circle - Renders a circle.
      * * Rectangle - Renders a rectangle.
      * * Triangle - Renders a triangle.
@@ -752,7 +754,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 }
 
 /**
- * Allows options for customize the error bar chart with diffent settings such as type, direction, mode, color, width, etc.
+ * Allows options for customize the error bar chart with different settings such as type, direction, mode, color, width, etc.
  *
  * @public
  */
@@ -1090,7 +1092,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
 }
 
 /**
- * Allows to congifure the strip line properties such as line position, size, color, size type, border, text and opacity in the chart.
+ * Allows to configure the strip line properties such as line position, size, color, size type, border, text and opacity in the chart.
  */
 export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
@@ -1296,7 +1298,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 }
 
 /**
- * Allows to customize the label border with a variety of means such as label color, width and labe type in the chart.
+ * Allows to customize the label border with a variety of means such as label color, width and label type in the chart.
  */
 export class LabelBorder extends ChildProperty<LabelBorder> {
 
@@ -1669,7 +1671,7 @@ export class PivotChartSeriesMarkerSettings {
     public dataLabel: PivotChartDataLabelSettingsModel;
 }
 /**
- * Allows options for customize the error bar chart series with diffent settings such as type, direction, mode, color, width, etc.
+ * Allows options for customize the error bar chart series with different settings such as type, direction, mode, color, width, etc.
  */
 export class PivotChartSeriesErrorSettings {
     /**
@@ -1957,7 +1959,7 @@ export class PivotChartSeriesCornerRadius {
 }
 
 /**
- * Allows to customize the apprearance of the text in the chart such as font style, font size, font weight, font color, font family, text alignment, opacity, text overflow.
+ * Allows to customize the appearance of the text in the chart such as font style, font size, font weight, font color, font family, text alignment, opacity, text overflow.
  */
 export class PivotChartAxisFont {
     /**
@@ -2189,7 +2191,7 @@ export class PivotChartAxisAxisLine {
     public color: string;
 }
 /**
- * Allows to congifure the strip line properties such as line position, size, color, size type, border, text and opacity in the chart.
+ * Allows to configure the strip line properties such as line position, size, color, size type, border, text and opacity in the chart.
  */
 export class PivotChartAxisStripLineSettings {
     /**
@@ -2393,7 +2395,7 @@ export class PivotChartAxisStripLineSettings {
     public opacity: number;
 }
 /**
- * Allows to customize the label border with a variety of means such as label color, width and labe type in the chart.
+ * Allows to customize the label border with a variety of means such as label color, width and label type in the chart.
  */
 export class PivotChartAxisLabelBorder {
     /**
@@ -2525,7 +2527,7 @@ export class PivotChartSettingsLegendSettings {
     /**
      * Allows to set the location of the legend, relative to the chart.
      * If x is 20, legend moves by 20 pixels to the right of the chart. It requires the `position` to be `Custom`.
-     * 
+     *
      * ```typescript
      * ...
      *   legendSettings: {
@@ -3444,9 +3446,10 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
      * Allows to set the custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
      *
      * @default null.
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Allows options to customize tooltip borders.
@@ -3509,7 +3512,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
 
     /**
      * If set to true, zooming will be performed on mouse up. It requires `enableSelectionZooming` to be true.
-     * 
+     *
      * ```typescript
      * ...
      *    zoomSettings: {
@@ -3547,7 +3550,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
      *    },
      * ...
      * ```
-     * 
+     *
      * @default 'XY'
      */
     @Property('XY')
@@ -3609,7 +3612,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
  * height, width, position, legend padding, alignment, textStyle, border, margin, background, opacity, description, tabIndex in the pivot chart.
  * * `margin`: Allow options to customize the left, right, top and bottom margins of the pivot chart.
  * * `palettes`: Allows you to draw the chart series points with custom color in the pivot chart.
- * * `primaryXAxis`: Allow options to customize the horzontal(row) axis with different properties such as labelIntersectAction, labelStyle, title,
+ * * `primaryXAxis`: Allow options to customize the horizontal(row) axis with different properties such as labelIntersectAction, labelStyle, title,
  * description, crosshairTooltip, labelFormat, titleStyle, plotOffset, edgeLabelPlacement, labelPlacement, tickPosition, opposedPosition, minor and
  * major grid lines, minor and major tick lines, border, etc. in the pivot chart.
  * * `primaryYAxis`: Allow options to customize the vertical(value) axis with different properties such as labelIntersectAction, labelStyle,
@@ -3644,7 +3647,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     public chartSeries: PivotSeriesModel;
 
     /**
-     * Allow options to customize the horzontal(row) axis with different properties such as labelIntersectAction, labelStyle, title,
+     * Allow options to customize the horizontal(row) axis with different properties such as labelIntersectAction, labelStyle, title,
      * description, crosshairTooltip, labelFormat, titleStyle, plotOffset, edgeLabelPlacement, labelPlacement, tickPosition, opposedPosition, minor and
      * major grid lines, minor and major tick lines, border, etc. in the pivot chart.
      */
@@ -4221,7 +4224,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     public zoomComplete: EmitType<IZoomCompleteEventArgs>;
 
     /**
-     * It triggers when change the scroll of the chart seires.
+     * It triggers when change the scroll of the chart series.
      *
      * @event scrollChanged
      * @deprecated

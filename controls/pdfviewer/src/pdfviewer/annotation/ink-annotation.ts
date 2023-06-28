@@ -327,7 +327,7 @@ export class InkAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderExistingInkSignature(annotationCollection: any, pageIndex: number, isImport: boolean): void {
+    public renderExistingInkSignature(annotationCollection: any, pageIndex: number, isImport: boolean,  isAnnotOrderAction?: boolean): void {
         let annot: PdfAnnotationBaseModel;
         let isinkAnnotationAdded: boolean = false;
         if (!isImport) {
@@ -338,7 +338,7 @@ export class InkAnnotation {
                 }
             }
         }
-        if (annotationCollection && !isinkAnnotationAdded) {
+        if (annotationCollection && (!isinkAnnotationAdded || isAnnotOrderAction)) {
             if (annotationCollection.length > 0 && this.inkAnnotationindex.indexOf(pageIndex) === -1) {
                 this.inkAnnotationindex.push(pageIndex);
             }

@@ -206,7 +206,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
      * Option for customizing the data label text.
      */
 
-    @Complex<FontModel>({ size: '11px', color: '', fontStyle: 'Normal', fontWeight: 'Normal', fontFamily: 'Segoe UI' }, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public font: FontModel;
 
     /**
@@ -222,10 +222,11 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
      * text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
 
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Used to format the data label that accepts any global string format like 'C', 'n1', 'P' etc.

@@ -216,7 +216,7 @@ export class NavigationPane {
                     const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
                     this.parent.trigger('fileSelect', selecEventArgs);
                 }
-                if(!this.isRightClick && args.node.getAttribute('data-uid') !== this.parent.pathId[this.parent.pathId.length-1])
+                if(!this.isRightClick)
                 {
                     const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
                     this.parent.trigger('fileOpen', eventArgs);

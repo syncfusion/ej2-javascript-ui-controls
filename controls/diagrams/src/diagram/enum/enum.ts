@@ -171,7 +171,15 @@ export type LayoutOrientation =
     /**
      * RightToLeft - Renders the layout from right to left
      */
-    'RightToLeft';
+    'RightToLeft'|
+    /**
+     * Horizontal - Renders only the mindmap layout from left to right
+     */
+    'Horizontal' |
+    /**
+    * vertical - Renders only the mindmap layout from top to bottom
+    */
+    'vertical';
 
 /**
  * Defines the types of the automatic layout
@@ -2556,7 +2564,7 @@ export enum DiagramEvent {
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
     'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad',
-    'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick', 'elementDraw','mouseWheel','segmentChange'
+    'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick', 'elementDraw', 'mouseWheel', 'segmentChange'
 }
 /**
  * @private
@@ -2627,6 +2635,10 @@ export enum PortConstraints {
     InConnect = 1 << 3,
     /** Enables to only connect the source end of connector */
     OutConnect = 1 << 4,
+    /**Enables or disables the Tooltip  for the ports*/
+    ToolTip = 1 << 5,
+    /** Enables or disables the Tooltip for the ports */
+    InheritTooltip = 1 << 6,
     /** Enables all constraints */
     Default = 1 << 3 | 1 << 4
 }
@@ -2799,8 +2811,9 @@ export type AssociationFlow = 'Directional' | 'Default' | 'BiDirectional';
  * * OneToOne - Indicates the connector multiplicity is OneToOne.
  * * OneToMany - Indicates the connector multiplicity is OneToMany.
  * * ManyToOne - Indicates the connector multiplicity is ManyToOne.
+ * * ManyToMany - Indicates the connector multiplicity us ManyToMany.
  */
-export type Multiplicity = 'OneToOne' | 'OneToMany' | 'ManyToOne';
+export type Multiplicity = 'OneToOne' | 'OneToMany' | 'ManyToOne' | 'ManyToMany';
 
 /**
  * Defines the visibility of the control points in the Bezier connector

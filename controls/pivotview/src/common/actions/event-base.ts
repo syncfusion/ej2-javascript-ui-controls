@@ -124,8 +124,7 @@ export class EventBase {
                 const fieldInfo: IField = this.parent.engineModule.fieldList[fieldName as string];
                 let members: IAxisSet[] =
                     PivotUtil.getClonedData(fieldInfo.dateMember as []) as IAxisSet[];
-                /* eslint-disable  */
-                let membersInfo: string[] | number[] = fieldInfo && fieldInfo.membersOrder ?
+                const membersInfo: string[] | number[] = fieldInfo && fieldInfo.membersOrder ?
                     [...fieldInfo.membersOrder] as string[] | number[] : [];
                 let outOfRange: IAxisSet;
                 if (members[0].actualText === 'Out of Range') {
@@ -136,14 +135,14 @@ export class EventBase {
                     outOfRange = members[members.length - 1];
                     members.splice(members.length - 1, 1);
                 }
-                let sortDetails: HeadersSortEventArgs = {
+                const sortDetails: HeadersSortEventArgs = {
                     fieldName: fieldName,
                     sortOrder: fieldInfo.sort as Sorting,
                     members: membersInfo && membersInfo.length > 0 ? membersInfo : Object.keys(members),
                     IsOrderChanged: false
                 };
                 let isHeaderSortByDefault: boolean = false;
-                let sortType: string | boolean = fieldInfo && fieldInfo.isAlphanumeric ? true : undefined;
+                const sortType: string | boolean = fieldInfo && fieldInfo.isAlphanumeric ? true : undefined;
                 if (membersInfo && membersInfo.length > 0) {
                     members = PivotUtil.applyCustomSort(sortDetails, members, sortType);
                 }
@@ -151,7 +150,6 @@ export class EventBase {
                     members = PivotUtil.applyHeadersSort(members, sortDetails.sortOrder, sortType);
                     isHeaderSortByDefault = true;
                 }
-                /* eslint-enable  */
                 const filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
                 if (!isNullOrUndefined(filterObj)) {
                     isInclude = this.isValidFilterItemsAvail(fieldName, filterObj) && filterObj.type === 'Include' ? true : false;
@@ -379,11 +377,12 @@ export class EventBase {
     }
 
     /**
-     * 
+     * It used to get the parentIds
+     *
      * @param {TreeView} treeObj - Specifies the treeview instance.
      * @param {string} id - Specifies the current node id.
      * @param {string[]} parent - Specifies the collection of parent element.
-     * @returns {string[]}
+     * @returns {string[]} - Returns parentIds.
      * @hidden
      */
     public getParentIDs(treeObj: TreeView, id: string, parent: string[]): string[] {
@@ -403,11 +402,12 @@ export class EventBase {
     }
 
     /**
-     * 
+     * It used to get the childIds
+     *
      * @param {TreeView} treeObj - Specifies the treeview instance.
      * @param {string} id - Specifies the current node id.
      * @param {string[]} children - Specifies the collection of clid elements.
-     * @returns {string[]}
+     * @returns {string[]} - Return childIds.
      * @hidden
      */
     public getChildIDs(treeObj: TreeView, id: string, children: string[]): string[] {
@@ -595,7 +595,7 @@ export class EventBase {
             }
             this.parent.currentTreeItems.push(obj);
             this.parent.searchTreeItems.push(obj);
-            this.parent.currentTreeItemsPos[actualText] = { index: memberCount - 1, isSelected: obj.isSelected as boolean };
+            this.parent.currentTreeItemsPos[actualText as number] = { index: memberCount - 1, isSelected: obj.isSelected as boolean };
             memberCount++;
         }
         this.parent.isDataOverflow = ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor);
@@ -653,11 +653,11 @@ export class EventBase {
     }
 
     /**
-     * 
      * @param {IOlapField[]} members - members.
      * @param {string} fieldName - fieldName.
      * @param {string} node - node.
      * @param {boolean} state - state.
+     * @returns {void}
      * @hidden
      */
     public updateChildNodeStates(members: IOlapField[], fieldName: string, node: string, state: boolean): void {
@@ -677,10 +677,7 @@ export class EventBase {
     }
 
     /* eslint-disable-next-line */
-    /**
-     * get the parent node of particular filter members.
-     * @hidden
-     */
+    /** @hidden */
     public getParentNode(fieldName: string, item: string, filterObj: { [key: string]: string }): { [key: string]: string } {
         const members: IMembers = this.parent.engineModule.fieldList[fieldName as string].members;
         if (members[item as string].parent && item !== members[item as string].parent) {
@@ -697,7 +694,7 @@ export class EventBase {
         const memberObject: IMembers = this.parent.engineModule.fieldList[fieldName as string].members;
         const selectedNodes: string[] = filterObj ? Object.keys(filterObj) : [];
         for (const node of selectedNodes) {
-            const parent: string = memberObject[node as string].parent;
+            const parent: string = memberObject[node as string] ? memberObject[node as string].parent : undefined;
             if (parent !== undefined && PivotUtil.inArray(parent, parentNodes) === -1) {
                 parentNodes.push(parent);
             }

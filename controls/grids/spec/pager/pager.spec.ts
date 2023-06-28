@@ -519,4 +519,138 @@ describe('Pager base module', () => {
             pagerObj = elem = null;
         });
     });
+
+    describe('EJ2-822821 - Need to render the pager based on the Dom width', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        let pagerElements: NodeListOf<HTMLElement>;
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 100, pageCount: 30, pageSize: 2,
+                    created: created
+                });
+            pagerObj.appendTo('#Pager');
+            pagerObj.element.style.borderStyle = 'solid'; //code to trigger pager resizing.
+        });
+
+        it('Code coverage case for resized method in pager component', function () {
+            pagerElements = pagerObj.element.querySelectorAll('.e-mfirst, .e-mprev, .e-icon-first, .e-icon-prev, .e-pp:not(.e-disable), .e-icon-next, .e-icon-last, .e-parentmsgbar, e-mnext, e-mlast, .e-pagerdropdown, .e-pagerconstant');
+            pagerObj.element.querySelector('.e-np').classList.remove('e-disable');
+            for (var i = 0; i < pagerElements.length; i++) {
+                pagerElements[i].style.width = '25px';
+            }
+            (pagerObj as any).resizePager();
+            expect(pagerObj.element.querySelectorAll('.e-numericitem:not(.e-hide):not(.e-np):not(.e-pp)')[29].classList.contains('e-hide')).toBeFalsy();
+        });
+        it('Code coverage case for resized method in pager component window reduced to current page', function () {
+            pagerObj.currentPage = 15;
+            pagerObj.element.querySelector('.e-np').classList.remove('e-disable');
+            for (var i = 0; i < pagerElements.length; i++) {
+                (pagerElements[i] as HTMLElement).style.width = '100px';
+            }
+            pagerObj.dataBind();
+            expect(pagerObj.element.querySelector('.e-active').classList.contains('e-hide')).toBeFalsy();
+        });
+
+        it('Case for dynamically changing window size (triggering resize event manually)', function () {
+            for (var i = 0; i < pagerElements.length; i++) {
+                pagerElements[i].style.width = '20px';
+            }
+            var resizeEvent = new Event('resize');
+            window.dispatchEvent(resizeEvent);
+            expect((pagerObj as any).isPagerResized).toBeTruthy();
+        });
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = pagerElements = elem = null;
+        });
+    });
+
+    describe('EJ2-832882 - Show and Hide Pager message elements dynamically when no numeric Items left to hide.', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        let pagerElements: NodeListOf<HTMLElement>;
+        const isDeviceMockValue = true;
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 100, pageCount: 30, pageSize: 2,
+                    created: created
+                });
+            pagerObj.appendTo('#Pager');
+            pagerObj.element.style.width = '250px';
+            pagerObj.element.style.borderStyle = 'solid'; //code to trigger pager resizing.
+        });
+
+        it('check whether the pager message is hidden or not', function () {
+            var resizeEvent = new Event('resize');
+            window.dispatchEvent(resizeEvent);
+            (pagerObj as any).resizePager();
+            expect((pagerObj.element.querySelector('.e-parentmsgbar') as HTMLElement).style.display === 'none').toBeTruthy();
+        });
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = pagerElements = elem = null;
+        });
+    });
+
+    describe('EJ2-832882 - Show and Hide Pager message elements dynamically when no numeric Items left to hide.', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        let pagerElements: NodeListOf<HTMLElement>;
+        const isDeviceMockValue = true;
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 100, pageCount: 30, pageSize: 2, pageSizes: true,
+                    created: created
+                });
+            pagerObj.appendTo('#Pager');
+            pagerObj.element.style.borderStyle = 'solid'; //code to trigger pager resizing.
+        });
+        
+        it('Make the window smaller to hide the pager message elements', function () {
+            pagerObj.element.style.width = '220px';
+            pagerObj.currentPage = 50; //to trigger current page if condition in resizePager method.
+            pagerObj.dataBind();
+            var resizeEvent = new Event('resize');
+            window.dispatchEvent(resizeEvent);
+            (pagerObj as any).resizePager();
+        });
+        
+        it('check whether the pager message is shown when increasing window size or not', function () {
+            pagerElements = pagerObj.element.querySelectorAll('.e-mfirst, .e-mprev, .e-icon-first, .e-icon-prev, .e-pp:not(.e-disable), .e-icon-next, .e-icon-last, .e-parentmsgbar, e-mnext, e-mlast, .e-pagesizes');
+            pagerObj.element.querySelector('.e-np').classList.remove('e-disable');
+            for (var i = 0; i < pagerElements.length; i++) {
+                pagerElements[i].style.width = '25px';
+            }
+            pagerObj.element.style.width = '1000px';
+            (pagerObj as any).resizePager();
+            expect((pagerObj.element.querySelector('.e-pagesizes') as HTMLElement).style.display === 'inline-block').toBeTruthy();
+            pagerElements = pagerObj.element.querySelectorAll('.e-mfirst, .e-mprev, .e-icon-first, .e-icon-prev, .e-pp:not(.e-disable), .e-icon-next, .e-icon-last, .e-parentmsgbar, e-mnext, e-mlast, .e-pagerdropdown , .e-pagerconstant');
+            for (var i = 0; i < pagerElements.length; i++) {
+                pagerElements[i].style.width = '25px';
+            }
+            (pagerObj.element.querySelector('.e-parentmsgbar') as HTMLElement).style.display = 'inline-block';
+            (pagerObj as any).resizePager();
+            expect(pagerObj.element.querySelector('.e-active').classList.contains('e-hide')).toBeFalsy();
+        });
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = pagerElements = elem = null;
+        });
+    });
 });

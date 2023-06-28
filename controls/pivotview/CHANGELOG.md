@@ -2,52 +2,28 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 22.1.36 (2023-06-28)
 
 ### Pivot Table
 
 #### Bug fixes
 
-- `#I453038` - Drill operations now work properly while adding attribute hierarchy to the pivot table.
+- `#I473176` - The issue with the spinner not being properly hidden on the pivot table when the drillthrough popup was closed with server-side engine has now been resolved.
+- `#I461804` - When we bind fields from the same hierarchy, drill down/up will now work properly in the pivot table with an OLAP data.
+
+## 22.1.34 (2023-06-21)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I467010` - When using the server-side engine support, the pivot table now works properly when grouping is applied dynamically.
 
 #### New features
 
-- `#I398184` - Based on export properties, the pivot table will now export automatically utilizing engine export option support while using for toolbar options.
-- `#I442424` - The field list UI now supports setting the default sort order via the `load` event.
-- `#I436727` - While the data source is empty, the field list UI has been rendered with an empty layout.
-
-## 21.1.41 (2023-04-18)
+- `I456010` - In addition to server-side engine support, the pivot table data can be easily exported to Excel or CSV files via server-side export.
 
 ### Pivot Table
-
-#### Bug fixes
-
-- `#I454110` - Pivot Table now works properly when conditional formatting is applied without a measure.
-
-## 21.1.39 (2023-04-11)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I450857` - When virtualization is enabled, the Pivot Table with OLAP data now exports to an Excel document properly.
-
-## 21.1.37 (2023-03-29)
-
-### Pivot Table
-
-#### Breaking changes
-
-- The property type of [`toolbar`](https://ej2.syncfusion.com/documentation/api/pivotview#toolbar) has been changed from `(ToolbarItems | ItemModel)[]` to `ToolbarItems[] | ItemModel[]`.
-- In the server side controller, the imported namespace name has been changed from `Syncfusion.Blazor.PivotView` to `Syncfusion.EJ2.Pivot`.
-
-## 21.1.35 (2023-03-23)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- `#I437267` - During initial rendering, the spinner will now be properly displayed in the pivot table.
 
 #### New Features
 
@@ -56,11 +32,11 @@
 
 #### Breaking Changes
 
-- The property type `pivotValues` has been changed from `IPivotValues` to `IAxisSet[][]`.
+- The property type `PivotValues` has been changed from `IPivotValues` to `IAxisSet[][]`.
 
 | Property Name | Description | Previous Type | Current Type |
 |---|---|---|---|
-| pivotValues | It holds the collection of cell information that has been populated from the engine on the basis of the given pivot report to render the component as table and chart. | IPivotValues | IAxisSet[][] |
+| `pivotValues` | It holds the collection of cell information that has been populated from the engine on the basis of the given pivot report to render the component as table and chart. | `IPivotValues` | `IAxisSet[][]` |
 
 ## 20.4.38 (2022-12-21)
 
@@ -85,7 +61,7 @@
 
 Previous | Now |
  ---  | ---  |
-showMemberSeries | showPointColorByMembers
+`showMemberSeries` | `showPointColorByMembers`
 
 - The `chartExport` method parameters for the pivot table have now been changed.
 
@@ -93,9 +69,9 @@ showMemberSeries | showPointColorByMembers
 
 Parameter | Type | Description |
  ---  | ---  | --- |
-type | ExportType | Defines the export type.
+type | `ExportType` | Defines the export type.
 fileName | string | Defines file name of export document.
-orientation | PdfPageOrientation | Defines the page orientation on pdf export(0 for Portrait mode, 1 for Landscape mode).
+orientation | `PdfPageOrientation` | Defines the page orientation on pdf export(0 for Portrait mode, 1 for Landscape mode).
 width | number | Defines width of the export document.
 height | number | Defines width of the export document.
 
@@ -103,11 +79,11 @@ height | number | Defines width of the export document.
 
 Parameter | Type | Description |
  ---  | ---  | --- |
-type | ExportType | Defines the export type.
-pdfExportProperties | PdfExportProperties | Allows to define the chart's export properties such as file name, orientation, width and height.
-isMultipleExport | boolean | Allows to export multiple tables and charts into a single PDF document.
-pdfDoc | Object | Allows the export of an external PDF document along with current PDF document.
-isBlob | boolean | Allows the PDF document to be saved as blob data.
+type | `ExportType` | Defines the export type.
+`pdfExportProperties` | `PdfExportProperties` | Allows to define the chart's export properties such as file name, orientation, width and height.
+`isMultipleExport` | boolean | Allows to export multiple tables and charts into a single PDF document.
+`pdfDoc` | Object | Allows the export of an external PDF document along with current PDF document.
+`isBlob` | boolean | Allows the PDF document to be saved as blob data.
 
 ## 20.3.59 (2022-11-29)
 
@@ -139,7 +115,7 @@ isBlob | boolean | Allows the PDF document to be saved as blob data.
 
 #### Bug Fixes
 
-- The drillthrough feature now works properly with alphanumeric data.
+- The `drillthrough` feature now works properly with alphanumeric data.
 
 ## 20.3.49 (2022-10-11)
 

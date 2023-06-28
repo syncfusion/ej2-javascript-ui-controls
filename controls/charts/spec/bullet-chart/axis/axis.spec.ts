@@ -57,21 +57,19 @@ describe('Bullet Chat Axis', () => {
             bullet.title = 'Testing Sample';
             bullet.ranges = [{end: 6}, {end: 8}, {end: 25}]
             bullet.dataBind();
-
             svg = document.getElementById('container_BulletChartTitle');
-            expect(svg.getAttribute('fill') == 'rgba(0,0,0,0.87)').toBe(true);
+            expect(svg.getAttribute('fill') == 'rgba(0, 0, 0, 1)').toBe(true);
             expect(svg.getAttribute('text-anchor') == 'middle').toBe(true);
-            expect(svg.getAttribute('y') == '28.5').toBe(true);
+            expect(svg.getAttribute('y') == '28').toBe(true);
             done();
         });
         it('checking with Title Postion Bottom and alignment near', (done: Function) => {
             bullet.titlePosition = 'Bottom';
             bullet.titleStyle.textAlignment = 'Near';
             bullet.dataBind();
-
             svg = document.getElementById('container_BulletChartTitle');
             expect(svg.getAttribute('x') == '15').toBe(true);
-            expect(svg.getAttribute('fill') == 'rgba(0,0,0,0.87)').toBe(true);
+            expect(svg.getAttribute('fill') == 'rgba(0, 0, 0, 1)').toBe(true);
             expect(svg.getAttribute('text-anchor') == 'start').toBe(true);
             done();
         });
@@ -82,7 +80,7 @@ describe('Bullet Chat Axis', () => {
             bullet.dataBind();
 
             svg = document.getElementById('container_BulletChartTitle');
-            expect(svg.getAttribute('fill') == 'rgba(0,0,0,0.87)').toBe(true);
+            expect(svg.getAttribute('fill') == 'rgba(0, 0, 0, 1)').toBe(true);
             expect(svg.getAttribute('text-anchor') == 'end').toBe(true);
             done();
         });
@@ -90,9 +88,8 @@ describe('Bullet Chat Axis', () => {
             bullet.titlePosition = 'Bottom';
             bullet.titleStyle.textAlignment = 'Center';
             bullet.dataBind();
-
             svg = document.getElementById('container_BulletChartTitle');
-            expect(svg.getAttribute('fill') == 'rgba(0,0,0,0.87)').toBe(true);
+            expect(svg.getAttribute('fill') == 'rgba(0, 0, 0, 1)').toBe(true);
             expect(svg.getAttribute('text-anchor') == 'middle').toBe(true);
             done();
         });
@@ -324,7 +321,7 @@ describe('Bullet Chat Axis', () => {
             bullet.dataBind();
 
             svg = document.getElementById('container_BulletChartTitle');
-            expect(svg.getAttribute('y')).toBe('28.5');
+            expect(svg.getAttribute('y')).toBe('28');
             done();
         });
         it('Title as Left', (done: Function) => {
@@ -342,7 +339,7 @@ describe('Bullet Chat Axis', () => {
             bullet.dataBind();
 
             svg = document.getElementById('container_BulletChartTitle');
-            expect(svg.getAttribute('y')).toEqual('444.3333333333333');
+            expect(svg.getAttribute('y')).toEqual('444.6666666666667');
             done();
         });
         it('Title as Right', (done: Function) => {
@@ -378,7 +375,7 @@ describe('Bullet Chat Axis', () => {
 
             svg = document.getElementById('container_BulletChartSubTitle');
             expect(svg.textContent).toEqual('(in px)');
-            expect(svg.getAttribute('font-size')).toBe('13px');
+            expect(svg.getAttribute('font-size')).toBe('12px');
             done();
         });
         it('checking subtitle position as Top', (done: Function) => {
@@ -387,7 +384,7 @@ describe('Bullet Chat Axis', () => {
 
             svg = document.getElementById('container_BulletChartSubTitle');
             expect(svg.textContent).toEqual('(in px)');
-            expect(svg.getAttribute('font-size')).toBe('13px');
+            expect(svg.getAttribute('font-size')).toBe('12px');
             done();
         });
         it('checking subtitle position as Bottom', (done: Function) => {
@@ -452,7 +449,7 @@ describe('Bullet Chat Axis', () => {
             svg = document.getElementById('container_svg_AxisLabel_20');
             expect(svg.textContent).toEqual('20%');
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            expect(svg.getAttribute('y') == '269.66666666666663' || svg.getAttribute('y') == '270').toBe(true);
+            expect(svg.getAttribute('y') == '270.66666666666663' || svg.getAttribute('y') == '270').toBe(true);
             done();
         });
     });

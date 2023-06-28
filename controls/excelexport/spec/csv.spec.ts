@@ -11,6 +11,39 @@ describe('CSV-Export', () => {
     //     while (curDate - date < millSecs);
     // }
     //Methods testcase
+    //Bug - 829928
+    it('text-doublequotes-csv', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Sheet',
+                    columns: [
+                        /*column -> 1*/{
+                            index: 1,
+                            width: 100,
+                        },
+                    ],
+                    rows: [
+                        /*row -> 1*/ { index: 1, cells: [{ index: 1, value: '"Hello" World' }] },
+                        /*row -> 2*/ { index: 2, cells: [{ index: 1, value: '"Hello" World' }] },
+                    ],
+                }
+            ]
+        }, 'csv');
+        book.saveAsBlob('text/csv').then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'text-doublequotes-csv.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(csvBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
     it('export-as-csv', (done) => {
         let book: Workbook = new Workbook({
             builtInProperties: {

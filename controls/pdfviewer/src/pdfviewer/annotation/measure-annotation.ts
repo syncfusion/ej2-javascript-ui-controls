@@ -259,12 +259,12 @@ export class MeasureAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderMeasureShapeAnnotations(shapeAnnotations: any, pageNumber: number, isImportAction?: boolean): void {
+    public renderMeasureShapeAnnotations(shapeAnnotations: any, pageNumber: number, isImportAction?: boolean,  isAnnotOrderAction?: boolean): void {
         if (shapeAnnotations) {
             if (shapeAnnotations.length >= 1) {
                 // eslint-disable-next-line
                 let measureAnnots: any[] = this.pdfViewer.annotation.getStoredAnnotations(pageNumber, shapeAnnotations, '_annotations_shape_measure');
-                if (!measureAnnots || isImportAction) {
+                if (!measureAnnots || isImportAction || isAnnotOrderAction) {
                     for (let i: number = 0; i < shapeAnnotations.length; i++) {
                     // eslint-disable-next-line
                     let annotation: any = shapeAnnotations[i];

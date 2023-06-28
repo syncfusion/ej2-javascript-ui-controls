@@ -284,3 +284,24 @@ export type TextAlignment =
     'Center' |
     /** align the label with right. */
     'Right';
+
+/**
+ * Defines the position of the title. They are
+ * * top - Displays the title on the top of chart.
+ * * left - Displays the title on the left of chart.
+ * * bottom - Displays the title on the bottom of chart.
+ * * right - Displays the title on the right of chart.
+ * * custom - Displays the title based on given x and y value.
+ */
+
+export type TitlePosition =
+    /** Places the title on the top of chart. */
+    'Top' |
+    /** Places the title on the left of chart. */
+    'Right' |
+    /** Places the title on the bottom of chart. */
+    'Bottom' |
+    /** Places the title on the right of chart. */
+    'Left' |
+    /** Places the title based on given x and y. */
+    'Custom';

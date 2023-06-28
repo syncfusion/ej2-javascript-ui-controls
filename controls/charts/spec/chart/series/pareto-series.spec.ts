@@ -88,7 +88,13 @@ describe('chart control', () => {
                         {
                             xName: 'x',
                             yName: 'y', dataSource: data, name: 'Browser', type: 'Pareto',
-                            marker: { dataLabel: { visible: true }, visible: true, width: 10, height: 10 }
+                            marker: { dataLabel: { visible: true }, visible: true, width: 10, height: 10 },
+                            paretoOptions: {
+                                fill: '#000000',
+                                width : 2,
+                                dashArray :'2,2',
+                                marker : { dataLabel: { visible: true }, visible: true, width:10, height:10, shape: 'Circle' }
+                            }
                         },
                     ],
 
@@ -181,9 +187,9 @@ describe('chart control', () => {
 
         it('Showing default marker', (done: Function) => {
             loaded = (args: Object): void => {
-                element1 = getElement('containerSymbolGroupPareto');
+                element1 = getElement('containerSymbolGroup1');
                 expect(element1.childElementCount).toBe(9);
-                let marker: HTMLElement = document.getElementById('container_Series_Pareto_Point_0_Symbol');
+                let marker: HTMLElement = document.getElementById('container_Series_1_Point_0_Symbol');
                 expect(marker.getAttribute('stroke') == '#000000').toBe(true);
                 expect(marker.getAttribute('fill') == '#ffffff').toBe(true);
                 expect(marker.getAttribute('rx') == '5').toBe(true);
@@ -196,7 +202,7 @@ describe('chart control', () => {
 
         it('Checking the last text value as 100', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('container_Series_Pareto_Point_7_Text_0').textContent).toBe(100 + '%');
+                expect(document.getElementById('container_Series_1_Point_7_Text_0').textContent).toBe(100 + '%');
                 done();
             }
             chartObj.loaded = loaded;
@@ -205,7 +211,7 @@ describe('chart control', () => {
 
         it('Checking line series marker color', (done: Function) => {
             loaded = (args: Object): void => {
-                let element1: HTMLElement = document.getElementById('container_Series_Pareto_Point_2_Symbol');
+                let element1: HTMLElement = document.getElementById('container_Series_1_Point_2_Symbol');
                 expect(element1.getAttribute('fill') == '#ffffff').toBe(true);
                 done();
             }
@@ -229,8 +235,8 @@ describe('chart control', () => {
 
         it('Checking line series in ascending order', (done: Function) => {
             loaded = (args: Object): void => {
-                let element1: HTMLElement = document.getElementById('container_Series_Pareto_Point_1_Text_0');
-                let element2: HTMLElement = document.getElementById('container_Series_Pareto_Point_2_Text_0');
+                let element1: HTMLElement = document.getElementById('container_Series_1_Point_0_Text_0');
+                let element2: HTMLElement = document.getElementById('container_Series_1_Point_1_Text_0');
                 expect(parseFloat(element1.getAttribute('y')) >
                     parseFloat(element2.getAttribute('y'))).toBe(true);
                 done();
@@ -254,7 +260,7 @@ describe('chart control', () => {
             loaded = (args: Object): void => {
                 let direction: string;
                 let series1: HTMLElement;
-                series1 = document.getElementById('container_Series_Pareto_Point_1_Symbol');
+                series1 = document.getElementById('container_Series_1_Point_1_Symbol');
                 //direction = series1.getAttribute('d');
                 expect(series1 != null).toBe(true);
                 done();
@@ -266,7 +272,7 @@ describe('chart control', () => {
 
         it('Checking line series rendering', (done: Function) => {
             loaded = (args: Object): void => {
-                let path = document.getElementById('container_Series_Pareto');
+                let path = document.getElementById('container_Series_1');
                 let id: string = path.getAttribute('d');
                 let check: number = id.indexOf('z');
                 expect(check !== 0).toBe(true);
@@ -279,7 +285,7 @@ describe('chart control', () => {
 
         it('Changing marker size', (done: Function) => {
             loaded = (args: Object): void => {
-                let series1: HTMLElement = document.getElementById('container_Series_Pareto_Point_2_Symbol');
+                let series1: HTMLElement = document.getElementById('container_Series_1_Point_2_Symbol');
                 expect(series1.getAttribute('rx') == '5').toBe(true);
                 expect(series1.getAttribute('ry') == '5').toBe(true);
                 done();
@@ -300,6 +306,35 @@ describe('chart control', () => {
             chartObj.loaded = loaded;
             chartObj.series[0].marker.offset.x = 0;
             chartObj.series[0].marker.dataLabel.fill = "blue";
+            chartObj.refresh();
+        });
+
+        it('Checking paretoOptions properties', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series1: HTMLElement = document.getElementById('container_Series_1');
+                expect(series1.getAttribute('stroke') == 'orange').toBe(true);
+                done();
+            }
+            chartObj.loaded = loaded;
+            chartObj.series[0].paretoOptions.width = 2;
+            chartObj.series[0].paretoOptions.fill = "orange";
+            chartObj.series[0].paretoOptions.dashArray = "5,2";
+            chartObj.series[0].paretoOptions.showAxis = false;
+            chartObj.refresh();
+        });
+
+        it('Changing default values', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series1: HTMLElement = document.getElementById('container_Series_1');
+                expect(series1.getAttribute('stroke') == '#404041').toBe(true);
+                done();
+            }
+            chartObj.loaded = loaded;
+            chartObj.series[0].paretoOptions.width = null;
+            chartObj.series[0].paretoOptions.fill = null;
+            chartObj.series[0].paretoOptions.dashArray = null;
+            chartObj.series[0].paretoOptions.marker = null;
+            chartObj.series[0].paretoOptions.showAxis = true;
             chartObj.refresh();
         });
 
@@ -351,12 +386,24 @@ describe('chart control', () => {
                         {
                             xName: 'x',
                             yName: 'y', dataSource: data, name: 'Browser', type: 'Pareto',
-                            marker: { dataLabel: { visible: true }, visible: true, width: 10, height: 10 }
+                            marker: { dataLabel: { visible: true }, visible: true, width: 10, height: 10 },
+                            paretoOptions: {
+                                fill: '#000000',
+                                width : 2,
+                                dashArray :'2,2',
+                                marker : { dataLabel: { visible: true }, visible: true, width:10, height:10, shape: 'Circle' }
+                            }
                         },
                         {
                             xName: 'x',
                             yName: 'y', dataSource: data1, name: 'Browser', type: 'Pareto',
-                            marker: { dataLabel: { visible: true }, visible: true, width: 10, height: 10, }
+                            marker: { dataLabel: { visible: true }, visible: true, width: 10, height: 10, },
+                            paretoOptions: {
+                                fill: '#000000',
+                                width : 2,
+                                dashArray :'2,2',
+                                marker : { dataLabel: { visible: true }, visible: true, width:10, height:10, shape: 'Circle' }
+                            }
                         },
 
                     ],
@@ -411,7 +458,18 @@ describe('chart control', () => {
 
             chartObj.refresh();
         });
-
+        it('Checking with multiple series type with showAxis as false', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element: Element = document.getElementById('container_Series_2');
+                let element1: Element = document.getElementById('container_Series_3');
+                expect(element.getAttribute('d') != '').toBe(true);
+                expect(element1.getAttribute('d') != '').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].paretoOptions.showAxis = false;
+            chartObj.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

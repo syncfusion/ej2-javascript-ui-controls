@@ -1173,6 +1173,76 @@ describe('Agenda View', () => {
         });
     });
 
+    describe('Current date indication in Resource group in Agenda view ', () => {
+        let schObj: Schedule;
+        const today = new Date();
+        const restemplate: string = '<div class="template-wrap"></div><div style="background:pink">${getResourceName(data)}</div>';
+
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                currentView: 'Agenda',
+                selectedDate: new Date(),
+                resourceHeaderTemplate: restemplate,
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [
+                    {
+                        field: 'RoomId',
+                        title: 'Room',
+                        name: 'Rooms',
+                        allowMultiple: false,
+                        dataSource: [
+                            { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText',
+                        idField: 'Id',
+                        colorField: 'RoomColor'
+                    },
+                    {
+                        field: 'OwnerId',
+                        title: 'Owner',
+                        name: 'Owners',
+                        allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                        ],
+                        textField: 'OwnerText',
+                        idField: 'Id',
+                        groupIDField: 'OwnerGroupId',
+                        colorField: 'OwnerColor'
+                    }
+                ]
+            };
+            const currentData = [
+                {
+                    Id: 1,
+                    Subject: 'Nancy',
+                    StartTime: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 9, 30, 0),
+                    EndTime: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 30, 0),
+                    IsAllDay: false,
+                    HallId: 1,
+                    RoomId: 1,
+                    OwnerId: 1
+                }];
+            schObj = createSchedule(model, currentData, done);
+        });
+
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Cheking Current date indication', () => {
+            const agendacellElement: HTMLElement = schObj.element.querySelector('.e-agenda-cells') as HTMLElement;
+            expect(agendacellElement.classList.contains('e-date-column')).toEqual(true);
+            expect(agendacellElement.firstElementChild.classList.contains('e-current-day')).toEqual(true);
+        });
+    });
+
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

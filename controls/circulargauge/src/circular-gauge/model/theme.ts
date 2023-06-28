@@ -8,14 +8,14 @@ export namespace Theme {
     /** @private */
     export const axisLabelFont: IFontMapping = {
         size: '12px',
-        fontWeight: 'Normal',
+        fontWeight: null,
         color: null,
         fontStyle: 'Normal',
         fontFamily: null
     };
     export const legendLabelFont: IFontMapping = {
         size: '12px',
-        fontWeight: 'Normal',
+        fontWeight: null,
         color: null,
         fontStyle: 'Normal',
         fontFamily: null
@@ -52,6 +52,14 @@ export function getRangePalette(theme: string): string[] {
         palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
             '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
         break;
+    case 'material3':
+        palette = ['#6200EE', '#E77A16', '#82C100', '#7107DC', '#05BB3D',
+        '#D21020', '#FAD200', '#0085FF', '#9204EA', '#08EE9B'];
+        break;
+    case 'material3dark':
+        palette = ['#4EAAFF', '#FA4EAB', '#FFF500', '#17EA58', '#38FFE7',
+                '#FF9E45', '#B3F32F', '#B93CE4', '#FC5664', '#9B55FF'];
+        break;
     }
     return palette;
 }
@@ -73,6 +81,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#ffffff',
             tooltipFillColor: '#FFFFFF',
             tooltipFontColor: '#000000',
+            tooltipFontSize: '13px',
             tooltipTextOpacity: 1,
             labelColor: '#DADADA',
             lineColor: '#C8C8C8',
@@ -85,6 +94,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             fontSize: '15px',
             labelFontFamily: 'Segoe UI',
             fontFamily: 'Segoe UI',
+            fontWeight: 'Normal',
             titleFontWeight: 'Normal'
         };
         break;
@@ -94,7 +104,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#FFFFFF',
             tooltipFillColor: '#ffffff',
             tooltipFontColor: '#000000',
-            tooltipTextOpacity: 1,
+            tooltipFontSize: '13px',
+            tooltipTextOpacity: 1, 
             labelColor: '#FFFFFF',
             lineColor: '#FFFFFF',
             majorTickColor: '#FFFFFF',
@@ -106,6 +117,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             fontSize: '15px',
             labelFontFamily: 'Segoe UI',
             fontFamily: 'Segoe UI',
+            fontWeight: 'Normal',
             titleFontWeight: 'Normal'
         };
         break;
@@ -115,6 +127,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#212529',
             tooltipFillColor: '#000000',
             tooltipFontColor: '#FFFFFF',
+            tooltipFontSize: '13px',
             labelColor: '#212529',
             lineColor: '#DEE2E6',
             majorTickColor: '#ADB5BD',
@@ -128,7 +141,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             labelFontFamily: 'HelveticaNeue',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 0.9,
-            titleFontWeight: 'Normal'
+            fontWeight: 'Normal',
+            titleFontWeight: 'Normal',
         };
         break;
     case 'tailwind':
@@ -137,7 +151,8 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#374151',
             tooltipFillColor: '#111827',
             tooltipFontColor: '#F9FAFB',
-            labelColor: '#6B7280',
+            tooltipFontSize: '13px',
+            labelColor: '#6B7280',            
             lineColor: '#E5E7EB',
             majorTickColor: '#9CA3AF',
             minorTickColor: '#9CA3AF',
@@ -150,6 +165,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             labelFontFamily: 'Inter',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 0.9,
+            fontWeight: 'Normal',
             titleFontWeight: '500'
         };
         break;
@@ -159,6 +175,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#D1D5DB',
             tooltipFillColor: '#F9FAFB',
             tooltipFontColor: '#1F2937',
+            tooltipFontSize: '13px',
             labelColor: '#9CA3AF',
             lineColor: '#374151',
             majorTickColor: '#6B7280',
@@ -172,6 +189,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             labelFontFamily: 'Inter',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 0.9,
+            fontWeight: 'Normal',
             titleFontWeight: '500'
         };
         break;
@@ -181,6 +199,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#343A40',
             tooltipFillColor: '#212529',
             tooltipFontColor: '#F9FAFB',
+            tooltipFontSize: '13px',
             labelColor: '#495057',
             lineColor: '#E5E7EB',
             majorTickColor: '#9CA3AF',
@@ -194,6 +213,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             labelFontFamily: 'Helvetica Neue',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
+            fontWeight: 'Normal',
             titleFontWeight: '500'
         };
         break;
@@ -203,6 +223,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#E9ECEF',
             tooltipFillColor: '#E9ECEF',
             tooltipFontColor: '#212529',
+            tooltipFontSize: '13px',
             labelColor: '#CED4DA',
             lineColor: '#343A40',
             majorTickColor: '#6C757D',
@@ -216,6 +237,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             labelFontFamily: 'Helvetica Neue',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
+            fontWeight: 'Normal',
             titleFontWeight: '500'
         };
         break;
@@ -225,6 +247,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#201F1E',
             tooltipFillColor: '#FFFFFF',
             tooltipFontColor: '#323130',
+            tooltipFontSize: '13px',
             labelColor: '#3B3A39',
             lineColor: '#EDEBE9',
             majorTickColor: '#C8C6C4',
@@ -238,6 +261,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             labelFontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
+            fontWeight: 'Normal',
             titleFontWeight: '600'
         };
         break;
@@ -247,6 +271,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#F3F2F1',
             tooltipFillColor: '#252423',
             tooltipFontColor: '#F3F2F1',
+            tooltipFontSize: '13px',
             labelColor: '#C8C6C4',
             lineColor: '#292827',
             majorTickColor: '#484644',
@@ -260,7 +285,56 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             labelFontFamily: 'Segoe UI',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 1,
+            fontWeight: 'Normal',
             titleFontWeight: '600'
+        };
+        break;
+    case 'material3':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#1C1B1F',
+            tooltipFillColor: '#313033',
+            tooltipFontColor: '#F4EFF4',
+            tooltipFontSize: '14px',
+            labelColor: ' #1E192B',
+            lineColor: '#E7E0EC',
+            majorTickColor: '#C4C7C5',
+            minorTickColor: '#C4C7C5',
+            pointerColor: '#49454E',
+            capColor: '#49454E',
+            needleColor: '#49454E',
+            needleTailColor: '#49454E',
+            fontFamily: 'Roboto',
+            fontSize: '16px',
+            labelFontFamily: 'Roboto',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            fontWeight: '400',
+            titleFontWeight: '500'
+        };
+        break;
+    case 'material3dark':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#E6E1E5',
+            tooltipFillColor: '#E6E1E5',
+            tooltipFontColor: '#313033',
+            tooltipFontSize: '14px',
+            labelColor: '#E6E1E5',
+            lineColor: '#49454F',
+            majorTickColor: '#444746',
+            minorTickColor: '#444746',
+            pointerColor: '#CAC4D0',
+            capColor: '#CAC4D0',
+            needleColor: '#CAC4D0',
+            needleTailColor: '#CAC4D0',
+            fontFamily: 'Roboto',
+            fontSize: '16px',
+            labelFontFamily: 'Roboto',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            fontWeight: '400',
+            titleFontWeight: '500'
         };
         break;
     default:
@@ -269,6 +343,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#424242',
             tooltipFillColor: '#363F4C',
             tooltipFontColor: '#ffffff',
+            tooltipFontSize: '13px',
             tooltipTextOpacity: 1,
             labelColor: '#212121',
             lineColor: '#E0E0E0',
@@ -281,6 +356,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             fontSize: '15px',
             labelFontFamily: 'Segoe UI',
             fontFamily: 'Segoe UI',
+            fontWeight: 'Normal',
             titleFontWeight: 'Normal'
         };
         break;

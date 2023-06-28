@@ -1,4 +1,4 @@
-import { addClass, append, Event, Collection, Complex, Component, EmitType, EventHandler, formatUnit, getInstance, getComponent, getUniqueID, closest } from '@syncfusion/ej2-base';
+import { addClass, append, Event, Collection, Complex, Component, EmitType, EventHandler, formatUnit, getInstance, getComponent, getUniqueID, closest, KeyboardEventArgs, KeyboardEvents } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, isNullOrUndefined, isUndefined, ModuleDeclaration, NotifyPropertyChanges, Property, remove, removeClass } from '@syncfusion/ej2-base';
 import { Tab, TabAnimationSettings, TabAnimationSettingsModel, TabItemModel, SelectEventArgs, SelectingEventArgs, HScroll, Toolbar } from '@syncfusion/ej2-navigations';
 import { RibbonTab, RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, FileMenuSettings, FileMenuSettingsModel, RibbonItem, RibbonCollection, RibbonGroup } from '../models/index';
@@ -12,6 +12,7 @@ import { RibbonFileMenu } from '../modules/index';
 import { RibbonTooltipModel } from '../models/ribbon-tooltip-model';
 import { Popup } from '@syncfusion/ej2-popups';
 import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { CheckBox } from '@syncfusion/ej2-buttons';
 
 /**
  * The Ribbon Component is a structured layout to manage tools with tabs and groups.
@@ -113,7 +114,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
      * @aspType string
      */
     @Property('')
-    public helpPaneTemplate: string | HTMLElement;
+    public helpPaneTemplate: string | HTMLElement | Function;
 
     /**
      * Event triggers before selecting the tab item.
@@ -191,11 +192,15 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     public ribbonFileMenuModule: RibbonFileMenu;
 
 
+    private itemIndex: number;
     private idIndex: number;
     private isAddRemove: boolean;
     private collapseButton: HTMLElement;
     private ribbonTempEle: HTMLElement;
     private scrollModule: HScroll;
+    private currentControlIndex: number;
+    private keyboardModuleRibbon: KeyboardEvents;
+    private keyConfigs: { [key: string]: string };
     /** @hidden */
     public overflowDDB: DropDownButton;
     /** @hidden */
@@ -230,6 +235,12 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         this.idIndex = 0;
         this.tooltipData = [];
         this.isAddRemove = false;
+        this.keyConfigs = {
+            leftarrow: 'leftarrow',
+            rightarrow: 'rightarrow',
+            tab: 'tab',
+            shiftTab: 'shift+tab'
+        };
     }
 
     /**
@@ -278,12 +289,224 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         this.renderTabs();
         if (this.ribbonFileMenuModule) { this.ribbonFileMenuModule.createFileMenu(this.fileMenu); }
         this.createHelpPaneTemplate();
+        const toolbar: Toolbar = this.tabObj['tbObj'] as Toolbar;
+        toolbar.refreshOverflow();
         createTooltip(this.element, this);
         this.wireEvents();
+        this.wireKeyboardEvent();
+        this.currentControlIndex = 0;
     }
 
     private wireEvents(): void {
         EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler, this);
+    }
+
+    private wireKeyboardEvent(): void {
+        this.keyboardModuleRibbon = new KeyboardEvents(this.element, {
+            keyAction: this.keyActionHandler.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown'
+        });
+    }
+
+    private keyActionHandler(e: KeyboardEventArgs): void {
+        if (((e.key === 'Tab') && (!((e.target as HTMLElement).classList.contains('e-tab-wrap')) && !((e.target as HTMLElement).classList.contains('e-combobox'))))) {
+            e.preventDefault();
+        }
+        const activeContent: HTMLElement = this.tabObj.element.querySelector('#' + this.tabs[this.selectedTab].id + constants.CONTENT_ID);
+        const ribbonControls: NodeListOf<Element> = activeContent.querySelectorAll('.e-control');
+        const comboBoxElements: NodeListOf<Element> = activeContent.querySelectorAll('.e-combobox');
+        let comboBoxEle: HTMLElement;
+        if (comboBoxElements) {
+            for (let i: number = 0; i < comboBoxElements.length; i++) {
+                if (comboBoxElements[parseInt(i.toString(), 10)].closest('.e-input-focus')) {
+                    comboBoxEle = comboBoxElements[parseInt(i.toString(), 10)] as HTMLElement;
+                }
+            }
+        }
+        if (comboBoxEle) {
+            for (let i: number = 0; i < ribbonControls.length; i++) {
+                if (ribbonControls[parseInt(i.toString(), 10)].classList.contains('e-combobox')) {
+                    if (ribbonControls[parseInt(i.toString(), 10)].closest('.e-input-focus')) {
+                        this.currentControlIndex = i;
+                    }
+                }
+            }
+        }
+        if (this.currentControlIndex === 0) {
+            let item: HTMLElement = ribbonControls[this.currentControlIndex].closest('.e-ribbon-item') as HTMLElement;
+            while (item && item.classList.contains('e-disabled')) {
+                this.currentControlIndex++;
+                item = ribbonControls[this.currentControlIndex].closest('.e-ribbon-item') as HTMLElement;
+            }
+        }
+        if ((e.target as HTMLElement).classList.contains('e-control') || (e.target as HTMLElement).classList.contains('e-ribbon-launcher-icon') ||
+                (e.target as HTMLElement).classList.contains('e-ribbon-collapse-btn') || (e.target as HTMLElement).classList.contains('e-ribbon-last-item') ||
+                    (e.target as HTMLElement).classList.contains('e-ribbon-first-item') || (e.target as HTMLElement).classList.contains('e-ribbon-group-of-btn') ||
+                        (e.target as HTMLElement).classList.contains('e-ribbon-overall-of-btn')) {
+            switch (e.action) {
+            case 'rightarrow':
+                this.handleNavigation(e, !this.enableRtl, ribbonControls);
+                break;
+            case 'leftarrow':
+                this.handleNavigation(e, this.enableRtl, ribbonControls);
+                break;
+            case 'tab':
+                if ((e.target as HTMLElement).classList.contains('e-combobox')) {
+                    if (this.currentControlIndex < ribbonControls.length - 1) { this.currentControlIndex++; }
+                }
+                break;
+            case 'shiftTab':
+                if ((e.target as HTMLElement).classList.contains('e-combobox')) {
+                    if (this.currentControlIndex > 0) { this.currentControlIndex--; }
+                } else {
+                    (this.tabObj.element.querySelector('.e-toolbar-item.e-active').querySelector('.e-tab-wrap') as HTMLElement).focus();
+                    this.currentControlIndex = 0;
+                }
+            }
+        }
+    }
+
+    private handleNavigation(e: Event, enableRtl: boolean, ribbonControls: NodeListOf<Element>): void {
+        let groupContainer: HTMLElement;
+        let prevGroupId: string;
+        if (enableRtl) {
+            if (this.currentControlIndex < ribbonControls.length - 1 && ribbonControls[this.currentControlIndex + 1].classList.contains('e-colorpicker')) {
+                this.currentControlIndex++;
+            }
+        }
+        else {
+            if (this.currentControlIndex > 0 && ribbonControls[this.currentControlIndex - 1].classList.contains('e-colorpicker')) {
+                this.currentControlIndex--;
+            }
+        }
+        if ((!enableRtl && (this.currentControlIndex > 0)) || (enableRtl && (this.currentControlIndex < ribbonControls.length - 1))) {
+            if (!(e.target as HTMLElement).classList.contains('e-combobox') && (e.target as HTMLElement).classList.contains('e-control') && !(e.target as HTMLElement).classList.contains('e-ribbon-last-item')) {
+                if (enableRtl) { this.currentControlIndex++; }
+                else {
+                    const prevGroupContainer: HTMLElement = ribbonControls[parseInt(this.currentControlIndex.toString(), 10)].closest('.' + constants.RIBBON_GROUP_CONTAINER) as HTMLElement;
+                    if (prevGroupContainer) { prevGroupId = prevGroupContainer.getAttribute('id'); }
+                    this.currentControlIndex--;
+                }
+                let item: HTMLElement = ribbonControls[this.currentControlIndex].closest('.e-ribbon-item') as HTMLElement;
+                while (item && item.classList.contains('e-disabled')) {
+                    if (((enableRtl && this.currentControlIndex === ribbonControls.length - 1) ||
+                        (!enableRtl && this.currentControlIndex === 0))) {
+                        if ((ribbonControls[this.currentControlIndex].closest('.e-ribbon-item') as HTMLElement).classList.contains('e-disabled')) {
+                            (this.tabObj.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).focus();
+                            break;
+                        }
+                    }
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                    enableRtl ? this.currentControlIndex++ : this.currentControlIndex--;
+                    item = ribbonControls[this.currentControlIndex].closest('.e-ribbon-item') as HTMLElement;
+                }
+                (ribbonControls[parseInt(this.currentControlIndex.toString(), 10)] as HTMLElement).focus();
+                if (this.activeLayout === 'Classic') {
+                    groupContainer = ribbonControls[parseInt(this.currentControlIndex.toString(), 10)].closest('.' + constants.RIBBON_GROUP_CONTAINER) as HTMLElement;
+                    if (enableRtl) {
+                        let launcherIconEle: HTMLElement;
+                        if (groupContainer) { launcherIconEle = groupContainer.querySelector('.e-ribbon-launcher-icon') as HTMLElement; }
+                        if (launcherIconEle) {
+                            const items: NodeListOf<Element> = groupContainer.querySelectorAll('.e-ribbon-item');
+                            items[items.length - 1].querySelector('.e-control').classList.add('e-ribbon-last-item');
+                        }
+                    }
+                    else {
+                        if (groupContainer) {
+                            const groupContainerId: string = groupContainer.getAttribute('id');
+                            if (prevGroupId !== groupContainerId) {
+                                const launcherIconEle: HTMLElement = groupContainer.querySelector('.e-ribbon-launcher-icon');
+                                if (launcherIconEle) {
+                                    ribbonControls[parseInt((this.currentControlIndex + 1).toString(), 10)].classList.add('e-ribbon-first-item');
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (ribbonControls[parseInt((this.currentControlIndex).toString(), 10)].classList.contains('e-ribbon-first-item')) {
+                        ribbonControls[parseInt((this.currentControlIndex).toString(), 10)].classList.remove('e-ribbon-first-item');
+                    }
+                    else if (ribbonControls[parseInt((this.currentControlIndex).toString(), 10)].classList.contains('e-ribbon-last-item')) {
+                        ribbonControls[parseInt((this.currentControlIndex).toString(), 10)].classList.remove('e-ribbon-last-item');
+                    }
+                }
+            }
+        }
+        else {
+            if (this.activeLayout === 'Classic') {
+                (this.tabObj.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).focus();
+            }
+            if (this.activeLayout === 'Simplified') {
+                const overflowButton: HTMLElement = this.tabObj.element.querySelector('.e-ribbon-overall-of-btn') as HTMLElement;
+                if (enableRtl && (overflowButton && !overflowButton.classList.contains('e-ribbon-hide'))) { overflowButton.focus(); }
+                else { (this.tabObj.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).focus(); }
+            }
+        }
+        if ((e.target as HTMLElement).classList.contains('e-ribbon-last-item')) {
+            if (enableRtl) {
+                groupContainer = ribbonControls[parseInt(this.currentControlIndex.toString(), 10)].closest('.' + constants.RIBBON_GROUP_CONTAINER) as HTMLElement;
+                (groupContainer.querySelector('.e-ribbon-launcher-icon')as HTMLElement).focus();
+            }
+            else {
+                this.currentControlIndex--;
+                (ribbonControls[parseInt(this.currentControlIndex.toString(), 10)] as HTMLElement).focus();
+            }
+        }
+        if (!enableRtl && (e.target as HTMLElement).classList.contains('e-ribbon-first-item')) {
+            groupContainer = ribbonControls[parseInt((this.currentControlIndex - 1).toString(), 10)].closest('.' + constants.RIBBON_GROUP_CONTAINER) as HTMLElement;
+            const launcherIconEle: HTMLElement = groupContainer.querySelector('.e-ribbon-launcher-icon') as HTMLElement;
+            if (launcherIconEle) {
+                (groupContainer.querySelector('.e-ribbon-launcher-icon') as HTMLElement).focus();
+            }
+        }
+        if ((e.target as HTMLElement).classList.contains('e-ribbon-launcher-icon')) {
+            if (enableRtl) {
+                this.currentControlIndex++;
+                (ribbonControls[parseInt(this.currentControlIndex.toString(), 10)] as HTMLElement).focus();
+                if ((ribbonControls[parseInt((this.currentControlIndex - 1).toString(), 10)] as HTMLElement).classList.contains('e-ribbon-last-item')) {
+                    (ribbonControls[parseInt((this.currentControlIndex - 1).toString(), 10)] as HTMLElement).classList.remove('e-ribbon-last-item');
+                }
+            }
+            else {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                this.currentControlIndex;
+                (ribbonControls[parseInt(this.currentControlIndex.toString(), 10)] as HTMLElement).focus();
+            }
+        }
+        if ((e.target as HTMLElement).classList.contains('e-ribbon-collapse-btn')) {
+            if (enableRtl) {
+                this.currentControlIndex = 0;
+                let ribbonItem: HTMLElement = ribbonControls[this.currentControlIndex].closest('.e-ribbon-item') as HTMLElement;
+                while (ribbonItem && ribbonItem.classList.contains('e-disabled')) {
+                    this.currentControlIndex++;
+                    ribbonItem = ribbonControls[this.currentControlIndex].closest('.e-ribbon-item') as HTMLElement;
+                }
+                (ribbonControls[parseInt(this.currentControlIndex.toString(), 10)] as HTMLElement).focus();
+            }
+            else {
+                const overflowButton: HTMLElement = this.tabObj.element.querySelector('.e-ribbon-overall-of-btn') as HTMLElement;
+                if ((overflowButton && !overflowButton.classList.contains('e-ribbon-hide'))) { overflowButton.focus(); }
+                else {
+                    this.currentControlIndex = ribbonControls.length - 1;
+                    let ribbonItem: HTMLElement = ribbonControls[this.currentControlIndex].closest('.e-ribbon-item') as HTMLElement;
+                    while (ribbonItem && ribbonItem.classList.contains('e-disabled')) {
+                        this.currentControlIndex--;
+                        ribbonItem = ribbonControls[this.currentControlIndex].closest('.e-ribbon-item') as HTMLElement;
+                    }
+                    (ribbonControls[parseInt(this.currentControlIndex.toString(), 10)] as HTMLElement).focus();
+                }
+            }
+        }
+        if (this.activeLayout === 'Simplified' && (e.target as HTMLElement).classList.contains('e-ribbon-overall-of-btn')) {
+            if (enableRtl) {
+                (this.tabObj.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).focus();
+            }
+            else {
+                this.currentControlIndex = ribbonControls.length - 1;
+                (ribbonControls[parseInt(this.currentControlIndex.toString(), 10)] as HTMLElement).focus();
+            }
+        }
     }
 
     private resizeHandler(): void {
@@ -485,7 +708,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 for (let k: number = collection.items.length; ((k >= 1) && (tabContent.offsetWidth < activeContent.offsetWidth)); k--) {
                     const item: RibbonItemModel = collection.items[k - 1];
                     const itemContainer: HTMLElement = collectionEle.querySelector('#' + item.id + constants.CONTAINER_ID);
-                    if ((item.displayOptions === (DisplayMode.Simplified | DisplayMode.Overflow)) && !isNullOrUndefined(itemContainer)) {
+                    if (((item.displayOptions === DisplayMode.Auto) ||
+                        (item.displayOptions === (DisplayMode.Simplified | DisplayMode.Overflow))) && !isNullOrUndefined(itemContainer)) {
                         itemContainer.setAttribute('data-simplified-width', activeContent.offsetWidth.toString());
                         this.createOverflowPopup(item, tabIndex, group.enableGroupOverflow, group.id
                             , group.header, itemContainer, groupContainer);
@@ -557,7 +781,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     if (overflowtarget) {
                         itemContainer = overflowtarget.querySelector('#' + item.id + constants.CONTAINER_ID);
                     }
-                    if ((item.displayOptions === (DisplayMode.Simplified | DisplayMode.Overflow)) && !isNullOrUndefined(itemContainer)) {
+                    if (((item.displayOptions === DisplayMode.Auto) ||
+                        (item.displayOptions === (DisplayMode.Simplified | DisplayMode.Overflow))) && !isNullOrUndefined(itemContainer)) {
                         const width: number = parseInt(itemContainer.getAttribute('data-simplified-width'), 10);
                         if (!isClear && (tabContent.offsetWidth < width)) { flag = false; break; }
                         const groupEle: HTMLElement = tabContent.querySelector('#' + collection.id);
@@ -640,7 +865,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             overflowButton = this.overflowDDB;
         }
-        this.addOverflowEvents(item, itemEle, overflowButton);
+        if (itemEle !== null) { this.addOverflowEvents(item, itemEle, overflowButton); }
     }
 
     private addOverflowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
@@ -692,6 +917,36 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         return isBreak;
     }
 
+    private checkValidCollectionLength (collections: RibbonCollectionModel[]): boolean {
+        let count: number = 0;
+        for (let i: number = 0; i < collections.length; i++) {
+            const items: RibbonItemModel[] = collections[parseInt(i.toString(), 10)].items;
+            for (let ind: number = 0; ind < items.length; ind++) {
+                if (items[parseInt(ind.toString(), 10)].displayOptions & DisplayMode.Classic) { count ++; break; }
+            }
+            if (count > 1) { return false; }
+        }
+        return count === 1;
+    }
+
+    private checkClassicCollection (collections: RibbonCollectionModel[], n: number, isIncrement: boolean ): number {
+        const items: RibbonItemModel[] = collections[parseInt(n.toString(), 10)].items;
+        for (let ind: number = 0; ind < items.length; ind++) {
+            if (items[parseInt(ind.toString(), 10)].displayOptions & DisplayMode.Classic) { return n; }
+        }
+        n = isIncrement ? n + 1 : n - 1;
+        if (isIncrement) { return (n === collections.length) ? n : this.checkClassicCollection (collections, n, isIncrement); }
+        else { return ( n < 0) ? n : this.checkClassicCollection (collections, n, isIncrement); }
+    }
+
+    private checkClassicItem (items: RibbonItemModel[], n: number, isIncrement: boolean ): number {
+        const item: RibbonItemModel = items[parseInt(n.toString(), 10)];
+        if (item.displayOptions & DisplayMode.Classic) { return n; }
+        n = isIncrement ? n + 1 : n - 1;
+        if (isIncrement) { return (n === items.length) ? n : this.checkClassicItem (items, n, isIncrement); }
+        else { return ( n < 0) ? n : this.checkClassicItem (items, n, isIncrement); }
+    }
+
     private checkLargeToMedium(tabIndex: number, tab: RibbonTabModel, groupIndex: number, tabContent: HTMLElement
         , activeContent: HTMLElement, shouldSkip: boolean = false): boolean {
         const group: RibbonGroupModel = tab.groups[parseInt(groupIndex.toString(), 10)];
@@ -720,6 +975,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 createShrinkEle(collection.id, firstItem, start, end);
             for (let i: number = start; i <= end; i++) {
                 const item: RibbonItemModel = collection.items[parseInt(i.toString(), 10)];
+                if (!(item.displayOptions & DisplayMode.Classic)) { continue; }
                 const ele: HTMLElement = activeContent.querySelector('#' + item.id + constants.CONTAINER_ID);
                 shrinkEle.appendChild(ele);
                 (item as RibbonItem).setProperties({ activeSize: RibbonItemSize.Medium }, true);
@@ -744,36 +1000,52 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if (orientation === ItemOrientation.Column) {
             for (let k: number = (group.collections.length - 1); k > 0; k--) {
                 //to avoid negative index while checking for the second collection
-                if (((k - 1) >= 0) && canReduceCollection(group.collections[parseInt(k.toString(), 10)])) {
-                    if (canReduceCollection(group.collections[k - 1])) {
-                        if (((k - 2) >= 0) && canReduceCollection(group.collections[k - 2])) {
-                            moveCollectionToColumn(k - 2, k);
+                k = this.checkClassicCollection(group.collections, k, false);
+                let l: number = k - 1;
+                //Checks the element rendered at position n
+                if ((l >= 0) && canReduceCollection(group.collections[parseInt(k.toString(), 10)])) {
+                    l = this.checkClassicCollection(group.collections, l, false);
+                    //Checks the element rendered at position n-1
+                    if ((l >= 0) && canReduceCollection(group.collections[parseInt(l.toString(), 10)])) {
+                        let m: number = l - 1;
+                        if (m >= 0) { m = this.checkClassicCollection(group.collections, m, false); }
+                        //Checks the element rendered at position n-2
+                        if ((m >= 0) && canReduceCollection(group.collections[parseInt(m.toString(), 10)])) {
+                            moveCollectionToColumn(m, k);
                         } else {
-                            moveCollectionToColumn(k - 1, k);
+                            moveCollectionToColumn(l, k);
                         }
-                        k -= 2;
+                        k = m;
                         if (!shouldSkip && (tabContent.offsetWidth > activeContent.offsetWidth)) { return true; }
                     } else {
-                        k--;
+                        k = l;
                     }
                 }
             }
         } else {
-            if (group.collections.length === 1) {
+            if (this.checkValidCollectionLength(group.collections)) {
                 const collection: RibbonCollectionModel = group.collections[0];
                 for (let k: number = (collection.items.length - 1); k > 0; k--) {
                     //to avoid negative index while checking for the second item
-                    if (((k - 1) >= 0) && canReduceItem(collection.items[parseInt(k.toString(), 10)])) {
-                        if (canReduceItem(collection.items[k - 1])) {
-                            if (((k - 2) >= 0) && canReduceItem(collection.items[k - 2])) {
-                                moveItemToColumn(k - 2, k);
+                    k = this.checkClassicItem(collection.items, k, false);
+                    let l: number = k - 1;
+                    //Checks the element rendered at position n
+                    if ((l >= 0) && canReduceItem(collection.items[parseInt(k.toString(), 10)])) {
+                        l = this.checkClassicItem(collection.items, l, false);
+                        //Checks the element rendered at position n-1
+                        if ((l >= 0) && canReduceItem(collection.items[parseInt(l.toString(), 10)])) {
+                            let m: number = l - 1;
+                            //Checks the element rendered at position n-2
+                            if (m >= 0) { m = this.checkClassicItem(collection.items, m, false); }
+                            if ((m >= 0) && canReduceItem(collection.items[parseInt(m.toString(), 10)])) {
+                                moveItemToColumn(m, k);
                             } else {
-                                moveItemToColumn(k - 1, k);
+                                moveItemToColumn(l, k);
                             }
-                            k -= 2;
+                            k = m;
                             if (!shouldSkip && (tabContent.offsetWidth > activeContent.offsetWidth)) { return true; }
                         } else {
-                            k--;
+                            k = l;
                         }
                     }
                 }
@@ -791,26 +1063,36 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         const canReduceItem: Function = (item: RibbonItemModel): boolean => {
             return (item.allowedSizes & RibbonItemSize.Small) && (item.activeSize === RibbonItemSize.Medium);
         };
-        const reduceItemsToSmall: Function = (collectionIndex: number, start: number, end: number): void => {
+        const reduceItemsToSmall: Function = (collectionIndex: number, start: number, end: number, middle: number = null): void => {
             const collection: RibbonCollectionModel = this.tabs[parseInt(tabIndex.toString(), 10)]
                 .groups[parseInt(groupIndex.toString(), 10)].collections[parseInt(collectionIndex.toString(), 10)];
-            for (let i: number = start; i <= end; i++) {
+            const reduce: Function = (i: number): void => {
                 const item: RibbonItemModel = collection.items[parseInt(i.toString(), 10)];
-                const ele: HTMLElement = activeContent.querySelector('#' + item.id);
-                (item as RibbonItem).setProperties({ activeSize: RibbonItemSize.Small }, true);
-                this.setItemSize(ele, item);
-            }
+                if (item.displayOptions & DisplayMode.Classic) {
+                    const ele: HTMLElement = activeContent.querySelector('#' + item.id);
+                    (item as RibbonItem).setProperties({ activeSize: RibbonItemSize.Small }, true);
+                    this.setItemSize(ele, item);
+                }
+            };
+            reduce(start);
+            if (middle) { reduce(middle); }
+            reduce(end);
         };
-        const reduceCollectionsToSmall: Function = (index: number, start: number, end: number): void => {
+        const reduceCollectionsToSmall: Function = (index: number, start: number, end: number, middle: number = null): void => {
             const group: RibbonGroupModel = this.tabs[parseInt(tabIndex.toString(), 10)]
                 .groups[parseInt(groupIndex.toString(), 10)];
             if (!shouldSkip) { shrinkColumns[parseInt(index.toString(), 10)].setAttribute('data-medium-width', activeContent.offsetWidth.toString()); }
-            for (let i: number = start; i <= end; i++) {
+            const reduce: Function = (i: number): void => {
                 const collection: RibbonCollectionModel = group.collections[parseInt(i.toString(), 10)];
-                const ele: HTMLElement = activeContent.querySelector('#' + collection.items[0].id);
-                (collection.items[0] as RibbonItem).setProperties({ activeSize: RibbonItemSize.Small }, true);
-                this.setItemSize(ele, collection.items[0]);
-            }
+                if (collection.items[0].displayOptions & DisplayMode.Classic) {
+                    const ele: HTMLElement = activeContent.querySelector('#' + collection.items[0].id);
+                    (collection.items[0] as RibbonItem).setProperties({ activeSize: RibbonItemSize.Small }, true);
+                    this.setItemSize(ele, collection.items[0]);
+                }
+            };
+            reduce(start);
+            if (middle) { reduce(middle); }
+            reduce(end);
         };
         const setWidth: Function = (id: string): void => {
             if (!shouldSkip) {
@@ -824,12 +1106,13 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     const start: number = parseInt(shrinkColumns[parseInt(k.toString(), 10)].getAttribute('data-start'), 10);
                     const end: number = parseInt(shrinkColumns[parseInt(k.toString(), 10)].getAttribute('data-end'), 10);
                     //only 2 or 3 itmes alone can be present in shrinked column
+                    const l: number = this.checkClassicCollection(group.collections, start + 1, false); //next valid item
                     if (canReduceItem(group.collections[parseInt(start.toString(), 10)].items[0])
-                        && canReduceItem(group.collections[start + 1].items[0])) {
-                        if ((end - start) === 1) {//if only 2 item, the difference will be 1, else check for 3 rd item satus.
+                        && canReduceItem(group.collections[parseInt(l.toString(), 10)].items[0])) {
+                        if (end === l) { //if only 2 item, then next valid item will be the end item, else check for 3 rd item satus.
                             reduceCollectionsToSmall(k, start, end);
-                        } else if (canReduceItem(group.collections[parseInt(start.toString(), 10)].items[0])) {
-                            reduceCollectionsToSmall(k, start, end);
+                        } else if (canReduceItem(group.collections[parseInt(end.toString(), 10)].items[0])) {
+                            reduceCollectionsToSmall(k, start, end , l);
                         }
                         if (!shouldSkip && (tabContent.offsetWidth > activeContent.offsetWidth)) { return true; }
                     }
@@ -837,36 +1120,44 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             for (let k: number = (group.collections.length - 1); k >= 0; k--) {
                 const collection: RibbonCollectionModel = group.collections[parseInt(k.toString(), 10)];
+                const classicItems: number[] = [];
+                for (let i: number = 0; i < collection.items.length; i++) {
+                    if (collection.items[parseInt(i.toString(), 10)].displayOptions & DisplayMode.Classic) {
+                        classicItems.push(i);
+                    }
+                }
                 //If items length is 1 then, it would have been already check for shrinked column
-                if ((collection.items.length > 1)) {
-                    if (canReduceItem(collection.items[0]) && canReduceItem(collection.items[1])) {
-                        if (collection.items.length === 2) {
+                if ((classicItems.length > 1)) {
+                    if (canReduceItem(collection.items[classicItems[0]]) && canReduceItem(collection.items[classicItems[1]])) {
+                        if (classicItems.length === 2) {
                             setWidth(collection.id);
-                            reduceItemsToSmall(k, 0, 1);
-                        } else if (canReduceItem(collection.items[2])) {
+                            reduceItemsToSmall(k, classicItems[0], classicItems[1]);
+                        } else if (canReduceItem(collection.items[classicItems[2]])) {
                             setWidth(collection.id);
-                            reduceItemsToSmall(k, 0, 2);
+                            reduceItemsToSmall(k, classicItems[0], classicItems[2], classicItems[1]);
                         }
                         if (!shouldSkip && (tabContent.offsetWidth > activeContent.offsetWidth)) { return true; }
                     }
                 }
             }
         } else {
-            if (group.collections.length === 1) {
+            if (this.checkValidCollectionLength(group.collections)) {
                 if (shrinkColumns.length > 0) {
                     for (let k: number = (shrinkColumns.length - 1); k >= 0; k--) {
                         const shrinkColumn: HTMLElement = shrinkColumns[parseInt(k.toString(), 10)];
                         const start: number = parseInt(shrinkColumn.getAttribute('data-start'), 10);
                         const end: number = parseInt(shrinkColumn.getAttribute('data-end'), 10);
                         //only 2 or 3 itmes alone can be present in shrinked column
+                        const collection: RibbonCollectionModel = group.collections[0];
+                        const l: number = this.checkClassicItem(collection.items, start + 1, false); //next valid item
                         if (canReduceItem(group.collections[0].items[parseInt(start.toString(), 10)])
-                            && canReduceItem(group.collections[0].items[start + 1])) {
-                            if ((end - start) === 1) {//if only 2 item, the difference will be 1, else check for 3 rd item satus.
+                            && canReduceItem(group.collections[0].items[parseInt(l.toString(), 10)])) {
+                            if (end === l) { //if only 2 item, then next valid item will be the end item, else check for 3 rd item satus.
                                 setWidth(shrinkColumn.id);
                                 reduceItemsToSmall(0, start, end);
                             } else if (canReduceItem(group.collections[0].items[parseInt(end.toString(), 10)])) {
                                 setWidth(shrinkColumn.id);
-                                reduceItemsToSmall(0, start, end);
+                                reduceItemsToSmall(0, start, end, l);
                             }
                             if (!shouldSkip && (tabContent.offsetWidth > activeContent.offsetWidth)) { return true; }
                         }
@@ -876,6 +1167,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 for (let k: number = (group.collections.length - 1); k >= 0; k--) {
                     const collection: RibbonCollectionModel = group.collections[parseInt(k.toString(), 10)];
                     for (let l: number = (collection.items.length - 1); l >= 0; l--) {
+                        l = this.checkClassicItem(collection.items, l, false);
+                        if ( l < 0) { continue; }
                         const item: RibbonItemModel = collection.items[parseInt(l.toString(), 10)];
                         if (canReduceItem(item)) {
                             setWidth(item.id);
@@ -908,20 +1201,21 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         const canExpandItem: Function = (item: RibbonItemModel): boolean => {
             return (item.allowedSizes & RibbonItemSize.Medium) && (item.activeSize === RibbonItemSize.Small);
         };
-        const expandItemsToMedium: Function = (collectionIndex: number, start: number, end: number, parentEle: HTMLElement): void => {
+        const expandItemToMedium: Function = (collectionIndex: number, index: number, parentEle: HTMLElement): void => {
             const collection: RibbonCollectionModel = this.tabs[parseInt(tabIndex.toString(), 10)]
                 .groups[parseInt(groupIndex.toString(), 10)].collections[parseInt(collectionIndex.toString(), 10)];
-            for (let i: number = start; i <= end; i++) {
-                const item: RibbonItemModel = collection.items[parseInt(i.toString(), 10)];
+            const item: RibbonItemModel = collection.items[parseInt(index.toString(), 10)];
+            if (item.displayOptions & DisplayMode.Classic) {
                 const ele: HTMLElement = parentEle.id === item.id ? parentEle : parentEle.querySelector('#' + item.id);
                 (item as RibbonItem).setProperties({ activeSize: RibbonItemSize.Medium }, true);
                 this.setItemSize(ele, item);
             }
         };
-        const expandCollectionsToMedium: Function = (start: number, end: number): void => {
+        const expandCollectionsToMedium: Function = (i: number): void => {
             const collections: RibbonCollectionModel[] = this.tabs[parseInt(tabIndex.toString(), 10)]
                 .groups[parseInt(groupIndex.toString(), 10)].collections;
-            for (let i: number = start; i <= end; i++) {
+            const item: RibbonItemModel = collections[parseInt(i.toString(), 10)].items[0];
+            if (item.displayOptions & DisplayMode.Classic) {
                 const ele: HTMLElement = activeContent.querySelector('#' + collections[parseInt(i.toString(), 10)].items[0].id);
                 (collections[parseInt(i.toString(), 10)].items[0] as RibbonItem).setProperties({ activeSize: RibbonItemSize.Medium }, true);
                 this.setItemSize(ele, collections[parseInt(i.toString(), 10)].items[0]);
@@ -929,17 +1223,19 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         };
         if (orientation === ItemOrientation.Row) {
             // collection length is 1, then the it wll be covered in shrinked columns
-            if (group.collections.length !== 1) {
+            if (!this.checkValidCollectionLength(group.collections)) {
                 for (let k: number = 0; k < group.collections.length; k++) {
                     const collection: RibbonCollectionModel = group.collections[parseInt(k.toString(), 10)];
                     for (let l: number = 0; l < collection.items.length; l++) {
+                        l = this.checkClassicItem(collection.items, l, true);
+                        if ( l === collection.items.length) { continue; }
                         const item: RibbonItemModel = collection.items[parseInt(l.toString(), 10)];
                         if (canExpandItem(item)) {
                             const itemEle: HTMLElement = activeContent.querySelector('#' + item.id);
                             const valString: string = itemEle.getAttribute('data-medium-width');
                             const value: number = valString ? parseInt(valString, 10) : null;
                             if (value && (shouldSkip || (tabContent.offsetWidth > value))) {
-                                expandItemsToMedium(k, l, l, itemEle);
+                                expandItemToMedium(k, l, itemEle);
                                 if (!shouldSkip || shouldClear) { itemEle.removeAttribute('data-medium-width'); }
                             } else if (value) { return true; }
                         }
@@ -954,8 +1250,16 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     const itemEle: HTMLElement = activeContent.querySelector('#' + collection.id);
                     const valString: string = itemEle.getAttribute('data-medium-width');
                     const value: number = valString ? parseInt(valString, 10) : null;
-                    if (value && (shouldSkip || (tabContent.offsetWidth > value))) {
-                        expandItemsToMedium(k, 0, (collection.items.length === 2) ? 1 : 2, itemEle);
+                    const classicItems: number[] = [];
+                    for (let i: number = 0; i < collection.items.length; i++) {
+                        if (collection.items[parseInt(i.toString(), 10)].displayOptions & DisplayMode.Classic) {
+                            classicItems.push(i);
+                        }
+                    }
+                    if ((classicItems.length > 1) && value && (shouldSkip || (tabContent.offsetWidth > value))) {
+                        expandItemToMedium(k, classicItems[0], itemEle);
+                        expandItemToMedium(k, classicItems[1], itemEle);
+                        if (classicItems.length === 3) { expandItemToMedium(k, classicItems[2], itemEle); }
                         if (!shouldSkip || shouldClear) { itemEle.removeAttribute('data-medium-width'); }
                     } else if (value) { return true; }
                 }
@@ -970,9 +1274,17 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     const start: number = parseInt(shrinkColumn.getAttribute('data-start'), 10);
                     const end: number = parseInt(shrinkColumn.getAttribute('data-end'), 10);
                     if (orientation === ItemOrientation.Row) {
-                        expandItemsToMedium(0, start, end, shrinkColumn);
+                        const collection: RibbonCollectionModel = group.collections[0];
+                        const l: number = this.checkClassicItem(collection.items, start + 1, true); //next valid item
+                        expandItemToMedium(0, start, shrinkColumn);
+                        expandItemToMedium(0, l, shrinkColumn);
+                        // if l == end, then l is the last item, else L is the middle item. If l is middle then call the method for end.
+                        if (l !== end) { expandItemToMedium(0, end, shrinkColumn); }
                     } else {
-                        expandCollectionsToMedium(start, end);
+                        const m: number = this.checkClassicCollection(group.collections, start + 1, true); //next valid item
+                        expandCollectionsToMedium(start);
+                        expandCollectionsToMedium(m);
+                        if (m !== end) { expandCollectionsToMedium(end); }
                     }
                     if (!shouldSkip || shouldClear) { shrinkColumn.removeAttribute('data-medium-width'); }
                 } else if (value) { return true; }
@@ -987,30 +1299,40 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         const ele: HTMLElement = activeContent.querySelector('#' + group.id);
         const shrinkColumns: NodeListOf<HTMLElement> = ele.querySelectorAll('.' + 'e-ribbon-shrink');
         if (shrinkColumns.length === 0) { return false; }
-        const expandItemsToLarge: Function = (start: number, end: number, parentEle: HTMLElement): void => {
+        const expandItemsToLarge: Function = (start: number, end: number, parentEle: HTMLElement, middle: null): void => {
             const items: RibbonItemModel[] = this.tabs[parseInt(tabIndex.toString(), 10)].
                 groups[parseInt(groupIndex.toString(), 10)].collections[0].items;
-            for (let i: number = end; i >= start; i--) {
+            const reduce: Function = (i: number): void => {
                 const item: RibbonItemModel = items[parseInt(i.toString(), 10)];
-                const container: HTMLElement = parentEle.querySelector('#' + item.id + constants.CONTAINER_ID);
-                const ele: HTMLElement = container.querySelector('#' + item.id);
-                (item as RibbonItem).setProperties({ activeSize: RibbonItemSize.Large }, true);
-                this.setItemSize(ele, item);
-                parentEle.insertAdjacentElement('afterend', container);
-            }
+                if (item.displayOptions & DisplayMode.Classic) {
+                    const container: HTMLElement = parentEle.querySelector('#' + item.id + constants.CONTAINER_ID);
+                    const ele: HTMLElement = container.querySelector('#' + item.id);
+                    (item as RibbonItem).setProperties({ activeSize: RibbonItemSize.Large }, true);
+                    this.setItemSize(ele, item);
+                    parentEle.insertAdjacentElement('afterend', container);
+                }
+            };
+            reduce(start);
+            if (middle) { reduce(middle); }
+            reduce(end);
             if (!shouldSkip || shouldClear) { remove(parentEle); }
         };
-        const expandCollectionsToLarge: Function = (start: number, end: number, parentEle: HTMLElement): void => {
+        const expandCollectionsToLarge: Function = (start: number, end: number, parentEle: HTMLElement, middle: null): void => {
             const collections: RibbonCollectionModel[] = this.tabs[parseInt(tabIndex.toString(), 10)].
                 groups[parseInt(groupIndex.toString(), 10)].collections;
-            for (let i: number = end; i >= start; i--) {
+            const reduce: Function = (i: number): void => {
                 const collection: RibbonCollectionModel = collections[parseInt(i.toString(), 10)];
-                const collectionEle: HTMLElement = parentEle.querySelector('#' + collection.id);
-                const ele: HTMLElement = collectionEle.querySelector('#' + collection.items[0].id);
-                (collection.items[0] as RibbonItem).setProperties({ activeSize: RibbonItemSize.Large }, true);
-                this.setItemSize(ele, collection.items[0]);
-                parentEle.insertAdjacentElement('afterend', collectionEle);
-            }
+                if (collection.items[0].displayOptions & DisplayMode.Classic) {
+                    const collectionEle: HTMLElement = parentEle.querySelector('#' + collection.id);
+                    const ele: HTMLElement = collectionEle.querySelector('#' + collection.items[0].id);
+                    (collection.items[0] as RibbonItem).setProperties({ activeSize: RibbonItemSize.Large }, true);
+                    this.setItemSize(ele, collection.items[0]);
+                    parentEle.insertAdjacentElement('afterend', collectionEle);
+                }
+            };
+            reduce(start);
+            if (middle) { reduce(middle); }
+            reduce(end);
             if (!shouldSkip || shouldClear) { remove(parentEle); }
         };
         for (let k: number = 0; k < shrinkColumns.length; k++) {
@@ -1021,9 +1343,14 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 const start: number = parseInt(shrinkColumn.getAttribute('data-start'), 10);
                 const end: number = parseInt(shrinkColumn.getAttribute('data-end'), 10);
                 if (orientation === ItemOrientation.Row) {
-                    expandItemsToLarge(start, end, shrinkColumn);
+                    const collection: RibbonCollectionModel = group.collections[0];
+                    const l: number = this.checkClassicItem(collection.items, start + 1, true); //next valid item
+                    if (l === end) { expandItemsToLarge(start, end, shrinkColumn); }
+                    else { expandItemsToLarge(start, end, shrinkColumn, l ); }
                 } else {
-                    expandCollectionsToLarge(start, end, shrinkColumn);
+                    const m: number = this.checkClassicCollection(group.collections, start + 1, true); //next valid item
+                    if (m === end) {expandCollectionsToLarge(start, end, shrinkColumn); }
+                    else { expandCollectionsToLarge(start, end, shrinkColumn, m ); }
                 }
                 if (!shouldSkip || shouldClear) { shrinkColumn.removeAttribute('data-large-width'); }
             } else if (value) { return true; }
@@ -1073,7 +1400,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             this.checkSmallToMedium(tabIndex, tab, groupIndex, tabContent, activeContent, true, false);
             this.checkMediumToLarge(tabIndex, tab, groupIndex, tabContent, activeContent, true, false);
             const dropdown: DropDownButton = this.ribbonDropDownModule.createOverFlowDropDown(group.id, group.header, group.groupIconCss,
-                                                                                              groupContainer, groupOverFlow);
+                                                                                              groupContainer, groupOverFlow,
+                                                                                              this.enableRtl);
             (this.tabs[parseInt(tabIndex.toString(), 10)].
                 groups[parseInt(groupIndex.toString(), 10)] as RibbonGroup).setProperties({ isCollapsed: true }, true);
             for (let j: number = 0; j < group.collections.length; j++) {
@@ -1082,7 +1410,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 for (let k: number = 0; k < collection.items.length; k++) {
                     const item: RibbonItemModel = collection.items[parseInt(k.toString(), 10)];
                     const itemEle: HTMLElement = collectionEle.querySelector('#' + item.id + constants.CONTAINER_ID);
-                    this.addOverflowEvents(item, itemEle, dropdown);
+                    if (itemEle !== null) { this.addOverflowEvents(item, itemEle, dropdown); }
                 }
             }
         }
@@ -1113,7 +1441,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 for (let k: number = 0; k < collection.items.length; k++) {
                     const item: RibbonItemModel = collection.items[parseInt(k.toString(), 10)];
                     const itemEle: HTMLElement = collectionEle.querySelector('#' + item.id + constants.CONTAINER_ID);
-                    this.removeOverflowEvent(item, itemEle);
+                    if (itemEle !== null) { this.removeOverflowEvent(item, itemEle); }
                 }
             }
         }
@@ -1160,6 +1488,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private ribbonTabSelecting(e: SelectingEventArgs): void {
+        this.currentControlIndex = 0;
         const nextTabId: string = e.selectingItem.getAttribute('data-id');
         const previousTabId: string = e.previousItem.getAttribute('data-id');
         let nextIndex: number = getIndex<RibbonTabModel>(this.tabs, ((tab: RibbonTabModel) => (tab.id === nextTabId)));
@@ -1218,7 +1547,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             id: btnId
         });
         const overflowTarget: HTMLElement = this.createElement('div', {
-            className: constants.RIBBON_OVERFLOW_TARGET
+            className: constants.RIBBON_OVERFLOW_TARGET,
+            attrs: { 'tabindex': '0' }
         });
         const overflowDDB: DropDownButton = new DropDownButton({
             iconCss: constants.OVERFLOW_ICON,
@@ -1234,8 +1564,101 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         }, overflowButton);
         this.element.classList.add(constants.RIBBON_OVERFLOW);
         createTooltip(overflowTarget, this);
+        let isGroupOf: boolean;
+        overflowButton.onkeydown = overflowButton.onclick = () => { this.itemIndex = -1; isGroupOf = overflowButton.classList.contains('e-ribbon-overall-of-btn') ? false : true; };
+        overflowTarget.onkeydown = (e: KeyboardEventArgs) => (this.upDownKeyHandler(e, overflowTarget, isGroupOf), this);
         return overflowDDB;
     }
+
+    private upDownKeyHandler(e: KeyboardEventArgs, target: HTMLElement, isGroupOf: boolean): void {
+        let items: HTMLCollectionOf<Element>;
+        if (isGroupOf) { items = target.getElementsByClassName('e-ribbon-item'); }
+        else {
+            const currentList: HTMLElement = target.querySelector('.e-ribbon-of-tab.e-ribbon-active');
+            items = currentList.getElementsByClassName('e-ribbon-item');
+        }
+        const comboBoxEle: HTMLElement = items[(!this.itemIndex || this.itemIndex < 0) ? 0 : this.itemIndex].querySelector('.e-control').classList.contains('e-combobox') ? items[(!this.itemIndex || this.itemIndex < 0) ? 0 : this.itemIndex].querySelector('.e-combobox') : null;
+        let ribbonItem: HTMLElement;
+        if (comboBoxEle === null || (e.key === 'Tab') || this.itemIndex < 0) {
+            if (e.key === 'ArrowDown' || (!e.shiftKey && e.key === 'Tab')) {
+                if ((!this.itemIndex && this.itemIndex !== 0) || this.itemIndex < 0 || this.itemIndex === items.length - 1) {
+                    this.itemIndex = 0;
+                    ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
+                    this.findDisabledItem(ribbonItem, items, true);
+                    if (comboBoxEle && e.key === 'Tab') { e.preventDefault(); (items[this.itemIndex].querySelector('.e-control') as HTMLElement).focus(); }
+                }
+                else if (this.itemIndex < items.length - 1 && this.itemIndex >= 0) {
+                    this.itemIndex++;
+                    ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
+                    this.findDisabledItem(ribbonItem, items, true);
+                }
+            }
+            else if (e.key === 'ArrowUp' || (e.shiftKey && e.key === 'Tab')) {
+                if (comboBoxEle === null || (e.key === 'Tab')) {
+                    if (!this.itemIndex || this.itemIndex === -1) {
+                        this.itemIndex = items.length - 1;
+                        ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
+                        this.findDisabledItem(ribbonItem, items, false);
+                        if (comboBoxEle && (e.shiftKey && e.key === 'Tab')) { e.preventDefault(); (items[this.itemIndex].querySelector('.e-control') as HTMLElement).focus(); }
+                    }
+                    else if (this.itemIndex <= items.length - 1 && this.itemIndex > 0) {
+                        this.itemIndex--;
+                        ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
+                        this.findDisabledItem(ribbonItem, items, false);
+                    }
+                }
+            }
+            target.setAttribute('index', this.itemIndex.toString());
+        }
+        const currentItemIndex: number = parseInt(target.getAttribute('index'), 10);
+        const itemType: string = items[parseInt(currentItemIndex.toString(), 10)] ? items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control').getAttribute('data-control') : null;
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === ' ' || e.key === 'Tab') {
+            if (itemType === 'ColorPicker') {
+                if (e.key === 'Tab') { e.preventDefault(); }
+                (items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-split-colorpicker') as HTMLElement).focus();
+            }
+            else {
+                if (e.key === 'Tab') { e.preventDefault(); }
+                (items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control') as HTMLElement).focus();
+            }
+            if (e.key === ' ' && (itemType === 'CheckBox')) {
+                const checkBoxEle: HTMLElement = items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control') as HTMLElement;
+                const checkBox: CheckBox = getComponent(checkBoxEle, CheckBox) as CheckBox;
+                this.itemIndex = -1;
+                checkBox.click();
+            }
+        }
+        if (((itemType === 'SplitButton') && (e.key === 'ArrowRight' || e.key === 'ArrowLeft'))) {
+            if (e.key === 'ArrowRight') {
+                this.enableRtl ? (items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control') as HTMLElement).focus() :
+                (items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-dropdown-btn') as HTMLElement).focus();
+            }
+            if (e.key === 'ArrowLeft') {
+                this.enableRtl ? (items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-dropdown-btn') as HTMLElement).focus() :
+                (items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control') as HTMLElement).focus();
+            }
+        }
+        if (e.key === 'Enter') { this.itemIndex = -1; }
+    }
+
+    private findDisabledItem(ribbonItem: HTMLElement, items: HTMLCollectionOf<Element>, isIncrease: boolean): void {
+        while (ribbonItem && ribbonItem.classList.contains('e-disabled')) {
+            if (isIncrease) {
+                if (this.itemIndex === items.length - 1 && (items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement).classList.contains('e-disabled')) {
+                    this.itemIndex = -1;
+                }
+            }
+            else {
+                if (this.itemIndex === 0 && (items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement).classList.contains('e-disabled')) {
+                    this.itemIndex = items.length;
+                }
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            isIncrease ? this.itemIndex++ : this.itemIndex--;
+            ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
+        }
+    }
+
     private removeOverflowButton(overflowDDB: DropDownButton): void {
         if (overflowDDB) {
             const btnEle: HTMLElement = overflowDDB.element;
@@ -1323,6 +1746,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private switchLayout(): void {
+        this.currentControlIndex = 0;
         this.destroyScroll();
         this.collapseButton.classList.toggle(constants.RIBBON_EXPAND_BUTTON, this.activeLayout === 'Simplified');
         this.element.classList.toggle(constants.RIBBON_SIMPLIFIED_MODE, this.activeLayout === 'Simplified');
@@ -1337,6 +1761,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 if (this.activeLayout === 'Simplified') {
                     for (let i: number = 0; i < groupList.length; i++) {
                         const group: RibbonGroupModel = groupList[parseInt(i.toString(), 10)];
+                        const alignType: string = groupList[parseInt(i.toString(), 10)].orientation;
                         if (group.isCollapsed) {
                             (group as RibbonGroup).setProperties({ isCollapsed: false }, true);
                             this.removeDropdown(group.id);
@@ -1363,7 +1788,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                                 const itemList: RibbonItemModel[] = collection.items;
                                 let item: RibbonItemModel = collection.items[parseInt(k.toString(), 10)];
                                 let flag: boolean = true;
-                                while ((flag) && (item.displayOptions === DisplayMode.None)) {
+                                while ((flag) && (item.displayOptions === DisplayMode.Classic)) {
                                     k++;
                                     const itemEle: HTMLElement = groupContainer.querySelector('#' + item.id + constants.CONTAINER_ID);
                                     const ele: HTMLElement = itemEle.querySelector('#' + item.id);
@@ -1372,20 +1797,28 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                                     if (k < itemList.length) { item = itemList[parseInt(k.toString(), 10)]; } else { flag = false; }
                                 }
                                 if (!flag) { break; }
-                                const itemEle: HTMLElement = groupContainer.querySelector('#' + item.id + constants.CONTAINER_ID);
-                                const ele: HTMLElement = itemEle.querySelector('#' + item.id);
                                 let size: RibbonItemSize = ((item.allowedSizes === RibbonItemSize.Large) ||
                                     (item.allowedSizes & RibbonItemSize.Medium)) ? RibbonItemSize.Medium : RibbonItemSize.Small;
-                                if (item.displayOptions === DisplayMode.Overflow) {
-                                    this.createOverflowPopup(item, tabIndex, group.enableGroupOverflow, group.id, group.header,
-                                                             itemEle, groupContainer);
-                                    size = RibbonItemSize.Medium;
-                                    if ((item.type === RibbonItemType.DropDown) || (item.type === RibbonItemType.SplitButton)) {
-                                        this.updatePopupItems(item, itemEle, group.enableGroupOverflow, true);
+                                size = (!(item.displayOptions & DisplayMode.Simplified) && (item.displayOptions & DisplayMode.Overflow))
+                                    ? RibbonItemSize.Medium : size;
+                                let itemEle: HTMLElement;
+                                if (!(item.displayOptions & DisplayMode.Classic)) {
+                                    itemEle = this.createItems([item], alignType, group.id, group.header
+                                        , group.enableGroupOverflow, tabIndex, groupContainer)[0];
+                                    if (item.displayOptions & DisplayMode.Simplified) { groupCollection.append(itemEle); }
+                                } else {
+                                    itemEle = groupContainer.querySelector('#' + item.id + constants.CONTAINER_ID);
+                                    if (item.displayOptions === (DisplayMode.Classic | DisplayMode.Overflow)) {
+                                        this.createOverflowPopup(item, tabIndex, group.enableGroupOverflow, group.id, group.header,
+                                                                 itemEle, groupContainer);
+                                        if ((item.type === RibbonItemType.DropDown) || (item.type === RibbonItemType.SplitButton)) {
+                                            this.updatePopupItems(item, itemEle, group.enableGroupOverflow, true);
+                                        }
                                     }
+                                    (item as RibbonItem).setProperties({ activeSize: size }, true);
+                                    const ele: HTMLElement = itemEle.querySelector('#' + item.id);
+                                    this.setItemSize(ele, item);
                                 }
-                                (item as RibbonItem).setProperties({ activeSize: size }, true);
-                                this.setItemSize(ele, item);
                             }
                         }
                         if (!(group.enableGroupOverflow || groupEle.querySelector('.' + constants.RIBBON_ITEM))) {
@@ -1428,23 +1861,29 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                             const groupCollection: HTMLElement = groupContainer.querySelector('#' + collection.id);
                             if (alignType === 'Column') { groupCollection.classList.replace(constants.RIBBON_COLUMN, constants.RIBBON_ROW); }
                             for (let k: number = 0; k < collection.items.length; k++) {
-                                const item: RibbonItemModel = collection.items[parseInt(k.toString(), 10)];
-                                if (item.displayOptions === DisplayMode.None) {
+                                const itemList: RibbonItemModel[] = collection.items;
+                                let item: RibbonItemModel = collection.items[parseInt(k.toString(), 10)];
+                                let flag: boolean = true;
+                                while ((flag) && !(item.displayOptions & DisplayMode.Classic)) {
+                                    k++;
+                                    let itemEle: HTMLElement;
+                                    if ((item.displayOptions & DisplayMode.Simplified) || (item.displayOptions & DisplayMode.Overflow)) {
+                                        if (item.displayOptions & DisplayMode.Simplified) {
+                                            itemEle = groupContainer.querySelector('#' + item.id + constants.CONTAINER_ID);
+                                        }
+                                        else { itemEle = overflowtarget.querySelector('#' + item.id + constants.CONTAINER_ID); }
+                                        if (itemEle !== null) {
+                                            const ele: HTMLElement = itemEle.querySelector('#' + item.id);
+                                            this.destroyFunction(item, ele);
+                                            itemEle.remove();
+                                        }
+                                    }
+                                    if (k < itemList.length) { item = itemList[parseInt(k.toString(), 10)]; } else { flag = false; }
+                                }
+                                if (!flag) { break; }
+                                if (!(item.displayOptions & (DisplayMode.Simplified | DisplayMode.Overflow))) {
                                     const itemEle: HTMLElement = this.createItems([item], alignType, group.id, group.header
                                         , group.enableGroupOverflow, tabIndex)[0];
-                                    groupCollection.append(itemEle);
-                                }
-                                else if ((item.displayOptions === DisplayMode.Overflow)) {
-                                    const itemEle: HTMLElement = overflowtarget.querySelector('#' + item.id + constants.CONTAINER_ID);
-                                    if ((item.type === RibbonItemType.DropDown) || (item.type === RibbonItemType.SplitButton)) {
-                                        this.updatePopupItems(item, itemEle, group.enableGroupOverflow, false);
-                                    }
-                                    groupCollection.append(itemEle);
-                                    this.removeOverflowEvent(item, itemEle);
-                                }
-                                else if ((item.displayOptions === DisplayMode.Simplified)) {
-                                    //To make sure the items are in proper order
-                                    const itemEle: HTMLElement = groupContainer.querySelector('#' + item.id + constants.CONTAINER_ID);
                                     groupCollection.append(itemEle);
                                 }
                                 else {
@@ -1477,6 +1916,20 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             this.removeOverflowButton(this.overflowDDB);
             this.overflowDDB = null;
         }
+    }
+
+    private createLauncherIcon(groupId: string, groupContainer: HTMLElement): void {
+        const launcherIcon: HTMLElement = this.createElement('div', {
+            className: constants.RIBBON_LAUNCHER_ICON_ELE + ' ' + (this.launcherIconCss ? this.launcherIconCss : constants.RIBBON_LAUNCHER_ICON),
+            id: groupId + constants.LAUNCHER_ID,
+            attrs: { 'tabindex': '0', 'type': 'button', 'aria-label': 'Launcher Icon', 'role': 'button' }
+        });
+        groupContainer.appendChild(launcherIcon);
+        groupContainer.classList.add(constants.RIBBON_LAUNCHER);
+        EventHandler.add(launcherIcon, 'click', this.launcherIconClicked.bind(this, groupId), this);
+        EventHandler.add(launcherIcon, 'keydown', (e: KeyboardEvent) => {
+            if (e.key === 'Enter') { this.launcherIconClicked(groupId); }
+        }, this);
     }
 
     private launcherIconClicked(id: string): void {
@@ -1516,17 +1969,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 groupContainer.appendChild(groupHeader);
             }
             if (group.showLauncherIcon) {
-                const launcherIcon: HTMLElement = this.createElement('div', {
-                    className: constants.RIBBON_LAUNCHER_ICON_ELE + ' ' + (this.launcherIconCss ? this.launcherIconCss : constants.RIBBON_LAUNCHER_ICON),
-                    id: group.id + constants.LAUNCHER_ID,
-                    attrs: { 'tabindex': '0', 'type': 'button', 'aria-label': 'Launcher Icon', 'role': 'button' }
-                });
-                groupContainer.appendChild(launcherIcon);
-                groupContainer.classList.add(constants.RIBBON_LAUNCHER);
-                EventHandler.add(launcherIcon, 'click', this.launcherIconClicked.bind(this, group.id), this);
-                EventHandler.add(launcherIcon, 'keydown', (e: KeyboardEvent) => {
-                    if (e.key === 'Enter') { this.launcherIconClicked(group.id); }
-                }, this);
+                this.createLauncherIcon(group.id, groupContainer);
             }
             const elements: HTMLElement[] = this.createCollection(group.collections, group.orientation
                 , group.id, group.header, group.enableGroupOverflow, tabIndex, groupContainer);
@@ -1597,6 +2040,32 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         return collectionElements;
     }
 
+    private createRibbonItem (item : RibbonItemModel, itemEle : HTMLElement) : void {
+        switch (item.type) {
+        case 'Button':
+            this.ribbonButtonModule.createButton(item, itemEle);
+            break;
+        case 'DropDown':
+            this.ribbonDropDownModule.createDropDown(item, itemEle);
+            break;
+        case 'SplitButton':
+            this.ribbonSplitButtonModule.createSplitButton(item, itemEle);
+            break;
+        case 'CheckBox':
+            this.ribbonCheckBoxModule.createCheckBox(item, itemEle);
+            break;
+        case 'ColorPicker':
+            this.ribbonColorPickerModule.createColorPicker(item, itemEle);
+            break;
+        case 'ComboBox':
+            this.ribbonComboBoxModule.createComboBox(item, itemEle);
+            break;
+        case 'Template':
+            this.createTemplateContent(item, itemEle);
+            break;
+        }
+    }
+
     private createItems(itemList: RibbonItemModel[], alignType: string, groupId: string, groupHeader: string
         , isGroupOF: boolean, tabIndex: number, groupContainer?: HTMLElement): HTMLElement[] {
         const itemElements: HTMLElement[] = [];
@@ -1604,7 +2073,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             let item: RibbonItemModel = itemList[parseInt(i.toString(), 10)];
             //To stop rendering of items with simplified mode position type as none
             let flag: boolean = true;
-            while ((this.activeLayout === 'Simplified') && (flag) && (item.displayOptions === DisplayMode.None)) {
+            while ( flag &&
+                (((this.activeLayout === 'Simplified') && !(item.displayOptions & (DisplayMode.Simplified | DisplayMode.Overflow))) ||
+                ((this.activeLayout === 'Classic') && !(item.displayOptions & DisplayMode.Classic)))) {
                 i++;
                 if (i < itemList.length) { item = itemList[parseInt(i.toString(), 10)]; } else { flag = false; }
             }
@@ -1630,30 +2101,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             } else {
                 itemEle.classList.add((size & RibbonItemSize.Medium) ? constants.RIBBON_MEDIUM_ITEM : constants.RIBBON_SMALL_ITEM);
             }
-            switch (item.type) {
-            case 'Button':
-                this.ribbonButtonModule.createButton(item, itemEle);
-                break;
-            case 'DropDown':
-                this.ribbonDropDownModule.createDropDown(item, itemEle);
-                break;
-            case 'SplitButton':
-                this.ribbonSplitButtonModule.createSplitButton(item, itemEle);
-                break;
-            case 'CheckBox':
-                this.ribbonCheckBoxModule.createCheckBox(item, itemEle);
-                break;
-            case 'ColorPicker':
-                this.ribbonColorPickerModule.createColorPicker(item, itemEle);
-                break;
-            case 'ComboBox':
-                this.ribbonComboBoxModule.createComboBox(item, itemEle);
-                break;
-            case 'Template':
-                this.createTemplateContent(item, itemEle);
-                break;
-            }
-            if ((this.activeLayout === 'Simplified') && (item.displayOptions === DisplayMode.Overflow)) {
+            this.createRibbonItem(item, itemEle);
+            if ((this.activeLayout === 'Simplified') && ((item.displayOptions === DisplayMode.Overflow) || (item.displayOptions === (DisplayMode.Classic | DisplayMode.Overflow)))) {
                 this.createOverflowPopup(item, tabIndex, isGroupOF, groupId, groupHeader, itemEle, groupContainer);
                 if ((item.type === RibbonItemType.DropDown) || (item.type === RibbonItemType.SplitButton)) {
                     this.updatePopupItems(item, itemEle, isGroupOF, true);
@@ -1756,12 +2205,14 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     for (const item of collection.items) {
                         let ele: HTMLElement = null;
                         if (this.activeLayout === RibbonLayout.Classic) {
-                            ele = dropdownElement ? this.ribbonDropDownModule.getDDBItemElement(dropdownElement, item.id) : contentEle.querySelector('#' + item.id);
+                            if (item.displayOptions & DisplayMode.Classic) {
+                                ele = dropdownElement ? this.ribbonDropDownModule.getDDBItemElement(dropdownElement, item.id) : contentEle.querySelector('#' + item.id);
+                            }
                         } else {
-                            //Checks for Simplified and Auto options (Auto = simplified + popup)
+                            //Checks for Simplified and Auto options (Auto = classic + simplified + popup)
                             ele = (item.displayOptions & DisplayMode.Simplified) ? contentEle.querySelector('#' + item.id) : null;
                             // element will be null for "Popup" and if the item is moved to overflow in "Auto" mode
-                            if (!ele && (item.displayOptions !== DisplayMode.None)) {
+                            if (!ele) {
                                 ele = (dropdown.target as HTMLElement).querySelector('#' + item.id);
                                 if (item.type === 'DropDown') {
                                     this.updatePopupItems(item, dropdown.target as HTMLElement, group.enableGroupOverflow, true);
@@ -1814,14 +2265,16 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     for (const item of collection.items) {
                         let ele: HTMLElement;
                         if (this.activeLayout === RibbonLayout.Classic) {
-                            ele = dropdownElement ? this.ribbonDropDownModule.getDDBItemElement(dropdownElement, item.id) :
-                                contentEle.querySelector('#' + item.id);
+                            if (item.displayOptions & DisplayMode.Classic) {
+                                ele = dropdownElement ? this.ribbonDropDownModule.getDDBItemElement(dropdownElement, item.id) :
+                                    contentEle.querySelector('#' + item.id);
+                            }
                         } else {
-                            //Checks for Simplified and Auto options (Auto = simplified + popup)
+                            //Checks for Simplified and Auto options (Auto = classic + simplified + popup)
                             ele = (item.displayOptions & DisplayMode.Simplified) ?
                                 contentEle.querySelector('#' + item.id) : null;
                             // element will be null for "Popup" and if the item is moved to overflow in "Auto" mode
-                            if (!ele && (item.displayOptions !== DisplayMode.None)) {
+                            if (!ele) {
                                 ele = dropdown ? (dropdown.target as HTMLElement).querySelector('#' + item.id) : null;
                             }
                         }
@@ -2188,15 +2641,325 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.selectedTab === itemProp.tabIndex) { this.refreshLayout(); }
     }
 
+    /**
+     * tab - Gets the ribbon tab to be updated. The id of the tab is a required property. Other properties are optional.
+     *
+     * @param {RibbonTabModel} tab - Gets the ribbon tab model.
+     * @returns {void}
+     */
+
+    public updateTab(tab: RibbonTabModel): void {
+        const tabId: string = tab.id;
+        const index: number = getIndex(this.tabs, (e: RibbonTab) => { return e.id === tabId; });
+        if (index === -1) { return; }
+        const contentEle: HTMLElement = this.tabObj.items[parseInt(index.toString(), 10)].content as HTMLElement;
+        const groups: RibbonGroupModel[] = this.tabs[parseInt(index.toString(), 10)].groups;
+        const tabEle: HTMLElement = this.tabObj.element;
+        if (groups && (contentEle.innerHTML !== '')) {
+            // Check whether cssClass is passed by the user, and if it is, then remove the old values.
+            if (tab.cssClass) {
+                if (this.tabs[parseInt(index.toString(), 10)].cssClass) {
+                    contentEle.classList.remove(this.tabs[parseInt(index.toString(), 10)].cssClass);
+                    tabEle.querySelector('.e-active').classList.remove(this.tabs[parseInt(index.toString(), 10)].cssClass);
+                }
+            }
+            // Check whether group is passed by the user, and if it is, then remove the old values.
+            if (tab.groups) {
+                for (const group of groups) {
+                    const dropdownElement: HTMLElement = group.isCollapsed ? contentEle.querySelector('#' + group.id + constants.OVERFLOW_ID + constants.DROPDOWN_ID) : null;
+                    for (const collection of group.collections) {
+                        for (const item of collection.items) {
+                            const ele: HTMLElement = dropdownElement ? this.ribbonDropDownModule.getDDBItemElement(dropdownElement, item.id) : contentEle.querySelector('#' + item.id);
+                            if (ele) {
+                                this.destroyFunction(item, ele);
+                            }
+                        }
+                    }
+                    if (dropdownElement) { this.ribbonDropDownModule.removeOverFlowDropDown(dropdownElement); }
+                }
+                const groupElements : NodeListOf<HTMLElement> = contentEle.querySelectorAll('.e-ribbon-group');
+                // eslint-disable-next-line @typescript-eslint/tslint/config
+                groupElements.forEach(groupEle => { groupEle.remove(); });
+            }
+        }
+        if (index === this.selectedTab) {
+            this.isAddRemove = true;
+        }
+        const ribbonTab: RibbonTab = this.tabs[parseInt(index.toString(), 10)] as RibbonTab;
+        ribbonTab.setProperties(tab, true);
+        this.setProperties({ groups: this.checkID(ribbonTab.groups, 'group', ribbonTab.id) }, true);
+        this.validateItemSize();
+        if (contentEle.innerHTML === '') {
+            // Check whether group is passed by the user and sets the updated values.
+            if (tab.groups) {
+                const elements: HTMLElement[] = this.createGroups(ribbonTab.groups, index);
+                append(elements, contentEle);
+            }
+            if (this.selectedTab === index) { this.refreshLayout(); }
+            // Check whether cssClass is passed by the user and sets the updated values.
+            if (tab.cssClass) {
+                contentEle.classList.add(ribbonTab.cssClass);
+                tabEle.querySelector('.e-active').classList.add(ribbonTab.cssClass);
+            }
+            // Check whether header is passed by the user and sets the updated values.
+            if (tab.header) {
+                tabEle.querySelector<HTMLElement>('#' + tabId + constants.HEADER_ID).innerText = ribbonTab.header;
+            }
+        }
+    }
+
+    /**
+     * group - Gets the ribbon group to be updated. The id of the group is a required property. Other properties are optional.
+     *
+     * @param {RibbonGroupModel} group - Gets the ribbon group model.
+     * @returns {void}
+     */
+
+    public updateGroup(group: RibbonGroupModel): void {
+        const groupId: string = group.id;
+        const itemProp: itemProps = getGroup(this.tabs, groupId);
+        if (!itemProp) { return; }
+        if (this.selectedTab === itemProp.tabIndex) { this.clearOverflowResize(); }
+        //Check whether the tab items are rendered
+        const contentEle: HTMLElement = this.tabObj.items[itemProp.tabIndex].content as HTMLElement;
+        const groupEle: HTMLElement = contentEle.querySelector('#' + groupId);
+        const groupContainer: HTMLElement = groupEle.querySelector('#' + group.id + constants.CONTAINER_ID);
+        let dropdownElement: HTMLElement;
+        let dropdown: DropDownButton;
+        if (contentEle.innerHTML !== '') {
+            if (itemProp.group.showLauncherIcon) { this.removeLauncherIcon(itemProp.group.id, null, contentEle); }
+            if (this.activeLayout === RibbonLayout.Simplified) {
+                dropdownElement = itemProp.group.enableGroupOverflow ?
+                    contentEle.querySelector('#' + itemProp.group.id + constants.GROUPOF_BUTTON_ID) : null;
+                dropdown = dropdownElement ? getComponent(dropdownElement, DropDownButton) : this.overflowDDB;
+            }
+            // Check whether cssClass is passed by the user, and if it is, then remove the old values.
+            if (group.cssClass) {
+                if (itemProp.group.cssClass) {
+                    groupEle.classList.remove(itemProp.group.cssClass);
+                    if (groupContainer) { groupContainer.classList.remove(itemProp.group.cssClass); }
+                }
+            }
+            // Check whether collections or orientation is passed by the user, and if it is, then remove the old values.
+            if (group.collections || group.orientation) {
+                if (itemProp.group.collections || itemProp.group.orientation) {
+                    for (const collection of itemProp.group.collections) {
+                        for (const item of collection.items) {
+                            this.removeItemElement(contentEle, item, dropdown);
+                        }
+                    }
+                    const collectionElements: NodeListOf<HTMLElement> =  groupEle.querySelectorAll('.e-ribbon-collection');
+                    // eslint-disable-next-line @typescript-eslint/tslint/config
+                    collectionElements.forEach(collectionEle => { collectionEle.remove(); });
+                    if (group.orientation) {
+                        const groupContent: HTMLElement = groupContainer.querySelector('.e-ribbon-group-content');
+                        const removeCss: string[] = groupContent.classList.value.match(/(e-ribbon-[column|row]+)/g);
+                        if (removeCss) { removeClass([groupContent], removeCss); }
+                    }
+                }
+            }
+            if (this.activeLayout === RibbonLayout.Simplified) {
+                if (itemProp.group.enableGroupOverflow) {
+                    if ((dropdown.target as HTMLElement).childElementCount === 0) { this.removeOverflowButton(dropdown); }
+                } else {
+                    const ofGroupContainer: HTMLElement = (dropdown.target as HTMLElement).querySelector('#' + itemProp.group.id + constants.CONTAINER_ID);
+                    if (ofGroupContainer && ofGroupContainer.childElementCount === 1) { ofGroupContainer.remove(); }
+                    const ofTabContainer: HTMLElement = (dropdown.target as HTMLElement).querySelector('#' + this.tabs[parseInt(itemProp.tabIndex.toString(), 10)].id + constants.OVERFLOW_ID);
+                    if (ofTabContainer && ofTabContainer.childElementCount === 0) { ofTabContainer.remove(); }
+                }
+            }
+        }
+        const ribbongroup: RibbonGroup = itemProp.group as RibbonGroup;
+        ribbongroup.setProperties(group, true);
+        ribbongroup.setProperties({ collections: this.checkID(ribbongroup.collections, 'collection', ribbongroup.id) }, true);
+        this.validateItemSize();
+        if (contentEle.innerHTML !== '') {
+            // Check whether showLauncherIcon or orientation is passed by the user and sets the updated values.
+            if (group.showLauncherIcon) { this.createLauncherIcon(ribbongroup.id, groupContainer); }
+            // Check whether collections or orientation is passed by the user and sets the updated values.
+            if (group.collections || group.orientation) {
+                const groupContent: HTMLElement = groupContainer.querySelector('.e-ribbon-group-content');
+                groupContent.classList.add(((ribbongroup.orientation === 'Column') || (this.activeLayout === 'Simplified')) ? constants.RIBBON_COLUMN : constants.RIBBON_ROW);
+                const elements: HTMLElement[] = this.createCollection(ribbongroup.collections, ribbongroup.orientation
+                    , ribbongroup.id, ribbongroup.header, ribbongroup.enableGroupOverflow, itemProp.tabIndex, groupContainer);
+                append(elements, groupContent);
+            }
+            if (this.selectedTab === itemProp.tabIndex) { this.refreshLayout(); }
+            // Check whether cssClass is passed by the user and sets the updated values.
+            if (group.cssClass) {
+                groupEle.classList.add(ribbongroup.cssClass);
+                if (groupContainer) { groupContainer.classList.add(ribbongroup.cssClass); }
+            }
+            // Check whether header is passed by the user and sets the updated values.
+            if (group.header) {
+                if (this.activeLayout === RibbonLayout.Simplified && !group.enableGroupOverflow) {
+                    const overflowHeader: HTMLElement = (dropdown.target as HTMLElement).querySelector('#' + group.id + constants.HEADER_ID);
+                    if (overflowHeader) { overflowHeader.innerText = ribbongroup.header; }
+                }
+                else if (this.activeLayout === RibbonLayout.Classic && !ribbongroup.isCollapsed) {
+                    groupEle.querySelector<HTMLElement>('.e-ribbon-group-header').innerText = ribbongroup.header;
+                }
+                else if (this.activeLayout === RibbonLayout.Classic && ribbongroup.isCollapsed) {
+                    const overflowEle: HTMLElement =  groupEle.querySelector('#' + ribbongroup.id + constants.OVERFLOW_ID + constants.DROPDOWN_ID);
+                    // need to set instance for dropdown
+                    const dropDownBtn: DropDownButton = getInstance(overflowEle, DropDownButton) as DropDownButton;
+                    const overflowHeader: HTMLElement = (dropDownBtn.target as HTMLElement).querySelector('#' + group.id + constants.HEADER_ID);
+                    if (overflowHeader) { overflowHeader.innerText = ribbongroup.header; }
+                }
+            }
+        }
+    }
+
+    /**
+     * collection - Gets the ribbon collection to be updated. The id of the collection is a required property. Other properties are optional.
+     *
+     * @param {RibbonCollectionModel} collection - Gets the ribbon collection model.
+     * @returns {void}
+     */
+
+    public updateCollection(collection: RibbonCollectionModel): void {
+        const collectionId: string = collection.id;
+        const itemProp: itemProps = getCollection(this.tabs, collectionId);
+        if (!itemProp) { return; }
+        if (this.selectedTab === itemProp.tabIndex) { this.clearOverflowResize(); }
+        //Check whether the tab items are rendered
+        const contentEle: HTMLElement = this.tabObj.items[itemProp.tabIndex].content as HTMLElement;
+        const collectionEle: HTMLElement = contentEle.querySelector('#' + collectionId);
+        if (contentEle.innerHTML !== '') {
+            let dropdownElement: HTMLElement;
+            let dropdown: DropDownButton;
+            if (this.activeLayout === RibbonLayout.Simplified) {
+                dropdownElement = itemProp.group.enableGroupOverflow ?
+                    contentEle.querySelector('#' + itemProp.group.id + constants.GROUPOF_BUTTON_ID) : null;
+                dropdown = dropdownElement ? getComponent(dropdownElement, DropDownButton) : this.overflowDDB;
+            }
+            // Check whether cssClass is passed by the user, and if it is, then remove the old values.
+            if (collection.cssClass) {
+                if (itemProp.collection.cssClass) { collectionEle.classList.remove(itemProp.collection.cssClass); }
+            }
+            if (collection.items) {
+                if (itemProp.collection.items) {
+                    for (const item of itemProp.collection.items) {
+                        this.removeItemElement(contentEle, item, dropdown);
+                    }
+                }
+            }
+        }
+        const ribboncollection: RibbonCollection = itemProp.collection as RibbonCollection;
+        ribboncollection.setProperties(collection, true);
+        ribboncollection.setProperties({ items: this.checkID(ribboncollection.items, 'item', ribboncollection.id) }, true);
+        this.validateItemSize();
+        if (contentEle.innerHTML !== '') {
+            if (collection.items) {
+                const groupContainer: HTMLElement = contentEle.querySelector('#' + itemProp.group.id + constants.CONTAINER_ID);
+                const elements: HTMLElement[] = this.createItems(ribboncollection.items, itemProp.group.orientation, itemProp.group.id,
+                                                                 itemProp.group.header, itemProp.group.enableGroupOverflow,
+                                                                 itemProp.tabIndex, groupContainer);
+                append(elements, collectionEle);
+            }
+        }
+        if (this.selectedTab === itemProp.tabIndex) { this.refreshLayout(); }
+        // Check whether cssClass is passed by the user and sets the updated values.
+        if (collection.cssClass) { collectionEle.classList.add(ribboncollection.cssClass); }
+    }
+
+    /**
+     * item - Gets the ribbon item to be updated. The id of the item is a required property. Other properties are optional.
+     *
+     * @param {RibbonItemModel} item - Gets the ribbon item model.
+     * @returns {void}
+     */
+
+    public updateItem(item: RibbonItemModel): void {
+        const itemId: string = item.id;
+        const itemProp: itemProps = getItem(this.tabs, itemId);
+        if (!itemProp) { return; }
+        if (this.selectedTab === itemProp.tabIndex) { this.clearOverflowResize(); }
+        //Check whether the tab items are rendered
+        const contentEle: HTMLElement = this.tabObj.items[itemProp.tabIndex].content as HTMLElement;
+        const groupEle: HTMLElement = contentEle.querySelector('#' + itemProp.group.id);
+        const groupContainer: HTMLElement = groupEle.querySelector('#' + itemProp.group.id + constants.CONTAINER_ID);
+        let itemContainer: HTMLElement = null;
+        let itemEle: HTMLElement = null;
+        let dropdownElement: HTMLElement;
+        let dropdown: DropDownButton;
+        if (contentEle.innerHTML !== '') {
+            if (this.activeLayout === RibbonLayout.Simplified) {
+                dropdownElement = itemProp.group.enableGroupOverflow ?
+                    contentEle.querySelector('#' + itemProp.group.id + constants.GROUPOF_BUTTON_ID) : null;
+                dropdown = dropdownElement ? getComponent(dropdownElement, DropDownButton) : this.overflowDDB;
+            }
+            if (this.activeLayout === RibbonLayout.Simplified && itemProp.item.displayOptions === DisplayMode.Overflow) {
+                itemContainer = (dropdown.target as HTMLElement).querySelector('#' + itemId + constants.CONTAINER_ID);
+                itemEle = (dropdown.target as HTMLElement).querySelector('#' + itemId);
+                if (item.displayOptions && item.displayOptions !== DisplayMode.Overflow) {
+                    const collectionEle : HTMLElement = groupContainer.querySelector('#' + itemProp.collection.id);
+                    if (collectionEle) { collectionEle.appendChild(itemContainer); }
+                }
+            } else {
+                itemContainer = groupContainer.querySelector('#' + itemId + constants.CONTAINER_ID);
+                itemEle = contentEle.querySelector('#' + itemId);
+                if (this.activeLayout === RibbonLayout.Simplified && item.displayOptions === DisplayMode.Overflow) {
+                    this.createOverflowPopup(itemProp.item, itemProp.tabIndex, itemProp.group.enableGroupOverflow, itemProp.group.id,
+                                             itemProp.group.header, itemContainer, groupContainer);
+                    if ((itemProp.item.type === RibbonItemType.DropDown) || (itemProp.item.type === RibbonItemType.SplitButton)) {
+                        this.updatePopupItems(itemProp.item, itemContainer, itemProp.group.enableGroupOverflow, true);
+                    }
+                }
+            }
+            // Check whether cssClass is passed by the user, and if it is, then remove the old values.
+            if (item.cssClass) {
+                if (itemProp.item.cssClass) { itemContainer.classList.remove(itemProp.item.cssClass); }
+            }
+            this.destroyFunction(itemProp.item, itemEle);
+            itemEle.remove();
+            const removeCss: string[] = itemContainer.classList.value.match(/(e-ribbon-[large|medium|small]+-item)/g);
+            if (removeCss) { removeClass([itemContainer], removeCss); }
+        }
+        const ribbonItem: RibbonItem = itemProp.item as RibbonItem;
+        ribbonItem.setProperties(item, true);
+        this.validateItemSize();
+        if (contentEle.innerHTML !== '') {
+            if (!(this.activeLayout === RibbonLayout.Simplified && ribbonItem.displayOptions === DisplayMode.Overflow)) {
+                itemContainer = groupContainer.querySelector('#' + itemId + constants.CONTAINER_ID);
+            } else {
+                itemContainer = (dropdown.target as HTMLElement).querySelector('#' + itemId + constants.CONTAINER_ID);
+            }
+            // To avoid undefined items condition is added
+            if (ribbonItem.ribbonTooltipSettings && isTooltipPresent(ribbonItem.ribbonTooltipSettings)) {
+                itemContainer.classList.add(constants.RIBBON_TOOLTIP_TARGET);
+                this.tooltipData.push({ id: itemContainer.id, data: ribbonItem.ribbonTooltipSettings });
+            }
+            let size: RibbonItemSize = ribbonItem.activeSize;
+            if (this.activeLayout === 'Simplified') {
+                size = ((ribbonItem.allowedSizes === RibbonItemSize.Large) || (ribbonItem.allowedSizes & RibbonItemSize.Medium) ||
+                    (ribbonItem.displayOptions === DisplayMode.Overflow)) ? RibbonItemSize.Medium : RibbonItemSize.Small;
+                (ribbonItem as RibbonItem).setProperties({ activeSize: size }, true);
+            }
+            if (size & RibbonItemSize.Large) {
+                itemContainer.classList.add(constants.RIBBON_LARGE_ITEM, constants.RIBBON_CONTENT_HEIGHT);
+            } else {
+                itemContainer.classList.add((size & RibbonItemSize.Medium) ? constants.RIBBON_MEDIUM_ITEM : constants.RIBBON_SMALL_ITEM);
+            }
+            this.createRibbonItem(ribbonItem, itemContainer);
+            if (this.activeLayout === 'Simplified' && itemProp.group.enableGroupOverflow) {
+                if ((dropdown.target as HTMLElement).childElementCount === 0) { this.removeOverflowButton(dropdown); }
+            }
+            if (this.selectedTab === itemProp.tabIndex) { this.refreshLayout(); }
+            if (item.cssClass) { itemContainer.classList.add(ribbonItem.cssClass); }
+            this.enableDisableItem(ribbonItem.id, ribbonItem.disabled);
+        }
+    }
+
     private removeItemElement(contentEle: HTMLElement, item: RibbonItemModel, dropdown: DropDownButton): void {
         let ele: HTMLElement = null;
         if (this.activeLayout === RibbonLayout.Classic) {
-            ele = contentEle.querySelector('#' + item.id);
+            ele = (item.displayOptions & DisplayMode.Classic) ? contentEle.querySelector('#' + item.id) : null;
         } else {
-            //Checks for Simplified and Auto options (Auto = simplified + popup)
+            //Checks for Simplified and Auto options (Auto = classic + simplified + popup)
             ele = (item.displayOptions & DisplayMode.Simplified) ? contentEle.querySelector('#' + item.id) : null;
             // element will be null for "Popup" and if the item is moved to overflow in "Auto" mode
-            if (!ele && (item.displayOptions !== DisplayMode.None)) {
+            if (!ele) {
                 ele = (dropdown.target as HTMLElement).querySelector('#' + item.id);
             }
         }
@@ -2249,6 +3012,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     public destroy(): void {
+        this.keyboardModuleRibbon.destroy();
+        this.keyboardModuleRibbon = null;
         destroyTooltip(this.element);
         this.destroyTabItems(this.tabs);
         this.removeExpandCollapse();
@@ -2296,6 +3061,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             case 'isMinimized':
                 this.element.classList.toggle(constants.RIBBON_MINIMIZE, this.isMinimized);
                 (this.tabObj.element.querySelector('.e-content') as HTMLElement).style.display = this.isMinimized ? 'none' : 'block';
+                if (!this.isMinimized) { this.refreshLayout(); }
                 break;
             case 'locale':
                 this.updateCommonProperty({ locale: this.locale });
@@ -2317,7 +3083,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                             if (group.showLauncherIcon) {
                                 const className: string = constants.RIBBON_LAUNCHER_ICON_ELE + ' ' + (this.launcherIconCss || constants.RIBBON_LAUNCHER_ICON);
                                 if (group.isCollapsed) {
-                                    const element: HTMLElement = tabContent.querySelector('.' + constants.RIBBON_GROUP_OVERFLOW_DDB);
+                                    const element: HTMLElement = tabContent.querySelector('#' + group.id + constants.OVERFLOW_ID + constants.DROPDOWN_ID);
                                     const dropdown: DropDownButton = getComponent(element, DropDownButton);
                                     const launcherIconEle: HTMLElement = (dropdown.target as HTMLElement).querySelector('#' + group.id + constants.LAUNCHER_ID);
                                     launcherIconEle.className = className;
@@ -2346,14 +3112,20 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 break;
             case 'fileMenu':
                 if (this.ribbonFileMenuModule) { this.ribbonFileMenuModule.updateFileMenu(this.fileMenu); }
+                const toolbarEle: Toolbar = this.tabObj['tbObj'] as Toolbar;
+                toolbarEle.refreshOverflow();
                 break;
             case 'helpPaneTemplate':
                 if (this.ribbonTempEle) {
                     remove(this.ribbonTempEle);
+                    this.ribbonTempEle = null;
+                    this.tabObj.element.style.setProperty(constants.RIBBON_HELP_PANE_TEMPLATE_WIDTH, '0px');
                 }
                 if (this.helpPaneTemplate) {
                     this.createHelpPaneTemplate();
                 }
+                const toolbar: Toolbar = this.tabObj['tbObj'] as Toolbar;
+                toolbar.refreshOverflow();
                 break;
             }
         }

@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { RangeNavigatorType, ThumbType } from '../utils/enum';import { Border, Animation, Font } from '../../common/model/base';import { BorderModel, AnimationModel, FontModel } from '../../common/model/base-model';import { Axis } from '../../chart/axis/axis';import { TooltipDisplayMode } from  '../utils/enum';import { Rect } from '@syncfusion/ej2-svg-base';import { RangeNavigator, DataPoint } from '../index';import { RangeNavigatorTheme  } from '../utils/theme';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { RangeNavigatorType, ThumbType } from '../utils/enum';import { Border, Animation, Font } from '../../common/model/base';import { BorderModel, AnimationModel, FontModel } from '../../common/model/base-model';import { Axis } from '../../chart/axis/axis';import { TooltipDisplayMode } from  '../utils/enum';import { Rect } from '@syncfusion/ej2-svg-base';import { RangeNavigator, DataPoint } from '../index';
 
 /**
  * Interface for a class RangeNavigatorSeries
@@ -171,7 +171,7 @@ export interface RangeTooltipSettingsModel {
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
      *
-     * @default 0.85
+     * @default null
      */
 
     opacity?: number;
@@ -202,9 +202,10 @@ export interface RangeTooltipSettingsModel {
      * Custom template to format the ToolTip content. Use ${value} as the placeholder text to display the corresponding data point.
      *
      * @default null.
+     * @aspType string
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * Options to customize tooltip borders.

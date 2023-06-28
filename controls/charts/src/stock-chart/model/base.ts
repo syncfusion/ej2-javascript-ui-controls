@@ -377,7 +377,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
     /**
      * Options to customize the strip line text.
      */
-    @Complex<StockChartFontModel>(Theme.stripLineLabelFont, StockChartFont)
+    @Complex<StockChartFontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, StockChartFont)
     public textStyle: StockChartFontModel;
 
 
@@ -1245,7 +1245,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Options to customize the axis label.
      */
 
-    @Complex<FontModel>(Theme.axisLabelFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public labelStyle: FontModel;
 
     /**
@@ -1261,7 +1261,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Options for customizing the axis title.
      */
 
-    @Complex<StockChartFontModel>(Theme.axisTitleFont, StockChartFont)
+    @Complex<StockChartFontModel>({fontFamily: null, size: "16px", fontStyle: 'Normal', fontWeight: '600', color: null}, StockChartFont)
     public titleStyle: StockChartFontModel;
 
     /**

@@ -899,6 +899,9 @@ export class Table {
         let maxiumWidth: number;
         const currentTdElement: HTMLElement = this.curTable.closest('td');
         const args: ResizeArgs = { event: e, requestType: 'table' };
+        let isRowCellsMerged: boolean = false;
+        let mergedCellIndex: number;
+        let mergedElement: HTMLTableDataCellElement;
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
@@ -961,7 +964,11 @@ export class Table {
                             const differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(
                                 tableWidth + mouseX, widthCompare);
                             for (let i: number = 0; i < lastColumnsCell.length; i++) {
-                                (this.curTable.rows[i as number].cells[this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
+                                if (this.curTable.rows[i as number].cells[this.colIndex]){
+                                     // eslint-disable-next-line
+                                     (this.curTable.rows[i as number].cells[this.curTable.rows[i].cells.length === this.colIndex ?
+                                        this.colIndex - 1 : this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
+                                }
                             }
                         }
                     } else {
@@ -970,19 +977,67 @@ export class Table {
                         const totalwid: number = parseFloat(this.columnEle.offsetWidth.toString()) +
                             parseFloat((cellColl[this.colIndex - 1] as HTMLElement).offsetWidth.toString());
                         for (let i: number = 0; i < this.curTable.rows.length; i++) {
-                            if ((totalwid - actualwid) > 20 && actualwid > 20) {
+                            if ((totalwid - actualwid) > 20 && actualwid > 20 && this.curTable.rows[i as number].cells[i as number]) {
                                 const leftColumnWidth: number = totalwid - actualwid;
                                 const rightColWidth: number = actualwid;
-                                const index: number = this.curTable.rows[i as number].cells[i as number].hasAttribute('colspan') ?
-                                    parseInt(this.curTable.rows[i as number].cells[i as number].getAttribute('colspan'), 10) - 1 : this.colIndex;
-                                if (!isNOU(this.curTable.rows[i as number].cells[index - 1])) {
+                                let index: number;
+                                let isMergedEleResize: boolean = false;
+                                let leftTableCell: HTMLTableDataCellElement;
+                                let rightTableCell: HTMLTableDataCellElement;
+                                /* eslint-disable */
+                                for (let j: number = 0; j < this.curTable.rows[i].cells.length; j++) {
+                                    if (this.curTable.rows[i].cells[j].hasAttribute('rowspan') && j <= this.colIndex) {
+                                        isRowCellsMerged = true;
+                                        mergedCellIndex = i;
+                                        mergedElement = this.curTable.rows[i].cells[j];
+                                    }
+                                }
+                                if (this.curTable.rows[i].cells[i].hasAttribute('colspan')) {
+                                    index = parseInt(this.curTable.rows[i].cells[i].getAttribute('colspan'), 10) - 1;
+                                }
+                                else {
+                                    index = this.colIndex;
+                                }
+                                if (isRowCellsMerged) {
+                                    let currentResizeRow: HTMLTableRowElement;
+                                    if (this.curTable.rows[i].cells.length < cellColl.length) {
+                                        index = this.curTable.rows[i].cells.length === this.colIndex ? this.colIndex - 1 : this.colIndex - (this.colIndex - 1);
+                                        currentResizeRow = this.curTable.rows[!isNullOrUndefined(mergedCellIndex) ? mergedCellIndex : this.colIndex - 1];
+                                        if (currentResizeRow && (currentResizeRow.cells[this.colIndex - 1] === mergedElement ||
+                                            currentResizeRow.cells[currentResizeRow.cells.length - 1] === mergedElement)) {
+                                            isMergedEleResize = true;
+                                        } else {
+                                            isMergedEleResize = false;
+                                        }
+                                    } else {
+                                        index = this.colIndex;
+                                    }
+                                    leftTableCell = !isMergedEleResize ? this.curTable.rows[i].cells[index - 1] : (currentResizeRow &&
+                                        currentResizeRow.cells[currentResizeRow.cells.length - 1] !== mergedElement) ? currentResizeRow.cells[this.colIndex - 1] :
+                                        this.curTable.rows[i].cells[this.curTable.rows[i].cells.length - 1];
+                                    rightTableCell = !isMergedEleResize ? this.curTable.rows[i].cells[index] : rightTableCell && rightTableCell.hasAttribute('rowspan') ?
+                                        rightTableCell : currentResizeRow && currentResizeRow.cells[currentResizeRow.cells.length - 1] !== mergedElement ? this.curTable.rows[i].cells[index - 1] :
+                                            currentResizeRow.cells[currentResizeRow.cells.length - 1];
+                                }
+                                if (!isNOU(this.curTable.rows[i as number].cells[index - 1]) && !isRowCellsMerged) {
                                     (this.curTable.rows[i as number].cells[index - 1] as HTMLTableDataCellElement).style.width =
-                                    this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
+                                        this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
+                                } else {
+                                    if (leftTableCell) {
+                                        (leftTableCell as HTMLTableDataCellElement).style.width =
+                                            this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
+                                    }
                                 }
-                                if (!isNOU(this.curTable.rows[i as number].cells[index as number])) {
+                                if (!isNOU(this.curTable.rows[i as number].cells[index as number]) && !isRowCellsMerged) {
                                     (this.curTable.rows[i as number].cells[index as number] as HTMLTableDataCellElement).style.width =
-                                    this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
+                                        this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
+                                } else {
+                                    if (rightTableCell) {
+                                        (rightTableCell as HTMLTableDataCellElement).style.width =
+                                            this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
+                                    }
                                 }
+                                /* eslint-enable */
                             }
                         }
                     }

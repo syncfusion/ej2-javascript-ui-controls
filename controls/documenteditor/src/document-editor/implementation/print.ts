@@ -10,6 +10,7 @@ export class Print {
     private getModuleName(): string {
         return 'Print';
     }
+    private windowPrint: Window = undefined;
 
     /**
      * Prints the current viewer
@@ -44,6 +45,7 @@ export class Print {
         if (isNullOrUndefined(printWindow)) {
             printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
         }
+        this.windowPrint = printWindow;
         let pageSize: string = width.toString() + 'px ' + height.toString() + 'px';
         if (width > height) {
             pageSize = 'landscape';
@@ -51,20 +53,21 @@ export class Print {
         if (browserUserAgent.indexOf('Chrome') !== -1) {
             // Chrome
             printWindow.document.write('<!DOCTYPE html>');
-            printWindow.document.write('<html><head><style>img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }</style></head> <body><center>');
+            printWindow.document.write('<html><head><title>' + documentHelper.owner.documentName + '</title><style>img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }</style></head> <body><center>');
         }
         else if (browserUserAgent.indexOf('Firefox') !== -1) {
             // Firefox
             printWindow.document.write('<!DOCTYPE html>');
-            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; } img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }@media print{ body { margin: 0cm; size:' + pageSize + '; }}</style></head> <body><center>');
+            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><title>' + documentHelper.owner.documentName + '</title><style>html, body { height: 100%; } img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }@media print{ body { margin: 0cm; size:' + pageSize + '; }}</style></head> <body><center>');
         } else {
             // Internet Explorer and Edge
-            printWindow.document.write('<html><head><style>@page{margin:0;size:' + pageSize + ';}</style></head><body><center>');
+            printWindow.document.write('<html><head><title>' + documentHelper.owner.documentName + '</title><style>@page{margin:0;size:' + pageSize + ';}</style></head><body><center>');
         }
         printWindow.document.write(printElement.innerHTML + '</center><script> (function() { window.ready = true; })(); </script></body></html>');
         printElement = undefined;
         printWindow.document.close();
         printWindow.focus();
+        window.addEventListener('beforeunload', this.closePrintWindow);
         const interval: number = setInterval(
             () => {
                 // eslint-disable-next-line
@@ -76,7 +79,11 @@ export class Print {
             },
             500);
     }
-
+    private closePrintWindow = (): void => {
+        if (this.windowPrint && !this.windowPrint.closed) {
+            this.windowPrint.close();
+        }
+    }
     /**
      * Generate Document Image.
      *
@@ -165,6 +172,8 @@ export class Print {
      * @returns {void}
      */
     public destroy(): void {
+        window.removeEventListener('beforeunload', this.closePrintWindow);
+        this.windowPrint = undefined;
         return;
     }
 }

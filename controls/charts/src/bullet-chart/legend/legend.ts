@@ -142,7 +142,7 @@ export class BulletChartLegend extends BaseLegend {
         const shapeWidth: number = legend.shapeWidth;
         const shapePadding: number = legend.shapePadding;
         let legendEventArgs: IBulletLegendRenderEventArgs;
-        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle, this.chart.themeStyle.legendLabelFont).height, legend.shapeHeight);
         let render: boolean = false;
         for (const bulletLegendOption of this.legendCollections) {
             legendEventArgs = {
@@ -154,7 +154,7 @@ export class BulletChartLegend extends BaseLegend {
             bulletLegendOption.text = legendEventArgs.text;
             bulletLegendOption.fill = legendEventArgs.fill;
             bulletLegendOption.shape = legendEventArgs.shape;
-            bulletLegendOption.textSize = measureText(bulletLegendOption.text, legend.textStyle);
+            bulletLegendOption.textSize = measureText(bulletLegendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont);
             if (bulletLegendOption.render && bulletLegendOption.text !== '') {
                 render = true;
                 legendWidth = shapeWidth + shapePadding + bulletLegendOption.textSize.width + padding;
@@ -196,7 +196,7 @@ export class BulletChartLegend extends BaseLegend {
         }
         const availwidth: number = (this.legendBounds.x + this.legendBounds.width) - (bulletLegendOption.location.x +
             textPadding - this.legend.shapeWidth / 2);
-        bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle);
+        bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
     }
     /**
      * To show the tooltip for the trimmed text in legend.

@@ -340,12 +340,13 @@
     &.e-rtl .e-hor-nav {
       background: $tbar-default-bg;
       border: $tbar-border-nav-type $tbar-default-border;
-      border-left: 0;
       border-width: $tbar-popup-rtl-border-width;
 
       &:not(.e-nav-active):hover {
         background: $tbar-hover-bg;
         color: $tbar-hover-font;
+        border: $tbar-border-nav-type $tbar-default-border;
+        border-width: $tbar-popup-rtl-border-width;
       }
     }
   }

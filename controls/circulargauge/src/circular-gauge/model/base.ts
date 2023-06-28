@@ -106,7 +106,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
      * Sets and gets the options for the text style of the tooltip text for ranges in circular gauge.
      */
 
-    @Complex<FontModel>({ size: '13px', fontFamily: null, opacity: null }, Font)
+    @Complex<FontModel>({ size: null, fontFamily: null, opacity: null , fontWeight: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -122,9 +122,10 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
      * as a placeholder text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Enables and disables the animation for the range tooltip. The animation is set as true by default.
@@ -183,10 +184,11 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
      * as a placeholder text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
 
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Enables and disables the animation of the annotation tooltip. By default, the animation is set as true.
@@ -269,7 +271,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Gets and sets the text style of the pointer tooltip.
      */
 
-    @Complex<FontModel>({ size: '13px', fontFamily: null, opacity: null }, Font)
+    @Complex<FontModel>({ size: null, fontFamily: null, opacity: null, fontWeight: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -300,10 +302,11 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * as a placeholder text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
 
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Enables and disables the animation of the pointer tooltip in circular gauge.

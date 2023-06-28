@@ -156,6 +156,10 @@ export class Open {
                 this.parent.notify(completeAction, { response: response, action: 'import' });
             }
             this.parent.notify(clearFormulaDependentCells, { cellRef: null, isOpen: true });
+            if (this.parent.isProtected && this.parent.showSheetTabs && response.isOpenFromJson) {
+                this.parent.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true');
+                this.parent.element.querySelector('.e-add-sheet-tab').classList.add('e-disabled');
+            }
             this.parent.renderModule.refreshSheet(response.isOpenFromJson);
             this.parent.notify(refreshSheetTabs, null);
             this.isImportedFile = true;

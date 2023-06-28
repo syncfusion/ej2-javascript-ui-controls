@@ -69,6 +69,7 @@ $schedule-block-appointment-bg-color: $content-bg-color-alt2 !default;
 $schedule-event-box-shadow-1: $shadow-md !default;
 $schedule-event-box-shadow-2: $shadow-md !default;
 $schedule-event-box-shadow-3: $shadow-md !default;
+$schedule-drag-appointment-opacity: .4;
 
 // schedule popup definitions
 $schedule-popup-content-padding: 40px 18px 12px !default;
@@ -171,10 +172,10 @@ $schedule-timeline-year-resource-text-padding: 4px 12px !default;
 $schedule-timeline-year-resource-cells-padding-left: 12px !default;
 $schedule-timeline-year-left-indent-padding: 0 !default;
 $schedule-timeline-date-header-wrap-padding: 8px 0 8px 8px !default;
-$schedule-dialog-row-continer-padding-bottom: 12px !default;
+$schedule-dialog-row-container-padding-bottom: 12px !default;
 $schedule-dialog-all-day-row-padding-top: 4px !default;
 $schedule-dialog-all-day-row-padding-bottom: 12px !default;
-$schedule-bigger-dialog-row-continer-padding-bottom: 12px !default;
+$schedule-bigger-dialog-row-container-padding-bottom: 12px !default;
 $schedule-bigger-dialog-all-day-row-padding-top: 10px !default;
 $schedule-device-dialog-all-day-row-padding-top: 20px !default;
 $schedule-vertical-time-slot-color: $content-bg-color-alt2 !default;

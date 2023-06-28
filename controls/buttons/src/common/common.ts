@@ -191,8 +191,10 @@ export interface ChangeEventArgs extends BaseEventArgs {
      * @blazorType MouseEventArgs
      */
     event?: Event;
+
     /** Returns the checked value of the CheckBox or Switch. */
     checked?: boolean;
+
 }
 
 export type CreateElementArgs = (

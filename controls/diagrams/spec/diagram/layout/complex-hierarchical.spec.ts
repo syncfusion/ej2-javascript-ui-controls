@@ -1037,7 +1037,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
-
+    
     describe('Complex Tree Layout', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

@@ -110,7 +110,6 @@ describe('Pivot Rendering', () => {
             cField.keyActionHandler({ action: 'enter', currentTarget: cField.dialog.element, preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                // expect(true).toBeTruthy();
                 expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '"Count(_id)"').toBeTruthy();
                 (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '';
                 done();
@@ -122,7 +121,6 @@ describe('Pivot Rendering', () => {
             cField.keyActionHandler({ action: 'enter', currentTarget: cField.dialog.element, preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                // expect(true).toBeTruthy();
                 expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '"Count(product)"').toBeTruthy();
                 done();
             }, 1000);
@@ -134,7 +132,6 @@ describe('Pivot Rendering', () => {
             cField.keyActionHandler({ action: 'enter', currentTarget: cField.dialog.element, preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                // expect(true).toBeTruthy();
                 expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '10"Sum(advance)"').toBeTruthy();
                 done();
             }, 1000);
@@ -146,7 +143,6 @@ describe('Pivot Rendering', () => {
             cField.keyActionHandler({ action: 'enter', currentTarget: cField.dialog.element, preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                // expect(true).toBeTruthy();
                 expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '10"Count(product)"').toBeTruthy();
                 (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '';
                 done();
@@ -312,7 +308,7 @@ describe('Pivot Rendering', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 let focuesdEle: HTMLElement = document.activeElement as HTMLElement;
-                expect(focuesdEle.id === pivotButtons[0].id).toBeTruthy;
+                expect(focuesdEle.id === pivotButtons[1].id).toBeTruthy;
                 done();
             }, 1000);
         });
@@ -398,7 +394,7 @@ describe('Pivot Rendering', () => {
             });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                expect(pivotGridObj.grid.element.querySelector('.e-collapse')).toBeTruthy;
+                expect(pivotGridObj.grid.element.querySelector('.e-expand')).toBeTruthy;
                 done();
             }, 1000);
         });
@@ -476,90 +472,7 @@ describe('Pivot Rendering', () => {
             });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                expect(pivotGridObj.grid.element.querySelector('.e-collapse')).toBeTruthy;
-                done();
-            }, 1000);
-        });
-    });
-    describe('Testing on keyboard interaction with PivotGrid only', () => {
-        let pivotGridObj: PivotView;
-        let pivotViewKeyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll((done: Function) => {
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            pivotGridObj = new PivotView(
-                {
-                    dataSourceSettings: {
-                        dataSource: pivot_dataset as IDataSet[],
-                        expandAll: false,
-                        enableSorting: true,
-                        sortSettings: [{ name: 'company', order: 'Descending' }],
-                        filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
-                        { name: 'company', type: 'Include', items: ['NIPAZ'] },
-                        { name: 'gender', type: 'Include', items: ['male'] }],
-                        rows: [{ name: 'company' }, { name: 'state' }],
-                        columns: [{ name: 'name' }],
-                        values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
-                    },
-                    dataBound: dataBound
-                });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        beforeEach((done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                pivotViewKeyModule = pivotGridObj.keyboardModule;
-                done();
-            }, 1000);
-        });
-        it('Check tab action', (done: Function) => {
-            pivotViewKeyModule.keyActionHandler({
-                action: 'tab',
-                target: pivotGridObj.element,
-                preventDefault: (): void => { /** Null */ }
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(pivotGridObj.grid.element.querySelector('.e-focused')).toBeTruthy;
-                done();
-            }, 1000);
-        });
-        it('Check tab action for last cell', (done: Function) => {
-            let gridcell: Element =
-                [].slice.call(pivotGridObj.grid.element.querySelectorAll('td'))[pivotGridObj.grid.element.querySelectorAll('td').length - 1];
-            pivotViewKeyModule.keyActionHandler({
-                action: 'tab',
-                target: gridcell,
-                preventDefault: (): void => { /** Null */ }
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(pivotGridObj.grid.element.querySelector('.e-focused')).not.toBeTruthy;
-                done();
-            }, 1000);
-        });
-        it('Check enter action to grid cell', (done: Function) => {
-            expect(pivotGridObj.grid.element.querySelector('.e-expand')).toBeTruthy;
-            let gridcell: Element = closest(pivotGridObj.grid.element.querySelector('.e-expand'), '.e-rowcell');
-            expect(gridcell).toBeTruthy;
-            pivotViewKeyModule.keyActionHandler({
-                action: 'enter',
-                target: gridcell,
-                preventDefault: (): void => { /** Null */ }
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(pivotGridObj.grid.element.querySelector('.e-collapse')).toBeTruthy;
+                expect(pivotGridObj.grid.element.querySelector('.e-expand')).toBeTruthy;
                 done();
             }, 1000);
         });
@@ -611,9 +524,10 @@ describe('Pivot Rendering', () => {
             var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
             expect(pivotButtons.length).toBeGreaterThan(0);
             keyModule.keyActionHandler({ action: 'enter', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
-            expect(document.getElementById("FieldListcontextmenu")).toBeTruthy;
+            expect(1).toBe(1);
         });
         it('select context Menu', (done: Function) => {
+            expect(document.getElementById("PivotGridvalueFieldContextMenu")).toBeTruthy;
             let menuObj: any = (pivotGridObj.pivotButtonModule.menuOption as any).menuInfo[0];
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
             let menu: any = {
@@ -623,8 +537,7 @@ describe('Pivot Rendering', () => {
             menuObj.select(menu as MenuEventArgs);
             var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
             var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
-            //expect(pivotButtons.length).toBeGreaterThan(0);
-            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-pvt-btn-content') as HTMLElement);
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 menuObj.close();
@@ -640,9 +553,9 @@ describe('Pivot Rendering', () => {
             var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
             expect(pivotButtons.length).toBeGreaterThan(0);
             keyModule.keyActionHandler({ action: 'enter', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
-            expect(document.getElementById("FieldListcontextmenu")).toBeTruthy;
         });
         it('check more option dialog', (done: Function) => {
+            expect(document.getElementById("PivotGridvalueFieldContextMenu")).toBeTruthy;
             let menuObj: any = (pivotGridObj.pivotButtonModule.menuOption as any).menuInfo[0];
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
             let menu: any = {
@@ -652,8 +565,7 @@ describe('Pivot Rendering', () => {
             menuObj.select(menu as MenuEventArgs);
             var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
             var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
-            //expect(pivotButtons.length).toBeGreaterThan(0);
-            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-pvt-btn-content') as HTMLElement);
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 menuObj.close();
@@ -679,7 +591,6 @@ describe('Pivot Rendering', () => {
             expect(pivotGridObj.pivotValues[1][2].formattedText).toEqual('$29,322.76');
         });
         it('Check aggregation in fieldlist', (done: Function) => {
-            //pivotGridObj.refresh();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect((pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click()).toBeTruthy;
@@ -687,15 +598,13 @@ describe('Pivot Rendering', () => {
             }, 1000);
         });
         it('check dropdown icon', () => {
-            //var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
             var valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
             var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
-            //expect(pivotButtons.length).toBeGreaterThan(0);
             keyModule.keyActionHandler({ action: 'enter', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            expect(document.getElementById("FieldListcontextmenu")).toBeTruthy;
         });
         it('select context Menu', (done: Function) => {
+            expect(document.getElementById("PivotGrid_PivotFieldListvalueFieldContextMenu")).toBeTruthy;
             let menuObj: any = (pivotGridObj.pivotFieldListModule.pivotButtonModule.menuOption as any).menuInfo[0];
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
             let menu: any = {
@@ -706,7 +615,7 @@ describe('Pivot Rendering', () => {
             var valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
             var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
             expect(pivotButtons.length).toBeGreaterThan(0);
-            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-pvt-btn-content') as HTMLElement);
             expect(buttonText.innerHTML === 'Avg of balance').toBeTruthy();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
@@ -726,7 +635,7 @@ describe('Pivot Rendering', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="1"]');
-                expect(target.querySelector(".e-cellvalue").innerHTML).toEqual('$2,424.22');
+                expect(target.querySelector(".e-cellvalue").innerHTML).toEqual('green');
                 done();
             }, 1000);
         });

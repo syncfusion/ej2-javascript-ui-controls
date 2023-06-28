@@ -134,6 +134,7 @@ $acrdn-item-select-border-color: $neutral-white !default;
 $acrdn-item-select-border-size: 1px 0 1px 0 !default;
 $acrdn-item-panel-content-select-bg: none !default;
 $acrdn-item-panel-content-select-border-top: 0 !default;
+$acrdn-item-panel-content-select-border-bottom: 0 !default;
 $acrdn-item-header-hover-border: 1px solid $neutral-lighter !default;
 $acrdn-item-header-hover-bg: $neutral-lighter !default;
 $acrdn-item-header-hover-border-color: $neutral-lighter !default;
@@ -178,5 +179,6 @@ $acrdn-item-nes-selected-exp-hover-hdr-con-font: $neutral-light-font !default;
 $acrdn-item-exp-not-selected-hdr-focus-bg: $theme-lighter !default;
 $acrdn-item-exp-not-selected-hdr-focus-border: 1px solid $acrdn-item-exp-hdr-focus-border-color !default;
 $acrdn-item-exp-not-selected-hdr-focus-border-color: $acrdn-item-exp-hdr-focus-border-color !default;
+$acrdn-nested-item-header-focus-box-shadow: none !default;
 
 //enddefault

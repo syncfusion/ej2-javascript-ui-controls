@@ -7,12 +7,13 @@ import { TreeView } from '@syncfusion/ej2-navigations';
 import { FieldDroppedEventArgs, FieldDragStartEventArgs, FieldDropEventArgs, FieldRemoveEventArgs, CalculatedFieldCreateEventArgs } from '../../src/common/base/interface';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
 import { EventHandler } from '@syncfusion/ej2-base';
-import { DragAndDropEventArgs } from '@syncfusion/ej2-navigations';
 import * as util from '../utils.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { FieldListRefreshedEventArgs } from '../../src';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Dialog } from '@syncfusion/ej2-popups';
 
 /**
  * Pivot Field List Drag and drop spec
@@ -276,7 +277,7 @@ describe('Pivot Field List Rendering', () => {
                 pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(4);
                 expect(pivotButton[0].getAttribute('data-uid')).toBe('advance');
-                expect((pivotButton[0].querySelector('.e-content') as HTMLElement).innerText).toEqual("Sum of droppedButton");
+                expect((pivotButton[0].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual("Sum of droppedButton");
                 done();
             }, 1000);
         });
@@ -551,112 +552,6 @@ describe('Pivot Field List Rendering', () => {
             expect(pivotButton.length).toEqual(3);
         });
     });
-    describe('Check public method for node state change', () => {
-        let fieldListObj: PivotFieldList;
-        let pivotCommon: PivotCommon;
-        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
-        afterAll(() => {
-            if (fieldListObj) {
-                fieldListObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll((done: Function) => {
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            fieldListObj = new PivotFieldList(
-                {
-                    dataSourceSettings: {
-                        dataSource: pivot_dataset as IDataSet[],
-                        expandAll: false,
-                        enableSorting: true,
-                        sortSettings: [{ name: 'company', order: 'Descending' }],
-                        filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
-                        { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
-                        { name: 'gender', type: 'Include', items: ['male'] }],
-                        rows: [{ name: 'company' }, { name: 'state' }],
-                        columns: [{ name: 'name' }],
-                        values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
-                    },
-                    renderMode: 'Fixed',
-                    dataBound: dataBound
-                });
-            fieldListObj.appendTo('#PivotFieldList');
-            pivotCommon = fieldListObj.pivotCommon;
-            pivotCommon.dataSourceUpdate.control = fieldListObj;
-        });
-        it('testing row axis using drop args', () => {
-            let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
-            let rowsAxisContent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
-            let pivotButton: HTMLElement[] = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(2);
-            let args: any = {
-                target: rowsAxisContent,
-                cancel: true,
-                event: util.getEventObject('MouseEvents', 'mouseup', treeObj.element, rowsAxisContent) as any
-            } as DragAndDropEventArgs;
-            pivotCommon.nodeStateModified.onStateModified(args, 'pno');
-            fieldListObj.axisFieldModule.render();
-            pivotButton = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(3);
-            expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('pno');
-        });
-        it('testing row axis using drop args with button target', () => {
-            let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-            let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
-            let rowsAxisContent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
-            let pivotButton: HTMLElement[] = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(3);
-            let args: any = {
-                target: pivotButton[0],
-                cancel: true,
-                event: util.getEventObject('MouseEvents', 'mouseup', treeObj.element, pivotButton[0]) as any
-            } as DragAndDropEventArgs;
-            pivotCommon.nodeStateModified.onStateModified(args, 'pno');
-            fieldListObj.axisFieldModule.render();
-            pivotButton = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(3);
-            expect(pivotButton[0].getAttribute('data-uid')).toBe('pno');
-        });
-        it('testing column axis using drop args', () => {
-            let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-            let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
-            let columnAxisContent: HTMLElement = rightAxisPanel.querySelector('.e-columns');
-            let pivotButton: HTMLElement[] = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(1);
-            let args: any = {
-                target: columnAxisContent,
-                cancel: true,
-                event: util.getEventObject('MouseEvents', 'mouseup', treeObj.element, columnAxisContent) as any
-            } as DragAndDropEventArgs;
-            pivotCommon.nodeStateModified.onStateModified(args, 'pno');
-            fieldListObj.axisFieldModule.render();
-            pivotButton = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(2);
-            expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('pno');
-        });
-        it('testing column axis using drop args with button target', () => {
-            let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-            let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
-            let columnsAxisContent: HTMLElement = rightAxisPanel.querySelector('.e-columns');
-            let pivotButton: HTMLElement[] = [].slice.call((columnsAxisContent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(2);
-            let args: any = {
-                target: pivotButton[0],
-                cancel: true,
-                event: util.getEventObject('MouseEvents', 'mouseup', treeObj.element, pivotButton[0]) as any
-            } as DragAndDropEventArgs;
-            pivotCommon.nodeStateModified.onStateModified(args, 'pno');
-            fieldListObj.axisFieldModule.render();
-            pivotButton = [].slice.call((columnsAxisContent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(2);
-            expect(pivotButton[0].getAttribute('data-uid')).toBe('pno');
-        });
-    });
 
     describe('Drag and drop restriction event support', () => {
         let fieldListObj: PivotFieldList;
@@ -756,7 +651,7 @@ describe('Pivot Field List Rendering', () => {
             let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
             let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
-            let draggedElement: string = pivotButton[0].querySelector('.e-content').textContent;
+            let draggedElement: string = pivotButton[0].querySelector('.e-pvt-btn-content').textContent;
             let mousedown: any =
                 util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
@@ -781,7 +676,7 @@ describe('Pivot Field List Rendering', () => {
             let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
             let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
-            let draggedElement: string = pivotButton[0].querySelector('.e-content').textContent;
+            let draggedElement: string = pivotButton[0].querySelector('.e-pvt-btn-content').textContent;
             let axisLength: number = pivotButton.length;
             let mousedown: any =
                 util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
@@ -808,7 +703,7 @@ describe('Pivot Field List Rendering', () => {
             let filterAxiscontent: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields .e-field-list-filters');
             let pivotButton: HTMLElement[] = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
-            let draggedElement: string = pivotButton[0].querySelector('.e-content').textContent;
+            let draggedElement: string = pivotButton[0].querySelector('.e-pvt-btn-content').textContent;
             let mousedown: any =
                 util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
@@ -833,7 +728,7 @@ describe('Pivot Field List Rendering', () => {
             let rowAxiscontent: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields .e-field-list-rows');
             let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
-            let draggedElement: string = pivotButton[0].querySelector('.e-content').textContent;
+            let draggedElement: string = pivotButton[0].querySelector('.e-pvt-btn-content').textContent;
             let axisLength: number = pivotButton.length;
             let mousedown: any =
                 util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
@@ -942,5 +837,249 @@ describe('Pivot Field List Rendering', () => {
         let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe('PivotView spec', () => {
+    /**
+     * PivotGrid base spec for OLAP data source
+     */
+
+    function disableDialogAnimation(dialogObject: Dialog): void {
+        dialogObject.animationSettings = { effect: 'None' };
+        dialogObject.dataBind();
+        dialogObject.hide();
+    }
+
+    function copyObject(source: any, destiation: any): Object {
+        for (let prop of source) {
+            destiation[prop] = source[prop];
+        }
+        return destiation;
+    }
+
+    function getEventObject(eventType: string, eventName: string, currentTarget?: Element, target?: Element, x?: number, y?: number): Object {
+        let tempEvent: any = document.createEvent(eventType);
+        tempEvent.initEvent(eventName, true, true);
+        let returnObject: any = copyObject(tempEvent, {});
+        returnObject.preventDefault = () => { return true; };
+
+        if (!isNullOrUndefined(x)) {
+            returnObject.pageX = x;
+            returnObject.clientX = x;
+        }
+        if (!isNullOrUndefined(y)) {
+            returnObject.pageY = y;
+            returnObject.clientY = y;
+        }
+        if (!isNullOrUndefined(currentTarget)) {
+            returnObject.currentTarget = currentTarget;
+        }
+        if (!isNullOrUndefined(target)) {
+            returnObject.target = returnObject.srcElement = returnObject.toElement = target;
+            returnObject.offsetY = 7;
+        }
+        returnObject.type = 'mouse';
+        return returnObject;
+    }
+
+    function setMouseCordinates(eventarg: any, x: number, y: number): Object {
+        eventarg.pageX = x;
+        eventarg.pageY = y;
+        eventarg.clientX = x;
+        eventarg.clientY = y;
+        eventarg.offsetY = 7;
+        return eventarg;
+    }
+
+    function triggerMouseEvent(node: HTMLElement, eventType: string, x?: number, y?: number) {
+        let mouseEve: MouseEvent = document.createEvent('MouseEvents');
+        if (x && y) {
+            mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, false, false, false, false, 0, null);
+        } else {
+            mouseEve.initEvent(eventType, true, true);
+        }
+        node.dispatchEvent(mouseEve);
+    }
+
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
+    describe('Grid base module - ', () => {
+        describe('- Grid properties - ', () => {
+            let originalTimeout: number;
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+            document.body.appendChild(elem);
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll(() => {
+                originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 25000;
+                if (document.getElementById(elem.id)) {
+                    remove(document.getElementById(elem.id));
+                }
+                document.body.appendChild(elem);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        catalog: 'Adventure Works DW 2008R2',
+                        cube: 'Adventure Works',
+                        providerType: 'SSAS',
+                        url: 'https://demos.telerik.com/olap/msmdpump.dll',
+                        localeIdentifier: 1033,
+                        drilledMembers: [
+                            {
+                                name: '[Date].[Fiscal]',
+                                items: ['[Date].[Fiscal].[Fiscal Year].&[2006]',
+                                    '[Date].[Fiscal].[Fiscal Semester].&[2006]&[2]',
+                                    '[Date].[Fiscal].[Fiscal Year].&[2008]']
+                            },
+                            {
+                                name: '[Customer].[Customer Geography]',
+                                items: ['[Customer].[Customer Geography].[Country].&[Australia]',
+                                    '[Customer].[Customer Geography].[State-Province].&[NSW]&[AU]'], delimiter: '##'
+                            },
+                            {
+                                name: '[Geography].[Geography]',
+                                items: ['[Geography].[Geography].[Country].&[Australia]',
+                                    '[Geography].[Geography].[State-Province].&[NSW]&[AU]'], delimiter: '##'
+                            }
+                        ],
+                        allowLabelFilter: true,
+                        allowValueFilter: true,
+                        filterSettings: [
+                            {
+                                name: '[Customer].[Customer Geography]',
+                                items: ['[Customer].[Customer Geography].[State-Province].&[NSW]&[AU]',
+                                    '[Customer].[Customer Geography].[State-Province].&[QLD]&[AU]',
+                                    '[Customer].[Customer Geography].[Country].&[Germany]',
+                                    '[Customer].[Customer Geography].[Country].&[France]',
+                                    '[Customer].[Customer Geography].[Country].&[United Kingdom]',
+                                    '[Customer].[Customer Geography].[Country].&[United States]'],
+                                levelCount: 2
+                            },
+                        ],
+                        rows: [
+                            { name: '[Date].[Fiscal]', caption: 'Date Fiscal' },
+                        ],
+                        columns: [
+                            { name: '[Customer].[Customer Geography]', caption: 'Customer Geography' },
+                            { name: '[Measures]', caption: 'Measures' },
+                        ],
+                        values: [
+                            { name: '[Measures].[Customer Count]', caption: 'Customer Count' },
+                            { name: '[Measures].[Internet Sales Amount]', caption: 'Internet Sales Amount' },
+                        ],
+                        filters: [],
+                        valueAxis: 'column',
+                        valueSortSettings: {
+                            sortOrder: 'Descending',
+                            measure: '[Measures].[Internet Sales Amount]'
+                        }
+                    },
+                    enableVirtualization: false,
+                    showGroupingBar: true,
+                    showFieldList: true,
+                    width: '80%',
+                    height: '500px',
+                    groupingBarSettings: {
+                        allowDragAndDrop: true
+                    }
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            let persistdata: string;
+            it('pivotgrid render testing', (done: Function) => {
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
+                    pivotGridObj.onWindowResize();
+                    pivotGridObj.renderModule.updateGridSettings();
+                    done();
+                }, 2000);
+            });
+            it('pivotgrid setPersist', () => {
+                persistdata = pivotGridObj.getPersistData();
+                expect(!isNullOrUndefined(JSON.parse(persistdata).dataSourceSettings)).toBeTruthy();
+            });
+            it('Mouse hover event testing - Value cell', (done: Function) => {
+                let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="3"]');
+                triggerMouseEvent(target, 'mouseover');
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$39,856.79');
+                    done();
+                }, 2000);
+            });
+            it('Mouse hover event testing - Value cell', (done: Function) => {
+                let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[aria-colindex="3"]')[1] as HTMLElement;
+                triggerMouseEvent(target, 'mouseover');
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$55,129.94');
+                    done();
+                }, 2000);
+            });
+            it('Mouse hover event testing - top left cell', (done: Function) => {
+                let target: HTMLElement = pivotGridObj.element.querySelector('.e-rowcell');
+                triggerMouseEvent(target, 'mouseover');
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelectorAll('.e-expand').length).toBe(50);
+                    done();
+                }, 2000);
+            });
+            it('Mouse hover event testing - bottom left value cell', (done: Function) => {
+                let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="6"]')[1] as HTMLElement;
+                triggerMouseEvent(target, 'mouseover');
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('64');
+                    done();
+                }, 2000);
+            });
+            it('Mouse hover event testing - bottom right value cell', (done: Function) => {
+                let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="6"]')[6] as HTMLElement;
+                triggerMouseEvent(target, 'mouseover');
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$98,667.35');
+                    done();
+                }, 2000);
+            });
+            it('Mouse hover event testing - bottom middle value cell', (done: Function) => {
+                let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[index="6"]')[3] as HTMLElement;
+                triggerMouseEvent(target, 'mouseover');
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('49');
+                    done();
+                }, 2000);
+            });
+            it('Filter testing', (done: Function) => {
+                (document.querySelectorAll('.e-btn-filter')[1] as HTMLElement).click();
+                setTimeout(() => {
+                    expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+                    done();
+                }, 2000);
+            });
+            it('Filter testing', (done: Function) => {
+                (document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value = 'k';
+                setTimeout(() => {
+                    expect((document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value === 'k').toBeTruthy();
+                    done();
+                }, 2000);
+            });
+            it('Filter testing', (done: Function) => {
+                (document.querySelectorAll('.e-cancel-btn')[0] as HTMLElement).click();
+                setTimeout(() => {
+                    expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+                    done();
+                }, 2000);
+            });
+        });
     });
 });

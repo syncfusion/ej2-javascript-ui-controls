@@ -61,7 +61,11 @@ export type LinearGaugeTheme =
     /** Renders the linear gauge with Fluent theme. */
     'Fluent' |
     /**  Render the linear gauge with Fluent dark theme. */
-    'FluentDark';
+    'FluentDark'|
+    /** Renders the linear gauge with Material3 theme. */
+    'Material3' |
+    /** Renders the linear gauge with Material3Dark theme. */
+    'Material3Dark';
 
 /**
  * Defines the type of marker.

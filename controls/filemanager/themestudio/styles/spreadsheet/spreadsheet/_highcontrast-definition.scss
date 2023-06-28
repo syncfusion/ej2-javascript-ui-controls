@@ -26,6 +26,9 @@ $aggregate-list-font-size: 16px !default;
 $bigger-spreadsheet-tbar-btn-icon-font-size: 18px !default;
 $bigger-toolbar-wrap-icon-font-size: 21px !default;
 $spreadsheet-drop-icon-font-size: 12px !default;
+$define-name-input-height: 23px !default;
+$define-name-input-padding: 0 0 0 8px !default;
+$cfmain-header-font-size: 14px !default;
 
 //enddefault
 //selection
@@ -74,6 +77,7 @@ $bigger-formula-bar-drop-icon-font-size: 18px !default;
 $dlg-list-border: $spreadsheet-border !default;
 $dlg-description-font-weight: 500 !default;
 $dlg-content-padding: 18px !default;
+$dlg-content-padding-bottom: 0 !default;
 $dlg-category-margin-bottom: 5px !default;
 $dlg-min-height: 510px !default;
 $function-dlg-header-content-font-size: 16px !default;
@@ -100,6 +104,7 @@ $bigger-cpicker-btn-width: 45px !default;
 $menu-extension-padding: 10px !default;
 $spreadsheet-ribbon-item-hover-border-color: $tbar-hover-border-color !default;
 $spreadsheet-ribbon-item-active-border-color: $tbar-focus-border-color !default;
+$spreadsheet-ribbon-item-active-background-color: $tbar-focus-bg !default;
 $font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 8px !default;
 
@@ -131,6 +136,7 @@ $filter-icon-before-font-size: 20px !default;
 //Find And Replace
 $find-popup-border-top-color: #fafafa !default;
 $find-popup-border-color: #e0e0e0 !default;
+$find-popup-box-shadow: none !default;
 $find-tool-dlg-width: 357px !default;
 $find-tool-dlg-height: 45px !default;
 $find-dlg-width: 518px !default;
@@ -154,6 +160,7 @@ $reenterpwd-dlg-alert-span-font-size: 12px !default;
 $reenterpwd-dlg-content-header-font-size: 14px !default;
 $protect-checkbox-label-font-size: 14px !default;
 $header-cell-font-size: 12px !default;
+$content-cell-padding: 0 2px !default;
 $protectworkbook-dlg-header-font-size: 18px !default;
 $protectworkbook-dlg-alert-span-font-size: 12px !default;
 $protectworkbook-dlg-content-header-font-size: 12px !default;

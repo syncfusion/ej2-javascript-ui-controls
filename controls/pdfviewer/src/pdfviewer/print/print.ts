@@ -227,6 +227,7 @@ export class Print {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.print);
         };
     }
+
     // eslint-disable-next-line
     private renderFieldsForPrint(pageIndex: number, heightRatio: number, widthRatio: number): any {
         // eslint-disable-next-line

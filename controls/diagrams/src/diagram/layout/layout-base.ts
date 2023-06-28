@@ -131,6 +131,8 @@ export class Layout extends ChildProperty<Layout> {
      * * BottomToTop - Renders the layout from bottom to top
      * * LeftToRight - Renders the layout from left to right
      * * RightToLeft - Renders the layout from right to left
+     * * Horizontal - Renders only the MindMap from left to right
+     * * Vertical - Renders only the MindMap from top to bottom
      *
      * @default 'TopToBottom'
      */

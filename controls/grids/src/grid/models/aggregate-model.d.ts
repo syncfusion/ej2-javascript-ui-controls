@@ -57,8 +57,9 @@ export interface AggregateColumnModel {
      * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    footerTemplate?: string;
+    footerTemplate?: string | Function;
 
     /**
      * Defines the group footer cell template as a string for the aggregate column.
@@ -70,8 +71,9 @@ export interface AggregateColumnModel {
      * {% codeBlock src="grid/group-footer-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    groupFooterTemplate?: string;
+    groupFooterTemplate?: string | Function;
 
     /**
      * Defines the group caption cell template as a string for the aggregate column.
@@ -83,8 +85,9 @@ export interface AggregateColumnModel {
      * {% codeBlock src="grid/group-caption-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    groupCaptionTemplate?: string;
+    groupCaptionTemplate?: string | Function;
 
     /**
      * Defines a function to calculate custom aggregate value. The `type` value should be set to `custom`.

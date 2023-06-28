@@ -6,7 +6,6 @@ import { SmithchartAlignment } from '../utils/enum';
 import { LegendItemStyleBorderModel} from '../legend/legend-model';
 import { SmithchartFont } from '../utils/utils';
 import { SmithchartFontModel} from '../utils/utils-model';
-import { Theme} from '../model/theme';
 
 export class LegendTitle extends  ChildProperty<LegendTitle> {
 
@@ -50,7 +49,7 @@ export class LegendTitle extends  ChildProperty<LegendTitle> {
      *  options for customizing font.
      */
 
-    @Complex<SmithchartFontModel>(Theme.legendLabelFont, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '600', color: null}, SmithchartFont)
     public textStyle: SmithchartFont;
 
 }
@@ -285,7 +284,7 @@ export class SmithchartLegendSettings extends ChildProperty<SmithchartLegendSett
      *  options for customizing font.
      */
 
-    @Complex<SmithchartFontModel>(Theme.legendLabelFont, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, SmithchartFont)
     public textStyle: SmithchartFont;
 }
 

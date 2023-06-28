@@ -90,7 +90,8 @@ export class HiloOpenCloseSeries extends ColumnBase {
      * Trigger point rendering event
      */
     private triggerPointRenderEvent(series: Series, point: Points): IPointRenderEventArgs {
-        const fill: string = (point.open <= point.close) ? series.bearFillColor : series.bullFillColor;
+        const fill: string = (point.open <= point.close) ? series.bearFillColor || series.chart.themeStyle.bearFillColor : 
+        series.bullFillColor || series.chart.themeStyle.bullFillColor;
         const border: BorderModel = { color: series.border.color, width: Math.max(series.border.width, 1) };
         return this.triggerEvent(series, point, fill, border);
     }

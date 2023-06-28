@@ -12,7 +12,7 @@ import { RowModelGenerator } from '../services/row-model-generator';
 import { IModelGenerator, ICellRenderer } from '../base/interface';
 import { Cell } from '../models/cell';
 import { FocusStrategy } from '../services/focus-strategy';
-import { getComplexFieldID, getObject, appendChildren, parentsUntil, extendObjWithFn } from '../base/util';
+import { getComplexFieldID, getObject, appendChildren, parentsUntil, extendObjWithFn, padZero } from '../base/util';
 import * as events from '../base/constant';
 import * as literals from '../base/string-literals';
 
@@ -216,6 +216,10 @@ export class EditRender {
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;
                 continue;
+            }
+            if (col.type === 'dateonly' && args.rowData[col.field] instanceof Date) {
+                const cellValue: Date = args.rowData[col.field];
+                args.rowData[col.field] = cellValue.getFullYear() + '-' + padZero(cellValue.getMonth() + 1) + '-' + padZero(cellValue.getDate());
             }
             const value: string = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
             const tArgs: Object = { column: col, value: value, type: args.requestType, data: args.rowData };

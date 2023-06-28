@@ -56,13 +56,13 @@ export class StockEvents extends BaseTooltip {
                 sChart.trigger(stockEventRender, argsData);
                 stockEvent.text = argsData.text;
                 stockEvent.type = argsData.type;
-                textSize = measureText(stockEvent.text + 'W', stockEvent.textStyle);
+                textSize = measureText(stockEvent.text + 'W', stockEvent.textStyle, this.stockChart.themeStyle.axisLabelFont);
                 if (!argsData.cancel) {
                     stockEventElement = sChart.renderer.createGroup(
                         { id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i }
                     );
                     const stockEventDate: number = this.dateParse(stockEvent.date).getTime();
-                    if (withIn(stockEventDate , series.xAxis.visibleRange)) {
+                    if (withIn(stockEventDate , series.xAxis.visibleRange) && (stockEventDate >= series.xMin && stockEventDate <= series.xMax)) {
                         if (stockEvent.seriesIndexes.length > 0) {
                             for (let j: number = 0; j < stockEvent.seriesIndexes.length; j++) {
                                 if (stockEvent.seriesIndexes[j as number] === series.index) {
@@ -224,7 +224,7 @@ export class StockEvents extends BaseTooltip {
         this.applyHighLights(pointIndex, seriesIndex);
         //title size and toolbar height is added location for placing tooltip
         const svgElement: HTMLElement = this.getElement(this.chartId + '_StockEvents_Tooltip_svg');
-        const isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
+        const isTooltip: boolean = (this.stockEventTooltip && svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         if (!isTooltip) {
             if (getElement(this.chartId + '_StockEvents_Tooltip_svg')) {
                 remove(getElement(this.chartId + '_StockEvents_Tooltip'));
@@ -268,6 +268,9 @@ export class StockEvents extends BaseTooltip {
                     this.removeHighLights();
                 },
                 duration);
+        }
+        else if (tooltipElement && this.stockChart.onPanning) {
+            remove(tooltipElement);
         }
     }
 

@@ -43,7 +43,7 @@ export class EditTooltip {
             const argsData: BeforeTooltipRenderEventArgs = {
                 data: this.taskbarEdit.taskBarEditRecord,
                 args: args,
-                content: this.toolTipObj.content
+                content: this.toolTipObj.content as any
             };
             this.parent.trigger('beforeTooltipRender', argsData);
         };
@@ -182,23 +182,23 @@ export class EditTooltip {
             let duration: string;
             if (!isNullOrUndefined(editRecord.startDate)) {
                 startDate = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('startDate') +
-                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' +
+                    '</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">' +
                     instance.formatDate(editRecord.startDate, { format: this.parent.getDateFormat() }) + '</td></tr>';
             }
             if (!isNullOrUndefined(editRecord.endDate)) {
                 endDate = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('endDate') +
-                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' +
+                    '</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">' +
                     instance.formatDate(editRecord.endDate, { format: this.parent.getDateFormat() }) + '</td></tr>';
             }
             if (!isNullOrUndefined(editRecord.duration)) {
                 duration = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('duration') +
-                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' +
+                    '</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">' +
                     this.parent.getDurationString(editRecord.duration, (editRecord as ITaskData).durationUnit) + '</td></tr>';
             }
             switch (this.taskbarEdit.taskBarEditAction) {
             case 'ProgressResizing':
                 const progress: string = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('progress') +
-                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' + (editRecord as ITaskData).progress + '</td></tr>';
+                    '</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">' + (editRecord as ITaskData).progress + '</td></tr>';
                 tooltipString =  '<table class = "e-gantt-tooltiptable"><tbody>' +
                     progress + '</tbody></table>';
 

@@ -14,6 +14,7 @@ import { isNullOrUndefined, Browser, EventHandler, remove, extend } from '@syncf
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { LayerSettingsModel, HighlightSettingsModel, SelectionSettingsModel } from '../model/base-model';
 import { ShapeSettings } from '../model/base';
+import { Theme } from '../model/theme';
 /**
  * Legend module is used to render legend for the maps
  */
@@ -515,6 +516,7 @@ export class Legend {
                 legendTextStyle.fontFamily = !isNullOrUndefined(legendTextStyle.fontFamily) ? legendTextStyle.fontFamily :
                     this.maps.themeStyle.fontFamily;
                 legendTextStyle.size = map.themeStyle.legendFontSize || legendTextStyle.size;
+                legendTextStyle.fontWeight = legendTextStyle.fontWeight || map.themeStyle.fontWeight;
                 if (i === 0) {
                     this.renderLegendBorder();
                 }
@@ -1337,6 +1339,8 @@ export class Legend {
         if (legendTitle) {
             textStyle.color = (textStyle.color !== null) ? textStyle.color : this.maps.themeStyle.legendTitleFontColor;
             textStyle.fontFamily = !isNullOrUndefined(textStyle.fontFamily) ? textStyle.fontFamily : this.maps.themeStyle.fontFamily;
+            textStyle.size = !isNullOrUndefined(textStyle.size) ? textStyle.size : this.maps.themeStyle.subTitleFontSize || Theme.legendTitleFont.size;
+            textStyle.fontWeight = !isNullOrUndefined(textStyle.fontWeight) ? textStyle.fontWeight : this.maps.themeStyle.titleFontWeight || Theme.legendTitleFont.fontWeight;
             textOptions = new TextOption(
                 map.element.id + '_LegendTitle',
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),

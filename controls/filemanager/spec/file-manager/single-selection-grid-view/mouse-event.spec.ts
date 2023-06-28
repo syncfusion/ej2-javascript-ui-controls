@@ -43,6 +43,7 @@ describe('FileManager control single selection Grid view', () => {
                     items: ['NewFolder']
                 },
                 allowMultiSelection: false,
+                showItemCheckBoxes:false
             });
             feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();

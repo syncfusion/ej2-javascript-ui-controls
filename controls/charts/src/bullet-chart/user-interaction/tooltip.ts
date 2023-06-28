@@ -9,7 +9,6 @@ import { compile as templateComplier } from '@syncfusion/ej2-base';
 import { stringToNumber } from '../../common/utils/helper';
 import { IBulletTooltipContent, IBulletchartTooltipEventArgs } from '../model/bullet-interface';
 import { tooltipRender } from '../../common/model/constants';
-import { BulletChartTheme } from '../utils/theme';
 import { BulletChartAxis } from '../renderer/bullet-axis';
 
 
@@ -47,9 +46,9 @@ export class BulletTooltip {
         let pageY: number = e.clientY;
         let str: string = '';
         let font: string = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
-            BulletChartTheme.tooltipLabelFont.fontStyle;
+        this.control.themeStyle.tooltipLabelFont.fontStyle;
         let fill: string = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
-        let color: string = BulletChartTheme.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
+        let color: string = this.control.themeStyle.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
         let style: string = 'left:' + pageX + 'px;' + 'top:' + pageY + 'px;' +
             'display: block; position: absolute; "z-index": "13000",cursor: default;' +
             'font-family: Segoe UI;' + 'color:' + color + '; font-size: 13px; background-color:' +
@@ -139,13 +138,13 @@ export class BulletTooltip {
                 this.control.trigger(tooltipRender, argsData);
                 tooltipdiv.innerHTML = argsData.text;
                 tooltipdiv.style.font = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
-                    BulletChartTheme.tooltipLabelFont.fontStyle;
-                tooltipdiv.style.color = BulletChartTheme.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
-                tooltipdiv.style.fontSize = BulletChartTheme.titleFont.size;
+                this.control.themeStyle.tooltipLabelFont.fontStyle;
+                tooltipdiv.style.color = this.control.themeStyle.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
+                tooltipdiv.style.fontSize = this.control.themeStyle.titleFont.size;
             }
             let fill: string = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
-            let borderWidth: number = this.control.tooltip.border.width ? this.control.tooltip.border.width : 1;
-            let borderColor: string = this.control.tooltip.border.color ? this.control.tooltip.border.color : 'Black';
+            let borderWidth: number = ((this.control.theme === 'Fabric' || this.control.theme === 'Fluent' && !this.control.tooltip.border.width) ? 1 : this.control.tooltip.border.width);
+            let borderColor: string = ((this.control.theme === 'Fabric' || this.control.theme === 'Fluent' && !this.control.tooltip.border.color) ? '#D2D0CE' : this.control.tooltip.border.color);
             let xPos: number = mouseX;
             let yPos: number = mouseY;
             xPos = ((xPos + stringToNumber(tooltipdiv.getAttribute('width'), this.control.containerWidth) < window.innerWidth) ?
@@ -155,18 +154,26 @@ export class BulletTooltip {
             if (xPos === undefined || xPos === null) {
                 xPos = mouseX;
             }
+            if ((xPos + tooltipdiv.clientWidth) > this.control.availableSize.width) {
+                xPos -= tooltipdiv.clientWidth + 20;
+            }
             if (yPos === undefined || yPos === null) {
                 yPos = e.clientY;
+            }
+            if (yPos + tooltipdiv.clientHeight > this.control.availableSize.height) {
+                yPos -= tooltipdiv.clientHeight + 20;
             }
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
                 tooltipdiv.style.cssText = 'position: absolute;left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;';
             } else {
+                let fontFamily: string = this.control.tooltip.textStyle.fontFamily || this.control.themeStyle.tooltipLabelFont.fontFamily;
+                let color: string = this.control.tooltip.textStyle.color || this.control.themeStyle.tooltipLabelFont.color;
                 const divStyle: string = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
                     '-webkit-border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px;-o-border-radius: 5px 5px 5px 5px;' +
                     'border-radius: 5px 5px 5px 5px;' + 'background-color:' + fill + ';' + 'color:' +
-                    tooltipdiv.style.color + '; border:' + borderWidth + 'px Solid' + ' ' + borderColor + ';' +
-                    'padding-bottom: 7px;' + 'font-style:' + BulletChartTheme.tooltipLabelFont.fontStyle +
-                    '; padding-left: 10px; font-family: Segoe UI; padding-right: 10px; padding-top: 7px';
+                    color + '; border:' + borderWidth + 'px Solid' + ' ' + borderColor + ';' +
+                    'padding-bottom: 7px;' + 'font-style:' + this.control.themeStyle.tooltipLabelFont.fontStyle +
+                    '; padding-left: 10px; font-family:' + fontFamily + '; font-size:'+ this.control.tooltip.textStyle.size +'; padding-right: 10px; padding-top: 7px';
                 tooltipdiv.style.cssText = divStyle;
                 if ((targetClass === this.control.svgObject.id + '_FeatureMeasure') ||
                     (targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
@@ -184,7 +191,8 @@ export class BulletTooltip {
     public updateTemplateFn(): void {
         if (this.control.tooltip.template) {
             try {
-                if (document.querySelectorAll(this.control.tooltip.template).length) {
+                if (typeof this.control.tooltip.template !== 'function' &&
+                 document.querySelectorAll(this.control.tooltip.template).length) {
                     this.templateFn = templateComplier(document.querySelector(this.control.tooltip.template).innerHTML.trim());
                 } else {
                     this.templateFn = templateComplier(this.control.tooltip.template);

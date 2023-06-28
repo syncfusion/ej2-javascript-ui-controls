@@ -300,7 +300,7 @@ export class LargeIconsView {
     }
 
     private renderCheckbox(args: ItemCreatedArgs): void {
-        if (!this.parent.allowMultiSelection) { return; }
+        if (!this.parent.showItemCheckBoxes) { return; }
         const checkElement: Element = createCheckBox(createElement, false, {
             checked: false,
             cssClass: 'e-small'
@@ -1373,7 +1373,7 @@ export class LargeIconsView {
     }
 
     private checkState(item: Element, toCheck: boolean): void {
-        if (!this.parent.allowMultiSelection) { return; }
+        if (!this.parent.showItemCheckBoxes) { return; }
         const checkEle: Element = select('.' + CLS.FRAME, item);
         if (isNOU(checkEle)) { return; }
         if (toCheck) {

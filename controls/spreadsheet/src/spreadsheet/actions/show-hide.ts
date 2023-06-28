@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs } from '../common/index';
-import { autoFit, virtualContentLoaded, completeAction } from '../common/index';
+import { autoFit, virtualContentLoaded, completeAction, focus } from '../common/index';
 import { hiddenMerge, updateTableWidth, updateTranslate } from '../common/index';
 import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, getSheet, ColumnModel, RowModel, getColumn, getRow } from '../../workbook/index';
 import { beginAction, getCellIndexes, applyCellFormat, CellFormatArgs, CellModel, MergeArgs, refreshChart } from '../../workbook/index';
@@ -73,6 +73,7 @@ export class ShowHide {
         if (args.actionUpdate) {
             this.updateIndexOnlyForHiddenColumnsAndRows(args, sheet);
             this.parent.notify(completeAction, actionArgs);
+            focus(this.parent.element);
         }
     }
     private updateIndexOnlyForHiddenColumnsAndRows(args: HideShowEventArgs, sheet: SheetModel): void {

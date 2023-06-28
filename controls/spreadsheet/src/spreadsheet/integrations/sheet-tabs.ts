@@ -1,6 +1,6 @@
 import { Tab, SelectingEventArgs, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet, removeDesignChart, goToSheet, showSheet } from '../common/index';
+import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, hideSheet, removeDesignChart, goToSheet, showSheet } from '../common/index';
 import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate, focus } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
 import { protectSheet, DialogBeforeOpenEventArgs, editOperation } from '../common/index';
@@ -149,6 +149,7 @@ export class SheetTabs {
             this.parent.notify(completeAction, {
                 eventArgs: { previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex }, action: 'gotoSheet'
             });
+            focus(this.parent.element);
         }
     }
 
@@ -324,6 +325,7 @@ export class SheetTabs {
             (target.firstElementChild as HTMLElement).style.display = 'none';
             target.appendChild(input);
             EventHandler.add(document, 'mousedown touchstart', this.renameInputFocusOut, this);
+            EventHandler.add(input, 'keydown', this.renameKeyDown, this);
             EventHandler.add(input, 'input', this.updateWidth, this);
             input.focus();
             (input as HTMLInputElement).setSelectionRange(0, value.length);
@@ -342,16 +344,22 @@ export class SheetTabs {
         target.style.width = `${len}ch`;
     }
 
+    private renameKeyDown(e: KeyboardEvent): void {
+        if (e.keyCode === 32) {
+            e.stopPropagation();
+        } else if (e.keyCode === 27) {
+            this.removeRenameInput(e.target as HTMLInputElement);
+            this.focusTab(this.tabInstance.element);
+        } else if (e.keyCode === 13) {
+            this.renameInputFocusOut(e);
+        }
+    }
+
     private renameInputFocusOut(e: KeyboardEvent | MouseEvent): void {
         let target: HTMLInputElement = e.target as HTMLInputElement;
         if ((e.type === 'mousedown' || e.type === 'touchstart') && (target.classList.contains('e-sheet-rename') ||
             closest(target, '.e-dlg-container'))) { return; }
         target = document.getElementById(this.parent.element.id + '_rename_input') as HTMLInputElement;
-        if (e.type === 'keydown' && (e as KeyboardEvent).keyCode === 27) {
-            this.removeRenameInput(target);
-            this.focusTab(this.tabInstance.element);
-            return;
-        }
         const value: string = target.value;
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (value) {
@@ -441,6 +449,7 @@ export class SheetTabs {
         const sheetItems: Element = closest(target, '.e-toolbar-items');
         EventHandler.add(sheetItems, 'dblclick', this.renameSheetTab, this);
         EventHandler.remove(document, 'mousedown touchstart', this.renameInputFocusOut);
+        EventHandler.remove(target, 'keydown', this.renameKeyDown);
         EventHandler.remove(target, 'input', this.updateWidth);
         remove(target);
         textEle.style.display = '';
@@ -515,8 +524,7 @@ export class SheetTabs {
                             }
                             args.element.querySelector('.e-footer-content .e-primary').setAttribute(
                                 'aria-label', `${l10n.getConstant('DeleteSheetAlert')} ${l10n.getConstant('Ok')}`);
-                            const item: Element = this.tabInstance.element.querySelector('.e-toolbar-item.e-active');
-                            focus((item.nextElementSibling || item.previousElementSibling).querySelector('.e-tab-wrap'));
+                            focus(this.parent.element);
                         },
                         buttons: [{
                             buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true },
@@ -665,7 +673,6 @@ export class SheetTabs {
         this.parent.on(renameSheetTab, this.renameSheetTab, this);
         this.parent.on(cMenuBeforeOpen, this.switchSheetTab, this);
         this.parent.on(activeSheetChanged, this.updateSheetTab, this);
-        this.parent.on(renameSheet, this.renameInputFocusOut, this);
         this.parent.on(activeCellChanged, this.removeAggregate, this);
         this.parent.on(onVerticalScroll, this.focusRenameInput, this);
         this.parent.on(onHorizontalScroll, this.focusRenameInput, this);
@@ -701,7 +708,6 @@ export class SheetTabs {
             this.parent.off(renameSheetTab, this.renameSheetTab);
             this.parent.off(cMenuBeforeOpen, this.switchSheetTab);
             this.parent.off(activeSheetChanged, this.updateSheetTab);
-            this.parent.off(renameSheet, this.renameInputFocusOut);
             this.parent.off(activeCellChanged, this.removeAggregate);
             this.parent.off(onVerticalScroll, this.focusRenameInput);
             this.parent.off(onHorizontalScroll, this.focusRenameInput);

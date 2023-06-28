@@ -27,9 +27,10 @@ export class Annotation extends ChildProperty<Annotation> {
      * Gets or sets the content for the annotation in maps.
      * 
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public content: string;
+    public content: string | Function;
 
     /**
      * Gets or sets the x position of the annotation in pixel or percentage format.
@@ -446,9 +447,10 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Gets or sets the tooltip template of layers, markers, and bubbles in maps to display custom elements as tooltip.
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public template: string;
+    public template: string | Function;
     /**
      * Gets or sets the color of the tooltip in layers, markers, and bubbles of maps.
      *
@@ -466,7 +468,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Gets or sets the options for customizing the style of the text in tooltip for layers, markers, and bubbles of maps.
      */
-    @Complex<FontModel>(Theme.tooltipLabelFont, Font)
+    @Complex<FontModel>({ fontFamily: null, size: null, fontWeight : null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -1401,7 +1403,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Gets or sets the options for customizing the text styles of the legend item text in maps.
      */
-    @Complex<FontModel>({ fontFamily: null }, Font)
+    @Complex<FontModel>({ fontFamily: null, fontWeight: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -1449,7 +1451,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Gets or sets the options for customizing the style of the title of the legend in maps.
      */
-    @Complex<FontModel>({ size: Theme.legendTitleFont.size, color: Theme.legendTitleFont.color, fontStyle: Theme.legendTitleFont.fontStyle, fontWeight: Theme.legendTitleFont.fontWeight,  fontFamily: null }, Font)
+    @Complex<FontModel>({ size: null, color: Theme.legendTitleFont.color, fontStyle: Theme.legendTitleFont.fontStyle, fontWeight: null,  fontFamily: null }, Font)
     public titleStyle: FontModel;
 
     /**
@@ -1584,7 +1586,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     /**
      * Gets or sets the options for customizing the styles of the text in data labels.
      */
-    @Complex<FontModel>({}, Font)
+    @Complex<FontModel>({fontWeight: null}, Font)
     public textStyle: FontModel;
     /**
      * Gets or sets the field name from the data source based on which the data labels gets rendered.
@@ -1612,9 +1614,10 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * Gets or sets the template for the data labels to render custom elements.
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public template: string;
+    public template: string | Function;
 }
 /**
  * Gets or sets the options to customize the shapes in the maps.
@@ -1825,9 +1828,10 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
      * Gets or sets the template for the marker to render custom elements.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
     /**
      * Gets or sets the data source for the marker.
      * The data source for the marker will contain latitude and longitude values to specify the location

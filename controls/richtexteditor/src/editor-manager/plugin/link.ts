@@ -81,7 +81,7 @@ export class LinkCommand {
             const domSelection: NodeSelection = new NodeSelection();
             let range: Range = domSelection.getRange(this.parent.currentDocument);
             if (range.endContainer.nodeName === '#text' && range.startContainer.textContent.length === (range.endOffset + 1) &&
-            range.endContainer.textContent.charAt(range.endOffset) === ' ' && range.endContainer.nextSibling.nodeName === 'A') {
+            range.endContainer.textContent.charAt(range.endOffset) === ' ' && (!isNOU(range.endContainer.nextSibling) && range.endContainer.nextSibling.nodeName === 'A')) {
                 domSelection.setSelectionText(this.parent.currentDocument, range.startContainer, range.endContainer,
                                               range.startOffset, range.endOffset + 1);
                 range = domSelection.getRange(this.parent.currentDocument);

@@ -52,7 +52,11 @@ export type ProgressTheme =
     /** Fluent */
     'Fluent' |
     /** FluentDark */
-    'FluentDark';
+    'FluentDark' | 
+    /** Material 3 */
+    'Material3' |
+    /** Material 3 dark */
+    'Material3Dark';
 
 /**
  * Text alignment

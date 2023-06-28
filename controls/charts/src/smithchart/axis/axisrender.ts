@@ -134,7 +134,7 @@ export class AxisRender {
 
         for (let i: number = 0; i < this.radialLabels.length; i++) {
             label = this.radialLabels[i as number].toString();
-            textSize = measureText(label, font);
+            textSize = measureText(label, font, smithchart.themeStyle.axisLabelFont);
             if (maximumLabelLength < textSize.width) {
                 maximumLabelLength = textSize.width;
             }
@@ -618,7 +618,7 @@ export class AxisRender {
                 x = (smithchart.renderType === 'Impedance') ?
                     circleAxis.centerX - circleAxis.radius : circleAxis.centerX + circleAxis.radius;
                 y = circleAxis.centerY;
-                textSize = measureText(label, font);
+                textSize = measureText(label, font, smithchart.themeStyle.axisLabelFont);
                 x = (smithchart.renderType === 'Impedance') ? x - textSize.width : x;
                 if (hAxis.labelPosition === 'Outside') {
                     y -= textSize.height / 4;
@@ -659,9 +659,9 @@ export class AxisRender {
                             smithchart.element.id + '_HLabel_' + i, axisLabelRenderEventArgs.x,
                             axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text
                         );
-                        const color: string = font.color ? font.color : smithchart.themeStyle.axisLabel;
+                        const color: string = font.color ? font.color : smithchart.themeStyle.axisLabelFont.color;
                         font.fontFamily = font.fontFamily || smithchart.themeStyle.labelFontFamily;
-                        const element: Element = renderTextElement(options, font, color, groupEle);
+                        const element: Element = renderTextElement(options, font, color, groupEle, smithchart.themeStyle.axisLabelFont);
                         groupEle.appendChild(element);
                     }
                 };
@@ -700,7 +700,7 @@ export class AxisRender {
         for (let i: number = 0; i < this.labelCollections.length; i++) {
             interSectPoint = this.labelCollections[i as number];
             label = interSectPoint.value.toString();
-            textSize = measureText(label, font);
+            textSize = measureText(label, font, smithchart.themeStyle.axisLabelFont);
             angle = Math.round(interSectPoint.angle * 100) / 100;
             if (rAxis.labelPosition === 'Outside') {
                 position = this.circlePointPosition(
@@ -747,9 +747,9 @@ export class AxisRender {
                         smithchart.element.id + '_RLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y,
                         'none', axisLabelRenderEventArgs.text
                     );
-                    const color: string = font.color ? font.color : smithchart.themeStyle.axisLabel;
+                    const color: string = font.color ? font.color : smithchart.themeStyle.axisLabelFont.color;
                     font.fontFamily = smithchart.themeStyle.labelFontFamily ? smithchart.themeStyle.labelFontFamily : font.fontFamily;
-                    const element: Element = renderTextElement(options, font, color, groupEle);
+                    const element: Element = renderTextElement(options, font, color, groupEle, smithchart.themeStyle.axisLabelFont);
                     groupEle.appendChild(element);
                 }
             };

@@ -99,3 +99,11 @@ export const SPACE_ACTION: string = 'actionBegin';
  * @hidden
  */
 export const FORMAT_PAINTER_ACTIONS: string = 'format_painter_actions';
+
+
+/**
+ * Emoji picker event constant
+ *
+ * @hidden
+ */
+export const EMOJI_PICKER_ACTIONS: string = 'emoji_picker_actions';

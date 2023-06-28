@@ -8,6 +8,7 @@
     margin: $datepicker-icon-normal-margin;
     min-height: $datepicker-icon-container-min-height;
     min-width: $datepicker-icon-container-min-width;
+    border-radius: $datepicker-mouse-icon-border-radius;
     outline: none;
 
     #{if(&, '&', '*')}::before {
@@ -28,6 +29,7 @@
     margin: $datepicker-icon-bigger-margin;
     min-height: $datepicker-bigger-icon-container-min-height;
     min-width: $datepicker-bigger-icon-container-min-width;
+    border-radius: $datepicker-bigger-icon-border-radius;
 
     #{if(&, '&', '*')}::before {
       content: '\e778';
@@ -45,6 +47,10 @@
   #{if(&, '&', '*')}.e-control-wrapper.e-small .e-input-group-icon.e-date-icon,
   #{if(&, '&', '*')}.e-small .e-control-wrapper .e-input-group-icon.e-date-icon {
     font-size: $datepicker-small-icon-font-size;
+    min-width: $datepicker-small-icon-container-min-width;
+    min-height: $datepicker-small-icon-container-min-height;
+    border-radius: $datepicker-small-icon-border-radius;
+    margin: $datepicker-small-icon-margin;
   }
 
   // Touch small icon
@@ -52,5 +58,22 @@
   #{if(&, '&', '*')}.e-control-wrapper.e-small.e-bigger .e-input-group-icon.e-date-icon,
   #{if(&, '&', '*')}.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-date-icon {
     font-size: $datepicker-bigger-small-icon-font-size;
+    min-width: $datepicker-bigger-small-icon-container-min-width;
+    min-height: $datepicker-bigger-small-icon-container-min-height;
+    border-radius: $datepicker-bigger-small-icon-border-radius;
+    margin: $datepicker-bigger-small-icon-margin;
+  }
+  .e-datepick-mob-popup-wrap {
+    
+    #{if(&, '&', '*')} .e-datepicker.e-popup-expand {
+  
+      #{if(&, '&', '*')} .e-model-header {
+  
+        #{if(&, '&', '*')} .e-popup-close::before {
+          content: '\e7e7';
+          font-family: 'e-icons';
+        }
+      }
+    }
   }
 }

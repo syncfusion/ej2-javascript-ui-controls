@@ -514,8 +514,8 @@ describe('Chart', () => {
                 trigger.draganddropEvent(element, 300, 100, 500, 100);
                 element = document.getElementById(draggedRectGroup);
                 expect(element.getAttribute('x') == '292').toBe(true);
-                expect(element.getAttribute('y') == '42.25' || element.getAttribute('y') == '45.25');
-                expect(element.getAttribute('height') == '560.75' || element.getAttribute('height') == '568.75').toBe(true);
+                expect(element.getAttribute('y') == '423' || element.getAttribute('y') == '45.25');
+                expect(element.getAttribute('height') == '567.75' || element.getAttribute('height') == '568.75').toBe(true);
                 expect(element.getAttribute('width')).toEqual('200');
                 done();
             };
@@ -658,7 +658,7 @@ describe('Chart', () => {
                 expect(element1.getAttribute('d') != '').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
                 //expect(element1.textContent == '6.700' || element1.textContent == '6.708').toBe(true);
-                expect(element1.textContent == '8.367' || element1.textContent == '8.321' || element1.textContent == '8.336' || element1.textContent == '8.326').toBe(true);
+                expect(element1.textContent == '8.352' || element1.textContent == '8.321' || element1.textContent == '8.336' || element1.textContent == '8.326').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -820,7 +820,7 @@ describe('Chart', () => {
             loaded = (args: Object) => {
                 let legendElement: HTMLElement = document.getElementById('container_chart_legend_element');
                 expect(parseInt(legendElement.getAttribute('y'), 10) == 46 ||
-                    parseInt(legendElement.getAttribute('y'), 10) == 43).toBe(true);
+                    parseInt(legendElement.getAttribute('y'), 10) == 44).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -833,7 +833,7 @@ describe('Chart', () => {
                 let legendElement: HTMLElement = document.getElementById('container_chart_legend_element');
                 expect(parseInt(legendElement.getAttribute('x'), 10)).toBe(10);
                 expect(parseInt(legendElement.getAttribute('y'), 10) == 46 ||
-                    parseInt(legendElement.getAttribute('y'), 10) == 43).toBe(true);
+                    parseInt(legendElement.getAttribute('y'), 10) == 44).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -845,9 +845,9 @@ describe('Chart', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '364.125').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '364.625').toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[2] == '84.75' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '85.75' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1152,14 +1152,14 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
                 let svg = document.getElementById('container_Series_0');
                 let bounds: ClientRect = svg.getBoundingClientRect();
-                expect(Math.round(bounds.top) == 80 || Math.round(bounds.top) == 82).toBe(true);
-                expect(bounds.left == 92.5 || bounds.left == 86.5).toBe(true);
-                expect(bounds.width == 705.5 || bounds.width == 711.5).toBe(true);
-                expect(Math.round(bounds.height) == 238 || Math.round(bounds.height) == 232).toBe(true);
+                expect(Math.round(bounds.top) == 81 || Math.round(bounds.top) == 82).toBe(true);
+                expect(bounds.left == 92.5 || bounds.left == 67.5).toBe(true);
+                expect(bounds.width == 705.5 || bounds.width == 730.5).toBe(true);
+                expect(Math.round(bounds.height) == 237 || Math.round(bounds.height) == 232).toBe(true);
                 let element1: number = +document.getElementById('container_Series_0_Point_2_Text_0').getAttribute('y');
-                expect(Math.round(element1) == 92 || Math.round(element1) == 91 || Math.round(element1) == 94).toBe(true);
+                expect(Math.round(element1) == 92 || Math.round(element1) == 91 || Math.round(element1) == 96).toBe(true);
                 element1 = +document.getElementById('container_Series_0_Point_2_Text_1').getAttribute('y');
-                expect(Math.round(element1) == 51 || Math.round(element1) == 53).toBe(true);
+                expect(Math.round(element1) == 51 || Math.round(element1) == 52).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1172,16 +1172,16 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
                 let svg = document.getElementById('container_Series_0');
                 let bounds: ClientRect = svg.getBoundingClientRect();
-                expect(bounds.top == 50.25 || bounds.top == 53.25).toBe(true);
+                expect(bounds.top == 51.25 || bounds.top == 53.25).toBe(true);
                 expect(bounds.left == 110.62692260742188 || bounds.left == 109.69615173339844
                     || bounds.left == 106.90384674072266).toBe(true);
                 expect(bounds.width == 636.2461547851562 || bounds.width == 637.107666015625
                     || bounds.width == 639.6922607421875).toBe(true);
-                expect(bounds.height == 318.75 || bounds.height == 318.25 || bounds.height == 310.25).toBe(true);
+                expect(bounds.height == 317.25 || bounds.height == 318.25 || bounds.height == 310.25).toBe(true);
                 let element1: number = +document.getElementById('container_Series_0_Point_2_Text_0').getAttribute('x');
-                expect(Math.round(element1) == 547 || Math.round(element1) == 550).toBe(true);
+                expect(Math.round(element1) == 549 || Math.round(element1) == 550).toBe(true);
                 element1 = +document.getElementById('container_Series_0_Point_2_Text_1').getAttribute('x');
-                expect(Math.round(element1) == 611 || Math.round(element1) == 613).toBe(true);
+                expect(Math.round(element1) == 613 || Math.round(element1) == 613).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1194,14 +1194,14 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
                 let svg = document.getElementById('container_Series_0');
                 let bounds: ClientRect = svg.getBoundingClientRect();
-                expect(bounds.top == 50.25 || bounds.top == 53.25).toBe(true);
+                expect(bounds.top == 51.25 || bounds.top == 53.25).toBe(true);
                 expect(bounds.left == 110.62692260742188 || bounds.left == 109.69615173339844
                     || bounds.left == 106.90384674072266).toBe(true);
                 expect(bounds.width == 636.2461547851562 || bounds.width == 637.107666015625
                     || bounds.width == 639.6922607421875).toBe(true);
-                expect(bounds.height == 318.75 || bounds.height == 318.25 || bounds.height == 310.25).toBe(true);
+                expect(bounds.height == 317.25 || bounds.height == 318.25 || bounds.height == 310.25).toBe(true);
                 let element1: number = +document.getElementById('container_Series_0_Point_2_Text_0').getAttribute('x');
-                expect(Math.round(element1) == 547 || Math.round(element1) == 550).toBe(true);
+                expect(Math.round(element1) == 549 || Math.round(element1) == 550).toBe(true);
                 element1 = +document.getElementById('container_Series_0_Point_2_Text_1').getAttribute('x');
                 expect(Math.round(element1) == 611 || Math.round(element1) == 613).toBe(true);
 

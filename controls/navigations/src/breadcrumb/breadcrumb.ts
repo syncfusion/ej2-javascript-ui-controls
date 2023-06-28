@@ -206,17 +206,19 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
      * Specifies the template for Breadcrumb item.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
 
     /**
      * Specifies the separator template for Breadcrumb.
      *
      * @default '/'
+     * @aspType string
      */
     @Property('/')
-    public separatorTemplate: string;
+    public separatorTemplate: string | Function;
 
     /**
      * Enable or disable the item's navigation, when set to false, each item navigation will be prevented.
@@ -467,7 +469,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 if (i % 2) {
                     // separator item
                     wrapDiv = this.createElement('div', { className: 'e-breadcrumb-item-wrapper' });
-                    listBaseOptions.template = this.separatorTemplate ? this.separatorTemplate : '/';
+                    listBaseOptions.template = this.separatorTemplate ? this.separatorTemplate as any : '/';
                     listBaseOptions.itemClass = 'e-breadcrumb-separator';
                     isSingleLevel = false;
                     item = [{ previousItem: items[j as number], nextItem: items[j + 1] }];
@@ -475,7 +477,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     // list item
                     listBaseOptions.itemClass = '';
                     if (this.itemTemplate) {
-                        listBaseOptions.template = this.itemTemplate;
+                        listBaseOptions.template = this.itemTemplate as any;
                         isSingleLevel = false;
                     } else {
                         isSingleLevel = true;

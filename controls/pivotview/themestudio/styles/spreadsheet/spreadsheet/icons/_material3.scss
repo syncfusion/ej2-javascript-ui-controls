@@ -4,13 +4,13 @@
 
       & .e-prev-icon {
         &::before {
-          content: '\e776';
+          content: '\e70d';
         }
       }
 
       & .e-next-icon {
         &::before {
-          content: '\e729';
+          content: '\e87a';
         }
       }
 
@@ -319,20 +319,26 @@
     padding: 0 16px 0 10px;
 
     .e-menu-icon {
-      font-size: $spreadsheet-chart-icon-font-size;
       margin-right: 10px;
     }
 
     .e-bar {
-      font-size: 42px;
-      left: -6px;
+      font-size: 26px;
+      left: -5px;
       margin-right: -2px;
       position: relative;
     }
   }
 
-  .e-addchart-menu .e-ul .e-menu-item .e-menu-icon {
-    font-size: $spreadsheet-chart-icon-font-size;
+  .e-bigger .e-chart-menu.e-menu-wrapper ul.e-ul .e-menu-item,
+  .e-bigger .e-chart-type-menu.e-menu-wrapper ul.e-ul .e-menu-item {
+
+    .e-menu-icon.e-bar {
+      font-size: 30px;
+      left: -4px;
+      margin-right: 0;
+      position: relative;
+    }
   }
 
   .e-chart-menu,
@@ -455,15 +461,33 @@
         }
       }
 
+      & .e-line-marker {
+        &::before {
+          content: '\e8c3';
+        }
+      }
+
       & .e-stackedline {
         &::before {
           content: '\e867';
         }
       }
 
+      & .e-stackedline-marker {
+        &::before {
+          content: '\e8c1';
+        }
+      }
+
       & .e-stackedline100 {
         &::before {
           content: '\e870';
+        }
+      }
+
+      & .e-stackedline100-marker {
+        &::before {
+          content: '\e8c2';
         }
       }
     }
@@ -923,7 +947,7 @@
   .e-spreadsheet-contextmenu {
     & .e-filter-icon {
       &::before {
-        content: '\e843';
+        content: '\e7fe';
       }
     }
 

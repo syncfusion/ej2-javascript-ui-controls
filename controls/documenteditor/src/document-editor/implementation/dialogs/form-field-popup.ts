@@ -234,11 +234,12 @@ export class FormFieldPopUp {
 
                 } else if (formFieldData instanceof DropDownFormField) {
                     classList(this.target, ['e-de-ddl-form'], []);
+                    this.ddlInstance.refresh();
                     this.ddlInstance.dataSource = formFieldData.dropdownItems;
                     this.ddlInstance.index = formFieldData.selectedIndex;
                     setTimeout(() => {
                         this.ddlInstance.showPopup();
-                    });
+                    }, 50);
                 }
                 const left: number = this.owner.selection.getLeftInternal(formField.line, formField, 0);
                 const lineHeight: number = formField.line.height * this.owner.documentHelper.zoomFactor;

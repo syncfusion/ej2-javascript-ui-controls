@@ -2,6 +2,7 @@ import { ListView, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { DocumentHelper } from '../viewer';
+import { StyleType } from '../../base';
 
 /**
  * The Styles dialog is used to create or modify styles.
@@ -33,7 +34,7 @@ export class StylesDialog {
      * @param {boolean} isRtl - Specifies the is rtl.
      * @returns {void}
      */
-    public initStylesDialog(localValue: L10n, styles: string[], isRtl?: boolean): void {
+    public initStylesDialog(localValue: L10n, styles: {[key: string]: string}[], isRtl?: boolean): void {
         const id: string = this.documentHelper.owner.containerId + '_insert_styles';
         this.target = createElement('div', { id: id, className: 'e-de-styles' });
         const headerValue: string = localValue.getConstant('Styles');
@@ -54,7 +55,9 @@ export class StylesDialog {
 
         this.listviewInstance = new ListView({
             dataSource: styles,
-            cssClass: 'e-styles-listview'
+            cssClass: 'e-styles-listview',
+            fields: { text: 'StyleName', iconCss: 'IconClass' },
+            showIcon: true
         });
 
         this.listviewInstance.appendTo(listviewDiv);
@@ -92,7 +95,10 @@ export class StylesDialog {
     public show(): void {
         const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
-        const styles: string[] = this.updateStyleNames();
+        let paraStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter(obj => (obj as any).Type == "Paragraph");
+        let linkedStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter(obj => (obj as any).Type == "Linked");
+        let charStyles: {[key: string]: string}[] = this.updateStyleNames('Character').filter(obj => (obj as any).Type == "Character");
+        let styles: {[key: string]: string}[] = paraStyles.concat(linkedStyles, charStyles);
         this.localValue = localValue;
         this.initStylesDialog(localValue, styles, this.documentHelper.owner.enableRtl);
         this.documentHelper.dialog.content = this.target;
@@ -108,20 +114,26 @@ export class StylesDialog {
         this.documentHelper.dialog.dataBind();
         this.documentHelper.dialog.show();
     }
-    private updateStyleNames(): string[] {
+    private updateStyleNames(type: StyleType): {[key: string]: string}[] {
         const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localValue.setLocale(this.documentHelper.owner.locale);
-        const collection: string[] = this.documentHelper.owner.documentHelper.styles.getStyleNames('Paragraph');
-        const styleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6'];
-        const defaultStyleNames: string[] = this.defaultStyleName(styleNames);
-        const filteredList: string[] = collection.concat(defaultStyleNames).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
-        let finalList: string[] = [];
-        for (let i: number = 0; i < filteredList.length; i++) {
-            let styleName : string = localValue.getConstant(filteredList[parseInt(i.toString(), 10)]);
+        const collection: object[] = this.documentHelper.owner.documentHelper.styles.getStyles(type);
+        const paraIcon: string = 'e-de-listview-icon e-de-e-paragraph-style-mark e-icons';
+        const charIcon: string = 'e-de-listview-icon e-de-e-character-style-mark e-icons';
+        const linkedIcon: string = 'e-de-listview-icon e-de-e-linked-style-mark e-icons';
+        let finalList: {[key: string]: string}[] = [];
+        for (let i: number = 0; i < collection.length; i++) {
+            let styleName : string = localValue.getConstant((collection[parseInt(i.toString(), 10)] as any).name);
             if(styleName === '') {
-                styleName = filteredList[parseInt(i.toString(), 10)];
+                styleName = (collection[parseInt(i.toString(), 10)] as any).name;
             }
-            finalList.push(styleName);
+            if ((collection[parseInt(i.toString(), 10)] as any).type == 'Paragraph') {
+                finalList.push({ StyleName: styleName, IconClass: paraIcon, Type: (collection[parseInt(i.toString(), 10)] as any).type });
+            } else if ((collection[parseInt(i.toString(), 10)] as any).type == 'Character'){
+                finalList.push({ StyleName: styleName, IconClass: charIcon, Type: (collection[parseInt(i.toString(), 10)] as any).type });
+            } else {
+                finalList.push({ StyleName: styleName, IconClass: linkedIcon, Type: (collection[parseInt(i.toString(), 10)] as any).type });
+            }
         }
         return finalList;
     }

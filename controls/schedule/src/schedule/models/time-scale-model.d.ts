@@ -34,8 +34,9 @@ export interface TimeScaleModel {
      *  onto the time cells. The time details can be accessed within this template.
      *
      *  @default null
+     *  @aspType string
      */
-    minorSlotTemplate?: string;
+    minorSlotTemplate?: string | Function;
 
     /**
      * The template option to be applied for major time slot. Here, the
@@ -43,7 +44,8 @@ export interface TimeScaleModel {
      *  onto the time cells. The time details can be accessed within this template.
      *
      * @default null
+     * @aspType string
      */
-    majorSlotTemplate?: string;
+    majorSlotTemplate?: string | Function;
 
 }

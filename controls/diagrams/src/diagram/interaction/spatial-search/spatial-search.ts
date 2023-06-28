@@ -299,7 +299,7 @@ export class SpatialSearch {
                 if (quad.fourth) {
                     this.findRight(quad.fourth);
                 }
-            } 
+            }
             // EJ2-65880 - Exception occurs on dragging outside the canvas
             {
                 if (quad.first) {

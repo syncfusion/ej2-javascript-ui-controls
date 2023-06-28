@@ -145,7 +145,7 @@ export interface MapsTooltipOption {
     text ?:  string[];
     data ?: Object;
     textStyle ?: TextStyleModel;
-    template ?: string;
+    template ?: string | Function;
 }
 /**
  * Specifies the event arguments for tooltip render event in maps.
@@ -373,8 +373,10 @@ export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
 
     /**
      * Defines the template of the marker.
+     * 
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
     /**
      * Defines the settings of the border for the marker.
      */
@@ -576,8 +578,10 @@ export interface ILabelRenderingEventArgs extends IMapsEventArgs {
     fill: string;
     /**
      * Defines the template for the data-label.
+     * 
+     * @aspType string
      */
-    template: string;
+    template: string | Function;
     /**
      * Defines the instance of the data-label.
      */
@@ -708,8 +712,10 @@ export interface IAnnotationRenderingEventArgs extends IMapsEventArgs {
     maps?: Maps;
     /**
      * Defines the content of the annotation which is being rendered.
+     * 
+     * @aspType string
      */
-    content?: string;
+    content?: string | Function;
     /**
      * Specifies the annotation instance.
      */
@@ -812,8 +818,14 @@ export interface IThemeStyle {
     zoomFillColor: string;
     /** Specifies the font-family for the maps. */
     fontFamily?: string;
+    /** Specifies the font-family for the maps. */
+    fontSize?: string;
     /** Specifies the font size for the title in maps. */
     titleFontSize?: string;
+    /** Specifies the font size for the sub title and legend title in maps. */
+    subTitleFontSize?: string;
+    /** Specifies the font weight for the sub title and legend title in maps. */
+    fontWeight?: string;
     /** Specifies the opacity for the tooltip in maps. */
     tooltipFillOpacity? : number;
     /** Specifies the text opacity for the tooltip in maps. */
@@ -828,6 +840,12 @@ export interface IThemeStyle {
     zoomSelectionColor?: string;
     /** Specifies the color for the shapes in the maps. */
     shapeFill?: string;
+    /** Specifies the color by using rectangle zoom fill color in maps. */
+    rectangleZoomFillColor?: string;
+    /** Specifies the color by using rectangle zoom fill color in maps. */
+    rectangleZoomFillOpacity?: number;
+    /** Specifies the color by using rectangle zoom fill color in maps. */
+    rectangleZoomBorderColor?: string;
 }
 
 /**

@@ -367,3 +367,27 @@ describe('EJ2-69534 - Font-Size dynamic update using custom class name style tag
         expect(format.fontsize).toEqual('24px');
     });
 });
+
+describe('829581 -  Underline and strikethrough toolbars are not highlighted properly in RichTextEditor toolbar', () => {
+    var innervalue = '<div id="div1"><p><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;" class="focusNode">Testing</span></span></em></strong></p></div>';
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('div1') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Check Underline and strikethrough toolbar status when text-decoration is text-deocoration-line', () => {
+        let node: Node = document.querySelector('.focusNode');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['8pt'], ['arial,sans-serif']);
+        expect(format.underline).toEqual(true);
+        expect(format.strikethrough).toEqual(true);
+    });
+});

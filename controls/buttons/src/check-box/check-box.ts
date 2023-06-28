@@ -46,7 +46,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private wrapper: Element;
     private clickTriggered: boolean = false;
     private validCheck: boolean = true;
-
+    
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
      *
@@ -524,6 +524,8 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         wrapper.classList.add(DISABLED);
         wrapper.setAttribute('aria-disabled', 'true');
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
     private setText(text: string): void {
         const wrapper: Element = this.getWrapper();

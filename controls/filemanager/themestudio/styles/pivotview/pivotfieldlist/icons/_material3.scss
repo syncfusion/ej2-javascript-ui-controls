@@ -3,7 +3,7 @@
   /*! field-list component icons */
   .e-pivotfieldlist {
     .e-select-table::before {
-      content: '\e751';
+      content: '\e880';
     }
   }
 
@@ -23,7 +23,7 @@
 
     .e-colorpicker-wrapper .e-format-font-color + .e-split-btn-wrapper .e-split-btn .e-selected-color::before,
     .e-colorpicker-container .e-format-font-color + .e-split-btn-wrapper .e-split-btn .e-selected-color::before {
-      content: '\e76f';
+      content: '\e7f5';
     }
   }
 
@@ -60,7 +60,7 @@
     }
 
     .e-list-item .e-text-content .e-format.e-icons::before {
-      content: '\e75c';
+      content: '\e748';
     }
 
     /* stylelint-disable */
@@ -323,6 +323,10 @@
 
     .e-sort-descend::before {
         content: '\e7d8' !important;
+    }
+
+    .e-field-list-search-icon::before {
+      content: '\e754' !important;
     }
     /* stylelint-enable */
 

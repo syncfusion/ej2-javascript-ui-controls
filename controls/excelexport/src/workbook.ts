@@ -813,12 +813,27 @@ export class Workbook {
 
         }
     }
+    private changeNumberFormats(value: any): any {
+        if (typeof value == "string") {
+            const regex = new RegExp(this.currency, 'g');
+            value = value.replace(regex, '[$' + this.currency + ']');
+        }
+        else if (typeof value == "object") {
+            for (var i = 0; i < value.length; i++) {
+                value[i] = value[i].replace(this.currency, '[$'+this.currency+']');
+            }
+        }
+        return value;
+    }
     private getNumberFormat(numberFormat: string, type: string): string {
         let returnFormat: string;
         switch (type) {
             case 'number':
                 try {
                     returnFormat = this.intl.getNumberPattern({ format: numberFormat, currency: this.currency, useGrouping: true }, true);
+                    if(this.currency.length >1){
+                        returnFormat = this.changeNumberFormats(returnFormat);
+                    }
                 } catch (error) {
                     returnFormat = numberFormat;
                 }

@@ -10,6 +10,7 @@
       transform: translate(-100%, 0);
     }
   }
+
   @keyframes SlideLeftIn {
     from {
       transform: translate(-100%, 0);
@@ -19,6 +20,7 @@
       transform: translate(0, 0);
     }
   }
+
   @keyframes SlideRightIn {
     from {
       transform: translate(100%, 0);
@@ -28,6 +30,7 @@
       transform: translate(0, 0);
     }
   }
+
   @keyframes SlideRightOut {
     from {
       transform: translate(0, 0);
@@ -37,6 +40,7 @@
       transform: translate(100%, 0);
     }
   }
+
   @keyframes SlideBottomIn {
     from {
       transform: translate(0, 100%);
@@ -46,6 +50,7 @@
       transform: translate(0, 0);
     }
   }
+
   @keyframes SlideBottomOut {
     from {
       transform: translate(0, 0);
@@ -55,6 +60,7 @@
       transform: translate(0, 100%);
     }
   }
+
   @keyframes SlideTopIn {
     from {
       transform: translate(0, -100%);
@@ -64,6 +70,7 @@
       transform: translate(0, 0);
     }
   }
+
   @keyframes SlideTopOut {
     from {
       transform: translate(0, 0);
@@ -73,6 +80,7 @@
       transform: translate(0, -100%);
     }
   }
+
   @keyframes SlideRight {
     from {
       width: 0;
@@ -82,6 +90,7 @@
       width: 100%;
     }
   }
+
   @keyframes SlideLeft {
     from {
       width: 100%;
@@ -91,6 +100,7 @@
       width: 0;
     }
   }
+
   @keyframes SlideDown {
     from {
       height: 0;
@@ -100,6 +110,7 @@
       height: 100%;
     }
   }
+
   @keyframes SlideUp {
     from {
       height: 100%;
@@ -109,6 +120,7 @@
       height: 0;
     }
   }
+
   @keyframes FadeIn {
     0% {
       filter: alpha(opacity=0);
@@ -120,6 +132,7 @@
       opacity: 1;
     }
   }
+
   @keyframes FadeOut {
     from {
       filter: alpha(opacity=100);
@@ -131,6 +144,7 @@
       opacity: 0;
     }
   }
+
   @keyframes ZoomIn {
     from {
       transform: translate(0, 0) scale(0);
@@ -140,6 +154,7 @@
       transform: translate(0, 0) scale(1);
     }
   }
+
   @keyframes ZoomOut {
     from {
       transform: translate(0, 0) scale(1);
@@ -149,6 +164,7 @@
       transform: translate(0, 0) scale(0);
     }
   }
+
   @keyframes FadeZoomIn {
     from {
       filter: alpha(opacity=0);
@@ -162,6 +178,7 @@
       transform: scale(1);
     }
   }
+
   @keyframes FadeZoomOut {
     from {
       filter: alpha(opacity=100);
@@ -175,6 +192,7 @@
       transform: scale(0);
     }
   }
+
   @keyframes FlipRightDownIn {
     from {
       transform: perspective(400px) rotateY(-180deg);
@@ -188,6 +206,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipRightDownOut {
     from {
       transform: perspective(400px) rotateY(0deg);
@@ -201,6 +220,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipRightUpIn {
     from {
       transform: perspective(400px) rotateY(135deg);
@@ -214,6 +234,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipRightUpOut {
     from {
       transform: perspective(400px) rotateY(0deg);
@@ -227,6 +248,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipLeftDownIn {
     from {
       transform: perspective(400px) rotateY(-180deg);
@@ -240,6 +262,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipLeftDownOut {
     from {
       transform: perspective(400px) rotateY(0deg);
@@ -253,6 +276,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipLeftUpIn {
     from {
       transform: perspective(400px) rotateY(-135deg);
@@ -266,6 +290,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipLeftUpOut {
     from {
       transform: perspective(400px) rotateY(0deg);
@@ -279,6 +304,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipYLeftIn {
     from {
       filter: alpha(opacity=0);
@@ -300,6 +326,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipYLeftOut {
     from {
       filter: alpha(opacity=100);
@@ -325,6 +352,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipYRightIn {
     from {
       filter: alpha(opacity=0);
@@ -346,6 +374,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipYRightOut {
     from {
       filter: alpha(opacity=100);
@@ -367,6 +396,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipXDownIn {
     from {
       filter: alpha(opacity=0);
@@ -388,6 +418,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipXDownOut {
     from {
       filter: alpha(opacity=100);
@@ -413,6 +444,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipXUpIn {
     from {
       filter: alpha(opacity=0);
@@ -434,6 +466,7 @@
       transform-style: preserve-3d;
     }
   }
+
   @keyframes FlipXUpOut {
     from {
       filter: alpha(opacity=100);
@@ -464,23 +497,44 @@
   }
 
   $ripple-background: rgba(0, 0, 0, .1);
+  $ripple-background-m3: linear-gradient(90deg, rgba(28, 27, 31, .08) 0%, rgba(28, 27, 31, .1) 5%, rgba(28, 27, 31, .1) 50%, rgba(28, 27, 31, .1) 50%, rgba(28, 27, 31, .1) 95%, rgba(28, 27, 31, .08) 100%);
 
   #{&} .e-ripple-element,
   #{&} .e-ripple-style::after {
-    background-color: $ripple-background;
-    border-radius: 100%;
+    @if $skin-name =='Material3' {
+      background: $ripple-background-m3;
+    }
+
+    @else {
+      background-color: $ripple-background;
+    }
+    border-radius: 0;
     overflow: hidden;
     pointer-events: none;
     position: absolute;
     transform: scale(0);
-    transition: opacity, transform 0ms cubic-bezier(0, .1, .2, 1);
+
+    @if $skin-name =='Material3' {
+      transition: opacity .3s transform 50ms cubic-bezier(.2, 0, 0, 1);
+    }
+
+    @else {
+      transition: opacity, transform 0ms cubic-bezier(0, .1, .2, 1);
+    }
   }
 
   #{&} .e-ripple-style {
     $ripple-style-background: rgba(0, 0, 0, .3);
+    $ripple-style-background-m3: rgba(28, 27, 31, .12);
 
     &::after {
-      background: $ripple-style-background;
+      @if $skin-name =='Material3' {
+        background: $ripple-style-background-m3;
+      }
+
+      @else {
+        background: $ripple-style-background;
+      }
       content: '';
       display: block;
       height: 50%;
@@ -488,7 +542,12 @@
       opacity: 0;
       top: 25%;
       transform: scale(3);
-      transition: transform .5s, opacity .5s;
+      @if $skin-name =='Material3' {
+        transition: transform .3s, opacity .3s;
+      }
+      @else {
+        transition: transform .5s, opacity .5s;
+      }
       width: 50%;
     }
 

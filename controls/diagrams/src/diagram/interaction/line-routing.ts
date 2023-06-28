@@ -179,7 +179,7 @@ export class LineRouting {
             } else {
                 endPoint = { x: bounds.center.x, y: bounds.center.y };
             }
-        } 
+        }
         else {
             if ((isSource && this.startNode) || (!isSource && this.targetNode)) {
                 endPoint = (isSource) ? { x: this.startNode.wrapper.offsetX, y: this.startNode.wrapper.offsetY } :
@@ -293,7 +293,7 @@ export class LineRouting {
         let reject: boolean = false;
         if (grid.nodeId.length >= 1 && !isSource) {
             for (let i: number = 0; i < grid.nodeId.length; i++) {
-                let id: string = grid.nodeId[parseInt(i.toString(), 10)];
+                const id: string = grid.nodeId[parseInt(i.toString(), 10)];
                 for (let j: number = 0; j < grid.nodeId.length; j++) {
                     if ((this.targetNode as Node).parentId === grid.nodeId[parseInt(j.toString(), 10)]) {
                         reject = true;
@@ -346,8 +346,8 @@ export class LineRouting {
         let neigbours: VirtualBoundaries[] = this.findNearestNeigbours(this.startGrid, this.gridCollection, true);
         if (neigbours.length === 0) {
             if (connector.sourcePortID !== '') {
-                let endPoint: PointModel = { x: connector.sourcePortWrapper.offsetX, y: connector.sourcePortWrapper.offsetY };
-                let portDirection: Direction = getPortDirection(endPoint, undefined, connector.sourceWrapper.bounds, false);
+                const endPoint: PointModel = { x: connector.sourcePortWrapper.offsetX, y: connector.sourcePortWrapper.offsetY };
+                const portDirection: Direction = getPortDirection(endPoint, undefined, connector.sourceWrapper.bounds, false);
                 if (portDirection === 'Top') {
                     this.resetGridColl(this.startGrid, 'top', true);
                 } else if (portDirection === 'Right') {
@@ -367,8 +367,8 @@ export class LineRouting {
         neigbours = this.findNearestNeigbours(this.targetGrid, this.gridCollection, false);
         if (neigbours.length === 0) {
             if (connector.targetPortID !== '') {
-                let endPoint: PointModel = { x: connector.targetPortWrapper.offsetX, y: connector.targetPortWrapper.offsetY };
-                let portDirection: Direction = getPortDirection(endPoint, undefined, connector.targetWrapper.bounds, false);
+                const endPoint: PointModel = { x: connector.targetPortWrapper.offsetX, y: connector.targetPortWrapper.offsetY };
+                const portDirection: Direction = getPortDirection(endPoint, undefined, connector.targetWrapper.bounds, false);
                 if (portDirection === 'Top') {
                     this.resetGridColl(this.targetGrid, 'top', true);
                 } else if (portDirection === 'Right') {
@@ -387,19 +387,19 @@ export class LineRouting {
         }
         if (this.targetGridCollection.length > 0 && this.targetGridCollection[0].nodeId.length > 1) {
             for (let i: number = 0; i <= 1; i++) {
-                let gridX: number = this.targetGridCollection[parseInt(i.toString(), 10)].gridX;
-                let gridY: number = this.targetGridCollection[parseInt(i.toString(), 10)].gridY;
-                let gridNodes: string[] = this.targetGridCollection[parseInt(i.toString(), 10)].nodeId
+                const gridX: number = this.targetGridCollection[parseInt(i.toString(), 10)].gridX;
+                const gridY: number = this.targetGridCollection[parseInt(i.toString(), 10)].gridY;
+                const gridNodes: string[] = this.targetGridCollection[parseInt(i.toString(), 10)].nodeId;
                 let targetNode: string;
                 for (let k: number = 0; k < gridNodes.length; k++) {
-                    if (this.targetNode.id != gridNodes[parseInt(k.toString(), 10)]) {
-                        targetNode = gridNodes[parseInt(k.toString(), 10)]
+                    if (this.targetNode.id !== gridNodes[parseInt(k.toString(), 10)]) {
+                        targetNode = gridNodes[parseInt(k.toString(), 10)];
                         break;
                     }
                 }
                 let targetNodewrapper: Container;
                 let overLapNode: Container;
-                let contains: boolean
+                let contains: boolean;
                 if (diagram.nameTable[this.targetNode.id]) {
                     targetNodewrapper = diagram.nameTable[this.targetNode.id].wrapper;
                 }
@@ -409,7 +409,7 @@ export class LineRouting {
                 if (targetNodewrapper && overLapNode) {
                     contains = this.contains(overLapNode.bounds, targetNodewrapper.bounds);
                 }
-                let reject: boolean
+                let reject: boolean;
                 for (let j: number = 0; j < gridNodes.length; j++) {
                     if ((this.targetNode as Node).parentId === gridNodes[parseInt(j.toString(), 10)]) {
                         reject = true;
@@ -417,22 +417,22 @@ export class LineRouting {
                 }
                 if (!this.gridCollection[parseInt(gridX.toString(), 10)][parseInt(gridY.toString(), 10)].walkable && contains && !reject) {
                     let grid: VirtualBoundaries;
-                    let diff: number
-                    grid = this.getEndvalue(targetLeft, "left")
-                    diff = targetLeft.gridX - grid.gridX
-                    this.changeValue(targetLeft, diff, "left");
+                    let diff: number;
+                    grid = this.getEndvalue(targetLeft, 'left');
+                    diff = targetLeft.gridX - grid.gridX;
+                    this.changeValue(targetLeft, diff, 'left');
 
-                    grid = this.getEndvalue(targetRight, "right")
-                    diff = grid.gridX - targetRight.gridX
-                    this.changeValue(targetRight, diff, "right");
+                    grid = this.getEndvalue(targetRight, 'right');
+                    diff = grid.gridX - targetRight.gridX;
+                    this.changeValue(targetRight, diff, 'right');
 
-                    grid = this.getEndvalue(targetTop, "top")
+                    grid = this.getEndvalue(targetTop, 'top');
                     diff = targetTop.gridY - grid.gridY;
-                    this.changeValue(targetTop, diff, "top");
+                    this.changeValue(targetTop, diff, 'top');
 
-                    grid = this.getEndvalue(targetBottom, "bottom")
+                    grid = this.getEndvalue(targetBottom, 'bottom');
                     diff = targetBottom.gridY - grid.gridY;
-                    this.changeValue(targetBottom, diff, "top");
+                    this.changeValue(targetBottom, diff, 'top');
 
 
                 }

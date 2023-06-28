@@ -683,7 +683,7 @@ describe('Waterfall Series', () => {
                 let text1: Element = group.childNodes[1] as HTMLElement;
                 let text2: Element = group.childNodes[2] as HTMLElement;
                 expect(path.getAttribute('fill') == '#000816').toBe(true);
-                expect((<HTMLElement>text1.childNodes[0]).getAttribute('fill') == '#dbdbdb').toBe(true);
+                expect((<HTMLElement>text1.childNodes[0]).getAttribute('fill') == 'rgba(249, 250, 251, 1)').toBe(true);
                 expect(text1.childNodes[0].textContent.replace(/\u200E/g, '') == 'series1 Marketting and Sales ').toBe(true);
                 expect(text1.childNodes[1].textContent.replace(/\u200E/g, '') == ':').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
@@ -722,8 +722,7 @@ describe('Waterfall Series', () => {
                 let legendElement: HTMLElement = document.getElementById('container_chart_legend_element');
                 expect((parseInt(legendElement.getAttribute('x'), 10)) == (325) || (parseInt(legendElement.getAttribute('x'), 10)) == (328)).toBe(true);
                 expect((parseInt(legendElement.getAttribute('y'), 10)) == (46) ||
-                       (parseInt(legendElement.getAttribute('y'), 10)) == (43)).toBe(true);
-                console.log(parseInt(legendElement.getAttribute('y'), 10));
+                       (parseInt(legendElement.getAttribute('y'), 10)) == (44)).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -734,8 +733,8 @@ describe('Waterfall Series', () => {
         it('Legend alignment', (done: Function) => {
             loaded = (args: Object) => {
                 let legendElement: HTMLElement = document.getElementById('container_chart_legend_element');
-                expect(parseInt(legendElement.getAttribute('x'), 10)).toBe(10);
-                expect((parseInt(legendElement.getAttribute('y'), 10)) == (46) ||
+                expect(parseInt(legendElement.getAttribute('y'), 10)).toBe(44);
+                expect((parseInt(legendElement.getAttribute('y'), 10)) == (44) ||
                        (parseInt(legendElement.getAttribute('y'), 10)) == (43)).toBe(true);
                 done();
             };
@@ -830,8 +829,8 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let point: Element = document.getElementById('containerSeriesGroup1');
                 expect(point != null).toBe(true);
-                expect(point.getAttribute('transform') == 'translate(82.5,79.25)' ||
-                      point.getAttribute('transform') == 'translate(78.5,84.75)').toBe(true); 
+                expect(point.getAttribute('transform') == 'translate(78.5,85.75)' ||
+                      point.getAttribute('transform') == 'translate(78.5,84.75)').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -888,10 +887,10 @@ describe('Waterfall Series', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerSeriesGroup1');
-                expect(svg.getAttribute('transform') == 'translate(77.5,79.25)' ||
+                expect(svg.getAttribute('transform') == 'translate(73.5,85.75)' ||
                         svg.getAttribute('transform') == 'translate(73.5,84.75)' ).toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[2] == '84.75' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '85.75' || svg.getAttribute('d').split(' ')[2] == '77.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -929,11 +928,11 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerSeriesGroup1');
                 expect(svg.getAttribute('transform').indexOf('translate(477.5,296.69200897216797') > -1 ||
-                       svg.getAttribute('transform') === 'translate(473.5,262.375)').toBe(true);     
+                       svg.getAttribute('transform') === 'translate(473.5,262.875)').toBe(true);
                 svg = document.getElementById('container_AxisBottom_Column0');
                 expect(svg.getAttribute('stroke') == 'red').toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[1] == '477.5' || svg.getAttribute('d').split(' ')[1] == '473.5' || svg.getAttribute('d').split(' ')[1] == '473.5').toBe(true);            
+                expect(svg.getAttribute('d').split(' ')[1] == '477.5' || svg.getAttribute('d').split(' ')[1] == '473.5' || svg.getAttribute('d').split(' ')[1] == '473.5').toBe(true);               
                 svg = document.getElementById('container_AxisBottom_Column1');
                 expect(svg.getAttribute('stroke') == 'blue').toBe(true);
                 done();
@@ -1093,8 +1092,7 @@ describe('Waterfall Series', () => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
                 expect(
-                    (d === 'M 14.45625000000004 368.5 L 563.7937499999999 368.5 '+
-                    'M 303.58124999999995 368.5 L 852.91875 368.5 M 592.70625 147.4 L 1142.04375 147.4 ') ||
+                    (d === 'M 8.318750000000009 371.5 L 324.43125 371.5 M 174.69374999999997 371.5 L 490.80625000000003 371.5 M 341.06874999999997 148.6 L 657.18125 148.6 ') ||
                     (d === 'M 8.318750000000009 372.5 L 324.43125 372.5 M 174.69374999999997 372.5 L 490.80625000000003 372.5 '+
                     'M 341.06874999999997 149 L 657.18125 149 ')).toBe(true);
                 done();
@@ -1107,8 +1105,7 @@ describe('Waterfall Series', () => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
                 expect(
-                    (d === 'M 0 300.69375 L 0 156.05624999999998 M 0 222.06875000000002 '+
-                    'L 0 79.93124999999999 M 703.5 148.44375000000002 L 703.5 3.8062499999999866 ') ||
+                    (d === 'M 0 306.61875 L 0 159.13125 M 0 228.99375 L 0 81.50624999999998 M 410.09999999999997 151.36875 L 410.09999999999997 3.8812499999999863 ') ||
                     (d === 'M 0 307.60625000000005 L 0 159.64374999999998 M 0 229.73125000000002 L 0 81.76874999999998 '+
                     'M 410.09999999999997 151.85625000000002 L 410.09999999999997 3.893749999999986 ')).toBe(true);
                 done();

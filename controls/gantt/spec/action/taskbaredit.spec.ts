@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 interface EJ2Instance extends HTMLElement {
@@ -430,15 +430,12 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(close, 'click');
         });
         it('Connector Line highlight while perform click on connector line', () => {
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container') as HTMLElement;
+            const ele: HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent6child5').childNodes[0] as HTMLElement;
             let e: Object = {} as Object;
-            let ele: Element = ganttObj.element.querySelector('#ConnectorLineparent6child5 > div > div.e-connector-line-right-arrow') as Element;
             e['target'] = ele;
             ganttObj.connectorLineEditModule.updateConnectorLineEditElement(e as PointerEvent);
-            expect(e['target'].classList.contains('e-connector-line-right-arrow-hover')).toBe(true);
-            e['target'] = null;
-            ganttObj.connectorLineEditModule.updateConnectorLineEditElement(e as PointerEvent);
-            expect((ganttObj.element.querySelector('#ConnectorLineparent6child5 > div > div.e-connector-line-right-arrow') as Element).classList.contains('e-connector-line-right-arrow-hover')).toBe(false);
+            const strokeWidth = ele.getAttribute('stroke-width');
+            expect(strokeWidth === '2').toBeTruthy();
         });
         it('Connector Line drag - spec coverage', () => {
             let element: Element = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container') as Element;
@@ -1328,7 +1325,7 @@ describe('Gantt taskbar editing', () => {
             ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[8];
             ganttObj.editModule.taskbarEditModule.finalPredecessor = '3SF';
             triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[8].ganttProperties.predecessorsName).toBe('3SF');
+            expect(ganttObj.flatData[8].ganttProperties.predecessorsName).toBe('3SF-7320 days');
         });
         it('Dependency editing - parent to child', () => {
             ganttObj.actionBegin = (args: any) => {
@@ -1350,7 +1347,7 @@ describe('Gantt taskbar editing', () => {
             ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[6];
             ganttObj.editModule.taskbarEditModule.finalPredecessor = '6SS';
             triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[6].ganttProperties.predecessorsName).toBe('6SS');
+            expect(ganttObj.flatData[6].ganttProperties.predecessorsName).toBe('6SS+118 days');
         });
         it('Dependency editing - parent to parent', () => {
             ganttObj.actionBegin = (args: any) => {
@@ -2651,5 +2648,887 @@ describe('Gantt taskbar editing', () => {
         triggerMouseEvent(dragElement, 'mousemove', 70, 300);
         triggerMouseEvent(dragElement, 'mouseup');
   });
+    });
+    describe("offset value not updating issue", () => {
+        Gantt.Inject(Edit);
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: scheduleModeData1,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        endDate: 'EndDate',
+                        dependency:'Predecessor',
+                        child: 'Children',
+                        manual: 'isManual'
+                    },
+                    projectStartDate: new Date('02/20/2017'),
+                    projectEndDate: new Date('03/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    allowSelection: false,
+                    editSettings: {
+                        allowEditing: true,
+                        allowTaskbarEditing: true
+                    }
+                }, done);
+        });
+        beforeEach(function (done) {
+            setTimeout(done, 500);
+        });
+        it("check offset value after connecting predecessors", () => {
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(9) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(9) > td > div.e-taskbar-main-container > div.e-right-connectorpoint-outer-div > div.e-connectorpoint-right') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 10, 100);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[10];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '9FS';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[10].ganttProperties.predecessorsName).toBe('9FS');
+            let dragElement1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement1, 'mousedown', dragElement1.offsetLeft, dragElement1.offsetTop);
+            dragElement1 = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div.e-right-connectorpoint-outer-div > div.e-connectorpoint-right') as HTMLElement;
+            triggerMouseEvent(dragElement1, 'mousedown', dragElement1.offsetLeft, dragElement1.offsetTop);
+            triggerMouseEvent(dragElement1, 'mousemove', 10, 150);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[10];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '8FS+4 days';
+            triggerMouseEvent(dragElement1, 'mouseup');
+            expect(ganttObj.flatData[10].ganttProperties.predecessor[0].offset).toBe(4);
+            
+      });
+    });
+});
+describe("cloneTaskbar drag drop", () => {
+    Gantt.Inject(Edit,RowDD);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: multiTaskbarData,
+        resources: multiResources,
+        allowRowDragAndDrop: true,
+        enableMultiTaskbar: true,
+        allowTaskbarDragAndDrop: true,
+        viewType: 'ResourceView',
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            expandState: 'isExpand',
+            resourceInfo: 'resources',
+            work: 'work',
+            child: 'subtasks'
+        },
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName',
+            unit: 'resourceUnit',
+            group: 'resourceGroup'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'work', headerText: 'Work' },
+            { field: 'Progress' },
+            { field: 'resourceGroup', headerText: 'Group' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        labelSettings: {
+            taskLabel: 'TaskName'
+        },
+        splitterSettings: {
+            columnIndex: 2
+        },
+        allowResizing: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        treeColumnIndex: 1,
+        height: '450px',
+        projectStartDate: new Date('03/28/2019'),
+        projectEndDate: new Date('05/18/2019')
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach(function (done) {
+        setTimeout(done, 500);
+    });
+    it("Taskbar Drag and drop", () => {
+        ganttObj.actionComplete = (args: any) => {
+            if (args.requestType == 'rowDropped') {
+                expect(args.data[0].resources).toBe('Rose Fuller');
+                expect(args.modifiedRecords[1].childRecords.length).toBe(2);
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1)').getElementsByClassName('e-taskbar-main-container')[1] as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 70, 150);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+  });
+});
+
+describe(" cloneTaskbar drag drop without overallocation", () => {
+    Gantt.Inject(Edit,RowDD);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: multiTaskbarData,
+        resources: multiResources,
+        allowRowDragAndDrop: true,
+        enableMultiTaskbar: true,
+        allowTaskbarDragAndDrop: true,
+        allowTaskbarOverlap: false,
+        showOverAllocation: true,
+        viewType: 'ResourceView',
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            expandState: 'isExpand',
+            resourceInfo: 'resources',
+            work: 'work',
+            child: 'subtasks'
+        },
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName',
+            unit: 'resourceUnit',
+            group: 'resourceGroup'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'work', headerText: 'Work' },
+            { field: 'Progress' },
+            { field: 'resourceGroup', headerText: 'Group' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        labelSettings: {
+            taskLabel: 'TaskName'
+        },
+        splitterSettings: {
+            columnIndex: 2
+        },
+        allowResizing: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        treeColumnIndex: 1,
+        height: '450px',
+        projectStartDate: new Date('03/28/2019'),
+        projectEndDate: new Date('05/18/2019')
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach(function (done) {
+        setTimeout(done, 500);
+    });
+    it("Taskbar Drag and drop", () => {
+        ganttObj.actionComplete = (args: any) => {
+            if (args.requestType == 'rowDropped') {
+                expect(args.data[0].resources).toBe('Margaret Buchanan');
+                expect(args.modifiedRecords[1].childRecords.length).toBe(2);
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1)').getElementsByClassName('e-taskbar-main-container')[1] as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 70, 200);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+  });
+  it("Taskbar Drag and drop in Auto scroll", () => {
+    ganttObj.actionComplete = (args: any) => {
+        if (args.requestType == 'rowDropped') {
+            expect(args.data[0].resources).toBe('Davolio Fuller');
+            expect(args.modifiedRecords[1].childRecords.length).toBe(2);
+            expect(args.modifiedRecords[2].childRecords.length).toBe(4);
+        }
+    };
+    ganttObj.dataBind();
+    let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1)').getElementsByClassName('e-taskbar-main-container')[1] as HTMLElement;
+    triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+    triggerMouseEvent(dragElement, 'mousemove', 70, 300);
+    var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+    expect(! isNullOrUndefined(cloneElement)).toBe(true);
+    var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+    expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+    triggerMouseEvent(dragElement, 'mouseup');
+});
+});
+
+describe('cloneTaskbar Expand/Collapse', () => {
+    let ganttObj: Gantt
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectData,
+             taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            allowSelection: true,
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('when allow editing is false',() => {
+        let taskbarElement: HTMLElement = ganttObj.element.getElementsByClassName('e-gantt-parent-taskbar-inner-div e-gantt-parent-taskbar e-row-expand')[0] as HTMLElement;
+        triggerMouseEvent(taskbarElement, 'mousedown');
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(false);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(false);
+        triggerMouseEvent(taskbarElement, 'mouseup');
+        setTimeout(() => {
+            expect(ganttObj.currentViewData[0].expanded).toBe(true);
+        }, 100);
+    });
+});
+describe('clone taskbar Disable offset validation', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: predecessorOffSetValidation,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                UpdateOffsetOnTaskbarEdit:false,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                allowSelection: false,
+                editSettings: {
+                    allowEditing: true,
+                    allowTaskbarEditing: true
+                }
+            }, done);
+    });
+    it('Child right drag action', () => {
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.currentViewData[3]['Predecessor']).toBe('2FS');
+        };
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    it('Child left drag action', () => {
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.currentViewData[3]['Predecessor']).toBe('2FS');
+        };
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft - 300, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('clone taskbar Split task -', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                dateFormat:'MM/dd/yyyy hh:mm:ss',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                
+                allowSelection: true,
+                height: '450px',
+            }, done);
+    });
+    it('Merging tasks', () => {
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(args.data.taskData['Segments'].length).toBe(2);
+        };
+        ganttObj.actionBegin = (args: any) => {
+            if (args['requestType'] === 'beforeSave') {
+               expect(args.modifiedRecords.length).toBe(3);
+            }
+        };
+        ganttObj.dataBind();
+        expect(ganttObj.currentViewData[2].taskData['Segments'].length).toBe(3);
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-segment-first.e-gantt-child-taskbar.e-segmented-taskbar > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 500), dragElement.offsetTop);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 2000);
+    });
+});
+describe(' clone taskbar Schedule mode', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: scheduleModeData,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                endDate: 'EndDate',
+                child: 'Children',
+                manual: 'isManual',
+            },
+            taskMode: 'Custom',
+            enableContextMenu: true,
+            splitterSettings: {
+                columnIndex: 8
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('Manual parent task-dragging', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args.taskBarEditAction).toBe('ManualParentDrag');
+        };
+        ganttObj.dataBind();   
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy')).toBe('03/04/2017');
+        };
+        ganttObj.dataBind();
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('02/27/2017');
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+});
+
+describe('clone taskbar edit action', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: baselineData,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children',
+                    cssClass: 'cusClass',
+                    dependency: 'predecessor'
+                },
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                allowSelection: false,
+                editSettings: {
+                    allowEditing: true,
+                    allowTaskbarEditing: true
+                }
+            }, done);
+    });
+
+    it('Hide spinner', () => {
+            ganttObj.hideSpinner();
+    });
+
+    it('Left resizing - drop on weekends', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args['name']).toBe('taskbarEditing');
+            expect(args.taskBarEditAction).toBe('LeftResizing');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/23/2017 08:00');
+            expect(args['name']).toBe('taskbarEdited');
+            expect(args.taskBarEditAction).toBe('LeftResizing');
+            expect(ganttObj.getFormatedDate(args.previousData.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/23/2017 08:00');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -50, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    it('Left resizing -  drop on weekdays', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args['name']).toBe('taskbarEditing');
+            expect(args.taskBarEditAction).toBe('LeftResizing');
+            expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('10/23/2017 08:00');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
+            expect(args['name']).toBe('taskbarEdited');
+            expect(args.taskBarEditAction).toBe('LeftResizing');
+            expect(ganttObj.getFormatedDate(args.previousData.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/23/2017 08:00');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -80, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+
+    it('Left resizing - editing cancel', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            args.cancel = true;
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -100, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+
+    it('Left resizing -  edited cancel', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
+        };
+        ganttObj.dataBind();
+        ganttObj.actionBegin = (args: object) => {
+            if (args['requestType'] !== 'taskbarediting') {
+                expect(ganttObj.getFormatedDate(args['data'].ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/16/2017 08:00');
+                if (args['requestType'] === 'beforeSave') {
+                    args['cancel'] = true;
+                }
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -110, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[1].ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
+    });
+    it('progress with 0% - editing cancel', () => {
+        ganttObj.actionBegin = (args: object) => { };
+        ganttObj.dataBind();
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args.data['Progress']).toBe(80);
+            args['cancel'] = true;
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(args.data.ganttProperties.progress).toBe(80);
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 100, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+
+    it('progress with 0% - edited cancel', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args.data['Progress']).toBe(80);
+        };
+        ganttObj.dataBind();
+        ganttObj.actionBegin = (args: object) => {
+            if (args['requestType'] !== 'taskbarediting') {
+                expect(args['data'].ganttProperties.progress).toBe(0);
+                if (args['requestType'] === 'beforeSave') {
+                    args['cancel'] = true;
+                }
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 100, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.flatData[1].ganttProperties.progress).toBe(80);
+    });
+    it('progress with 0%', () => {
+        ganttObj.actionBegin = (args: object) => { };
+        ganttObj.dataBind();
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args.data['Progress']).toBe(80);
+            expect(args.taskBarEditAction).toBe('ProgressResizing');
+            expect(args.editingFields.progress).toBe(0);
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(args.data.ganttProperties.progress).toBe(0);
+            expect(args.taskBarEditAction).toBe('ProgressResizing');
+            expect(args.editingFields.progress).toBe(0);
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 0, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    it('Child drag action', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            //expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
+            expect(args.taskBarEditAction).toBe('ChildDrag');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+           //expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
+            expect(args.taskBarEditAction).toBe('ChildDrag');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+
+    it('Milestone drag action', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('10/24/2017 08:00');
+            expect(args.taskBarEditAction).toBe('MilestoneDrag');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('11/02/2017 08:00');
+            expect(args.taskBarEditAction).toBe('MilestoneDrag');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 300, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+
+    it('Parent drag action', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            //expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
+            expect(args.taskBarEditAction).toBe('ParentDrag');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            //expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/24/2017 08:00');
+            expect(args.taskBarEditAction).toBe('ParentDrag');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr.gridrowtaskIdlevel0.e-chart-row > td > div.e-taskbar-main-container') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 300, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+
+    it('Right resizing - editing cancel', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'MM/dd/yyyy HH:mm')).toBe('10/30/2017 17:00');
+            expect(args.taskBarEditAction).toBe('RightResizing');
+            args.cancel = true;
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'MM/dd/yyyy HH:mm')).toBe('10/30/2017 17:00');
+            expect(args.taskBarEditAction).toBe('RightResizing');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 100), dragElement.offsetTop);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+
+    it('Right resizing - edited cancel', () => {
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'MM/dd/yyyy HH:mm')).toBe('10/30/2017 17:00');
+            expect(args.taskBarEditAction).toBe('RightResizing');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+        ganttObj.dataBind();
+        ganttObj.actionBegin = (args: object) => {
+            if (args['requestType'] === 'beforeSave') {
+                args['cancel'] = true;
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 100), dragElement.offsetTop);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[1].ganttProperties.endDate, 'MM/dd/yyyy HH:mm')).toBe('10/30/2017 17:00');
+    });
+    it('Right resizing', () => {
+        ganttObj.actionBegin = (args: object) => { };
+        ganttObj.dataBind();
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data['EndDate'], 'MM/dd/yyyy HH:mm')).toBe('10/30/2017 17:00');
+            expect(args.taskBarEditAction).toBe('RightResizing');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'MM/dd/yyyy HH:mm')).toBe('10/24/2017 08:00');
+            expect(args.taskBarEditAction).toBe('RightResizing');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 100, 0);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(true);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    it('Connector Line Left drag - drop outside the Gantt container', () => {
+        ganttObj.actionBegin = (args: object) => {
+            if (args['requestType'] === 'ValidateDependency') {
+                expect(args['name']).toBe('actionBegin');
+                expect(args['newPredecessorString']).toBe('5SS');
+            }
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args.taskBarEditAction).toBe('ConnectorPointLeftDrag');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(args.taskBarEditAction).toBe('ConnectorPointLeftDrag');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 800, 100);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(false);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(false);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    it('Connector Line Left drag - drop inside the Gantt container', () => {
+        ganttObj.actionBegin = (args: object) => {
+            if (args['requestType'] === 'ValidateDependency') {
+                expect(args['name']).toBe('actionBegin');
+                expect(args['newPredecessorString']).toBe('5SS');
+            }
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args.taskBarEditAction).toBe('ConnectorPointLeftDrag');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(args.taskBarEditAction).toBe('ConnectorPointLeftDrag');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 400, 100);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(false);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(false);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    it('Connector Line Right drag - drop inside the Gantt container', () => {
+        ganttObj.actionBegin = (args: object) => {
+            if (args['requestType'] === 'ValidateDependency') {
+                expect(args['name']).toBe('actionBegin');
+                expect(args['newPredecessorString']).toBe('5FF');
+            }
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+            expect(args.taskBarEditAction).toBe('ConnectorPointRightDrag');
+        };
+        ganttObj.dataBind();
+        ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+            expect(args.taskBarEditAction).toBe('ConnectorPointRightDrag');
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-right-connectorpoint-outer-div > div.e-connectorpoint-right') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 400, 100);
+        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        expect(! isNullOrUndefined(cloneElement)).toBe(false);
+        var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+        expect(! isNullOrUndefined(resizeCheck)).toBe(false);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });        
+   
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });

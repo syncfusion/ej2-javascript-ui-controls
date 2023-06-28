@@ -294,7 +294,7 @@ describe('Chart Control', () => {
             chartObj.series[0].marker.shape = 'VerticalLine';
             chartObj.refresh();
         });
-        it('checking with marker shape Cross', (done: Function) => {
+        it('checking with marker shape Plus', (done: Function) => {
             remove(document.getElementById('container_tooltip'));
             loaded = (args: Object): void => {
                 let target: HTMLElement = document.getElementById('container_Series_0_Point_2');
@@ -309,7 +309,7 @@ describe('Chart Control', () => {
                 done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[0].marker.shape = 'Cross';
+            chartObj.series[0].marker.shape = 'Plus';
             chartObj.refresh();
         });
         it('checking with marker shape image', (done: Function) => {
@@ -1249,7 +1249,7 @@ describe('Scatter Series Inversed axis', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 100);
                 let yValue: number = chartObj.visibleSeries[0].points[2].yValue;
-                expect(yValue == 65.62 || yValue == 65.24).toBe(true);
+                expect(yValue == 65.62 || yValue == 65.44).toBe(true);
                 chartObj.loaded = null;
                 done();
             };

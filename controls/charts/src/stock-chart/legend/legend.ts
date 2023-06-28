@@ -13,7 +13,7 @@ import { Series } from '../../chart/series/chart-series';
 import { legendClick, legendRender, regSub, regSup } from '../../common/model/constants';
 import { IStockLegendClickEventArgs, IStockLegendRenderEventArgs, StockChartBorder, StockChartFont, StockMargin } from '../model/base';
 import { Browser } from '@syncfusion/ej2-base';
-import { StockChart } from '../../stock-chart/index';
+import { StockChart, Chart } from '../../stock-chart/index';
 import { Axis } from '../../chart/axis/axis';
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
 import { Theme } from '../../common/model/theme';
@@ -136,7 +136,7 @@ export class StockChartLegendSettings extends ChildProperty<StockChartLegendSett
     /**
      * Options to customize the legend text.
      */
-    @Complex<StockChartFontModel>(Theme.legendLabelFont, StockChartFont)
+    @Complex<StockChartFontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, StockChartFont)
     public textStyle: StockChartFontModel;
 
     /**
@@ -243,7 +243,7 @@ export class StockChartLegendSettings extends ChildProperty<StockChartLegendSett
     /**
      * Options to customize the legend title in stock chart.
      */
-    @Complex<StockChartFontModel>(Theme.legendTitleFont, StockChartFont)
+    @Complex<StockChartFontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '600', color: null}, StockChartFont)
     public titleStyle: StockChartFontModel;
 
     /**
@@ -396,7 +396,7 @@ export class StockLegend extends BaseLegend {
         let rowCount: number = 0;
         let titlePlusArrowSpace: number = 0;
         let legendEventArgs: IStockLegendRenderEventArgs;
-        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle, this.chart.themeStyle.legendLabelFont).height, legend.shapeHeight);
         let render: boolean = false;
         for (let i: number = 0; i < this.legendCollections.length; i++) {
             legendOption = this.legendCollections[i as number];
@@ -416,7 +416,7 @@ export class StockLegend extends BaseLegend {
             legendOption.shape = legendEventArgs.shape;
             legendOption.fill = legendEventArgs.fill;
             legendOption.markerShape = legendEventArgs.markerShape;
-            legendOption.textSize = measureText(legendOption.text, legend.textStyle);
+            legendOption.textSize = measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont);
             if (legendOption.render) {
                 render = true;
                 legendWidth = shapePadding + shapeWidth + legendOption.textSize.width + (!this.isVertical ? (i === 0) ? padding :
@@ -528,7 +528,7 @@ export class StockLegend extends BaseLegend {
         }
         const availwidth: number = (this.legendBounds.width + this.legendBounds.x) - (legendOptions.location.x +
             textPadding - this.itemPadding - this.legend.shapeWidth / 2);
-        legendOptions.text = textTrim(+availwidth.toFixed(4), legendOptions.text, this.legend.textStyle);
+        legendOptions.text = textTrim(+availwidth.toFixed(4), legendOptions.text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
     }
     /**
      * @param index

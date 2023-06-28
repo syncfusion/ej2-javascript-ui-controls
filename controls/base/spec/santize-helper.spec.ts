@@ -58,7 +58,7 @@ describe('Sanitize Html Helper', () => {
         it('check the div element attribute while inline event bind', () => {
             expect(htmlObject.querySelector('#inline-event').hasAttribute('onmouseover')).toBe(false);
         });
-        
+
         it('should remove onpropertychange attribute', () => {
             expect(htmlObject.querySelector('#onpropertychange').hasAttribute('onpropertychange')).toBe(false);
         });

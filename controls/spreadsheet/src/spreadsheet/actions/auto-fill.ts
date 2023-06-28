@@ -1,7 +1,7 @@
-import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, completeAction, showAggregate, dialog, locale, fillRange, hideAutoFillOptions, performUndoRedo, hideAutoFillElement } from '../../spreadsheet/index';
+import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, completeAction, showAggregate, dialog, locale, hideAutoFillOptions, performUndoRedo, hideAutoFillElement } from '../../spreadsheet/index';
 import { Spreadsheet, contentLoaded, positionAutoFillElement, getCellPosition, getRowIdxFromClientY } from '../../spreadsheet/index';
 import { performAutoFill, isLockedCells } from '../../spreadsheet/index';
-import { ICellRenderer, editAlert, AutoFillEventArgs } from '../common/index';
+import { ICellRenderer, editAlert, AutoFillEventArgs, FillRangeInfo } from '../common/index';
 import { updateSelectedRange, isHiddenRow, setAutoFill, AutoFillType, AutoFillDirection, refreshCell, getFillInfo, getautofillDDB } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, Workbook, getRowsHeight, getColumnsWidth, isInRange } from '../../workbook/index';
 import { getCell, CellModel, SheetModel, getRangeAddress, isHiddenCol, beginAction } from '../../workbook/index';
@@ -277,8 +277,7 @@ export class AutoFill {
         this.parent.notify(getRowIdxFromClientY, rowObj);
         this.parent.notify(getColIdxFromClientX, colObj);
         let rangeIndexes: number[];
-        const autofillRange: fillRangeInfo
-            = this.getAutoFillRange({ rowIndex: rowObj.clientY, colIndex: colObj.clientX });
+        const autofillRange: FillRangeInfo = this.getAutoFillRange({ rowIndex: rowObj.clientY, colIndex: colObj.clientX });
         if (autofillRange && autofillRange.fillRange) {
             rangeIndexes = [autofillRange.startCell.rowIndex, autofillRange.startCell.colIndex, autofillRange.endCell.rowIndex,
                 autofillRange.endCell.colIndex];
@@ -289,7 +288,7 @@ export class AutoFill {
         return rangeIndexes;
     }
 
-    private getAutoFillRange(idx: { colIndex: number, rowIndex: number }): fillRangeInfo {
+    private getAutoFillRange(idx: { colIndex: number, rowIndex: number }): FillRangeInfo {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const aCell: { rowIndex: number; colIndex: number; } = this.autoFillCell;
         const range: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
@@ -389,20 +388,26 @@ export class AutoFill {
         return modifiedIdx;
     }
 
-    private performAutoFill(args: { event: MouseEvent & TouchEvent, dAutoFillCell: string }): void {
-        if (!(args.event.clientX > this.autoFillElementPosition.left && args.event.clientX < this.autoFillElementPosition.left + 10) ||
+    private performAutoFill(
+        args: { event?: MouseEvent & TouchEvent, dAutoFillCell: string, fillType?: AutoFillType, rangeInfo?: FillRangeInfo }): void {
+        if (args.rangeInfo || !(args.event.clientX > this.autoFillElementPosition.left && args.event.clientX < this.autoFillElementPosition.left + 10) ||
             !(args.event.clientY > this.autoFillElementPosition.top && args.event.clientY < this.autoFillElementPosition.top + 10)) {
-            const rowObj: { clientY: number; target: Element; } = { clientY: getClientY(args.event), target: args.event.target as Element };
-            const colObj: { clientX: number; target: Element; } = { clientX: getClientX(args.event), target: args.event.target as Element };
+            let autofillRange: FillRangeInfo;
+            if (args.rangeInfo) {
+                autofillRange = args.rangeInfo;
+            } else {
+                const rowObj: { clientY: number; target: Element; } = { clientY: getClientY(args.event), target: args.event.target as Element };
+                const colObj: { clientX: number; target: Element; } = { clientX: getClientX(args.event), target: args.event.target as Element };
+                this.parent.notify(getRowIdxFromClientY, rowObj);
+                this.parent.notify(getColIdxFromClientX, colObj);
+                autofillRange = this.getAutoFillRange({ rowIndex: rowObj.clientY, colIndex: colObj.clientX });
+            }
             const sheet: SheetModel = this.parent.getActiveSheet();
-            this.parent.notify(getRowIdxFromClientY, rowObj);
-            this.parent.notify(getColIdxFromClientX, colObj);
-            const autofillRange: fillRangeInfo = this.getAutoFillRange({ rowIndex: rowObj.clientY, colIndex: colObj.clientX });
             if (autofillRange && autofillRange.fillRange) {
                 const eventArgs: AutoFillEventArgs = {
                     dataRange: sheet.name + '!' + args.dAutoFillCell,
                     fillRange: sheet.name + '!' + getRangeAddress(autofillRange.fillRange), direction: autofillRange.direction,
-                    fillType: this.parent.autoFillSettings.fillType, cancel: false
+                    fillType: args.fillType || this.parent.autoFillSettings.fillType, cancel: false
                 };
                 this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'autofill' });
                 if (eventArgs.cancel) {
@@ -413,10 +418,13 @@ export class AutoFill {
                     this.parent.notify(editAlert, null);
                     return;
                 }
-                this.performAutoFillAction(eventArgs, autofillRange, isLockedCell);
-                this.positionAutoFillElement({ isautofill: true });
+                if (args.rangeInfo) {
+                    this.performAutoFillAction(eventArgs, null, isLockedCell);
+                } else {
+                    this.performAutoFillAction(eventArgs, autofillRange, isLockedCell);
+                    this.positionAutoFillElement({ isautofill: true });
+                }
             }
-
         } else {
             this.positionAutoFillElement({ isautofill: false });
         }
@@ -424,63 +432,6 @@ export class AutoFill {
 
     private refreshCell(options: { rowIndex: number, colIndex: number }): void {
         this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange([options.rowIndex, options.colIndex, options.rowIndex, options.colIndex]);
-    }
-
-    private isRange(range: number[]): boolean {
-        return range && (range[0] !== range[2] || range[1] !== range[3]);
-    }
-
-    private fillRange(options: { verticalFill: boolean }): void {
-        const args: {
-            dataRange: string,
-            fillRange: string,
-            direction: AutoFillDirection,
-            fillType: AutoFillType
-        } = {
-            dataRange: '',
-            fillRange: '',
-            direction: 'Down',
-            fillType: 'CopyCells'
-        };
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        const range: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
-        const minr: number = range[0]; const minc: number = range[1]; const maxr: number = range[2]; const maxc: number = range[3];
-        const dirc: AutoFillDirection = this.getDirection({ rowIndex: minr, colIndex: minc }, { rowIndex: maxr, colIndex: maxc },
-                                                          options.verticalFill);
-        const isProperKey: boolean = options.verticalFill ? dirc === 'Down' : dirc === 'Right';
-        if (this.isRange(range) && isProperKey) {
-            if (options.verticalFill) {
-                args.dataRange = sheet.name + '!' + getRangeAddress([minr, minc, minr, maxc]);
-                args.fillRange = sheet.name + '!' + getRangeAddress([minr + 1, minc, maxr, maxc]);
-            }
-            else {
-                args.dataRange = sheet.name + '!' + getRangeAddress([minr, minc, maxr, minc]);
-                args.fillRange = sheet.name + '!' + getRangeAddress([minr, minc + 1, maxr, maxc]);
-            }
-        }
-        else {
-            if (options.verticalFill) {
-                if (!minr) {
-                    return;
-                }
-                args.dataRange = sheet.name + '!' + getRangeAddress([minr - 1, minc, minr - 1, maxc]);
-            }
-            else {
-                if (!minc) {
-                    return;
-                }
-                args.dataRange = sheet.name + '!' + getRangeAddress([minr, minc - 1, maxr, minc - 1]);
-            }
-            args.fillRange = sheet.name + '!' + getRangeAddress(range);
-        }
-        args.direction = options.verticalFill ? 'Down' : 'Right';
-        args.fillType = 'CopyCells';
-        const isLockedCell: boolean = isLockedCells(this.parent, getRangeIndexes(args.fillRange));
-        if (sheet.isProtected && isLockedCell) {
-            this.parent.notify(editAlert, null);
-            return;
-        }
-        this.performAutoFillAction(args);
     }
 
     private getDirection(endCell: { rowIndex: number, colIndex: number }, currcell: { rowIndex: number, colIndex: number },
@@ -517,7 +468,7 @@ export class AutoFill {
         return null;
     }
 
-    private performAutoFillAction(args: AutoFillEventArgs, autoFillRange?: fillRangeInfo, isLockedCell?: boolean): void {
+    private performAutoFillAction(args: AutoFillEventArgs, autoFillRange?: FillRangeInfo, isLockedCell?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (this.isMergedRange(getRangeIndexes(args.fillRange))) {
@@ -594,7 +545,6 @@ export class AutoFill {
         this.parent.on(hideAutoFillOptions, this.hideAutoFillOptions, this);
         this.parent.on(hideAutoFillElement, this.hideAutoFillElement, this);
         this.parent.on(performAutoFill, this.performAutoFill, this);
-        this.parent.on(fillRange, this.fillRange, this);
         this.parent.on(selectAutoFillRange, this.selectAutoFillRange, this);
         this.parent.on(refreshCell, this.refreshCell, this);
         this.parent.on(getautofillDDB, this.getautofillDDB, this);
@@ -607,7 +557,6 @@ export class AutoFill {
             this.parent.off(hideAutoFillOptions, this.hideAutoFillOptions);
             this.parent.off(hideAutoFillElement, this.hideAutoFillElement);
             this.parent.off(performAutoFill, this.performAutoFill);
-            this.parent.off(fillRange, this.fillRange);
             this.parent.off(selectAutoFillRange, this.selectAutoFillRange);
             this.parent.off(refreshCell, this.refreshCell);
             this.parent.off(getautofillDDB, this.getautofillDDB);
@@ -639,11 +588,3 @@ export class AutoFill {
         return 'autofill';
     }
 }
-
-interface fillRangeInfo {
-    startCell?: { colIndex: number, rowIndex: number },
-    endCell?: { colIndex: number, rowIndex: number },
-    fillRange?: number[],
-    direction?: AutoFillDirection
-}
-

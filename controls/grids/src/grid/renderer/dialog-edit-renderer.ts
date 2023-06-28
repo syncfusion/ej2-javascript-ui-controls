@@ -1,7 +1,7 @@
 import { IGrid, ResponsiveDialogArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
-import { remove, extend, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { remove, extend, updateBlazorTemplate, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
@@ -63,7 +63,10 @@ export class DialogEditRender {
             return responsiveDlgRenderer.renderResponsiveHeader(undefined, args);
         } else {
             if (gObj.editSettings.headerTemplate) {
-                header = this.getDialogEditTemplateElement('HeaderTemplate', args);
+                header = (initializeCSPTemplate((): string => {
+                    return this.getDialogEditTemplateElement('HeaderTemplate', args).outerHTML;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                }) as any);
             } else if (this.isEdit) {
                 header = this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0];
             } else {
@@ -99,7 +102,9 @@ export class DialogEditRender {
                 created: this.dialogCreated.bind(this),
                 closeOnEscape: true, width: gObj.editSettings.template ? 'auto' : '330px',
                 target: args.target ? args.target : document.body, animationSettings: { effect: 'None' },
-                footerTemplate: gObj.editSettings.footerTemplate ? this.getDialogEditTemplateElement('FooterTemplate', args) : null,
+                footerTemplate: gObj.editSettings.footerTemplate ? initializeCSPTemplate((): string => {
+                    return this.getDialogEditTemplateElement('FooterTemplate', args).outerHTML;
+                }) : null,
                 buttons: [{
                     click: this.btnClick.bind(this),
                     buttonModel: { content: this.l10n.getConstant('SaveButton'),

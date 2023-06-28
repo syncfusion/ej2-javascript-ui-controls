@@ -1,5 +1,7 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, ActionBeginEventArgs } from '../base/interface';
+import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { IRichTextEditor } from '../base/interface';
+import { IHtmlFormatterCallBack } from '../../common/interface';
 /**
  * `ExecCommandCallBack` module is used to run the editor manager command
  */
@@ -15,8 +17,9 @@ export class ExecCommandCallBack {
         this.parent.on(events.destroy, this.removeEventListener, this);
     }
 
-    private commandCallBack(args: ActionBeginEventArgs): void {
-        if (args.requestType !== 'Undo' && args.requestType !== 'Redo') {
+    private commandCallBack(args: IHtmlFormatterCallBack): void {
+        const formatPainterCopy: boolean = !isNOU(args.requestType) && args.requestType === 'FormatPainter' && args.action === 'format-copy';
+        if (!isNOU(args) && !isNOU(args.requestType) && args.requestType !== 'Undo' && args.requestType !== 'Redo' && !formatPainterCopy) {
             this.parent.formatter.saveData();
         }
         this.parent.notify(events.toolbarRefresh, { args: args });

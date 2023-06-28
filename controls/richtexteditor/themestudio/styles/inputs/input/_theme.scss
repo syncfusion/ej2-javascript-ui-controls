@@ -35,6 +35,9 @@
     @if ($input-skin-name == 'FluentUI') {
       border-color: $input-group-icon-border-color;
     }
+    @if ($input-skin-name == 'Material3') {
+      margin: 0;
+    }
   }
 
   .e-input-group.e-disabled .e-input-group-icon,
@@ -156,7 +159,6 @@
     }
     @if $input-skin-name == 'Material3' {
       border: $input-icon-hover-border;
-      border-radius: $input-icon-hover-border-radius;
       background: $input-icon-hover-bg-color;
     }
     color: $input-group-hovered-color;
@@ -1248,7 +1250,6 @@
     }
     @if $input-skin-name == 'Material3' {
       border: $input-clear-icon-hover-border;
-      border-radius: $input-clear-icon-hover-border-radius;
       background: $input-clear-icon-hover-bg-color;
     }
   }

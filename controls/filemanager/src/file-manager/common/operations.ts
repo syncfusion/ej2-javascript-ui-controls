@@ -1,4 +1,4 @@
-import { Ajax, createElement, select, extend } from '@syncfusion/ej2-base';
+import { Ajax, createElement, select, extend, Internationalization  } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, setValue, getValue } from '@syncfusion/ej2-base';
 import { IFileManager, ReadArgs, BeforeSendEventArgs, BeforeDownloadEventArgs } from '../base/interface';
 import * as events from '../base/constant';
@@ -6,6 +6,7 @@ import { createDialog, createExtDialog } from '../pop-up/dialog';
 import { FileDetails, FileDragEventArgs, FailureEventArgs, SuccessEventArgs } from '../../index';
 import { fileType, setNodeId, getLocaleText, setDateObject, doPasteUpdate, getParentPath, getPathObject } from '../common/utility';
 import { generatePath } from '../common/utility';
+import { ColumnModel } from '@syncfusion/ej2-grids';
 
 /**
  * Function to read the content from given path in File Manager.
@@ -163,6 +164,19 @@ export function GetDetails(parent: IFileManager, names: string[], path: string, 
  * @returns {void}
  * @private
  */
+function getDateFormat(parent: IFileManager): string {
+    const columns: ColumnModel[] = parent.detailsViewSettings.columns;
+    let dateFormat: string;
+    for (var i = 0; i < columns.length; i++) {
+        if (columns[i as number].field === '_fm_modified') {
+            if(!isNOU(columns[i as number].format)) {
+                dateFormat = columns[i as number].format.toString();
+            }
+            break;
+        }
+    }
+    return dateFormat
+}
 function createAjax(
     // eslint-disable-next-line
     parent: IFileManager, data: Object, fn: Function, event?: string,
@@ -225,8 +239,9 @@ function createAjax(
                             }
                         }
                     }
+                    const intl: Internationalization = new Internationalization(parent.locale);
                     if (!isNOU(result.files)) {
-                        setDateObject(result.files);
+                        setDateObject(result.files, intl, getDateFormat(parent));
                         for (let i: number = 0, len: number = result.files.length; i < len; i++) {
                             // eslint-disable-next-line
                             const item: Object = result.files[i];
@@ -299,6 +314,7 @@ function triggerAjaxFailure(
         getValue('onFailure', beforeSendArgs.ajaxSettings)();
     }
 }
+
 /**
  * Function for read success in File Manager.
  *

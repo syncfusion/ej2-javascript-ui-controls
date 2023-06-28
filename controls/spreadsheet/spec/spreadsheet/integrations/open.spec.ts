@@ -66,16 +66,16 @@ describe('Open & Save ->', () => {
         it('Save dialog opening using keyboard shortcuts->', (done: Function) => {
             helper.triggerKeyNativeEvent(83,true);
             setTimeout(() => {
-                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
-                helper.setAnimationToNone('.e-dialog');
+                expect(helper.getElementFromSpreadsheet('.e-open-dlg.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-open-dlg.e-dialog');
                 helper.click('.e-dialog .e-flat');
                 done();
             });
         });
         it('Providing no name in save as dialog->', (done: Function) => {
-            helper.triggerKeyNativeEvent(83,true);
+            helper.triggerKeyNativeEvent(113, false, false, null, undefined, true);
             setTimeout(() => {
-                helper.setAnimationToNone('.e-dialog');
+                helper.setAnimationToNone('.e-open-dlg.e-dialog');
                 (helper.getElements('.e-dialog input')[0] as HTMLInputElement).value = '';
                 helper.click('.e-dialog .e-primary');
                 var alertText =  (document.getElementsByClassName('e-file-alert-span')[0] as HTMLElement).textContent;
@@ -87,7 +87,7 @@ describe('Open & Save ->', () => {
         it('Providing invalid characters in name input in save as dialog->', (done: Function) => {
             helper.triggerKeyNativeEvent(83,true);
             setTimeout(() => {
-                helper.setAnimationToNone('.e-dialog');
+                helper.setAnimationToNone('.e-open-dlg.e-dialog');
                 (helper.getElements('.e-dialog input')[0] as HTMLInputElement).value = '/Test/';
                 helper.click('.e-dialog .e-primary');
                 var alertText =  (document.getElementsByClassName('e-file-alert-span')[0] as HTMLElement).textContent;
@@ -99,7 +99,7 @@ describe('Open & Save ->', () => {
         it('Providing name with length > 218->', (done: Function) => {
             helper.triggerKeyNativeEvent(83,true);
             setTimeout(() => {
-                helper.setAnimationToNone('.e-dialog');
+                helper.setAnimationToNone('.e-open-dlg.e-dialog');
                 (helper.getElements('.e-dialog input')[0] as HTMLInputElement).value = 'xcvbnjhgfdwertyuytresdxcvbnbvcxzxcvbnmjuytrewqasxcvbhjuytredscvhjiokjhgfdsxsaqwertyuioooooooooplkjhgfdsazxcvbnmkiuytrewqasdfghjklkmnbvcxzaqwertyujhgfdertyuiuytrewqazxcvbnjkioiuytrewqwertyuiopoiuytrewqasdfghjklkjhgfdszxcvbnm';
                 helper.click('.e-dialog .e-primary');
                 var alertText =  (document.getElementsByClassName('e-file-alert-span')[0] as HTMLElement).textContent;
@@ -120,11 +120,11 @@ describe('Open & Save ->', () => {
         it('Cancelling the save as dialog opening', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
-            args.cancel = true;
+                args.cancel = true;
             };
             helper.triggerKeyNativeEvent(83,true);
             setTimeout(function () {
-                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull();
+                expect(helper.getElementFromSpreadsheet('.e-open-dlg.e-dialog.e-popup-open')).toBeNull();
                 done();
             });
         });

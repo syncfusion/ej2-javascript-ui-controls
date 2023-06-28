@@ -16,8 +16,8 @@ import { Periods } from '../common/model/base';
 import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
 import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs, IZoomingEventArgs  } from '../chart/model/chart-interface';
 import { PeriodsModel } from '../common/model/base-model';
-import { TooltipSettings } from '../common/model/base';
-import { TooltipSettingsModel } from '../common/model/base-model';
+import { StockTooltipSettings } from '../common/model/base';
+import { StockTooltipSettingsModel } from '../common/model/base-model';
 import { calculateSize, getElement } from '../common/utils/helper';
 import { RangeNavigator } from '../range-navigator/range-navigator';
 import { getRangeValueXByPoint } from '../range-navigator/utils/helper';
@@ -156,7 +156,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * @complex {opposedPosition=true, labelPosition=AxisPosition.Outside}
      */
 
-    @Complex<StockChartAxisModel>({ name: 'primaryYAxis', opposedPosition: true, labelPosition: 'Inside' }, StockChartAxis)
+    @Complex<StockChartAxisModel>({ name: 'primaryYAxis', opposedPosition: true, labelPosition: 'Inside', tickPosition: 'Inside' }, StockChartAxis)
     public primaryYAxis: StockChartAxisModel;
 
 
@@ -211,7 +211,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Options for customizing the title of the Chart.
      */
 
-    @Complex<StockChartFontModel>({ size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' }, StockChartFont)
+    @Complex<StockChartFontModel>({ size: '16px', fontWeight: '600', color: null, fontStyle: 'Normal', fontFamily: null }, StockChartFont)
     public titleStyle: StockChartFontModel;
     /**
      * Defines the collection of technical indicators, that are used in financial markets.
@@ -222,14 +222,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Options for customizing the tooltip of the chart.
      */
 
-    @Complex<TooltipSettingsModel>({ shared: true, enableMarker: false }, TooltipSettings)
-    public tooltip: TooltipSettingsModel;
+    @Complex<StockTooltipSettingsModel>({ shared: true, enableMarker: false }, StockTooltipSettings)
+    public tooltip: StockTooltipSettingsModel;
 
 
     /**
      * Options for customizing the crosshair of the chart.
      */
-    @Complex<CrosshairSettingsModel>({ dashArray: '5' }, CrosshairSettings)
+    @Complex<CrosshairSettingsModel>({ dashArray: '5', lineType: 'Vertical'}, CrosshairSettings)
     public crosshair: CrosshairSettingsModel;
 
     /**
@@ -241,7 +241,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Options to enable the zooming feature in the chart.
      */
-    @Complex<ZoomSettingsModel>({}, ZoomSettings)
+    @Complex<ZoomSettingsModel>({enablePan: true}, ZoomSettings)
     public zoomSettings: ZoomSettingsModel;
 
     /**
@@ -506,7 +506,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * It specifies the types of series in financial chart.
      */
-    @Property(['Line', 'Hilo', 'OHLC', 'Hollow Candle', 'Spline', 'Candle'])
+    @Property([])
     public seriesType: ChartSeriesType[];
 
     /**
@@ -524,7 +524,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * It specifies the types of trendline types in financial chart.
      */
-    @Property(['Linear', 'Exponential', 'Polynomial', 'Logarithmic', 'Moving Average'])
+    @Property([])
     public trendlineType: TrendlineTypes[];
 
     /**
@@ -651,6 +651,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public initialClipRect: Rect;
     /** @private */
     public tempAvailableSize: Size;
+    /** @private */
+    public mouseMoveEvent: PointerEvent;
 
     /**
      * Constructor for creating the widget
@@ -880,7 +882,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.createElement('div');
         tooltipDiv.id = this.element.id + '_Secondary_Element';
         if (this.title) {
-            this.titleSize = measureText(this.title, this.titleStyle);
+            this.titleSize = measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont);
             this.titleSize.height += 15;  // for title padding
         } else {
             this.titleSize = { height: null, width: null };
@@ -1063,7 +1065,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
                 this.renderTitle();
                 this.renderLegend();
                 this.cartesianChart.cartesianChartRefresh(this);
-                this.mainObject.setAttribute('width', this.availableSize.width.toString());
+                if (!this.legendSettings.visible) {
+                    this.mainObject.setAttribute('width', this.availableSize.width.toString());
+                }
                 if (this.enablePeriodSelector) {
                     this.renderPeriodSelector();
                 }
@@ -1103,7 +1107,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
             this.mouseDownY = this.previousMouseMoveY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
             this.mouseDownX = this.previousMouseMoveX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
-            this.setMouseXY(this.mouseDownX, this.mouseDownY);
+            this.setMouseXY(pageX, pageY);
             this.referenceXAxis = this.chart.primaryXAxis as Axis;
             getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
             this.mouseDownXPoint = getRangeValueXByPoint(this.mouseX - this.referenceXAxis.rect.x, this.referenceXAxis.rect.width,
@@ -1150,6 +1154,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         this.trigger('stockChartMouseUp', { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.allowPan = false;
+        if (this.rangeNavigator) {
+            this.rangeNavigator.rangeSlider.isDrag = false;
+        }
         if (this.isTouch) {
             this.threshold = new Date().getTime() + 300;
         }
@@ -1182,6 +1189,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public stockChartOnMouseMove(e: PointerEvent): boolean {
         let pageX: number;
         let touchArg: TouchEvent; let pageY: number;
+        this.mouseMoveEvent = e;
         if (e.type === 'touchmove') {
             this.isTouch = true; touchArg = <TouchEvent & PointerEvent>e;
             pageY = touchArg.changedTouches[0].clientY;
@@ -1205,8 +1213,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * @private
      */
     public chartOnMouseMove(e: PointerEvent | TouchEvent): boolean {
+        if (this.rangeNavigator && this.rangeNavigator.rangeSlider.isDrag) {
+            this.rangeNavigator.mouseX = this.mouseX;
+            this.rangeNavigator.rangeSlider.mouseMoveHandler(e);
+        }
         if (this.allowPan && this.mouseDownXPoint && this.mouseX !== this.previousMouseMoveX && this.zoomSettings.enablePan) {
             this.onPanning = true;
+            this.zoomChange = false;
             getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
             this.mouseUpXPoint = getRangeValueXByPoint(this.mouseX - this.referenceXAxis.rect.x, this.referenceXAxis.rect.width,
                                                        this.referenceXAxis.visibleRange, this.referenceXAxis.isInversed);
@@ -1216,27 +1229,37 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
                 if (this.seriesXMin <= this.referenceXAxis.visibleRange.min - diff) {
                     this.startValue = this.referenceXAxis.visibleRange.min - diff;
                     this.endValue = this.referenceXAxis.visibleRange.max - diff;
-                    this.cartesianChart.cartesianChartRefresh(this);
                     if (this.enableSelector) {
-                        this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min - diff,
-                                                        this.referenceXAxis.visibleRange.max - diff);
+                        this.rangeNavigator.rangeSlider.setSlider(this.referenceXAxis.visibleRange.min - diff,
+                                                                  this.referenceXAxis.visibleRange.max - diff,
+                                                                  !this.rangeNavigator.enableDeferredUpdate,
+                                                                  (this.rangeNavigator.rangeTooltipModule
+                                                                  && this.rangeNavigator.tooltip.enable));
+                    }
+                    else {
+                        this.cartesianChart.cartesianChartRefresh(this);
                     }
                 }
             } else {
                 if (this.seriesXMax >= this.referenceXAxis.visibleRange.max + diff) {
                     this.startValue = this.referenceXAxis.visibleRange.min + diff;
                     this.endValue = this.referenceXAxis.visibleRange.max + diff;
-                    this.cartesianChart.cartesianChartRefresh(this);
                     if (this.enableSelector) {
-                        this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min + diff,
-                                                        this.referenceXAxis.visibleRange.max + diff);
+                        this.rangeNavigator.rangeSlider.setSlider(this.referenceXAxis.visibleRange.min + diff,
+                                                                  this.referenceXAxis.visibleRange.max + diff,
+                                                                  !this.rangeNavigator.enableDeferredUpdate,
+                                                                  (this.rangeNavigator.rangeTooltipModule
+                                                                  && this.rangeNavigator.tooltip.enable));
+                    }
+                    else {
+                        this.cartesianChart.cartesianChartRefresh(this);
                     }
                 }
             }
 
         }
         this.notify(Browser.touchMoveEvent, e);
-        if ((<HTMLElement>e.target).id === '') { //to remove the tooltip when hover on mouse move
+        if ((<HTMLElement>e.target).id === ''  && !this.onPanning === true) { //to remove the tooltip when hover on mouse move
             let element: HTMLElement;
             if (this.chart.tooltip.enable || this.crosshair.enable) {
                 element = document.getElementById(this.element.id + '_stockChart_chart_tooltip');
@@ -1320,6 +1343,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         if (this.stockEvent) {
             this.stockEvent.removeStockEventTooltip(1000);
         }
+        if (this.rangeNavigator) {
+            this.rangeNavigator.rangeSlider.isDrag = false;
+        }
+        if (this.onPanning) {
+            this.onPanning = false;
+            this.chart.mouseLeave(e as PointerEvent);
+            getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'auto');
+        }
         return false;
     }
 
@@ -1393,8 +1424,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             );
             textElement(
                 this.renderer as unknown as SvgRenderer,
-                options, this.titleStyle, this.titleStyle.color || this.findTitleColor(),
-                getElement(this.element.id + '_stockChart_Title'), false, false
+                options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitleFont.color || this.findTitleColor(),
+                getElement(this.element.id + '_stockChart_Title'), false, false, null, null, null, null, null, null, null, null, this.themeStyle.chartTitleFont
             );
             this.availableSize.height -= (this.titleSize.height + 5);
         }

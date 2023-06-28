@@ -3,6 +3,7 @@
  */
 export * from './intl/intl-base';
 export * from './ajax';
+export * from './fetch';
 export * from './animation';
 export * from './animation-model';
 export * from './base';

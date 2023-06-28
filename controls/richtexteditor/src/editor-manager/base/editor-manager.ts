@@ -1,5 +1,5 @@
 import { Observer } from '@syncfusion/ej2-base';
-import { ICommandModel } from './interface';
+import { ICommandModel, IFormatPainterEditor } from './interface';
 import { IHtmlKeyboardEvent } from './interface';
 import { EditorExecCommand as ExecCommand } from './types';
 import * as CONSTANT from './constant';
@@ -24,6 +24,7 @@ import * as EVENTS from './../../common/constant';
 import { InsertTextExec } from '../plugin/insert-text';
 import { NodeCutter } from '../plugin/nodecutter';
 import { FormatPainterActions } from '../plugin/format-painter-actions';
+import { EmojiPickerAction } from '../plugin/emoji-picker-action';
 /**
  * EditorManager internal component
  *
@@ -51,8 +52,9 @@ export class EditorManager {
     public clearObj: ClearFormatExec;
     public undoRedoManager: UndoRedoManager;
     public msWordPaste: MsWordPaste;
-    public formatPaintetrObj: FormatPainterActions;
+    public formatPainterEditor: IFormatPainterEditor;
     public editableElement: Element;
+    public emojiPickerObj: EmojiPickerAction;
     /**
      * Constructor for creating the component
      *
@@ -82,7 +84,8 @@ export class EditorManager {
         this.tableObj = new TableCommand(this);
         this.undoRedoManager = new UndoRedoManager(this, options.options);
         this.msWordPaste = new MsWordPaste(this);
-        this.formatPaintetrObj = new FormatPainterActions(this, options.formatPainterSettings);
+        this.formatPainterEditor = new FormatPainterActions(this, options.formatPainterSettings);
+        this.emojiPickerObj = new EmojiPickerAction(this);
         this.wireEvents();
     }
     private wireEvents(): void {
@@ -233,6 +236,9 @@ export class EditorManager {
         case 'formatpainter':
             this.observer.notify(EVENTS.FORMAT_PAINTER_ACTIONS, { item: exeValue, subCommand: value, event: event, callBack: callBack });
             break;
+        case 'emojipicker':
+            this.observer.notify(EVENTS.EMOJI_PICKER_ACTIONS, { item: exeValue, subCommand: value, value: text,
+                event : event, callBack: callBack });
         }
     }
 }

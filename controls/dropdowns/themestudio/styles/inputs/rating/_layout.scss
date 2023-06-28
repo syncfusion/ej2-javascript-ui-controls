@@ -35,6 +35,8 @@
       padding: $rating-li-padding;
       line-height: $rating-li-line-height;
       display: block;
+      min-width: calc(1em + (2 * $rating-li-padding)); //calc(font-size + (2 * padding));
+      min-height: calc(1em + (2 * $rating-li-padding)); //calc(font-size + (2 * padding));
       //For Blazor Tooltip
       position: relative;
 

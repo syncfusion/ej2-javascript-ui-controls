@@ -17,6 +17,14 @@
         }
       }
 
+      &:first-child:not(.e-toolbar-multirow) {
+
+        > .e-toolbar-item:last-child,
+        > .e-toolbar-right .e-toolbar-item:last-child {
+          margin-right: $tbar-item-bgr-mrgn;
+        }
+      }
+
       .e-hscroll-bar .e-hscroll-content {
 
         > .e-toolbar-item:last-child {

@@ -23,7 +23,8 @@ export class Grouping implements IAction {
     private parentElement: HTMLElement;
     private groupDialog: Dialog;
     private selectedCellsInfo: SelectedCellsInfo[];
-    private isUpdate: boolean;
+    /** @hidden */
+    public isUpdate: boolean;
     private dateGroup: RegExp = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
 
     private handlers: {
@@ -187,7 +188,11 @@ export class Grouping implements IAction {
         if (this.isUpdate) {
             this.parent.setProperties({ dataSourceSettings: { groupSettings: groupFields } }, true);
             this.parent.updateGroupingReport(groupFields, (type === 'date' ? 'Date' : type === 'custom' ? 'Custom' : 'Number'));
-            this.parent.initEngine();
+            if (this.parent.dataSourceSettings.mode === 'Server') {
+                this.parent.getEngine('onRefresh');
+            } else {
+                this.parent.initEngine();
+            }
         }
     }
 
@@ -209,6 +214,8 @@ export class Grouping implements IAction {
                 }
             }
         }
+        // eslint-disable-next-line security/detect-object-injection
+        delete this.parent.engineModule.groupingFieldsInfo[fieldName];
         return groupFields;
     }
 
@@ -745,6 +752,9 @@ export class Grouping implements IAction {
             const groupFields: IGroupSettings[] = groupType === 'date' ? groups[groupOrders[0]] : groups[groupOrders[1]];
             if (groupType === 'date') {
                 groups[groupOrders[0]] = groupFields.filter((field: IGroupSettings) => { return field.name !== fieldName; });
+                if (groups[groupOrders[0]].length === 0) { // eslint-disable-next-line security/detect-object-injection
+                    delete this.parent.engineModule.groupingFieldsInfo[fieldName];
+                }
             } else {
                 groups[groupOrders[1]] = groupFields.filter((field: IGroupSettings) => { return field.name !== fieldName; });
             }

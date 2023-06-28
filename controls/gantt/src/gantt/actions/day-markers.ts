@@ -46,9 +46,12 @@ export class DayMarkers {
     }
 
     private refreshMarkers(): void {
-        this.eventMarkerRender.renderEventMarkers();
         this.nonworkingDayRender.renderWeekends();
         this.nonworkingDayRender.renderHolidays();
+        if (this.parent.gridLines === 'Vertical' || this.parent.gridLines === 'Both') {
+            this.parent['renderChartVerticalLines']();
+        }
+        this.eventMarkerRender.renderEventMarkers();
     }
 
     private updateHeight(): void {

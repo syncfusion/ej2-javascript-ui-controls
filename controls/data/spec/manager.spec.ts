@@ -2,8 +2,8 @@
  * Test case for dataManager
  */
 import { DataManager, DataOptions } from '../src/manager';
-import { RemoteSaveAdaptor } from '../src/adaptors';
-import { Query } from '../src/query';
+import { JsonAdaptor, ODataV4Adaptor, RemoteSaveAdaptor } from '../src/adaptors';
+import { Predicate, Query } from '../src/query';
 import { extend } from '@syncfusion/ej2-base';
 
 describe('DataManager', () => {
@@ -607,6 +607,116 @@ describe('DataManager', () => {
                 it('To check offline mode.', () => {
                     expect(dataManager.dataSource.offline).toEqual(true);
                 });
+            });
+        });
+
+        describe('persistence support in datamanager', () => {
+            let promise: Promise<Object>;
+            let dataManagernew: DataManager;
+            beforeAll((done: Function) => {
+                dataManagernew = new DataManager({
+                    url: '/api/Employees',
+                    adaptor: new ODataV4Adaptor,
+                    enablePersistence: true,
+                    id: 'DMNew',
+                });
+                promise = dataManagernew.executeQuery(new Query().sortBy("EmployeeID", "descending").take(8));
+                promise.then((e: { result: Object[] }) => {
+                    result = e.result;
+                    done();
+                });
+            });
+            it('trigger unload event to mimic browser page load action', (done: Function) => {
+                window.dispatchEvent(new Event('unload'));
+                    dataManagernew = new DataManager({
+                        url: '/api/Employees',
+                        adaptor: new ODataV4Adaptor,
+                        enablePersistence: true,
+                        id: 'DMNew',
+                    });
+                    promise = dataManagernew.executeQuery(new Query().sortBy("EmployeeID", "ascending"));
+                    promise.then((e: { result: Object[] }) => {
+                        result = e.result;
+                        done();
+                    });
+            });
+            it('checking ascending sorted result in persistence enabled data manager', () => {
+                expect((result[0] as any).EmployeeID === 10001).toBe(false);
+            });
+
+            afterAll(() => {
+                dataManagernew.clearPersistence();
+            });
+        });
+
+        describe('persistence support in datamanager - persitence with Filter query', () => {
+            let dataManagernew: DataManager;
+            beforeAll((done: Function) => {
+                dataManagernew = new DataManager({
+                    json: data,
+                    adaptor: new JsonAdaptor(),
+                    enablePersistence: true,
+                    id: 'DMNew',
+                });
+                let predicate: Predicate = new Predicate('OrderID', 'equal', 10248);
+                predicate = predicate.or('OrderID', 'equal', 10249);
+                result = dataManagernew.executeLocal(new Query().where(predicate));
+                done();
+            });
+            it('trigger unload event to mimic browser page load action', () => {
+                    window.dispatchEvent(new Event('unload'));
+                    dataManagernew = new DataManager({
+                        json: data,
+                        adaptor: new JsonAdaptor(),
+                        enablePersistence: true,
+                        id: 'DMNew',
+                    });
+                    result = dataManagernew.executeLocal(new Query().take(4));
+
+            });
+            it('checking Filtered result in persistence enabled data manager', () => {
+                expect(result.length).toBe(2);
+                expect((result[0] as any).OrderID).toBe(10248);
+                expect((result[1] as any).OrderID).toBe(10249);
+            });
+
+            afterAll(() => {
+                dataManagernew.clearPersistence();
+            });
+        });
+
+        describe('persistence support in datamanager - ignoreOnPersist', () => {
+            let dataManagernew: DataManager;
+            beforeAll((done: Function) => {
+                dataManagernew = new DataManager({
+                    json: data,
+                    adaptor: new JsonAdaptor(),
+                    enablePersistence: true,
+                    id: 'DMNew',
+                    ignoreOnPersist: ['onSelect']
+                });
+                let query: Query = new Query().select(['OrderID', 'CustomerID']).take(3);
+                result = dataManagernew.executeLocal(query);
+                done();
+            });
+            it('trigger unload event to mimic browser page load action', () => {
+                    window.dispatchEvent(new Event('unload'));
+                    dataManagernew = new DataManager({
+                        json: data,
+                        adaptor: new JsonAdaptor(),
+                        enablePersistence: true,
+                        id: 'DMNew',
+                        ignoreOnPersist: ['onSelect']
+
+                    });
+                    result = dataManagernew.executeLocal(new Query().take(5));
+            });
+            it('checking result in ignoreonPersist as "onSelect" enabled data manager', () => {
+                expect(Object.keys(result[0]).length === 2).toBeFalsy;
+            });
+
+            afterAll(() => {
+                dataManagernew.clearPersistence();
             });
         });
     });

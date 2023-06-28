@@ -58,6 +58,7 @@
       color: $icon-color;
       content: '\e8bc';
       font-family: 'e-icons';
+      font-size: 14px;
     }
 
     .e-de-cmt-post::before {
@@ -232,7 +233,7 @@
   .e-de-table-border-none-setting::before {
     color: $icon-color;
     content: '\e7eb';
-    font-size: $de-border-none-setting-font-size;
+    font-size: $de-border-setting-font-size;
     position: absolute;
   }
 
@@ -266,14 +267,14 @@
 
   .e-de-para-border-none-setting::before {
     color: $icon-color;
-    content: '\e93f';
-    font-size: $de-border-none-setting-font-size;
+    content: '\e890';
+    font-size: $de-border-setting-font-size;
     position: absolute;
   }
 
   .e-de-para-border-box-setting::before {
     color: $icon-color;
-    content: '\e940';
+    content: '\e891';
     font-size: $de-border-setting-font-size;
     left: 2px;
     position: absolute;
@@ -282,7 +283,7 @@
 
   .e-de-para-border-shadow-setting::before {
     color: $icon-color;
-    content: '\e942';
+    content: '\e892';
     font-size: $de-border-setting-font-size;
     left: 2px;
     position: absolute;
@@ -291,7 +292,7 @@
 
   .e-de-para-border-custom-setting::before {
     color: $icon-color;
-    content: '\e946';
+    content: '\e88f';
     font-size: $de-border-setting-font-size;
     left: 2px;
     position: absolute;

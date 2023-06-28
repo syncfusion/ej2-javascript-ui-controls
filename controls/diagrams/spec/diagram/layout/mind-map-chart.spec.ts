@@ -268,6 +268,78 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Vertical Orientation in mindmap', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let data: object[] = [
+            { id: 1, Label: "Creativity", fill: "red", branch: "Root" },
+            { id: 3, Label: "Brainstorming", parentId: 1, branch: "Right", fill: "red" },
+            { id: 4, Label: "Complementing", parentId: 1, branch: "Left", fill: "red" },
+            { id: 22, Label: "Sessions", parentId: 3, branch: "subRight", fill: "red" },
+            { id: 23, Label: "Generate", parentId: 3, branch: "subRight", fill: "red" },
+            { id: 25, Label: "Local", parentId: 22, branch: "subRight" },
+            { id: 26, Label: "Remote", parentId: 22, branch: "subRight" },
+            { id: 27, Label: "Individual", parentId: 22, branch: "subRight" },
+            { id: 28, Label: "Teams", parentId: 22, branch: "subRight" },
+            { id: 29, Label: "Ideas", parentId: 23, branch: "subRight" },
+            { id: 30, Label: "Engagement", parentId: 23, branch: "subRight" },
+            { id: 31, Label: "Product", parentId: 29, branch: "subRight" },
+            { id: 32, Label: "Service", parentId: 29, branch: "subRight" },
+            { id: 33, Label: "Business Direction", parentId: 29, branch: "subRight" },
+            { id: 34, Label: "Empowering", parentId: 30, branch: "subRight" },
+            { id: 35, Label: "Ownership", parentId: 30, branch: "subRight" },
+            { id: 50, Label: "Information", parentId: 4, branch: "subLeft" },
+            { id: 51, Label: "Expectations", parentId: 4, branch: "subLeft" },
+            { id: 53, Label: "Competitors", parentId: 50, branch: "subLeft" },
+            { id: 54, Label: "Products", parentId: 50, branch: "subLeft" },
+            { id: 55, Label: "Features", parentId: 50, branch: "subLeft" },
+            { id: 56, Label: "Other Data", parentId: 50, branch: "subLeft" },
+            { id: 59, Label: "Organization", parentId: 51, branch: "subLeft" },
+            { id: 60, Label: "Customer", parentId: 51, branch: "subLeft" },
+            { id: 61, Label: "Staff", parentId: 51, branch: "subLeft" },
+            { id: 62, Label: "Stakeholders", parentId: 51, branch: "subLeft" }
+        ];
+
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+
+             diagram = new Diagram({
+                width: '100%', height: '550px',
+                layout: { type: 'MindMap',verticalAlignment : 'Auto', horizontalAlignment : 'Auto' , verticalSpacing : 20, horizontalSpacing : 40},
+                dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: items, root: String(1) },
+                getNodeDefaults: (obj: Node) => {
+                    obj.shape = { type: 'Text', content: (obj.data as { Label: 'string' }).Label };
+                    obj.style = { fill: 'lightgrey', strokeColor: 'none', strokeWidth: 2 };
+                    obj.borderColor = 'black';
+                    obj.backgroundColor = 'lightgrey';
+                    obj.borderWidth = 1;
+                    (obj.shape as TextModel).margin = { left: 5, right: 5, top: 5, bottom: 5 };
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.type = 'Orthogonal';
+                    return connector;
+                }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('vertical Orientation in mindmap', (done: Function) => {
+            expect(diagram.layout.orientation === 'TopToBottom').toBe(true);
+            diagram.layout.orientation = 'Horizontal';
+            expect(diagram.layout.orientation === 'Horizontal').toBe(true);
+            let bounds: Rect = diagram.spatialSearch.getPageBounds();
+            expect((bounds.x == 417 || bounds.x == 337 || bounds.x == 500) && (bounds.y == 107 || bounds.y == 70) && (bounds.width == 884 || bounds.width == 690 || bounds.width === 918 ||
+                bounds.width == 688 || bounds.width === 880) && (bounds.height == 412 || bounds.height == 341)).toBe(true);
+            done();
+        });
+    });
+
     describe('Without datasource and without root ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

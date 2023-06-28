@@ -9,4 +9,16 @@
       content: '\e705';
     }
   }
+
+  .e-timepicker-mob-popup-wrap .e-timepicker.e-popup-expand,
+  .e-datetimepicker.e-popup-expand {
+
+    #{if(&, '&', '*')} .e-model-header {
+
+      #{if(&, '&', '*')} .e-popup-close::before {
+        content: '\e932';
+        font-family: 'e-icons';
+      }
+    }
+  }
 }

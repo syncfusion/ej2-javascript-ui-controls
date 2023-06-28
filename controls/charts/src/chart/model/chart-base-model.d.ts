@@ -376,6 +376,13 @@ export interface StripLineSettingsModel {
      */
     opacity?: number;
 
+    /**
+     * The URL of the background image for the strip line.
+     *
+     * @default ''
+     */
+    imageUrl?: string;
+
 }
 
 /**
@@ -466,5 +473,54 @@ export interface ScrollbarSettingsModel {
      * Specifies the range for date time values alone.
      */
     range?: ScrollbarSettingsRangeModel;
+
+    /**
+     * Defines the color of the back track.
+     *
+     * @default null
+     */
+    trackColor?: string;
+
+    /**
+     * Defines the border radius for the scroll bar.
+     *
+     * @default 0
+     */
+    scrollbarRadius?: number;
+
+    /**
+     * Defines the color for the scroll bar.
+     *
+     * @default null
+     */
+    scrollbarColor?: string;
+
+    /**
+     * Defines the border radius for back rect.
+     *
+     * @default 0
+     */
+    trackRadius?: number;
+
+    /**
+     * Defines the color for thumb grip.
+     *
+     * @default null
+     */
+    gripColor?: string;
+
+    /**
+     * Defines the height of the back rect and scroll bar.
+     *
+     * @default 16
+     */
+    height?: number;
+
+    /**
+     * Defines enable or disable of zoom by scroll bar.
+     *
+     * @default true
+     */
+    enableZoom?: boolean;
 
 }

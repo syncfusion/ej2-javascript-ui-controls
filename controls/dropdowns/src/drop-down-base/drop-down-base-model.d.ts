@@ -82,35 +82,39 @@ export interface DropDownBaseModel extends ComponentModel{
      * For EX: We have expression evolution as like ES6 expression string literals.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
 
     /**
      * Accepts the template design and assigns it to the group headers present in the popup list.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
-    groupTemplate?: string;
+    groupTemplate?: string | Function;
 
     /**
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
      *
      * @default 'No records found'
+     * @aspType string
      * @deprecated
      */
-    noRecordsTemplate?: string;
+    noRecordsTemplate?: string | Function;
 
     /**
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
      *
      * @default 'Request failed'
+     * @aspType string
      * @deprecated
      */
-    actionFailureTemplate?: string;
+    actionFailureTemplate?: string | Function;
 
     /**
      * Specifies the `sortOrder` to sort the data source. The available type of sort orders are

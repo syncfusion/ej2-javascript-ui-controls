@@ -69,11 +69,16 @@
     }
 
     .e-appbar-separator {
-      height: 32px;
+      height: 24px;
     }
 
     .e-appbar-spacer {
       flex-grow: 1;
+    }
+
+    .e-btn,
+    .e-css.e-btn {
+      border-image: unset;
     }
   }
 

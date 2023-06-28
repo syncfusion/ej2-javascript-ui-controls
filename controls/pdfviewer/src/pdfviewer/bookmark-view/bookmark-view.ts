@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { PdfViewerBase, PdfViewer } from '../index';
-import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { TreeView, NodeSelectEventArgs, DrawNodeEventArgs } from '@syncfusion/ej2-navigations';
 import { ListView } from '@syncfusion/ej2-lists';
 import { AjaxHandler } from '../index';
@@ -158,7 +158,9 @@ export class BookmarkView {
                         child: 'Child',
                         hasChildren: 'HasChild'
                     },
-                    nodeTemplate: bookmarkIconView.outerHTML,
+                    nodeTemplate:  initializeCSPTemplate(
+                        function (data: any): string { return bookmarkIconView.outerHTML.replace('${Title}', data.Title); }
+                    ),
                     nodeSelected: this.nodeClick.bind(this),
                     drawNode: this.bookmarkPanelBeforeOpen.bind(this)
                 });

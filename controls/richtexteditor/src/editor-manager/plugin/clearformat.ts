@@ -26,6 +26,7 @@ export class ClearFormat {
      * @param {Node} endNode - specifies the end node
      * @param {string} enterAction - specifies the enter key action
      * @param {string} selector - specifies the string value
+     * @param {string} command - specifies the command value
      * @returns {void}
      * @hidden
      * @deprecated

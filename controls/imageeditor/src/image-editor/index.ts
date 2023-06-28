@@ -1,5 +1,3 @@
-/**
- * Image Editor Modules
- */
-export * from './image-editor';
-export * from './image-editor-model';
+export * from './action/index';
+export * from './base/index';
+export * from './renderer/index';

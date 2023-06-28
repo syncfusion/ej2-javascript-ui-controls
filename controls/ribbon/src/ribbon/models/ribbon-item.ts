@@ -69,7 +69,7 @@ export class RibbonItem extends ChildProperty<RibbonItem>  {
      * @aspType string
      */
     @Property('')
-    public itemTemplate: string | HTMLElement;
+    public itemTemplate: string | HTMLElement | Function;
 
     /**
      * Defines the type of control to be added as the Ribbon Item.

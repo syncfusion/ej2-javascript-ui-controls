@@ -1,5 +1,5 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser, detach } from '@syncfusion/ej2-base';import { EmitType, getDefaultDateObject, getValue, cldrData, L10n, isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';import { NumericTextBox } from '@syncfusion/ej2-inputs';import { DatePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';import { Button, RadioButton } from '@syncfusion/ej2-buttons';import { EventHandler, MouseEventArgs, classList } from '@syncfusion/ej2-base';import { EJ2Instance } from '../schedule/base/interface';import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate, getCalendarUtil } from './date-generator';import { CalendarUtil, CalendarType } from '../common/calendar-util';import { capitalizeFirstWord } from '../schedule/base/util';
-import {RepeatType,RecurrenceEditorChangeEventArgs} from "./recurrence-editor";
+import {RepeatType,EndType,RecurrenceEditorChangeEventArgs} from "./recurrence-editor";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -13,6 +13,13 @@ export interface RecurrenceEditorModel extends ComponentModel{
      * @default ['none', 'daily', 'weekly', 'monthly', 'yearly']
      */
     frequencies?: RepeatType[];
+
+    /**
+     * Sets the type of recurrence end for the recurrence pattern on the editor.
+     *
+     * @default ['never', 'until', 'count']
+     */
+    endTypes?: EndType[];
 
     /**
      * Sets the first day of the week.

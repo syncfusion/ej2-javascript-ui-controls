@@ -1,5 +1,5 @@
 import { isNullOrUndefined, NumberFormatOptions, DateFormatOptions, extend } from '@syncfusion/ej2-base';
-import { Query, DataManager, Predicate, Deferred, UrlAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
+import { Query, DataManager, Predicate, Deferred, UrlAdaptor, RemoteSaveAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
 import { IDataProcessor, IGrid, DataStateChangeEventArgs, DataSourceChangedEventArgs, PendingState } from '../base/interface';
 import { ReturnType } from '../base/type';
 import { SearchSettingsModel, PredicateModel, SortDescriptorModel } from '../base/grid-model';
@@ -181,8 +181,8 @@ export class Data implements IDataProcessor {
                 this.parent.notify(events.infinitePageQuery, query);
             } else {
                 query.page(gObj.pageSettings.currentPage, gObj.allowPaging && gObj.pagerModule as Page &&
-                    ((gObj.pagerModule as Page).pagerObj as Pager).isAllPage && !this.dataManager.dataSource.offline ? null :
-                    gObj.pageSettings.pageSize);
+                    ((gObj.pagerModule as Page).pagerObj as Pager).isAllPage && (!this.dataManager.dataSource.offline &&
+                        !(this.dataManager.adaptor instanceof RemoteSaveAdaptor)) ? null : gObj.pageSettings.pageSize);
             }
         }
         return query;
@@ -301,7 +301,7 @@ export class Data implements IDataProcessor {
             const defaultFltrCols: PredicateModel[] = [];
             for (const col of columns) {
                 const gridColumn: Column = col.isForeignKey ? gObj.getColumnByUid(col.uid) : gObj.getColumnByField(col.field);
-                if (isNullOrUndefined(col.type) && gridColumn && (gridColumn.type === 'date' || gridColumn.type === 'datetime')) {
+                if (isNullOrUndefined(col.type) && gridColumn && (gridColumn.type === 'date' || gridColumn.type === 'datetime' || gridColumn.type === 'dateonly')) {
                     col.type = col.isForeignKey ? gObj.getColumnByUid(col.uid).type : gObj.getColumnByField(col.field).type;
                 }
                 if (col.isForeignKey) {

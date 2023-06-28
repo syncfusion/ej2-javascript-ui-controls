@@ -1150,9 +1150,12 @@ describe('Ribbon', () => {
     describe('Ribbon Methods', () => {
         let ribbon: Ribbon;
         let ribbonEle: HTMLElement;
+        let containerEle: HTMLElement;
         beforeEach(() => {
             ribbonEle = createElement('div', { id: 'ribbon' });
-            document.body.appendChild(ribbonEle);
+            containerEle = createElement('div', { id: 'container'});
+            containerEle.appendChild(ribbonEle);
+            document.body.appendChild(containerEle);
         })
         afterEach(() => {
             if (ribbon) {
@@ -1160,6 +1163,7 @@ describe('Ribbon', () => {
                 ribbon = undefined;
             }
             remove(ribbonEle);
+            remove(containerEle);
         });
         it('add/remove tab', () => {
             ribbon = new Ribbon({
@@ -1365,7 +1369,7 @@ describe('Ribbon', () => {
             expect((ribbon.element.querySelectorAll('.e-ribbon-group-header')[1] as HTMLElement).innerText).toBe('group2Header');
             expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(2);
             expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(2);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(4);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
             ribbon.removeGroup('someGroup');
             expect(ribbon.tabs[0].groups.length).toBe(2);
             ribbon.removeGroup('newGroup');
@@ -1506,7 +1510,7 @@ describe('Ribbon', () => {
             expect((ribbon.element.querySelectorAll('.e-ribbon-collection')[0] as HTMLElement).classList.contains('oldcss')).toBe(true);
             expect((ribbon.element.querySelectorAll('.e-ribbon-collection')[1] as HTMLElement).classList.contains('newcss')).toBe(true);
             expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(2);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(4);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
             ribbon.removeCollection('someCollection');
             expect(ribbon.tabs[0].groups[0].collections.length).toBe(2);
             ribbon.removeCollection('newCollection');
@@ -1640,7 +1644,7 @@ describe('Ribbon', () => {
             let item: RibbonItemModel = {
                 type: RibbonItemType.DropDown,
                 allowedSizes: RibbonItemSize.Small,
-                displayOptions: DisplayMode.Overflow,
+                displayOptions: DisplayMode.Classic | DisplayMode.Simplified,
                 id: 'newItem',
                 dropDownSettings: {
                     content: 'Edit',
@@ -1664,17 +1668,17 @@ describe('Ribbon', () => {
             ribbon.addItem('collection1', item);
             expect(ribbon.tabs[0].groups[0].collections[0].items.length).toBe(2);
             expect((ribbon.element.querySelectorAll('.e-ribbon-item')[0].firstElementChild).classList.contains('e-dropdown-btn')).toBe(false);
-            expect((ribbon.element.querySelectorAll('.e-ribbon-item')[1].firstElementChild).classList.contains('e-dropdown-btn')).toBe(false);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(1);
+            expect((ribbon.element.querySelectorAll('.e-ribbon-item')[1].firstElementChild).classList.contains('e-dropdown-btn')).toBe(true);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(0);
             ribbon.removeItem('newItem');
             expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(0);
             ribbon.addItem('collection2', item);
             expect(ribbon.tabs[0].groups[0].collections[0].items.length).toBe(1);
             expect((ribbon.element.querySelectorAll('.e-ribbon-item')[0].firstElementChild).classList.contains('e-dropdown-btn')).toBe(false);
             expect((ribbon.element.querySelectorAll('.e-ribbon-item')[1].firstElementChild).classList.contains('e-dropdown-btn')).toBe(false);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(0);
             ribbon.removeItem('newItem');
             expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(0);
             (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
@@ -1707,6 +1711,914 @@ describe('Ribbon', () => {
             ribbon.setProperties({ tabAnimation: { previous: { effect: "None" }, next: { effect: "None" } } });
             ribbon.selectTab('tab2');
             ribbon.removeItem('item4');//remove an item  not rendered but tab rendered
+        });
+        it('update tab', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    cssClass: "tabCss",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.tabObj.items.length).toBe(1);
+            expect((ribbon.tabObj.items[0].header.text as HTMLElement).outerHTML).toBe('<span id="tab1_header">tab1</span>');
+            expect(document.querySelector('#e-item-ribbon_tab_0').classList.contains('tabCss')).toBe(true);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-tab-item').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(1);
+            // for coverage index === -1
+            let tab1: RibbonTabModel = {
+                id: 'tab3',
+            }
+            ribbon.updateTab(tab1);
+            let tab: RibbonTabModel = {
+                id: 'tab1',
+                cssClass: "tabUpdatedCSS",
+                header: "Updated Header",
+                groups: [{
+                    id: "group1",
+                    header: "group1Header",
+                    orientation: 'Row',
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.DropDown,
+                            allowedSizes: RibbonItemSize.Large,
+                            dropDownSettings: {
+                                content: 'Edit',
+                                iconCss: 'e-icons e-edit',
+                                items: dropDownButtonItems
+                            }
+                        }, {
+                            type: RibbonItemType.DropDown,
+                            allowedSizes: RibbonItemSize.Large,
+                            dropDownSettings: {
+                                content: 'Edit1',
+                                iconCss: 'e-icons e-edit',
+                                items: dropDownButtonItems
+                            }
+                        }, {
+                            type: RibbonItemType.DropDown,
+                            allowedSizes: RibbonItemSize.Large,
+                            dropDownSettings: {
+                                content: 'Edit2 option',
+                                iconCss: 'e-icons e-edit',
+                                items: dropDownButtonItems
+                            }
+                        }]
+                    }]
+                }, {
+                    id: "group2",
+                    header: "group2Header",
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        },]
+                    }]
+                }]
+            }
+            ribbon.updateTab(tab);
+            expect(ribbon.tabObj.items.length).toBe(1);
+            expect((ribbon.tabObj.items[0].header.text as HTMLElement).outerHTML).toBe('<span id="tab1_header">Updated Header</span>');
+            expect(document.querySelector('#e-item-ribbon_tab_0').classList.contains('tabCss')).toBe(false);
+            expect(document.querySelector('#e-item-ribbon_tab_0').classList.contains('tabUpdatedCSS')).toBe(true);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-tab-item').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(4);
+            containerEle.style.width = '200px';
+            ribbon.refreshLayout();
+            let newtab: RibbonTabModel = {
+                id: 'tab1',
+                header: "New Header",
+                groups: [{
+                    id: "group1",
+                    header: "group1Header",
+                    orientation: 'Row',
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.DropDown,
+                            allowedSizes: RibbonItemSize.Large,
+                            dropDownSettings: {
+                                content: 'Edit',
+                                iconCss: 'e-icons e-edit',
+                                items: dropDownButtonItems
+                            }
+                        }, {
+                            type: RibbonItemType.DropDown,
+                            allowedSizes: RibbonItemSize.Large,
+                            dropDownSettings: {
+                                content: 'Edit1',
+                                iconCss: 'e-icons e-edit',
+                                items: dropDownButtonItems
+                            }
+                        }]
+                    }]
+                }, {
+                    id: "group2",
+                    header: "group2Header",
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        },]
+                    }]
+                }]
+            }
+            ribbon.updateTab(newtab);
+            expect(ribbon.tabObj.items.length).toBe(1);
+            expect((ribbon.tabObj.items[0].header.text as HTMLElement).outerHTML).toBe('<span id="tab1_header">New Header</span>');
+            expect(document.querySelector('#e-item-ribbon_tab_0').classList.contains('tabCss')).toBe(false);
+            expect(document.querySelector('#e-item-ribbon_tab_0').classList.contains('tabUpdatedCSS')).toBe(true);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-tab-item').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
+        });
+        it('update group', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        cssClass: "Group2CSS",
+                        showLauncherIcon: true,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item3",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button3',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            // for coverage itemProp === null
+            let group3: RibbonGroupModel = {
+                id: 'group5',
+            }
+            ribbon.updateGroup(group3);
+            expect(ribbon.tabs[0].groups.length).toBe(1);
+            expect((ribbon.element.querySelectorAll('.e-ribbon-group-header')[0] as HTMLElement).innerText).toBe('group1Header');
+            expect(document.querySelector('#group1').classList.contains('Group2CSS')).toBe(true);
+            expect(ribbon.element.querySelector('#group1_container').classList.contains('e-ribbon-launcher')).toBe(true);
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-column')).toBe(true);
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-row')).toBe(false);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(0);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.activeLayout).toBe('Classic');
+
+            let group: RibbonGroupModel = {
+                id: 'group1',
+                header: "group1UpdatedHeader",
+                showLauncherIcon: false,
+                groupIconCss: 'e-icons e-paste',
+                cssClass: "updatedGroup2CSS",
+                orientation: 'Row',
+                collections: [{
+                    items: [{
+                        type: RibbonItemType.DropDown,
+                        allowedSizes: RibbonItemSize.Large,
+                        dropDownSettings: {
+                            content: 'Edit',
+                            iconCss: 'e-icons e-edit',
+                            items: dropDownButtonItems
+                        }
+                    },{
+                        id: "item3",
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            content: 'button3',
+                            iconCss: 'e-icons e-cut',
+                        }
+                    }, {
+                        type: RibbonItemType.DropDown,
+                        allowedSizes: RibbonItemSize.Large,
+                        displayOptions: DisplayMode.Overflow,
+                        dropDownSettings: {
+                            content: 'Edit2 option',
+                            iconCss: 'e-icons e-edit',
+                            items: dropDownButtonItems
+                        }
+                    }]
+                }]
+            }
+            ribbon.updateGroup(group);
+            expect(ribbon.tabs[0].groups.length).toBe(1);
+            expect((ribbon.element.querySelectorAll('.e-ribbon-group-header')[0] as HTMLElement).innerText).toBe('group1UpdatedHeader');
+            expect(document.querySelector('#group1').classList.contains('Group2CSS')).toBe(false);
+            expect(document.querySelector('#group1').classList.contains('updatedGroup2CSS')).toBe(true);
+            expect(ribbon.element.querySelector('#group1_container').classList.contains('e-ribbon-launcher')).toBe(false);
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-column')).toBe(false);
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-row')).toBe(true);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            containerEle.style.width = '200px';
+            ribbon.refreshLayout();
+            let groupHeader: RibbonGroupModel = {
+                id: 'group1',
+                header: "group1NewHeader",
+                showLauncherIcon: true,
+            }
+            ribbon.updateGroup(groupHeader);
+            (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            expect((document.body.querySelector('#group1_header') as HTMLElement).innerText).toBe('group1NewHeader');
+            (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.activeLayout).toBe('Classic');
+            expect(ribbon.element.querySelector('#group1_container').classList.contains('e-ribbon-launcher')).toBe(true);
+            containerEle.style.width = '130px';
+            ribbon.refreshLayout();
+            let overflowHeader: RibbonGroupModel = {
+                id: 'group1',
+                header: "group1overflowHeader",
+                showLauncherIcon: false,
+            }
+            ribbon.updateGroup(overflowHeader);
+            expect((ribbon.element.querySelector('#group1_overflow_dropdown') as HTMLElement).innerText).toBe('group1overflowHeader');
+            expect(document.body.querySelector('#group1_overflow_container').querySelectorAll('.e-btn-icon').length).toBe(2);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            containerEle.style.width = '600px';
+            ribbon.refreshLayout();
+            let group1: RibbonGroupModel = {
+                id: 'group1',
+                enableGroupOverflow: true,
+            }
+            ribbon.updateGroup(group1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            let group2: RibbonGroupModel = {
+                id: 'group1',
+                enableGroupOverflow: false,
+                collections: [{
+                    items: [{
+                        type: RibbonItemType.DropDown,
+                        allowedSizes: RibbonItemSize.Large,
+                        dropDownSettings: {
+                            content: 'Edit',
+                            iconCss: 'e-icons e-edit',
+                            items: dropDownButtonItems
+                        }
+                    }, {
+                        type: RibbonItemType.DropDown,
+                        allowedSizes: RibbonItemSize.Large,
+                        dropDownSettings: {
+                            content: 'Edit1',
+                            iconCss: 'e-icons e-edit',
+                            items: dropDownButtonItems
+                        }
+                    }, {
+                        type: RibbonItemType.DropDown,
+                        allowedSizes: RibbonItemSize.Large,
+                        dropDownSettings: {
+                            content: 'Edit2 option',
+                            iconCss: 'e-icons e-edit',
+                            items: dropDownButtonItems
+                        }
+                    }]
+                }]
+            }
+            ribbon.updateGroup(group2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(0);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.activeLayout).toBe('Classic');
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-row')).toBe(true);
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-column')).toBe(false);
+            let newGroup1: RibbonGroupModel = {
+                id: 'group1',
+                orientation: 'Column',
+            }
+            ribbon.updateGroup(newGroup1);
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-column')).toBe(true);
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-row')).toBe(false);
+
+        });
+        it('update group in simplified mode', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        enableGroupOverflow: true,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item3",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button3',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups.length).toBe(1);
+            expect((ribbon.element.querySelectorAll('.e-ribbon-group-header')[0] as HTMLElement).innerText).toBe('group1Header');
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-column')).toBe(true);
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-row')).toBe(false);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            let group: RibbonGroupModel = {
+                id: 'group1',
+                collections: [{
+                    id: "collection1",
+                    items: [{
+                        id: "item1",
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            content: 'button1',
+                            iconCss: 'e-icons e-cut',
+                        }
+                    },{
+                        id: "item2",
+                        type: RibbonItemType.Button,
+                        displayOptions: DisplayMode.Simplified,
+                        buttonSettings: {
+                            content: 'button2',
+                            iconCss: 'e-icons e-copy',
+                        }
+                    }]
+                }]
+            }
+            ribbon.updateGroup(group);
+            expect(ribbon.tabs[0].groups.length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+        });
+        it('updateGroup method with overlow in simplified mode', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item3",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button3',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups.length).toBe(1);
+            expect((ribbon.element.querySelectorAll('.e-ribbon-group-header')[0] as HTMLElement).innerText).toBe('group1Header');
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-column')).toBe(true);
+            expect(ribbon.element.querySelector('#group1_content').classList.contains('e-ribbon-row')).toBe(false);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            let group: RibbonGroupModel = {
+                id: 'group1',
+                collections: [{
+                    id: "collection1",
+                    items: [{
+                        id: "item1",
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            content: 'button1',
+                            iconCss: 'e-icons e-cut',
+                        }
+                    },{
+                        id: "item2",
+                        type: RibbonItemType.Button,
+                        displayOptions: DisplayMode.Simplified,
+                        buttonSettings: {
+                            content: 'button2',
+                            iconCss: 'e-icons e-copy',
+                        }
+                    }]
+                }]
+            }
+            ribbon.updateGroup(group);
+            expect(ribbon.tabs[0].groups.length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+        });
+        it('update collection', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Row',
+                        enableGroupOverflow: true,
+                        collections: [{
+                            id: "collection1",
+                            cssClass: 'oldcss',
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            // for coverage itemProp === null
+            let collection5: RibbonCollectionModel = {
+                id: 'collection7'
+            }
+            ribbon.updateCollection(collection5);
+            expect(ribbon.tabs[0].groups[0].collections.length).toBe(1);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            expect((ribbon.element.querySelectorAll('.e-ribbon-collection')[0] as HTMLElement).classList.contains('oldcss')).toBe(true);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(1);
+            let collection: RibbonCollectionModel = {
+                id: 'collection1',
+                cssClass: 'newcss'
+            }
+            ribbon.updateCollection(collection);
+            expect(ribbon.tabs[0].groups[0].collections.length).toBe(1);
+            expect((ribbon.element.querySelectorAll('.e-ribbon-collection')[0] as HTMLElement).classList.contains('newcss')).toBe(true);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(1);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.activeLayout).toBe('Classic');
+            let newCollection: RibbonCollectionModel = {
+                id: 'collection1',
+                items: [{
+                    type: RibbonItemType.DropDown,
+                    allowedSizes: RibbonItemSize.Small,
+                    dropDownSettings: {
+                        content: 'Edit',
+                        iconCss: 'e-icons e-edit',
+                        items: dropDownButtonItems
+                    }
+                }, {
+                    type: RibbonItemType.DropDown,
+                    allowedSizes: RibbonItemSize.Small,
+                    dropDownSettings: {
+                        content: 'Edit1',
+                        iconCss: 'e-icons e-edit',
+                        items: dropDownButtonItems
+                    }
+                }, {
+                    id: "item3",
+                    type: RibbonItemType.Button,
+                    buttonSettings: {
+                        content: 'button3',
+                        iconCss: 'e-icons e-cut',
+                    }
+                },{
+                    type: RibbonItemType.DropDown,
+                    allowedSizes: RibbonItemSize.Small,
+                    displayOptions: DisplayMode.Overflow,
+                    dropDownSettings: {
+                        content: 'Edit2 option',
+                        iconCss: 'e-icons e-edit',
+                        items: dropDownButtonItems
+                    }
+                }]
+            }
+            ribbon.updateCollection(newCollection);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
+        });
+        it('update collection in simplified mode', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Row',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections.length).toBe(1);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(1);
+            let newCollection: RibbonCollectionModel = {
+                id: 'collection1',
+                items: [{
+                    type: RibbonItemType.DropDown,
+                    allowedSizes: RibbonItemSize.Small,
+                    dropDownSettings: {
+                        content: 'Edit',
+                        iconCss: 'e-icons e-edit',
+                        items: dropDownButtonItems
+                    }
+                }, {
+                    type: RibbonItemType.DropDown,
+                    allowedSizes: RibbonItemSize.Small,
+                    dropDownSettings: {
+                        content: 'Edit1',
+                        iconCss: 'e-icons e-edit',
+                        items: dropDownButtonItems
+                    }
+                }, {
+                    type: RibbonItemType.DropDown,
+                    allowedSizes: RibbonItemSize.Small,
+                    displayOptions: DisplayMode.Overflow,
+                    dropDownSettings: {
+                        content: 'Edit2 option',
+                        iconCss: 'e-icons e-edit',
+                        items: dropDownButtonItems
+                    }
+                }]
+            }
+            ribbon.updateCollection(newCollection);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+        });
+        it('update item', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        enableGroupOverflow: true,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                cssClass: 'oldcss',
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item2",
+                                displayOptions: DisplayMode.Overflow,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        },
+                        ]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button3',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            // for coverage itemProp === null
+            let item5: RibbonItemModel = {
+                id: 'item10'
+            }
+            ribbon.updateItem(item5);
+            expect(ribbon.tabs[0].groups[0].collections[0].items.length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('oldcss')).toBe(true);
+
+            let item: RibbonItemModel = {
+                id: 'item1',
+                type: RibbonItemType.DropDown,
+                disabled: true,
+                cssClass: 'newcss',
+                dropDownSettings: {
+                    content: 'Edit',
+                    iconCss: 'e-icons e-edit',
+                    items: dropDownButtonItems
+                }
+            }
+            ribbon.updateItem(item);
+            expect(ribbon.tabs[0].groups[0].collections[0].items.length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            expect((ribbon.element.querySelectorAll('.e-ribbon-item')[0].firstElementChild).classList.contains('e-dropdown-btn')).toBe(true);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('oldcss')).toBe(false);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('newcss')).toBe(true);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-disabled')).toBe(true);
+            let newItem: RibbonItemModel = {
+                id: 'item1',
+                disabled: false,
+                allowedSizes: RibbonItemSize.Large,
+                displayOptions: DisplayMode.Overflow,
+            }
+            ribbon.updateItem(newItem);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-disabled')).toBe(true);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            let overflowItem: RibbonItemModel = {
+                id: 'item2',
+                displayOptions: DisplayMode.Simplified
+            }
+            ribbon.updateItem(overflowItem);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(1);
+            let newItems: RibbonItemModel = {
+                id: 'item1',
+                displayOptions: DisplayMode.Simplified
+            }
+            ribbon.updateItem(newItems);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(0);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(4);
+        });
+        it('update item in simplified mode', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        enableGroupOverflow: true,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                cssClass: 'oldcss',
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        },
+                        ]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button3',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items.length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('oldcss')).toBe(true);
+            let item: RibbonItemModel = {
+                id: 'item1',
+                type: RibbonItemType.DropDown,
+                disabled: true,
+                cssClass: 'newcss',
+                ribbonTooltipSettings: {
+                    title: 'Edit',
+                    iconCss: 'e-icons e-edit',
+                    content: 'Edit content here.</br> Add content on the clipboard to your document.'
+                },
+                dropDownSettings: {
+                    content: 'Edit',
+                    iconCss: 'e-icons e-edit',
+                    items: dropDownButtonItems
+                }
+            }
+            ribbon.updateItem(item);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            expect(ribbon.tabs[0].groups[0].collections[0].items.length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            expect((ribbon.element.querySelectorAll('.e-ribbon-item')[0].firstElementChild).classList.contains('e-dropdown-btn')).toBe(true);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('oldcss')).toBe(false);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('newcss')).toBe(true);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-disabled')).toBe(true);
+            let newItem: RibbonItemModel = {
+                id: 'item1',
+                displayOptions: DisplayMode.Overflow,
+            }
+            ribbon.updateItem(newItem);
+            expect(ribbon.tabs[0].groups[0].collections[0].items.length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(1);
+            (ribbon.element.querySelector('#group1_sim_grp_overflow') as HTMLElement).click();
+            expect(document.body.querySelector('#group1_sim_grp_overflow-popup').querySelectorAll('.e-ribbon-item').length).toBe(2);
+        });
+        it('update a item size using updateItem method', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        header: "group1Header",
+                        orientation: 'Column',
+                        id: 'group1',
+                        collections: [{
+                            id: 'collection1',
+                            items: [{
+                                id: 'item1',
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Medium,
+                                splitButtonSettings: {
+                                    content: 'cut',
+                                    iconCss: 'e-icons e-cut'
+                                }
+                            }]
+                        }]
+                    }, {
+                        id: "group2",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button3',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item4",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button3',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.tabs[0].groups[0].collections[0].items.length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-ribbon-medium-item')).toBe(true);
+            let newItem1: RibbonItemModel = {
+                id: 'item1',
+                allowedSizes: RibbonItemSize.Large,
+            }
+            ribbon.updateItem(newItem1);
+            expect(ribbon.tabs[0].groups[0].collections[0].items.length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-ribbon-large-item')).toBe(true);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
+            expect(ribbon.activeLayout).toBe('Simplified');
+            let newItem2: RibbonItemModel = {
+                id: 'item1',
+                displayOptions: DisplayMode.Overflow,
+            }
+            ribbon.updateItem(newItem2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(1);
         });
         it('enable/disable item', () => {
             let template1 = '<button id="btn1" class="tempContent">Button1</button>';
@@ -1880,7 +2792,7 @@ describe('Ribbon', () => {
                         collections: [{
                             id: "collection1",
                             items: [{
-                                id: "item1",
+                                id: "item1001",
                                 type: RibbonItemType.DropDown,
                                 allowedSizes: RibbonItemSize.Large,
                                 dropDownSettings: {
@@ -1893,13 +2805,13 @@ describe('Ribbon', () => {
                     }]
                 }]
             }, ribbonEle);
-            expect(ribbon.element.querySelector('#item1').tagName.toLowerCase()).toBe('button');
-            expect((getComponent('item1', DropDownButton) as DropDownButton).getModuleName()).toBe('dropdown-btn');
-            expect((ribbon.element.querySelector('#item1') as HTMLElement).innerText.toLowerCase()).toBe('edit');
-            expect(isNullOrUndefined((ribbon.element.querySelector('#item1') as HTMLElement).querySelector('.e-edit'))).toBe(false);
-            expect(isNullOrUndefined(document.querySelector('#item1-popup'))).toBe(false);
-            (ribbon.element.querySelector('#item1') as HTMLElement).click();
-            expect((document.querySelector('#item1-popup') as HTMLElement).querySelectorAll('li').length).toBe(7);
+            expect(ribbon.element.querySelector('#item1001').tagName.toLowerCase()).toBe('button');
+            expect((getComponent('item1001', DropDownButton) as DropDownButton).getModuleName()).toBe('dropdown-btn');
+            expect((ribbon.element.querySelector('#item1001') as HTMLElement).innerText.toLowerCase()).toBe('edit');
+            expect(isNullOrUndefined((ribbon.element.querySelector('#item1001') as HTMLElement).querySelector('.e-edit'))).toBe(false);
+            expect(isNullOrUndefined(document.querySelector('#item1001-popup'))).toBe(false);
+            (ribbon.element.querySelector('#item1001') as HTMLElement).click();
+            expect((document.querySelector('#item1001-popup') as HTMLElement).querySelectorAll('li').length).toBe(7);
         });
         it('Initial Rendering with splitbutton', () => {
             ribbon = new Ribbon({
@@ -2195,7 +3107,7 @@ describe('Ribbon', () => {
                         collections: [{
                             id: "collection1",
                             items: [{
-                                id: "item1",
+                                id: "item1010",
                                 type: RibbonItemType.DropDown,
                                 allowedSizes: RibbonItemSize.Large,
                                 cssClass: 'newClass',
@@ -2249,33 +3161,33 @@ describe('Ribbon', () => {
                     }]
                 }]
             }, ribbonEle);
-            (ribbon.element.querySelector('#item1') as HTMLElement).click();
-            expect((document.querySelector('#item1-popup') as HTMLElement).querySelectorAll('li').length).toBe(7);
-            (ribbon.element.querySelector('#item1') as HTMLElement).click();
-            ribbon.ribbonDropDownModule.addItems('item1', [{ text: 'new Item' }]);
-            (ribbon.element.querySelector('#item1') as HTMLElement).click();
-            expect((document.querySelector('#item1-popup') as HTMLElement).querySelectorAll('li').length).toBe(8);
-            expect((document.querySelector('#item1-popup') as HTMLElement).querySelectorAll('li')[7].innerText.toLowerCase()).toBe('new item');
-            (ribbon.element.querySelector('#item1') as HTMLElement).click();
-            ribbon.ribbonDropDownModule.removeItems('item1', ['new Item']);
-            (ribbon.element.querySelector('#item1') as HTMLElement).click();
-            expect((document.querySelector('#item1-popup') as HTMLElement).querySelectorAll('li').length).toBe(7);
-            (ribbon.element.querySelector('#item1') as HTMLElement).click();
-            ribbon.ribbonDropDownModule.updateDropDown({ content: 'New Edit' }, 'item1');
-            expect((document.querySelector('#item1') as HTMLElement).innerText.toLowerCase()).toBe('new edit');
-            expect((document.querySelector('#item1') as HTMLElement).classList.contains('e-active')).toBe(false);
-            expect((document.querySelector('#item1') as HTMLElement).getAttribute('aria-expanded')).toBe('false');
-            ribbon.ribbonDropDownModule.toggle('item1');
-            expect((document.querySelector('#item1') as HTMLElement).classList.contains('e-active')).toBe(true);
-            expect((document.querySelector('#item1') as HTMLElement).getAttribute('aria-expanded')).toBe('true');
-            ribbon.ribbonDropDownModule.toggle('item1');
-            expect((document.querySelector('#item1') as HTMLElement).classList.contains('e-active')).toBe(false);
-            expect((document.querySelector('#item1') as HTMLElement).getAttribute('aria-expanded')).toBe('false');
-            expect((document.querySelector('#item1') as HTMLElement).classList.contains('newClass')).toBe(false);
+            (ribbon.element.querySelector('#item1010') as HTMLElement).click();
+            expect((document.querySelector('#item1010-popup') as HTMLElement).querySelectorAll('li').length).toBe(7);
+            (ribbon.element.querySelector('#item1010') as HTMLElement).click();
+            ribbon.ribbonDropDownModule.addItems('item1010', [{ text: 'new Item' }]);
+            (ribbon.element.querySelector('#item1010') as HTMLElement).click();
+            expect((document.querySelector('#item1010-popup') as HTMLElement).querySelectorAll('li').length).toBe(8);
+            expect((document.querySelector('#item1010-popup') as HTMLElement).querySelectorAll('li')[7].innerText.toLowerCase()).toBe('new item');
+            (ribbon.element.querySelector('#item1010') as HTMLElement).click();
+            ribbon.ribbonDropDownModule.removeItems('item1010', ['new Item']);
+            (ribbon.element.querySelector('#item1010') as HTMLElement).click();
+            expect((document.querySelector('#item1010-popup') as HTMLElement).querySelectorAll('li').length).toBe(7);
+            (ribbon.element.querySelector('#item1010') as HTMLElement).click();
+            ribbon.ribbonDropDownModule.updateDropDown({ content: 'New Edit' }, 'item1010');
+            expect((document.querySelector('#item1010') as HTMLElement).innerText.toLowerCase()).toBe('new edit');
+            expect((document.querySelector('#item1010') as HTMLElement).classList.contains('e-active')).toBe(false);
+            expect((document.querySelector('#item1010') as HTMLElement).getAttribute('aria-expanded')).toBe('false');
+            ribbon.ribbonDropDownModule.toggle('item1010');
+            expect((document.querySelector('#item1010') as HTMLElement).classList.contains('e-active')).toBe(true);
+            expect((document.querySelector('#item1010') as HTMLElement).getAttribute('aria-expanded')).toBe('true');
+            ribbon.ribbonDropDownModule.toggle('item1010');
+            expect((document.querySelector('#item1010') as HTMLElement).classList.contains('e-active')).toBe(false);
+            expect((document.querySelector('#item1010') as HTMLElement).getAttribute('aria-expanded')).toBe('false');
+            expect((document.querySelector('#item1010') as HTMLElement).classList.contains('newClass')).toBe(false);
             expect((document.querySelector('#item3') as HTMLElement).classList.contains('newClass')).toBe(false);
-            ribbon.ribbonDropDownModule.updateDropDown({ cssClass: 'newClass' }, 'item1');
+            ribbon.ribbonDropDownModule.updateDropDown({ cssClass: 'newClass' }, 'item1010');
             ribbon.ribbonDropDownModule.updateDropDown({ cssClass: 'newClass' }, 'item3');
-            expect((document.querySelector('#item1') as HTMLElement).classList.contains('newClass')).toBe(true);
+            expect((document.querySelector('#item1010') as HTMLElement).classList.contains('newClass')).toBe(true);
             expect((document.querySelector('#item3') as HTMLElement).classList.contains('newClass')).toBe(true);
             expect((document.querySelector('#item3') as HTMLElement).innerText.toLowerCase()).toBe('');
             ribbon.ribbonDropDownModule.updateDropDown({ content: 'New Edit1' }, 'item3');
@@ -2485,6 +3397,7 @@ describe('Ribbon', () => {
             ribbon.ribbonColorPickerModule.updateColorPicker({ modeSwitcher: true }, 'item1');
             ribbon.ribbonColorPickerModule.toggle('item1');//open
             expect(document.querySelector('#' + splitId + '_dropdownbtn-popup').querySelector('.e-mode-switch-btn') !== null).toBe(true);
+            ribbon.ribbonColorPickerModule.toggle('item1');//close
             //To cover not rendered
             ribbon.ribbonColorPickerModule.toggle('item5');
             ribbon.ribbonColorPickerModule.updateColorPicker({ modeSwitcher: false }, 'item3');
@@ -2875,7 +3788,7 @@ describe('Ribbon', () => {
                                 id: "item2",
                                 type: RibbonItemType.DropDown,
                                 allowedSizes: RibbonItemSize.Medium,
-                                displayOptions: DisplayMode.None,
+                                displayOptions: DisplayMode.Classic,
                                 dropDownSettings: {
                                     content: 'Edit',
                                     iconCss: 'e-icons e-edit',
@@ -3341,12 +4254,12 @@ describe('Ribbon', () => {
             (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
             expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
             expect(ribbon.activeLayout).toBe('Classic');
-            expect(ribbon.element.querySelectorAll('.e-ribbon-row').length).toBe(1);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-content-height').length).toBe(1);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-group-overflow').length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-row').length).toBe(4);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-content-height').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-overflow').length).toBe(0);
             expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(0);
             expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(0);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(5);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(4);
             containerEle.style.width = '400px';
             ribbon.refreshLayout();
             (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
@@ -3507,70 +4420,7 @@ describe('Ribbon', () => {
             expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(10);
             expect(document.querySelectorAll('.e-hscroll-bar').length).toBe(0);
         });
-        it('None item', () => {
-            ribbon = new Ribbon({
-                activeLayout: "Classic",
-                tabs: [{
-                    id: "tab1",
-                    header: "tab1",
-                    groups: [{
-                        id: "group1",
-                        header: "group1Header",
-                        orientation: ItemOrientation.Row,
-                        enableGroupOverflow: true,
-                        collections: [{
-                            id: "collection1",
-                            items: [{
-                                id: "item1",
-                                type: RibbonItemType.Button,
-                                allowedSizes: RibbonItemSize.Medium,
-                                displayOptions: DisplayMode.Simplified,
-                                buttonSettings: {
-                                    content: 'button1',
-                                    iconCss: 'e-icons e-cut',
-                                }
-                            },
-                            {
-                                id: "item2",
-                                type: RibbonItemType.DropDown,
-                                allowedSizes: RibbonItemSize.Medium,
-                                displayOptions: DisplayMode.None,
-                                dropDownSettings: {
-                                    content: 'Edit',
-                                    iconCss: 'e-icons e-edit',
-                                    items: dropDownButtonItems
-                                }
-                            },
-                            {
-                                id: "item3",
-                                type: RibbonItemType.ColorPicker,
-                                displayOptions: DisplayMode.Simplified,
-                                colorPickerSettings: {
-                                    value: '#123456'
-                                }
-                            }]
-                        }]
-                    }]
-                }]
-            }, ribbonEle);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-row').length).toBe(1);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-group-header').length).toBe(1);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(1);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-content-height').length).toBe(1);
-            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
-            expect((ribbon.element.querySelector('#item2') as HTMLElement).innerText.toLowerCase()).toBe('edit');
-            expect(isNullOrUndefined((ribbon.element.querySelector('#item2') as HTMLElement).querySelector('.e-edit'))).toBe(false);
-            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
-            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
-            expect(ribbon.activeLayout).toBe('Simplified');
-            expect(ribbon.element.querySelectorAll('.e-edit').length).toBe(0);
-            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
-            expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
-            expect(ribbon.activeLayout).toBe('Classic');
-            expect((ribbon.element.querySelector('#item2') as HTMLElement).innerText.toLowerCase()).toBe('edit');
-            expect(isNullOrUndefined((ribbon.element.querySelector('#item2') as HTMLElement).querySelector('.e-edit'))).toBe(false);
-        });
-
+        
         it('With initial overflow with enableRtl', () => {
             let isfiltered: boolean = false;
             ribbon = new Ribbon({
@@ -3972,6 +4822,3521 @@ describe('Ribbon', () => {
         });
     });
 
+    describe('Keyboard Navigation', () => {
+        let ribbon: Ribbon;
+        let ribbonEle: HTMLElement;
+        let containerEle: HTMLElement;
+        let keyboardEventArgs: any;
+        beforeEach(() => {
+            ribbonEle = createElement('div', { id: 'ribbon' });
+            containerEle = createElement('div', { id: 'container', styles: 'width:600px' });
+            containerEle.appendChild(ribbonEle);
+            document.body.appendChild(containerEle);    
+            keyboardEventArgs = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => { },
+            };
+        })
+        afterEach(() => {
+            if (ribbon) {
+                ribbon.destroy();
+                ribbon = undefined;
+            }
+            remove(ribbonEle);
+            remove(containerEle);
+        });
+
+        it('Keyboard Navigation Using ArrowRight Key In Classic Mode', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        showLauncherIcon: true,
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.Button,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Format Painter',
+                                    iconCss: 'e-icons e-paste',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    allowFiltering: true,
+                                    width: '150px',
+                                }
+                            }, {
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    width: '65px'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '1500px';
+            ribbon.refreshLayout();
+            let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#clipboard_collection1_item2')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('format painter');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.action = '';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('format painter');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-launcher-icon')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection8_item9');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'tab';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            (ribbonEle.querySelector('#ribbon_tab0_group7_collection8_item10')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection8_item10');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'tab';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            (ribbonEle.querySelector('#ribbon_tab0_group7_collection8_item10')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            (ribbonEle.querySelector('#ribbon_tab0_group7_collection11_item12')as HTMLElement).focus();
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection11_item13');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection11_item16');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group17_collection18_item19');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group17_collection18_item19_dropdownbtn');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group17_collection18_item20');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group17_collection18_item21');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group17_collection18_item21_dropdownbtn');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-collapse-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab_collapsebutton');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_collection1_item2');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'shiftTab';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBe(true);
+        });
+
+        it('Keyboard Navigation Using ArrowLeft Key In Classic Mode', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        showLauncherIcon: true,
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.Button,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Format Painter',
+                                    iconCss: 'e-icons e-paste',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    allowFiltering: true,
+                                    width: '150px',
+                                }
+                            }, {
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    width: '65px'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.ColorPicker,
+                                allowedSizes: RibbonItemSize.Small,
+                                colorPickerSettings: {
+                                    value: '#123456',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '1500px';
+            ribbon.refreshLayout();
+            let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#clipboard_collection1_item2')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-collapse-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab_collapsebutton');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item22_dropdownbtn');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item22');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item21');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item20_dropdownbtn');
+            document.activeElement.dispatchEvent((new KeyboardEvent('keydown',{'key':'ArrowRight'})));
+            document.activeElement.dispatchEvent((new KeyboardEvent('keydown',{'key':'Enter'})));
+            (document.querySelector('#ribbon_tab0_group18_collection19_item20_dropdownbtn-popup').querySelector('.e-item') as HTMLElement).dispatchEvent((new KeyboardEvent('keydown',{'key':'Enter'})));
+            (document.querySelector('#ribbon_tab0_group18_collection19_item20_dropdownbtn-popup').querySelector('.e-item') as HTMLElement).click();
+            (ribbonEle.querySelector('#ribbon_tab0_group18_collection19_item20_dropdownbtn')as HTMLElement).focus();
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item20');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection11_item17');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection11_item14');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection11_item13');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-colorpicker')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection8_item10');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'shiftTab';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            (ribbonEle.querySelector('#ribbon_tab0_group7_collection8_item9')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection8_item9');
+            keyboardEventArgs.action = 'shiftTab';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            (ribbonEle.querySelector('#clipboard_launcher')as HTMLElement).focus();
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('format painter');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_collection1_item2_dropdownbtn');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-collapse-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab_collapsebutton');
+        });
+
+        it('Keyboard Navigation Using ArrowRight Key In Simplified Mode', () => {
+            ribbon = new Ribbon({
+                activeLayout: 'Simplified',
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        showLauncherIcon: true,
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.Button,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Format Painter',
+                                    iconCss: 'e-icons e-paste',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    allowFiltering: true,
+                                    width: '150px',
+                                }
+                            }, {
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    width: '65px'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                displayOptions: DisplayMode.Simplified,
+                                type: RibbonItemType.ColorPicker,
+                                allowedSizes: RibbonItemSize.Small,
+                                colorPickerSettings: {
+                                    value: '#123456',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Simplified,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Simplified,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '700px';
+            ribbon.refreshLayout();
+            let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#clipboard_collection1_item2')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_collection3_item5');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_collection3_item6');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection8_item9');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+           (ribbonEle.querySelector('.e-split-colorpicker')as HTMLElement).focus();
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-group-overflow-ddb')).toBe(true);
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item20');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item20_dropdownbtn');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item22');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item22_dropdownbtn');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab_sim_ovrl_overflow');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-collapse-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab_collapsebutton');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_collection1_item2');
+        });
+
+        it('Keyboard Navigation Using ArrowLeft Key In Simplified Mode', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        showLauncherIcon: true,
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.Button,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Format Painter',
+                                    iconCss: 'e-icons e-paste',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    allowFiltering: true,
+                                    width: '150px',
+                                }
+                            }, {
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    width: '65px'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                displayOptions: DisplayMode.Simplified,
+                                type: RibbonItemType.ColorPicker,
+                                allowedSizes: RibbonItemSize.Small,
+                                colorPickerSettings: {
+                                    value: '#123456',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Simplified,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                displayOptions: DisplayMode.Simplified,
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '700px';
+            ribbon.refreshLayout();
+            let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#clipboard_collection1_item2')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-collapse-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab_collapsebutton');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab_sim_ovrl_overflow');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item22_dropdownbtn');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item22');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item20_dropdownbtn');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group18_collection19_item20');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_sim_grp_overflow');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group7_collection8_item9');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'shiftTab';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            (ribbonEle.querySelector('#clipboard_collection3_item6')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_collection3_item6');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_collection3_item5');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_collection1_item2_dropdownbtn');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_collection1_item2');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-collapse-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab_collapsebutton');
+        });
+
+        it('Keyboard Navigation With Disabled Item', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        showLauncherIcon: true,
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                disabled: true,
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Format Painter',
+                                    iconCss: 'e-icons e-paste',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '1500px';
+            ribbon.refreshLayout();
+            let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#clipboard_collection3_item4')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('cut');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('format painter');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-launcher-icon')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-launcher-icon')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('format painter');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('cut');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-collapse-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab_collapsebutton');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('cut');
+        });
+
+        it('Keyboard Navigation In Classic Mode Overflow Dropdown', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        showLauncherIcon: true,
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    width: '65px'
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '350px';
+            ribbon.refreshLayout();let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#ribbon_tab0_group7_collection8_item9')as HTMLElement).focus();
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_overflow_dropdown');
+            // expect((document.activeElement as HTMLElement).click());
+            expect(document.querySelector('#clipboard_overflow_dropdown').dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'})));
+            (document.querySelector('#clipboard_overflow_dropdown')as HTMLElement).click();
+            expect(document.querySelector('#clipboard_container').dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'})));
+            (document.querySelector('#clipboard_collection1_item2')as HTMLElement).focus();
+            let target: HTMLElement = document.querySelector('#clipboard_overflow_dropdown-popup').children[0] as HTMLElement;
+            keyboardEventArgs.target = document.querySelector('#clipboard_overflow_dropdown-popup').children[0];
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            (document.querySelector('#clipboard_collection3_item6')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-ribbon-launcher-icon')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            (document.querySelector('#clipboard_collection3_item6')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey =  true;
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey =  false;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            (document.querySelector('#clipboard_collection3_item6')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-ribbon-launcher-icon')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+
+        });
+
+        it('Keyboard Navigation In Classic Mode Overflow Dropdown Without Launcher Icon', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 3,
+                                    width: '65px'
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '350px';
+            ribbon.refreshLayout();let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#ribbon_tab0_group7_collection8_item9')as HTMLElement).focus();
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_overflow_dropdown');
+            expect(document.querySelector('#clipboard_overflow_dropdown').dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'})));
+            (document.querySelector('#clipboard_overflow_dropdown')as HTMLElement).click();
+            expect(document.querySelector('#clipboard_container').dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'})));
+            (document.querySelector('#clipboard_collection1_item2')as HTMLElement).focus();
+            let target: HTMLElement = document.querySelector('#clipboard_overflow_dropdown-popup').children[0] as HTMLElement;
+            keyboardEventArgs.target = document.querySelector('#clipboard_overflow_dropdown-popup').children[0];
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            (document.querySelector('#clipboard_collection3_item6')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-combobox')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            (document.querySelector('#clipboard_collection3_item6')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey =  true;
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+        });
+
+        it('Keyboard Navigation Using ArrowLeft And ShiftTab key With Classic Mode Overflow Dropdown', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        showLauncherIcon: true,
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Format Painter',
+                                    iconCss: 'e-icons e-paste',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '350px';
+            ribbon.refreshLayout();
+            let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#ribbon_tab0_group7_collection8_item9')as HTMLElement).focus();
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_overflow_dropdown');
+            expect((document.activeElement as HTMLElement).click());
+            (document.querySelector('#clipboard_collection1_item2')as HTMLElement).focus();
+            let target: HTMLElement = document.querySelector('#clipboard_overflow_dropdown-popup').children[0] as HTMLElement;
+            keyboardEventArgs.target = document.querySelector('#clipboard_overflow_dropdown-popup').children[0];
+            keyboardEventArgs.key = 'ArrowLeft';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-ribbon-launcher-icon')).toBe(true);
+            keyboardEventArgs.key = 'ArrowLeft';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('format painter');
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey = true;
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-ribbon-launcher-icon')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('format painter');
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+        });
+
+        it('Keyboard Navigation Using ArrowDown With Overflow Popup Items', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        priority: 1,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item4",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            }, {
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item060",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'disabled',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item003",
+                                type: RibbonItemType.DropDown,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    iconCss: 'e-icons e-table',
+                                    content: 'Table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                id: 'item8',
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [
+                            {
+                                id: "item4",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Auto,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            },
+                            {
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Auto,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        priority: 2,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item6",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Simplified,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: 'item8',
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            }, {
+                                id: 'item7',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button4',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            },  {
+                                id: "item02",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item03",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    iconCss: 'e-icons e-table',
+                                    content: 'Table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                id: "item06",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Dictate',
+                                    iconCss: 'sf-icon-dictate',
+                                    items: [{ text: 'Chinese' }, { text: 'English' }, { text: 'German' }, { text: 'French' }]
+                                }
+                            }, {
+                                id: "item09",
+                                type: RibbonItemType.ComboBox,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            }, {
+                                id: 'item010',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button6',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        priority: 3,
+                        collections: [{
+                            id: "collection4",
+                            items: [{
+                                id: "item009",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            }, {
+                                id: 'item7',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button4',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }, {
+                                id: "item006",
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Dictate',
+                                    iconCss: 'sf-icon-dictate',
+                                    items: [{ text: 'Chinese' }, { text: 'English' }, { text: 'German' }, { text: 'French' }]
+                                }
+                            }, {
+                                id: "item002",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(1);
+            // for coverage
+            expect(document.querySelector('.e-ribbon-group-overflow-ddb').dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'})));
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target').dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'})));
+            (document.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            keyboardEventArgs.target = document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').children[0];
+            keyboardEventArgs.key = 'ArrowDown';
+            let target: HTMLElement = document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').children[0] as HTMLElement;
+            let ddb: DropDownButton = (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as any).ej2_instances[0];
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('0');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            document.activeElement.classList.contains('e-checkbox');
+            expect(target.querySelector('#item8_container').querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            keyboardEventArgs.key = " ";
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect(target.querySelector('#item8_container').querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('3');
+            (document.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('4');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('4');            
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('5');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('6');
+            keyboardEventArgs.key = 'ArrowLeft';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect(document.activeElement.classList.contains('e-split-btn')).toBe(true);
+            keyboardEventArgs.key = 'ArrowRight';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            keyboardEventArgs.key = 'Enter';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            // for coverage
+            document.activeElement.dispatchEvent((new KeyboardEvent('keydown',{'key':'ArrowRight'})));
+            document.activeElement.dispatchEvent((new KeyboardEvent('keydown',{'key':'Enter'})));
+            (document.querySelector('#item006_dropdownbtn-popup').querySelector('.e-item') as HTMLElement).classList.add('e-focused');
+            // for coverage
+            (document.querySelector('#item006_dropdownbtn-popup').dispatchEvent((new KeyboardEvent('keydown',{'key':'ArrowRight'}))));
+            (document.querySelector('#item006_dropdownbtn-popup').dispatchEvent((new KeyboardEvent('keydown',{'key':'Enter'}))));
+            
+        });
+
+        it('Keyboard Navigation In Classic Mode Overflow Dropdown With Disabled Items', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        showLauncherIcon: true,
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                disabled: true,
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }, {
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Format Painter',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '350px';
+            ribbon.refreshLayout();let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#ribbon_tab0_group7_collection8_item9')as HTMLElement).focus();
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_overflow_dropdown');
+            (document.querySelector('#clipboard_overflow_dropdown')as HTMLElement).click();
+            (document.querySelector('#clipboard_collection3_item4')as HTMLElement).focus();
+            let target: HTMLElement = document.querySelector('#clipboard_overflow_dropdown-popup').children[0] as HTMLElement;
+            keyboardEventArgs.target = document.querySelector('#clipboard_overflow_dropdown-popup').children[0];
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-ribbon-launcher-icon')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('cut');
+            keyboardEventArgs.key = 'ArrowLeft';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-ribbon-launcher-icon')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+        });
+
+        it('Keyboard Navigation Overflow Dropdown Without Launcher Icon', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",        
+                    groups: [{
+                        id: 'clipboard',
+                        header: "Clipboard",
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                disabled: true,
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    content: 'Paste'
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }, {
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {                    
+                                    content: 'Format Painter',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Font",
+                        isCollapsible: false,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Bold',
+                                    iconCss: 'e-icons e-bold',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Italic',
+                                    iconCss: 'e-icons e-italic',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'Underline',
+                                    iconCss: 'e-icons e-underline',
+                                    isToggle: true
+                                }
+                            },{
+                                allowedSizes: RibbonItemSize.Small,
+                                disabled: true,
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Strikethrough',
+                                    iconCss: 'e-icons e-strikethrough',
+                                    isToggle: true
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Small,
+                                buttonSettings: {
+                                    content: 'Change Case',
+                                    iconCss: 'e-icons e-change-case',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "Editing",
+                        groupIconCss: 'e-icons e-edit',
+                        orientation: ItemOrientation.Column,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-search',
+                                    content: 'Find',
+                                    items: [
+                                        { text: 'Find', iconCss: 'e-icons e-search' },
+                                        { text: 'Advanced find', iconCss: 'e-icons e-search' },
+                                        { text: 'Go to', iconCss: 'e-icons e-arrow-right' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Replace',
+                                    iconCss: 'e-icons e-replace',
+                                }
+                            }, {
+                                type: RibbonItemType.SplitButton,
+                                splitButtonSettings: {
+                                    iconCss: 'e-icons e-mouse-pointer',
+                                    content: 'Select',
+                                    items: [{ text: 'Select All' },
+                                    { text: 'Select Objects' }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '350px';
+            ribbon.refreshLayout();let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#ribbon_tab0_group7_collection8_item9')as HTMLElement).focus();
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'leftarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-dropdown-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('clipboard_overflow_dropdown');
+            (document.querySelector('#clipboard_overflow_dropdown')as HTMLElement).click();
+            (document.querySelector('#clipboard_collection3_item4')as HTMLElement).focus();
+            let target: HTMLElement = document.querySelector('#clipboard_overflow_dropdown-popup').children[0] as HTMLElement;
+            keyboardEventArgs.target = document.querySelector('#clipboard_overflow_dropdown-popup').children[0];
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.key = 'ArrowRight';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('cut');
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+            keyboardEventArgs.key = 'ArrowLeft';
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('cut');
+            keyboardEventArgs.target = document.activeElement;
+            (ribbon.ribbonDropDownModule as any).keyActionHandler(keyboardEventArgs, target);
+            expect(document.activeElement.classList.contains('e-btn')).toBe(true);
+            expect((document.activeElement as HTMLElement).innerText.toLowerCase()).toBe('copy');
+        });
+
+        it('Keyboard Navigation Using ArrowUp With Overflow Popup Items', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        priority: 1,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            },
+                            {
+                                id: "item4",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Auto,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            },
+                            {
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Auto,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        priority: 2,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item6",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Simplified,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: 'item8',
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            }, {
+                                id: 'item7',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button4',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }, {
+                                id: "item02",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            },{
+                                id: "item060",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'disabled',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item03",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    iconCss: 'e-icons e-table',
+                                    content: 'Table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                id: "item06",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Dictate',
+                                    iconCss: 'sf-icon-dictate',
+                                    items: [{ text: 'Chinese' }, { text: 'English' }, { text: 'German' }, { text: 'French' }]
+                                }
+                            }, {
+                                id: 'item010',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button6',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        priority: 3,
+                        collections: [{
+                            id: "collection4",
+                            items: [{
+                                id: "item10",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Simplified,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },
+                            {
+                                id: "item11",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Auto,
+                                checkBoxSettings: {
+                                    label: 'Check1',
+                                    checked: true,
+                                }
+                            }]
+                        },
+                        {
+                            id: "collection5",
+                            items: [{
+                                id: "item12",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            },
+                            {
+                                id: "item13",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check3',
+                                    checked: true,
+                                }
+                            },
+                            {
+                                id: "item43",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(1);
+            (document.querySelector('#group2_sim_grp_overflow') as HTMLElement).click();
+            keyboardEventArgs.target = document.querySelector('#group2_sim_grp_overflow-popup').children[0];
+            keyboardEventArgs.key = 'ArrowUp';
+            let target: HTMLElement = document.querySelector('#group2_sim_grp_overflow-popup').children[0] as HTMLElement;
+            let ddb: DropDownButton = (ribbon.element.querySelector('#group2_sim_grp_overflow') as any).ej2_instances[0];
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('6');
+            keyboardEventArgs.key = 'ArrowUp';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('5');
+            keyboardEventArgs.key = 'ArrowUp';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('4');
+            keyboardEventArgs.key = 'ArrowUp';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect(document.activeElement.classList.contains('e-split-colorpicker')).toBe(true);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.key = 'ArrowUp';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('0');
+        });
+
+        it('Keyboard Navigation Using Tab With Overflow Popup Items', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        priority: 1,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item003",
+                                type: RibbonItemType.DropDown,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    iconCss: 'e-icons e-table',
+                                    content: 'Table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                id: 'item8',
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [
+                            {
+                                id: "item4",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Auto,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            },
+                            {
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Auto,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        priority: 2,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item6",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Simplified,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: 'item8',
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            }, {
+                                id: 'item7',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button4',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            },  {
+                                id: "item02",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item03",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    iconCss: 'e-icons e-table',
+                                    content: 'Table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                id: "item06",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Dictate',
+                                    iconCss: 'sf-icon-dictate',
+                                    items: [{ text: 'Chinese' }, { text: 'English' }, { text: 'German' }, { text: 'French' }]
+                                }
+                            }, {
+                                id: "item09",
+                                type: RibbonItemType.ComboBox,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            }, {
+                                id: 'item010',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button6',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        priority: 3,
+                        collections: [{
+                            id: "collection4",
+                            items: [{
+                                id: "item009",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            }, {
+                                id: 'item7',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button4',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }, {
+                                id: "item006",
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Dictate',
+                                    iconCss: 'sf-icon-dictate',
+                                    items: [{ text: 'Chinese' }, { text: 'English' }, { text: 'German' }, { text: 'French' }]
+                                }
+                            }, {
+                                id: "item002",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(1);
+            (document.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            keyboardEventArgs.target = document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').children[0];
+            keyboardEventArgs.key = 'Tab';
+            let target: HTMLElement = document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').children[0] as HTMLElement;
+            let ddb: DropDownButton = (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as any).ej2_instances[0];
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('0');
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            document.activeElement.classList.contains('e-checkbox');
+            expect(target.querySelector('#item8_container').querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            keyboardEventArgs.key = " ";
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect(target.querySelector('#item8_container').querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            (document.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('3');
+           keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('4');
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('5');
+        });
+
+        it('Keyboard Navigation Using Shift + Tab With Overflow Popup Items', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        priority: 1,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },
+                            {
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            },
+                            {
+                                id: "item4",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Auto,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            },
+                            {
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Auto,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        priority: 2,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item6",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Simplified,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: 'item8',
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            }, {
+                                id: 'item7',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button4',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            },  {
+                                id: "item02",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item03",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    iconCss: 'e-icons e-table',
+                                    content: 'Table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                id: "item06",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Dictate',
+                                    iconCss: 'sf-icon-dictate',
+                                    items: [{ text: 'Chinese' }, { text: 'English' }, { text: 'German' }, { text: 'French' }]
+                                }
+                            }, {
+                                id: 'item010',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button6',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        priority: 3,
+                        collections: [{
+                            id: "collection4",
+                            items: [{
+                                id: "item10",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Simplified,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },
+                            {
+                                id: "item11",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Auto,
+                                checkBoxSettings: {
+                                    label: 'Check1',
+                                    checked: true,
+                                }
+                            }]
+                        },
+                        {
+                            id: "collection5",
+                            items: [{
+                                id: "item12",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            },
+                            {
+                                id: "item13",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check3',
+                                    checked: true,
+                                }
+                            },
+                            {
+                                id: "item43",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(1);
+            (document.querySelector('#group2_sim_grp_overflow') as HTMLElement).click();
+            keyboardEventArgs.target = document.querySelector('#group2_sim_grp_overflow-popup').children[0];
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey = true;
+            let target: HTMLElement = document.querySelector('#group2_sim_grp_overflow-popup').children[0] as HTMLElement;
+            let ddb: DropDownButton = (ribbon.element.querySelector('#group2_sim_grp_overflow') as any).ej2_instances[0];
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('5');
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey = true;
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('4');
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey = true;
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('3');
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey = true;
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey = true;
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('0');
+        });
+
+        it('Keyboard Navigation Using ArrowDown With Overflow Combobox Items', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        priority: 1,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection2",
+                            items: [
+                            {
+                                id: "item4",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Auto,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            },
+                            {
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Auto,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item6",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Simplified,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: 'item8',
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Auto,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            }, {
+                                id: 'item7',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Auto,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button4',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        priority: 3,
+                        collections: [{
+                            id: "collection4",
+                            items: [{
+                                id: "item009",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            }, {
+                                id: "item4",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            }, {
+                                id: 'item7',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button4',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(0);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(1);
+            (document.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            keyboardEventArgs.target = document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').children[0];
+            keyboardEventArgs.key = 'ArrowDown';
+            let target: HTMLElement = document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').children[0] as HTMLElement;
+            let ddb: DropDownButton = (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as any).ej2_instances[0];
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('0');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('0');
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('0');
+            keyboardEventArgs.key = 'Tab';
+            keyboardEventArgs.shiftKey = true;
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+        });
+
+        it('Keyboard Navigation Using ArrowUp With Overflow Disabled Popup Items', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        priority: 1,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            },
+                            {
+                                id: "item4",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Auto,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1,
+                                    allowFiltering: true
+                                }
+                            },
+                            {
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Auto,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        priority: 2,
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item6",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Simplified,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: 'item7',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                disabled: true,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button4',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            },{
+                                id: "item060",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "item03",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    iconCss: 'e-icons e-table',
+                                    content: 'Table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                id: 'item010',
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Large,
+                                disabled: true,
+                                buttonSettings: {
+                                    content: 'button6',
+                                    iconCss: 'e-icons e-cut',
+                                    isToggle: true
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        priority: 3,
+                        collections: [{
+                            id: "collection4",
+                            items: [{
+                                id: "item10",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Simplified,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },
+                            {
+                                id: "item11",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Auto,
+                                checkBoxSettings: {
+                                    label: 'Check1',
+                                    checked: true,
+                                }
+                            }]
+                        },
+                        {
+                            id: "collection5",
+                            items: [{
+                                id: "item13",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Check3',
+                                    checked: true,
+                                }
+                            },
+                            {
+                                id: "item43",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Medium,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group').length).toBe(3);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-group-of-btn').length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-ribbon-overall-of-btn').length).toBe(1);
+            (document.querySelector('#group2_sim_grp_overflow') as HTMLElement).click();
+            keyboardEventArgs.target = document.querySelector('#group2_sim_grp_overflow-popup').children[0];
+            keyboardEventArgs.key = 'ArrowUp';
+            let target: HTMLElement = document.querySelector('#group2_sim_grp_overflow-popup').children[0] as HTMLElement;
+            let ddb: DropDownButton = (ribbon.element.querySelector('#group2_sim_grp_overflow') as any).ej2_instances[0];
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.key = 'ArrowUp';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            keyboardEventArgs.key = 'ArrowUp';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.key = 'ArrowUp';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            keyboardEventArgs.shiftKey = true;
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.shiftKey = true;
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            keyboardEventArgs.shiftKey = true;
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.shiftKey = true;
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            keyboardEventArgs.shiftKey = false;
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.key = 'Tab';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('2');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, true, ddb);
+            expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+            
+        });
+    });
+
     describe('Items allowedSizes and actualSize', () => {
         let ribbon: Ribbon;
         let ribbonEle: HTMLElement;
@@ -4205,9 +8570,9 @@ describe('Ribbon', () => {
                 }, ribbonEle);
             expect(ribbon.element.querySelectorAll('.e-ribbon-row').length).toBe(3);
             expect(ribbon.element.querySelectorAll('.e-ribbon-group-header').length).toBe(2);
-            expect((ribbon.element.querySelector('#item1').closest('.e-ribbon-large-item')) != null).toBe(true);
-            expect((ribbon.element.querySelector('#item2').closest('.e-ribbon-medium-item')) != null).toBe(true);
-            expect((ribbon.element.querySelector('#item5').closest('.e-ribbon-small-item')) != null).toBe(true);
+            expect((ribbon.element.querySelector('#item1')) != null).toBe(false);
+            expect((ribbon.element.querySelector('#item2')) != null).toBe(false);
+            expect((ribbon.element.querySelector('#item5')) != null).toBe(false);
             ribbon.setProperties({ activeLayout: 'Simplified' });
             expect(ribbon.element.querySelectorAll('.e-ribbon-row').length).toBe(0);
             expect(ribbon.element.querySelectorAll('.e-ribbon-group-header').length).toBe(0);
@@ -4345,9 +8710,9 @@ describe('Ribbon', () => {
             ribbon.setProperties({ activeLayout: 'Classic' });
             expect(ribbon.element.querySelectorAll('.e-ribbon-row').length).toBe(3);
             expect(ribbon.element.querySelectorAll('.e-ribbon-group-header').length).toBe(2);
-            expect((ribbon.element.querySelector('#items1').closest('.e-ribbon-large-item')) != null).toBe(true);
-            expect((ribbon.element.querySelector('#items2').closest('.e-ribbon-medium-item')) != null).toBe(true);
-            expect((ribbon.element.querySelector('#items5').closest('.e-ribbon-small-item')) != null).toBe(true);
+            expect((ribbon.element.querySelector('#items1')) != null).toBe(false);
+            expect((ribbon.element.querySelector('#items2')) != null).toBe(false);
+            expect((ribbon.element.querySelector('#items5')) != null).toBe(false);
         });
         it('Simplified to Normal mode without oveflow ', () => {
             let isfiltered: boolean = false;
@@ -5288,7 +9653,7 @@ describe('Ribbon', () => {
                             items: [{
                                 type: RibbonItemType.DropDown,
                                 allowedSizes: RibbonItemSize.Medium,
-                                displayOptions: DisplayMode.None,
+                                displayOptions: DisplayMode.Classic,
                                 dropDownSettings: {
                                     content: 'Edit',
                                     iconCss: 'e-icons e-edit',

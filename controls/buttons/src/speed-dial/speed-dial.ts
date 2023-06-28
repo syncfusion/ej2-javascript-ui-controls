@@ -472,9 +472,10 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * {% codeBlock src='speeddial/itemTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
 
     /**
      * Defines the display mode of speed dial action items.
@@ -545,9 +546,10 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * Defines a template content for popup of SpeedDial.
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public popupTemplate: string;
+    public popupTemplate: string | Function;
 
     /**
      * Provides the options to customize the speed dial action buttons when mode of speed dial is radial
@@ -808,11 +810,11 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         const templateFunction: Function = this.getTemplateString(this.popupTemplate);
         append(templateFunction({}, this, 'fabPopupTemplate', (this.element.id + 'popupTemplate'), this.isStringTemplate), templateContainer);
     }
-    private getTemplateString(template: string): Function {
-        let stringContent: string = '';
+    private getTemplateString(template: string | Function): Function {
+        let stringContent: string | Function = '';
         try {
-            const tempEle: HTMLElement = select(template);
-            if (tempEle) {
+            const tempEle: HTMLElement = select(template as string);
+            if (typeof template !== 'function' && tempEle) {
                 //Return innerHTML incase of jsrenderer script else outerHTML
                 stringContent = tempEle.tagName === 'SCRIPT' ? tempEle.innerHTML : tempEle.outerHTML;
             } else {

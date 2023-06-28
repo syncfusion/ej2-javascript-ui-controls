@@ -1,6 +1,6 @@
 import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';
 import { BorderModel, FontModel, PeriodsModel } from './base-model';
-import { EmptyPointMode, FadeOutMode } from '../../chart/utils/enum';
+import { EmptyPointMode, FadeOutMode, TooltipPosition } from '../../chart/utils/enum';
 import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';
 import { Alignment, TextOverflow } from '../utils/enum';
 import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
@@ -519,7 +519,7 @@ export class CenterLabel extends ChildProperty<CenterLabel> {
      * Defines the font style of the center label.
      */
 
-    @Complex<FontModel>(Theme.chartTitleFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "16px", fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -586,17 +586,17 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
      *
-     * @default 0.75
+     * @default null
      */
 
-    @Property(0.75)
+    @Property(null)
     public opacity: number;
 
     /**
      * Options to customize the ToolTip text.
      */
 
-    @Complex<FontModel>(Theme.tooltipLabelFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -612,10 +612,11 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
      *
      * @default null.
+     * @aspType string
      */
 
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * If set to true, ToolTip will animate while moving from one point to another.
@@ -675,9 +676,164 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Options to customize tooltip borders.
      */
 
-    @Complex<BorderModel>({ color: '#cccccc', width: 0.5 }, Border)
+    @Complex<BorderModel>({ color: null, width: null }, Border)
     public border: BorderModel;
 
+}
+
+export class StockTooltipSettings extends ChildProperty<StockTooltipSettings> {    
+    /**
+     * Enables / Disables the visibility of the tooltip.
+     *
+     * @default false.
+     */
+
+    @Property(false)
+    public enable: boolean;
+
+    /**
+     * Enables / Disables the visibility of the marker.
+     *
+     * @default true.
+     */
+
+    @Property(true)
+    public enableMarker: boolean;
+
+    /**
+     * If set to true, a single ToolTip will be displayed for every index.
+     *
+     * @default false.
+     */
+
+    @Property(false)
+    public shared: boolean;
+
+    /**
+     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default null
+     */
+
+    @Property(null)
+    public fill: string;
+
+    /**
+     * Header for tooltip. By default, the shared tooltip displays the point x value and the series name for each individual tooltip.
+     *
+     * @default null
+     */
+
+    @Property(null)
+    public header: string;
+
+    /**
+     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default 0.75
+     */
+
+    @Property(0.75)
+    public opacity: number;
+
+    /**
+     * Options to customize the ToolTip text.
+     */
+
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    public textStyle: FontModel;
+
+    /**
+     * Format the ToolTip content.
+     *
+     * @default null.
+     */
+
+    @Property(null)
+    public format: string;
+
+    /**
+     * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
+     *
+     * @default null.
+     * @aspType string
+     */
+
+    @Property(null)
+    public template: string | Function;
+
+    /**
+     * If set to true, ToolTip will animate while moving from one point to another.
+     *
+     * @default true.
+     */
+    @Property(true)
+    public enableAnimation: boolean;
+
+    /**
+     * Duration for the ToolTip animation.
+     *
+     * @default 300
+     */
+
+    @Property(300)
+    public duration: number;
+
+    /**
+     * Fade Out duration for the ToolTip hide.
+     *
+     * @default 1000
+     */
+
+    @Property(1000)
+    public fadeOutDuration: number;
+
+    /**
+     * Fade Out duration for the Tooltip hide.
+     *
+     * @default Move
+     */
+
+    @Property('Move')
+    public fadeOutMode: FadeOutMode;
+
+    /**
+     * To wrap the tooltip long text based on available space.
+     * This is only application for chart tooltip.
+     *
+     * @default false
+     */
+
+    @Property(false)
+    public enableTextWrap: boolean;
+
+    /**
+     * By default, the nearest points will be included in the shared tooltip; however, you can set it to false to exclude the nearest value from the tooltip.
+     *
+     * @default true
+     */
+
+    @Property(true)
+    public showNearestPoint: boolean;
+
+    /**
+     * Options to customize tooltip borders.
+     */
+
+    @Complex<BorderModel>({ color: null, width: null }, Border)
+    public border: BorderModel;
+
+    /** 
+     * Specifies the tooltip position. They are, 
+     * * fixed - Place the tooltip in the fixed position. 
+     * * nearest- Tooltip moves along with the mouse. 
+     * 
+     * @default 'Fixed' 
+     */
+
+    @Property('Fixed')
+    public position: TooltipPosition; 
+    
 }
 
 /**

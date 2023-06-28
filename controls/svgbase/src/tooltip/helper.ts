@@ -17,7 +17,7 @@ import { createElement, remove, merge } from '@syncfusion/ej2-base';
  * @param {FontModel} font To get a font of the text
  * @returns {Size} measureText
  */
-export function measureText(text: string, font: TextStyleModel): Size {
+export function measureText(text: string, font: TextStyleModel, themeFontStyle?: TextStyleModel): Size {
     const breakText: string = text || ''; // For avoid NuLL value
     let htmlObject: HTMLElement = document.getElementById('chartmeasuretext');
 
@@ -39,7 +39,7 @@ export function measureText(text: string, font: TextStyleModel): Size {
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
     htmlObject.style.fontStyle = font.fontStyle;
-    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.fontFamily = font.fontFamily || themeFontStyle.fontFamily;
     htmlObject.style.visibility = 'hidden';
     htmlObject.style.top = '-100';
     htmlObject.style.left = '0';
@@ -116,33 +116,24 @@ export function findDirection(
     } else if (left) {
         direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
             + (startY) + ' ' + (startX + rX) + ' ' + (startY));
-
         direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' '
-            + (startY) + ' ' + (width) + ' ' + (startY + rY) + ' L' + ' ' + (width) + ' ' + (arrowLocation.y - arrowPadding));
-
-        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY - arrowPadding)) :
+            + (startY) + ' ' + (width) + ' ' + ((controlName === 'RangeNavigator' ? 0 : (startY + rY)) + ' L' + ' ' + (width) + ' ' + (controlName === 'RangeNavigator' ? 0 : (arrowLocation.y - arrowPadding))));
+        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + 0) :
             direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY));
-
-        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y)) :
+        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y - rY)) :
             direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding));
-
         direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' ' + (height) + ' ' + (width - rX) + ' ' + (height));
-
         direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + startX + ' '
             + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
     } else {
         direction = direction.concat('M' + ' ' + (startX + rX) + ' ' + (startY) + ' Q ' + (startX) + ' '
-            + (startY) + ' ' + (startX) + ' ' + (startY + rY) + ' L' + ' ' + (startX) + ' ' + (arrowLocation.y - arrowPadding));
-
-        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + (tipY - arrowPadding)) :
+            + (startY) + ' ' + (startX) + ' ' + ((controlName === 'RangeNavigator' ? 0 : (startY + rY)) + ' L' + ' ' + (startX) + ' ' + (controlName === 'RangeNavigator' ? 0 : (arrowLocation.y - arrowPadding))));
+        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + 0) :
             direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + (tipY));
-
-        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y)) :
+        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y - rY)) :
             direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y + arrowPadding));
-
         direction = direction.concat(' L' + ' ' + (startX) + ' ' + (height - rY) + ' Q ' + startX + ' '
             + (height) + ' ' + (startX + rX) + ' ' + (height));
-
         direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (height) + ' Q ' + width + ' '
             + (height) + ' ' + (width) + ' ' + (height - rY) +
             ' L' + ' ' + (width) + ' ' + (startY + rY) + ' Q ' + width + ' '
@@ -260,9 +251,15 @@ export function calculateShapes(location: TooltipLocation, size: Size, shape: st
         functionName = 'Ellipse';
         merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': locX, 'cy': locY });
         break;
-    case 'Cross':
+    case 'Plus':
         path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
             'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' +
+            (locY + (-height / 2));
+        merge(options, { 'd': path });
+        break;
+    case 'Cross':
+        path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
+            'M' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' +
             (locY + (-height / 2));
         merge(options, { 'd': path });
         break;
@@ -350,7 +347,7 @@ export class PathOption extends CustomizeOption {
 /** @private */
 export function textElement(
     options: TextOption, font: TextStyleModel, color: string,
-    parent: HTMLElement | Element
+    parent: HTMLElement | Element, themeStyle?: TextStyleModel
 ): Element {
     let renderOptions: Object = {};
     const renderer: SvgRenderer = new SvgRenderer('');
@@ -361,7 +358,7 @@ export function textElement(
         'fill': color,
         'font-size': font.size,
         'font-style': font.fontStyle,
-        'font-family': font.fontFamily,
+        'font-family': font.fontFamily || themeStyle.fontFamily,
         'font-weight': font.fontWeight,
         'text-anchor': options.anchor,
         'transform': options.transform,
@@ -370,11 +367,6 @@ export function textElement(
     };
     const text: string = typeof options.text === 'string' ? options.text : options.text[0];
     const htmlObject: HTMLElement = renderer.createText(renderOptions, text) as HTMLElement;
-    htmlObject.style.fontFamily = font.fontFamily;
-    htmlObject.style.fontStyle = font.fontStyle;
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
-    htmlObject.style.color = font.color;
     parent.appendChild(htmlObject);
     return htmlObject;
 }

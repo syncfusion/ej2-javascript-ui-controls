@@ -4,6 +4,7 @@
 import { Sparkline } from '../sparkline';
 import { SparklineBorderModel, SparklineFontModel } from './base-model';
 import { Size } from '../utils/helper';
+import { FontModel } from '../../stock-chart';
 /**
  * Specifies sparkline Events
  *
@@ -41,6 +42,13 @@ export interface IThemes {
     tooltipTextOpacity?: number;
     /** Defines the label font style. */
     labelFontFamily?: string;
+    /** Defines the label font size. */
+    labelFontSize?: string;
+    /** Defines the tooltip font size. */
+    tooltipFontFamily: string;
+    /** Defines the datalabel font style. */
+    dataLabelFont: FontModel;
+
 }
 /**
  * Specifies the Loaded Event arguments.

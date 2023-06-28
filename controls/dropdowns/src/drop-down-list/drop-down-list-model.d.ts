@@ -107,24 +107,27 @@ export interface DropDownListModel extends DropDownBaseModel{
      * For EX: We have expression evolution as like ES6 expression string literals.
      *
      * @default null
+     * @aspType string
      */
-    valueTemplate?: string;
+    valueTemplate?: string | Function;
 
     /**
      * Accepts the template design and assigns it to the header container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
      *
      * @default null
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * Accepts the template design and assigns it to the footer container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
      *
      * @default null
+     * @aspType string
      */
-    footerTemplate?: string;
+    footerTemplate?: string | Function;
 
     /**
      * When allowFiltering is set to true, show the filter bar (search box) of the component.

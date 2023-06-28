@@ -139,8 +139,11 @@ export class IsFormatted {
         const validTags : string[] = ['u'];
         if ( validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
             return true;
+        /* eslint-disable */
         } else if ( this.inlineTags.indexOf(node.nodeName.toLowerCase()) !== -1 &&
-        (node as HTMLElement).style && (node as HTMLElement).style.textDecoration === 'underline') {
+        (node as HTMLElement).style && ((node as HTMLElement).style.textDecoration === 'underline' ||
+        ((node as HTMLElement).style as any).textDecorationLine === 'underline')) {
+        /* eslint-enable */
             return true;
         } else {
             return false;
@@ -159,8 +162,11 @@ export class IsFormatted {
         const validTags : string[] = ['del', 'strike'];
         if ( validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
             return true;
+        /* eslint-disable */
         } else if (this.inlineTags.indexOf(node.nodeName.toLowerCase()) !== -1 &&
-        (node as HTMLElement).style && (node as HTMLElement).style.textDecoration === 'line-through') {
+        (node as HTMLElement).style && ((node as HTMLElement).style.textDecoration === 'line-through' ||
+        ((node as HTMLElement).style as any).textDecorationLine === 'line-through')) {
+        /* eslint-enable */
             return true;
         } else {
             return false;

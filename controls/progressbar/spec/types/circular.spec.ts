@@ -759,6 +759,48 @@ describe('ProgressBar Control', () => {
             progress.loaded = loaded;
             progress.refresh();
         });
+        it('checking with material3 theme style opacity for buffer', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularbuffer');
+                opacity = path.getAttribute('opacity');
+                expect(opacity === '0.24' ).toBe(true);
+            };
+            progress.loaded = loaded;
+            progress.theme = 'Material3';
+            progress.secondaryProgress = 60;
+            progress.refresh();
+        });
+        it('checking with material3 theme style for track', ()=>{
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circulartrack');
+                stroke = path.getAttribute('stroke');
+                expect(stroke === "#E7E0EC" ).toBe(true);
+            };
+            progress.theme = 'Material3';
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking with material3 dark theme style opacity for buffer', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularbuffer');
+                opacity = path.getAttribute('opacity');
+                expect(opacity === '0.24' ).toBe(true);
+            };
+            progress.loaded = loaded;
+            progress.theme = 'Material3Dark';
+            progress.secondaryProgress = 60;
+            progress.refresh();
+        });
+        it('checking with material3 dark theme style for track', ()=>{
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circulartrack');
+                stroke = path.getAttribute('stroke');
+                expect(stroke === "#49454F" ).toBe(true);
+            };
+            progress.theme = 'Material3Dark';
+            progress.loaded = loaded;
+            progress.refresh();
+        });
     });
     describe('linear progress bar themestyle', () => {
         let progress: ProgressBar;

@@ -6,9 +6,9 @@ import { CellModel, getSheetName, getSheet, SheetModel, checkIsFormula, Workbook
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel, isLocked, getColumn } from '../../workbook/index';
 import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, closest, select } from '@syncfusion/ej2-base';
+import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { isUndefined, getNumericObject } from '@syncfusion/ej2-base';
-import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue, toggleFormulaBar, renderInsertDlg } from '../common/event';
+import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue, renderInsertDlg } from '../common/event';
 import { intToDate, isNumber } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
@@ -329,7 +329,7 @@ export class FormulaBar {
         const range: number[] = getCellIndexes(sheet.activeCell);
         const cell: CellModel = getCell(range[0], range[1], sheet);
         const isCellLocked: boolean = isLocked(cell, getColumn(sheet, range[1]));
-        if (target.classList.contains('e-drop-icon') && closest(target, '.e-formula-bar-panel')) {
+        if (target.classList.contains('e-drop-icon') && target.parentElement.classList.contains('e-formula-bar-panel')) {
             this.toggleFormulaBar(target);
         } else if (target.classList.contains('e-formula-bar')) {
             if (!this.parent.isEdit && (!isSheetProtected || (isSheetProtected && !isCellLocked))) {
@@ -359,15 +359,19 @@ export class FormulaBar {
             || (this.parent.element.id + '_insert_function' === target.id) ||
             target.parentElement.classList.contains('e-insert-function')
             || (this.parent.element.id + '_insert_function' === target.parentElement.id))) {
-            if (isSheetProtected) {
-                this.parent.notify(editAlert, null);
-                return;
-            }
             this.renderInsertDlg();
         }
     }
 
     private renderInsertDlg(): void {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        if (sheet.isProtected) {
+            const activeCell: number[] = getCellIndexes(sheet.activeCell);
+            if (isLocked(getCell(activeCell[0], activeCell[1], sheet), getColumn(sheet, activeCell[1]))) {
+                this.parent.notify(editAlert, null);
+                return;
+            }
+        }
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let isOpen: boolean = !this.parent.isEdit;
         const args: { [key: string]: Object } = { action: 'getCurrentEditValue', editedValue: '' };
@@ -394,8 +398,12 @@ export class FormulaBar {
             const categoryArgs: { action: string, categoryCollection: string[] } = { action: 'getFormulaCategory', categoryCollection: [] };
             this.parent.notify(workbookFormulaOperation, categoryArgs);
             this.categoryCollection = categoryArgs.categoryCollection;
+            let categoryPopupOpen: boolean;
             this.categoryList = new DropDownList({
-                dataSource: this.categoryCollection, index: 0, width: '285px', popupHeight: '210px', select: this.dropDownSelect.bind(this)
+                dataSource: this.categoryCollection, cssClass: 'e-ss-formula-category', index: 0, width: '285px', popupHeight: '210px',
+                select: this.dropDownSelect.bind(this),
+                open: () => categoryPopupOpen = true,
+                close: () => categoryPopupOpen = false,
             });
             const listArgs: { action: string, formulaCollection: string[] } = { action: 'getLibraryFormulas', formulaCollection: [] };
             this.parent.notify(workbookFormulaOperation, listArgs);
@@ -417,12 +425,20 @@ export class FormulaBar {
                         const dlgArgs: DialogBeforeOpenEventArgs = {
                             dialogName: 'InsertFunctionDialog', element: args.element, target: args.target, cancel: args.cancel };
                         this.parent.trigger('dialogBeforeOpen', dlgArgs);
-                        if (dlgArgs.cancel) { args.cancel = true; }
-                        focus(this.parent.element); },
+                        if (dlgArgs.cancel) {
+                            args.cancel = true;
+                        }
+                        focus(this.parent.element);
+                    },
                     open: this.dialogOpen.bind(this), beforeClose: this.dialogBeforeClose.bind(this), close: this.dialogClose.bind(this),
                     buttons: [
                         {
-                            click: (this.selectFormula.bind(this, this.dialog, this)),
+                            click: (event: KeyboardEvent): void => {
+                                if (event && event.keyCode === 13 && !categoryPopupOpen) {
+                                    return;
+                                }
+                                this.selectFormula();
+                            },
                             buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true }
                         }]
                 });
@@ -449,17 +465,14 @@ export class FormulaBar {
         this.parent.setPanelSize();
     }
 
-    private toggleFormulaBarBtn(): void {
-        const formulaExpand : HTMLElement = this.parent.element.querySelector('.e-formula-bar-panel .e-drop-icon');
-        this.toggleFormulaBar(formulaExpand);
-    }
-
     private dialogOpen(): void {
         getUpdateUsingRaf((): void => {
             const okBtn: HTMLElement = this.dialog.dialogInstance.element.querySelector('.e-footer-content .e-primary');
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             okBtn.setAttribute('aria-label', l10n.getConstant('InsertFunction') + ' ' + l10n.getConstant('Ok'));
-            focus(okBtn);
+            if (this.categoryList) {
+                focus(this.categoryList.element);
+            }
         });
     }
 
@@ -484,8 +497,8 @@ export class FormulaBar {
         this.formulaList = null;
     }
 
-    private selectFormula(dialog: Dialog, formulaBarObj: FormulaBar): void {
-        const formulaText: string | string[] | number | number[] = formulaBarObj.formulaList.getSelectedItems().text;
+    private selectFormula(): void {
+        const formulaText: string | string[] | number | number[] = this.formulaList.getSelectedItems().text;
         const sheet: SheetModel = getSheet(this.parent as Workbook, this.parent.activeSheetIndex);
         if (this.parent.isEdit) {
             this.parent.notify(editOperation, {
@@ -496,10 +509,13 @@ export class FormulaBar {
             this.parent.notify(editOperation, { action: 'startEdit', value: '=' + formulaText + '(', address: sheet.activeCell });
             this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: '=' + formulaText + '(' });
         }
-        dialog.hide();
+        this.dialog.hide();
     }
-    private listSelected(): void {
+    private listSelected(args: SelectEventArgs): void {
         this.updateFormulaDescription();
+        if (args.isInteracted && args.item) {
+            (args.item as HTMLElement).focus();
+        }
     }
     private updateFormulaList(): void {
         this.activeListFormula();
@@ -544,7 +560,6 @@ export class FormulaBar {
         if (okBtn.hasAttribute('aria-label')) {
             okBtn.removeAttribute('aria-label');
         }
-        focus(okBtn);
         const descriptionArea: Element = document.getElementById(this.parent.element.id + '_description_content');
         selectedFormula = (selectedFormula === 'AND') ? 'CalculateAND' : (selectedFormula === 'OR') ? 'CalculateOR' : selectedFormula;
         descriptionArea.textContent = descriptionArgs.isCustom?descriptionArgs.description:(this.parent.serviceLocator.getService(locale) as L10n).getConstant(selectedFormula as string);
@@ -572,7 +587,6 @@ export class FormulaBar {
         this.parent.on(click, this.formulaBarClickHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
         this.parent.on(renderInsertDlg, this.renderInsertDlg, this);
-        this.parent.on(toggleFormulaBar, this.toggleFormulaBarBtn,this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(selectionComplete, this.formulaBarUpdateHandler, this);
         this.parent.on(mouseUpAfterSelection, this.UpdateValueAfterMouseUp, this);
@@ -602,7 +616,6 @@ export class FormulaBar {
             this.parent.off(formulaBar, this.createFormulaBar);
             this.parent.off(click, this.formulaBarClickHandler);
             this.parent.off(renderInsertDlg, this.renderInsertDlg);
-            this.parent.off(toggleFormulaBar,this.toggleFormulaBarBtn);
             this.parent.off(keyDown, this.keyDownHandler);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(selectionComplete, this.formulaBarUpdateHandler);

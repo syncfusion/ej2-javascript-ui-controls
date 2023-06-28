@@ -157,6 +157,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         } else {
             this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
         }
+        if (e.requestType === 'grouping') {
+            this.parent.currentViewData[`${grouping}`] = this.parent.currentViewData[`${grouping}`].filter((item: Object, index: number) =>
+                this.parent.currentViewData[`${grouping}`].indexOf(item) === index);
+        }
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
             if (['save', 'delete'].some((value: string) => { return e.requestType === value; })) {
                 return result = this.parent.vcRows;

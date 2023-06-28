@@ -159,7 +159,7 @@ describe('Pivot Grid - HyperLink', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(() => {
             expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
-            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent').querySelectorAll('.e-valuescontent a')[40]).toBeTruthy;
+            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent').querySelectorAll('.e-valuescontent a')[20]).toBeTruthy;
             done();
         }, 1000);
     });
@@ -187,7 +187,6 @@ describe('Pivot Grid - HyperLink', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(() => {
             expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent td a')).toBeTruthy;
-            //(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent td a') as HTMLElement).click();
             done();
         }, 1000);
     });
@@ -196,7 +195,6 @@ describe('Pivot Grid - HyperLink', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);
         //Check average change in memory samples to not be over 10MB
-        //expect(average).toBeLessThan(10);
         let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);

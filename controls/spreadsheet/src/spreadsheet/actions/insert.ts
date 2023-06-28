@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { completeAction, insertSheetTab, refreshImagePosition, updateScrollValue } from '../common/index';
+import { completeAction, focus, insertSheetTab, refreshImagePosition, updateScrollValue } from '../common/index';
 import { beforeInsert, insert, InsertDeleteEventArgs, triggerDataChange, getRowsHeight, ActionEventArgs } from '../../workbook/index';
 import { SheetModel, CellModel, getCell, getSheet, getCellIndexes, getCellAddress, getColumnsWidth } from '../../workbook/index';
 import { skipHiddenIdx } from '../../workbook/index';
@@ -120,6 +120,7 @@ export class Insert {
         if (args.isAction) {
             delete args.isAction;
             this.parent.notify(completeAction, actionArgs);
+            focus(this.parent.element);
         } else if (!args.isUndoRedo) {
             args.isMethod = true;
             this.parent.notify(triggerDataChange, actionArgs);

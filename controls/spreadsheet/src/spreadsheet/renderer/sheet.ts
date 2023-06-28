@@ -228,7 +228,9 @@ export class SheetRender implements IRenderer {
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
             indexes = getRangeIndexes(key);
             if (indexes[1] === args.indexes[1] || !row) {
-                hRow = this.rowRenderer.render(indexes[0], true);
+                if (indexes[1] === args.indexes[1]) {
+                    hRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                }
                 if (frozenCol && frozenRow && indexes[1] < frozenCol && indexes[0] < frozenRow) {
                     emptyRow = selectAllTBody.querySelector('.e-empty');
                     if (emptyRow) {
@@ -505,7 +507,9 @@ export class SheetRender implements IRenderer {
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
             indexes = getRangeIndexes(key);
             if (indexes[1] === args.indexes[1] || !row) {
-                hdrRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                if (indexes[1] === args.indexes[1]) {
+                    hdrRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                }
                 if (frozenCol && indexes[1] < frozenCol) {
                     hTBody.appendChild(hdrRow); row = hdrRow;
                 } else {
@@ -677,7 +681,9 @@ export class SheetRender implements IRenderer {
                     getCell(this.parent.viewport.topIndex + frozenRow, indexes[1], sheet) || {});
             }
             if (indexes[1] === firstCol || !row) {
-                hRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                if (indexes[1] === firstCol) {
+                    hRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                }  
                 if (frozenCol && indexes[1] < frozenCol) {
                     rFrag.appendChild(hRow); row = hRow;
                 } else {

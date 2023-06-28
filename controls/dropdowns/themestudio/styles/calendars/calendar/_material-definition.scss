@@ -61,7 +61,7 @@ $calendar-small-min-width: $calendar-normal-min-width !default;
 $calendar-weeknumber-min-width: 262px !default;
 $calendar-weeknumber-bigger-width: 320px !default;
 $calendar-normal-month-view-height: 30px !default;
-$calendar-normal-month-view-line-height: 28px !default;
+$calendar-normal-month-view-line-height: $calendar-normal-month-view-height !default;
 $calendar-normal-day-header-height: $calendar-normal-month-view-height !default;
 $calendar-normal-day-header-text: none !default;
 $calendar-normal-year-decade-height: 45px !default;

@@ -19,6 +19,7 @@ export class SortDescriptor extends ChildProperty<SortDescriptor> {
      *
      * @default null
      * @isEnumeration true
+     * @asptype SortDirection
      *
      */
     @Property()

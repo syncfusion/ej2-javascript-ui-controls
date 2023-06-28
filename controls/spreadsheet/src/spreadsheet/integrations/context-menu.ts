@@ -2,7 +2,7 @@ import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
-import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus } from '../common/index';
+import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, applyProtect } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale, removeHyperlink } from '../common/index';
@@ -61,6 +61,9 @@ export class ContextMenu {
      */
     private beforeCloseHandler(args: BeforeOpenCloseMenuEventArgs): void {
         this.parent.trigger('contextMenuBeforeClose', args);
+        if (this.parent.enableKeyboardShortcut && args.event && (args.event as KeyboardEvent).keyCode === 27) { // Esc key
+            getUpdateUsingRaf((): void => focus(this.parent.element));
+        }
     }
 
     /**
@@ -83,13 +86,13 @@ export class ContextMenu {
                 this.parent.notify(copy, { invokeCopy: true, promise: Promise });
                 break;
             case id + '_paste':
-                this.parent.notify(paste, { isAction: true, isInternal: true });
+                this.parent.notify(paste, { isAction: true, isInternal: true, focus: true });
                 break;
             case id + '_pastevalues':
-                this.parent.notify(paste, { type: 'Values', isAction: true, isInternal: true });
+                this.parent.notify(paste, { type: 'Values', isAction: true, isInternal: true, focus: true });
                 break;
             case id + '_pasteformats':
-                this.parent.notify(paste, { type: 'Formats', isAction: true, isInternal: true });
+                this.parent.notify(paste, { type: 'Formats', isAction: true, isInternal: true, focus: true });
                 break;
             case id + '_rename':
                 this.parent.notify(renameSheetTab, {});
@@ -136,39 +139,33 @@ export class ContextMenu {
                 indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                 this.parent.notify(hideShow, <HideShowEventArgs>{
                     startIndex: indexes[0], endIndex: indexes[2], hide: true, isCol: false, actionUpdate: true });
-                focus(this.parent.element);
                 break;
             case id + '_unhide_row':
                 indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                 this.parent.notify(hideShow, <HideShowEventArgs>{
                     startIndex: indexes[0], endIndex: indexes[2], hide: false, isCol: false, actionUpdate: true });
-                focus(this.parent.element);
                 break;
             case id + '_hide_column':
                 indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                 this.parent.notify(hideShow, <HideShowEventArgs>{
                     startIndex: indexes[1], endIndex: indexes[3], hide: true, isCol: true, actionUpdate: true });
-                focus(this.parent.element);
                 break;
             case id + '_unhide_column':
                 indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                 this.parent.notify(hideShow, <HideShowEventArgs>{
                     startIndex: indexes[1], endIndex: indexes[3], hide: false, isCol: true, actionUpdate: true });
-                focus(this.parent.element);
                 break;
             case id + '_insert_row_above': case id + '_delete_row':
                 indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                 this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
                     this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true,
                 insertType: 'above' });
-                focus(this.parent.element);
                 break;
             case id + '_insert_row_below':
                 indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
                 this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent.getActiveSheet(), start:
                     indexes[2] + 1, end: indexes[2] + 1 + (indexes[2] - indexes[0]), modelType: 'Row', isAction: true,
                 insertType: 'below' });
-                focus(this.parent.element);
                 break;
             case id + '_insert_column_before': case id + '_delete_column':
                 indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
@@ -453,8 +450,8 @@ export class ContextMenu {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (this.parent.allowHyperlink) {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
-            if ((!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
-                !document.activeElement.classList.contains('e-hyperlink')) || (sheet.isProtected && !sheet.protectSettings.insertLink)) {
+            if (!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
+                !document.activeElement.classList.contains('e-hyperlink')) {
                 items.push({
                     text: l10n.getConstant('Hyperlink'), iconCss: 'e-icons e-hyperlink-icon', id: id + '_hyperlink'
                 });

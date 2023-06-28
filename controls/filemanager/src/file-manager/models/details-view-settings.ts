@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, initializeCSPTemplate  } from '@syncfusion/ej2-base';
 import { ColumnModel } from './index';
 /**
  * Specifies the columns in the details view of the file manager.
@@ -6,14 +6,20 @@ import { ColumnModel } from './index';
 export const columnArray: ColumnModel[] = [
     {
         field: 'name', headerText: 'Name', minWidth: 120, isPrimaryKey : true,
-        template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name'}
+        template: initializeCSPTemplate(function(data: any) {
+            return `<span class="e-fe-text">${data.name}</span>`;
+        }) as any,
+        customAttributes: { class: 'e-fe-grid-name'}
     },
     {
         field: '_fm_modified', headerText: 'DateModified', type: 'dateTime',
         format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190'
     },
     {
-        field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>', format: 'n2'
+        field: 'size', headerText: 'Size', minWidth: 90, width: '110',
+        template: initializeCSPTemplate(function(data: any) {
+            return `<span class="e-fe-size">${data.size}</span>`;
+        }) as any, format: 'n2'
     }
 ];
 /**

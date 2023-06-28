@@ -3261,6 +3261,15 @@ export interface PdfViewerModel extends ComponentModel{
     retryStatusCodes?: number[];
 
     /**
+     * Gets or sets the timeout for retries in seconds.
+     * 
+     * {% codeBlock src='pdfviewer/retryTimeout/index.md' %}{% endcodeBlock %}
+     *
+     * @default 0
+     */
+    retryTimeout?: number;
+
+    /**
      * Initially renders the first N pages of the PDF document when the document is loaded.
      * 
      * {% codeBlock src='pdfviewer/initialRenderPages/index.md' %}{% endcodeBlock %}

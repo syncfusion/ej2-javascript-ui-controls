@@ -85,10 +85,10 @@ describe('Pivot Grid Cell Template', () => {
             expect(true).toBeTruthy();
         });
         it('grouping bar render testing', () => {
-            expect(pivotGridObj.element.children[0].classList.contains('e-grouping-bar')).toBeTruthy;
+            expect(pivotGridObj.element.children[0].classList.contains('e-grouping-bar')).not.toBeTruthy;
             pivotGridObj.dataBind();
             pivotGridObj.groupingBarSettings = { showFilterIcon: true, showRemoveIcon: true, showSortIcon: true };
-            expect(pivotGridObj.element.children[0].classList.contains('e-grouping-bar')).toBeTruthy;
+            expect(pivotGridObj.element.children[0].classList.contains('e-grouping-bar')).not.toBeTruthy;
         });
         it('check sorting order field', () => {
             let pivotButtons: HTMLElement[] =
@@ -141,7 +141,7 @@ describe('Pivot Grid Cell Template', () => {
         it('check remove pivot button', (done: Function) => {
             let pivotButton: HTMLElement =
                 (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
-            expect(pivotButton.id).toBe('gender');
+            expect(pivotButton.id).toBe('PivotGrid_gender');
             (pivotButton.querySelector('.e-remove') as HTMLElement).click();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
@@ -158,7 +158,7 @@ describe('Pivot Grid Cell Template', () => {
             let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
             let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(2);
-            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-content');
+            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-pvt-btn-content');
             let mousedown: any =
                 util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
@@ -182,7 +182,7 @@ describe('Pivot Grid Cell Template', () => {
             setTimeout(() => {
                 pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(3);
-                expect((pivotButton[2].querySelector('.e-content') as HTMLElement).innerText).toEqual("droppedButton");
+                expect((pivotButton[2].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual("droppedButton");
                 done();
             }, 1000);
         });
@@ -193,7 +193,7 @@ describe('Pivot Grid Cell Template', () => {
         });
         it('check cell template with sanitizer', (done: Function) => {
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('td')[4].childElementCount == 1).toBeTruthy();
+                expect(pivotGridObj.element.querySelectorAll('td')[4].childElementCount == 2).toBeTruthy();
                 pivotGridObj.enableHtmlSanitizer = false;
                 pivotGridObj.refresh();
                 done();
@@ -326,7 +326,7 @@ describe('Pivot Grid Cell Template', () => {
         it('check remove pivot button', (done: Function) => {
             let pivotButton: HTMLElement =
                 (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
-            expect(pivotButton.id).toBe('gender');
+            expect(pivotButton.id).toBe('PivotGrid_gender');
             (pivotButton.querySelector('.e-remove') as HTMLElement).click();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
@@ -361,7 +361,7 @@ describe('Pivot Grid Cell Template', () => {
             setTimeout(() => {
                 pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(3);
-                expect((pivotButton[2].querySelector('.e-content') as HTMLElement).innerText).toEqual("droppedButton");
+                expect((pivotButton[2].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual("droppedButton");
                 done();
             }, 1000);
         });
