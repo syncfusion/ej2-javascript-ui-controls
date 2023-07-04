@@ -89,7 +89,7 @@ export interface ExpandCollapseEventArgs {
  */
 @NotifyPropertyChanges
 export class Ribbon extends Component<HTMLDivElement> implements INotifyPropertyChanged {
-    private toolbarObj: Toolbar;
+    public toolbarObj: Toolbar;
     public tabObj: Tab;
 
     /**
@@ -326,6 +326,12 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             selecting: (args: SelectingEventArgs): void => {
                 if (this.menuItems.length && args.selectingIndex === 0) {
                     args.cancel = true;
+                    if ((!args.event || args.event.type === 'keydown') && args.selectingItem) {
+                        const fileMenu: HTMLElement = args.selectingItem.querySelector('.e-file-menu .e-menu-item');
+                        if (fileMenu) {
+                            fileMenu.click();
+                        }
+                    }
                 } else {
                     if (args.selectingIndex === this.getIndex(this.selectedTab)) { return; }
                     this.updateToolbar(this.getIndex(args.selectingIndex, true));

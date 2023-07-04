@@ -105,6 +105,10 @@
       & .e-switch-handle.e-switch-active {
         left: $switch-handle-active;
         margin-left: $switch-handle-margin-left;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-active-height;
+          width: $switch-handle-active-width;
+        }
       }
 
       &.e-switch-disabled {
@@ -123,9 +127,22 @@
         z-index: 1;
         @if $skin-name == 'Material3' {
           height: $switch-ripple-height;
-          left: $switch-ripple-left;
-          top: $switch-ripple-top;
+          left: $switch-off-ripple-left;
+          top: $switch-off-ripple-top;
           width: $switch-ripple-width;
+        }
+
+        &.e-ripple-check {
+          @if $skin-name == 'Material3' {
+            left: $switch-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+            top: $switch-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        & .e-ripple-element {
+          @if $skin-name == 'Material3' {
+            border-radius: 50%;
+          }
         }
       }
 
@@ -186,6 +203,10 @@
         & .e-switch-handle.e-switch-active {
           left: $switch-small-handle-active-left;
           margin-left: $switch-small-handle-margin-left;
+          @if $skin-name == 'Material3' {
+            height: $switch-handle-small-active-height;
+            width: $switch-handle-small-active-width;
+          }
         }
 
         & .e-switch-on,
@@ -231,6 +252,10 @@
 
           & .e-switch-handle.e-switch-active {
             left: $switch-small-handle-active-left-rtl;
+            @if $skin-name == 'Material3' {
+              height: $switch-handle-small-active-height;
+              width: $switch-handle-small-active-width;
+            }
           }
         }
       }
@@ -262,11 +287,26 @@
       top: $switch-small-ripple-top;
       width: $switch-small-ripple-width;
       z-index: 1;
+      @if $skin-name == 'Material3' {
+        left: $switch-small-off-ripple-left;
+        top: $switch-small-off-ripple-top;
+      }
+
+      &.e-ripple-check {
+        @if $skin-name == 'Material3' {
+          left: $switch-small-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+          top: $switch-small-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
     }
 
     & .e-switch-handle.e-switch-active {
       left: $switch-small-handle-active-left;
       margin-left: $switch-small-handle-margin-left;
+      @if $skin-name == 'Material3' {
+        height: $switch-handle-small-active-height;
+        width: $switch-handle-small-active-width;
+      }
     }
 
     & .e-switch-on,
@@ -312,6 +352,10 @@
 
       & .e-switch-handle.e-switch-active {
         left: $switch-small-handle-active-left-rtl;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-small-active-height;
+          width: $switch-handle-small-active-width;
+        }
       }
     }
   }
@@ -339,11 +383,26 @@
       top: $switch-bigger-small-ripple-top;
       width: $switch-bigger-small-ripple-width;
       z-index: 1;
+      @if $skin-name == 'Material3' {
+        left: $switch-bigger-small-off-ripple-left;
+        top: $switch-bigger-small-off-ripple-top;
+      }
+
+      &.e-ripple-check {
+        @if $skin-name == 'Material3' {
+          left: $switch-bigger-small-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+          top: $switch-bigger-small-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
     }
 
     & .e-switch-handle.e-switch-active {
       left: $switch-bigger-small-handle-active-left;
       margin-left: $switch-bigger-small-handle-margin-left;
+      @if $skin-name == 'Material3' {
+        height: $switch-handle-bigger-small-active-height;
+        width: $switch-handle-bigger-small-active-width;
+      }
     }
 
     & .e-switch-on,
@@ -389,6 +448,10 @@
 
       & .e-switch-handle.e-switch-active {
         left: $switch-bigger-small-handle-active-left-rtl;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-bigger-small-active-height;
+          width: $switch-handle-bigger-small-active-width;
+        }
       }
     }
   }
@@ -410,6 +473,10 @@
     & .e-switch-handle.e-switch-active {
       left: $switch-bigger-handle-active-left;
       margin-left: $switch-bigger-handle-margin-left;
+      @if $skin-name == 'Material3' {
+        height: $switch-handle-bigger-active-height;
+        width: $switch-handle-bigger-active-width;
+      }
     }
 
     & .e-switch-on,
@@ -430,6 +497,17 @@
       left: $switch-bigger-ripple-left;
       top: $switch-bigger-ripple-top;
       width: $switch-bigger-ripple-width;
+      @if $skin-name == 'Material3' {
+        left: $switch-bigger-off-ripple-left;
+        top: $switch-bigger-off-ripple-top;
+      }
+
+      &.e-ripple-check {
+        @if $skin-name == 'Material3' {
+          left: $switch-bigger-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+          top: $switch-bigger-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
     }
 
     &.e-rtl {
@@ -460,6 +538,10 @@
 
       & .e-switch-handle.e-switch-active {
         left: $switch-bigger-handle-active-left-rtl;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-bigger-active-height;
+          width: $switch-handle-bigger-active-width;
+        }
       }
     }
 
@@ -483,11 +565,26 @@
         top: $switch-bigger-small-ripple-top;
         width: $switch-bigger-small-ripple-width;
         z-index: 1;
+        @if $skin-name == 'Material3' {
+          left: $switch-bigger-small-off-ripple-left;
+          top: $switch-bigger-small-off-ripple-top;
+        }
+  
+        &.e-ripple-check {
+          @if $skin-name == 'Material3' {
+            left: $switch-bigger-small-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+            top: $switch-bigger-small-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
       }
 
       & .e-switch-handle.e-switch-active {
         left: $switch-bigger-small-handle-active-left;
         margin-left: $switch-bigger-small-handle-margin-left;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-bigger-small-active-height;
+          width: $switch-handle-bigger-small-active-width;
+        }
       }
 
       & .e-switch-on,

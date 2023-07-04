@@ -20,21 +20,24 @@ export interface QuickInfoTemplatesModel {
      * Template option to customize the header section of quick popup.
      *
      *  @default null
+     *  @aspType string
      */
-    header?: string;
+    header?: string | Function;
 
     /**
      * Template option to customize the content area of the quick popup.
      *
      *  @default null
+     *  @aspType string
      */
-    content?: string;
+    content?: string | Function;
 
     /**
      * Template option to customize the footer section of quick popup.
      *
      *  @default null
+     *  @aspType string
      */
-    footer?: string;
+    footer?: string | Function;
 
 }

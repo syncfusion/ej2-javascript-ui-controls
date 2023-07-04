@@ -58,3 +58,8 @@ $datetime-list-active-hover-bg-color: $flyout-bg-color-hover !default;
 $datetime-list-active-hover-font-color: $flyout-text-color-hover !default;
 $datetime-list-hover-border-color: none !default;
 $datetime-default-overlay: $content-bg-color-alt2 !default;
+
+// modal full-screen popup
+$modal-datetime-position: fixed !default;
+$modal-datetime-wrapper-position: relative !default;
+$modal-datetime-wrapper-width: 100% !default;

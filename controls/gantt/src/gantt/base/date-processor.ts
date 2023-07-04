@@ -185,7 +185,7 @@ export class DateProcessor {
             } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
                 for (let i: number = 0; i < this.parent.workingTimeRanges.length; i++) {
                     const value: IWorkingTimeRange = this.parent.workingTimeRanges[i as number];
-                    if (hour >= value.to && (this.parent.workingTimeRanges[i + 1] &&
+                    if (hour > value.to && (this.parent.workingTimeRanges[i + 1] &&
                         hour < this.parent.workingTimeRanges[i + 1].from)) {
                         this.setTime(this.parent.workingTimeRanges[i + 1].from, cloneDate);
                         break;
@@ -524,21 +524,7 @@ export class DateProcessor {
                 sDate = new Date(endDate.getTime());
                 this.setTime(this.parent.defaultStartTime, sDate);
             } else if (!isNullOrUndefined(duration)) {
-                this.parent.flatData.map((record) => {
-                    if (record.ganttProperties.taskId == ganttProp.taskId) {
-                        if ((!isNullOrUndefined(record.parentItem)) && (record.parentItem.taskId)) {
-                            this.parent.flatData.map((data) => {
-                                if (data.ganttProperties.taskId === record.parentItem.taskId) {
-                                    if (!isNullOrUndefined(data.ganttProperties.startDate))
-                                        sDate = data.ganttProperties.startDate;
-                                }else { sDate = this.getProjectStartDate(ganttProp) }
-                            })
-                        }
-                        else { sDate = this.getProjectStartDate(ganttProp) }
-
-                    }
-
-                })
+                   sDate = this.getProjectStartDate(ganttProp);
             }
         } else {
             sDate = new Date(startDate.getTime());
@@ -1296,6 +1282,7 @@ export class DateProcessor {
             setValue('minStartDate', minStartDate, editArgs);
             setValue('maxEndDate', maxEndDate, editArgs);
         }
+        this.parent['isProjectDateUpdated'] = true;
     }
     /**
      *
@@ -1309,7 +1296,15 @@ export class DateProcessor {
             const segment: ITaskSegment = segments[i as number];
             const sDate: Date = segment.startDate;
             const eDate: Date = segment.endDate;
-            duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
+            if (this.parent.timelineModule.bottomTier === "Hour") {
+                duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60));
+            }
+            else if (this.parent.timelineModule.bottomTier === "Minutes") {
+                duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60));
+            }
+            else {
+                duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));
+            }
         }
         return duration;
     }

@@ -139,8 +139,9 @@ export interface ToastModel extends ComponentModel{
      * Accepts selectors, string values and HTML elements.
      *
      * @default null
+     * @aspType string
      */
-    title?: string;
+    title?: string | Function;
 
     /**
      * Specifies the content to be displayed on the Toast.
@@ -148,8 +149,9 @@ export interface ToastModel extends ComponentModel{
      *
      * @default null
      * @blazorType string
+     * @aspType string
      */
-    content?: string | HTMLElement;
+    content?: string | HTMLElement | Function;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
@@ -179,8 +181,9 @@ export interface ToastModel extends ComponentModel{
      * {% codeBlock src='toast/template/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Specifies the newly created Toast message display order while multiple toast's are added to page one after another.

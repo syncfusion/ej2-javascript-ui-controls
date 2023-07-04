@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { SheetModel, getRangeAddress, Spreadsheet, getCell } from '../../../src/index';
+import { SheetModel, getRangeAddress, Spreadsheet, getCell, CellModel } from '../../../src/index';
 import { L10n } from '@syncfusion/ej2-base';
 import { SpreadsheetModel } from '../../../src/spreadsheet/index';
 
@@ -269,9 +269,19 @@ describe('Cell Format ->', () => {
         });
         it('Alt enter', (done: Function) => {
             helper.triggerKeyNativeEvent(113);
-            const editElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
+            const editor: HTMLElement = helper.getElement('#' + helper.id + '_edit');
+            editor.focus();
+            editor.textContent = 'Sridhar';
             helper.triggerKeyNativeEvent(13, false, false, null, 'keyup', true);
             helper.triggerKeyNativeEvent(13);
+            expect(helper.getInstance().sheets[0].rows[10].height).toBe(38);
+            const cell: CellModel = helper.getInstance().sheets[0].rows[10].cells[0];
+            expect(cell.wrap).toBeTruthy();
+            expect(cell.value).toBe('Sridhar\n ');
+            const cellEle: HTMLElement = helper.invoke('getCell', [10, 0]);
+            expect(cellEle.classList).toContain('e-wraptext');
+            expect(cellEle.textContent).toBe('Sridhar\n ');
+            expect(cellEle.parentElement.style.height).toBe('38px');
             done();
         });
         it('Apply all border with alt + enter edited cell->', (done: Function) => {

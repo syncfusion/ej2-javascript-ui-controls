@@ -23,7 +23,7 @@ export class TreeViewRenderer implements IAction {
     /** @hidden */
     public parent: PivotFieldList;
     /** @hidden */
-    public fieldTable: TreeView;    
+    public fieldTable: TreeView;
 
     private parentElement: HTMLElement;
     private fieldDialog: Dialog;
@@ -55,7 +55,7 @@ export class TreeViewRenderer implements IAction {
         this.parentElement = this.parent.dialogRenderer.parentElement;
         this.fieldListSort = this.parent.pivotGridModule ?
             this.parent.pivotGridModule.defaultFieldListOrder : this.parent.defaultFieldListOrder;
-        this.fieldListSort = this.fieldListSort === 'Ascending' ? 'Ascend' : 
+        this.fieldListSort = this.fieldListSort === 'Ascending' ? 'Ascend' :
             this.fieldListSort === 'Descending' ? 'Descend' : 'None';
         if (!this.parent.isAdaptive) {
             const fieldTable: Element = createElement('div', {
@@ -310,7 +310,7 @@ export class TreeViewRenderer implements IAction {
             enableRtl: this.parent.enableRtl,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             locale: this.parent.locale,
-            width: 'auto',
+            width: '320px',
             height: '350px',
             position: { X: 'center', Y: 'center' },
             buttons: [{
@@ -726,7 +726,7 @@ export class TreeViewRenderer implements IAction {
             }
             this.updateDataSource();
         }
-        let selectedLi: HTMLElement = this.treeViewElement.querySelector('[data-uid="'+ id + '"]');
+        const selectedLi: HTMLElement = this.treeViewElement.querySelector('[data-uid="' + id + '"]');
         selectedLi.focus();
         removeClass([selectedLi], 'e-hover');
         const parent: PivotFieldList = this.parent;
@@ -754,7 +754,8 @@ export class TreeViewRenderer implements IAction {
             } else {
                 (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
             }
-            (this.parent as PivotFieldList).pivotGridModule.setProperties({ dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions }, true);    /* eslint-disable-line */
+            // eslint-disable-next-line max-len
+            (this.parent as PivotFieldList).pivotGridModule.setProperties({ dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions }, true);
             (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
         } else {
             this.parent.triggerPopulateEvent();
@@ -807,7 +808,7 @@ export class TreeViewRenderer implements IAction {
 
     private refreshTreeView(): void {
         if (this.fieldTable) {
-            let treeData: { [key: string]: Object }[] = this.getUpdatedData();  /* eslint-disable-line */
+            const treeData: { [key: string]: Object }[] = this.getUpdatedData();
             this.fieldTable.fields = {
                 dataSource: treeData, id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass'
             };
@@ -925,7 +926,7 @@ export class TreeViewRenderer implements IAction {
             }
         } else {
             data = isNullOrUndefined(this.parent.olapEngineModule.fieldListData) ? [] :
-            PivotUtil.getClonedData(this.parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);
+                PivotUtil.getClonedData(this.parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);
         }
         return data;
     }
@@ -1000,13 +1001,13 @@ export class TreeViewRenderer implements IAction {
                     measure = treeData[0];
                     treeData.splice(0, 1);
                 }
-                /* eslint-disable  */
                 treeData = sortOrder === 'Ascend' ?
-                    (treeData.sort((a, b) => (a.caption > b.caption) ? 1 : ((b.caption > a.caption) ? -1 : 0))) :
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (treeData.sort((a: any, b: any) => (a.caption > b.caption) ? 1 : ((b.caption > a.caption) ? -1 : 0))) :
                     sortOrder === 'Descend' ?
-                        (treeData.sort((a, b) => (a.caption < b.caption) ? 1 : ((b.caption < a.caption) ? -1 : 0))) :
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (treeData.sort((a: any, b: any) => (a.caption < b.caption) ? 1 : ((b.caption < a.caption) ? -1 : 0))) :
                         treeData;
-                /* eslint-enable  */
                 if (calcMember) {
                     treeData.splice(0, 0, calcMember, measure);
                 } else {
@@ -1018,7 +1019,8 @@ export class TreeViewRenderer implements IAction {
         }
         return treeData;
     }
-    private onFieldAdd(e: MouseEventArgs & TouchEventArgs): void {  /* eslint-disable-line */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private onFieldAdd(e: MouseEventArgs & TouchEventArgs): void {
         this.parent.dialogRenderer.updateDataSource(this.selectedNodes);
         this.closeTreeDialog();
     }

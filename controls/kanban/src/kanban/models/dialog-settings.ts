@@ -11,9 +11,10 @@ export class DialogSettings extends ChildProperty<DialogSettings> {
      * Defines the dialog template
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public template: string;
+    public template: string | Function;
 
     /**
      * Defines the dialog fields
@@ -24,7 +25,7 @@ export class DialogSettings extends ChildProperty<DialogSettings> {
     public fields: DialogFieldsModel[];
 
     /**
-     * Customize the model object configuration for the edit or add Dialog component.
+     * Customize the model object configuration for the edit or add Dialog of Kanban.
      *
      * @default null
      */

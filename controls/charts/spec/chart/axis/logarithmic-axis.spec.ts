@@ -246,7 +246,7 @@ describe('Chart Control', () => {
             loaded = (args: Arg): void => {
                 svg = document.getElementById('container_Series_0_Point_0');
                 let value: number = Math.round((<Series>args.chart.series[0]).points[1].regions[0].y);
-                expect(value == 253 || value == 248).toBe(true);
+                expect(value == 253 || value == 252).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { DropDownList, ComboBox, SelectEventArgs, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { RadioButton, Button } from '@syncfusion/ej2-buttons';
 import { WStyle, WCharacterStyle, WParagraphStyle } from '../../implementation/format/style';
@@ -205,19 +205,19 @@ export class StyleDialog {
             items: items, cssClass: 'e-de-style-format-dropdwn', enableRtl: isRtl,
             beforeItemRender: (args: MenuEventArgs) => {
                 if (this.styleType.value === localValue.getConstant('Character')) {
-                    if (args.item.text === localValue.getConstant('Paragraph')) {
+                    if (args.item.id === "style_paragraph") {
                         args.element.classList.add('e-disabled');
                     }
 
-                    if (args.item.text === 'Numbering') {
+                    if (args.item.id === 'style_numbering') {
                         args.element.classList.add('e-disabled');
                     }
                 } else {
-                    if (args.item.text === localValue.getConstant('Paragraph')) {
+                    if (args.item.id === "style_paragraph") {
                         args.element.classList.remove('e-disabled');
                     }
 
-                    if (args.item.text === 'Numbering') {
+                    if (args.item.id === 'style_numbering') {
                         args.element.classList.remove('e-disabled');
                     }
                 }
@@ -249,8 +249,10 @@ export class StyleDialog {
             id: this.target.id + '_fontName',
         });
         let fontStyle: { [key: string]: Object; }[];
-        let isStringTemplate: boolean = true;
-        let itemTemplate: string = '<span style="font-family: ${FontName};">${FontName}</span>';
+        let isStringTemplate: boolean = true;        
+        let itemTemplate: string | Function = initializeCSPTemplate(
+            function (data: any): string { return `<span style="font-family: ${data.FontName};">${data.FontName}</span>`; }
+        );
         parentDiv.appendChild(fontFamilyElement);
         this.fontFamily = new ComboBox({
             dataSource: fontStyle, query: new Query().select(['FontName']), fields: { text: 'FontName', value: 'value' },
@@ -695,6 +697,9 @@ export class StyleDialog {
             } else {
                 let tmpStyle: any = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
                 tmpStyle.copyStyle(this.style);
+                if (this.getTypeValue() === 'Character') {
+                    (tmpStyle as WCharacterStyle).characterFormat.copyFormat(this.characterFormat);
+                }
                 let basedOn: any = this.documentHelper.styles.findByName(this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleBasedOn.value as string)) as WStyle;
                 if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked Style') {
                     if (styleName === this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleParagraph.value as string)) {
@@ -809,6 +814,9 @@ export class StyleDialog {
     public updateParagraphFormat(paragraphFOrmat?: WParagraphFormat): void {
         if (!isNullOrUndefined(paragraphFOrmat)) {
             this.paragraphFormat = paragraphFOrmat;
+        }
+        if (isNullOrUndefined(this.paragraphFormat)) {
+            return;
         }
         if (this.paragraphFormat.textAlignment === 'Left') {
             if (!this.leftAlign.classList.contains('e-active')) {

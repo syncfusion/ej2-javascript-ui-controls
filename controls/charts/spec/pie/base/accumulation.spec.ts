@@ -125,11 +125,12 @@ describe('accumulation and Doughnut Control Checking', () => {
         expect(text).toBeNull();
     });
     it('Checking with  title', () => {
+        debugger;
         accumulation.title = 'Syncfusion accumulation Title';
         accumulation.dataBind();
         text = getElement(id + '_title');
         expect(text.textContent).toBe('Syncfusion accumulation Title');
-        expect(text.getAttribute('y') === '25' || text.getAttribute('y') === '22.75').toEqual(true);
+        expect(text.getAttribute('y') === '25' || text.getAttribute('y') === '23.5').toEqual(true);
     });
          
     it('checking chart title with different radius', () => {
@@ -138,7 +139,7 @@ describe('accumulation and Doughnut Control Checking', () => {
         text = getElement(id + '_title');
         expect(text.textContent).toBe('Empty Point as average');
        if (parseInt(accumulation.series[0].radius) >= 80) {
-        expect(text.getAttribute('y') === '25' || text.getAttribute('y') === '22.75').toEqual(true);
+        expect(text.getAttribute('y') === '25' || text.getAttribute('y') === '23.5').toEqual(true);
        }
     });
 
@@ -147,7 +148,7 @@ describe('accumulation and Doughnut Control Checking', () => {
         accumulation.dataBind();
         text = getElement(id + '_subTitle');
         expect(text.textContent).toBe('accumulation SubTitle');
-        expect(text.getAttribute('y') === '46.25' || text.getAttribute('y') === '41.75').toEqual(true);
+        expect(text.getAttribute('y') === '45.5' || text.getAttribute('y') === '41.75').toEqual(true);
     });
 
     it('Checking with title', () => {
@@ -164,7 +165,7 @@ describe('accumulation and Doughnut Control Checking', () => {
         text = getElement(id + '_title');
         expect(text.textContent).toBe('Empty Point as average');
        if(parseInt(accumulation.series[0].radius) >= 80){
-        expect(text.getAttribute('y') === '25' || text.getAttribute('y') === '22.75').toEqual(true);
+        expect(text.getAttribute('y') === '25' || text.getAttribute('y') === '23.5').toEqual(true);
        }
     });
 

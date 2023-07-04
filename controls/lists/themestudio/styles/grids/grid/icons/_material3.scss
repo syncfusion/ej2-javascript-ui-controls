@@ -18,11 +18,11 @@
     }
 
     .e-icon-ascending::before {
-      content: '\e7df';
+      content: '\e823';
     }
 
     .e-icon-descending::before {
-      content: '\e7d8';
+      content: '\e87c';
     }
 
     .e-icon-hide::before {
@@ -49,9 +49,12 @@
       content: '\e748';
     }
 
-    .e-icon-filter::before,
-    .e-icon-filter.e-filtered::before {
+    .e-icon-filter::before {
       content: '\e7f7';
+    }
+    
+    .e-icon-filter.e-filtered::before {
+      content: '\e735';
     }
 
     .e-resfilter-icon::before {

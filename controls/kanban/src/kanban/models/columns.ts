@@ -27,9 +27,10 @@ export class Columns extends ChildProperty<Columns> {
      * Defines the column template
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public template: string;
+    public template: string | Function;
 
     /**
      * Enable or disable toggle column

@@ -1,5 +1,5 @@
-import { getRangeAddress, SheetModel, Spreadsheet } from "../../../src/index";
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { getRangeAddress, SheetModel, Spreadsheet, focus } from '../../../src/index';
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 
 describe('Spreadsheet cell navigation module ->', () => {
@@ -18,182 +18,147 @@ describe('Spreadsheet cell navigation module ->', () => {
             expect(helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename')).not.toBeNull();
             done();
         });
-        it('Ctrl + Shift + Home Button with Vertical Scrolling', (done: Function) => {
-            helper.invoke('goTo', ['H80']);
+        it('Ctrl + Shift + Home key with vertical and horizontal scrolling', (done: Function) => {
+            helper.invoke('goTo', ['AG80']);
             setTimeout(() => {
-                helper.invoke('selectRange', ['H100']);
+                helper.invoke('selectRange', ['AI100']);
                 helper.triggerKeyNativeEvent(36, true, true);
                 setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].selectedRange).toBe('H100:A1');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('AI100:A1');
                     done();
                 }, 20);
             });
         });
-        it('Ctrl + Shift + Home Button with Horizontal Scrolling', (done: Function) => {
-            helper.invoke('goTo', ['AG5']);
-            setTimeout(() => {
-                helper.invoke('selectRange', ['AI5']);
-                helper.triggerKeyNativeEvent(36, true, true);
-                setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].selectedRange).toBe('AI5:A1');
-                    done(); 
-                }, 20);
-            });
-        });
-        it('Home Button', (done: Function) => {
+        it('Home key', (done: Function) => {
             helper.invoke('selectRange', ['H5']);
             helper.triggerKeyNativeEvent(36);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A5');
-                done();
-            }, 20);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A5');
+            done();
         });
-        it('Ctrl + Home Button', (done: Function) => {
+        it('Ctrl + Home key', (done: Function) => {
             helper.invoke('selectRange', ['H5']);
             helper.triggerKeyNativeEvent(36, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
-                done();
-            }, 20);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+            done();
         });
-        it('Ctrl + End Button', (done: Function) => {
+        it('Shift + Home key', (done: Function) => {
+            helper.invoke('selectRange', ['H6']);
+            helper.triggerKeyNativeEvent(36, false, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('H6:A6');
+            done();
+        });
+        it('Ctrl + End key', (done: Function) => {
             helper.invoke('selectRange', ['C5']);
             helper.triggerKeyNativeEvent(35, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('H11:H11');
-                done();
-            }, 20);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('H11:H11');
+            done();
         });
-        it('Shift + Space Button for Row Selection', (done: Function) => {
+        it('Ctrl + Shift + End key', (done: Function) => {
+            helper.invoke('selectRange', ['B2']);
+            helper.triggerKeyNativeEvent(35, true, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:H11');
+            done();
+        });
+        it('Shift + Space key for row selection', (done: Function) => {
             helper.invoke('selectRange', ['C5']);
             helper.triggerKeyNativeEvent(32, false, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:CY5');
-                done();
-            });
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:CV5');
+            done();
         });
-        it('Ctrl + Space Button for Column Selection', (done: Function) => {
+        it('Ctrl + Space key for column selection', (done: Function) => {
             helper.invoke('selectRange', ['C5']);
             helper.triggerKeyNativeEvent(32, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('C1:C105');
-                done();
-            });
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('C1:C100');
+            done();
         });
-        it('Ctrl + Shift + Down Arrow Button for Selection', (done: Function) => {
-            helper.invoke('selectRange', ['H1']);
+        it('Ctrl + Shift + Down arrow key for selection', (done: Function) => {
+            helper.invoke('selectRange', ['E4']);
+            helper.triggerKeyNativeEvent(46);
+            helper.invoke('selectRange', ['E1']);
             helper.triggerKeyNativeEvent(40, true, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('H1:H11');
-                done();
-            });
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E1:E3');
+            helper.triggerKeyNativeEvent(40, true, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E1:E5');
+            helper.triggerKeyNativeEvent(40, true, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E1:E11');
+            done();
         });
-        it('Ctrl + Shift + Right Arrow Button for Selection', (done: Function) => {
-            helper.invoke('selectRange', ['A5']);
+        it('Ctrl + Shift + Right arrow key for selection', (done: Function) => {
+            helper.invoke('selectRange', ['C4']);
             helper.triggerKeyNativeEvent(39, true, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:H5');
-                done();
-            });
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('C4:D4');
+            helper.triggerKeyNativeEvent(39, true, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('C4:F4');
+            helper.triggerKeyNativeEvent(39, true, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('C4:H4');
+            done();
         });
-        it('Ctrl + Shift + Up Arrow Button for Selection', (done: Function) => {
-            helper.invoke('selectRange', ['C11']);
+        it('Ctrl + Shift + Up arrow key for selection', (done: Function) => {
+            helper.invoke('selectRange', ['E11']);
             helper.triggerKeyNativeEvent(38, true, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('C11:C1');
-                done();
-            });
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E11:E5');
+            helper.triggerKeyNativeEvent(38, true, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E11:E3');
+            helper.triggerKeyNativeEvent(38, true, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E11:E1');
+            done();
         });
-        it('Ctrl + Shift + Left Arrow Button for Selection', (done: Function) => {
-            helper.invoke('selectRange', ['H5']);
+        it('Ctrl + Shift + Left arrow key for selection', (done: Function) => {
+            helper.invoke('selectRange', ['H4']);
             helper.triggerKeyNativeEvent(37, true, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('H5:A5');
-                done();
-            });
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('H4:F4');
+            helper.triggerKeyNativeEvent(37, true, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('H4:D4');
+            helper.triggerKeyNativeEvent(37, true, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('H4:A4');
+            done();
         });
-        it('Ctrl + Down Arrow Button for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['H1']);
+        it('Ctrl + Down arrow key for navigation', (done: Function) => {
+            helper.invoke('selectRange', ['E1']);
+            helper.triggerKeyNativeEvent(40, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E3:E3');
+            helper.triggerKeyNativeEvent(40, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E5:E5');
+            helper.triggerKeyNativeEvent(40, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E11:E11');
             helper.triggerKeyNativeEvent(40, true);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('H11:H11');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('E100:E100');
                 done();
             }, 20);
         });
-        it('Ctrl + Right Arrow Button for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['A5']);
+        it('Ctrl + Right arrow key for Navigation', (done: Function) => {
+            helper.invoke('selectRange', ['A4']);
+            helper.triggerKeyNativeEvent(39, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('D4:D4');
+            helper.triggerKeyNativeEvent(39, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('F4:F4');
+            helper.triggerKeyNativeEvent(39, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('H4:H4');
             helper.triggerKeyNativeEvent(39, true);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('H5:H5');
-                done();
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('CV4:CV4'); done();
             }, 20);
         });
-        it('Ctrl + Up Arrow Button for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['C11']);
+        it('Ctrl + Up arrow key for navigation', (done: Function) => {
+            helper.invoke('selectRange', ['E11']);
             helper.triggerKeyNativeEvent(38, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('C1:C1');
-                done();
-            }, 20);
-        });
-        it('Ctrl + Left Arrow Button for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['H5']);
-            helper.triggerKeyNativeEvent(37, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A5');
-                done();
-            }, 20);
-        });
-        it('Ctrl + Down Arrow Button with scrolling for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['H11']);
-            helper.triggerKeyNativeEvent(40, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('H100:H100');
-                done();
-            }, 20);
-        });
-        it('Ctrl + Right Arrow Button with scrolling for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['H11']);
-            helper.triggerKeyNativeEvent(39, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('CV11:CV11');
-                done();
-            }, 20);
-        });
-
-        it('Ctrl + Down Arrow Button with empty cell for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['H10']);
-            helper.triggerKeyNativeEvent(46);
-            helper.triggerKeyNativeEvent(40, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('H11:H11');
-                done();
-            }, 20);
-        });
-        it('Ctrl + Up Arrow Button with empty cell for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['H10']);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E5:E5');
             helper.triggerKeyNativeEvent(38, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('H9:H9');
-                done();
-            }, 20);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E3:E3');
+            helper.triggerKeyNativeEvent(38, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E1:E1');
+            done();
         });
-        it('Ctrl + Left Arrow Button with empty cell for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['H10']);
+        it('Ctrl + Left arrow key for navigation', (done: Function) => {
+            helper.invoke('selectRange', ['H4']);
             helper.triggerKeyNativeEvent(37, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('G10:G10');
-                done();
-            }, 20);
-        });
-        it('Ctrl + Right Arrow Button with empty cell for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['F10']);
-            helper.triggerKeyNativeEvent(46);
-            helper.triggerKeyNativeEvent(39, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('G10:G10');
-                done();
-            }, 20);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('F4:F4');
+            helper.triggerKeyNativeEvent(37, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('D4:D4');
+            helper.triggerKeyNativeEvent(37, true);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('A4:A4');
+            done();
         });
         it('Shift + Up Arrow Button for Selection', (done: Function) => {
             helper.invoke('selectRange', ['A2']);
@@ -296,6 +261,13 @@ describe('Spreadsheet cell navigation module ->', () => {
                 done();
             }, 10);
         });
+        it('Shift + Tab key with Column Merged cell for Navigation', (done: Function) => {
+            helper.triggerKeyNativeEvent(9, false, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A3:B3');
+                done();
+            }, 20);
+        });
         it('Down arrow Button with Hidden Row for Navigation', (done: Function) => {
             helper.invoke('hideRow', [2]);
             helper.invoke('selectRange', ['A2']);
@@ -369,35 +341,50 @@ describe('Spreadsheet cell navigation module ->', () => {
             helper.getElement().focus();
             helper.triggerKeyNativeEvent(34);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A27:A27');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A29:A29');
                 done();
             }, 50);
         });
         it('Page Up Button for Navigation', (done: Function) => {
-            helper.invoke('selectRange', ['A1']);
+            helper.invoke('selectRange', ['G15']);
+            helper.getElement().focus();
             helper.triggerKeyNativeEvent(33);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('G2:G2');
                 done();
-            }, 10);
+            }, 50);
         });
 
         it('Shift + Page Up Button for Selection', (done: Function) => {
-            helper.invoke('selectRange', ['A1']);
+            helper.invoke('selectRange', ['G15']);
             helper.triggerKeyNativeEvent(33, false, true);
-            setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
-                done();
-            }, 10);
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('G15:G2');
+            done();
         });
         it('Shift + Page Down Button for Selection', (done: Function) => {
             helper.invoke('selectRange', ['A5']);
             helper.getElement().focus();
             helper.triggerKeyNativeEvent(34, false, true);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A31');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A32');
                 done();
             }, 50);
+        });
+        it('Insert function using shift+F3', (done: Function) => {
+            helper.invoke('selectRange', ['A6']);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.isEdit).toBeFalsy();
+            helper.triggerKeyNativeEvent(114, false, true);
+            setTimeout(() => {
+                expect(spreadsheet.isEdit).toBeFalsy();
+                const dialog: HTMLElement = helper.getElement('.e-spreadsheet-function-dlg.e-dialog');
+                expect(dialog).not.toBeNull();
+                helper.click('.e-spreadsheet-function-dlg.e-dialog .e-list-item:nth-child(4)');
+                helper.setAnimationToNone('.e-spreadsheet-function-dlg.e-dialog');
+                helper.click('.e-spreadsheet-function-dlg.e-dialog .e-footer-content .e-primary');
+                expect(spreadsheet.isEdit).toBeTruthy();
+                done();
+            });
         });
     });
 
@@ -473,7 +460,226 @@ describe('Spreadsheet cell navigation module ->', () => {
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('D5:D5');
                 done();
-            }, 10);
+            }, 20);
+        });
+    });
+
+    describe('Dependent features using keyboard actions ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2:A2' }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        const navigateMenuItemAndSelect: (row: number, col: number, countArr: number[], isRowHdr?: boolean, isColHdr?: boolean) => void =
+            (row: number, col: number, countArr: number[], isRowHdr?: boolean, isColHdr?: boolean) => {
+            helper.openAndClickCMenuItem(row, col, null, isRowHdr, isColHdr);
+            const cMenuWrapper: HTMLElement = document.activeElement.parentElement as HTMLElement;
+            countArr.forEach((count: number, index: number) => {
+                while (count) {
+                    helper.triggerKeyNativeEvent(40, false, false, cMenuWrapper, 'keyup');
+                    count--;
+                }
+                if (countArr.length - 1 === index) {
+                    helper.triggerKeyNativeEvent(13, false, false, cMenuWrapper, 'keyup');
+                } else {
+                    const focuedItem: HTMLElement = cMenuWrapper.querySelector('.e-menu-item.e-focused') as HTMLElement;
+                    focuedItem.classList.add('e-selected');
+                    helper.triggerKeyNativeEvent(39, false, false, cMenuWrapper, 'keyup');
+                }
+            });
+        };
+        it ('Cut/paste cell using context menu', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            focus(spreadsheet.element);
+            helper.setAnimationToNone(`#${helper.id}_contextmenu`);
+            helper.triggerKeyNativeEvent(121, false, true);
+            expect(document.activeElement.textContent).toBe('02/14/2014');
+            navigateMenuItemAndSelect(1, 0, [1]);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                expect(spreadsheet.clipboardModule.copiedInfo.isCut).toBeTruthy();
+                expect(spreadsheet.clipboardModule.copiedInfo.range[0]).toBe(1);
+                expect(spreadsheet.clipboardModule.copiedInfo.range[1]).toBe(0);
+                helper.invoke('selectRange', ['A7']);
+                navigateMenuItemAndSelect(6, 0, [3]);
+                expect(spreadsheet.sheets[0].rows[6].cells[0].value).toBe('Casual Shoes');
+                expect(spreadsheet.sheets[0].rows[1].cells[0]).toBeNull();
+                done();
+            });
+        });
+        it ('Copy/paste cell using context menu', (done: Function) => {
+            navigateMenuItemAndSelect(6, 0, [2]);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                expect(spreadsheet.clipboardModule.copiedInfo.isCut).toBeFalsy();
+                expect(spreadsheet.clipboardModule.copiedInfo.range[0]).toBe(6);
+                expect(spreadsheet.clipboardModule.copiedInfo.range[1]).toBe(0);
+                helper.invoke('selectRange', ['A2']);
+                navigateMenuItemAndSelect(1, 0, [3]);
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('Casual Shoes');
+                helper.triggerKeyNativeEvent(27);
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).toBeNull();
+                done();
+            });
+        });
+        it ('Apply and clear filter using context menu', (done: Function) => {
+            navigateMenuItemAndSelect(1, 0, [3, 0]);
+            setTimeout(() => {
+                const checkFilterCases: Function = () => {
+                    expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(1);
+                    expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe('Casual Shoes');
+                    expect(spreadsheet.sheets[0].rows[1].isFiltered).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[2].isFiltered).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[6].isFiltered).toBeUndefined();
+                };
+                checkFilterCases();
+                navigateMenuItemAndSelect(1, 0, [3, 1]);
+                setTimeout(() => {
+                    checkFilterCases();
+                    navigateMenuItemAndSelect(1, 0, [3, 0]);
+                    expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(0);
+                    expect(spreadsheet.sheets[0].rows[2].isFiltered).toBeFalsy();
+                    done();
+                });
+            });
+        });
+        it ('Sort Ascending', (done: Function) => {
+            navigateMenuItemAndSelect(1, 0, [4, 0]);
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Casual Shoes');
+                    expect(spreadsheet.sheets[0].rows[3].cells[0].value).toBe('Cricket Shoes');
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe('Flip- Flops & Slippers');
+                    expect(spreadsheet.sheets[0].rows[10].cells[0].value).toBe('T-Shirts');
+                    helper.triggerKeyNativeEvent(90, true);
+                    expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+                    done();
+                });
+            });
+        });
+        it ('Sort Descending', (done: Function) => {
+            navigateMenuItemAndSelect(1, 0, [4, 1]);
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('T-Shirts');
+                    expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe('Running Shoes');
+                    expect(spreadsheet.sheets[0].rows[10].cells[0].value).toBe('Casual Shoes');
+                    helper.triggerKeyNativeEvent(90, true);
+                    expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('Casual Shoes');
+                    expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+                    done();
+                });
+            });
+        });
+        it ('Apply hyperlink', (done: Function) => {
+            navigateMenuItemAndSelect(1, 0, [5]);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                const urlInput: HTMLInputElement = helper.getElementFromSpreadsheet(
+                    '.e-hyperlink-dlg .e-webpage').lastElementChild.querySelector('.e-text');
+                focus(urlInput);
+                urlInput.value = 'https://www.syncfusion.com/';
+                helper.triggerKeyNativeEvent(39, false, false, null, 'keyup', false, urlInput);
+                helper.getElementFromSpreadsheet('.e-hyperlink-dlg .e-footer-content .e-primary').click();
+                expect(spreadsheet.sheets[0].rows[1].cells[0].hyperlink.address).toBe('https://www.syncfusion.com/');
+                expect(helper.invoke('getCell', [1, 0]).querySelector('.e-hyperlink')).not.toBeNull();
+                done();
+            });
+        });
+        it ('Edit and remove hyperlink', (done: Function) => {
+            navigateMenuItemAndSelect(1, 0, [5]);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
+                const urlInput: HTMLInputElement = helper.getElementFromSpreadsheet(
+                    '.e-edithyperlink-dlg .e-webpage').lastElementChild.querySelector('.e-text');
+                urlInput.value = 'https://www.google.com/';
+                helper.getElementFromSpreadsheet('.e-edithyperlink-dlg .e-footer-content .e-primary').click();
+                expect(spreadsheet.sheets[0].rows[1].cells[0].hyperlink.address).toBe('https://www.google.com/');
+                const cell: HTMLElement = helper.invoke('getCell', [1, 0]);
+                expect(cell.querySelector('.e-hyperlink')).not.toBeNull();
+                navigateMenuItemAndSelect(1, 0, [7]);
+                expect(spreadsheet.sheets[0].rows[1].cells[0].hyperlink).toBeUndefined();
+                expect(cell.querySelector('.e-hyperlink')).toBeNull();
+                done();
+            });
+        });
+        it ('Hide/show column', (done: Function) => {
+            focus(spreadsheet.element);
+            helper.invoke('selectRange', ['B1']);
+            helper.triggerKeyNativeEvent(32, true);
+            navigateMenuItemAndSelect(0, 1, [5], false, true);
+            expect(spreadsheet.sheets[0].columns[1].hidden).toBeTruthy();
+            navigateMenuItemAndSelect(0, 1, [6], false, true);
+            expect(spreadsheet.sheets[0].columns[1].hidden).toBeFalsy();
+            done();
+        });
+        it ('Delete column', (done: Function) => {
+            navigateMenuItemAndSelect(0, 1, [4], false, true);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].usedRange.colIndex).toBe(6);
+                expect(spreadsheet.sheets[0].rows[0].cells[1].value).toBe('Time');
+                helper.triggerKeyNativeEvent(90, true);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].usedRange.colIndex).toBe(7);
+                    expect(spreadsheet.sheets[0].rows[0].cells[1].value).toBe('Date');
+                    done();
+                });
+            });
+        });
+        it ('Insert column', (done: Function) => {
+            navigateMenuItemAndSelect(0, 1, [3, 0], false, true);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].usedRange.colIndex).toBe(8);
+                expect(spreadsheet.sheets[0].rows[0].cells[1]).toBeNull();
+                expect(spreadsheet.sheets[0].rows[0].cells[2].value).toBe('Date');
+                helper.triggerKeyNativeEvent(90, true);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].usedRange.colIndex).toBe(7);
+                    expect(spreadsheet.sheets[0].rows[0].cells[1].value).toBe('Date');
+                    expect(spreadsheet.sheets[0].rows[0].cells[2].value).toBe('Time');
+                    done();
+                });
+            });
+        });
+        it ('Hide/show row', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.triggerKeyNativeEvent(32, false, true);
+            navigateMenuItemAndSelect(1, 0, [5], true);
+            expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+            navigateMenuItemAndSelect(1, 0, [6], true);
+            expect(spreadsheet.sheets[0].rows[1].hidden).toBeFalsy();
+            done();
+        });
+        it ('Delete row', (done: Function) => {
+            navigateMenuItemAndSelect(1, 0, [4], true);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].usedRange.rowIndex).toBe(9);
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('Sports Shoes');
+                helper.triggerKeyNativeEvent(90, true);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].usedRange.rowIndex).toBe(10);
+                    expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('Casual Shoes');
+                    done();
+                });
+            });
+        });
+        it ('Insert row', (done: Function) => {
+            navigateMenuItemAndSelect(1, 0, [3, 0], true);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].usedRange.rowIndex).toBe(11);
+                expect(spreadsheet.sheets[0].rows[1].cells).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Casual Shoes');
+                helper.triggerKeyNativeEvent(90, true);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].usedRange.rowIndex).toBe(10);
+                    expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('Casual Shoes');
+                    expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+                    done();
+                });
+            });
         });
     });
 

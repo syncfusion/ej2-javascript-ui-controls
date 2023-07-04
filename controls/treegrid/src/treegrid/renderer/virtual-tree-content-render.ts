@@ -103,8 +103,16 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.startIndex = 0;
             this.endIndex = this.parent.pageSettings.pageSize - 1;
         }
-        args.startIndex = this.startIndex;
-        args.endIndex = this.endIndex;
+        if ((this.endIndex - this.startIndex !== this.parent.pageSettings.pageSize) &&
+            (this.totalRecords > this.parent.pageSettings.pageSize) &&
+            (this.endIndex === this.totalRecords)) {
+            args.startIndex = this.endIndex - this.parent.pageSettings.pageSize;
+            args.endIndex = this.endIndex;
+        }
+        else{
+            args.startIndex = this.startIndex;
+            args.endIndex = this.endIndex;
+        }
     }
     public eventListener(action: string): void {
         if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
@@ -396,7 +404,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         const selectedRowIndex: string = 'selectedRowIndex';
         const currentViewData: Object[] = this.parent.currentViewData; const indexValue: string = 'index';
         if (upScroll && (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left')) {
-            const vHeight: number = +(this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
+            const vHeight: number = +(this.parent.height.toString().indexOf('%') < 0 ? parseInt(this.parent.height.toString(), 10) :
                 this.parent.element.getBoundingClientRect().height);
             let index: number = (~~(content.scrollTop / rowHeight)
           + Math.ceil(vHeight / rowHeight))
@@ -414,7 +422,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.startIndex = (this.startIndex - remains) < 0 ? 0 : (this.startIndex - remains);
             }
             if (currentViewData.length && (currentViewData[0][`${indexValue}`] >= this.parent.pageSettings.pageSize / 2) &&
-            ((currentViewData[0][`${indexValue}`] - this.startIndex) < (this.parent.pageSettings.pageSize / 2))) {
+                ((currentViewData[0][`${indexValue}`] - this.startIndex) < (this.parent.pageSettings.pageSize / 2)) && this.parent.selectionModule.isRowSelected) {
                 this.startIndex = currentViewData[0][`${indexValue}`] - (this.parent.pageSettings.pageSize / 2);
                 this.endIndex = this.startIndex + this.parent.pageSettings.pageSize;
             }
@@ -433,6 +441,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                     this.translateY = scrollArgs.offset.top - rowHeight * 2;
                 }
                 else {
+                    scrollArgs.offset.top = content.scrollTop;
                     this.translateY = scrollArgs.offset.top;
                 }
             } else {
@@ -451,10 +460,14 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 lastIndex = nextSetResIndex +
           (this.totalRecords - nextSetResIndex);
             }
-            this.startIndex =  !isLastBlock ? lastIndex - this.parent.pageSettings.pageSize : nextSetResIndex;
+            this.startIndex =  !isLastBlock || isNullOrUndefined(this['' + selectedRowIndex]) ? lastIndex - this.parent.pageSettings.pageSize : nextSetResIndex;
             this.endIndex = lastIndex;
+            if ((nextSetResIndex + this.parent.pageSettings.pageSize) > this.totalRecords && (this.endIndex - this.startIndex) <
+            (this.parent.pageSettings.pageSize / 2) && (this.endIndex - nextSetResIndex) < (this.parent.pageSettings.pageSize / 2)) {
+                this.startIndex = lastIndex - (this.parent.pageSettings.pageSize / 2);
+            }
             if (currentViewData.length && this.startIndex > currentViewData[0][`${indexValue}`] &&
-            ((this.startIndex - currentViewData[0][`${indexValue}`]) < (this.parent.pageSettings.pageSize / 2))){
+                ((this.startIndex - currentViewData[0][`${indexValue}`]) < (this.parent.pageSettings.pageSize / 2)) && this.parent.selectionModule.isRowSelected) {
                 this.startIndex = currentViewData[0][`${indexValue}`] + (this.parent.pageSettings.pageSize / 2);
             }
             if (scrollArgs.offset.top > (rowHeight * this.totalRecords)) {
@@ -464,7 +477,14 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                     this.translateY = scrollArgs.offset.top -  rowHeight * 2;
                 }
                 else {
-                    this.translateY = scrollArgs.offset.top;
+                    if (this.totalRecords === this.endIndex)
+                    {
+                        this.translateY = (this.totalRecords * rowHeight) - ((this.endIndex - this.startIndex) * rowHeight);
+                    }
+                    else
+                    {
+                        this.translateY = scrollArgs.offset.top;
+                    }
                 }
             }
         }
@@ -641,6 +661,8 @@ export class TreeInterSectionObserver extends InterSectionObserver {
                 return;
             }
 
+            const containerRect: string = 'containerRect';
+            this[`${containerRect}`] = this[`${options}`].container.getBoundingClientRect();
             const check: boolean = this.check(direction);
             if (current.entered && (current.axis === 'X' || instance.enableVirtualMaskRow)) {
                 if (this[`${movableEle}`] && (direction === 'right' || direction === 'left')) {

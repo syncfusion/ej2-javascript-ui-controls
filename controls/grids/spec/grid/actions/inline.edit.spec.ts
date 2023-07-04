@@ -3472,7 +3472,7 @@ describe('EJ2-70349 - Last row gets removed, after adding a new row when page si
     });
 
     it('Add start when page size set to ALL', (done: Function) => {
-        gridObj.pageSettings.pageSize = gridObj.pageSettings.totalRecordsCount;     
+        (gridObj.pagerModule.pagerObj.pagerdropdownModule).setDropDownValue('value', gridObj.pageSettings.totalRecordsCount); 
         done();
     });
 

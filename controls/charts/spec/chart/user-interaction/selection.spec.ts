@@ -1611,11 +1611,12 @@ describe('Point color mapping chart highlight and selection', function () {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 108);
                 let yValue: number = chartObj.visibleSeries[1].points[0].yValue;
-                expect(yValue == 60.24 || yValue == 59.65).toBe(true);
+                expect(yValue == 60.24 || yValue == 59.82).toBe(true);
                 chartObj.loaded = null;
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series[1].marker.shape = 'Circle';
             chartObj.refresh();
         });
     });

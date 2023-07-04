@@ -1354,10 +1354,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      *
      * @param {number} axisIndex - Specifies the index value for the axis in circular gauge.
      * @param {number} annotationIndex - Specifies the index value for the annotation in circular gauge.
-     * @param {string} content - Specifies the content for the annotation in circular gauge.
+     * @param {string | Function} content - Specifies the content for the annotation in circular gauge.
      * @returns {void}
      */
-    public setAnnotationValue(axisIndex: number, annotationIndex: number, content: string): void {
+    public setAnnotationValue(axisIndex: number, annotationIndex: number, content: string | Function): void {
         if (!this.isDestroyed) {
             const isElementExist: boolean = getElement(this.element.id + '_Annotations_' + axisIndex) !== null;
             const element: HTMLElement = <HTMLElement>getElement(this.element.id + '_Annotations_' + axisIndex) ||

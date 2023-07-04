@@ -50,12 +50,12 @@ export class RibbonComboBox {
             enabled: !item.disabled,
             fields: comboBoxSettings.fields,
             filterType: comboBoxSettings.filterType,
-            footerTemplate: comboBoxSettings.footerTemplate,
-            groupTemplate: comboBoxSettings.groupTemplate,
-            headerTemplate: comboBoxSettings.headerTemplate,
+            footerTemplate: comboBoxSettings.footerTemplate as any,
+            groupTemplate: comboBoxSettings.groupTemplate as any,
+            headerTemplate: comboBoxSettings.headerTemplate as any,
             index: comboBoxSettings.index,
-            itemTemplate: comboBoxSettings.itemTemplate,
-            noRecordsTemplate: comboBoxSettings.noRecordsTemplate,
+            itemTemplate: comboBoxSettings.itemTemplate as any,
+            noRecordsTemplate: comboBoxSettings.noRecordsTemplate as any,
             placeholder: comboBoxSettings.placeholder,
             popupHeight: comboBoxSettings.popupHeight,
             popupWidth: comboBoxSettings.popupWidth,
@@ -86,10 +86,11 @@ export class RibbonComboBox {
      */
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const inputEle: HTMLElement = itemEle.querySelector('#' + item.id);
+        inputEle.setAttribute('data-control', item.type.toString());
         const comboBoxObj: ComboBox = getComponent(inputEle, ComboBox);
-        comboBoxObj.setProperties({cssClass: comboBoxObj.cssClass + SPACE + RIBBON_POPUP_CONTROL});
+        comboBoxObj.setProperties({ cssClass: comboBoxObj.cssClass + SPACE + RIBBON_POPUP_CONTROL });
         comboBoxObj.close = (e: PopupEventArgs) => {
-            let target: HTMLElement = (e.event as MouseEvent) ? (e.event as MouseEvent).target as HTMLElement : null;
+            const target: HTMLElement = (e.event as MouseEvent) ? (e.event as MouseEvent).target as HTMLElement : null;
             if (item.comboBoxSettings.close) { item.comboBoxSettings.close.call(this, e); }
             if (target && !target.closest('.e-ribbon-group-overflow-ddb')) {
                 overflowButton.toggle();

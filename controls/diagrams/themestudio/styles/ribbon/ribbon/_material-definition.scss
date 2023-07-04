@@ -94,6 +94,8 @@ $ribbon-menu-border-radius: unset !default;
 $ribbon-menu-blank-icon-padding: 34px !default;
 $ribbon-launcher-icon-margin: 0 7px 2px 0 !default;
 $ribbon-rtl-launcher-icon-margin: 0 0 2px 7px !default;
+$ribbon-ddb-popup-font-size: 14px;
+$ribbon-ddb-popup-height: 36px;
 
 $ribbon-bigger-content-height: 120px !default;
 $ribbon-bigger-group-overflow-content-height: 120px !default;
@@ -157,6 +159,8 @@ $ribbon-bigger-color-picker-height: 20px !default;
 $ribbon-bigger-color-picker-width: 20px !default;
 $ribbon-bigger-launcher-icon-margin: 0 8px 8px 0 !default;
 $ribbon-bigger-rtl-launcher-icon-margin: 0 0 8px 8px !default;
+$ribbon-bigger-ddb-popup-font-size: 16px;
+$ribbon-bigger-ddb-popup-height: 48px;
 
 $ribbon-header-bg-color: $grey-50 !default;
 $ribbon-border-color: $grey-300 !default;

@@ -1,7 +1,7 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/index';
 import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange } from '../common/event';
 import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress } from '../common/index';
-import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { checkIsFormula } from '../../workbook/common/index';
 import { getTypeFromFormat } from '../integrations/index';
 
@@ -10,8 +10,6 @@ import { getTypeFromFormat } from '../integrations/index';
  */
 export class WorkbookEdit {
     private parent: Workbook;
-    private localeObj: Object;
-    private decimalSep: string;
 
     /**
      * Constructor for edit module in Workbook.
@@ -21,9 +19,6 @@ export class WorkbookEdit {
      */
     constructor(workbook: Workbook) {
         this.parent = workbook;
-        this.localeObj = getNumericObject(this.parent.locale);
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        this.decimalSep = (<any>this.localeObj).decimal;
         this.addEventListener();
     }
 
@@ -63,32 +58,15 @@ export class WorkbookEdit {
         switch (action) {
         case 'updateCellValue':
             args.isFormulaDependent = this.updateCellValue(
-                <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly, <string>args.formula,
-                <boolean>args.skipFormatCheck);
+                <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly,
+                <boolean>args.skipFormatCheck, <boolean>args.isRandomFormula);
             break;
         }
     }
 
-    private checkDecimalPoint(value: string, formula?: string): string {
-        if (Number(value)) {
-            const decIndex: number = value.toString().indexOf(this.decimalSep) + 1;
-            const checkDec: boolean = value.toString().substr(decIndex).length <= 6;
-            if (checkDec) {
-                if (!formula || formula.includes('RANDBETWEEN')) {
-                    value = decIndex < 7 ? value : (parseFloat(value)).toFixed(0);
-                } else if (value.toString().length >= 11) {
-                    value = decIndex < 11 ? Number(parseFloat(value).toFixed(9 - decIndex + 2)).toString() : parseFloat(value).toFixed(0);
-                }
-            } else {
-                value = decIndex > 7 ? (parseFloat(value)).toFixed(0) : Number((parseFloat(value)).toFixed(6 - decIndex + 2)).toString();
-            }
-        }
-        return value;
-    }
-
     private updateCellValue(
-        address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, formula?: string,
-        skipFormatCheck?: boolean): boolean {
+        address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, skipFormatCheck?: boolean,
+        isRandomFormula?: boolean): boolean {
         if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
@@ -124,7 +102,8 @@ export class WorkbookEdit {
                 rowIndex: range[0],
                 colIndex: range[1],
                 sheetIndex: sheetIdx,
-                isFormula: isFormula
+                isFormula: isFormula,
+                isRandomFormula: isRandomFormula
             };
             if (isNotTextFormat && !skipFormatCheck) {
                 const dateEventArgs: { [key: string]: string | number } = {
@@ -170,13 +149,10 @@ export class WorkbookEdit {
                 }
             }
         } else {
-            if (value && value.toString().indexOf(this.decimalSep) > -1) {
-                value = this.checkDecimalPoint(value, formula);
-            }
             cell.value = value;
         }
         this.parent.setUsedRange(range[0], range[1], sheet);
-        if (this.parent.chartColl.length && !this.parent.isEdit) {
+        if (this.parent.chartColl.length && !this.parent.isEdit && !isRandomFormula) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
         }
         return isFormulaDependent;

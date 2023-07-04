@@ -14,7 +14,12 @@
   $warning: #ffd800;
   $yellow: #ffff00;
   .e-error {
-    color: $error-font-color;
+    @if $skin-name == 'Material3' {
+      color: rgba($error-font-color);
+    }
+    @else {
+      color: $error-font-color;
+    }
     font-family: $font-family;
     font-size: $font-size;
     font-weight: $font-weight;
@@ -70,15 +75,30 @@
   }
 
   .e-warning {
-    color: $warning-font-color;
+    @if $skin-name == 'Material3' {
+      color: rgba($warning-font-color);
+    }
+    @else {
+      color: $warning-font-color;
+    }
   }
 
   .e-success {
-    color: $success-font-color;
+    @if $skin-name == 'Material3' {
+      color: rgba($success-font-color);
+    }
+    @else {
+      color: $success-font-color;
+    }
   }
 
   .e-information {
-    color: $information-font-color;
+    @if $skin-name == 'Material3' {
+      color: rgba($information-font-color);
+    }
+    @else {
+      color: $information-font-color;
+    }
   }
 
   .e-block-touch {

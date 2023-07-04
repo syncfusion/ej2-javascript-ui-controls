@@ -105,7 +105,7 @@ export class Row<T> {
      * @param {string | number | boolean | Date} value - To update new value for the particular cell.
      * @returns {void}
      */
-    public setCellValue(field: string, value: string | number | boolean | Date): void {
+    public setCellValue(field: string, value: string | number | boolean | Date | null): void {
         if (!this.parent) {
             return;
         }

@@ -394,6 +394,53 @@ describe('Recurrence Editor Base Module', () => {
         });
     });
 
+    describe('Customize inner elements in the recurrence editor dynamically', () => {
+        let recObj: RecurrenceEditor;
+        beforeAll(() => {
+            recObj = undefined;
+            const elem: HTMLElement = createElement('div', { id: 'editor' });
+            document.body.appendChild(elem);
+            recObj = new RecurrenceEditor();
+            recObj.appendTo('#editor');
+        });
+        afterAll(() => {
+            if (recObj) {
+                recObj.destroy();
+            }
+            remove(document.querySelector('#editor'));
+        });
+        it('Ensuring endTypes property value', () => {
+            recObj = new RecurrenceEditor();
+            recObj.appendTo('#editor');
+            recObj.frequencies = ['daily', 'monthly'];
+            recObj.endTypes = ['count','until','never'];
+            recObj.dataBind();
+            const repeatField: HTMLElement = recObj.element.querySelector('.e-editor option') as HTMLElement;
+            expect(repeatField.innerText).toBe('Daily');
+            const endCountField: HTMLElement = recObj.element.querySelector('.e-end-on-left option') as HTMLElement;
+            expect(endCountField.innerText).toBe('Count');
+            expect(recObj.element.querySelector('.e-end-on-count').classList.contains("e-hide-recurrence-element")).toEqual(false);
+            expect(recObj.element.querySelector('.e-end-on-date').classList.contains("e-hide-recurrence-element")).toEqual(true);
+        });
+        it('Customize inner elements', () => {
+            recObj = new RecurrenceEditor();
+            recObj.appendTo('#editor');
+            recObj.endTypes = ['count','until'];
+            recObj.dataBind();
+            const repeatField: HTMLElement = recObj.element.querySelector('.e-editor option') as HTMLElement;
+            expect(repeatField.innerText).toBe('Never');
+            const endCountField: HTMLElement = recObj.element.querySelector('.e-end-on-left option') as HTMLElement;
+            expect(endCountField.innerText).toBe('Count');
+            expect(recObj.element.querySelectorAll('.e-form-right').length).toEqual(2);
+            expect(recObj.element.querySelectorAll('.e-form-left').length).toEqual(3);
+            expect(recObj.element.querySelectorAll('.e-form-right')[0].classList.contains("e-hide-recurrence-element")).toEqual(true);
+            expect(recObj.element.querySelectorAll('.e-form-right')[1].classList.contains("e-hide-recurrence-element")).toEqual(true);
+            expect(recObj.element.querySelectorAll('.e-form-left')[0].classList.contains("e-hide-recurrence-element")).toEqual(false);
+            expect(recObj.element.querySelectorAll('.e-form-left')[1].classList.contains("e-hide-recurrence-element")).toEqual(true);
+            expect(recObj.element.querySelectorAll('.e-form-left')[2].classList.contains("e-hide-recurrence-element")).toEqual(true);
+        });
+    });
+
     describe('recurrence editor destroy testing in wrost case', () => {
         let recObj: RecurrenceEditor;
         beforeAll(() => {

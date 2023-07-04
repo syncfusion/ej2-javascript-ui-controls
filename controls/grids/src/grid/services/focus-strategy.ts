@@ -976,6 +976,7 @@ export class FocusStrategy {
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         EventHandler.add(this.parent.element, 'mousedown', this.focusCheck, this);
+        EventHandler.add(this.parent.element, 'touchstart', this.focusCheck, this);
         EventHandler.add(this.parent.element, 'focus', this.onFocus, this);
         this.parent.element.addEventListener('focus', this.passiveHandler = (e: FocusEvent) => this.passiveFocus(e), true);
         EventHandler.add(this.parent.element, 'focusout', this.onBlur, this);
@@ -1011,6 +1012,7 @@ export class FocusStrategy {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         EventHandler.remove(this.parent.element, 'mousedown', this.focusCheck);
+        EventHandler.remove(this.parent.element, 'touchstart', this.focusCheck);
         EventHandler.remove(this.parent.element, 'focus', this.onFocus);
         EventHandler.remove(this.parent.element, 'focusout', this.onBlur);
         this.parent.element.removeEventListener('focus', this.passiveHandler, true);

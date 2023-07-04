@@ -154,7 +154,8 @@ describe('Range navigator', () => {
         it('checking with date time axis', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_AxisLabel_3');
-                expect(element.firstChild.textContent === 'Quarter1' || element.firstChild.textContent === 'Q1 2001').toBe(true);
+                expect(element.firstChild.textContent === 'Quarter1' || element.firstChild.textContent === 'Q1 2001' || 
+                element.firstChild.textContent === 'Jul').toBe(true);
                 // eslint-disable-next-line
                 expect(element.getAttribute('opacity') === '1').toBe(true);
                 done();

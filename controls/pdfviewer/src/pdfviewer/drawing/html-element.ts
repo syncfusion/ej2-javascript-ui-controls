@@ -14,19 +14,21 @@ export class DiagramHtmlElement extends DrawingElement {
      *
      * @private
      */
-    public constructor(nodeTemplate?: string) {
+    public constructor(nodeTemplate?: string | Function) {
         super();
         this.templateFn = this.templateCompiler(nodeTemplate);
     }
 
 
-    public templateCompiler(template: string): Function {
+    public templateCompiler(template: string | Function): Function {
         if (template) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             let e: Object;
             try {
-                if (document.querySelectorAll(template).length) {
+                if (typeof template !== 'function' && document.querySelectorAll(template).length) {
                     return baseTemplateComplier(document.querySelector(template).innerHTML.trim());
+                } else {
+                    return baseTemplateComplier(template);
                 }
             } catch (e) {
                 return baseTemplateComplier(template);

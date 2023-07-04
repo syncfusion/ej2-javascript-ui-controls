@@ -49,4 +49,25 @@
   #{if(&, '&', '*')}.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-date-icon {
     font-size: $datepicker-bigger-small-icon-font-size;
   }
+
+  .e-datepick-mob-popup-wrap {
+    
+    #{if(&, '&', '*')} .e-datepicker.e-popup-expand {
+  
+      #{if(&, '&', '*')} .e-model-header {
+  
+        #{if(&, '&', '*')} .e-popup-close::before {
+          content: '\e7fc';
+          font-family: 'e-icons';
+        }
+      }
+
+      #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-next::before {
+        content: '\e913';
+      }
+      #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-prev::before {
+        content: '\e904';
+      }
+    }
+  }
 }

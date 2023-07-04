@@ -12,6 +12,7 @@ Chart.Inject(
 AccumulationChart.Inject(AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel);
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { chartTypeProperty, widthProperty, heightProperty, chartDataProperty, chartCategoryProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartSeriesProperty, chartTitleProperty, chartPrimaryValueAxisProperty, dataPointsProperty, seriesNameProperty, errorBarProperty, dataLabelProperty, trendLinesProperty, fillProperty, foreColorProperty, positionProperty, typeProperty, directionProperty, endStyleProperty, nameProperty, forwardProperty, backwardProperty, interceptProperty, lineProperty, rgbProperty, categoryTypeProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, minimumValueProperty, maximumValueProperty, majorUnitProperty, categoryXNameProperty, numberFormatProperty, yValueProperty, sizeProperty, seriesFormatProperty } from '../index';
 /**
  * Chart component is used to convert office charts to ej2-charts.
  */
@@ -31,29 +32,33 @@ export class ChartComponent {
     /**
      * @private
      */
-    public chartRender(chart: any): void {
-        
-        this.chartType = chart.chartType;
+    private keywordIndex: number = undefined;
+    /**
+     * @private
+     */
+    public chartRender(chart: any, keywordIndex?: number): void {
+        this.keywordIndex = !isNullOrUndefined(keywordIndex)? keywordIndex : 0;
+        this.chartType = chart[chartTypeProperty[this.keywordIndex]];
         this.isPieType = (this.chartType === 'Pie' || this.chartType === 'Doughnut');
         let chartData: object[] = this.chartData(chart, this.chartType);
         let chartModel: AccumulationChartModel | ChartModel = {
             enableAnimation: false,
-            width: chart.width * (96 / 72) + 'px',
-            height: chart.height * (96 / 72) + 'px'
+            width: chart[widthProperty[this.keywordIndex]] * (96 / 72) + 'px',
+            height: chart[heightProperty[this.keywordIndex]] * (96 / 72) + 'px'
         };
         if (this.isPieType) {
             this.chart = new AccumulationChart(chartModel as AccumulationChartModel);
         } else {
             this.chart = new Chart(chartModel as ChartModel);
-            this.chart.primaryXAxis = this.chartPrimaryXAxis(chart.chartPrimaryCategoryAxis, this.chartType);
-            this.chart.primaryYAxis = this.chartPrimaryYAxis(chart.chartPrimaryValueAxis);
+            this.chart.primaryXAxis = this.chartPrimaryXAxis(chart[chartPrimaryCategoryAxisProperty[this.keywordIndex]], this.chartType);
+            this.chart.primaryYAxis = this.chartPrimaryYAxis(chart[chartPrimaryValueAxisProperty[this.keywordIndex]]);
         }
-        this.chart.series = this.chartSeries(chart.chartSeries, chartData, this.chartType);
+        this.chart.series = this.chartSeries(chart[chartSeriesProperty[this.keywordIndex]], chartData, this.chartType);
         for (let i: number = 0; i < this.chart.series.length; i++) {
-            this.chart.series[i].animation.enable = false;
+            this.chart.series[parseInt(i.toString(), 10)].animation.enable = false;
         }
-        this.chart.title = chart.chartTitle;
-        this.chart.legendSettings = this.parseChartLegend(chart.chartLegend);
+        this.chart.title = chart[chartTitleProperty[this.keywordIndex]];
+        this.chart.legendSettings = this.parseChartLegend(chart[chartLegendProperty[this.keywordIndex]]);
     }
     /**
      * @private
@@ -182,7 +187,7 @@ export class ChartComponent {
         // json data
         let chartSeries: object[] = [];
         for (let i: number = 0; i < series.length; i++) {
-            let seriesData: any = series[i];
+            let seriesData: any = series[parseInt(i.toString(), 10)];
             let seriesValue: any = this.writeChartSeries(seriesData, data, type, i);
             chartSeries.push(seriesValue);
         }
@@ -192,12 +197,12 @@ export class ChartComponent {
     private writeChartSeries(seriesData: any, data: any[], type: string, count: number): any {
         let chartType: string = this.officeChartType(type);
         // let isAreaType: boolean = (type === 'Area_Stacked_100' || type === 'Area' || type === 'Area_Stacked');
-        let seriesFormat: any = seriesData.dataPoints[count];        
+        let seriesFormat: any = seriesData[dataPointsProperty[this.keywordIndex]][parseInt(count.toString(), 10)];        
         let series: any = {};
         let fill: string;
         series.type = chartType;
         series.dataSource = data;
-        series.name = seriesData.seriesName;
+        series.name = seriesData[seriesNameProperty[this.keywordIndex]];
         series.xName = 'x';
         series.yName = 'y' + count;
         if (type === 'Bubble') {
@@ -211,35 +216,35 @@ export class ChartComponent {
             }
         } else {
             if(isNullOrUndefined(seriesFormat)){
-                seriesFormat = seriesData.dataPoints[0];
+                seriesFormat = seriesData[dataPointsProperty[this.keywordIndex]][0];
             }
             fill = this.chartFormat(seriesFormat, chartType);
             series.fill = fill;
-            if (!isNullOrUndefined(seriesFormat.fill.foreColor)) {
+            if (!isNullOrUndefined(seriesFormat[fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]])) {
                 series.pointColorMapping = 'color';
             }
         }
         if (type === 'Line_Markers' || type === 'Line_Markers_Stacked' || type === 'Line_Markers_Stacked_100') {
             series.marker = { visible: true };
         }
-        if (seriesData.hasOwnProperty('dataLabel')) {
+        if (seriesData.hasOwnProperty(dataLabelProperty[this.keywordIndex])) {
             if (this.isPieType) {
-                series.dataLabel = this.parseDataLabels(seriesData.dataLabel);
+                series.dataLabel = this.parseDataLabels(seriesData[dataLabelProperty[this.keywordIndex]]);
             } else {
                 let data: any = {};
-                data.dataLabel = this.parseDataLabels(seriesData.dataLabel);
+                data.dataLabel = this.parseDataLabels(seriesData[dataLabelProperty[this.keywordIndex]]);
                 series.marker = data;
             }
         }
-        if (seriesData.hasOwnProperty('errorBar')) {
-            let errorBarData: any = seriesData.errorBar;
+        if (seriesData.hasOwnProperty(errorBarProperty[this.keywordIndex])) {
+            let errorBarData: any = seriesData[errorBarProperty[this.keywordIndex]];
             series.errorBar = this.parseErrorBars(errorBarData);
         }
-        if (seriesData.hasOwnProperty('trendLines')) {
-            let trendLines: any = seriesData.trendLines;
+        if (seriesData.hasOwnProperty(trendLinesProperty[this.keywordIndex])) {
+            let trendLines: any = seriesData[trendLinesProperty[this.keywordIndex]];
             let trendLinesData: any[] = [];
             for (let count: number = 0; count < trendLines.length; count++) {
-                let trendLine: any = trendLines[count];
+                let trendLine: any = trendLines[parseInt(count.toString(), 10)];
                 let data: any = {};
                 data = this.parseTrendLines(trendLine, fill);
                 trendLinesData.push(data);
@@ -254,13 +259,13 @@ export class ChartComponent {
         dataLabel.visible = true;
 
         if (this.isPieType) {
-            if (label.position === 'BestFit' || label.position === 'Inside') {
+            if (label[positionProperty[this.keywordIndex]] === 'BestFit' || label[positionProperty[this.keywordIndex]] === 'Inside') {
                 dataLabel.position = 'Inside';
             } else {
                 dataLabel.position = 'Outside';
             }
         } else {
-            dataLabel.position = this.dataLabelPosition(label.position);
+            dataLabel.position = this.dataLabelPosition(label[positionProperty[this.keywordIndex]]);
         }
         return dataLabel;
     }
@@ -268,9 +273,9 @@ export class ChartComponent {
     private parseErrorBars(errorBarData: any): any {
         let errorBar: any = {};
         errorBar.visible = true;
-        errorBar.type = errorBarData.type;
-        errorBar.direction = errorBarData.direction;
-        if (errorBarData.endStyle === 'Cap') {
+        errorBar.type = errorBarData[typeProperty[this.keywordIndex]];
+        errorBar.direction = errorBarData[directionProperty[this.keywordIndex]];
+        if (errorBarData[endStyleProperty[this.keywordIndex]] === 'Cap') {
             errorBar.errorBarCap = { width: 1 };
         } else {
             errorBar.errorBarCap = { width: 0 };
@@ -280,14 +285,14 @@ export class ChartComponent {
 
     private parseTrendLines(trendLines: any, fill: string): any {
         let trendLine: any = {};
-        trendLine.type = trendLines.type;
-        trendLine.name = trendLines.name;
-        trendLine.forwardForecast = trendLines.forward;
-        trendLine.backwardForecast = trendLines.backward;
-        if (trendLines.intercept === 'NaN') {
+        trendLine.type = trendLines[typeProperty[this.keywordIndex]];
+        trendLine.name = trendLines[nameProperty[this.keywordIndex]];
+        trendLine.forwardForecast = trendLines[forwardProperty[this.keywordIndex]];
+        trendLine.backwardForecast = trendLines[backwardProperty[this.keywordIndex]];
+        if (trendLines[interceptProperty[this.keywordIndex]] === 'NaN') {
             trendLine.intercept = 0;
         } else {
-            trendLine.intercept = trendLines.intercept;
+            trendLine.intercept = trendLines[interceptProperty[this.keywordIndex]];
         }
         trendLine.fill = fill;
         return trendLine;
@@ -314,18 +319,18 @@ export class ChartComponent {
     private chartFormat(dataPoints: any, type: string): any {
         let format: any = dataPoints;
         if (type === 'Line' || type === 'StackingLine' || type === 'StackingLine100') {
-            return format.line.rgb;
+            return format[lineProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]];
         } else {
-            return format.fill.rgb;
+            return format[fillProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]];
         }
     }
     private chartPrimaryXAxis(data: any, type: string): object {
         // json data
         let primaryXAxis: any = {};
-        if (data.chartTitle) {
-            primaryXAxis.title = data.chartTitle;
+        if (data[chartTitleProperty[this.keywordIndex]]) {
+            primaryXAxis.title = data[chartTitleProperty[this.keywordIndex]];
         }
-        let categoryType: string = this.chartCategoryType(data.categoryType);
+        let categoryType: string = this.chartCategoryType(data[categoryTypeProperty[this.keywordIndex]]);
         primaryXAxis.valueType = categoryType;
         if (categoryType === 'DateTime') {
             primaryXAxis.intervalType = 'Days';
@@ -335,10 +340,10 @@ export class ChartComponent {
         if (type === 'Scatter_Markers' || type === 'Bubble') {
             this.checkAndSetAxisValue(primaryXAxis, data);
         }
-        if (data.hasMajorGridLines) {
+        if (this.parseBoolValue(data[hasMajorGridLinesProperty[this.keywordIndex]])) {
             primaryXAxis.majorGridLines = { width: 1 };
         }
-        if (data.hasMinorGridLines) {
+        if (this.parseBoolValue(data[hasMinorGridLinesProperty[this.keywordIndex]])) {
             primaryXAxis.minorTicksPerInterval = 4;
         }
         return primaryXAxis;
@@ -360,36 +365,36 @@ export class ChartComponent {
     private chartPrimaryYAxis(data: any): any {
         // json data
         let primaryYAxis: any = {};
-        if (data.chartTitle) {
-            primaryYAxis.title = data.chartTitle;
+        if (data[chartTitleProperty[this.keywordIndex]]) {
+            primaryYAxis.title = data[chartTitleProperty[this.keywordIndex]];
         }
         this.checkAndSetAxisValue(primaryYAxis, data);
-        if (data.hasMajorGridLines) {
+        if (data[hasMajorGridLinesProperty[this.keywordIndex]]) {
             primaryYAxis.majorGridLines = { width: 1 };
         }
-        if (data.hasMinorGridLines) {
+        if (data[hasMinorGridLinesProperty[this.keywordIndex]]) {
             primaryYAxis.minorTicksPerInterval = 4;
         }
         return primaryYAxis;
     }
     private checkAndSetAxisValue(primaryYAxis: any, data: any): any {
-        if (data.minimumValue !== 0) {
-            primaryYAxis.minimum = data.minimumValue;
+        if (data[minimumValueProperty[this.keywordIndex]] !== 0) {
+            primaryYAxis.minimum = data[minimumValueProperty[this.keywordIndex]];
         }
-        if (data.maximumValue !== 0) {
-            primaryYAxis.maximum = data.maximumValue;
+        if (data[maximumValueProperty[this.keywordIndex]] !== 0) {
+            primaryYAxis.maximum = data[maximumValueProperty[this.keywordIndex]];
         }
-        if (data.majorUnit !== 0) {
-            primaryYAxis.interval = data.majorUnit;
+        if (data[majorUnitProperty[this.keywordIndex]] !== 0) {
+            primaryYAxis.interval = data[majorUnitProperty[this.keywordIndex]];
         }
     }
 
     private chartData(chart: any, type: string): any[] {
         // json data
-        let data: any[] = chart.chartCategory;
+        let data: any[] = chart[chartCategoryProperty[this.keywordIndex]];
         let chartData: object[] = [];
         for (let i: number = 0; i < data.length; i++) {
-            let xData: any = data[i];
+            let xData: any = data[parseInt(i.toString(), 10)];
             let plotValue: any = this.chartPlotData(xData, chart, type, i);
             chartData.push(plotValue);
         }
@@ -398,40 +403,40 @@ export class ChartComponent {
 
     private chartPlotData(data: any, chart: any, type: string, count: number): any {
         let plotValue: any = {};
-        let series: any = chart.chartSeries;
-        if (chart.chartPrimaryCategoryAxis.numberFormat === 'm/d/yyyy') {
-            let date: string = data.categoryXName;
+        let series: any = chart[chartSeriesProperty[this.keywordIndex]];
+        if (chart[chartPrimaryCategoryAxisProperty[this.keywordIndex]][numberFormatProperty[this.keywordIndex]] === 'm/d/yyyy') {
+            let date: string = data[categoryXNameProperty[this.keywordIndex]];
             let array: string[] = date.split('/');
             let month: number = Number(array[0]);
             let day: number = Number(array[1]);
             let year: number = Number(array[2]);
             plotValue.x = new Date(year, month - 1, day);
         } else {
-            plotValue.x = data.categoryXName;
+            plotValue.x = data[categoryXNameProperty[this.keywordIndex]];
         }
         for (let j: number = 0; j < series.length; j++) {
-            let yData: any = data.chartData[j];
-            plotValue['y' + j] = yData.yValue;
+            let yData: any = data[chartDataProperty[this.keywordIndex]][parseInt(j.toString(), 10)];
+            plotValue['y' + j] = yData[yValueProperty[this.keywordIndex]];
             if (type === 'Bubble') {
-                plotValue['size' + j] = yData.size;
+                plotValue['size' + j] = yData[sizeProperty[this.keywordIndex]];
             }
-            if (chart.chartType === 'Pie' || chart.chartType === 'Doughnut' || chart.chartType === 'Column_Stacked') {
-                let seriesData: any = series[j];
-                let seriesDataPoints: any = seriesData.dataPoints.find((obj: any) => {
+            if (chart[chartTypeProperty[this.keywordIndex]] === 'Pie' || chart[chartTypeProperty[this.keywordIndex]] === 'Doughnut' || chart[chartTypeProperty[this.keywordIndex]] === 'Column_Stacked') {
+                let seriesData: any = series[parseInt(j.toString(), 10)];
+                let seriesDataPoints: any = seriesData[dataPointsProperty[this.keywordIndex]].find((obj: any) => {
                     return obj.id === count
                 });
                 if (!isNullOrUndefined(seriesDataPoints)) {
                     plotValue.color = this.chartFormat(seriesDataPoints, type);
                 }
                 else {
-                    if (seriesData.dataPoints.length > 1 && seriesData.dataPoints[count].id === 0) {
-                        seriesDataPoints = seriesData.dataPoints[count];
+                    if (seriesData[dataPointsProperty[this.keywordIndex]].length > 1 && seriesData[dataPointsProperty[this.keywordIndex]][parseInt(count.toString(), 10)].id === 0) {
+                        seriesDataPoints = seriesData[dataPointsProperty[this.keywordIndex]][parseInt(count.toString(), 10)];
                         plotValue.color = this.chartFormat(seriesDataPoints, type);
                     }
                     else {
-                        if (!isNullOrUndefined(seriesData.seriesFormat) && !isNullOrUndefined(seriesData.seriesFormat.fill)) {
-                            if (seriesData.seriesFormat.fill.rgb.length > 7) {
-                                plotValue.color = this.getColor(seriesData.seriesFormat.fill.rgb);
+                        if (!isNullOrUndefined(seriesData[seriesFormatProperty[this.keywordIndex]]) && !isNullOrUndefined(seriesData[seriesFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]])) {
+                            if (seriesData[seriesFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]].length > 7) {
+                                plotValue.color = this.getColor(seriesData[seriesFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]]);
                             }
                         }
                     }
@@ -452,7 +457,7 @@ export class ChartComponent {
     }
     private parseChartLegend(data: any): any {
         let legendSettings: any = {};
-        let position: string = data.position;
+        let position: string = data[positionProperty[this.keywordIndex]];
         if (position === 'Corner') {
             position = 'right';
         }
@@ -463,6 +468,21 @@ export class ChartComponent {
             legendSettings.visible = false;
         }
         return legendSettings;
+    }
+    private parseBoolValue(value: any): boolean {
+        if (value instanceof String) {
+            if (isNullOrUndefined(value) || value == "f" || value == "0" || value == "off" || value == "false") {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (value == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     /**

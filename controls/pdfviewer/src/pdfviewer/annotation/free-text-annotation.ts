@@ -320,7 +320,7 @@ export class FreeTextAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderFreeTextAnnotations(shapeAnnotations: any, pageNumber: number, isImportAction?: boolean): void {
+    public renderFreeTextAnnotations(shapeAnnotations: any, pageNumber: number, isImportAction?: boolean, isAnnotOrderAction?: boolean): void {
         let isFreeTextAdded: boolean = false;
         if (!isImportAction) {
             for (let p: number = 0; p < this.freeTextPageNumbers.length; p++) {
@@ -330,7 +330,7 @@ export class FreeTextAnnotation {
                 }
             }
         }
-        if (shapeAnnotations && !isFreeTextAdded) {
+        if  (shapeAnnotations && (!isFreeTextAdded || isAnnotOrderAction)) {
             if (shapeAnnotations.length >= 1) {
                 this.freeTextPageNumbers.push(pageNumber);
                 for (let i: number = 0; i < shapeAnnotations.length; i++) {
@@ -930,10 +930,6 @@ export class FreeTextAnnotation {
             // eslint-disable-next-line
             this.pdfViewer.renderDrawing(canvass as any, pageIndex);
             this.inputBoxCount += 1;
-            if (!isNewlyAdded && this.previousText !== inputValue) {
-                // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.triggerAnnotationPropChange(this.selectedAnnotation, false, false, false, false, false, false, false, true, this.previousText, inputValue);
-            }
         } else {
             this.inputBoxElement.focus();
             if (!this.isTextSelected) {
@@ -1242,7 +1238,6 @@ export class FreeTextAnnotation {
         // eslint-disable-next-line
         if (!this.pdfViewer.freeTextSettings.enableAutoFit && (this.defaultHeight * zoomFactor) < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height) < this.inputBoxElement.scrollHeight) {
             this.inputBoxElement.style.height = this.inputBoxElement.scrollHeight + 'px';
-            this.inputBoxElement.style.top = ((currentPosition.y)) - (parseFloat(this.inputBoxElement.style.height) / 2) + 'px';
         }
         this.isInuptBoxInFocus = true;
         this.inputBoxElement.focus();

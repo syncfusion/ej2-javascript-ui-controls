@@ -10,6 +10,7 @@ import { extend, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';
 import { NiceInterval } from '../axis/axis-helper';
 
+
 /**
  * `Category` module is used to render category axis.
  */

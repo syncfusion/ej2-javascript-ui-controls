@@ -2,12 +2,19 @@
   /* stylelint-disable value-no-vendor-prefix */
   /* stylelint-disable property-no-vendor-prefix */
   .e-pv-viewer-container {
-    background-color: $pv-background;
     border-color: $pv-control-border-color;
     height: $pv-viewer-container-height;
     overflow: $pv-control-overflow;
     position: $pv-control-position;
     touch-action: $pv-control-touch-action;
+    @if $skin-name == 'Material3' {
+      background: $pv-background;
+      border: $pv-toolbar-border;
+    }
+    @else
+    {
+      background-color: $pv-background;
+    }
   }
 
   .e-pdfviewer.e-pv-mobile-view .e-pv-viewer-container::-webkit-scrollbar {
@@ -19,6 +26,9 @@
   }
 
   .e-pv-page-container {
+    @if $skin-name == 'Material3' {
+      background: $pv-background;
+    }
     margin: $pv-page-container-margin;
     padding: $pv-page-container-padding;
     touch-action: $pv-page-container-touch-action;
@@ -89,7 +99,13 @@
   }
 
   .e-pv-mobilescroll-container {
-    background-color: $pv-background;
+    @if $skin-name == 'Material3' {
+      background: $pv-background;
+    }
+    @else
+    {
+      background-color: $pv-background;
+    }
     border: $pv-thumbnail-hover-border;
     border-radius: 56px 0 0 56px;
     line-height: 27px;
@@ -218,7 +234,9 @@
   }
 
   .e-pv-password-input {
-    margin-top: $pv-password-input-margin-top;
+    @if $skin-name != 'Material3' {
+      margin-top: $pv-password-input-margin-top;
+    }
   }
 
   .e-pv-password-error {
@@ -231,7 +249,12 @@
   }
 
   .e-pv-corrupted-popup-content {
-    color: $pv-corrupted-pop-header-color;
+    @if $skin-name == 'Material3' {
+      color: $content-text-color-alt1;
+    }
+    @else {
+      color: $pv-corrupted-pop-header-color;
+    }
     font-size: $pv-corrupted-pop-content-font-size;
     line-height: $pv-corrupted-pop-content-line-height;
     margin-left: $pv-corrupted-pop-content-margin-left;
@@ -251,11 +274,18 @@
   }
 
   .e-pv-toolbar.e-toolbar:not(.e-pv-mobile-toolbar) .e-toolbar-items .e-toolbar-item:not(.e-separator) {
-    height: auto;
+    @if $skin-name == 'Material3' {
+      height: $pv-toolbar-height;
+    }
+    @else {
+      height: auto;
+    }
     margin-left: $pv-toolbar-items-margin-left;
     margin-right: $pv-toolbar-items-margin-right;
-    padding-bottom: $pv-toolbar-items-padding-bottom;
-    padding-top: $pv-toolbar-items-padding-top;
+    @if $skin-name != 'Material3' {
+      padding-bottom: $pv-toolbar-items-padding-bottom;
+      padding-top: $pv-toolbar-items-padding-top;
+    }
     @if $skin-name == 'bootstrap5' {
       padding: 3px 4px;
     }
@@ -550,7 +580,12 @@
   }
 
   .e-input-group.e-control-wrapper.e-pv-current-page-box:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left) {
-    border: $pv-current-page-border;
+    @if $skin-name == 'Material3' {
+      border-bottom: $pv-current-page-border;
+    }
+    @else {
+      border: $pv-current-page-border;
+    }
     border-radius: $pv-current-page-border-radius;
     @if $skin-name == 'bootstrap5' {
       box-shadow: none;
@@ -584,19 +619,23 @@
   .e-pv-password-popup.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn,
   .e-pv-corrupted-popup.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn,
   .e-pv-notification-popup.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
-    @if $skin-name != 'bootstrap4' {
+    @if ($skin-name != 'bootstrap4') {
       padding-top: $pv-dialog-pop-close-icon-padding-top;
     }
   }
 
   .e-pv-password-popup.e-dialog {
-    height: $pv-password-dialog-height;
+    @if $skin-name != 'Material3' {
+      height: $pv-password-dialog-height;
+    }
     margin: 0 10px;
     max-width: $pv-password-dialog-width;
   }
 
   .e-pv-corrupted-popup.e-dialog {
-    height: $pv-corrupted-dialog-height;
+    @if $skin-name != 'Material3' {
+      height: $pv-corrupted-dialog-height;
+    }
     margin: 0 10px;
     max-width: $pv-corrupted-dialog-width;
   }
@@ -612,8 +651,10 @@
   }
 
   .e-pv-corrupted-popup.e-dialog .e-dlg-content {
-    padding-bottom: $pv-corrupted-dialog-pop-content-padding-bottom;
-    padding-top: $pv-corrupted-dialog-pop-content-padding-top;
+    @if $skin-name != 'Material3' {
+      padding-bottom: $pv-corrupted-dialog-pop-content-padding-bottom;
+      padding-top: $pv-corrupted-dialog-pop-content-padding-top;
+    }
   }
 
   .e-pv-password-popup.e-dialog span[id *= '_prompt'] {
@@ -630,8 +671,10 @@
   }
 
   .e-pv-password-popup.e-dialog .e-dlg-content {
-    padding-bottom: $pv-password-dialog-pop-content-padding-bottom;
-    padding-top: $pv-password-pop-content-padding-top;
+    @if $skin-name != 'Material3' {
+      padding-bottom: $pv-password-dialog-pop-content-padding-bottom;
+      padding-top: $pv-password-pop-content-padding-top;
+    }
   }
 
   .e-pv-current-page-box.e-input-group.e-control-wrapper input.e-input {
@@ -704,7 +747,13 @@
   }
 
   .e-pv-viewer-main-container {
-    background-color: $pv-background;
+    @if $skin-name == 'Material3' {
+      background: $pv-background;
+    }
+    @else
+    {
+      background-color: $pv-background;
+    }
     bottom: $pv-viewer-main-container-bottom;
     left: $pv-viewer-main-container-left;
     position: $pv-viewer-main-container-position;
@@ -786,7 +835,7 @@
   .e-pv-sidebar-title {
     color: $pv-sidebar-title-color;
     font-size: $pv-sidebar-title-font-size;
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'Material3') {
       font-weight: 500;
     }
     height: $pv-sidebar-title-height;
@@ -896,6 +945,9 @@
     -webkit-box-shadow: $pv-sidebar-content-scrollbar-track-box-shadow;
     background: $pv-sidebar-content-scrollbar-track-background;
     border: $pv-sidebar-content-scrollbar-track-border;
+    @if $skin-name == 'Material3' {
+      border-width: 0 1px 0 0;
+    }
   }
 
   .e-pv-sidebar-content::-webkit-scrollbar-thumb {
@@ -904,6 +956,10 @@
     background-clip: $pv-sidebar-content-scrollbar-thumb-background-clip;
     border: $pv-sidebar-content-scrollbar-thumb-border;
     border-radius: $pv-sidebar-content-scrollbar-thumb-border-radius;
+    @if $skin-name == 'Material3' {
+      width: 6px;
+      height: 329px;
+    }
   }
 
   .e-pv-thumbnail-view-button.e-btn {
@@ -1099,6 +1155,9 @@
     padding-left: $pv-thumbnail-number-padding-left;
     padding-right: $pv-thumbnail-number-padding-left;
     padding-top: $pv-thumbnail-number-padding-top;
+    @if $skin-name == 'Material3' {
+      font-weight: 500;
+    }
   }
 
   .e-pv-thumbnail-selection-ring {
@@ -1174,15 +1233,31 @@
     font-size: $pv-bookmark-icon-font-size;
     padding-left: $pv-bookmark-icon-padding-left;
     padding-right: $pv-bookmark-icon-padding-right;
+    @if $skin-name == 'Material3' {
+      font-size: $text-base;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
   }
 
   .e-pv-bookmark-title {
     padding-left: $pv-bookmark-title-padding-left;
+    @if $skin-name == 'Material3' {
+      font-size: $text-sm;
+      font-weight: $font-weight-normal;
+      line-height: 20px;
+      letter-spacing: .24px;
+    }
   }
 
   .e-bigger div > .e-pv-bookmark-icon.e-pv-icon {
     @if $skin-name == 'bootstrap4' {
       font-size: $pv-icon-font-size-big;
+    }
+    @if $skin-name == 'Material3' {
+      font-size: $text-base;
+      padding-left: 12px;
+      padding-right: 12px;
     }
   }
 
@@ -1201,6 +1276,9 @@
     -webkit-box-shadow: $pv-sidebar-content-scrollbar-track-box-shadow;
     background: $pv-sidebar-content-scrollbar-track-background;
     border: $pv-sidebar-content-scrollbar-track-border;
+    @if $skin-name == 'Material3' {
+      border-width: 0 1px 0 0;
+    }
   }
 
   .e-pv-bookmark-view::-webkit-scrollbar-thumb {
@@ -1209,6 +1287,10 @@
     background-clip: $pv-sidebar-content-scrollbar-thumb-background-clip;
     border: $pv-sidebar-content-scrollbar-thumb-border;
     border-radius: $pv-sidebar-content-scrollbar-thumb-border-radius;
+    @if $skin-name == 'Material3' {
+      width: 6px;
+      height: 329px;
+    }
   }
 
   .e-pv-bookmark-view > .e-ul {
@@ -1226,6 +1308,9 @@
     height: $pv-bookmark-view-icon-collapsible-height;
     padding: $pv-bookmark-view-icon-collapsible-padding;
     width: $pv-bookmark-view-icon-collapsible-width;
+    @if $skin-name == 'Material3' {
+      margin-top: 5px;
+    }
   }
 
   .e-pv-bookmark-view .e-list-item .e-ul {
@@ -1353,7 +1438,9 @@
   }
 
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item {
-    height: inherit;
+    @if $skin-name != 'Material3' {
+      height: inherit;
+    }
   }
 
   .e-pv-stamp.e-menu-wrapper ul .e-menu-item {
@@ -1461,7 +1548,12 @@
   }
 
   .e-pv-search-bar {
-    background-color: $pv-search-box-background-color;
+    @if ($skin-name == 'Material3'){
+      background: $pv-search-box-background-color;
+    }
+    @else{
+      background-color: $pv-search-box-background-color;
+    }
     border: $pv-search-box-border;
     border-radius: $pv-search-box-border-radius;
     box-shadow: $pv-search-box-box-shadow;
@@ -1698,7 +1790,9 @@
 
   .e-pv-annotation-opacity-popup-container,
   .e-pv-annotation-thickness-popup-container {
-    background-color: $pv-annotation-opacity-popup-background-color;
+    @if $skin-name != 'Material3' {
+      background-color: $pv-annotation-opacity-popup-background-color;
+    }
     box-shadow: $pv-annotation-opacity-popup-box-shadow;
     color: $pv-annotation-opacity-popup-color;
     height: auto;
@@ -1745,6 +1839,12 @@
     font-size: $pv-annotation-drop-down-caret-font-size;
   }
 
+  .e-bigger .e-.e-pv-annotation-color-container.e-dropdown-btn.e-btn .e-caret .e-pv-annotation-opacity-container.e-dropdown-btn.e-btn .e-caret .e-pv-annotation-textcolor-container.e-dropdown-btn.e-btn .e-caret,
+  .e-bigger .e-pv-annotation-textalign-container.e-dropdown-btn.e-btn .e-caret,
+  .e-bigger .e-pv-annotation-textprop-container.e-dropdown-btn.e-btn .e-caret {
+    font-size: 18px;
+  }
+
   .e-pv-annotation-color-container,
   .e-pv-annotation-opacity-container,
   .e-pv-annotation-stroke-container,
@@ -1776,6 +1876,9 @@
     margin-bottom: 0;
     margin-left: 4px;
     margin-right: 4px;
+    @if $skin-name == 'Material3' {
+      margin-top: 4px;
+    }
   }
 
   .e-pv-shapes-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn.e-btn {
@@ -1818,8 +1921,14 @@
   .e-pv-annotation-textprop-container.e-btn,
   .e-pv-annotation-handwritten-container.e-btn,
   .e-pv-stamp.e-menu-wrapper ul .e-menu-item.e-focused:not(.e-selected) {
-    background-color: $pv-annotation-dropdown-background-color;
-    border-color: $pv-annotation-dropdown-border-color;
+    @if $skin-name == 'Material3' {
+      background: $pv-annotation-dropdown-background-color;
+      border: $pv-annotation-dropdown-border-color;
+    }
+    @else {
+      background-color: $pv-annotation-dropdown-background-color;
+      border-color: $pv-annotation-dropdown-border-color;
+    }
   }
 
   .e-pv-annotation-color-container.e-btn:hover,
@@ -1835,8 +1944,14 @@
   .e-input-group.e-control-wrapper.e-pv-prop-dropdown.e-ddl.e-valid-input:hover,
   .e-input-group.e-control-wrapper.e-pv-prop-dropdown-rtl.e-ddl.e-valid-input:hover,
   .e-pv-stamp.e-menu-wrapper ul .e-menu-item.e-focused:hover {
-    background-color: $pv-annotation-dropdown-background-color-hover;
-    border-color: $pv-annotation-dropdown-border-color-hover;
+    @if $skin-name == 'Material3' {
+      background: $pv-annotation-dropdown-background-color-hover;
+      border: $pv-annotation-dropdown-border-color-hover;
+    }
+    @else {
+      background-color: $pv-annotation-dropdown-background-color-hover;
+      border-color: $pv-annotation-dropdown-border-color-hover;
+    }
   }
 
   .e-pv-annotation-color-container.e-btn:active,
@@ -1849,8 +1964,14 @@
   .e-pv-annotation-textalign-container.e-btn:active,
   .e-pv-annotation-textprop-container.e-btn:active,
   .e-pv-annotation-handwritten-container.e-btn:active {
-    background-color: $pv-annotation-dropdown-background-color-active;
-    border-color: $pv-annotation-dropdown-border-color-active;
+    @if $skin-name == 'Material3' {
+      background: $pv-annotation-dropdown-background-color-active;
+      border: $pv-annotation-dropdown-border-color-active;
+    }
+    @else {
+      background-color: $pv-annotation-dropdown-background-color-active;
+      border-color: $pv-annotation-dropdown-border-color-active;
+    }
     box-shadow: none;
     color: $pv-item-selection-color;
   }
@@ -1859,7 +1980,12 @@
   .e-pv-annotation-calibrate-container.e-btn.e-dropdown-btn.e-active:not(:hover),
   .e-pv-annotation-handwritten-container.e-dropdown-btn.e-btn.e-active:not(:hover),
   .e-pv-annotation-toolbar .e-dropdown-btn.e-btn.e-active:not(:hover) .e-caret {
-    background-color: $pv-annotation-dd-background-color-active;
+    @if $skin-name == 'Material3' {
+      background: $pv-annotation-dd-background-color-active;
+    }
+    @else {
+      background-color: $pv-annotation-dd-background-color-active;
+    }
     color: $pv-icon-color;
     @if ($skin-name == 'bootstrap5') {
       color: $secondary-text-color-pressed;
@@ -1877,7 +2003,7 @@
   .e-pv-annotation-textprop-container.e-dropdown-btn.e-btn {
     line-height: $pv-annotation-drop-down-btn-line-height;
     padding: $pv-annotation-drop-down-btn-padding;
-    @if ($skin-name == 'bootstrap5') {
+    @if ($skin-name == 'bootstrap5' or $skin-name =='Material3') {
       align-items: center;
       display: flex;
     }
@@ -2018,6 +2144,9 @@
       box-sizing: border-box;
       color: $content-text-color;
     }
+    @if ($skin-name == 'Material3') {
+      padding: 7px;
+    }
   }
 
   .e-bigger .e-pv-properties-line-fill-color-container .e-dropdown-btn.e-btn,
@@ -2052,6 +2181,11 @@
     float: left;
     height: auto;
     width: $pv-properties-window-container-max-width;
+    @if $skin-name == 'Material3'
+    {
+      width: 204px;
+      max-width: 204px;
+    }
   }
 
   .e-pv-scale-ratio-src-input-container,
@@ -2127,10 +2261,16 @@
   .e-pv-properties-line-stroke-color-label,
   .e-pv-properties-line-opacity-label,
   .e-pv-properties-line-leader-length-label {
-    font-size: 14px;
     margin-bottom: 8px;
     @if ($skin-name == 'FluentUI') {
       font-weight: 600;
+    }
+    @if ($skin-name == 'Material3'){
+      font-size: $text-xxs;
+      margin-bottom: 0;
+    }
+    @else {
+      font-size: 14px;
     }
   }
 
@@ -2138,6 +2278,9 @@
   .e-pv-properties-line-thickness-container {
     @if ($skin-name == 'bootstrap5') {
       margin-left: 37px;
+    }
+    @if ($skin-name == 'Material3'){
+      margin-left: 12px;
     }
     @else {
       margin-left: 24px;
@@ -2205,6 +2348,14 @@
     width: $pv-properties-window-container-width;
   }
 
+  .e-pv-properties-line-style {
+    @if ($skin-name == 'Material3'){
+      font-size: $text-xxs;
+      max-width: 214px;
+      border-radius: 0;
+    }
+  }
+
   .e-bigger .e-pv-properties-line-start,
   .e-bigger .e-pv-properties-line-end,
   .e-bigger .e-pv-properties-line-style {
@@ -2253,6 +2404,9 @@
     @if $skin-name == 'FluentUI' {
       line-height: 20px;
     }
+    @if ($skin-name == 'Material3'){
+      font-size: $text-sm;
+    }
   }
 
   .e-pv-properties-line-start.e-btn,
@@ -2266,6 +2420,13 @@
     @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
       height: 30px;
     }
+    @if ($skin-name == 'Material3'){
+      border-bottom: 1px solid rgba($border);
+      border-radius: 0;
+      width: 214px;
+      height: 32px;
+    }
+
     @else {
       height: 32px;
     }
@@ -2292,6 +2453,10 @@
     }
     @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
       height: 30px;
+    }
+    @if ($skin-name =='Material3'){
+      border-bottom: 1px solid rgba($border);
+      border-radius: 0;
     }
     @else {
       height: 32px;
@@ -2328,6 +2493,10 @@
     @if $skin-name == 'FluentUI' {
       width: 120px;
     }
+    @if ($skin-name == 'Material3'){
+      width: 155px;
+      padding-top: 6px;
+    }
     @else {
       width: 138px;
     }
@@ -2344,7 +2513,9 @@
   .e-pv-annotation-calibrate-container.e-btn.e-icon-btn,
   .e-pv-annotation-handwritten-container.e-btn.e-icon-btn,
   .e-menu-wrapper.e-custom-scroll.e-lib.e-keyboard.e-pv-stamp ul {
-    height: $pv-annot-toolbar-dropdown-btn-height;
+    @if $skin-name != 'Material3' {
+      height: $pv-annot-toolbar-dropdown-btn-height;
+    }
     width: $pv-annot-toolbar-dropdown-btn-width;
   }
 
@@ -2405,6 +2576,9 @@
     @if $skin-name == 'FluentUI' {
       margin-left: 141px;
     }
+    @if $skin-name == 'Material3' {
+      margin-left: 190px;
+    }
     @else {
       margin-left: 153px;
     }
@@ -2420,7 +2594,9 @@
   .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item,
   .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item .e-pv-stamp-icon,
   .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item .e-caret {
-    line-height: $pv-annot-toolbar-dropdown-btn-line-height;
+    @if $skin-name != 'Material3' {
+      line-height: $pv-annot-toolbar-dropdown-btn-line-height;
+    }
   }
 
   .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item.e-selected {
@@ -2471,7 +2647,9 @@
 
   .e-bigger .e-pv-password-popup.e-dialog,
   .e-pv-mobile-view .e-pv-password-popup.e-dialog {
-    height: $pv-password-dialog-height-mobile;
+    @if ($skin-name != 'Material3') {
+      height: $pv-password-dialog-height-mobile;
+    }
   }
   .e-bigger .e-pv-password-popup.e-dialog,
   .e-pv-mobile-view .e-pv-password-popup.e-dialog {
@@ -2482,12 +2660,16 @@
 
   .e-bigger .e-pv-notification-popup.e-dialog,
   .e-pv-mobile-view .e-pv-notification-popup.e-dialog {
-    height: $pv-notification-dialog-height-mobile;
+    @if $skin-name != 'Material3' {
+      height: $pv-notification-dialog-height-mobile;
+    }
   }
 
   .e-bigger .e-pv-notification-popup.e-pv-notification-large-content.e-dialog,
   .e-pv-mobile-view .e-pv-notification-popup.e-pv-notification-large-content.e-dialog {
-    height: $pv-notification-dialog-height-large-mobile;
+    @if $skin-name != 'Material3' {
+      height: $pv-notification-dialog-height-large-mobile;
+    }
   }
 
   .e-bigger .e-pv-notification-popup.e-pv-notification-large-content.e-dialog,
@@ -2498,7 +2680,9 @@
   }
   .e-bigger .e-pv-corrupted-popup.e-dialog,
   .e-pv-mobile-view .e-pv-corrupted-popup.e-dialog {
-    height: $pv-corrupted-dialog-height-mobile;
+    @if $skin-name != 'Material3' {
+      height: $pv-corrupted-dialog-height-mobile;
+    }
   }
 
   .e-bigger .e-pv-password-popup.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn,
@@ -2651,11 +2835,21 @@
     padding-left: $pv-bookmark-icon-rtl-padding;
     padding-right: $pv-bookmark-icon-rtl-padding;
     position: $pv-bookmark-icon-rtl-position;
+    @if $skin-name == 'Material3' {
+      font-size: $text-base;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
   }
 
   .e-bigger div > .e-pv-bookmark-icon.e-pv-icon.e-right {
     @if $skin-name == 'bootstrap4' {
       font-size: $pv-icon-font-size-big;
+    }
+    @if $skin-name == 'Material3' {
+      font-size: $text-base;
+      padding-left: 12px;
+      padding-right: 12px;
     }
   }
 
@@ -2716,6 +2910,9 @@
 
   .e-pdfviewer .e-editable-value-wrapper {
     color: $pv-comment-font-color;
+    line-height: normal;
+    min-height: 22px;
+    padding: 2px 8px 3px;
     @if $skin-name == 'bootstrap5' {
       color: $content-text-color-alt2;
     }
@@ -2723,9 +2920,10 @@
     @if $skin-name == 'bootstrap5' {
       font-size: 12px;
     }
-    line-height: normal;
-    min-height: 22px;
-    padding: 2px 8px 3px;
+    @if $skin-name == 'Material3' {
+      font-size: $text-xs;
+      line-height: 18px;
+    }
   }
 
   .e-pdfviewer .e-pv-comment-textbox .e-editable-value-wrapper {
@@ -2736,6 +2934,9 @@
     font-size: 14px;
     @if $skin-name == 'bootstrap5' {
       font-size: 12px;
+    }
+    @if $skin-name == 'Material3' {
+      font-size: $text-xs;
     }
     line-height: normal;
     min-height: 24px;
@@ -2806,7 +3007,7 @@
 
   .e-pdfviewer .e-editable-inline .e-btn.e-outline.e-primary,
   .e-pdfviewer .e-editable-inline .e-btn.e-outline {
-    @if $skin-name != 'bootstrap5' {
+    @if ($skin-name != 'bootstrap5' and $skin-name != 'Material3') {
       border-color: transparent;
     }
   }
@@ -2823,6 +3024,9 @@
     font-size: 14px;
     padding-left: 5px;
     padding-right: 5px;
+    @if $skin-name == 'Material3' {
+      font-size: $text-xs;
+    }
   }
 
   .e-pdfviewer .e-btn-save {
@@ -2830,10 +3034,13 @@
     margin-right: 12px;
     padding-left: 7px;
     padding-right: 7px;
+    @if $skin-name == 'Material3' {
+      font-size: $text-xs;
+    }
   }
 
   .e-pdfviewer .e-btn-save.e-outline.e-primary:disabled {
-    @if $skin-name != 'bootstrap5' {
+    @if ($skin-name != 'bootstrap5' and $skin-name != 'Material3') {
       background-color: $pv-save-button-bg-color;
       border-radius: 2px;
       color: $pv-save-button-color;
@@ -2848,6 +3055,9 @@
   .e-pdfviewer .e-accordion .e-acrdn-item .e-acrdn-header {
     line-height: 32px;
     min-height: 32px;
+    @if $skin-name == 'Material3' {
+      box-shadow: none;
+    }
   }
 
   .e-contextmenu-wrapper .e-pv-context-menu .e-menu-item {
@@ -2855,6 +3065,9 @@
   }
 
   .e-pv-comment-panel {
+    @if $skin-name == 'Material3' {
+      background: $content-bg-color-alt2;
+    }
     background-color: $pv-comment-panel-bg;
     border: $pv-sidebar-toolbar-border;
     border-width: 1px 1px 0;
@@ -2867,17 +3080,33 @@
   }
 
   .e-pv-comment-panel-title-container {
-    background-color: $pv-comment-panel-bg;
-    border-color: $pv-comment-panel-border-color;
-    border-style: double;
-    border-width: 0 1px 1px 0;
+    @if $skin-name == 'Material3' {
+      background: $content-bg-color-alt2;
+      border-style: solid;
+      border-width: 0 0 1px 1px;
+    }
+    @else {
+      background-color: $pv-comment-panel-bg;
+      border-style: double;
+      border-width: 0 1px 1px 0;
+    }
     height: 45px;
     position: relative;
+    border-color: $pv-comment-panel-border-color;
   }
 
   .e-pv-comment-panel-title {
     color: $pv-comment-font-color;
     font-size: 14px;
+    @if $skin-name == 'Material3' {
+      background: $content-bg-color-alt2;
+      border: $border-light;
+      border-width: 0 0 1px 1px;
+      font-size: $text-base;
+      font-weight: $pv-comment-tile-font-weight;
+      line-height: 24px;
+      padding: 8px 215px 8px 12px;
+    }
     @if $skin-name == 'bootstrap5' {
       font-size: 16px;
       font-weight: 500;
@@ -2885,10 +3114,12 @@
     @if $skin-name == 'FluentUI' {
       font-weight: $pv-comment-tile-font-weight;
     }
-    left: 15px;
+    @if $skin-name != 'Material3' {
+      left: 15px;
+      top: 14px;
+    }
     position: absolute;
     text-align: left;
-    top: 14px;
   }
 
   .e-pv-comment-panel-title-close-div.e-btn {
@@ -2900,11 +3131,22 @@
     }
     height: $pv-title-close-height;
     position: $pv-title-close-position;
-    right: 11px;
-    top: 5px;
+    @if $skin-name != 'Material3' {
+      right: 11px;
+      top: 5px;
+    }
     width: $pv-title-close-width;
     @if $skin-name == 'FluentUI' {
       padding: 4px;
+    }
+    @if $skin-name == 'Material3' {
+      padding: 12px 12px 12px 270px;
+    }
+  }
+
+  @if $skin-name == 'Material3' {
+    .e-pv-comment-panel-title-container .e-pv-more-icon .e-pv-icon {
+      font-size: $text-base;
     }
   }
 
@@ -2929,6 +3171,9 @@
     border-width: 0 1px 1px 0;
     height: calc(100% - 45px);
     overflow: auto;
+    @if $skin-name == 'Material3' {
+      background: $content-bg-color-alt2;
+    }
   }
 
   .e-pv-comments-container {
@@ -2953,10 +3198,16 @@
       border: 1px solid $border-light;
       border-radius: 2px;
     }
+    @if $skin-name == 'Material3' {
+      border: 1px solid rgba($border-light);
+      border-radius: 4px;
+    }
   }
 
   .e-pv-comment-title {
     color: $pv-comment-text-color;
+    padding-left: 32px;
+    padding-top: $pv-comment-title-padding-top;
     @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI') {
       color: $pv-comment-tile-text-color;
     }
@@ -2968,9 +3219,14 @@
     @if $skin-name == 'FluentUI' {
       font-weight: $pv-comment-tile-font-weight;
     }
+    @if $skin-name == 'Material3' {
+      font-size: $text-xs;
+      padding-left: 40px;
+      padding-top: $pv-comment-title-padding-top;
+      padding-bottom: 30px;
+      height: 18px;
+    }
     max-width: 237px;
-    padding-left: 32px;
-    padding-top: $pv-comment-title-padding-top;
     position: absolute;
   }
 
@@ -2986,6 +3242,9 @@
     }
     @if $skin-name == 'FluentUI' {
       font-weight: $pv-comment-tile-font-weight;
+    }
+    @if $skin-name == 'Material3' {
+      font-size: $text-xs;
     }
     max-width: 212px;
     padding-left: 8px;
@@ -3015,8 +3274,14 @@
   }
 
   .e-pdfviewer .e-accordion {
-    background-color: $pv-comments-content-container-bg;
-    border: transparent;
+    @if $skin-name == 'Material3' {
+      background: $pv-comments-content-container-bg;
+      border-radius: 0;
+    }
+    @else {
+      background-color: $pv-comments-content-container-bg;
+      border: transparent;
+    }
   }
 
   .e-menu-wrapper.e-custom-scroll.e-lib.e-keyboard.e-pv-stamp {
@@ -3024,11 +3289,13 @@
     @if $skin-name == 'bootstrap5' {
       background-color: $transparent;
     }
-    display: block;
+    @if $skin-name != 'Material3' {
+      display: block;
+    }
   }
 
   .e-dropdown-popup.e-lib.e-popup.e-control.e-pv-handwritten-popup.e-popup-open ul {
-    @if $skin-name == 'FluentUI' {
+    @if ($skin-name == 'FluentUI' or $skin-name == 'Material3') {
       padding-bottom: 6px;
       padding-top: 6px;
     }
@@ -3073,7 +3340,13 @@
 
   .e-pdfviewer .e-inplaceeditor .e-editable-value-wrapper .e-editable-value {
     border-bottom: 0;
-    word-break: break-all;
+    word-break: break-word;
+  }
+
+  .e-pdfviewer .e-inplaceeditor .e-editable-value-container .e-editable-value {
+    @if $skin-name == 'Material3' {
+      font-size: $text-xs;
+    }
   }
 
   .e-pdfviewer .e-inplaceeditor .e-editable-value-wrapper {
@@ -3114,7 +3387,7 @@
   .e-pdfviewer .e-pv-accordion-container.e-accordion .e-acrdn-item.e-select.e-selected.e-expand-state > .e-acrdn-header,
   .e-pdfviewer .e-pv-accordion-container.e-accordion .e-acrdn-item.e-select.e-expand-state > .e-acrdn-header {
     background: $pv-comment-panel-bg;
-    @if $skin-name != 'FluentUI' {
+    @if $skin-name != 'FluentUI' and $skin-name != 'Material3' {
       border: 1px solid $pv-comment-panel-border-color;
     }
   }
@@ -3134,6 +3407,12 @@
     @if $skin-name == 'FluentUI' {
       font-weight: $pv-comment-tile-font-weight;
     }
+    @if $skin-name == 'Material3' {
+      font-weight: $font-weight-normal;
+      letter-spacing: .24px;
+      line-height: 20px;
+      padding: 0 249px 9px 0;
+    }
   }
 
   .e-content-placeholder.e-pdfviewer.e-placeholder-pdfviewer {
@@ -3147,6 +3426,9 @@
   .e-pdfviewer .e-pv-signature-apperance .e-checkbox-wrapper {
     margin-top: 10px;
     padding-bottom: $pv-signature-appearance-checkbox;
+    @if $skin-name == 'Material3' {
+      margin-top: 12px;
+    }
   }
 
   .e-pdfviewer .e-pv-signature-window .e-footer-content {
@@ -3155,29 +3437,42 @@
   .e-pv-signature-dialog-height .e-pv-clearbtn
   {
     float: left;
-    height: 30px;
-    min-height: 30px;
+    @if $skin-name != 'Material3' {
+      height: 30px;
+      min-height: 30px;
+    }
   }
   .e-pv-signature-dialog-height .e-pv-cancelbtn{
-    height: 30px;
-    min-height: 30px;
+    @if $skin-name != 'Material3' {
+      height: 32px;
+      min-height: 32px;
+    }
   }
+
   .e-pv-signature-dialog-height .e-pv-createbtn{
-    height: 30px;
-    min-height: 30px;
+    @if $skin-name != 'Material3' {
+      height: 30px;
+      min-height: 30px;
+    }
   }
   .e-bigger .e-pv-signature-dialog-height .e-pv-clearbtn{
-    float: left;
-    height: 49px;
-    min-height: 49px;
+    @if $skin-name != 'Material3' {
+      float: left;
+      height: 49px;
+      min-height: 49px;
+    }
   }
   .e-bigger .e-pv-signature-dialog-height .e-pv-cancelbtn{
-    height: 49px;
-    min-height: 49px;
+    @if $skin-name != 'Material3' {
+      height: 49px;
+      min-height: 49px;
+    }
   }
   .e-bigger .e-pv-signature-dialog-height .e-pv-createbtn{
-    height: 49px;
-    min-height: 49px;
+    @if $skin-name != 'Material3' {
+      height: 49px;
+      min-height: 49px;
+    }
   }
   
   .e-tbar-btn.e-control.e-btn.e-lib.e-icon-btn.e-pv-bold.e-pv-tbar-btn.e-tooltip.textprop-option-active,
@@ -3262,6 +3557,14 @@
     @if $skin-name == 'FluentUI' {
       max-width: 300px;
       padding-top: 36px;
+    }
+    @if $skin-name == 'Material3' {
+      border: 1px dashed rgba($primary);
+      border-radius: 4px;
+      background: $content-bg-color;
+      font-size: $text-2xl;
+      color: $content-text-color;
+      font-weight: $font-weight-normal;
     }
   }
 
@@ -3368,8 +3671,14 @@
 
   .e-pv-custom-annotation-thickness-container,
   .e-pv-custom-annotation-opacity-container {
-    background-color: $pv-annotation-dropdown-background-color;
-    border-color: $pv-annotation-dropdown-border-color;
+    @if $skin-name == 'Material3'{
+      background: $pv-annotation-dropdown-background-color;
+      border: $pv-annotation-dropdown-border-color;
+    }
+    @else {
+      background-color: $pv-annotation-dropdown-background-color;
+      border-color: $pv-annotation-dropdown-border-color;
+    }
   }
 
   .e-pdfviewer-signatureformfields.e-pv-signature-focus,
@@ -3525,6 +3834,9 @@
       padding-bottom: 12px;
       padding-top: 12px;
     }
+    @if $skin-name == 'Material3' {
+      padding-top: 16px;
+    }
     @else {
       padding-bottom: 10px;
       padding-top: 20px;
@@ -3555,12 +3867,18 @@
   .e-pv-left-align-icon-div:hover,
   .e-pv-center-align-icon-div:hover,
   .e-pv-right-align-icon-div:hover {
-    background-color: $pv-annotation-dropdown-background-color-hover;
-    border-color: $pv-annotation-dropdown-border-color-hover;
+    @if ($skin-name != 'Material3' and $skin-name != 'bootstrap5') {
+      background-color: $pv-annotation-dropdown-background-color-hover;
+      border-color: $pv-annotation-dropdown-border-color-hover;
+    }
     @if ($skin-name == 'bootstrap5') {
       background-color: $secondary-bg-color-pressed;
       border-color: $secondary-bg-color-pressed;
       color: $white;
+    }
+    @if ($skin-name == 'Material3') {
+      background: $pv-annotation-dropdown-background-color-hover;
+      border: $pv-annotation-dropdown-border-color-hover;
     }
   }
 
@@ -3571,12 +3889,18 @@
   .e-pv-left-align-icon-div:active,
   .e-pv-center-align-icon-div:active,
   .e-pv-right-align-icon-div:active {
-    background-color: $pv-signature-footer-color;
-    border-color: $pv-signature-footer-color;
+    @if ($skin-name != 'Material3' and $skin-name != 'bootstrap5') {
+      background-color: $pv-signature-footer-color;
+      border-color: $pv-signature-footer-color;
+    }
     @if ($skin-name == 'bootstrap5') {
       background-color: $secondary-bg-color-pressed;
       border-color: $secondary-bg-color-pressed;
       color: $white;
+    }
+    @if ($skin-name == 'Material3') {
+      background: $pv-signature-footer-color;
+      border: $pv-signature-footer-color;
     }
   }
 
@@ -3623,11 +3947,28 @@
       padding: 0 11px;
       width: inherit;
     }
+    @if ($skin-name == 'Material3') {
+      align-content: center;
+      align-items: center;
+      box-shadow: none;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      width: 72px;
+      height: 32px;
+      border-bottom: 1px solid rgba($border);
+      box-sizing: border-box;
+      padding-right: 16px;
+      margin-top: 0;
+    }
   }
 
   .e-pv-properties-format-text-style-prop {
     @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
       padding: 15px 15px 4px 1px;
+    }
+    @if ($skin-name == 'Material3') {
+      padding: 20px 15px 6px 0;
     }
     @else {
       padding: 15px 15px 15px 1px;
@@ -3639,17 +3980,30 @@
     @if $skin-name == 'FluentUI' {
       width: 122px;
     }
+    @if $skin-name == 'Material3' {
+      width: 214px;
+      height: 32px;
+      margin-right: 12px;
+    }
     @else {
       width: 165px;
     }
   }
 
   .e-pv-properties-font-size-container {
-    border-right-color: $pv-comment-panel-bottom-color;
-    border-right-style: solid;
-    border-right-width: 1px;
-    margin-right: 15px;
-    padding-right: 15px;
+    @if $skin-name == 'Material3' {
+      border-right-color: $transparent;
+      height: 32px;
+      border-bottom: 1px solid $transparent;
+      box-sizing: border-box;
+    }
+    @else {
+      border-right-color: $pv-comment-panel-bottom-color;
+      border-right-style: solid;
+      border-right-width: 1px;
+      margin-right: 15px;
+      padding-right: 15px;
+    }
     width: $pv-font-size-field-width;
   }
 
@@ -3724,6 +4078,12 @@
       display: flex;
       height: 32px;
     }
+    @if ($skin-name == 'Material3') {
+      display: flex;
+      width: 76px;
+      border-bottom: 1px solid rgba($border);
+      box-shadow: none;
+    }
     @if ($skin-name == 'FluentUI') {
       height: auto;
     }
@@ -3733,6 +4093,9 @@
   .e-pv-formfield-maxlength {
     padding-left: 1px;
     width: $pv-formfield-maxlength-width;
+    @if ($skin-name == 'Material3') {
+      height: 32px;
+    }
   }
 
   .e-pv-formfield-maxlength-group {
@@ -3763,6 +4126,12 @@
 
   .e-pv-properties-form-field-window {
     max-width: $pv-properties-form-field-win-max-width;
+  }
+
+  .e-bigger .e-pv-properties-form-field-window {
+    @if $skin-name == 'Material3' {
+      max-width: 490px;
+    }
   }
 
   .e-pv-properties-formfield-textarea {
@@ -3869,10 +4238,29 @@
     }
   }
 
-  .e-pv-formfield-li-element:hover {
-    background-color: $pv-form-field-li-background-color;
+  .e-pv-formfield-li-element:hover:not(.e-pv-li-select) {
+    @if ($skin-name != 'Material3') {
+      background-color: $pv-form-field-li-background-color;
+    }
     @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
       color: $white;
+    }
+    @if ($skin-name == 'Material3') {
+      background-color: $content-bg-color-hover;
+    }
+  }
+
+  .e-pv-formfield-li-element:focus {
+    @if ($skin-name == 'Material3') {
+      background-color: $content-bg-color-focus;
+    }
+  }
+
+  .e-pv-formfield-li-element:disabled {
+    @if ($skin-name == 'Material3') {
+      background-color: $transparent;
+      font-size: $text-sm;
+      color: rgba(28, 31, 30, .38);
     }
   }
 
@@ -3913,12 +4301,19 @@
     vertical-align: top;
     white-space: nowrap;
     width: $pv-form-field-property-header-width;
+    @if $skin-name == 'Material3' {
+      height: 20px;
+      font-family: $font-family;
+    }
   }
 
   .e-pv-form-field-property-header-general {
     @if $skin-name == 'FluentUI' {
       font-family: 'Segoe UI';
       height: 24px;
+    }
+    @if $skin-name == 'Material3' {
+      font-family: $font-family;
     }
     @else {
       font-family: 'Roboto';
@@ -3975,11 +4370,18 @@
       height: 32px;
       width: 163px;
     }
+    @if ($skin-name == 'Material3') {
+      align-items: center;
+      border-bottom: 1px solid $transparent;
+      height: 32px;
+      width: 128px;
+      padding-left: 8px;
+    }
   }
 
   .e-pv-properties-form-field-font-align {
     background: $pv-form-field-property-font-style-color;
-    @if ($skin-name == 'bootstrap5') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'Material3') {
       border-radius: 4px;
     }
     @else {
@@ -3997,6 +4399,12 @@
     }
     @if ($skin-name == 'FluentUI') {
       border: 1px solid $border;
+    }
+    @if ($skin-name == 'Material3') {
+      align-items: center;
+      height: 32px;
+      width: 96px;
+      border: 1px solid $transparent;
     }
   }
 
@@ -4019,6 +4427,13 @@
     }
     height: $pv-form-field-property-general-header-line-height;
     line-height: $pv-form-field-property-general-header-line-height;
+    @if ($skin-name == 'Material3') {
+      font-size: $text-xxs;
+      font-weight: $font-weight-normal;
+      line-height: 12px;
+      height: 12px;
+      font-family: $font-family;
+    }
   }
 
   .e-pv-formfield-maxlength .e-input-group.e-control-wrapper .e-input-group-icon {
@@ -4030,6 +4445,9 @@
   }
 
   .e-bigger .e-pv-properties-form-field-window {
+    @if $skin-name == 'Material3' {
+      height: 565px;
+    }
     @if ($skin-name == 'FluentUI') {
       height: 585px;
     }
@@ -4045,6 +4463,18 @@
     width: $pv-properties-header-spliter-width;
   }
 
+  .e-bigger .e-pv-properties-header-spliter {
+    @if $skin-name == 'Material3'{
+      border-bottom-color: $pv-properties-header-spliter-border-bottom-color;
+      border-bottom-style: $pv-properties-header-spliter-border-bottom-style;
+      border-bottom-width: $pv-properties-header-spliter-border-bottom-width;
+      left: $pv-properties-header-spliter-left;
+      padding-top: 48px;
+      position: $pv-properties-header-spliter-position;
+      width: $pv-properties-header-spliter-width;
+    }
+  }
+
   .e-pv-properties-bottom-spliter {
     border-bottom-color: $pv-properties-header-spliter-border-bottom-color;
     border-bottom-style: $pv-properties-header-spliter-border-bottom-style;
@@ -4053,6 +4483,11 @@
     margin-bottom: $pv-properties-header-spliter-margin-bottom;
     padding-top: $pv-properties-header-spliter-margin-bottom;
     width: $pv-properties-header-spliter-width;
+    @if ($skin-name == 'Material3'){
+      margin-bottom: 0;
+      padding-top: 0;
+      border-width: 0;
+    }
   }
 
   .e-pv-formfield-textcolor-icon .e-btn-icon.e-icons,
@@ -4104,20 +4539,20 @@
 
   .e-dialog.e-pv-signature-dialog-height {
     height: $pv-signature-dialog-height;
-    @if ($skin-name == 'FluentUI') {
+    @if ($skin-name == 'FluentUI' or $skin-name == 'Material3') {
       min-height: $pv-signature-dialog-height;
     }
   }
 
   .e-bigger .e-dialog.e-pv-signature-dialog-height {
-    @if ($skin-name == 'FluentUI') {
+    @if ($skin-name == 'FluentUI' or $skin-name == 'Material3') {
       height: 627px;
       min-height: 591px;
     }
   }
   
   .e-bigger .e-pv-signature-dialog-height {
-    @if ($skin-name == 'FluentUI') {
+    @if ($skin-name == 'FluentUI' $skin-name == 'Material3') {
       min-height: 592px;
     }
   }
@@ -4126,6 +4561,15 @@
     height: $pv-signature-dialog-blazor-height;
     @if ($skin-name == 'FluentUI') {
       min-height: $pv-signature-dialog-height;
+    }
+    @if ($skin-name == 'Material3') {
+      min-height: $pv-signature-dialog-blazor-height;
+    }
+  }
+
+  .e-bigger .e-dialog.e-pv-signature-dialog-blazor-height  {
+    @if ($skin-name == 'Material3') {
+      min-height: 590px;
     }
   }
 
@@ -4143,6 +4587,10 @@
     @if $skin-name == 'FluentUI' {
       max-width: $pv-canvas-sign-width;
     }
+    @if $skin-name == 'Material3' {
+      width: 100%;
+      max-width: $pv-canvas-sign-width;
+    }
   }
 
   .e-pv-canvas-signature-blazor {
@@ -4151,6 +4599,9 @@
 
   .e-pv-font-appearance-style {
     padding: $pv-font-div-padding;
+    @if $skin-name == 'Material3' {
+      max-width: $pv-canvas-sign-width;
+    }
   }
 
   .e-pv-font-appearance-style-blazor {
@@ -4165,5 +4616,12 @@
   }
   .e-pv-toolbar-tooltip {
     pointer-events: none;
+  }
+
+  .e-pdfviewer .e-dropdown-btn,
+  .e-dropdown-btn.e-btn {
+    @if ($skin-name == 'Material3') {
+      box-shadow: none;
+    }
   }
 }

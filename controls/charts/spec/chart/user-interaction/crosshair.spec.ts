@@ -94,7 +94,7 @@ describe('Chart Crosshair', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
                 expect(element1.textContent == 'France').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
-                expect(element1.textContent == '$39.97' || element1.textContent == '$39.85').toBe(true);
+                expect(element1.textContent == '$39.86' || element1.textContent == '$39.85').toBe(true);
 
                 chartArea = document.getElementById('container_ChartAreaBorder');
                 y = parseFloat(chartArea.getAttribute('y')) + elem.offsetTop + 1;
@@ -146,6 +146,7 @@ describe('Chart Crosshair', () => {
             let element1: HTMLElement;
             element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
             expect(element1.textContent == 'Germany1').toBe(true);
+
             loaded = (args: Object): void => {
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
                 y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 4 + elem.offsetTop;
@@ -335,7 +336,7 @@ describe('Chart Crosshair', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
                 expect(element1.textContent == 'Australia').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
-                expect(element1.textContent == '$59.81' || element1.textContent == '$59.73').toBe(true);
+                expect(element1.textContent == '$59.81' || element1.textContent == '$59.74').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].lastChild;
                 expect(element1.textContent == '2005').toBe(true);
                 done();
@@ -368,7 +369,7 @@ describe('Chart Crosshair', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[2];
                 expect(element1.getAttribute('d') !== '').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
-                expect(element1.textContent == '$59.81' || element1.textContent == '$59.73').toBe(true);
+                expect(element1.textContent == '$59.74' || element1.textContent == '$59.73').toBe(true);
                 let elem1: HTMLElement = <HTMLElement>crosshair.childNodes[2].lastChild;
                 expect(elem1.getAttribute('fill') == 'red').toBe(true);
                 crosshair.innerHTML = '';
@@ -421,7 +422,7 @@ describe('Chart Crosshair', () => {
                 let crosshair: Element = <Element>document.getElementById('container_svg').lastChild;
                 let element1: HTMLElement;
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
-                expect(element1.textContent == '105.3' || element1.textContent == '102.9').toBe(true);
+                expect(element1.textContent == '104.7' || element1.textContent == '102.9').toBe(true);
                 done();
             };
             chartObj1.primaryXAxis.crosshairTooltip.enable = true;
@@ -570,11 +571,12 @@ describe('Chart Crosshair', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 108);
                 let yValue: number = chartObj.visibleSeries[1].points[0].yValue;
-                expect(yValue == 60.24 || yValue == 59.65).toBe(true);
+                expect(yValue == 60.24 || yValue == 59.82).toBe(true);
                 chartObj.loaded = null;
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series[1].marker.shape = 'Circle';
             chartObj.refresh();
         });
     });

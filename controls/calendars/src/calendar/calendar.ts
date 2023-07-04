@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import { Component, EventHandler, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
-import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
+import { INotifyPropertyChanged, KeyboardEvents, L10n, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';
 import { removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';
@@ -1811,8 +1811,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             break;
         }
     }
-    protected navigatePrevious(e: MouseEvent | KeyboardEvent): void {
-        e.preventDefault();
+    protected navigatePrevious(e: MouseEvent | KeyboardEvent | SwipeEventArgs): void {
+        !Browser.isDevice && (e as MouseEvent | KeyboardEvent).preventDefault();
         if (this.calendarMode === 'Gregorian') {
             this.previous();
         } else {
@@ -1842,8 +1842,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             break;
         }
     }
-    protected navigateNext(eve: MouseEvent | KeyboardEvent): void {
-        eve.preventDefault();
+    protected navigateNext(eve: MouseEvent | KeyboardEvent | SwipeEventArgs): void {
+        !Browser.isDevice && (eve as MouseEvent | KeyboardEvent).preventDefault();
         if (this.calendarMode === 'Gregorian') {
             this.next();
         } else {
@@ -1887,9 +1887,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {string}
      */
     public currentView(): string {
-        if (this.contentElement.classList.contains(YEAR)) {
+        if (!isNullOrUndefined(this.contentElement) && this.contentElement.classList.contains(YEAR)) {
             return 'Year';
-        } else if (this.contentElement.classList.contains(DECADE)) {
+        } else if (!isNullOrUndefined(this.contentElement) && this.contentElement.classList.contains(DECADE)) {
             return 'Decade';
         } else {
             return 'Month';
@@ -2078,11 +2078,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         extend(this.renderDayCellArgs, { name: 'renderDayCell' });
         this.trigger('renderDayCell', args);
     }
-    protected navigatedEvent(eve: MouseEvent | KeyboardEvent): void {
+    protected navigatedEvent(eve: MouseEvent | KeyboardEvent| SwipeEventArgs): void {
         extend(this.navigatedArgs, { name: 'navigated', event: eve });
         this.trigger('navigated', this.navigatedArgs);
     }
-    protected triggerNavigate(event: MouseEvent | KeyboardEvent): void {
+    protected triggerNavigate(event: MouseEvent | KeyboardEvent | SwipeEventArgs): void {
         this.navigatedArgs = { view: this.currentView(), date: this.currentDate };
         this.navigatedEvent(event);
     }

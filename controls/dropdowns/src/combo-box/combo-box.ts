@@ -137,10 +137,11 @@ export class ComboBox extends DropDownList {
      * Not applicable to this component.
      *
      * @default null
+     * @aspType string
      * @private
      */
     @Property(null)
-    public valueTemplate: string;
+    public valueTemplate: string | Function;
     /**
      * Specifies whether to display the floating label above the input element.
      * Possible values are:
@@ -181,19 +182,21 @@ export class ComboBox extends DropDownList {
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
     @Property(null)
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
     /**
      * Accepts the template design and assigns it to the footer container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
     @Property(null)
-    public footerTemplate: string;
+    public footerTemplate: string | Function;
     /**
      * Specifies a short hint that describes the expected value of the DropDownList component.
      *
@@ -298,6 +301,7 @@ export class ComboBox extends DropDownList {
             EventHandler.add(this.inputElement, 'keyup', this.onFilterUp, this);
             EventHandler.add(this.inputElement, 'keydown', this.onFilterDown, this);
             EventHandler.add(this.inputElement, 'paste', this.pasteHandler, this);
+            EventHandler.add(<HTMLElement & Window>window, 'resize',this.windowResize, this);
         }
         this.bindCommonEvent();
     }
@@ -657,6 +661,7 @@ export class ComboBox extends DropDownList {
                 EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
                 EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
                 EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
+                EventHandler.remove(<HTMLElement & Window>window, 'resize', this.windowResize);
             }
         }
         this.unBindCommonEvent();

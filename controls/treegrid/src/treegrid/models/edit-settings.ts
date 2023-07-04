@@ -87,9 +87,10 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * Defines the custom edit elements for the dialog template.
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public template: string;
+    public template: string | Function;
 
     /**
      * Defines the dialog params to edit.

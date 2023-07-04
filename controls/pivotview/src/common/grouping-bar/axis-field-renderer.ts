@@ -62,8 +62,9 @@ export class AxisFields {
                 element.innerHTML = '';
             }
         }
-        if ((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && (this.parent.dataSourceSettings.dataSource as IDataSet[]).length > 0)
-        || (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '')) {
+        if ((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && (this.parent.dataSourceSettings.dataSource as IDataSet[]).length > 0) ||
+        (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '') ||
+        (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '')) {
             /* eslint-enable @typescript-eslint/no-explicit-any */
             const axis: string[] = ['rows', 'columns', 'values', 'filters'];
             if (this.parent.dataType === 'pivot' && this.parent.groupingBarSettings.showFieldsPanel) {

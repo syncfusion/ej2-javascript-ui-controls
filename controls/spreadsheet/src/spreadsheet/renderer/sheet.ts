@@ -228,7 +228,9 @@ export class SheetRender implements IRenderer {
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
             indexes = getRangeIndexes(key);
             if (indexes[1] === args.indexes[1] || !row) {
-                hRow = this.rowRenderer.render(indexes[0], true);
+                if (indexes[1] === args.indexes[1]) {
+                    hRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                }
                 if (frozenCol && frozenRow && indexes[1] < frozenCol && indexes[0] < frozenRow) {
                     emptyRow = selectAllTBody.querySelector('.e-empty');
                     if (emptyRow) {
@@ -505,7 +507,9 @@ export class SheetRender implements IRenderer {
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
             indexes = getRangeIndexes(key);
             if (indexes[1] === args.indexes[1] || !row) {
-                hdrRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                if (indexes[1] === args.indexes[1]) {
+                    hdrRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                }
                 if (frozenCol && indexes[1] < frozenCol) {
                     hTBody.appendChild(hdrRow); row = hdrRow;
                 } else {
@@ -677,7 +681,9 @@ export class SheetRender implements IRenderer {
                     getCell(this.parent.viewport.topIndex + frozenRow, indexes[1], sheet) || {});
             }
             if (indexes[1] === firstCol || !row) {
-                hRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                if (indexes[1] === firstCol) {
+                    hRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
+                }  
                 if (frozenCol && indexes[1] < frozenCol) {
                     rFrag.appendChild(hRow); row = hRow;
                 } else {
@@ -757,7 +763,7 @@ export class SheetRender implements IRenderer {
                 }
             } else if (model.rowSpan > 1) {
                 const prevTopIdx: number = range[2] + 1;
-                if (indexes[0] + model.rowSpan - 1 > prevTopIdx && indexes[0] < prevTopIdx) {
+                if (indexes[0] + model.rowSpan - 1 >= prevTopIdx && indexes[0] < prevTopIdx) {
                     this.refreshPrevMerge(prevTopIdx, indexes[1], this.parent.viewport.topIndex + frozenRow);
                 }
             }
@@ -768,7 +774,7 @@ export class SheetRender implements IRenderer {
         const td: HTMLTableCellElement
             = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(currTopIdx ?
                 currTopIdx : 0, null, colIndex)) as HTMLTableCellElement;
-        if (td && td.rowSpan > 1) {
+        if (td) {
             this.cellRenderer.refresh(prevTopIdx, colIndex, null, td);
         }
     }
@@ -782,7 +788,7 @@ export class SheetRender implements IRenderer {
                 this.parent.notify(checkMerge, e);
                 if (e.insideFreezePane) { return; }
             }
-            if (firstcell && ((firstcell as HTMLTableCellElement).colSpan > 1 || (firstcell as HTMLTableCellElement).rowSpan > 1)) {
+            if (firstcell && ((firstcell as HTMLTableCellElement).colSpan >= 1 || (firstcell as HTMLTableCellElement).rowSpan >= 1)) {
                 this.cellRenderer.refresh(indexes[0], indexes[1] + (range[3] - range[1]) + 1, null, firstcell);
             }
         }

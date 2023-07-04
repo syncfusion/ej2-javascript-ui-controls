@@ -1,16 +1,16 @@
 @include export-module('pivotview-icons') {
   .e-pivotview {
     .e-expand::before {
-      content: '\e75c';
+      content: '\e748';
     }
 
     .e-collapse::before {
-      content: '\e734';
+      content: '\e729';
     }
 
     &.e-rtl {
       .e-expand::before {
-        content: '\e738';
+        content: '\e765';
       }
     }
 
@@ -75,7 +75,7 @@
     }
 
     .e-toolbar-fieldlist::before {
-      content: '\e751';
+      content: '\e880';
     }
 
     .e-toolbar-grid::before {

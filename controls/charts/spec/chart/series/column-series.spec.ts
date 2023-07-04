@@ -1657,6 +1657,21 @@ describe('Column Series', () => {
             chartObj.series[0].marker.offset = { x : 10 , y : -5};
             chartObj.refresh();
         });
+        it('Checking with Cross marker shape ', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series1: HTMLElement = document.getElementById('container_Series_0_Point_1_Symbol');
+                let direction: string = series1.getAttribute('d');
+                expect(direction.indexOf('z') == -1).toBe(true);
+                expect(series1.getAttribute('fill') == 'red').toBe(true);
+                expect(series1.getAttribute('opacity') == '0.5').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker.shape = 'Cross';
+            chartObj.series[0].marker.fill = 'red';
+            chartObj.series[0].marker.opacity = 0.5;
+            chartObj.refresh();
+        });
         it('with marker and datalabel', (done: Function) => {
             loaded = (args: Object): void => {
                 let series1 = document.getElementById('container_Series_0_Point_0_Symbol');
@@ -1666,6 +1681,7 @@ describe('Column Series', () => {
             };
             chartObj.loaded = loaded;
             chartObj.series[0].marker.offset = { x : 0 , y : 0};
+            chartObj.series[0].marker.shape = 'Circle';
             chartObj.series[0].marker.dataLabel.visible = true;
             chartObj.series[0].marker.dataLabel.position = 'Outer';
             chartObj.refresh();
@@ -1679,6 +1695,18 @@ describe('Column Series', () => {
             chartObj.loaded = loaded;
             chartObj.series[0].marker.dataLabel.position = 'Top';
             chartObj.series[0].fill = '#404041';
+            chartObj.refresh();
+        });        
+        it('checking default series marker shape', function (done) {
+            loaded = (args: Object): void => {
+                let series1 = document.getElementById('container_Series_0_Point_2_Symbol');
+                expect(series1.getAttribute('cx') == '252.99695921774384').toBe(true);
+                expect(series1.getAttribute('cy') == '165.39583333333334').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker.visible = true;
+            chartObj.series[0].marker.shape = 'Circle';
             chartObj.refresh();
         });
         
@@ -1765,7 +1793,7 @@ describe('Column Series', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 142);
                 let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
-                expect(yValue == 80.27 || yValue == 79.68).toBe(true);
+                expect(yValue == 80.27 || yValue == 79.91).toBe(true);
                 columnChart.loaded = null;
                 done();
             };
@@ -1781,7 +1809,7 @@ describe('Column Series', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 142);
                 let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
-                expect(yValue == 80.27 || yValue == 79.68).toBe(true);
+                expect(yValue == 80.27 || yValue == 79.91).toBe(true);
                 columnChart.loaded = null;
                 done();
             };
@@ -1798,7 +1826,7 @@ describe('Column Series', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 142);
                 let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
-                expect(yValue == 80.27 || yValue == 79.68).toBe(true);
+                expect(yValue == 80.27 || yValue == 79.91).toBe(true);
                 columnChart.loaded = null;
                 done();
             };
@@ -1816,7 +1844,7 @@ describe('Column Series', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) + 142);
                 let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
-                expect(yValue == 80.72 || yValue == 80.12).toBe(true);
+                expect(yValue == 80.72 || yValue == 80.06).toBe(true);
                 columnChart.loaded = null;
                 done();
             };
@@ -1854,7 +1882,7 @@ describe('Column Series', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 142);
                 let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
-                expect(yValue == 80.27 || yValue == 79.68).toBe(true);
+                expect(yValue == 80.27 || yValue == 79.91).toBe(true);
                 let color: string = document.getElementById('dragColumn_Series_0_Point_3').getAttribute('fill');
                 expect(color === 'red').toBe(true);
                 columnChart.loaded = null;

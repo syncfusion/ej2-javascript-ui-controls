@@ -401,6 +401,21 @@
     content: '\e353';
     font-family: 'e-icons';
   }
+
+  .e-de-e-paragraph-style-mark::before{
+    content: '\e353';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-character-style-mark::before{
+    content: '\e97d';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-linked-style-mark::before{
+    content: '\e97e';
+    font-family: 'e-icons';
+  }
   
   .e-de-ctnr-columns::before {
     content: '\e955';

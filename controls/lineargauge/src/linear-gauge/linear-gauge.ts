@@ -44,14 +44,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     //Module declaration for gauge
     /**
      * Specifies the module that is used to place any text or images as annotation into the linear gauge.
-     * 
+     *
      * @private
      */
     public annotationsModule: Annotations;
 
     /**
      * Specifies the module that is used to display the pointer value in tooltip.
-     * 
+     *
      * @private
      */
     public tooltipModule: GaugeTooltip;
@@ -192,7 +192,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Specifies the options for customizing the appearance of title for linear gauge.
      */
 
-    @Complex<FontModel>({ size: '15px', color: null, fontStyle: null, fontWeight: null }, Font)
+    @Complex<FontModel>({ size: null, color: null, fontFamily: null, fontStyle: null, fontWeight: null }, Font)
     public titleStyle: FontModel;
 
     /**
@@ -699,7 +699,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 opacity: this.titleStyle.opacity
             };
             style.fontFamily = style.fontFamily || this.themeStyle.fontFamily;
-            style.size = style.size || this.themeStyle.fontSize;
+            style.size = style.size || this.themeStyle.titleFontSize;
             style.fontStyle = style.fontStyle || this.themeStyle.titleFontStyle;
             style.fontWeight = style.fontWeight || this.themeStyle.titleFontWeight;
             const element: Element = textElement(
@@ -840,7 +840,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const extraPadding: number = 30;
         let path: string = '';
         const fill: string = (this.container.backgroundColor !== 'transparent'
-            || (this.theme !== 'Bootstrap4' && this.theme !== 'Material'))
+            || (this.theme !== 'Bootstrap4' && this.theme !== 'Material' && this.theme !== 'Material3' && this.theme !== 'Material3Dark'))
             ? this.container.backgroundColor : this.themeStyle.containerBackground;
         let rect: RectOption;
         const radius: number = this.container.width;
@@ -1404,11 +1404,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * This method is used to set the annotation value in the linear gauge.
      *
      * @param {number} annotationIndex - Specifies the index value for the annotation in linear gauge.
-     * @param {string} content - Specifies the content for the annotation in linear gauge.
+     * @param {string | Function} content - Specifies the content for the annotation in linear gauge.
      * @param {number} axisValue - Specifies the axis value to which the annotation must be positioned.
      */
 
-    public setAnnotationValue(annotationIndex: number, content: string, axisValue?: number): void {
+    public setAnnotationValue(annotationIndex: number, content: string | Function, axisValue?: number): void {
         if (!this.isDestroyed) {
             const elementExist: boolean = getElement(this.element.id + '_Annotation_' + annotationIndex) === null;
             const element: HTMLElement = <HTMLElement>getElement(this.element.id + '_AnnotationsGroup') ||

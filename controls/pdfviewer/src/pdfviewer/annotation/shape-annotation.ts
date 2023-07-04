@@ -195,12 +195,12 @@ export class ShapeAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderShapeAnnotations(shapeAnnotations: any, pageNumber: number, isImportAcion?: boolean): void {
+    public renderShapeAnnotations(shapeAnnotations: any, pageNumber: number, isImportAcion?: boolean,  isAnnotOrderAction?: boolean): void {
         if (shapeAnnotations) {
             if (shapeAnnotations.length >= 1) {
                 // eslint-disable-next-line
                 let shapeAnnots: any[] = this.pdfViewer.annotation.getStoredAnnotations(pageNumber, shapeAnnotations, '_annotations_shape');
-                if (!shapeAnnots || isImportAcion) {
+                if (!shapeAnnots || isAnnotOrderAction || isImportAcion) {
                     for (let i: number = 0; i < shapeAnnotations.length; i++) {
                     // eslint-disable-next-line
                     let annotation: any = shapeAnnotations[i];

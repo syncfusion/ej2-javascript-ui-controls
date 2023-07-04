@@ -467,6 +467,7 @@ export class Selection {
      */
     private mouseUpHandler(e: PointerEvent): void {
         let isTaskbarEdited: boolean = false;
+        var elements = document.querySelectorAll('.e-drag-item');
         let targetElement: Element = null;
         if ((e.target as Element).closest('.e-rowcell')) {
             targetElement = e.target as HTMLElement;
@@ -483,7 +484,7 @@ export class Selection {
                 isTaskbarEdited = true;
             }
         }
-        if (!isTaskbarEdited && this.parent.element.contains(e.target as Node)) {
+        if (!isTaskbarEdited && this.parent.element.contains(e.target as Node) && !(elements.length === 1)) {
             const parent: Element = parentsUntil(e.target as Element, 'e-chart-row');
             const isSelected: boolean = (e.target as HTMLElement).classList.contains('e-rowcell') ||
                 (e.target as HTMLElement).classList.contains('e-row') ||

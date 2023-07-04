@@ -34,12 +34,13 @@ export class DataLabel {
         for (let i: number = 0; i < count; i++) {
 
             labelText = smithchart.series[seriesindex as number].points[i as number].reactance.toString();
-            textSize = measureText(labelText, font);
+            textSize = measureText(labelText, font, smithchart.themeStyle.dataLabelFont);
             region = pointsRegion[i as number]['point'];
             const xPos: number = region.x - textSize.width / 2;
             const yPos: number = region.y - (textSize.height + marker['height'] + (margin.top));
             const width: number = textSize.width + (margin.left / 2) + (margin.right / 2);
             const height: number = textSize.height + (margin.top / 2) + (margin.bottom / 2);
+            font.fontFamily = font.fontFamily ? font.fontFamily : smithchart.themeStyle.dataLabelFont.fontFamily;
             pointIndex = i;
             labelPosition = new SmithchartLabelPosition();
             labelPosition = { textX: xPos + (margin.left / 2), textY: yPos + (height / 2) + margin.top / 2, x: xPos, y: yPos };

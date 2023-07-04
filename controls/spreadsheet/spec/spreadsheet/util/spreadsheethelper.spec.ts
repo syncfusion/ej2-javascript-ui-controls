@@ -75,7 +75,7 @@ export class SpreadsheetHelper extends TestHelper {
     }
 
     public triggerKeyNativeEvent(keyCode: number, isCtrl: boolean = false, isShift: boolean = false,
-        element?: HTMLElement, type: string = 'keydown', isAltKey: boolean = false): void {
+        element?: HTMLElement, type: string = 'keydown', isAltKey: boolean = false, target?: HTMLElement): void {
             if (!element) {
                 element = this.getElement();
             }
@@ -85,6 +85,9 @@ export class SpreadsheetHelper extends TestHelper {
             eventArg['altKey'] = isAltKey;
             eventArg['shiftKey'] = isShift;
             eventArg['ctrlKey'] = isCtrl;
+            if (target) {
+                Object.defineProperty(eventArg, 'target', { writable: false, value: target });
+            }
             element.dispatchEvent(eventArg);
     }
 
@@ -195,7 +198,7 @@ export class SpreadsheetHelper extends TestHelper {
         (document.querySelector(selector) as any).ej2_instances[0].animationSettings.effect = 'None';
     }
 
-    public openAndClickCMenuItem(rowIdx: number, colIdx: number, children: number[], isRowHdr?: boolean, isColHdr?: boolean, checkFn?: Function, isSheetTab?: boolean, tabEle?: HTMLElement): void {
+    public openAndClickCMenuItem(rowIdx: number, colIdx: number, children?: number[], isRowHdr?: boolean, isColHdr?: boolean, checkFn?: Function, isSheetTab?: boolean, tabEle?: HTMLElement): void {
         let td: HTMLElement;
         let item: HTMLElement;
         const cMenu: HTMLElement = this.getElement('.e-spreadsheet-contextmenu');
@@ -209,7 +212,7 @@ export class SpreadsheetHelper extends TestHelper {
             td = this.invoke('getCell', [rowIdx, colIdx]);
         }
         this.triggerMouseAction('contextmenu', { x: td.getBoundingClientRect().left + 1, y: td.getBoundingClientRect().top + 1 }, null, td);
-        children.forEach((childIdx: number, idx: number) => {
+        children && children.forEach((childIdx: number, idx: number) => {
             if (children.length - 1 === idx) {
                 if (checkFn) {
                     checkFn();

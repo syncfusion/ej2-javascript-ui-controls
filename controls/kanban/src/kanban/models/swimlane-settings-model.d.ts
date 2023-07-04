@@ -44,8 +44,9 @@ export interface SwimlaneSettingsModel {
      * Defines the swimlane row template
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Sort the swimlane resources. The possible values are:

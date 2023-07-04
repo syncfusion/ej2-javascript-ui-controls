@@ -24,6 +24,7 @@
           }
 
           > .e-acrdn-content > .e-accordion > .e-acrdn-item > .e-acrdn-header {
+            box-shadow: none;
             padding: $acrdn-nest-bgr-header-padding;
           }
 
@@ -136,6 +137,10 @@
       border-radius: $acrdn-item-border-radius;
       margin-top: $acrdn-item-margin-top;
 
+      &:first-child {
+        margin-top: 0;
+      }
+      
       &:not(.e-select) + .e-acrdn-item:not(.e-select) {
         margin-bottom: 0;
         margin-top: 0;
@@ -255,6 +260,10 @@
 
           > .e-acrdn-content > .e-accordion > .e-acrdn-item > .e-acrdn-header {
             padding: $acrdn-nest-nrml-header-padding;
+
+            &:focus {
+              box-shadow: $acrdn-nested-item-header-focus-box-shadow;
+            }
           }
 
           > .e-acrdn-content {

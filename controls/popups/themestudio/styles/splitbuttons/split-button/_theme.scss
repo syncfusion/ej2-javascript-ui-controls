@@ -3,7 +3,13 @@
   /*! splitbutton theme */
   .e-split-btn-wrapper {
     .e-split-btn {
-      border-right-color: $split-btn-seperator-border-color;
+      @if $skin-name == 'Material3' {
+        border-image: $split-btn-seperator-border-color;
+        border-width: 0 1px 0 0;
+      }
+      @else {
+        border-right-color: $split-btn-seperator-border-color;
+      }
 
       &:focus {
         border-right-color: $split-btn-focus-border-color;
@@ -22,6 +28,12 @@
       }
     }
 
+    &.e-splitbtn-disabled {
+      @if $skin-name == 'Material3' {
+        box-shadow: none;
+      }
+    }
+
     &:hover :not(e-active) {
       & .e-split-btn {
         border-right-color: $split-btn-hover-border-color;
@@ -36,6 +48,10 @@
       .e-split-btn {
         @if $skin-name == 'material' or $skin-name == 'fabric' {
           border-color: transparent;
+        }
+        @else if $skin-name == 'Material3' {
+          border-image: $split-btn-seperator-border-color-rtl;
+          border-width: 0 0 0 1px;
         }
         @else {
           border-left-color: $split-btn-seperator-border-color;
@@ -86,6 +102,10 @@
 
     &.e-vertical {
       .e-split-btn {
+        @if $skin-name == 'Material3' {
+          border-image: $split-btn-seperator-border-color-vertical;
+          border-width: 0 0 2px;
+        }
         border-bottom-color: $split-btn-seperator-vertical-border-color;
         border-right-color: $split-btn-seperator-default-border-color;
 

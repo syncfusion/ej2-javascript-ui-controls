@@ -32,6 +32,8 @@ export class ToolbarRenderer implements IRenderer {
     private currentElement: HTMLElement;
     private currentDropdown: DropDownButton;
     private popupOverlay: HTMLElement;
+    private tooltip: Tooltip;
+
     /**
      * Constructor for toolbar renderer module
      *
@@ -44,6 +46,11 @@ export class ToolbarRenderer implements IRenderer {
 
     private wireEvent(): void {
         this.parent.on(events.destroy, this.unWireEvent, this);
+        this.parent.on(events.maximizeMinimizeClick, this.destroyTooltip, this);
+    }
+
+    private destroyTooltip(): void {
+        this.tooltip.close();
     }
 
     private unWireEvent(): void {
@@ -149,12 +156,13 @@ export class ToolbarRenderer implements IRenderer {
         args.rteToolbarObj.toolbarObj.createElement = this.parent.createElement;
         args.rteToolbarObj.toolbarObj.appendTo(args.target);
         if (this.parent.showTooltip) {
-            const tooltip : Tooltip = new Tooltip({
+            this.tooltip = new Tooltip({
                 target: '#' + this.parent.getID() + '_toolbar_wrapper [title]',
                 showTipPointer: true,
+                openDelay: 400,
                 cssClass: this.parent.cssClass
             });
-            tooltip.appendTo(args.target);
+            this.tooltip.appendTo(args.target);
         }
     }
 

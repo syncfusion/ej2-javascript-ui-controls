@@ -13,6 +13,7 @@ import { Axis, VisibleRangeModel } from '../../chart/axis/axis';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BorderModel } from '../../common/model/base-model';
 import { ChartShape } from '../utils/enum';
+import { markerShapes } from './marker';
 
 /**
  * `ScatterSeries` module is used to render the scatter series.

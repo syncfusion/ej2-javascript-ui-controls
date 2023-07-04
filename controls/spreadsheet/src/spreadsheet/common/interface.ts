@@ -1,9 +1,9 @@
-import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType, ChartModel } from './../../workbook/index';
+import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType, ChartModel, MarkerSettingsModel } from './../../workbook/index';
 import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, HyperlinkModel } from './../../workbook/index';
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { CellInfoEventArgs, CFColor, ChartTheme } from './../../workbook/index';
+import { CellInfoEventArgs, CFColor, ChartTheme, RowModel } from './../../workbook/index';
 import { SortCollectionModel } from './../../workbook/index';
 
 
@@ -285,6 +285,7 @@ export interface CellRenderArgs {
     isMerged?: boolean;
     colSpan?: number;
     rowSpan?: number;
+    isRandomFormula?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -531,6 +532,7 @@ export interface BeforeChartEventArgs {
     type?: ChartType;
     theme?: ChartTheme;
     isSeriesInRows?: boolean;
+    markerSettings?: MarkerSettingsModel
     range?: string;
     id?: string;
     height?: number;
@@ -587,4 +589,24 @@ export interface FilterCheckboxArgs {
 export interface BeforeActionDataInternal extends BeforeActionData {
     /** Specifies the sorted cells. */
     sortedCellDetails?: object[];
+}
+/** @hidden */
+export interface FillRangeInfo {
+    startCell?: { colIndex: number, rowIndex: number },
+    endCell?: { colIndex: number, rowIndex: number },
+    fillRange?: number[],
+    direction?: AutoFillDirection
+}
+
+/**
+ * Cell model and its count details on external copy/paste.
+ * @hidden
+ */
+export interface PasteModelArgs {
+    model?: RowModel[];
+    usedRowIndex?: number;
+    usedColIndex?: number;
+    colCount?: number;
+    rowCount?: number;
+    selection?: string;
 }

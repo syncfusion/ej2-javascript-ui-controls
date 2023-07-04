@@ -1640,7 +1640,7 @@ describe('Slider Control', () => {
             mousemove = setMouseCoordinates(mousemove, 319, 148);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-            expect((document.getElementsByClassName('e-handle')[1] as HTMLElement).getAttribute('aria-valuenow')).toBe('10');
+            expect((document.getElementsByClassName('e-handle')[1] as HTMLElement).getAttribute('aria-valuenow')).toBe('20');
         });
         afterEach(() => {
             document.body.innerHTML = '';

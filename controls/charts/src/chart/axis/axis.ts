@@ -333,7 +333,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
      * Options to customize the crosshair ToolTip text.
      */
 
-    @Complex<FontModel>(Theme.crosshairLabelFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public textStyle: FontModel;
 
 }
@@ -349,7 +349,7 @@ export class Axis extends ChildProperty<Axis> {
      * Options to customize the axis label.
      */
 
-    @Complex<FontModel>(Theme.axisLabelFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public labelStyle: FontModel;
 
     /**
@@ -372,7 +372,7 @@ export class Axis extends ChildProperty<Axis> {
      * Options for customizing the axis title.
      */
 
-    @Complex<FontModel>(Theme.axisTitleFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
     public titleStyle: FontModel;
 
     /**
@@ -1069,7 +1069,7 @@ export class Axis extends ChildProperty<Axis> {
         if (this.title) {
             const angle: number = this.titleRotation;
             if ((isNullOrUndefined(angle))) {
-                this.titleSize = measureText(this.title, this.titleStyle);
+                this.titleSize = measureText(this.title, this.titleStyle, chart.themeStyle.axisTitleFont);
                 titleSize = this.titleSize.height + innerPadding;
             }
             else {
@@ -1078,7 +1078,7 @@ export class Axis extends ChildProperty<Axis> {
             }
             if (this.rect.width || this.rect.height) {
                 const length: number = isHorizontal ? this.rect.width : this.rect.height;
-                this.titleCollection = getTitle(this.title, this.titleStyle, length);
+                this.titleCollection = getTitle(this.title, this.titleStyle, length, chart.themeStyle.legendLabelFont);
                 titleSize = (titleSize * this.titleCollection.length);
             }
         }
@@ -1248,12 +1248,12 @@ export class Axis extends ChildProperty<Axis> {
             label = this.visibleLabels[i as number];
             isAxisLabelBreak = isBreakLabel(label.originalText);
             if (isAxisLabelBreak) {
-                label.size = measureText(label.originalText.replace(/<br>/g, ' '), this.labelStyle);
+                label.size = measureText(label.originalText.replace(/<br>/g, ' '), this.labelStyle, chart.themeStyle.axisLabelFont);
                 label.breakLabelSize = measureText(
-                    this.enableTrim ? (<string[]>label.text).join('<br>') : label.originalText, this.labelStyle
+                    this.enableTrim ? (<string[]>label.text).join('<br>') : label.originalText, this.labelStyle, chart.themeStyle.axisLabelFont
                 );
             } else {
-                label.size = measureText(<string>label.text, this.labelStyle);
+                label.size = measureText(<string>label.text, this.labelStyle, chart.themeStyle.axisLabelFont);
             }
             const width: number = isAxisLabelBreak ? label.breakLabelSize.width : label.size.width;
             if (width > this.maxLabelSize.width) {
@@ -1303,7 +1303,7 @@ export class Axis extends ChildProperty<Axis> {
                         for (let index: number = 0; index < label.text.length; index++) {
                             result = textWrap(
                                 label.text[index as number],
-                                this.rect.width / this.visibleLabels.length, this.labelStyle);
+                                this.rect.width / this.visibleLabels.length, this.labelStyle, null, null, chart.themeStyle.axisLabelFont);
                             if (result.length > 1) {
                                 for (let j: number = 0; j < result.length; j++) {
                                     str = result[j as number]; result1.push(str);
@@ -1316,7 +1316,7 @@ export class Axis extends ChildProperty<Axis> {
                     } else {
                         label.text = textWrap(
                                 <string>label.text,
-                                this.rect.width / this.visibleLabels.length, this.labelStyle
+                                this.rect.width / this.visibleLabels.length, this.labelStyle, null, null, chart.themeStyle.axisLabelFont
                         );
                     }
                     // eslint-disable-next-line no-case-declarations
@@ -1409,7 +1409,7 @@ export class Axis extends ChildProperty<Axis> {
      * @returns {void}
      * @private
      */
-    public setIsInversedAndOpposedPosition(isPolar : boolean = false): void {
+    public setIsInversedAndOpposedPosition(isPolar: boolean = false): void {
         this.isAxisOpposedPosition = this.opposedPosition || (!isPolar && this.isRTLEnabled && this.orientation === 'Vertical');
         this.isAxisInverse = this.isInversed || (this.isRTLEnabled && this.orientation === 'Horizontal');
     }

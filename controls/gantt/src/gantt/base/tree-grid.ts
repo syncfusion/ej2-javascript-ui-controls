@@ -79,6 +79,9 @@ export class GanttTreeGrid {
         const root: string = 'root';
         this.parent.treeGrid[root as string] = this.parent[root as string] ? this.parent[root as string] : this.parent;
         this.parent.treeGrid.appendTo(this.treeGridElement);
+	if (this.parent.treeGrid.grid && this.parent.toolbarModule && (this.parent as any).isReact) {
+           (this.parent.treeGrid.grid as any).portals = (this.parent as any).portals;
+        }
         this.wireEvents();
     }
 
@@ -468,7 +471,7 @@ export class GanttTreeGrid {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
             if (typeof ganttObj.columns[i as number] === 'string') {
@@ -558,7 +561,9 @@ export class GanttTreeGrid {
                 this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.width = column.width ? column.width : 150;
-            column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            if (!column.edit  || (column.edit && !column.edit.create)) {
+                column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            }
         } else if (taskSettings.endDate === column.field) {
             if (this.parent.isLocaleChanged && previousColumn) {
                 column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('endDate');
@@ -570,7 +575,9 @@ export class GanttTreeGrid {
             column.editType = column.editType ? column.editType :
                 this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.width = column.width ? column.width : 150;
-            column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            if (!column.edit  || (column.edit && !column.edit.create)) {
+                column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            }
         } else if (taskSettings.duration === column.field) {
             column.width = column.width ? column.width : 150;
             if (this.parent.isLocaleChanged && previousColumn) {

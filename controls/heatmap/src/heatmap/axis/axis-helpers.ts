@@ -4,8 +4,8 @@
 import { HeatMap } from '../heatmap';
 import { Rect, Size, measureText, TextOption, rotateTextSize, textTrim, CanvasTooltip, PathOption, textWrap } from '../utils/helper';
 import { Axis } from './axis';
-import { sum, titlePositionX, LineOption, Line, DrawSvgCanvas, TextBasic, titlePositionY, MultiLevelPosition } from '../utils/helper';
-import { extend, Browser } from '@syncfusion/ej2-base';
+import { sum, titlePositionX, LineOption, Line, DrawSvgCanvas, TextBasic, titlePositionY, MultiLevelPosition, getTitle } from '../utils/helper';
+import { extend, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TitleModel } from '../model/base-model';
 import { DataModel } from '../datasource/adaptor-model';
 import { MultiLevelLabels, MultiLevelCategories } from '../model/base';
@@ -254,17 +254,31 @@ export class AxisHelper {
         if (axis.isInversed && axis.labelIntersectAction === 'MultipleRows') { axis.multipleRow.reverse(); }
         for (let i: number = 0, len: number = labels.length; i < len; i++) {
             const lableRect: Rect = new Rect(lableStrtX, rect.y, interval, rect.height);
-            let label: string = (axis.labelIntersectAction === 'Trim' && axis.isIntersect) ? axis.valueType !== 'DateTime' ||
+            let label: string = (axis.textStyle.textOverflow !== 'Wrap' && axis.textStyle.textOverflow !== 'Trim' && axis.labelIntersectAction === 'Trim' && axis.isIntersect) ? axis.valueType !== 'DateTime' ||
                 axis.showLabelOn === 'None' ? textTrim(interval * axisInterval, labels[i as number], axis.textStyle) :
                 textTrim(axis.dateTimeAxisLabelInterval[i as number] * interval, labels[i as number], axis.textStyle) : labels[i as number];
-            label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i as number], axis.textStyle) : label;
-            const elementSize: Size = measureText(label, axis.textStyle); let transform: string;
+            label = (axis.enableTrim || axis.textStyle.textOverflow === 'Trim') ? textTrim((axis.textStyle.textOverflow === 'Trim' ? interval - (axis.border.width / 2) : axis.maxLabelLength), labels[i as number], axis.textStyle) : label;
+            let wrappedLabel: string = <string>label;
+            if (axis.textStyle.textOverflow === 'Wrap') {
+                const wrappedlabels: string[] = textWrap(wrappedLabel, interval - (axis.border.width / 2), axis.textStyle);
+                let labelWidth: number = 0;
+                let wrappedlabelSize: Size = new Size(0, 0);
+                for (let index: number = 0; index < wrappedlabels.length; index++)
+                {
+                    wrappedlabelSize = measureText(wrappedlabels[index as number], axis.textStyle);
+                    if (wrappedlabelSize.width > labelWidth){
+                        labelWidth = wrappedlabelSize.width;
+                        wrappedLabel = wrappedlabels[index as number];
+                    }
+                }
+            }
+            const elementSize: Size = measureText(wrappedLabel, axis.textStyle); let transform: string;
             labelPadding = (axis.opposedPosition) ? -(padding) : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
+            elementSize.width = axis.isInversed ? (elementSize.width > interval ? interval : elementSize.width) : elementSize.width;
             let x: number = lableRect.x + ((!axis.isInversed) ?
                 (lableRect.width / 2) - (elementSize.width / 2) : -((lableRect.width / 2) + (elementSize.width / 2)));
             if (axis.textStyle.textAlignment === 'Near') {
-                x = lableRect.x - ((!axis.isInversed) ?
-                    (elementSize.width / 2) : (lableRect.width + (elementSize.width / 2)));
+                x = lableRect.x - ((!axis.isInversed) ? 0 : lableRect.width);
             } else if (axis.textStyle.textAlignment === 'Far') {
                 x = lableRect.x + ((!axis.isInversed) ?
                     (lableRect.width - elementSize.width) : -(elementSize.width));
@@ -275,7 +289,10 @@ export class AxisHelper {
                 x = x < rect.x ? rect.x : x;
                 x = ((x + elementSize.width) > (rect.x + rect.width)) ? (rect.x + rect.width - elementSize.width) : x;
             }
-            if (axis.labelIntersectAction === 'MultipleRows' && axis.labelRotation === 0) {
+            if (axis.textStyle.textOverflow === 'Wrap' && !axis.isInversed){
+                x = x < lableRect.x ? lableRect.x : x;
+            }
+            if (axis.labelIntersectAction === 'MultipleRows' && axis.textStyle.textOverflow !== 'Wrap' && axis.textStyle.textOverflow !== 'Trim' && axis.labelRotation === 0) {
                 const a: number = axis.opposedPosition ? -(axis.multipleRow[i as number].index - 1) :
                     (axis.multipleRow[i as number].index - 1);
                 if (axis.multipleRow[i as number].index > 1) {
@@ -286,14 +303,14 @@ export class AxisHelper {
                     y = rect.y + labelPadding + (axis.opposedPosition ? - ((elementSize.height * 0.5) / 2) :
                         ((elementSize.height * 0.5) / 2));
                 }
-            } else { y = rect.y + labelPadding; }
+            } else { y = rect.y + (axis.textStyle.textOverflow === 'Wrap' && axis.opposedPosition && angle % 360 === 0 ? - (axis.farSizes.length >= 1 ? axis.farSizes[1] : 0) + padding : labelPadding); }
             this.drawXAxisBorder(axis, borderElement, axis.rect, x, elementSize.width, i);
             if (angle % 360 !== 0) {
                 angle = (angle > 360) ? angle % 360 : angle;
-                const rotateSize: Size = rotateTextSize(axis.textStyle, <string>label, angle);
+                const rotateSize: Size = rotateTextSize(axis.textStyle, wrappedLabel, angle);
                 x = lableRect.x + (axis.isInversed ? -(lableRect.width / 2) : (lableRect.width / 2));
-                y = y + (axis.opposedPosition ? -(rotateSize.height / 2) :
-                    (((angle % 360) === 180 || (angle % 360) === -180) ? 0 : (rotateSize.height) / 2));
+                y = y + (axis.opposedPosition ? ((axis.textStyle.textOverflow === 'Wrap' ? (rotateSize.height / 2) - (axis.farSizes.length >= 1 ? axis.farSizes[1] : 0) : -(rotateSize.height / 2)) + (axis.border.width / 2)) :
+                    (((angle % 360) === 180 || (angle % 360) === -180) ? 0 : (rotateSize.height / 2) - (axis.border.width)));
                 transform = 'rotate(' + angle + ',' + x + ',' + y + ')';
             }
             if (this.heatMap.cellSettings.border.width > 5 && axis.opposedPosition) {
@@ -305,14 +322,26 @@ export class AxisHelper {
             if (this.heatMap.xAxis.isInversed && this.heatMap.cellSettings.border.width > 5) {
                 x = x - (this.heatMap.cellSettings.border.width / 2);
             }
+            if (elementSize.width >= interval){
+                x = axis.border.width ? x + (axis.border.width / 2) : x;
+            }
+            x = axis.textStyle.textAlignment === 'Near' ? x + (axis.border.width / 2) : axis.textStyle.textAlignment === 'Far' ?
+                x - (axis.border.width / 2) : x;
             const options: TextOption = new TextOption(
                 heatMap.element.id + '_XAxis_Label' + i,
                 new TextBasic(x, y, (angle % 360 === 0) ? 'start' : 'middle', label, angle, transform), axis.textStyle,
                 axis.textStyle.color || heatMap.themeStyle.axisLabel
             );
+            options.text = getTitle(options.text as string, axis.textStyle, lableRect.width - (axis.border.width / 2));
             if (angle !== 0 && this.heatMap.enableCanvasRendering) {
                 this.drawSvgCanvas.canvasDrawText(options, label);
-            } else { this.drawSvgCanvas.createText(options, labelElement, label); }
+            } else {
+                if (axis.textStyle.textOverflow === 'Wrap') {
+                    this.drawSvgCanvas.createWrapText(options, axis.textStyle, labelElement);
+                } else {
+                    this.drawSvgCanvas.createText(options, labelElement, label);
+                }
+            }
             if (compactInterval === 0) {
                 const labelInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
                     axis.dateTimeAxisLabelInterval[i as number] : axis.axisLabelInterval;
@@ -321,7 +350,7 @@ export class AxisHelper {
             } else {
                 lableStrtX = lableStrtX + (!axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
             }
-            if (label.indexOf('...') !== -1) {
+            if (wrappedLabel.indexOf('...') !== -1) {
                 this.heatMap.tooltipCollection.push(
                     new CanvasTooltip(
                         labels[i as number],
@@ -367,17 +396,39 @@ export class AxisHelper {
             const labelRect: Rect = new Rect(rect.x, lableStartY, rect.width, interval);
             let position: number = axis.isInversed ? labelRect.height / 2 : -(labelRect.height / 2); //titlePositionY(lableRect, 0, 0, axis.textStyle);
             const axisWidth: number = this.heatMap.cellSettings.border.width >= 20 ? (this.heatMap.cellSettings.border.width / 2) : 0;
-            const x: number = labelRect.x + padding + (axis.opposedPosition ? axisWidth : -axisWidth);
             const indexValue: number = this.heatMap.cellSettings.border.width > 5 ?
                 (((this.heatMap.cellSettings.border.width / 2) / len) * (axis.isInversed ? (i) : (len - i))) : 0;
-            label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i as number], axis.textStyle) : labels[i as number];
+            label = (axis.enableTrim || axis.textStyle.textOverflow === 'Trim') ? textTrim(axis.maxLabelLength, labels[i as number], axis.textStyle) : labels[i as number];
             const elementSize: Size = measureText(label, axis.textStyle);
-            if (axis.textStyle.textAlignment === 'Far' && axis.angle === 0) {
-                position = axis.isInversed ? labelRect.height - (elementSize.height / 2) : -(elementSize.height / 2);
-            } else if (axis.textStyle.textAlignment === 'Near' && axis.angle === 0) {
-                position = axis.isInversed ? elementSize.height / 2 : ((elementSize.height / 2) - labelRect.height);
+            let labelLength: number = 1;
+            if (axis.textStyle.textOverflow === 'Wrap') {
+                const wrappedLabel: string[] = textWrap(label, axis.maxLabelLength, axis.textStyle);
+                for (let index: number = 0; index < wrappedLabel.length; index++){
+                    if ((elementSize.height * wrappedLabel.length) > tempintervel && wrappedLabel.length > 0){
+                        wrappedLabel.pop();
+                        if (wrappedLabel.length > 0) {
+                            wrappedLabel[wrappedLabel.length - 1] = wrappedLabel[wrappedLabel.length - 1] + '...';
+                            /* eslint-disable max-len */
+                            wrappedLabel[wrappedLabel.length - 1] = textTrim(axis.maxLabelLength, wrappedLabel[wrappedLabel.length - 1], axis.textStyle);
+                        }
+                    }
+                }
+                label = wrappedLabel.length !== 0 ? '' : label;
+                for (let labelIndex: number = 0; labelIndex < wrappedLabel.length; labelIndex++){
+                    label = isNullOrUndefined(label) ? wrappedLabel[labelIndex as number] : label + ' ' + wrappedLabel[labelIndex as number];
+                }
+                labelLength = wrappedLabel.length;
             }
-            const y: number = (labelRect.y - indexValue) + position;
+            const x: number = labelRect.x + padding + (axis.opposedPosition ? (axis.textStyle.textOverflow === 'Wrap' && axis.angle % 360 !== 0 ? labelLength * (elementSize.height / 2) : 0) + axisWidth : -axisWidth);
+            if (axis.textStyle.textAlignment === 'Far' && axis.angle === 0) {
+                /* eslint-disable max-len */
+                position = axis.isInversed ? labelRect.height - (labelLength > 1 ? (elementSize.height * labelLength) - (elementSize.height / 2) : (elementSize.height / 2)) :
+                    - (labelLength > 1 ? (elementSize.height * labelLength) - (elementSize.height / 2) : (elementSize.height / 2));
+            } else if (axis.textStyle.textAlignment === 'Near' && axis.angle === 0) {
+                /* eslint-disable max-len */
+                position = (axis.isInversed ? elementSize.height / 2 : ((elementSize.height / 2) - labelRect.height)) + (axis.border.width / 2);
+            }
+            const y: number = (labelRect.y - indexValue) + position - ((labelLength > 1 && axis.textStyle.textAlignment === 'Center') || (axis.angle !== 0 && axis.opposedPosition) ? (((elementSize.height * labelLength) / 2) - (elementSize.height / 2)) : 0);
             const options: TextOption = new TextOption(
                 heatMap.element.id + '_YAxis_Label' + i,
                 new TextBasic(x, y, anchor, label, 0, 'rotate(' + axis.angle + ',' + (x) + ',' + (y) + ')', 'middle'),
@@ -385,7 +436,12 @@ export class AxisHelper {
             if (Browser.isIE && !heatMap.enableCanvasRendering) {
                 options.dy = '1ex';
             }
-            this.drawSvgCanvas.createText(options, labelElement, label);
+            options.text = getTitle(options.text as string, axis.textStyle, axis.maxLabelLength);
+            if (axis.textStyle.textOverflow === 'Wrap') {
+                this.drawSvgCanvas.createWrapText(options, axis.textStyle, labelElement);
+            } else {
+                this.drawSvgCanvas.createText(options, labelElement, label);
+            }
             if (compactInterval === 0) {
                 const labelInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
                     axis.dateTimeAxisLabelInterval[i as number] : axis.axisLabelInterval;
@@ -560,6 +616,10 @@ export class AxisHelper {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Inter' }}, true);
                 }
+                if (this.heatMap.theme === 'Material3' || this.heatMap.theme === 'Material3Dark') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Roboto' }}, true);
+                }
                 if (this.heatMap.theme === 'Fluent' || this.heatMap.theme === 'FluentDark') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (multiLevel as any).setProperties({ textStyle : { fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' }}, true);
@@ -705,6 +765,10 @@ export class AxisHelper {
                 if (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Inter' }}, true);
+                }
+                if (this.heatMap.theme === 'Material3' || this.heatMap.theme === 'Material3Dark') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Roboto' }}, true);
                 }
                 if (this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any

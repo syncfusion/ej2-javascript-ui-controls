@@ -176,7 +176,7 @@ export class DiagramScroller {
     // SF-359118 implemented for this ticket requirement.
     private getBounds() {
         let pageBounds: Rect;
-        let postion: Rect = this.diagram.spatialSearch.getPageBounds(0, 0);
+        const postion: Rect = this.diagram.spatialSearch.getPageBounds(0, 0);
         if ((postion.x < 0 || postion.y < 0) && !this.diagram.pageSettings.multiplePage) {
             pageBounds = this.getPageBounds(undefined, undefined, true, true);
         } else {
@@ -197,7 +197,7 @@ export class DiagramScroller {
     public updateScrollOffsets(hOffset?: number, vOffset?: number): void {
         let offsetX: number = 0;
         let offsetY: number = 0;
-        let pageBounds: Rect = this.getBounds();
+        const pageBounds: Rect = this.getBounds();
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -229,7 +229,7 @@ export class DiagramScroller {
      */
     public setScrollOffset(hOffset: number, vOffset: number): void {
         this.scrolled = false;
-        let pageBounds: Rect = this.getBounds();
+        const pageBounds: Rect = this.getBounds();
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -350,10 +350,10 @@ export class DiagramScroller {
             new Rect(-this.horizontalOffset / this.currentZoom, -this.verticalOffset / this.currentZoom, viewWidth, viewHeight)
         );
         let oObjectsID: string[] = [];
-        let renderOrder: string[] = [];
+        const renderOrder: string[] = [];
 
         for (let j = 0; j < oObjects.length; j++) {
-            let bpmnShape: any = oObjects[parseInt(j.toString(), 10)].shape;
+            const bpmnShape: any = oObjects[parseInt(j.toString(), 10)].shape;
             if (bpmnShape.type === 'Bpmn' && bpmnShape && bpmnShape.activity && bpmnShape.activity.subProcess && bpmnShape.activity.subProcess.processes && bpmnShape.activity.subProcess.processes.length > 0) {
                 for (var k = 0; k < bpmnShape.activity.subProcess.processes.length; k++) {
                     renderOrder.push(bpmnShape.activity.subProcess.processes[parseInt(k.toString(), 10)]);
@@ -366,16 +366,16 @@ export class DiagramScroller {
 
         oObjectsID = renderOrder;
 
-        let zindexOrder: string[] = [];
+        const zindexOrder: string[] = [];
 
         for (let j = 0; j < oObjects.length; j++) {
-            let items: any = oObjects[parseInt(j.toString(), 10)].shape;
+            const items: any = oObjects[parseInt(j.toString(), 10)].shape;
             if (items.type === 'Bpmn' && items && items.activity && items.activity.subProcess && items.activity.subProcess.processes && items.activity.subProcess.processes.length > 0) {
                 zindexOrder.push(oObjects[parseInt(j.toString(), 10)].id);
                 for (let t = 0; t < items.activity.subProcess.processes.length; t++) {
                     zindexOrder.push(items.activity.subProcess.processes[parseInt(t.toString(), 10)]);
                 }
-            } else if ((oObjects[parseInt(j.toString(), 10)] as any).processId === "" || (oObjects[parseInt(j.toString(), 10)] as any).processId === undefined) {
+            } else if ((oObjects[parseInt(j.toString(), 10)] as any).processId === '' || (oObjects[parseInt(j.toString(), 10)] as any).processId === undefined) {
                 zindexOrder.push(oObjects[parseInt(j.toString(), 10)].id);
             }
         }
@@ -496,10 +496,11 @@ export class DiagramScroller {
      * @param {boolean} boundingRect - provide the factor value.
      * @param {DiagramRegions} region - provide the factor value.
      * @param {boolean} hasPadding - provide the factor value.
+     * @param {boolean} isnegativeRegion - provide the isnegativeRegion value.
      *
      * @private
      */
-    public getPageBounds(boundingRect?: boolean, region?: DiagramRegions, hasPadding?: boolean, isnegativeRegion?:boolean): Rect {
+    public getPageBounds(boundingRect?: boolean, region?: DiagramRegions, hasPadding?: boolean, isnegativeRegion?: boolean): Rect {
         let rect: Rect = new Rect();
         const temp: number = 0;
         let pageBounds: Rect;
@@ -628,10 +629,12 @@ export class DiagramScroller {
      * @param {number} deltaX - provide the bounds value.
      * @param {number} deltaY - provide the bounds value.
      * @param {PointModel} focusPoint - provide the bounds value.
+     * @param {boolean} isInteractiveZoomPan - provide the isInteractiveZoomPan value.
+     * @param {boolean} isBringIntoView - provide the isBringIntoView value.
      *
      * @private
      */
-    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean, isBringIntoView?: boolean): void {
+    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean, isBringIntoView?: boolean,isTrackpadScroll?:boolean): void {
         if (canZoom(this.diagram) && factor !== 1 || (canPan(this.diagram) && factor === 1)) {
             const matrix: Matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
@@ -659,9 +662,12 @@ export class DiagramScroller {
                     // EJ2-69238 - add true as an extra parameter to calcuate the horizontal and vertical offset
                     newOffset = this.applyScrollLimit(newOffset.x, newOffset.y, isInteractiveZoomPan, isBringIntoView);
                 }
+                // Bug 829925: Scroll bar flickers on scrolling the diagram using touchpad.
+                // The below condition is used to avoid the flickering of the scroll bar on scrolling the diagram using trackpad.
+                (-(pageBounds.y) >= newOffset.y && -(pageBounds.x) >= newOffset.x && isTrackpadScroll) ? isTrackpadScroll = true: isTrackpadScroll = false;
                 if ((this.diagram.scrollActions & ScrollActions.PropertyChange ||
                     !(this.diagram.scrollActions & ScrollActions.Interaction)) ||
-                    this.diagram.scrollSettings.scrollLimit !== 'Diagram') {
+                    this.diagram.scrollSettings.scrollLimit !== 'Diagram'|| isTrackpadScroll) {
                     this.transform = {
                         tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
                         ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
@@ -751,14 +757,14 @@ export class DiagramScroller {
                 deltaY += centerY + (margin.top - margin.bottom) / 2 * zoomFactor;
                 break;
             }
-             /**
+            /**
              * EJ2-62912 - fit to page is not working properly when call it multiple times.
-             */ 
-              
-            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 },true);
+             */
+
+            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true);
         } else {
             factor = 1 / this.currentZoom;
-            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 },true);
+            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true);
         }
     }
     /**
@@ -766,6 +772,7 @@ export class DiagramScroller {
      *
      * @returns { void }     bringIntoView method .\
      * @param {Rect} rect - provide the bounds value.
+     * @param {boolean} isBringIntoView - provide the isBringIntoView value.
      *
      * @private
      */
@@ -809,12 +816,12 @@ export class DiagramScroller {
         const actualbounds: Rect = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
         let hoffset: number = actualbounds.x + actualbounds.width / 2 - this.viewPortWidth / 2;
         let voffset: number = actualbounds.y + actualbounds.height / 2 - this.viewPortHeight / 2;
-         /**
-         * In applyScrollLimit method the sign of deltaX and deltaY 
+        /**
+         * In applyScrollLimit method the sign of deltaX and deltaY
          * will be changed ,so here we change the sign.
          * similarly for bringIntoView.
-         */ 
-        hoffset*=-1;voffset*=-1;
+         */
+        hoffset *= -1; voffset *= -1;
         this.zoom(1, -this.horizontalOffset - hoffset, -this.verticalOffset - voffset, null);
     }
 
@@ -824,11 +831,11 @@ export class DiagramScroller {
          * EJ2-62524 - panning is not working properly in diagram.
          * isInteractiveZoomPan is undefined while setting scrollOffset at runtime.
          */
-        if(this.diagram.scrollSettings.scrollLimit === 'Infinity')
+        if (this.diagram.scrollSettings.scrollLimit === 'Infinity')
         {
-            if(isInteractiveZoomPan === undefined){
-                hOffset = -hOffset;vOffset = -vOffset;
-                }
+            if (isInteractiveZoomPan === undefined){
+                hOffset = -hOffset; vOffset = -vOffset;
+            }
         }
         if (this.diagram.scrollSettings.scrollLimit !== 'Infinity') {
             let bounds: Rect;
@@ -836,17 +843,17 @@ export class DiagramScroller {
                 const scrollableBounds: Rect = this.diagram.scrollSettings.scrollableArea;
                 bounds = new Rect(scrollableBounds.x, scrollableBounds.y, scrollableBounds.width, scrollableBounds.height);
             }
-            bounds = bounds || this.getPageBounds(true);
+            bounds = bounds || this.getPageBounds();
             bounds.x *= this.currentZoom;
             bounds.y *= this.currentZoom;
             bounds.width *= this.currentZoom;
             bounds.height *= this.currentZoom;
-            if(isInteractiveZoomPan !== undefined){
-            hOffset *= -1;
-            vOffset *= -1;
+            if (isInteractiveZoomPan !== undefined){
+                hOffset *= -1;
+                vOffset *= -1;
             }
             // EJ2-69238 - Added below code to multiple the horizontal and vertical offset to bring the node in viewport
-            if(isBringIntoView) {
+            if (isBringIntoView) {
                 hOffset *= -1;
                 vOffset *= -1;
             }
@@ -865,7 +872,7 @@ export class DiagramScroller {
                 }
             }
             const allowedBottom: number = Math.max(bounds.bottom, this.viewPortHeight);
-             // EJ2-69238 - Added below code to restrict the min value calculation for vertical offset in bringIntoview scenarion.
+            // EJ2-69238 - Added below code to restrict the min value calculation for vertical offset in bringIntoview scenarion.
             if (!isBringIntoView && !(vOffset <= bounds.y && vOffset + this.viewPortHeight >= bounds.bottom
                 || vOffset >= bounds.y && vOffset + this.viewPortHeight <= allowedBottom)) {
                 //not allowed case

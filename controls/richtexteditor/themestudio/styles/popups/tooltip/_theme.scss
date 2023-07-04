@@ -119,6 +119,7 @@
 
     /*! tooltip content area */
     .e-tip-content {
+      border-radius: inherit;
       color: $tooltip-content-font-color;
       font-family: $font-family;
       font-size: $tooltip-font-size;

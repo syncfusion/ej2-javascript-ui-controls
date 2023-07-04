@@ -1008,15 +1008,13 @@ export class RowDD {
                             const childRecords: ITreeData[] = rec[0].childRecords;
                             const droppedRecordIndex: number = childRecords.indexOf(droppedRecord) + 1;
                             childRecords.splice(droppedRecordIndex, 0, draggedRecord);
-                            if (this.parent.enableImmutableMode || this.parent['isIndentEnabled'] && !this.parent.parentIdMapping)
-                            {
-                                draggedRecord.parentItem = droppedRecord.parentItem;
-                                draggedRecord.level = droppedRecord.level;
-                            }
+                            draggedRecord.parentItem = droppedRecord.parentItem;
                             draggedRecord.parentUniqueID = droppedRecord.parentUniqueID;
+                            draggedRecord.level = droppedRecord.level;
                             if (this.parent.parentIdMapping) {
                                 draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
-                                draggedRecord.parentUniqueID = droppedRecord.parentUniqueID;
+                                draggedRecord.parentItem = droppedRecord.parentItem;
+                                draggedRecord.level = droppedRecord.level;
                             }
                         }
                         if (draggedRecord.hasChildRecords) {

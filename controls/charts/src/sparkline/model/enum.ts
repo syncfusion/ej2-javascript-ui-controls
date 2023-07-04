@@ -99,7 +99,11 @@ export type SparklineTheme =
     /**  Render a sparkline with Fluent theme. */
     'Fluent' |
     /**  Render a sparkline with FluentDark theme. */
-    'FluentDark';
+    'FluentDark' |
+    /**  Render a smithchart with Material 3 theme. */
+    'Material3' |
+    /**  Render a smithchart with Material 3 dark theme. */
+    'Material3Dark';
 
 /**
  * Defines edge data label placement for datalabel, if exceeds the sparkline area horizontally.

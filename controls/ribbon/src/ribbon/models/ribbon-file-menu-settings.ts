@@ -53,14 +53,16 @@ export class FileMenuSettings extends ChildProperty<FileMenuSettings>  {
      * Specifies the template for file menu item.
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
 
     /**
      * Specifies the custom content for the file menu popup.
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
     public popupTemplate: string | HTMLElement;

@@ -105,7 +105,7 @@ export class InlineEdit {
         const verticalEvent: VerticalEvent = new VerticalEvent(this.parent);
         verticalEvent.initializeValues();
         const index: number =
-          verticalEvent.dateRender[parseInt(resIndex.toString(), 10)].map((date: Date) => date.getDay()).indexOf(dayIndex);
+            verticalEvent.dateRender[parseInt(resIndex.toString(), 10)].map((date: Date) => date.getDay()).indexOf(dayIndex);
         if (count >= 1) {
             verticalEvent.allDayElement = [].slice.call(this.parent.element.querySelectorAll('.' + cls.ALLDAY_CELLS_CLASS));
             verticalEvent.slots.push(...this.parent.activeView.renderDates.map((date: Date) => +date));
@@ -116,7 +116,10 @@ export class InlineEdit {
                     allDayElements[0].offsetHeight) - 1;
             }
             verticalEvent.allDayLevel = allDayLevel;
-            verticalEvent.renderAllDayEvents(saveObj, index, resIndex, daysCount, this.parent.allowInline);
+            const appHeight: number = util.getElementHeightFromClass(
+                this.parent.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS), cls.APPOINTMENT_CLASS);
+            const cellTop: number = verticalEvent.allDayElement.length > 0 ? verticalEvent.allDayElement[0].offsetTop : 0;
+            verticalEvent.renderAllDayEvents(saveObj, index, resIndex, daysCount, this.parent.allowInline, cellTop, appHeight);
         } else {
             verticalEvent.renderNormalEvents(saveObj, index, resIndex, daysCount, this.parent.allowInline);
         }

@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';import { ColumnModel } from './index';
+import { Property, ChildProperty, initializeCSPTemplate  } from '@syncfusion/ej2-base';import { ColumnModel } from './index';
 
 /**
  * Interface for a class DetailsViewSettings

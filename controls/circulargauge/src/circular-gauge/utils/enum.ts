@@ -85,8 +85,11 @@ export type GaugeTheme =
     /**  Render a gauge with Fluent theme. */
     'Fluent' |
     /**  Render a gauge with Fluent dark theme. */
-    'FluentDark';
-
+    'FluentDark'|
+     /** Render a gauge with material3 theme. */
+    'Material3' |
+      /** Render a gauge with material3Dark theme. */
+    'Material3Dark';
 
 /**
  * Specifies the axis label to be hidden in the axis of circular gauge.

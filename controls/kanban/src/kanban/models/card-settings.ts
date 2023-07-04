@@ -59,9 +59,10 @@ export class CardSettings extends ChildProperty<CardSettings> {
      * Defines the card template
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public template: string;
+    public template: string | Function;
 
     /**
      * It defines the card selection type, which accepts either of the following values.

@@ -8,6 +8,7 @@
     min-height: $range-icon-container-min-height;
     min-width: $range-icon-container-min-width;
     outline: none;
+    border-radius: $range-icon-mouse-border-radius;
 
     #{if(&, '&', '*')}::before {
       content: '\e74c';
@@ -47,9 +48,10 @@
     #{if(&, '&', '*')} .e-control-wrapper .e-input-group-icon.e-range-icon {
       font-size: $range-bigger-icon-font-size;
       margin: $range-icon-bigger-margin;
-      min-height: $range-icon-container-min-height;
-      min-width: $range-icon-container-min-width;
+      min-height: $range-icon-bigger-container-min-height;
+      min-width: $range-icon-bigger-container-min-width;
       outline: none;
+      border-radius: $range-icon-bigger-border-radius;
     }
   }
 
@@ -58,6 +60,10 @@
   #{if(&, '&', '*')}.e-control-wrapper.e-small .e-input-group-icon.e-range-icon,
   #{if(&, '&', '*')}.e-small .e-control-wrapper .e-input-group-icon.e-range-icon {
     font-size: $range-small-icon-font-size;
+    min-width: $range-small-icon-container-min-width;
+    min-height: $range-small-icon-container-min-height;
+    border-radius: $range-small-icon-border-radius;
+    margin: 0;
   }
 
   // Touch small icon
@@ -65,6 +71,10 @@
   #{if(&, '&', '*')}.e-control-wrapper.e-small.e-bigger .e-input-group-icon.e-range-icon,
   #{if(&, '&', '*')}.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-range-icon {
     font-size: $range-bigger-small-icon-font-size;
+    min-width: $range-bigger-small-icon-container-min-width;
+    min-height: $range-bigger-small-icon-container-min-height;
+    border-radius: $range-bigger-small-icon-border-radius;
+    margin: $zero-value;
   }
 
   // Outline textbox configuration
@@ -95,5 +105,25 @@
   .e-bigger.e-small .e-date-range-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-range-icon {
     min-height: $zero-value;
     min-width: 20px;
+  }
+
+  .e-daterangepick-mob-popup-wrap {
+    
+    #{if(&, '&', '*')} .e-daterangepicker.e-popup-expand {
+  
+      #{if(&, '&', '*')} .e-range-header,
+      #{if(&, '&', '*')} .e-model-header {
+  
+        #{if(&, '&', '*')} .e-popup-close::before {
+          content: '\e7e7';
+          font-family: 'e-icons';
+        }
+
+        #{if(&, '&', '*')} .e-apply::before {
+          content: '\e774';
+          font-family: 'e-icons';
+        }
+      }
+    }
   }
 }

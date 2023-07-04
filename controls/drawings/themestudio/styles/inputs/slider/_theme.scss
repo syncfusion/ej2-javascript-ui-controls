@@ -33,6 +33,7 @@
           height: 24px;
           width: 24px;
           padding: 4px;
+          border: none;
         }
         @else {
           height: 18px;
@@ -42,7 +43,9 @@
       box-sizing: border-box;
       cursor: pointer;
       outline: none;
-      padding: 0;
+      @if ($skin-name != 'Material3') {
+        padding: 0;
+      }
       position: absolute;
       @if ($skin-name == 'bootstrap4') {
         border: 0;

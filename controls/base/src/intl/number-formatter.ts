@@ -144,7 +144,7 @@ export class NumberFormat {
             } else if (!isFinite(value)) {
                 return symbols[mapper[0]];
             }
-            return this.intNumberFormatter(value, cOptions, dOptions);
+            return this.intNumberFormatter(value, cOptions, dOptions, option);
         };
     }
     /**
@@ -226,7 +226,7 @@ export class NumberFormat {
      * @param {CommonOptions} dOptions ?
      * @returns {string} ?
      */
-    private static intNumberFormatter(value: number, fOptions: base.GenericFormatOptions, dOptions: CommonOptions): string {
+    private static intNumberFormatter(value: number, fOptions: base.GenericFormatOptions, dOptions: CommonOptions, option ?: NumberFormatOptions): string {
         let curData: base.NegativeData;
         if (isUndefined(fOptions.nData.type)) {
             return undefined;
@@ -246,7 +246,7 @@ export class NumberFormat {
             if (curData.groupOne) {
                 fValue = this.processSignificantDigits(value, curData.minimumSignificantDigits, curData.maximumSignificantDigits);
             } else {
-                fValue = this.processFraction(value, curData.minimumFractionDigits, curData.maximumFractionDigits);
+                fValue = this.processFraction(value, curData.minimumFractionDigits, curData.maximumFractionDigits, option);
                 if (curData.minimumIntegerDigits) {
                     fValue = this.processMinimumIntegers(fValue, curData.minimumIntegerDigits);
                 }
@@ -281,6 +281,9 @@ export class NumberFormat {
             if (curData.nlead === 'N/A') {
                 return curData.nlead;
             } else {
+                if (fValue === '0' && option && option.format=== '0') {
+                    return fValue + curData.nend;
+                }
                 return curData.nlead + fValue + curData.nend;
             }
         }
@@ -341,7 +344,7 @@ export class NumberFormat {
      * @param {number} max ?
      * @returns {string} ?
      */
-    private static processFraction(value: number, min: number, max: number): string {
+    private static processFraction(value: number, min: number, max: number, option ?: NumberFormatOptions): string {
         const temp: string = (value + '').split('.')[1];
         const length: number = temp ? temp.length : 0;
         if (min && length < min) {
@@ -359,7 +362,12 @@ export class NumberFormat {
         } else if (!isNullOrUndefined(max) && (length > max || max === 0)) {
             return value.toFixed(max);
         }
-        return value + '';
+        let str=value+'';
+        if(str[0]==='0' && option && option.format==='###.00')
+        {
+            str=str.slice(1);
+        }
+        return str;
     }
     /**
      * Returns integer processed numeric string

@@ -4,6 +4,7 @@ import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Kanban } from './kanban';
 import * as events from './constant';
 import * as cls from './css-constant';
+import { HeaderArgs } from './interface';
 
 /**
  * Kanban mobile layout rendering module
@@ -43,11 +44,13 @@ export class MobileLayout {
         this.parent.element.appendChild(wrapper);
         const swimlaneTree: HTMLElement = createElement('div', { className: cls.SWIMLANE_TREE_CLASS });
         treeWrapper.appendChild(swimlaneTree);
+        const dataSource: HeaderArgs[] = this.parent.enableVirtualization ?
+            this.parent.virtualLayoutModule.kanbanRows : this.parent.layoutModule.kanbanRows;
         this.treeViewObj = new TreeView({
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             fields: {
-                dataSource: this.parent.layoutModule.kanbanRows as [],
+                dataSource: dataSource as [],
                 id: 'keyField',
                 text: 'textField'
             },

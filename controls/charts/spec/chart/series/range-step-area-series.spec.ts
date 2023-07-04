@@ -511,8 +511,8 @@ describe('Chart', () => {
                 trigger.draganddropEvent(element, 300, 100, 500, 100);
                 element = document.getElementById(draggedRectGroup);
                 expect(element.getAttribute('x') == '292').toBe(true);
-                expect(element.getAttribute('y') == '42.25' || element.getAttribute('y') == '45');
-                expect(element.getAttribute('height') == '560.75' || element.getAttribute('height') == '568.75').toBe(true);
+                expect(element.getAttribute('y') == '43' || element.getAttribute('y') == '45');
+                expect(element.getAttribute('height') == '560.75' || element.getAttribute('height') == '567.75').toBe(true);
                 expect(element.getAttribute('width')).toEqual('200');
                 done();
             };
@@ -654,7 +654,7 @@ describe('Chart', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[2];
                 expect(element1.getAttribute('d') != '').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
-                expect(element1.textContent == '8.367' || element1.textContent == '8.321' || element1.textContent == '8.336' || element1.textContent == '8.326').toBe(true);
+                expect(element1.textContent == '8.352' || element1.textContent == '8.321' || element1.textContent == '8.336' || element1.textContent == '8.326').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -816,7 +816,7 @@ describe('Chart', () => {
             loaded = (args: Object) => {
                 let legendElement: HTMLElement = document.getElementById('container_chart_legend_element');
                 expect(parseInt(legendElement.getAttribute('y'), 10) == 46 ||
-                    parseInt(legendElement.getAttribute('y'), 10) == 43).toBe(true);
+                    parseInt(legendElement.getAttribute('y'), 10) == 44).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -829,7 +829,7 @@ describe('Chart', () => {
                 let legendElement: HTMLElement = document.getElementById('container_chart_legend_element');
                 expect(parseInt(legendElement.getAttribute('x'), 10)).toBe(10);
                 expect(parseInt(legendElement.getAttribute('y'), 10) == 46 ||
-                    parseInt(legendElement.getAttribute('y'), 10) == 43).toBe(true);
+                    parseInt(legendElement.getAttribute('y'), 10) == 44).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

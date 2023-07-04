@@ -71,7 +71,10 @@ export class TreeMapTooltip {
                 }
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
                 location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
+                this.tooltipSettings.textStyle.size = this.tooltipSettings.textStyle.size || this.treemap.themeStyle.tooltipFontSize;
                 this.tooltipSettings.textStyle.fontFamily = this.treemap.themeStyle.fontFamily;
+                this.tooltipSettings.textStyle.fontStyle = !isNullOrUndefined(this.tooltipSettings.textStyle.fontStyle) ? this.tooltipSettings.textStyle.fontStyle : 'Normal';
+                this.tooltipSettings.textStyle.fontWeight = this.tooltipSettings.textStyle.fontWeight || this.treemap.themeStyle.fontWeight;
                 this.tooltipSettings.textStyle.color = this.treemap.themeStyle.tooltipFontColor
                     || this.tooltipSettings.textStyle.color;
                 this.tooltipSettings.textStyle.opacity = this.treemap.themeStyle.tooltipTextOpacity
@@ -119,7 +122,7 @@ export class TreeMapTooltip {
                 enable: true,
                 header: '',
                 data: args['data'],
-                template: args['template'],
+                template: args['template'] as any,
                 content: args['text'],
                 shapes: [],
                 location: args['location'],

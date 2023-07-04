@@ -148,15 +148,20 @@ export class Video {
         if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 const temp: Element = this.parent.createElement('div');
-                const contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i as number].text);
-                temp.appendChild(contentElem);
+                const contentElem: DocumentFragment = this.parent.formatter.getUndoRedoStack()[i as number].text as DocumentFragment;
+                temp.appendChild(contentElem.cloneNode(true));
                 const vid: NodeListOf<HTMLElement> = temp.querySelectorAll('video');
                 if (temp.querySelector('.e-vid-resize') && vid.length > 0) {
                     for (let j: number = 0; j < vid.length; j++) {
                         vid[j as number].style.outline = '';
                     }
                     detach(temp.querySelector('.e-vid-resize'));
-                    this.parent.formatter.getUndoRedoStack()[i as number].text = temp.innerHTML;
+                    const clonedElement: HTMLElement = temp.cloneNode(true) as HTMLElement;
+                    const fragment: DocumentFragment = document.createDocumentFragment();
+                    while (clonedElement.firstChild) {
+                        fragment.appendChild(clonedElement.firstChild);
+                    }
+                    this.parent.formatter.getUndoRedoStack()[i as number].text = fragment;
                 }
             }
         }
@@ -457,8 +462,8 @@ export class Video {
             parseInt(vidEleStyle.width, 10) : vid.style.width !== '' ? vid.style.width : vid.width;
         const height: string | number = vidEleStyle.height !== '' ? parseInt(vidEleStyle.height, 10) : vid.style.height !== '' ? vid.style.height : vid.height;
         if (width > height) {
-            vid.style.minWidth = this.parent.insertVideoSettings.minWidth === 0 ? '140px' : formatUnit(this.parent.insertVideoSettings.minWidth);
-            vid.style.minHeight = this.parent.insertVideoSettings.minHeight === 0 ? '60px' : formatUnit(this.parent.insertVideoSettings.minHeight);
+            vid.style.minWidth = this.parent.insertVideoSettings.minWidth === 0 ? '200px' : formatUnit(this.parent.insertVideoSettings.minWidth);
+            vid.style.minHeight = this.parent.insertVideoSettings.minHeight === 0 ? '90px' : formatUnit(this.parent.insertVideoSettings.minHeight);
             if (this.parent.insertVideoSettings.resizeByPercent) {
                 if (parseInt('' + vid.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
                     const percentageValue: number = this.pixToPerc(
@@ -645,7 +650,7 @@ export class Video {
             selectNodeEle = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
             selectParentEle = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             if (!originalEvent.ctrlKey && originalEvent.key && (originalEvent.key.length === 1 || originalEvent.action === 'enter') &&
-                (((selectParentEle[0] as HTMLElement).tagName === 'VIDEO' || this.isEmbedVidElem(selectParentEle[0] as HTMLElement))) &&
+                ((!isNOU(selectParentEle[0]) && (selectParentEle[0] as HTMLElement).tagName === 'VIDEO' || this.isEmbedVidElem(selectParentEle[0] as HTMLElement))) &&
                 (selectParentEle[0] as HTMLElement).parentElement) {
                 const prev: Node = ((selectParentEle[0] as HTMLElement).parentElement as HTMLElement).childNodes[0];
                 if (this.contentModule.getEditPanel().querySelector('.e-vid-resize')) {
@@ -1163,7 +1168,7 @@ export class Video {
         videoUrl.appendChild(urlContent);
         this.embedInputUrl = this.parent.createElement('textarea', {
             className: 'e-input e-embed-video-url',
-            attrs: { placeholder: 'Paste Embedded Code here', type: 'text', tabindex: '-1', 'aria-label': this.i10n.getConstant('embedVideoLinkHeader') }
+            attrs: { placeholder: this.i10n.getConstant('pasteEmbeddedCodeHere'), type: 'text', tabindex: '-1', 'aria-label': this.i10n.getConstant('embedVideoLinkHeader') }
         });
         this.embedInputUrl.addEventListener('keyup', () => {
             if (!isNOU(this.embedInputUrl)) {
@@ -1188,7 +1193,7 @@ export class Video {
             }
         });
         const embedUrlBtn: RadioButton = new RadioButton({
-            label: 'Embedded Code',
+            label: this.i10n.getConstant('embeddedCode'),
             checked: true,
             name: 'URL',
             created: () => {
@@ -1202,7 +1207,7 @@ export class Video {
         });
         embedUrlBtn.appendTo((videoUrl.querySelector('#embedURL') as HTMLElement));
         const webUrlBtn: RadioButton = new RadioButton({
-            label: 'Web URL',
+            label: this.i10n.getConstant('webUrl'),
             name: 'URL',
             change: () => {
                 urlContent.innerHTML = '';

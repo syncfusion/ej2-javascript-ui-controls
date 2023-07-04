@@ -228,22 +228,25 @@ export interface GanttModel extends ComponentModel{
      * The task bar template that renders customized child task bars from the given template.
      *
      * @default null
+     * @aspType string
      */
-    taskbarTemplate?: string;
+    taskbarTemplate?: string | Function;
 
     /**
      * The parent task bar template that renders customized parent task bars from the given template.
      *
      * @default null
+     * @aspType string
      */
-    parentTaskbarTemplate?: string;
+    parentTaskbarTemplate?: string | Function;
 
     /**
      * The milestone template that renders customized milestone task from the given template.
      *
      * @default null
+     * @aspType string
      */
-    milestoneTemplate?: string;
+    milestoneTemplate?: string | Function;
 
     /**
      * Defines the baseline bar color.

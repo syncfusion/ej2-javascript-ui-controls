@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { SmithchartFont } from '../utils/utils';import { SmithchartFontModel } from '../utils/utils-model';import { Theme } from '../model/theme';import { ISmithChartPoint } from '../model/interface';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { SmithchartFont } from '../utils/utils';import { SmithchartFontModel } from '../utils/utils-model';import { ISmithChartPoint } from '../model/interface';
 
 /**
  * Interface for a class SeriesTooltipBorder
@@ -43,7 +43,7 @@ export interface SeriesTooltipModel {
     /**
      * opacity for tooltip.
      *
-     * @default 0.95
+     * @default 0.75
      */
     opacity?: number;
 
@@ -51,8 +51,9 @@ export interface SeriesTooltipModel {
      * template for tooltip.
      *
      * @default ''
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      *  options for customizing tooltip border.
@@ -141,8 +142,9 @@ export interface SeriesMarkerDataLabelModel {
      * showing template for data label template.
      *
      * @default ''
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * color for data label.

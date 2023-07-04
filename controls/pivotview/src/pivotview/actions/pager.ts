@@ -1,7 +1,7 @@
 import { PivotView } from '../base/pivotview';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { createElement, remove, select, EventHandler, MouseEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, remove, select, EventHandler, MouseEventArgs, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Pager as GridPager } from '@syncfusion/ej2-grids';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { PagerSettingsModel } from '../base/pivotview-model';
@@ -94,11 +94,15 @@ export class Pager {
                 } else {
                     this.parent.element.append(pagerElement);
                 }
-            }
+            } // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const _this: this = this; // eslint-disable-next-line @typescript-eslint/tslint/config
+            const tempFunc: Function = function() {
+                return _this.createPagerContainer();
+            };
             this.pager = new GridPager({
                 enableRtl: this.parent.enableRtl,
-                locale: this.parent.locale,
-                template: pagerOptions.template === '' || pagerOptions.template ? pagerOptions.template : this.createPagerContainer(),
+                locale: this.parent.locale, // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                template: pagerOptions.template === '' || pagerOptions.template ? pagerOptions.template : initializeCSPTemplate(tempFunc) as any,
                 cssClass: this.parent.cssClass
             });
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

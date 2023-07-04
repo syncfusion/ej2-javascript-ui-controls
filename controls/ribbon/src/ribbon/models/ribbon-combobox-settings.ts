@@ -90,25 +90,28 @@ export class RibbonComboBoxSettings extends ChildProperty<RibbonComboBoxSettings
      * Specifies the template content for the footer container of the popup list.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public footerTemplate: string;
+    public footerTemplate: string | Function;
 
     /**
      * Specifies the template content for the group headers present in the popup list.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public groupTemplate: string;
+    public groupTemplate: string | Function;
 
     /**
      * Specifies the template content for the header container of the popup list.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
 
     /**
      * Specifies the index of the selected item in the combobox.
@@ -122,16 +125,18 @@ export class RibbonComboBoxSettings extends ChildProperty<RibbonComboBoxSettings
      * Specifies the template content for each list item present in the popup.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
     /**
      * Specifies the template content for the popup list of combobox when no data is available.
      *
      * @default 'No records found'
+     * @aspType string
      */
     @Property('No records found')
-    public noRecordsTemplate: string;
+    public noRecordsTemplate: string | Function;
 
     /**
      * Specifies a short hint that describes the expected value of the combobox.

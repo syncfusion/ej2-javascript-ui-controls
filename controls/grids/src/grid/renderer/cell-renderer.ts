@@ -65,7 +65,7 @@ export class CellRenderer implements ICellRenderer<Column> {
     public evaluate(node: Element, cell: Cell<Column>, data: Object, attributes?: Object, fData?: Object, isEdit?: boolean): boolean {
         let result: Element[];
         if (cell.column.template) {
-            const isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string'  && cell.column.template.prototype && !(cell.column.template.prototype).CSPTemplate;
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             const literals: string[] = ['index'];
@@ -190,7 +190,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         let value: Object = cell.isForeignKey ? this.getValue(column.foreignKeyValue, fData, column) :
             this.getValue(column.field, data, column);
 
-        if ((column.type === 'date' || column.type === 'datetime') && !isNullOrUndefined(value)) {
+        if ((column.type === 'date' || column.type === 'datetime' || column.type === 'dateonly') && !isNullOrUndefined(value)) {
             value = new Date(value as string);
         }
         value = this.format(column, value, data);

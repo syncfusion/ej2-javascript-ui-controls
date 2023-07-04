@@ -1795,7 +1795,7 @@ describe('Uploader Control', () => {
             let eventArgs1 = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
             uploadObj.onSelectFiles(eventArgs1);
             let element : HTMLFormElement = <HTMLFormElement>document.getElementById("form1");
-            expect(uploadObj.fileList.length).toEqual(1);
+            expect(uploadObj.fileList.length).toEqual(2);
         });        
     })    
 

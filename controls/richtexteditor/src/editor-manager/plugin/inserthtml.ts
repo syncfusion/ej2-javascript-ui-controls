@@ -461,7 +461,12 @@ export class InsertHtml {
     private static removeEmptyElements(element: HTMLElement): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         for (let i: number = 0; i < emptyElements.length; i++) {
-            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(emptyElements[i as number].tagName.toLowerCase()) < 0) {
+            let lineWithDiv: boolean = true;
+            if (emptyElements[i as number].tagName === 'DIV') {
+                lineWithDiv =  (emptyElements[i as number] as HTMLElement).style.borderBottom === 'none' ||
+                (emptyElements[i as number] as HTMLElement).style.borderBottom === '' ? true : false;
+            }
+            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(emptyElements[i as number].tagName.toLowerCase()) < 0 && lineWithDiv) {
                 const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i as number]);
                 if (!isNOU(detachableElement)) {
                     detach(detachableElement);

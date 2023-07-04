@@ -565,9 +565,9 @@ export class Filter implements IAction {
     }
 
     private applyColumnFormat(filterValue: string | number | Date | boolean): void {
-        const getFlvalue: Date | number | string = (this.column.type === 'date' || this.column.type === 'datetime') ?
+        const getFlvalue: Date | number | string = (this.column.type === 'date' || this.column.type === 'datetime' || this.column.type === 'dateonly') ?
             new Date(filterValue as string) : parseFloat(filterValue as string);
-        if ((this.column.type === 'date' || this.column.type === 'datetime') && filterValue &&
+        if ((this.column.type === 'date' || this.column.type === 'datetime' || this.column.type === 'dateonly') && filterValue &&
             Array.isArray(this.value) && (filterValue as string).split(',').length > 1) {
             this.values[this.column.field] = (((filterValue as string)).split(',')).map((val: string) => {
                 if (val === '') {
@@ -951,10 +951,10 @@ export class Filter implements IAction {
                         this.filterStatusMsg += ' && ';
                     }
                     if (!isNullOrUndefined(column.format)) {
-                        const flValue: Date | number = (column.type === 'date' || column.type === 'datetime') ?
-                            this.valueFormatter.fromView(this.values[column.field], column.getParser(), column.type) :
+                        const flValue: Date | number = (column.type === 'date' || column.type === 'datetime' || column.type === 'dateonly') ?
+                            this.valueFormatter.fromView(this.values[column.field], column.getParser(), (column.type === 'dateonly' ? 'date' : column.type)) :
                             this.values[column.field];
-                        if (!(column.type === 'date' || column.type === 'datetime')) {
+                        if (!(column.type === 'date' || column.type === 'datetime' || column.type === 'dateonly')) {
                             const formater: IValueFormatter = this.serviceLocator.getService<IValueFormatter>('valueFormatter');
                             getFormatFlValue = formater.toView(flValue, column.getParser()).toString();
                         } else {
@@ -1182,6 +1182,8 @@ export class Filter implements IAction {
 
             datetimeOperator: numOptr,
 
+            dateonlyOperator: numOptr,
+
             booleanOperator: [
                 { value: 'equal', text: this.l10n.getConstant('Equal') },
                 { value: 'notequal', text: this.l10n.getConstant('NotEqual') }
@@ -1259,7 +1261,8 @@ export class Filter implements IAction {
             const dialog: Element = parentsUntil(this.parent.element, 'e-dialog');
             let hasDialog: boolean = false;
             const popupEle: Element = parentsUntil(target, 'e-popup');
-            const hasDialogClosed: Element = this.parent.element.querySelector('.e-filter-popup');
+            const hasDialogClosed: Element = this.parent.element.classList.contains('e-device') ? document.querySelector('.e-filter-popup')
+                : this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }

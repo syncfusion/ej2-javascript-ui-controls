@@ -245,17 +245,17 @@ export class Circular {
         const labelValue: number = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
         const circularValue: number = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
         const argsData: ITextRenderEventArgs = {
-            cancel: false, text: labelText ? labelText : String(circularValue) + '%', color: progress.labelStyle.color
+            cancel: false, text: labelText ? labelText : String(circularValue) + '%', color: progress.labelStyle.color || progress.themeStyle.circularLabelFont.color
         };
         progress.trigger('textRender', argsData);
         if (!argsData.cancel) {
-            textSize = measureText(argsData.text, progress.labelStyle);
+            textSize = measureText(argsData.text, progress.labelStyle, progress.themeStyle.circularLabelFont);
             centerY = this.centerY + (textSize.height / 2);
             option = new TextOption(
-                progress.element.id + '_circularLabel', progress.labelStyle.size || progress.themeStyle.circularFontSize,
-                progress.labelStyle.fontStyle || progress.themeStyle.circularFontStyle,
-                progress.labelStyle.fontFamily || progress.themeStyle.circularFontFamily, progress.labelStyle.fontWeight,
-                'middle', argsData.color || progress.themeStyle.fontColor, this.centerX, centerY, progress.progressRect.width,
+                progress.element.id + '_circularLabel', progress.labelStyle.size || progress.themeStyle.circularLabelFont.size,
+                progress.labelStyle.fontStyle || progress.themeStyle.circularLabelFont.fontStyle,
+                progress.labelStyle.fontFamily || progress.themeStyle.circularLabelFont.fontFamily, progress.labelStyle.fontWeight,
+                'middle', argsData.color, this.centerX, centerY, progress.progressRect.width,
                 progress.progressRect.height
             );
             circularLabel = progress.renderer.createText(option, argsData.text);

@@ -2423,11 +2423,11 @@ export class CustomDataAdaptor extends UrlAdaptor {
 
     // options replaced the default adaptor options
     protected options: RemoteOptions = extend({}, this.options, {
-        getData: new Function(),
-        addRecord: new Function(),
-        updateRecord: new Function(),
-        deleteRecord: new Function(),
-        batchUpdate: new Function()
+        getData: () => {},
+        addRecord: () => {},
+        updateRecord: () => {},
+        deleteRecord: () => {},
+        batchUpdate: () => {}
     });
     constructor(props?: RemoteOptions) {
         super();

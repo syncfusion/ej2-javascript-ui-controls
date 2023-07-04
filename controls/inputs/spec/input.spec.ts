@@ -1941,4 +1941,25 @@ describe('Input Groups - Enable/Disable', () => {
             element.remove();
         });
     });
+    describe('check valid input', () => {
+        let inputObj: InputObject;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputpopup', attrs: { type: 'text' } });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            inputObj = Input.createInput({
+                element: element,
+                floatLabelType: "Always",
+                properties: {
+                 placeholder: 'Enter the value',
+                 cssClass: 'e-outline'
+                },
+            });
+        });
+        it('class name of valid input', () => {
+            expect(inputObj.container.classList.contains('e-valid-input')).toBe(true);
+        });
+        afterAll(() => {
+            element.remove();
+        });
+    });
 });

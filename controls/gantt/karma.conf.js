@@ -37,7 +37,8 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-grids/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-treegrid/**/*.js", included: false },
-      { pattern: "node_modules/@syncfusion/ej2-richtexteditor/**/*.js", included: false }    
+      { pattern: "node_modules/@syncfusion/ej2-richtexteditor/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false } 
       // Add dependent package's script files here              
     ],
 

@@ -3,7 +3,14 @@
   .e-ddt {
 
     .e-chips {
-      background-color: $ddt-chip-bg-color;
+      @if $ddt-skin-name == 'Material3' {
+        background: $ddt-chip-bg-color;
+        border-color: $ddt-chip-border-color;
+        border: 1px solid;
+      }
+      @else {
+        background-color: $ddt-chip-bg-color;
+      }
 
       .e-chips-close::before {
         color: $ddt-chip-close;
@@ -14,7 +21,12 @@
       }
 
       &:hover {
-        background-color: $ddt-chip-hover-bg-color;
+        @if $ddt-skin-name == 'Material3' {
+          background: $ddt-chip-hover-bg-color;
+        }
+        @else {
+          background-color: $ddt-chip-hover-bg-color;
+        }
 
         @if $ddt-skin-name == 'highcontrast' {
           .e-chips-close::before {

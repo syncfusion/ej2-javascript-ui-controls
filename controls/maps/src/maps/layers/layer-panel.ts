@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { isNullOrUndefined, extend, createElement, Ajax } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, createElement, Fetch } from '@syncfusion/ej2-base';
 import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
 import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, PolylineOption, removeElement } from '../utils/helper';
@@ -28,7 +28,7 @@ export class LayerPanel {
     private urlTemplate: string;
     private isMapCoordinates: boolean = true;
     private tileSvgObject: Element;
-    private ajaxModule: Ajax;
+    private ajaxModule: Fetch;
     private ajaxResponse: LayerSettings[];
     private bing: BingMap;
     private animateToZoomX : number;
@@ -38,7 +38,7 @@ export class LayerPanel {
     public layerGroup: Element;
     constructor(map: Maps) {
         this.mapObject = map;
-        this.ajaxModule = new Ajax();
+        this.ajaxModule = new Fetch();
         this.ajaxResponse = [];
     }
 
@@ -276,14 +276,13 @@ export class LayerPanel {
                         const bing: BingMap = new BingMap(this.mapObject);
                         const bingType: string = layer.bingMapType === 'AerialWithLabel' ? 'AerialWithLabelsOnDemand' : layer.bingMapType;
                         const url: string = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + bingType;
-                        const ajax: Ajax = new Ajax({
+                        const ajax: Fetch = new Fetch({
                             url: url + '?output=json&include=ImageryProviders&urischeme=https&key=' + layer.key
                         });
-                        ajax.onSuccess = (json: string) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        ajax.onSuccess = (json: any) => {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const jsonObject: any = JSON.parse(json);
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const resource: any = jsonObject['resourceSets'][0]['resources'][0];
+                            const resource: any = json['resourceSets'][0]['resources'][0];
                             const imageUrl: string = <string>resource['imageUrl'];
                             const subDomains: string[] = <string[]>resource['imageUrlSubdomains'];
                             const maxZoom: string = <string>resource['zoomMax'];
@@ -1313,6 +1312,7 @@ export class LayerPanel {
                             imgElement.setAttribute('width', '256px');
                             imgElement.setAttribute('src', tile.src);
                             imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                            imgElement.style.setProperty('user-select', 'none');
                             child.appendChild(imgElement);
                             animateElement.appendChild(child);
                         }
@@ -1321,6 +1321,7 @@ export class LayerPanel {
                         imgElement.setAttribute('height', '256px');
                         imgElement.setAttribute('width', '256px');
                         imgElement.setAttribute('src', tile.src);
+                        imgElement.style.setProperty('user-select', 'none');
                         imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
                         const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
                         child.style.position = 'absolute';

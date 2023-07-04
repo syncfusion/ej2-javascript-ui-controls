@@ -29,6 +29,7 @@
         .e-resize-handler {
           background: $resize-icon-bg-color;
           color: $splitbar-icon-color;
+          z-index: 10;
         }
 
         .e-navigate-arrow:not(.e-icon-hidden) {
@@ -115,6 +116,7 @@
         .e-resize-handler {
           background: $resize-icon-bg-color;
           color: $splitbar-icon-color;
+          z-index: 12;
         }
 
         &.e-split-bar-hover,

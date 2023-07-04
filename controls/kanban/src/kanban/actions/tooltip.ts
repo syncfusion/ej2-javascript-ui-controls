@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createElement, append, closest, addClass } from '@syncfusion/ej2-base';
+import { createElement, append, closest, addClass, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Kanban } from '../base';
 import * as cls from '../base/css-constant';
@@ -42,7 +42,7 @@ export class KanbanTooltip {
             args.cancel = true;
             return;
         }
-        let tooltipContent: HTMLElement | string;
+        let tooltipContent: HTMLElement | string | Function;
         if (this.parent.tooltipTemplate) {
             tooltipContent = createElement('div');
             const target: Element = closest(args.target, '.' + cls.CARD_CLASS);
@@ -53,7 +53,7 @@ export class KanbanTooltip {
             append(tooltipTemplate, tooltipContent);
             this.parent.renderTemplates();
         } else {
-            tooltipContent = `<div class="e-card-header-caption">${args.target.innerText}</div>`;
+            tooltipContent = initializeCSPTemplate(function(): string { return `<div class="e-card-header-caption">${args.target.innerText}</div>`});
         }
         this.tooltipObj.setProperties({ content: tooltipContent }, true);
     }

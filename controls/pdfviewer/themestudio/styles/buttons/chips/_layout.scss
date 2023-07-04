@@ -81,7 +81,10 @@
         margin: $chip-delete-icon-margin;
         overflow: hidden;
         width: $chip-delete-icon-size;
-
+        @if $skin-name == 'Material3' {
+          line-height: $chip-delete-icon-size;
+          width: $chip-delete-icon-font-size;
+        }
         &.e-dlt-btn::before {
           font-family: 'e-icons';
         }
@@ -244,6 +247,9 @@
       @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5dark' ) {
         height: $chip-touch-text-height;
       }
+      @if $skin-name == 'Material3' {
+        line-height: $chip-touch-text-line-height;
+      }
     }
 
     .e-chip-avatar {
@@ -251,6 +257,9 @@
       height: $chip-touch-avatar-size;
       margin: $chip-touch-avatar-margin;
       width: $chip-touch-avatar-size;
+      @if $skin-name == 'Material3' {
+        border-radius: $chip-touch-avatar-wrapper-border-radius;
+      }
     }
 
     .e-chip-avatar-wrap,
@@ -268,6 +277,10 @@
     .e-chip-delete {
       font-size: $chip-touch-delete-icon-font-size;
       height: $chip-touch-delete-icon-size;
+      @if $skin-name == 'Material3' {
+        line-height: $chip-touch-delete-icon-height;
+        height: $chip-touch-delete-icon-height;
+      }
       margin: $chip-touch-delete-icon-margin;
       width: $chip-touch-delete-icon-size;
 

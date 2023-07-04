@@ -4,6 +4,8 @@ import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { EditorHistory } from '../editor-history/editor-history';
 import { FootEndNoteNumberFormat, FootnoteRestartIndex } from '../../base/types';
+import { SelectionHeaderFooter } from '../selection';
+import { HeaderFooterWidget } from '../viewer/page';
 /* eslint-disable */
 /**
  * @private
@@ -14,6 +16,7 @@ export class WSectionFormat {
     private static uniqueFormatType: number = 10;
     public ownerBase: Object;
     public columns: WColumnFormat[] = [];
+    public removedHeaderFooters: HeaderFooterWidget[];
 
     public get headerDistance(): number {
         return this.getPropertyValue('headerDistance') as number;
@@ -159,10 +162,58 @@ export class WSectionFormat {
     public set breakCode(value: string) {
         this.setPropertyValue('breakCode', value);
     }
+    public set firstPageHeader(value: SelectionHeaderFooter) {
+        this.setPropertyValue('firstPageHeader', value);
+    }
+
+    public get firstPageHeader(): SelectionHeaderFooter {
+        return this.getPropertyValue('firstPageHeader') as SelectionHeaderFooter;
+    }
+
+    public set firstPageFooter(value: SelectionHeaderFooter) {
+        this.setPropertyValue('firstPageFooter', value);
+    }
+
+    public get firstPageFooter(): SelectionHeaderFooter {
+        return this.getPropertyValue('firstPageFooter') as SelectionHeaderFooter;
+    }
+
+    public set oddPageHeader(value: SelectionHeaderFooter) {
+        this.setPropertyValue('oddPageHeader', value);
+    }
+
+    public get oddPageHeader(): SelectionHeaderFooter {
+        return this.getPropertyValue('oddPageHeader') as SelectionHeaderFooter;
+    }
+
+    public set oddPageFooter(value: SelectionHeaderFooter) {
+        this.setPropertyValue('oddPageFooter', value);
+    }
+
+    public get oddPageFooter(): SelectionHeaderFooter {
+        return this.getPropertyValue('oddPageFooter') as SelectionHeaderFooter;
+    }
+
+    public set evenPageHeader(value: SelectionHeaderFooter) {
+        this.setPropertyValue('evenPageHeader', value);
+    }
+
+    public get evenPageHeader(): SelectionHeaderFooter {
+        return this.getPropertyValue('evenPageHeader') as SelectionHeaderFooter;
+    }
+
+    public set evenPageFooter(value: SelectionHeaderFooter) {
+        this.setPropertyValue('evenPageFooter', value);
+    }
+
+    public get evenPageFooter(): SelectionHeaderFooter {
+        return this.getPropertyValue('evenPageFooter') as SelectionHeaderFooter;
+    }
 
     public constructor(node?: Object) {
         this.ownerBase = node;
         this.columns = [];
+        this.removedHeaderFooters = [];
     }
     public destroy(): void {
         if (!isNullOrUndefined(this.uniqueSectionFormat)) {
@@ -171,6 +222,7 @@ export class WSectionFormat {
         this.uniqueSectionFormat = undefined;
         this.ownerBase = undefined;
         this.columns = undefined;
+        this.removedHeaderFooters = undefined;
     }
     private hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueSectionFormat)) {
@@ -261,6 +313,24 @@ export class WSectionFormat {
             case 'breakCode':
                 value = 'NewPage';
                 break;
+            case 'firstPageHeader':
+                value = undefined;
+                break;
+            case 'firstPageFooter':
+                value = undefined;
+                break;
+            case 'oddPageHeader':
+                value = undefined;
+                break;
+            case 'oddPageFooter':
+                value = undefined;
+                break;
+            case 'evenPageHeader':
+                value = undefined;
+                break;
+            case 'evenPageFooter':
+                value = undefined;
+                break;
 
         }
         return value;
@@ -334,8 +404,10 @@ export class WSectionFormat {
         if (history && (history.isUndoing || history.isRedoing)) {
             this.uniqueSectionFormat = format.uniqueSectionFormat;            
             this.columns = format.columns;
+            this.removedHeaderFooters = format.removedHeaderFooters;
         } else {
             if (!isNullOrUndefined(format)) {
+                this.removedHeaderFooters = format.removedHeaderFooters;
                 if (!isNullOrUndefined(format.uniqueSectionFormat) && format.uniqueSectionFormat.propertiesHash) {
                     this.updateUniqueSectionFormat(format);
                     this.columns = format.columns;

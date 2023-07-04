@@ -2,15 +2,22 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 22.1.37 (2023-07-04)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
-- `#I448219` - Issue with Query builder validation not shown using `validateFields` method and scroll the page has been fixed.
+- `#I44054` - Resolved the issue where importing SQL queries containing special characters.
 
-## 21.1.35 (2023-03-23)
+## 22.1.34 (2023-06-21)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I460895` - Issue with Query builder template not render in Vue3 platform has been fixed.
+- `#I448219` - Issue with Query builder validation not shown using `validateFields` method and scroll the page has been fixed.
 
 ### QueryBuilder
 

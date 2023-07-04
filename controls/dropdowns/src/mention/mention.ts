@@ -61,6 +61,7 @@ export class Mention extends DropDownBase {
     private isSelectCancel: boolean;
     private isTyped: boolean;
     private didPopupOpenByTypingInitialChar: boolean;
+    private isUpDownKey: boolean;
 
     // Mention Options
 
@@ -183,9 +184,10 @@ export class Mention extends DropDownBase {
      * Specifies the template for the selected value from the suggestion list.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public displayTemplate: string;
+    public displayTemplate: string | Function;
 
     /**
      * Specifies the template for the suggestion list.
@@ -207,9 +209,10 @@ export class Mention extends DropDownBase {
      * Specifies the template for showing until data is loaded in the popup.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public spinnerTemplate: string;
+    public spinnerTemplate: string | Function;
 
     /**
      * Specifies the target selector where the mention component needs to be displayed.
@@ -593,6 +596,7 @@ export class Mention extends DropDownBase {
         switch (e.action) {
         case 'down':
         case 'up':
+            this.isUpDownKey = true;
             this.updateUpDownAction(e);
             break;
         case 'tab':
@@ -658,10 +662,13 @@ export class Mention extends DropDownBase {
 
     private onKeyUp(e: KeyboardEventArgs): void {
         let rangetextContent: string[];
+        if(this.isUpDownKey && this.isPopupOpen && e.keyCode === 229) {
+            this.isUpDownKey = false;
+            return;
+        }
         this.isTyped = e.code !== 'Enter' && e.code !== 'Space' && e.code !== 'ArrowDown' && e.code !== 'ArrowUp' ? true : false;
         if (document.activeElement != this.inputElement) {
-            this.inputElement.focus(); 
-        }
+            this.inputElement.focus(); }
         if (this.isContentEditable(this.inputElement)) {
             this.range = this.getCurrentRange();
             rangetextContent = this.range.startContainer.textContent.split('');
@@ -1023,7 +1030,7 @@ export class Mention extends DropDownBase {
                     }
                 }
                 append([this.list], popupEle);
-                if (this.inputElement.parentElement && this.inputElement.parentElement.parentElement &&
+		if (this.inputElement.parentElement && this.inputElement.parentElement.parentElement &&
                     this.inputElement.parentElement.parentElement.classList.contains('e-richtexteditor')) {
                     if (popupEle.firstElementChild && popupEle.firstElementChild.childElementCount > 0) {
                         popupEle.firstElementChild.setAttribute('aria-owns', this.inputElement.parentElement.parentElement.id);
@@ -1193,7 +1200,7 @@ export class Mention extends DropDownBase {
             const selectedNodePosition: number = this.getTriggerCharPosition();
             globalRange = this.range;
             range = document.createRange();
-            if (this.getTextRange() && this.getTextRange().lastIndexOf(this.mentionChar) !== -1 && this.isTyped) {
+            if (this.getTextRange() && this.getTextRange().lastIndexOf(this.mentionChar) !== -1) {
                 range.setStart(globalRange.startContainer, selectedNodePosition);
                 range.setEnd(globalRange.startContainer, selectedNodePosition);
             }

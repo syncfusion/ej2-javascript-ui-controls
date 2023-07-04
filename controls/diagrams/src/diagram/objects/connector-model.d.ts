@@ -115,7 +115,7 @@ export interface BezierSettingsModel {
     smoothness?: BezierSmoothness;
 
     /**
-    * Specifies whether to reset the current segment collections in response to a change in the connector's source and target ends. 
+    * Specifies whether to reset the current segment collections in response to a change in the connector's source and target ends.
     *
     * @default 'true'
     */

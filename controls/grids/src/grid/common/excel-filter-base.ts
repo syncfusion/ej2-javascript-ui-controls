@@ -56,13 +56,14 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private getCMenuDS(type: string, operator?: string): MenuItemModel[] {
-        const options: { number?: string[], date?: string[], string?: string[], datetime?: string[] } = {
+        const options: { number?: string[], date?: string[], string?: string[], datetime?: string[], dateonly?: string[] } = {
             number: ['Equal', 'NotEqual', '', 'LessThan', 'LessThanOrEqual', 'GreaterThan',
                 'GreaterThanOrEqual', 'Between', '', 'CustomFilter'],
             string: ['Equal', 'NotEqual', '', 'StartsWith', 'EndsWith', '', 'Contains', 'NotContains', '', 'CustomFilter']
         };
         options.date = options.number;
         options.datetime = options.number;
+        options.dateonly = options.number;
         const model: MenuItemModel[] = [];
         for (let i: number = 0; i < options[`${type}`].length; i++) {
             if (options[`${type}`][parseInt(i.toString(), 10)].length) {
@@ -106,7 +107,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private createMenu(type: string, isFiltered: boolean, isCheckIcon: boolean, eleOptions?: IFilterArgs ): void {
-        const options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
+        const options: Object = { string: 'TextFilter', date: 'DateFilter',  dateonly: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
         this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
         if (this.parent.enableRtl) {
             this.menu.classList.add('e-rtl');
@@ -846,6 +847,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 'string': this.renderAutoComplete.bind(this),
                 'number': this.renderNumericTextBox.bind(this),
                 'date': this.renderDate.bind(this),
+                'dateonly': this.renderDate.bind(this),
                 'datetime': this.renderDateTime.bind(this)
             };
             types[this.options.type](this.options, column, valueInput, flValue, this.parent.enableRtl);

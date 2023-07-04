@@ -56,7 +56,8 @@ export class CommandColumn {
                     } else {
                         const buttons: HTMLElement[] = [].slice.call(closest(target, '.e-unboundcell').querySelectorAll('button'));
                         const index: number = buttons.findIndex((ele: HTMLElement) => ele === target);
-                        if (index < commandCols.length && commandCols[parseInt(index.toString(), 10)][`${typeInString}`] === type) {
+                        if (index < commandCols.length && commandCols[parseInt(index.toString(), 10)][`${typeInString}`] === type &&
+                            String(commandCols[parseInt(j.toString(), 10)][`${idInString}`]) === uid) {
                             commandColumn = commandCols[parseInt(index.toString(), 10)];
                         }
                     }

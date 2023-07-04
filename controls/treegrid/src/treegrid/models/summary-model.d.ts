@@ -31,8 +31,10 @@ export interface AggregateColumnModel {
      * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
+     *
      */
-    footerTemplate?: string;
+    footerTemplate?: string | Function;
 
     /**
      * Defines the column name to perform aggregation.

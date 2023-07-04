@@ -247,6 +247,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isPreventChange: boolean = false;
     protected isDynamicDataChange: boolean = false;
     protected addedNewItem: boolean = false;
+    protected isAddNewItemTemplate: boolean = false;
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -279,36 +280,40 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * For EX: We have expression evolution as like ES6 expression string literals.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
     @Property(null)
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
     /**
      * Accepts the template design and assigns it to the group headers present in the popup list.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
     @Property(null)
-    public groupTemplate: string;
+    public groupTemplate: string | Function;
     /**
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
      *
      * @default 'No records found'
+     * @aspType string
      * @deprecated
      */
     @Property('No records found')
-    public noRecordsTemplate: string;
+    public noRecordsTemplate: string | Function;
     /**
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
      *
      * @default 'Request failed'
+     * @aspType string
      * @deprecated
      */
     @Property('Request failed')
-    public actionFailureTemplate: string;
+    public actionFailureTemplate: string | Function;
     /**
      * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
      * * `None` - The data source is not sorting.
@@ -583,9 +588,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
         return value as string;
     }
-    private templateCompiler(baseTemplate: string): boolean {
+    private templateCompiler(baseTemplate: string | Function): boolean {
         let checkTemplate: boolean = false;
-        if (baseTemplate) {
+        if (typeof baseTemplate !== 'function' && baseTemplate) {
             try {
                 checkTemplate = (selectAll(baseTemplate, document).length) ? true : false;
             } catch (exception) {
@@ -597,12 +602,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected l10nUpdate(actionFailure?: boolean): void {
         const ele: Element = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
         if (this.noRecordsTemplate !== 'No records found' || this.actionFailureTemplate !== 'Request failed') {
-            const template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
+            const template: string | Function = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString: Function;
             const templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             ele.innerHTML = '';
             const tempaltecheck: boolean = this.templateCompiler(template);
-            if (tempaltecheck) {
+            if (typeof template !== 'function' && tempaltecheck) {
                 compiledString = compile(select(template, document).innerHTML.trim());
             } else {
                 compiledString = compile(template);
@@ -613,16 +618,26 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (noDataCompTemp && noDataCompTemp.length > 0) {
                 for (let i: number = 0; i < noDataCompTemp.length; i++) {
                     if (this.getModuleName() === 'listbox' && templateName === 'noRecordsTemplate') {
-                        noDataCompTemp[i as number].classList.add('e-list-nr-template');
+                        if (noDataCompTemp[i as number].nodeName === '#text') {
+                            const liElem: HTMLElement = this.createElement('li');
+                            liElem.textContent = noDataCompTemp[i as number].textContent;
+                            liElem.classList.add('e-list-nrt');
+                            liElem.setAttribute('role','option')
+                            ele.appendChild(liElem);
+                        } else {
+                            noDataCompTemp[i as number].classList.add('e-list-nr-template');
+                            ele.appendChild(noDataCompTemp[i as number]);
+                        }
+                    } else {
+                        ele.appendChild(noDataCompTemp[i as number]);
                     }
-                    ele.appendChild(noDataCompTemp[i as number]);
                 }
             }
             this.renderReactTemplates();
         } else {
             const l10nLocale: Object = { noRecordsTemplate: 'No records found', actionFailureTemplate: 'Request failed'};
             const componentLocale: L10n = new L10n(this.getLocaleName(), {}, this.locale);
-            if (componentLocale.getConstant('actionFailureTemplate') !== '') {
+            if (componentLocale.getConstant('actionFailureTemplate') !== '' || componentLocale.getConstant('noRecordsTemplate') !== '') {
                 this.l10n = componentLocale;
             } else {
                 this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' :
@@ -976,6 +991,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         e?: Object): void {
     /* eslint-enable @typescript-eslint/no-unused-vars */
         this.listData = list;
+        if (this.getModuleName() !== 'listbox') {
+            ulElement.setAttribute('tabindex', '0'); }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
@@ -1037,7 +1054,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             const option: { [key: string]: Object } = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
             const headerItems: Element[] = <NodeListOf<Element> & Element[]>listEle.querySelectorAll('.' + dropDownBaseClasses.group);
             const groupcheck: boolean = this.templateCompiler(this.groupTemplate);
-            if (groupcheck) {
+            if (typeof this.groupTemplate !== 'function' &&  groupcheck) {
                 const groupValue: string = select(this.groupTemplate, document).innerHTML.trim();
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const tempHeaders: Element[] = ListBase.renderGroupTemplate(
@@ -1186,14 +1203,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         option.templateID = this.itemTemplateId;
         option.isStringTemplate = this.isStringTemplate;
         const itemcheck: boolean = this.templateCompiler(this.itemTemplate);
-        if (itemcheck) {
+        if (typeof this.itemTemplate !== 'function' && itemcheck) {
             const itemValue: string = select(this.itemTemplate, document).innerHTML.trim();
             return ListBase.renderContentTemplate(
                 this.createElement, itemValue, dataSource,
                 (fields as FieldSettingsModel & { properties: Object }).properties, option, this);
         } else {
             return ListBase.renderContentTemplate(
-                this.createElement, this.itemTemplate, dataSource,
+                this.createElement, this.itemTemplate as any, dataSource,
                 (fields as FieldSettingsModel & { properties: Object }).properties, option, this);
         }
     }
@@ -1281,7 +1298,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected dispatchEvent(element: HTMLElement, type: string): void {
         const evt: Event = document.createEvent('HTMLEvents');
         evt.initEvent(type, false, true);
-        element.dispatchEvent(evt);
+        if(element){
+            element.dispatchEvent(evt);
+        }
     }
     /**
      * To set the current fields
@@ -1411,7 +1430,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     public render(e?: MouseEvent | KeyboardEventArgs | TouchEvent, isEmptyData?: boolean): void {
-        this.list = this.createElement('div', { className: dropDownBaseClasses.content, attrs: { 'tabindex': '0' } });
+        if (this.getModuleName() === 'listbox') {
+            this.list = this.createElement('div', { className: dropDownBaseClasses.content, attrs: { 'tabindex': '0' } }); }
+        else {
+            this.list = this.createElement('div', { className: dropDownBaseClasses.content});
+        }
         this.list.classList.add(dropDownBaseClasses.root);
         this.setFields();
         const rippleModel: RippleOptions = { duration: 300, selector: '.' + dropDownBaseClasses.li };
@@ -1505,7 +1528,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             if (this.itemTemplate && !isHeader) {
                 const itemCheck: boolean = this.templateCompiler(this.itemTemplate);
-                const compiledString: Function = itemCheck ? compile(select(this.itemTemplate, document).innerHTML.trim()) : compile(this.itemTemplate);
+                const compiledString: Function = typeof this.itemTemplate !== 'function' &&
+                 itemCheck ? compile(select(this.itemTemplate, document).innerHTML.trim()) : compile(this.itemTemplate);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const addItemTemplate: any = compiledString(
                     item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate, null, li);
@@ -1531,6 +1555,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (!isNullOrUndefined(this.list)) {
                 this.list.innerHTML = '';
                 this.list.classList.remove(dropDownBaseClasses.noData);
+                this.isAddNewItemTemplate = true;
                 if (!isNullOrUndefined(this.ulElement)) {
                     this.list.appendChild(this.ulElement);
                 }
@@ -1577,6 +1602,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     this.updateDataList();
                 }
             }
+        }
+        if (this.getModuleName() === 'listbox' && (this as any).isReact) {
+            this.renderReactTemplates();
         }
         if (selectedItemValue || itemIndex === 0) {
             this.updateSelection();

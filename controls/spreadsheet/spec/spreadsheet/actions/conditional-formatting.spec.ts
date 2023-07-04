@@ -997,7 +997,7 @@ describe('Conditional formatting ->', () => {
         });
     });
 
-    describe('EJ2-60930 ->', () => {
+    describe('EJ2-60930, EJ2-831846 ->', () => {
         beforeEach((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: InventoryList }] }] }, done);
         });
@@ -1011,6 +1011,15 @@ describe('Conditional formatting ->', () => {
             expect(cell1.textContent).not.toBe(cell2.textContent);
             expect(cell1.style.backgroundColor).not.toBe(cell2.style.backgroundColor);
             done();
+        });
+        it('Conditional formatting is not pasted correctly to another cell or range', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'H2:H6' }]);
+            helper.invoke('copy', ['H3:H5']).then(function () {
+                helper.invoke('paste', ['J2']);
+                expect(helper.invoke('getCell', [1, 9]).querySelector('.e-databar')).not.toBeNull();
+                expect(helper.invoke('getCell', [1, 9]).getElementsByClassName('e-databar')[1].style.width).toBe('95%');
+                done();
+            });
         });
     });
 

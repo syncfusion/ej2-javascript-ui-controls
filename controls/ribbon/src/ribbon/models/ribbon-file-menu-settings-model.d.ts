@@ -46,13 +46,15 @@ export interface FileMenuSettingsModel {
      * Specifies the template for file menu item.
      *
      * @default ''
+     * @aspType string
      */
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
 
     /**
      * Specifies the custom content for the file menu popup.
      *
      * @default ''
+     * @aspType string
      */
     popupTemplate?: string | HTMLElement;
 

@@ -7,7 +7,7 @@ export interface PivotSelectionSettingsModel {
 
     /**
      * Allow options to highlight either row wise or column wise or specific cells in the pivot table.
-     * For expample, to highlight the columns, set the property `mode` to **Column**. The modes available are:
+     * For example, to highlight the columns, set the property `mode` to **Column**. The modes available are:
      * * `Cell`: Allows specific cells to be highlighted in the pivot table.
      * * `Row`: Allows the rows to be highlighted in the pivot table.
      * * `Column`: Allows the columns to be highlighted in the pivot table.
@@ -193,7 +193,7 @@ export interface GridSettingsModel {
      * Allows set of options to customize the selection of a row or column or cell by simply clicking on the arrow key in the pivot table.
      * The options available are:
      * * `mode - Allow options to highlight either row wise or column wise or specific cells in the pivot table.
-     * For expample, to highlight the columns, set the property `mode` to **Column**.
+     * For example, to highlight the columns, set the property `mode` to **Column**.
      * * `cellSelectionMode`: Allow options to customize the mode of selection to highlight either row wise or column wise or specific cell in the pivot table.
      * For example, to apply the selection that includes in between cells of rows within the range, set the property `cellSelectionMode` to **Box**.
      * * `type`: Allow options to customize the selection type to highlight either row wise or column wise or specific cell in the pivot table.
@@ -234,14 +234,14 @@ export interface GridSettingsModel {
      * Allows to show built-in context with pre-defined menu option or custom menu options by simply right clicking on the pivot table cell.
      * The options available are:
      * * `Drillthrough`: Allows to show the drill-through dialog over the pivot table to perform drill-through operations.
-     * * `Expand`: Allows to expand the collaped row or column headers in the pivot table.
-     * * `Collapse`: Allows to collapse the expaned row or column headers in the pivot table.
+     * * `Expand`: Allows to expand the collapsed row or column headers in the pivot table.
+     * * `Collapse`: Allows to collapse the expanded row or column headers in the pivot table.
      * * `CalculatedField`: Allows to show the calculated field dialog over the pivot table to perform calculated field operations.
      * * `Pdf Export`: Allows to export the pivot table as PDF format.
      * * `Excel Export`: Allows to export the pivot table as Excel format.
      * * `Csv Export`: Allows to export the pivot table as CSV format.
-     * * `Sort Ascending`: Allows to perform ascending order with repect to the values on selected cell contained row or column in the pivot table.
-     * * `Sort Descending`: Allows to perform descending order with repect to the values on selected cell contained row or column in the pivot table.
+     * * `Sort Ascending`: Allows to perform ascending order with respect to the values on selected cell contained row or column in the pivot table.
+     * * `Sort Descending`: Allows to perform descending order with respect to the values on selected cell contained row or column in the pivot table.
      * * `Aggregate`: Allow options to perform calculations over a group of values (exclusively for value fields bound in value axis) using the aggregation option in the pivot table.
      *
      * @default null

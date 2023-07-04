@@ -81,3 +81,17 @@ export type RangeLabelIntersectAction =
     'None' |
     /** Hide the label when it intersect. */
     'Hide';
+
+/** 
+ * Defines the Label Placement for axis. They are 
+ * * betweenTicks - Render the label between the ticks. 
+ * * onTicks - Render the label on the ticks. 
+ * * auto - Render the label between or on the ticks based on data. 
+ */ 
+export type NavigatorPlacement = 
+    /** Render the label between the ticks. */ 
+    'BetweenTicks' | 
+    /** Render the label on the ticks. */ 
+    'OnTicks' | 
+    /** Render the label between or on the ticks based on data. */ 
+    'Auto'; 

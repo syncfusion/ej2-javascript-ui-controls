@@ -1,4 +1,4 @@
-import { Spreadsheet, SpreadsheetModel, CellSaveEventArgs, RowModel, SheetModel, getCell, ImageModel } from '../../../src/index';
+import { Spreadsheet, SpreadsheetModel, CellSaveEventArgs, RowModel, SheetModel, getCell, ImageModel, PasteModelArgs } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { createElement, EventHandler } from '@syncfusion/ej2-base';
@@ -518,8 +518,8 @@ describe('Clipboard ->', () => {
             helper.invoke('destroy');
         });
         it('Paste alert dialog for invalid paste selection for column in finite mode', (done: Function) => {
-            helper.invoke('selectRange', ['A1:A15']);
-            helper.invoke('copy', ['A1:A15']).then(() => {
+            helper.invoke('selectRange', ['A2:A16']);
+            helper.invoke('copy', ['A2:A16']).then(() => {
                 helper.invoke('paste', ['B2']);
                 setTimeout(() => {
                     var dialog = helper.getElement('.e-control.e-dialog');
@@ -531,8 +531,8 @@ describe('Clipboard ->', () => {
             });   
         }); 
         it('Paste alert dialog for invalid paste selection for row in finite mode', (done: Function) => {
-            helper.invoke('selectRange', ['A1:O1']);
-            helper.invoke('copy', ['A1:O1']).then(() => {
+            helper.invoke('selectRange', ['B1:P1']);
+            helper.invoke('copy', ['B1:P1']).then(() => {
                 helper.invoke('paste', ['B2']);
                 setTimeout(() => {
                     var dialog = helper.getElement('.e-control.e-dialog');
@@ -548,8 +548,8 @@ describe('Clipboard ->', () => {
                 spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
                 args.cancel = true;
             };
-            helper.invoke('selectRange', ['A1:A15']);
-            helper.invoke('copy', ['A1:A15']).then(() => {
+            helper.invoke('selectRange', ['A2:A16']);
+            helper.invoke('copy', ['A2:A16']).then(() => {
                 helper.invoke('paste', ['B2']);
                 setTimeout(() => {
                     var dialog = helper.getElement('.e-control.e-dialog');
@@ -967,9 +967,63 @@ describe('Clipboard ->', () => {
                 });
             });
         });
-        describe('SF-367525, SF-367519 ->', () => {
+        describe('EJ2-64826 ->', () => {
             beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({}, done);
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Paste format only option is not working for merge row cell', (done: Function) => {
+                helper.invoke('merge', ['A3:A4']);
+                setTimeout(() => {
+                    helper.invoke('copy', ['A3:A4']).then(() => {
+                        helper.invoke('selectRange', ['I2']);
+                        helper.invoke('paste', ['I2:I2', "Formats"]);
+                        setTimeout(() => {
+                            const sheet: SheetModel = helper.getInstance().sheets[0];
+                            expect(sheet.rows[1].cells[8].rowSpan).toBe(2);
+                            done();
+                        });
+                    });
+                });
+            });
+            it('Paste format only option is not working for merge column cell', (done: Function) => {
+                helper.invoke('merge', ['B1:C1']);
+                setTimeout(() => {
+                    helper.invoke('copy', ['B1:C1']).then(() => {
+                        helper.invoke('selectRange', ['J2']);
+                        helper.invoke('paste', ['J2:J2', "Formats"]);
+                        setTimeout(() => {
+                            const sheet: SheetModel = helper.getInstance().sheets[0];
+                            expect(sheet.rows[1].cells[9].colSpan).toBe(2);
+                            done();
+                        });
+                    });
+                });
+            });
+            it('Paste format only option is not working for merge row column cell', (done: Function) => {
+                helper.invoke('merge', ['G3:H4']);
+                setTimeout(() => {
+                    helper.invoke('copy', ['G3:H4']).then(() => {
+                        helper.invoke('selectRange', ['L2']);
+                        helper.invoke('paste', ['L2:L2', "Formats"]);
+                        setTimeout(() => {
+                            const sheet: SheetModel = helper.getInstance().sheets[0];
+                            expect(sheet.rows[1].cells[11].rowSpan).toBe(2);
+                            expect(sheet.rows[1].cells[11].colSpan).toBe(2);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('SF-367525, SF-367519 ->', () => {
+            let tableCont: HTMLElement; let spreadsheet: any;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
             afterAll(() => {
                 helper.invoke('destroy');
@@ -995,10 +1049,10 @@ describe('Clipboard ->', () => {
                     '</td>' +
                 '</tr>' +
                 '</tbody></table>';
-                const tableCont: Element = createElement('span', { innerHTML: tableStr });
-                const spreadsheet: any = helper.getInstance();
-                let rows: RowModel[] = [];
-                spreadsheet.clipboardModule.generateCells(tableCont, rows);
+                tableCont = createElement('span', { innerHTML: tableStr });
+                spreadsheet = helper.getInstance();
+                const rows: RowModel[] = [];
+                spreadsheet.clipboardModule.generateCells(tableCont, { model: rows });
                 expect(rows.length).toBe(2);
                 expect(rows[0].cells.length).toBe(2);
                 expect(rows[0].cells[0].value as any).toBe(115);
@@ -1016,6 +1070,40 @@ describe('Clipboard ->', () => {
                 expect(JSON.stringify(rows[1].cells[0].style)).toBe(style);
                 expect(rows[1].cells[1].value as any).toBe(406);
                 expect(JSON.stringify(rows[1].cells[1].style)).toBe(style);
+                done();
+            });
+            it('Set external cells for copy and paste - spreadsheet to Spreadsheet', (done: Function) => {
+                spreadsheet.clipboardModule.copiedInfo = { range: [0, 0, 99, 99], sId: spreadsheet.sheets[0].id };
+                const clipboardArgs: { clipboardData: { setData: Function }, preventDefault: Function } = {
+                    clipboardData: {
+                        setData: (key: string, data: string): void => {
+                            if (key === 'text/html') {
+                                tableCont = createElement('span', { innerHTML: data });
+                            } else {
+                                expect(key).toBe('text/plain');
+                                expect(data.startsWith('Item Name	Date	Time')).toBeTruthy();
+                            }
+                        }
+                    },
+                    preventDefault: (): void => { /** */ }
+                };
+                spreadsheet.clipboardModule.setExternalCells(clipboardArgs);
+                const table: HTMLTableElement = tableCont.querySelector('table');
+                expect(table.className).toBe('e-spreadsheet');
+                expect(table.getAttribute('aria-rowcount')).toBe('10');
+                expect(table.getAttribute('aria-colcount')).toBe('7');
+                expect(table.getAttribute('aria-label')).toBe('Sheet');
+                expect(table.rows.length).toBe(100);
+                expect(table.rows[0].cells.length).toBe(100);
+                done();
+            });
+            it('Get external cells for copy and paste - spreadsheet to Spreadsheet', (done: Function) => {
+                const pasteModelArgs: PasteModelArgs = { model: [] };
+                spreadsheet.clipboardModule.generateCells(tableCont, pasteModelArgs);
+                expect(pasteModelArgs.model.length).toBe(11);
+                expect(pasteModelArgs.model[0].cells.length).toBe(8);
+                expect(pasteModelArgs.usedRowIndex).toBe(10);
+                expect(pasteModelArgs.usedColIndex).toBe(7);
                 done();
             });
         });
@@ -1222,4 +1310,29 @@ describe('Clipboard ->', () => {
                 });
             });
         });
+
+        describe('EJ2-69857', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        ranges: [{
+                            dataSource: defaultData
+                        }]
+                    }]
+                }, done)
+            })
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Copy paste not working for data validation applied cells', (done: Function) => {
+                helper.getInstance().addDataValidation({ type: 'List', value1: 'Loafers', ignoreBlank: true }, `A:A`)
+                helper.invoke('selectRange', ['A1:A11'])
+                helper.invoke('copy').then(() => {
+                    helper.invoke('selectRange', ['D1:D11'])
+                    helper.invoke('paste');
+                    helper.invoke('addInvalidHighlight');
+                    done()
+                })
+            })
+        })
 });

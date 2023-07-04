@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData,expandStateData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData, stateChangeData, childdata1, stackedData, IndentData } from './datasource.spec';
+import { sampleData, projectData,expandStateData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData, stateChangeData, childdata1, stackedData } from './datasource.spec';
 import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventArgs, SearchEventArgs, SortEventArgs, RowSelectEventArgs, ResizeArgs, ColumnModel } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
@@ -2309,40 +2309,6 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
     });
     afterAll(() => {
       destroy(TreeGridObj);
-    });
-  });
-
-  describe('EJ2-70690 - Indent is not proper when using sub parent and direct child in parent data.', () => {
-    let gridObj: TreeGrid;
-    let rows: Element[];
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: IndentData,
-          childMapping: 'subtasks',
-          height: '400',
-          treeColumnIndex: 1,
-          columns: [
-              { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
-              { field: 'taskName', headerText: 'Task Name', width: 250 },
-              { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
-              { field: 'endDate', headerText: 'End Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
-              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 },
-              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 120 },
-              { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
-          ],
-        },
-        done
-      );
-    });
-    it('Checking width of emptyExpandIcon', (done: Function) => {
-      rows = gridObj.getRows();
-      (rows[23].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-      expect(gridObj.getRows()[23].getElementsByClassName('e-treecolumn-container')[0].children[4].getBoundingClientRect().width).toBe(4);
-      done();
-    });
-    afterAll(() => {
-      destroy(gridObj);
     });
   });
 

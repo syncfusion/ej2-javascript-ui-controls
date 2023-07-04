@@ -66,7 +66,7 @@ export class Annotations {
                 }
             } else {
                 childElement.appendChild(createElement('div', {
-                    innerHTML: argsData.content
+                    innerHTML: argsData.content as string
                 }));
             }
         });

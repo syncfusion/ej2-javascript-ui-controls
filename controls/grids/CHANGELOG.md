@@ -2,52 +2,41 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 22.1.37 (2023-07-04)
 
 ### Grid
 
-#### Bug Fixes
+#### Bug fixes
 
-- `#I432845` - Fixed the issue where `Lazylaod` grouping with aggregates was not exported properly in Angular and React platforms.
-- `#F181415` - Fixed the issue where the typing for `filterbeforeopen` event of `FilterMenu` was not set properly.
-- `#I450047` - Performance degradation on infinite scrolling with column templates has been fixed.
-- `#I455291` - The issue of being unable to edit a newly added row when the dataSource is empty and infinite scrolling is enabled has been resolved.
+- `#I471572` - Fixed the issue where the Select all checkbox was disabled when using the `ResetOnRowClick` property.
+- `#I429156` - Provided the support for special characters in column field names.
+- `#I471760` - Resolved the flickering issue with grid column's `clipMode` - `EllipsisWithTooltip`.
+- `#F182956` - Fixed a typo error that occurred while setting a null value using the `setCellValue` method.
 
-## 21.1.41 (2023-04-18)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I442797` - The issue of an error occurring when hovering over the search option on a filter dropdown has been resolved and fixed.
-- `#I452425` - The row selection is not working properly when virtualisation is enabled and an odd number is set as the page size has been resolved.
-- `#I455150` - The issue with the script error while opening the custom filter template in the grid filter menu feature has been resolved.
-- `#I451761` - Script error being thrown when copying an empty Grid has been resolved.
-- `#I453134` - The last edited cell is now correctly saved when the tab key is pressed from the last row cell, even when `allowAdding` is set to `false` in batch edit mode.
-
-## 21.1.39 (2023-04-11)
+## 22.1.36 (2023-06-28)
 
 ### Grid
 
-#### Bug Fixes
+#### Bug fixes
 
-- `#I443674` - Resolved the issue where the currency format was incorrect with grid excel export.
-- `#F175708` - Fixed the issue where the change event of the textbox component was not triggered when pressing the tab key on batch edit.
-- `#I432022` - Resolved the issue where the grid was being re rendered while updating state due to the use of function type property.
-- `#I447288` - The issue of virtual scrolling not functioning correctly when rendering the Grid at the bottom of the page has been resolved.
+- `#I473934` - The issue with drag and drop within grid sample throwing a script error when pressing Enter has been resolved.
+- `#I472112` - Fixed issue with `CommandClickEventArgs` getting incorrect command column header.
+- `#I470584` - The white space issue caused by deleting the previous record has been resolved.
+- `#I471458` - The problem with the pager dropdown not working properly while cancelling paging operation has been resolved.
 
-## 21.1.38 (2023-04-04)
+## 22.1.34 (2023-06-21)
 
 ### Grid
 
-#### Bug Fixes
+#### Bug fixes
 
-- `#I446919` - Inconsistent date value when searching string value issue has been fixed.
-- `#I449503` - search bar clear icon not working when apply searching in programmatic way issue has been fixed.
-- `#I440720`, `#I451314` - Provided support for grid query with the custom dataSource while on pdf exporting.
-- `#I444506`  - Last row border is not applied while reordering a row to the last index issue has been resolved.
-- `#F180653`  - `rowHeight` does not work properly with Detail Template issue has been resolved.
-- `#F180026` - The issue of the last row being removed after adding a new row has been resolved when the page size is set to `ALL`.
+- Improved the checkbox selection functionality by integrating Grid observable binding and incorporating support for the virtual scrolling feature.
+
+#### Features
+
+- `#I451870` - The Pager component has been enhanced to be more responsive. It now includes the ability to automatically resize itself and dynamically show or hide pager items based on the width of the Grid. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/pager-dropdown.html).
+- `#FB31707` - Added functionality to support drag-and-drop of grid rows between different groups within the Grid. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/drag-drop-within-grid.html).
+- `#FB6478`, `#FB5702` - Implemented support for maintaining the state of expanded grouped rows during editing actions. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/grouping.html).
 
 ## 21.1.35 (2023-03-23)
 

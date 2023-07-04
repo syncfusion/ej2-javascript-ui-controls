@@ -1,6 +1,11 @@
 @include export-module('color-picker-theme') {
   .e-container {
-    background-color: $cpicker-color;
+    @if $skin-name == 'Material3' {
+      background: $cpicker-color;
+    }
+    @else {
+      background-color: $cpicker-color;
+    }
 
     & .e-palette {
       & .e-tile {

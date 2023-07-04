@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { PdfViewer, FormFieldModel, FormFieldType } from '../index';
 import { PdfViewerBase } from '../index';
-import { createElement, Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { splitArrayCollection, processPathData, cornersPointsBeforeRotation, Rect, PointModel } from '@syncfusion/ej2-drawings';
@@ -171,7 +171,7 @@ export class FormFields {
                             this.selectedIndex = [];
  
                             var elementValue = "";
-                            if (currentData.Name === 'RadioButton') {
+                            if (currentData.Name === 'RadioButton' || currentData.Name === 'CheckBox') {
                                 elementValue = currentData['Text'] ? currentData['Text'] : currentData['Value'];
                             }
                             else {
@@ -337,7 +337,9 @@ export class FormFields {
     private setToolTip(tooltipContent: string, targetElement: any): void {
         //initialize tooltip component
         let tooltip: Tooltip = new Tooltip({
-            content: tooltipContent
+            content:  initializeCSPTemplate(
+                function (): string { return tooltipContent; }
+            )
         });
         // render initialized tooltip
         tooltip.appendTo(targetElement);
@@ -2392,6 +2394,7 @@ export class FormFields {
         this.addSignaturePath(data, count);
         return inputField;
     }
+    
     // eslint-disable-next-line
     private addSignaturePath(signData: any, count?: number): boolean {
         this.isSignatureField = false;
@@ -2404,7 +2407,7 @@ export class FormFields {
                 // eslint-disable-next-line
                 let currentData: any = formFieldsData[m];
                 // eslint-disable-next-line max-len
-                if (currentData.ActualFieldName === null && count && (currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && (this.pdfViewer.formDesigner ? ((currentData.FieldName.split('_')[0] ) === (signData.ActualFieldName) || (currentData.FieldName.split('_')[0]) === (signData.FieldName)) : ((currentData.FieldName.split('_')[0] === (signData.FieldName)) && !isNullOrUndefined(signData.ActualFieldName)) && currentData.Value && currentData.Value !== '')) {
+                if (currentData.ActualFieldName === null && count && (currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && (this.pdfViewer.formDesigner ? ((currentData.FieldName.split('_')[0] ) === (signData.ActualFieldName) || (currentData.FieldName.split('_')[0]) === (signData.FieldName)) : ((currentData.FieldName.split('_')[0] === (signData.FieldName )) && !isNullOrUndefined(signData.ActualFieldName)) && currentData.Value && currentData.Value !== '')) {
                     signData.Value = currentData.Value;
                     signData.FontFamily = currentData.FontFamily;
                     signData.FontSize = currentData.FontSize;
@@ -2425,6 +2428,7 @@ export class FormFields {
         }
         return this.isSignatureField;
     }
+
     // eslint-disable-next-line
     private getBounds(bound: any, pageIndex: number, rotation?: any, isFieldRotated? : boolean): any {
         // eslint-disable-next-line
@@ -2791,7 +2795,7 @@ export class FormFields {
                                 formField.signatureType[0] = '';
                             }
                         }
-                        this.pdfViewer.annotation.deleteAnnotationById(annotation.id);
+                        this.pdfViewer.annotation.deleteAnnotationById(annotation.id)
                     }
                 }
                 if (currentData.Name !== 'SignatureField' && currentData.Name !== 'ink' && currentData.Name !== 'RadioButton') {

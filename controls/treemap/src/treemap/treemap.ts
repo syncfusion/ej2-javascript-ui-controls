@@ -2,7 +2,7 @@
  * Tree Map Components
  */
 
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Ajax } from '@syncfusion/ej2-base';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Fetch } from '@syncfusion/ej2-base';
 import { Complex, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Event, EmitType, Internationalization } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -562,7 +562,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private processDataManager(): void {
-        let dataModule: DataManager; let queryModule: Query; let ajaxModule: Ajax;
+        let dataModule: DataManager; let queryModule: Query; let fetchApiModule: Fetch;
         let localAjax: TreeMapAjax;
         if (this.dataSource instanceof DataManager) {
             dataModule = this.dataSource;
@@ -576,12 +576,12 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             });
         } else if (this.dataSource instanceof TreeMapAjax) {
             localAjax = this.dataSource as TreeMapAjax;
-            ajaxModule = new Ajax(localAjax.dataOptions, localAjax.type, localAjax.async, localAjax.contentType);
-            ajaxModule.onSuccess = (args: string) => {
-                this.dataSource = JSON.parse('[' + args + ']')[0];
+            fetchApiModule = new Fetch(localAjax.dataOptions, localAjax.type, localAjax.contentType);
+            fetchApiModule.onSuccess = (args: any) => {
+                this.dataSource =  args;
                 this.renderTreeMapElements();
             };
-            ajaxModule.send(localAjax.sendData);
+            fetchApiModule.send(localAjax.sendData);
         } else {
             this.renderTreeMapElements();
         }
@@ -704,6 +704,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let height: number; const titlePadding: number = 10;
         const width: number = (this.availableSize.width - this.margin.right - this.margin.left);
         style.fontFamily = style.fontFamily || this.themeStyle.fontFamily;
+        style.fontWeight = style.fontWeight || this.themeStyle.titleFontWeight;
         style.size = style.size || (type === 'title' ? this.themeStyle.fontSize : this.themeStyle.subtitleFontSize);
         if (title.text) {
             if (isNullOrUndefined(groupEle)) {
@@ -1133,6 +1134,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         this.trigger(resize, args, (observedArgs: IResizeEventArgs) => {
                             this.render();
+                            this.refreshing = false;
                         });
                     },
                     500);

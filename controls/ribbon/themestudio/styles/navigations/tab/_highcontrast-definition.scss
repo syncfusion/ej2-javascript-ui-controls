@@ -300,6 +300,7 @@ $tab-big-safari-close-icon-top: -1px !default;
 $tab-nrml-safari-close-icon-top: -1px !default;
 $tab-close-icon-color: $content-font !default;
 $tab-mob-close-icon-color: $content-font !default;
+$tab-active-close-icon-color: $content-font !default;
 $tab-close-icon-hover-color: $selection-bg !default;
 $tab-close-icon-active-color: $selection-bg !default;
 $tab-alt-close-icon-color: $content-font !default;
@@ -529,6 +530,7 @@ $tab-item-wrap-border: 2px solid $tab-wrap-border-color !default;
 $tab-clone-item-wrap-border: 2px $tab-wrap-border-color !default;
 $tab-item-wrap-hover-border: 2px solid $tab-wrap-border-color !default;
 $tab-item-wrap-hover-border-radius: 0 !default;
+$tab-item-active-hover-bg: $hover-bg-color !default;
 $tab-item-active-wrap-border: 2px solid $tab-wrap-border-color !default;
 $tab-active-wrap-position: relative !default;
 $tab-active-wrap-before-border: 1px solid $tab-active-line-color !default;
@@ -698,3 +700,5 @@ $tab-background-focused-active-wrap-icon-color: $tab-alt-active-hover-text-color
 $tab-background-accent-indicator-bg: $tab-border-color !default;
 $tab-background-active-text-font-weight: $tab-light-font-weight !default;
 $tab-background-text-color: $tab-alt-text-color !default;
+
+$tab-fill-background-disable-text-color: $tab-disable-text-color !default;

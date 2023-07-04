@@ -2,7 +2,12 @@
 
   /*! drop-down button theme */
   .e-dropdown-popup {
-    background-color: $drop-down-btn-ul-bgcolor;
+    @if $skin-name == 'Material3' {
+      background: $drop-down-btn-ul-bgcolor;
+    }
+    @else {
+      background-color: $drop-down-btn-ul-bgcolor;
+    }
     color: $drop-down-btn-color;
 
     & ul {

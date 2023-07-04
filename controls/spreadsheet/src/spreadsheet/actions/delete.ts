@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { completeAction, refreshSheetTabs, refreshImagePosition } from '../common/index';
+import { completeAction, refreshSheetTabs, refreshImagePosition, focus } from '../common/index';
 import { skipHiddenIdx, deleteAction, InsertDeleteEventArgs, triggerDataChange, ActionEventArgs } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell, getCellIndexes } from '../../workbook/index';
 
@@ -119,6 +119,7 @@ export class Delete {
         if (args.isAction) {
             delete args.isAction;
             this.parent.notify(completeAction, actionArgs);
+            focus(this.parent.element);
         } else if (!args.isUndoRedo) {
             args.isMethod = true;
             this.parent.notify(triggerDataChange, actionArgs);

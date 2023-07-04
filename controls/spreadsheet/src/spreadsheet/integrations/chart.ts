@@ -3,9 +3,9 @@
  */
 import { Spreadsheet } from '../base/index';
 import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook, getSheet } from '../../workbook/index';
-import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateToInt, LegendPosition, getSheetIndexFromAddress } from '../../workbook/common/index';
+import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, LegendPosition, getSheetIndexFromAddress, DateFormatCheckArgs, checkDateFormat } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
-import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData } from '../common/index';
+import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData, addDPRValue } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
 import { Chart, ColumnSeries, Category, ILoadedEventArgs, StackingColumnSeries, BarSeries, ChartSeriesType, AccumulationLabelPosition, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';
 import { AreaSeries, StackingAreaSeries, AccumulationChart, IAccLoadedEventArgs } from '@syncfusion/ej2-charts';
@@ -60,6 +60,7 @@ export class SpreadsheetChart {
 
     private insertChartHandler(args: { action: string, id: string, isChart?: boolean }): void {
         let chartType: ChartType = 'Column';
+        let markerVisible: boolean = false;
         switch (args.id) {
         case 'clusteredColumn':
             chartType = 'Column';
@@ -91,11 +92,23 @@ export class SpreadsheetChart {
         case 'line':
             chartType = 'Line';
             break;
+        case 'lineMarker':
+            chartType = 'Line';
+            markerVisible = true;
+            break;
         case 'stackedLine':
             chartType = 'StackingLine';
             break;
+        case 'stackedLineMarker':
+            chartType = 'StackingLine';
+            markerVisible = true;
+            break;
         case 'stackedLine100':
             chartType = 'StackingLine100';
+            break;
+        case 'stackedLine100Marker':
+            chartType = 'StackingLine100';
+            markerVisible = true;
             break;
         case 'pie':
             chartType = 'Pie';
@@ -113,11 +126,11 @@ export class SpreadsheetChart {
             chartType = 'Scatter';
             break;
         }
-        const chart: ChartModel[] = [{ type: chartType }];
+        const chart: ChartModel[] = [{ type: chartType, markerSettings : { visible : markerVisible, isFilled: true } }];
         if (args.isChart) {
             this.parent.notify(setChart, { chart: chart });
         } else {
-            this.parent.notify(chartDesignTab, { chartType: chartType, triggerEvent: true });
+            this.parent.notify(chartDesignTab, { chartType: chartType, triggerEvent: true, markerVisible: markerVisible  });
         }
     }
 
@@ -358,7 +371,7 @@ export class SpreadsheetChart {
         let pObj: object = {};
         let j: number;
         let i: number = 0; let yInc: number = 0;
-        const sArr: SeriesModel[] = []; let dtVal: number;
+        const sArr: SeriesModel[] = [];
         sheetIndex = isNullOrUndefined(sheetIndex) ? this.parent.getActiveSheet().index : sheetIndex;
         const sheet: SheetModel = this.parent.sheets[sheetIndex as number];
         const yValue: { value: number }[] = this.getRangeData({ range: yRange, sheetIdx: sheetIndex, skipFormula: true, isYvalue: true });
@@ -399,8 +412,13 @@ export class SpreadsheetChart {
                     if (isNumber(val)) {
                         val = Number(val);
                     } else {
-                        dtVal = dateToInt(isNullOrUndefined(val) ? '' : val);
-                        val = isNaN(dtVal) ? 0 : dtVal;
+                        const dateCheck: DateFormatCheckArgs ={value: isNullOrUndefined(val) ? '' : val.toString(), sheetIndex: sheetIndex, updatedVal: ''};
+                        this.parent.notify(checkDateFormat, dateCheck);
+                        if (dateCheck.isDate || dateCheck.isTime) {
+                            val = dateCheck.updatedVal;
+                        } else {
+                            val = 0;
+                        }
                     }
                     pArr.push({ x: xValue[j as number], y: val });
                 }
@@ -419,23 +437,15 @@ export class SpreadsheetChart {
                 const type: ChartType = options.type;
                 if (type === 'Line' || type === 'StackingLine' || type === 'StackingLine100') {
                     pObj = {
-                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(), marker: {
-                            visible: true,
-                            width: 10,
-                            height: 10,
-                            dataLabel: dataLabel
-                        }
+                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(),
+                        marker: options.markerSettings ? { visible: options.markerSettings.visible, width: options.markerSettings.size,
+                            height: options.markerSettings.size, shape: options.markerSettings.shape, dataLabel: dataLabel,
+                            isFilled: options.markerSettings.isFilled, border: options.markerSettings.border,
+                            fill: options.markerSettings.isFilled ? options.markerSettings.fill : null } : { dataLabel: dataLabel }
                     };
                 } else if (type === 'Scatter') {
-                    pObj = {
-                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(), marker: {
-                            visible: false,
-                            width: 12,
-                            height: 12,
-                            shape: 'Circle',
-                            dataLabel: dataLabel
-                        }
-                    };
+                    pObj = { dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(),
+                        marker: { visible: false, width: 12, height: 12, shape: 'Circle', dataLabel: dataLabel } };
                 } else if (type === 'Pie' || type === 'Doughnut') {
                     const innerRadius: string = options.type === 'Pie' ? '0%' : '40%';
                     const visible: boolean = dataLabel.visible;
@@ -592,6 +602,21 @@ export class SpreadsheetChart {
         if (sheetIdx === this.parent.activeSheetIndex && isRangeSelect) {
             this.focusChartRange(xRange, yRange, lRange);
         }
+        if (argsOpt.triggerEvent && !argsOpt.isRefresh) {
+            eventArgs = { type: chart.type, theme: chart.theme, isSeriesInRows: chart.isSeriesInRows, range: chart.range,
+                markerSettings: options.markerSettings, id: chart.id, height: chart.height, width: chart.width, posRange: argsOpt.range,
+                isInitCell: argsOpt.isInitCell, cancel: false };
+            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeInsertChart' });
+            if (eventArgs.cancel) { return []; }
+            chart.type = eventArgs.type;
+            chart.theme = eventArgs.theme;
+            chart.isSeriesInRows = eventArgs.isSeriesInRows;
+            chart.markerSettings = eventArgs.markerSettings;
+            chart.range = eventArgs.range;
+            chart.id = eventArgs.id;
+            chart.height = eventArgs.height;
+            chart.width = eventArgs.width;
+        }
         const chartOptions: { series: SeriesModel[] | AccumulationSeriesModel[], xRange: number[], yRange: number[], lRange: number[] } =
             this.processChartSeries(options, argsOpt.dataSheetIdx, xRange, yRange, lRange);
         const primaryXAxis: AxisModel = {
@@ -624,35 +649,26 @@ export class SpreadsheetChart {
         if (argsOpt.isRefresh) {
             return chartOptions.series;
         }
-        if (argsOpt.triggerEvent) {
-            eventArgs = {
-                type: chart.type, theme: chart.theme, isSeriesInRows: chart.isSeriesInRows, range: chart.range, id: chart.id,
-                height: chart.height, width: chart.width, posRange: argsOpt.range, isInitCell: argsOpt.isInitCell, cancel: false
-            };
-            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeInsertChart' });
-            if (eventArgs.cancel) { return []; }
-            chart.type = eventArgs.type;
-            chart.theme = eventArgs.theme;
-            chart.isSeriesInRows = eventArgs.isSeriesInRows;
-            chart.range = eventArgs.range;
-            chart.id = eventArgs.id;
-            chart.height = eventArgs.height;
-            chart.width = eventArgs.width;
-        }
         const id: string = chart.id + '_overlay';
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
-        const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, getSheetIndexFromAddress(this.parent, eleRange));
-        element.classList.add('e-datavisualization-chart');
-        element.style.width = chart.width + 'px';
-        element.style.height = chart.height + 'px';
+        const overlayProps: { element: HTMLElement, top: number, left: number } = overlayObj.insertOverlayElement(id, eleRange, getSheetIndexFromAddress(this.parent, eleRange));
+        overlayProps.element.classList.add('e-datavisualization-chart');
+        overlayProps.element.style.width = chart.width + 'px';
+        overlayProps.element.style.height = chart.height + 'px';
         if (sheet.frozenRows || sheet.frozenColumns) {
-            overlayObj.adjustFreezePaneSize(chart, element, eleRange);
+            overlayObj.adjustFreezePaneSize(chart, overlayProps.element, eleRange);
         } else {
-            element.style.top = isNullOrUndefined(chart.top) ? element.style.top : (chart.top + 'px');
-            element.style.left = isNullOrUndefined(chart.left) ? element.style.left : (chart.left + 'px');
-            chart.top = parseInt(element.style.top.replace('px', ''), 10);
-            chart.left = parseInt(element.style.left.replace('px', ''), 10);
+            if (isNullOrUndefined(chart.top)) {
+                chart.top = overlayProps.top;
+            } else {
+                overlayProps.element.style.top = Number(addDPRValue(chart.top).toFixed(2)) + 'px';
+            }
+            if (isNullOrUndefined(chart.left)) {
+                chart.left = overlayProps.left;
+            } else {
+                overlayProps.element.style.left = Number(addDPRValue(chart.left).toFixed(2)) + 'px';
+            }
         }
         this.parent.notify(overlayEleSize, { height: chart.height, width: chart.width });
         const legendSettings: LegendSettingsModel =
@@ -666,7 +682,9 @@ export class SpreadsheetChart {
                 id: chart.id, className: chart.id
             });
         const theme: ChartTheme = chart.theme || 'Material';
-        const format: string = this.primaryYAxisFormat(yRange)
+        const format: string = this.primaryYAxisFormat(yRange);
+        const borderWidth: number = Math.round(parseFloat(getComputedStyle(overlayProps.element).borderWidth)) * 2;
+        const height: string = (parseFloat(overlayProps.element.style.height) - (isNaN(borderWidth) ? 0 : borderWidth)) + 'px';
         if (chart.type !== 'Pie' && chart.type !== 'Doughnut') {
             this.chart = new Chart({
                 primaryXAxis: primaryXAxis,
@@ -684,8 +702,9 @@ export class SpreadsheetChart {
                 tooltip: {
                     enable: true
                 },
-                width: element.style.width,
-                height: element.style.height,
+                width: overlayProps.element.style.width,
+                height: height,
+                enableRtl: this.parent.enableRtl,
                 load: (args: ILoadedEventArgs) => {
                     args.chart.theme = chart.theme || 'Material';
                 },
@@ -693,7 +712,7 @@ export class SpreadsheetChart {
                     args.cancelResizedEvent = true; // This is for cancel the resized event.
                 },
                 axisLabelRender: (args: IAxisLabelRenderEventArgs) => {
-                    if(args.axis.name == "primaryYAxis" && format && !isNullOrUndefined(args.value) && this.parent){
+                    if (args.axis.name === 'primaryYAxis' && format && !isNullOrUndefined(args.value) && this.parent) {
                         args.text = this.parent.getDisplayText({ format: format, value: args.value.toString()});
                     }
                 }
@@ -706,11 +725,12 @@ export class SpreadsheetChart {
                 theme: theme,
                 background: this.getThemeBgColor(theme),
                 series: chartOptions.series as AccumulationSeriesModel[],
-                width: element.style.width,
-                height: element.style.height,
+                width: overlayProps.element.style.width,
+                height: height,
                 center: { x: '50%', y: '50%' },
                 enableSmartLabels: true,
                 enableAnimation: true,
+                enableRtl: this.parent.enableRtl,
                 load: (args: IAccLoadedEventArgs) => {
                     args.chart.theme = chart.theme || 'Material';
                 },
@@ -720,9 +740,9 @@ export class SpreadsheetChart {
             });
             this.chart.appendTo(chartContent);
         }
-        element.appendChild(chartContent);
-        if (element.classList.contains('e-ss-overlay-active')) {
-            this.parent.notify(insertDesignChart, { id: element.id });
+        overlayProps.element.appendChild(chartContent);
+        if (overlayProps.element.classList.contains('e-ss-overlay-active')) {
+            this.parent.notify(insertDesignChart, { id: overlayProps.element.id });
         }
         if (argsOpt.triggerEvent) {
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'insertChart' });
@@ -757,7 +777,7 @@ export class SpreadsheetChart {
             }
         }
         const eventArgs: BeforeChartEventArgs = {
-            id: chartObj.id, range: chartObj.range, type: chartObj.type, theme: chartObj.theme, height: chartObj.height,
+            id: chartObj.id, range: chartObj.range, type: chartObj.type, markerSettings: chartObj.markerSettings, theme: chartObj.theme, height: chartObj.height,
             width: chartObj.width, isSeriesInRows: chartObj.isSeriesInRows, isInitCell: true, posRange: null,
             top: chartObj.top, left: chartObj.left, cancel: false
         };
@@ -774,8 +794,8 @@ export class SpreadsheetChart {
                     chartleft.target = this.parent.getRowHeaderTable();
                 }
             } else {
-                chartTop = { clientY: chartElements.offsetTop, isImage: true };
-                chartleft = { clientX: chartElements.offsetLeft, isImage: true };
+                chartTop = { clientY: parseFloat(chartElements.style.top), isImage: true };
+                chartleft = { clientX: parseFloat(chartElements.style.left), isImage: true };
             }
             this.parent.notify(deleteChartColl, { id: args.id });
             this.parent.notify(getRowIdxFromClientY, chartTop); this.parent.notify(getColIdxFromClientX, chartleft);
@@ -1036,7 +1056,7 @@ export class SpreadsheetChart {
     }
 
     private undoRedoForChartDesign(
-        args: { addChartEle: string, switchRowColumn: boolean, chartTheme: ChartTheme, chartType: ChartType,
+        args: { addChartEle: string, switchRowColumn: boolean, chartTheme: ChartTheme, chartType: ChartType, chartMarker: boolean,
             beforeActionData: BeforeActionData, address: string, id: string, title: string, isUndo: boolean }): void {
         const overlayElem: HTMLElement = document.getElementById(args.id);
         if (!overlayElem) {
@@ -1059,12 +1079,13 @@ export class SpreadsheetChart {
                 break;
             }
         }
+        let isMarkerEnabled: boolean = isNullOrUndefined(chart.markerSettings) ? false : chart.markerSettings.visible;
         if (args.switchRowColumn) {
             this.switchRowColumn(chartCollectionId, chartElem.id, chartComp, cell);
         } else if (args.chartTheme) {
             this.switchChartTheme(chartCollectionId, chartElem.id, args.isUndo ? chart.theme : args.chartTheme, chartComp, cell);
         } else if (args.chartType) {
-            this.switchChartType(chartCollectionId, chartElem.id, args.isUndo ? chart.type : args.chartType, chartComp, cell);
+            this.switchChartType(chartCollectionId, chartElem.id, args.isUndo ? chart.type : args.chartType, chartComp, cell,  false, args.isUndo ? isMarkerEnabled : args.chartMarker, 'undoRedo');
         } else if (args.addChartEle) {
             if (args.isUndo) {
                 let position: string;
@@ -1109,7 +1130,7 @@ export class SpreadsheetChart {
 
     private chartDesignTabHandler(
         args: { switchRowColumn?: boolean, chartType?: ChartType, chartTheme?: ChartTheme, addChartEle?: string, id?:string, title?:string,
-            triggerEvent?: boolean }): void {
+            triggerEvent?: boolean, markerVisible?: boolean  }): void {
         let isAccumulationChart: boolean = false;
         const sheet: SheetModel = this.parent.sheets[this.parent.activeSheetIndex];
         const switchRowColumn: boolean = args.switchRowColumn;
@@ -1163,7 +1184,7 @@ export class SpreadsheetChart {
             this.switchRowColumn(chartCollId, chartId, chartComp, currCellObj);
         }
         if (chartType) {
-            this.switchChartType(chartCollId, chartId, chartType, chartComp, currCellObj);
+            this.switchChartType(chartCollId, chartId, chartType, chartComp, currCellObj, args.markerVisible);
         }
         if (chartTheme) {
             this.switchChartTheme(chartCollId, chartId, chartTheme, chartComp, currCellObj);
@@ -1182,7 +1203,7 @@ export class SpreadsheetChart {
             }
         }
         if (args.triggerEvent && !opensTitleDialog) {
-            const eventArgs = { switchRowColumn: args.switchRowColumn, chartType: args.chartType, chartTheme: args.chartTheme,
+            const eventArgs = { switchRowColumn: args.switchRowColumn, chartType: args.chartType, chartMarker: args.markerVisible, chartTheme: args.chartTheme,
                 addChartEle: args.addChartEle, id: overlayElem.id, address: address };
             this.parent.notify(completeAction, { action: 'chartDesign', eventArgs: eventArgs });
         }
@@ -1194,8 +1215,7 @@ export class SpreadsheetChart {
                 true : !this.parent.chartColl[chartCollId as number].isSeriesInRows;
         for (let idx: number = 0, chartCount: number = cell.chart.length; idx < chartCount; idx++) {
             if (cell.chart[idx as number].id === chartId) {
-                cell.chart[idx as number].isSeriesInRows =
-                    isNullOrUndefined(cell.chart[idx as number].isSeriesInRows) ? true : !cell.chart[idx as number].isSeriesInRows;
+                cell.chart[idx as number].isSeriesInRows = this.parent.chartColl[chartCollId as number].isSeriesInRows;
             }
         }
         const chartSeries: SeriesModel[] =
@@ -1237,6 +1257,9 @@ export class SpreadsheetChart {
                 case 'FluentDark':
                     bg = '#1b1a19';
                     break;
+                case 'Material3Dark':
+                    bg = '#1C1B1F';
+                    break;
             }
         } else if (theme.includes('HighContrast')) {
             bg = '#000000';
@@ -1247,12 +1270,15 @@ export class SpreadsheetChart {
     }
 
     private switchChartType(
-        chartCollId: number, chartId: string, chartType: ChartType, chartComp: Chart | AccumulationChart, cell: CellModel): void {
+        chartCollId: number, chartId: string, chartType: ChartType, chartComp: Chart | AccumulationChart, cell: CellModel, markerVisible?: boolean, enableMarker?: boolean, action?: string): void {
         const type: ChartType = this.parent.chartColl[chartCollId as number].type;
         this.parent.chartColl[chartCollId as number].type = chartType;
         for (let idx: number = 0, chartCount: number = cell.chart.length; idx < chartCount; idx++) {
             if (cell.chart[idx as number].id === chartId) {
                 cell.chart[idx as number].type = chartType;
+                if (!isNullOrUndefined(cell.chart[idx as number].markerSettings)) {
+                    cell.chart[idx as number].markerSettings.visible = markerVisible;
+                }
             }
         }
         if (chartType !== 'Pie' && chartType !== 'Doughnut') {
@@ -1260,8 +1286,18 @@ export class SpreadsheetChart {
                 this.changeCharType(chartCollId);
             } else {
                 const chartSeries: SeriesModel[] = chartComp.series as SeriesModel[];
+                const isLineChart: boolean = chartType === 'Line' || chartType === 'StackingLine' || chartType === 'StackingLine100';
                 for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {
                     chartSeries[idx as number].type = chartType as ChartSeriesType;
+                    if (isLineChart) {
+                        chartSeries[idx as number].marker.visible = markerVisible;
+                        chartSeries[idx as number].marker.shape = isNullOrUndefined(chartSeries[idx as number].marker.shape) ? 'Circle' : chartSeries[idx as number].marker.shape;
+                        if (action === 'undoRedo') {
+                            chartSeries[idx as number].marker.visible = enableMarker;
+                        }
+                    } else {
+                        chartSeries[idx as number].marker.visible = false;
+                    }
                 }
                 chartComp.series = chartSeries;
                 chartComp.refresh();

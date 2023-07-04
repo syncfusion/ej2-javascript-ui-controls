@@ -62,9 +62,9 @@ export class Snapping {
             }
         }
         return selectedObject.wrapper;
-    };
-    
-    public setSnapLineColor():string
+    }
+
+    public setSnapLineColor(): string
     {
         return this.diagram.snapSettings.snapLineColor;
     }
@@ -79,8 +79,7 @@ export class Snapping {
         const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
         const zoomFactor: number = this.diagram.scroller.currentZoom;
         const offset: PointModel = { x: 0, y: 0 };
-        let wrapper: Container;
-        wrapper = this.getWrapperObject(selectedObject, diagram.nameTable);
+        const wrapper: Container = this.getWrapperObject(selectedObject, diagram.nameTable);
         const bounds: Rect = getBounds(wrapper);
         const horizontallysnapped: Snap = { snapped: false, offset: 0 };
         const verticallysnapped: Snap = { snapped: false, offset: 0 };
@@ -213,8 +212,7 @@ export class Snapping {
         const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
         const objectsAtLeft: Objects[] = []; const objectsAtRight: Objects[] = []; const objectsAtTop: Objects[] = [];
         const objectsAtBottom: Objects[] = [];
-        let wrapper: Container;
-        wrapper = this.getWrapperObject(selectedObject, diagram.nameTable);
+        const wrapper: Container = this.getWrapperObject(selectedObject, diagram.nameTable);
         const bounds: Rect = getBounds(wrapper); const scale: number = diagram.scroller.currentZoom;
         const hoffset: number = -scroller.horizontalOffset; const voffset: number = -scroller.verticalOffset;
         const snapObjDistance: number = snapSettings.snapObjectDistance / scale;
@@ -604,8 +602,8 @@ export class Snapping {
             y: (end.y + transform.ty) * transform.scale
         };
         const line1: LineAttributes = {
-            stroke:this.setSnapLineColor(), strokeWidth: 1, startPoint: { x: start.x, y: start.y },
-            endPoint: { x: end.x, y: end.y }, fill:this.setSnapLineColor(), dashArray: '', width: 1,
+            stroke: this.setSnapLineColor(), strokeWidth: 1, startPoint: { x: start.x, y: start.y },
+            endPoint: { x: end.x, y: end.y }, fill: this.setSnapLineColor(), dashArray: '', width: 1,
             x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
             pivotY: 0, visible: true, opacity: 1, id: randomId()
         };
@@ -707,8 +705,7 @@ export class Snapping {
         this.sortByDistance(objectsAtTop, 'distance', true);
         this.sortByDistance(objectsAtBottom, 'distance', true);
         const equallySpaced: Objects[] = [];
-        let wrapper: Container;
-        wrapper = this.getWrapperObject(shape, diagram.nameTable);
+        const wrapper: Container = this.getWrapperObject(shape, diagram.nameTable);
         const bounds: Rect = getBounds(wrapper);
         let nearesttop: Rect; let nearestbottom: Rect;
         let targetBounds: Rect;
@@ -930,7 +927,7 @@ export class Snapping {
             line1 = {
                 startPoint: { x: end.x - 8, y: end.y + 1 },
                 endPoint: { x: end.x + 8, y: end.y + 1 },
-                stroke:this.setSnapLineColor(),
+                stroke: this.setSnapLineColor(),
                 strokeWidth: 1, fill: this.setSnapLineColor(), dashArray: '', width: 1, x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
                 pivotY: 0, visible: true, opacity: 1, id: this.getAdornerLayerSvg().id + 'spacing'
             };
@@ -975,7 +972,7 @@ export class Snapping {
         }
         line1 = {
             startPoint: { x: start.x, y: start.y },
-            endPoint: { x: end.x, y: end.y }, stroke: this.setSnapLineColor(), strokeWidth: 1, fill:this.setSnapLineColor(),
+            endPoint: { x: end.x, y: end.y }, stroke: this.setSnapLineColor(), strokeWidth: 1, fill: this.setSnapLineColor(),
             dashArray: '0', width: 1, x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
             pivotY: 0, visible: true, opacity: 1, id: randomId()
         };
@@ -1133,7 +1130,7 @@ export class Snapping {
                     nd = quad.objects[parseInt(j.toString(), 10)] as DiagramElement;
                     if (!(this.diagram.nameTable[nd.id] instanceof Connector) && nd.visible
                         && !(this.diagram.nameTable[nd.id].shape.type === 'SwimLane') && !(this.diagram.nameTable[nd.id].isLane) &&
-                        !(this.diagram.nameTable[nd.id].isPhase) && !(this.diagram.nameTable[nd.id].isHeader) && nd.id != 'helper') {
+                        !(this.diagram.nameTable[nd.id].isPhase) && !(this.diagram.nameTable[nd.id].isHeader) && nd.id !== 'helper') {
                         bounds = getBounds(nd);
                         if (nodes.indexOf(nd) === -1 && this.intersectsRect(child, bounds)) {
                             nodes.push(nd);

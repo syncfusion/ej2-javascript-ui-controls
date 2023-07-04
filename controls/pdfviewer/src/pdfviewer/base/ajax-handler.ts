@@ -42,6 +42,7 @@ export class AjaxHandler {
     private pdfViewer: PdfViewer;
     private retryCount: number;
     private retryStatusCodes : number[];
+    private retryTimeout: number = 0;
 
     /**
      * Constructor for Ajax class
@@ -52,6 +53,7 @@ export class AjaxHandler {
         this.pdfViewer = pdfviewer;
         this.retryCount = pdfviewer.retryCount;
         this.retryStatusCodes = pdfviewer.retryStatusCodes;
+        this.retryTimeout = 1000 * pdfviewer.retryTimeout;
     }
 
     /**
@@ -63,6 +65,7 @@ export class AjaxHandler {
      */
     public send(jsonObj: object): void {
         this.httpRequest = new XMLHttpRequest();
+        this.httpRequest.timeout = this.retryTimeout;
         if (!this.mode) {
             setTimeout(() => {
                 this.sendRequest(jsonObj);
@@ -79,7 +82,22 @@ export class AjaxHandler {
                 this.retryCount = 0;
             }
             if (this.retryCount > 0) {
-                isSkip = this.resendRequest(this, jsonObj);
+                isSkip = this.resendRequest(this, jsonObj, false);
+            }
+            if (!isSkip) {
+                this.stateChange(this);
+            }
+        };
+        this.httpRequest.ontimeout = () => {
+            let isSkip: boolean = false;
+            // tslint:disable-next-line
+            let viewerBase: any = this.pdfViewer.viewerBase;
+            if (viewerBase && viewerBase.isPasswordAvailable && viewerBase.passwordData === '') {
+                isSkip = true;
+                this.retryCount = 0;
+            }
+            if (this.retryCount > 0) {
+                isSkip = this.resendRequest(this, jsonObj, true);
             }
             if (!isSkip) {
                 this.stateChange(this);
@@ -102,7 +120,7 @@ export class AjaxHandler {
         this.onError = null;
      }
     // eslint-disable-next-line
-    private resendRequest(proxy: AjaxHandler, jsonObj: any): boolean {
+    private resendRequest(proxy: AjaxHandler, jsonObj: any, isTimeout: boolean): boolean {
         let isSkip: boolean = false;
         const status: number = proxy.httpRequest.status;
         let statusString : boolean = this.retryStatusCodes.indexOf(status) !== -1;
@@ -127,7 +145,7 @@ export class AjaxHandler {
                 }
             }
         }
-        if (statusString || isSkip) {
+        if (statusString || isSkip || isTimeout) {
             isSkip = true;
             this.retryCount--;
             proxy.pdfViewer.fireAjaxRequestFailed(status, proxy.httpRequest.statusText, jsonObj.action, true);

@@ -4,10 +4,10 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ImageFormatInfo, ImageStringInfo, HelperMethods } from '../index';
 import { Dictionary, TabJustification, TabLeader, WColumnFormat, LocaleId } from '../../index';
 import { WTabStop } from '../index';
-import { ProtectionType, CompatibilityMode } from '../../base';
+import { ProtectionType, CompatibilityMode, BreakClearType } from '../../base';
 import { DocumentHelper } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
-import { sectionsProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty , isAfterRowMarkProperty, isAfterParagraphMarkProperty, columnCountProperty, gridProperty} from '../../index';
+import { sectionsProperty, fontSubstitutionTableProperty, breakClearTypeProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty , isAfterRowMarkProperty, isAfterParagraphMarkProperty, columnCountProperty, gridProperty, characterSpacingProperty, scalingProperty} from '../../index';
 
 /**
  * Exports the document to Word format.
@@ -1606,7 +1606,9 @@ export class WordExport {
     private serializeTrackChanges(writer: XmlWriter, type: any, author: any, date: any): void {
         writer.writeStartElement('w', type, this.wNamespace);
         writer.writeAttributeString('w', 'id', this.wNamespace, (this.trackChangesId++).toString());
-        writer.writeAttributeString('w', 'author', this.wNamespace, author);
+        if(author != "Unknown") {
+            writer.writeAttributeString('w', 'author', this.wNamespace, author);
+        }
         writer.writeAttributeString('w', 'date', this.wNamespace, date);
     }
 
@@ -2441,7 +2443,7 @@ export class WordExport {
                     const isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
                     if (isNullOrUndefined(isString) && format === 'm/d/yyyy') {
                         type = 's';
-                    } else if ((!isString && !isNullOrUndefined(isString)) || isScatterType) {
+                    } else if (!isString || isScatterType) {
                         type = 'n';
                     } else {
                         type = 's';
@@ -2466,7 +2468,7 @@ export class WordExport {
                 writer.writeStartElement(undefined, 'v', undefined);
                 if (row === 0 && column === 0 && !isScatterType) {
                     writer.writeString(this.chartStringCount.toString());
-                } else if (type === 's') {
+                } else if (type === 's' && count < this.chartStringCount) {
                     writer.writeString(count.toString());
                     count++;
                 } else if (row !== 0 && type !== 's' && column === 0 && column !== (bubbleLength)) {
@@ -3351,7 +3353,7 @@ export class WordExport {
                 writer.writeAttributeString(undefined, 'cap', undefined, 'rnd');
             }
             if (chartType !== 'lineChart') {
-                this.serializeChartSolidFill(writer, data[fillProperty[this.keywordIndex]][foreColorProperty[this.keywordIndex]], true);
+                this.serializeChartSolidFill(writer, this.getColor(data[fillProperty[this.keywordIndex]][rgbProperty[this.keywordIndex]]), true);
             } else {
                 this.serializeChartSolidFill(writer, data[lineProperty[this.keywordIndex]][colorProperty[this.keywordIndex]], true);
             }
@@ -4635,18 +4637,19 @@ export class WordExport {
                 let bottom: string = Math.round(table[positioningProperty[this.keywordIndex]][distanceBottomProperty[this.keywordIndex]] * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'bottomFromText', this.wNamespace, bottom);
             }
-            if (table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]]) {
+            if (!isNullOrUndefined(table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]])) {
                 let verticalOrigin: string = table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Paragraph') ? 'text' : this.getTableVerticalRelation(table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]]).toLowerCase();
                 writer.writeAttributeString('w', 'vertAnchor', this.wNamespace, verticalOrigin);
             }
-            if (table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]] && table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'Column')) {
-                writer.writeAttributeString('w', 'horzAnchor', this.wNamespace, this.getTableHorizontalRelation(table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]]).toLowerCase());
+            if (!isNullOrUndefined(table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]]) && table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'Column')) {
+                let horizontalOrigin: string = this.keywordIndex == 1 ? this.getTableHorizontalRelation(table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]]).toLowerCase() : table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]].toLowerCase();
+                writer.writeAttributeString('w', 'horzAnchor', this.wNamespace, horizontalOrigin);
             }
-            if (table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]] && table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'Left')) {
+            if (!isNullOrUndefined(table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]]) && table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'Left')) {
                 let horizontalAlignment: string = this.keywordIndex == 1 ? this.getTableHorizontalAlignment(table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]]) : table[positioningProperty[this.keywordIndex]][horizontalAlignmentProperty[this.keywordIndex]].toLowerCase();
                 writer.writeAttributeString('w', 'tblpXSpec', this.wNamespace, horizontalAlignment);
             }
-            if (table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]] && table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'None')) {
+            if (!isNullOrUndefined(table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]]) && table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'None')) {
                 let verticalAlignment: string = this.keywordIndex == 1 ? this.getTableVerticalAlignment(table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]]) : table[positioningProperty[this.keywordIndex]][verticalAlignmentProperty[this.keywordIndex]].toLowerCase();
                 writer.writeAttributeString('w', 'tblpYSpec', this.wNamespace, verticalAlignment);
             }
@@ -5206,6 +5209,11 @@ export class WordExport {
             writer.writeElementString(undefined, 'tab', this.wNamespace, undefined);
         } else if (span[textProperty[this.keywordIndex]] === '\v') {
             writer.writeElementString(undefined, 'br', this.wNamespace, undefined);
+        } else if (!isNullOrUndefined(span[breakClearTypeProperty[this.keywordIndex]])) {
+            writer.writeStartElement(undefined, 'br', this.wNamespace);
+            writer.writeAttributeString('w', 'type', this.wNamespace, "textWrapping");
+            writer.writeAttributeString('w', 'clear', this.wNamespace, this.getBreakClearType(span[breakClearTypeProperty[this.keywordIndex]]).toString().toLowerCase());
+            writer.writeEndElement();
         } else if (span[textProperty[this.keywordIndex]] === '\f') {
             writer.writeStartElement(undefined, 'br', this.wNamespace);
             writer.writeAttributeString('w', 'type', this.wNamespace, 'page');
@@ -5634,6 +5642,20 @@ export class WordExport {
                 return 'None';
         }
     }
+    private getBreakClearType(breakClearType: number | BreakClearType): BreakClearType {
+        switch (breakClearType) {
+            case 0:
+                return 'None';
+            case 1:
+                return 'Left';
+            case 2:
+                return 'Right';
+            case 3:
+                return 'All';
+            default: 
+                return breakClearType as BreakClearType;
+        }
+    }
     // // Seraializes the pargraph list format
     // private serializeListParagraph(writer: XmlWriter, paragraph: any): void {
     //     if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
@@ -5688,9 +5710,10 @@ export class WordExport {
             if (!isNullOrUndefined(lf[listIdProperty[this.keywordIndex]])) {
                 writer.writeStartElement(undefined, 'numId', this.wNamespace);
                 let listId = (lf[listIdProperty[this.keywordIndex]] + 1).toString()
-                if (lf[listIdProperty[this.keywordIndex]] === -1) {
-                    listId = '';
-                }
+                // When attempting to open the exported document in tika server, the empty listId value is having trouble.So commented this below lines
+                // if (lf[listIdProperty[this.keywordIndex]] === -1) {
+                //     listId = '';
+                // }
                 writer.writeAttributeString('w', 'val', this.wNamespace, listId);
                 writer.writeEndElement();
             }
@@ -6040,7 +6063,7 @@ export class WordExport {
             writer.writeStartElement(undefined, 'rFonts', this.wNamespace);
             if (!isNullOrUndefined(characterFormat[fontFamilyAsciiProperty[this.keywordIndex]])) {
                 let key: string = HelperMethods.isThemeFont(characterFormat[fontFamilyAsciiProperty[this.keywordIndex]]) ? 'asciiTheme' : 'ascii';
-                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat[fontFamilyProperty[this.keywordIndex]]);
+                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat[fontFamilyAsciiProperty[this.keywordIndex]]);
             }
             if (!isNullOrUndefined(characterFormat[fontFamilyFarEastProperty[this.keywordIndex]])) {
                 let key: string = HelperMethods.isThemeFont(characterFormat[fontFamilyFarEastProperty[this.keywordIndex]]) ? 'eastAsiaTheme' : 'eastAsia';
@@ -6108,6 +6131,16 @@ export class WordExport {
         if (!isNullOrUndefined(characterFormat[fontSizeProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'sz', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, this.roundToTwoDecimal(characterFormat[fontSizeProperty[this.keywordIndex]] * 2).toString());
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(characterFormat[characterSpacingProperty[this.keywordIndex]])) {
+            writer.writeStartElement(undefined, 'spacing', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, (characterFormat[characterSpacingProperty[this.keywordIndex]] * 20).toString());
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(characterFormat[scalingProperty[this.keywordIndex]])) {
+            writer.writeStartElement(undefined, 'w', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, (characterFormat[scalingProperty[this.keywordIndex]]).toString());
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(characterFormat[fontSizeBidiProperty[this.keywordIndex]])) {
@@ -6928,7 +6961,7 @@ export class WordExport {
                 let mImage: any = images.get(keys[i]);
                 let imageStringInfo: ImageStringInfo = this.getBase64ImageString(mImage);
                 base64ImageString = imageStringInfo.imageString;
-                if (HelperMethods.parseBoolValue(mImage.isMetaFile)) {
+                if (HelperMethods.parseBoolValue(mImage[isMetaFileProperty[this.keywordIndex]])) {
                     let format: string = HelperMethods.formatClippedString(imageStringInfo.metaFileImageString).extension;
                     if (format !== '.svg' || isSvg) {
                         base64ImageString = imageStringInfo.metaFileImageString;

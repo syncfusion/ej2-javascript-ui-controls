@@ -8,7 +8,9 @@
       border-bottom: $image-editor-border;
 
       & .e-toolbar-item:hover .filterwrapper,
-      & .e-toolbar-item.e-selected .filterwrapper{
+      & .e-toolbar-item.e-selected .filterwrapper,
+      & .e-toolbar-item:hover .filter-wrapper,
+      & .e-toolbar-item.e-selected .filter-wrapper {
         border-color: $btn-active-bgcolor;
       }
     }
@@ -39,6 +41,9 @@
           @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' $skin-name == 'bootstrap5-dark' {
             background: $tbar-default-bg;
             color: $tbar-default-icon-color;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: none;
           }
 
           & .e-caret-hide {
@@ -97,7 +102,9 @@
 
 .e-dropdown-popup {
   & .e-selected-btn {
-    background: $image-editor-icon-sel-bg-color !important; /* stylelint-disable-line declaration-no-important */
+    @if $skin-name != 'highcontrast' {
+      background: $image-editor-icon-sel-bg-color !important; /* stylelint-disable-line declaration-no-important */
+    }
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
       color: $secondary-text-color-focus !important; /* stylelint-disable-line declaration-no-important */
     }

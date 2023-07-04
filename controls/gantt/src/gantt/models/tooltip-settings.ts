@@ -16,31 +16,35 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Defines tooltip template for taskbar elements.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public taskbar: string;
+    public taskbar: string | Function;
 
     /**
      * Defines template for baseline tooltip element.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public baseline: string;
+    public baseline: string | Function;
 
     /**
      * Defines template for dependency line tooltip.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public connectorLine: string;
+    public connectorLine: string | Function;
 
     /**
      * Defines tooltip template for taskbar editing action.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public editing: string;
+    public editing: string | Function;
 }

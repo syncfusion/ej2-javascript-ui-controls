@@ -26,7 +26,7 @@ import { ConnectorEditing } from './connector-editing';
 import { Selector } from '../objects/node';
 import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
-import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints } from '../enum/enum';
+import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints, PortConstraints, NudgeDirection } from '../enum/enum';
 import { BlazorAction, ScrollActions } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParentInSwimlane } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
@@ -64,7 +64,7 @@ import { HistoryEntry } from '../diagram/history';
 import { GridPanel } from '../core/containers/grid';
 import { Canvas } from '../core/containers/canvas';
 import { DiagramHtmlElement } from '../core/elements/html-element';
-import { randomId } from '../index';
+import { PathElement, randomId } from '../index';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { isBlazor } from '@syncfusion/ej2-base';
 import { BlazorTooltip } from '../blazor-tooltip/blazor-Tooltip';
@@ -157,7 +157,7 @@ export class DiagramEventHandler {
 
     private lastObjectUnderMouse: NodeModel | ConnectorModel;
 
-    private hoverElement: NodeModel | ConnectorModel;
+    private hoverElement: NodeModel | ConnectorModel | PointPortModel;
 
     private hoverNode: NodeModel;
 
@@ -384,7 +384,7 @@ export class DiagramEventHandler {
                         // EJ2-32213- Added the below code to check whether the userhandle has tooltip content.
                         // If userhandle has tooltip content then we open the tooltip based on the userhandle shape
                         if (arg.element.tooltip && arg.element.tooltip.openOn === 'Auto' && arg.element.tooltip.content !== '') {
-                            updateTooltip(this.diagram,arg.element );
+                            updateTooltip(this.diagram, arg.element );
                             let targetEle: HTMLElement;
                             if (arg.element.pathData){
                                 targetEle =  document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_userhandle');
@@ -436,7 +436,7 @@ export class DiagramEventHandler {
         this.focus = true;
         //let touches: TouchList;
         const touches: TouchList = (<TouchEvent & PointerEvent>evt).touches;
-        let isSymblDragging: boolean = document.getElementsByClassName('e-dragclone')[0] ? true : false;
+        const isSymblDragging: boolean = document.getElementsByClassName('e-dragclone')[0] ? true : false;
         if (this.isMouseOnScrollBar(evt) && !isSymblDragging) {
             this.isScrolling = true;
             evt.preventDefault();
@@ -477,7 +477,7 @@ export class DiagramEventHandler {
                     this.diagram.endEdit();
                     this.diagram.textEditing = false;
                     // EJ2-57743 - Added below code to refresh the diagram layer after the annotation gets edited in canvas mode.
-                    if(this.diagram.mode === 'Canvas' && this.diagram.scroller.currentZoom !== 1) {
+                    if (this.diagram.mode === 'Canvas' && this.diagram.scroller.currentZoom !== 1) {
                         this.diagram.refreshDiagramLayer();
                     }
                 }
@@ -537,10 +537,10 @@ export class DiagramEventHandler {
         if (this.eventArgs.target) {
             this.hoverElement = this.eventArgs.target;
         }
-        const isNode: boolean = this.eventArgs.target instanceof Node && obj instanceof Node ? false : true;
+        const isNode: boolean = (this.eventArgs.target instanceof Node) && (obj instanceof Node)? false : true;
         if (this.tool instanceof ConnectTool) {
             this.diagram.updatePortVisibility(
-                this.hoverElement instanceof Node ? this.hoverElement : this.hoverNode as Node,
+                (this.hoverElement instanceof Node)? this.hoverElement : this.hoverNode as Node,
                 PortVisibility.Connect | PortVisibility.Hover, isNode);
         }
         if (this.hoverElement instanceof Node
@@ -609,9 +609,13 @@ export class DiagramEventHandler {
                 if (this.isMouseDown === false || force) {
                     this.eventArgs = {};
                     let sourceElement: DiagramElement = null;
+                    let tooltipTarget: object;
                     if (obj !== null) {
                         sourceElement = this.diagram.findElementUnderMouse(obj, this.currentPosition);
-                        if (obj !== this.hoverElement) {
+                        if(sourceElement){
+                            tooltipTarget = this.commandHandler.findTarget(sourceElement, obj);
+                        }
+                        if (tooltipTarget !== this.hoverElement) {
                             const content: string | HTMLElement = this.getContent();
                             if (this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                                 this.elementLeave();
@@ -626,16 +630,26 @@ export class DiagramEventHandler {
                                 canResetElement = false;
                             }
                             this.hoverElement = canResetElement ? obj : this.hoverElement;
+                            //EJ2-62120 - Provide tooltip support for ports - to set hoverelement as PathElement if hovered on ports in Node
+                            let portElement: DiagramElement = null; let portTarget;
+                            portElement = this.diagram.findElementUnderMouse(obj, this.currentPosition);
+                            if (portElement instanceof PathElement) {
+                                portTarget = this.commandHandler.findTarget(portElement, obj);
+                                if(portTarget instanceof PointPort && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip){
+                                this.hoverElement = portTarget as object;}
+                            }
                             if (canResetElement) {
                                 this.elementEnter(this.currentPosition, false);
                             } else {
                                 this.hoverElement = obj;
                             }
-                        } 
+                        }
                         // EJ2-66418 - set tooltip relativeMode as mouse
                         // Updating the tooltip position based on Mouse move
-                        else if(this.hoverElement === obj && this.hoverElement.tooltip.content && this.diagram.tooltipObject != undefined && this.hoverElement.tooltip.relativeMode === "Mouse") {
-                            this.setTooltipOffset(this.currentPosition);
+                        else if(this.hoverElement){
+                            if (this.hoverElement === tooltipTarget && this.hoverElement.tooltip.content && this.diagram.tooltipObject !== undefined && this.hoverElement.tooltip.relativeMode === 'Mouse') {
+                                this.setTooltipOffset(this.currentPosition);
+                            }
                         }
                         if (sourceElement) { target = this.commandHandler.findTarget(sourceElement, obj); }
                     }
@@ -656,9 +670,9 @@ export class DiagramEventHandler {
                     this.renderUmlHighLighter(this.eventArgs);
                     let isNode: boolean = false;
                     if (!(this.hoverElement && (!(this.tool instanceof ZoomPanTool))
-                        && (obj instanceof Node && this.isSwimlaneElements(obj)) &&
+                        && (obj instanceof Node  && this.isSwimlaneElements(obj)) &&
                         (this.diagram.selectedItems.nodes.length === 0 || !isSelected(this.diagram, this.hoverElement)))) {
-                        isNode = true;
+                      isNode = true;
                     }
                     this.diagram.updatePortVisibility(this.hoverElement as Node, PortVisibility.Hover, isNode);
                     const content: string | HTMLElement = this.getContent();
@@ -699,11 +713,10 @@ export class DiagramEventHandler {
     /* tslint:enable */
 
     private getContent(): string | HTMLElement {
-        const isPrivateTooltip: number = ((this.hoverElement instanceof Node) &&
-            (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
-            ((this.hoverElement instanceof Connector) &&
-                (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip);
-        let node: NodeModel = this.hoverElement as Node;
+        const isPrivateTooltip: number = ((this.hoverElement instanceof Node) && (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
+            ((this.hoverElement instanceof Connector) && (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip) ||
+            ((this.hoverElement instanceof PointPort) && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip);
+        const node: NodeModel = this.hoverElement as Node;
         let childNode: NodeModel | ConnectorModel;
         if (node instanceof Node && node.children && node.children.length > 0) {
             childNode = this.findIntersectChild(node);
@@ -716,7 +729,7 @@ export class DiagramEventHandler {
 
     private findIntersectChild(node: NodeModel): NodeModel | ConnectorModel {
         let childNode: NodeModel | ConnectorModel;
-        let rect: Rect = new Rect(this.currentPosition.x, this.currentPosition.y, 8, 8);
+        const rect: Rect = new Rect(this.currentPosition.x, this.currentPosition.y, 8, 8);
         for (let i: number = 0; i < node.children.length; i++) {
             childNode = this.diagram.getObject(node.children[parseInt(i.toString(), 10)]);
             if (childNode.wrapper.outerBounds.intersects(rect)) {
@@ -776,7 +789,7 @@ export class DiagramEventHandler {
                 if (!this.inAction && evt.which !== 3) {
                     if (this.action === 'Drag') {
                         this.action = 'Select';
-                        let oldSelectedValue = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel))
+                        const oldSelectedValue = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
                         const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
                         const obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
                         let isMultipleSelect: boolean = true;
@@ -848,7 +861,7 @@ export class DiagramEventHandler {
                     this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
                     if (avoidDropChildren) {
                         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate;
-                        let nodes: NodeModel[] = this.eventArgs.source instanceof Selector
+                        const nodes: NodeModel[] = this.eventArgs.source instanceof Selector
                             ? (this.eventArgs.source as Selector).nodes : [this.eventArgs.source as Node];
                         if (nodes) {
                             for (let i = 0; i < nodes.length; i++) {
@@ -912,7 +925,7 @@ export class DiagramEventHandler {
         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate;
         this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter();// end the corresponding tool
     }
-	/**
+    /**
      * return the clicked element such as node/connector/port/diagram
     */
     private getTargetElement (){
@@ -930,7 +943,7 @@ export class DiagramEventHandler {
             'sourceElement' : sourceElement,
             'target' : target
         };
-    return targetObject;
+        return targetObject;
     }
     /* tslint:enable */
 
@@ -1033,7 +1046,7 @@ export class DiagramEventHandler {
                     //EJ2-64457 - Not able to add lane in the existing vertical swimlane.
                     let ind: number;
                     if (shape.orientation === 'Horizontal')
-                        {
+                    {
                         ind = targetNode.rowIndex < 3 ? 0 : value - index - 1;
                     }
                     else{
@@ -1128,64 +1141,74 @@ export class DiagramEventHandler {
     public mouseWheel(evt: WheelEvent): void {
         this.diagram.blazorActions |= BlazorAction.interaction;
         // EJ2-64831 - Need to provide support to override the mousewheel event
-        let arg: IMouseWheelEventArgs= {
-            event:evt,
-           cancel :false
+        const arg: IMouseWheelEventArgs = {
+            event: evt,
+            cancel: false
         };
         this.diagram.triggerEvent(DiagramEvent.mouseWheel, arg);
-        if(!arg.cancel){  
+        if (!arg.cancel){
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const up: boolean = ((evt as any).wheelDelta > 0 || -40 * evt.detail > 0) ? true : false;
-        const mousePosition: PointModel = this.getMousePosition(evt);
-        this.diagram.tooltipObject.close();
-        const ctrlKey: boolean = this.isMetaKey(evt);
-        if (ctrlKey) {
+            const up: boolean = ((evt as any).wheelDelta > 0 || -40 * evt.detail > 0) ? true : false;
+            const mousePosition: PointModel = this.getMousePosition(evt);
+            this.diagram.tooltipObject.close();
+            const ctrlKey: boolean = this.isMetaKey(evt);
+            if (ctrlKey) {
             // SF-362356 - Command below line to implement smooth scroll in diagram.
             // this.diagram.zoom(up ? (1.2) : 1 / (1.2), mousePosition);
             // EJ2-59803 - Added the below code to get the zoom factor value from scroll settings and
             // set it to zoomFactor args in zoomTo method.
-            let zoomFactor: number = this.diagram.scrollSettings.zoomFactor;
-            if (up) {
-                this.diagram.zoomTo({ type: 'ZoomIn', zoomFactor: zoomFactor, focusPoint: mousePosition });
-            }
-            else {
-                this.diagram.zoomTo({ type: 'ZoomOut', zoomFactor: zoomFactor, focusPoint: mousePosition });
-            }
-            evt.preventDefault();
-        } else {
-            const horizontalOffset: number = this.diagram.scroller.horizontalOffset;
-            const verticalOffset: number = this.diagram.scroller.verticalOffset;
-            const change: number = up ? 10 : -10;
-            if (this.tool && (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)) {
-                this.eventArgs = {};
-                this.getMouseEventArgs(mousePosition, this.eventArgs);
-                this.eventArgs.position = mousePosition;
-                this.tool.mouseWheel(this.eventArgs);
-            }
-            this.diagram.scrollActions |= ScrollActions.Interaction;
-            let canMouseWheel:boolean = true;
-            if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0)) {
-                this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel);
-            } else {
-                this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel);
-            }
-            this.diagram.scrollActions &= ~ScrollActions.Interaction;
-            if (horizontalOffset !== this.diagram.scroller.horizontalOffset
-                || verticalOffset !== this.diagram.scroller.verticalOffset) {
+                const zoomFactor: number = this.diagram.scrollSettings.zoomFactor;
+                if (up) {
+                    this.diagram.zoomTo({ type: 'ZoomIn', zoomFactor: zoomFactor, focusPoint: mousePosition });
+                }
+                else {
+                    this.diagram.zoomTo({ type: 'ZoomOut', zoomFactor: zoomFactor, focusPoint: mousePosition });
+                }
                 evt.preventDefault();
+            } else {
+                const horizontalOffset: number = this.diagram.scroller.horizontalOffset;
+                const verticalOffset: number = this.diagram.scroller.verticalOffset;
+                const change: number = up ? 10 : -10;
+                if (this.tool && (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)) {
+                    this.eventArgs = {};
+                    this.getMouseEventArgs(mousePosition, this.eventArgs);
+                    this.eventArgs.position = mousePosition;
+                    this.tool.mouseWheel(this.eventArgs);
+                }
+                this.diagram.scrollActions |= ScrollActions.Interaction;
+                const canMouseWheel: boolean = true;
+                // Bug 829925: Scroll bar flickers on scrolling the diagram using touchpad.
+                // Added the below condition to check whether the mouse wheel is from trackpad or not.
+                var isTrackpadScroll:boolean = false;
+                if((Math.abs(evt.deltaY) < 100 && Math.abs(evt.deltaX) === -0) || 
+                    (Math.abs(evt.deltaX) < 100 && Math.abs(evt.deltaY) === -0)){
+                    isTrackpadScroll = true;
+                }
+                if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0)) {
+                    this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel,undefined,isTrackpadScroll);
+                } else if((evt.deltaY && evt.deltaY !== -0)) {
+                    this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel,undefined,isTrackpadScroll);
+                }
+                this.diagram.scrollActions &= ~ScrollActions.Interaction;
+                if (horizontalOffset !== this.diagram.scroller.horizontalOffset
+                || verticalOffset !== this.diagram.scroller.verticalOffset) {
+                    evt.preventDefault();
+                }
             }
-        }
-        if (this.diagram.textEditing) {
-            this.diagram.isTriggerEvent = true;
-            if (this.diagram.activeLabel.parentId) {
-                const node: NodeModel | ConnectorModel = this.diagram.getObject(this.diagram.activeLabel.parentId);
-                this.diagram.startTextEdit(node, this.diagram.activeLabel.id);
+            if (this.diagram.textEditing) {
+                this.diagram.isTriggerEvent = true;
+                if (this.diagram.activeLabel.parentId) {
+                    const node: NodeModel | ConnectorModel = this.diagram.getObject(this.diagram.activeLabel.parentId);
+                    this.diagram.startTextEdit(node, this.diagram.activeLabel.id);
+                }
+                this.diagram.isTriggerEvent = false;
             }
-            this.diagram.isTriggerEvent = false;
+            this.diagram.blazorActions = this.diagram.blazorActions & ~BlazorAction.interaction;
         }
-        this.diagram.blazorActions = this.diagram.blazorActions & ~BlazorAction.interaction;
     }
-    }
+    private isKeyUp = true;
+    private keyCount = 0;
+    private isNudgeKey = false;
     private keyArgs: IKeyEventArgs = {};
     /** @private */
     public keyDown(evt: KeyboardEvent): void {
@@ -1195,6 +1218,9 @@ export class DiagramEventHandler {
             let command: CommandModel;
             const keycode: number = evt.keyCode ? evt.keyCode : evt.which;
             const key: string = evt.key;
+            if(key === 'ArrowDown' || key === 'ArrowUp' || key === 'ArrowLeft' || key === 'ArrowRight'){
+                this.isNudgeKey = true;
+            }
             const ctrlKey: boolean = this.isMetaKey(evt);
             if (this.diagram.commandManager && this.diagram.commands) {
                 const commands: {} = this.diagram.commands;
@@ -1258,7 +1284,22 @@ export class DiagramEventHandler {
                                         //     command.execute()
                                         // } else {
                                         const execute: Function = getFunction(command.execute);
-                                        execute({ 'keyDownEventArgs': KeyboardEvent, parameter: command.parameter });
+                                        // Bug 832880: Need to improve performance while nudging multiple nodes.
+                                        if (this.isNudgeKey){
+                                            if (!this.isKeyUp)
+                                            {
+                                                this.keyCount++;
+                                                if (this.keyCount > 4)
+                                                {
+                                                    execute({ 'keyDownEventArgs': KeyboardEvent, parameter: command.parameter, type:'KEYDOWN' });
+                                                    this.keyCount = 0;
+                                                }
+                                            }
+                                            this.isKeyUp = false;
+                                        }
+                                        else{
+                                            execute({ 'keyDownEventArgs': KeyboardEvent, parameter: command.parameter });
+                                        }
                                     }
                                     // }
                                 }
@@ -1330,6 +1371,14 @@ export class DiagramEventHandler {
             this.getlabel(this.keyArgs, evt);
         }
         this.diagram.triggerEvent(DiagramEvent.keyUp, this.keyArgs);
+        // this.isKeyUp = true;
+        // Bug 832880: Need to improve performance while nudging multiple nodes.
+        if (!this.isKeyUp && this.isNudgeKey){
+            let direction: NudgeDirection = evt.code === 'ArrowUp' ? 'Up' : evt.code === 'ArrowDown' ? 'Down' : evt.code === 'ArrowLeft' ? 'Left' : 'Right';
+            this.diagram.nudge(direction);
+            this.isNudgeKey = false;
+            this.keyCount = 0;
+        }
     }
 
     private startAutoScroll(e: PointerEvent | TouchEvent): string {
@@ -1365,7 +1414,7 @@ export class DiagramEventHandler {
 
     private doAutoScroll(option: string, e: PointerEvent | TouchEvent, delay?: number, autoScroll?: boolean): void {
         const position: string = option;
-        let canAutoScroll: boolean = true;
+        const canAutoScroll: boolean = true;
         if ((this.tool instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool
             || this.tool instanceof MoveTool || this.tool instanceof ResizeTool
             || this.tool instanceof SelectTool || this.tool instanceof ConnectTool) && this.inAction) {
@@ -1525,9 +1574,9 @@ export class DiagramEventHandler {
 
     private elementEnter(mousePosition: PointModel, elementOver: boolean): void {
         if (!elementOver) {
-            const isPrivateTooltip: number = ((this.hoverElement instanceof Node) &&
-                (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
-                ((this.hoverElement instanceof Connector) && (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip);
+            const isPrivateTooltip: number = ((this.hoverElement instanceof Node) && (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
+            ((this.hoverElement instanceof Connector) && (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip) ||
+            ((this.hoverElement instanceof PointPort) && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip);
             const content: string | HTMLElement = this.getContent();
             let children: NodeModel | ConnectorModel;
             if (this.hoverElement && (this.hoverElement as NodeModel).children && (this.hoverElement as NodeModel).children.length > 0) {
@@ -1544,8 +1593,8 @@ export class DiagramEventHandler {
             }
             // EJ2-66418 - set tooltip relativeMode as mouse
             // Calculating offset position for relativeMode Mouse
-            if(this.hoverElement.tooltip.content){
-                if(this.hoverElement.tooltip.relativeMode === "Mouse"){
+            if (this.hoverElement.tooltip.content){
+                if (this.hoverElement.tooltip.relativeMode === 'Mouse'){
                     this.setTooltipOffset(mousePosition);
                 }
                 else{
@@ -1553,14 +1602,22 @@ export class DiagramEventHandler {
                     this.diagram.tooltipObject.offsetY = 0;
                 }
             }
-            const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
+            let objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
             let obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+            let targetEle :HTMLElement;
             if (obj instanceof Node && obj.children && obj.children.length > 0) {
                 // EJ2-56981 - If children returned means then update tooltip for child node else update tooltip for group node.
                 obj = children ? children as Node : obj;
             }
-            let idName: string = ((obj as Node).shape && (((obj as Node).shape) instanceof Native)) ? '_content_native_element' : '_groupElement';
-            let targetEle: HTMLElement = document.getElementById((obj as Node).id + idName);
+            //EJ2-62120 - check if the Node has Ports and hoverElement is Port as mousepointer hovered over Port
+            if((obj as Node).ports && this.hoverElement instanceof PointPort){
+                //executed to set target as port
+                targetEle = document.getElementById( (obj as Node).id + '_'+ (this.hoverElement as any).id);
+            }else{
+                //executed to set target as Node or Connector
+                const idName: string = ((obj as Node).shape && (((obj as Node).shape) instanceof Native)) ? '_content_native_element' : '_groupElement';
+                targetEle = document.getElementById((obj as Node).id + idName);
+            }
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                 (this.diagram.tooltipObject as Tooltip).close();
                 (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
@@ -1572,7 +1629,7 @@ export class DiagramEventHandler {
             }
             if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
                 (this.diagram.tooltipObject as Tooltip).target = this.hoverElement.id;
-                if(this.hoverElement.tooltip.relativeMode === "Mouse"){
+                if (this.hoverElement.tooltip.relativeMode === 'Mouse'){
                     (this.diagram.tooltipObject as Tooltip).open(this.diagram.element);
                 }
                 else{
@@ -1590,7 +1647,7 @@ export class DiagramEventHandler {
 
     // EJ2-66418 - set tooltip relativeMode as mouse
     // Calculating offset position for relativeMode Mouse
-    private setTooltipOffset(mousePosition: PointModel):void{
+    private setTooltipOffset(mousePosition: PointModel): void {
         var offset = getTooltipOffset(this.diagram, mousePosition, this.hoverElement);
         this.diagram.tooltipObject.offsetX = offset.x;
         this.diagram.tooltipObject.offsetY = offset.y;
@@ -1887,7 +1944,7 @@ export class DiagramEventHandler {
         case 'Draw':
             const shape: string = 'shape'; const basicShape: string = 'basicShape';
             const type: string = findObjectType(this.diagram.drawingObject);
-             if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
+            if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
                 return new TextDrawingTool(this.commandHandler);
             }else if (type === 'Connector' && (this.diagram.drawingObject as Connector).type === 'Freehand'){
                 return new FreeHandTool(this.commandHandler);
@@ -2142,8 +2199,11 @@ export class DiagramEventHandler {
                 for (let j: number = 0; j < (obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children.length; j++) {
                     const id: string = (obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children[parseInt(j.toString(), 10)].id;
                     const childNode: NodeModel = this.diagram.nameTable[`${id}`];
-                    childNode.offsetX = childNode.wrapper.offsetX;
-                    childNode.offsetY = childNode.wrapper.offsetY;
+                    //828489 - Exception occurs while dragging swimlane after adding shape & undo action is performed
+                    if (childNode) {
+                        childNode.offsetX = childNode.wrapper.offsetX;
+                        childNode.offsetY = childNode.wrapper.offsetY;
+                    }  
                 }
             }
         }
@@ -2387,7 +2447,7 @@ class ObjectFinder {
     public checkSwimlane(actualTarget: (NodeModel | ConnectorModel)[], diagram: Diagram): void {
         let isNode: Boolean;
         for (let m: number = 0; m < actualTarget.length; m++) {
-            let obj: NodeModel | ConnectorModel = actualTarget[parseInt(m.toString(), 10)];
+            const obj: NodeModel | ConnectorModel = actualTarget[parseInt(m.toString(), 10)];
             let parentNode: string;
             let node: Node;
             if (obj instanceof Node) {
@@ -2401,26 +2461,26 @@ class ObjectFinder {
                     isNode = false;
                 }
             }
-            let parent: NodeModel = diagram.nameTable[`${parentNode}`];
+            const parent: NodeModel = diagram.nameTable[`${parentNode}`];
             if (parent && (parent as Node).isLane && diagram.nameTable[(parent as Node).parentId].zIndex > (obj as Node).zIndex) {
                 actualTarget[parseInt(m.toString(), 10)] = parent;
             }
             if (m > 0 && isNode && node && (node.isLane || node.isPhase || node.isHeader)) {
                 if ((actualTarget[parseInt(m.toString(), 10)] as Node).zIndex < (actualTarget[m - 1] as Node).zIndex) {
-                    let swap: NodeModel | ConnectorModel = actualTarget[parseInt(m.toString(), 10)];
+                    const swap: NodeModel | ConnectorModel = actualTarget[parseInt(m.toString(), 10)];
                     actualTarget[parseInt(m.toString(), 10)] = actualTarget[m - 1];
                     actualTarget[m - 1] = swap;
                 }
             }
         }
         if (actualTarget.length >= 2) {
-            let parent: string = '';
+            const parent: string = '';
             for (let i: number = actualTarget.length - 1; i >= 0; i--) {
                 if ((actualTarget[parseInt(i.toString(), 10)] as Node).parentId) {
-                    let parent1: string = findParentInSwimlane(actualTarget[parseInt(i.toString(), 10)] as Node, diagram, parent);
-                    let parent2: string = findParentInSwimlane(actualTarget[i - 1] as Node, diagram, parent);
-                    let parentNode1: Node = diagram.nameTable[`${parent1}`];
-                    let parentNode2: Node = diagram.nameTable[`${parent2}`];
+                    const parent1: string = findParentInSwimlane(actualTarget[parseInt(i.toString(), 10)] as Node, diagram, parent);
+                    const parent2: string = findParentInSwimlane(actualTarget[i - 1] as Node, diagram, parent);
+                    const parentNode1: Node = diagram.nameTable[`${parent1}`];
+                    const parentNode2: Node = diagram.nameTable[`${parent2}`];
                     if (parentNode2 && parent1 !== parent2 && parentNode1.zIndex < parentNode2.zIndex) {
                         actualTarget.splice(i, 1);
                     }
@@ -2436,7 +2496,7 @@ class ObjectFinder {
         node = action === 'ConnectorSourceEnd' ? diagram.nameTable[connector.targetID] :
             node = diagram.nameTable[connector.sourceID];
 
-        if (node && (!node.processId && !actualTarget.processId || node.processId !== actualTarget.processId)) {
+        if (node && !(node .processId && !actualTarget.processId || node.processId !== actualTarget.processId)) {
             if (node.processId !== actualTarget.processId) {
                 actualTarget = null;
             }
@@ -2498,7 +2558,7 @@ class ObjectFinder {
                         }
                     }
                     // eslint-disable-next-line max-len
-                    if (objects[parseInt(i.toString(), 10)] instanceof Node && ((canOutConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortOutConnect(outPort)) || canInConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortInConnect(inPort))) ||
+                    if ((objects[parseInt(i.toString(), 10)] instanceof Node)  && ((canOutConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortOutConnect(outPort)) || canInConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortInConnect(inPort))) ||
                         (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[`${endPoint}`] === 'ConnectorTargetEnd' &&
                             (canInConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortInConnect(inPort)))))) {
                         actualTarget = objects[parseInt(i.toString(), 10)];
@@ -2512,7 +2572,7 @@ class ObjectFinder {
             } else if (action === 'ConnectorTargetEnd' && source) {
                 for (let i: number = objects.length - 1; i >= 0; i--) {
                     inPort = getInOutConnectPorts(objects[parseInt(i.toString(), 10)] as Node, true);
-                    if (objects[parseInt(i.toString(), 10)] instanceof Node && (canInConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortInConnect(inPort)))) {
+                    if (objects[parseInt(i.toString(), 10)] instanceof Node && (canInConnect(objects[parseInt(i.toString(), 10)] as NodeModel ) || (canPortInConnect(inPort)))) {
                         actualTarget = objects[parseInt(i.toString(), 10)];
                         actualTarget = this.isTarget(actualTarget as Node, diagram, action);
                         eventArg.actualObject = actualTarget as Node;
@@ -2632,7 +2692,7 @@ class ObjectFinder {
                 }
                 //EJ2-69047 - Node selection is improper while adding annotation for multiple nodes
                 //Checked textOverflow property to avoid the selection of text element with clip and ellipsis;
-                if (element.bounds.containsPoint(position, padding || 0) && (element.style as TextStyleModel).textOverflow !=='Clip' && (element.style as TextStyleModel).textOverflow !=='Ellipsis') {
+                if (element.bounds.containsPoint(position, padding || 0) && (element.style as TextStyleModel).textOverflow !== 'Clip' && (element.style as TextStyleModel).textOverflow !== 'Ellipsis') {
                     return element;
                 }
             }

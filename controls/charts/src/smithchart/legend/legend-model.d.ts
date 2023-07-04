@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { SmithchartAlignment } from '../utils/enum';import { SmithchartFont } from '../utils/utils';import { SmithchartFontModel} from '../utils/utils-model';import { Theme} from '../model/theme';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { SmithchartAlignment } from '../utils/enum';import { SmithchartFont } from '../utils/utils';import { SmithchartFontModel} from '../utils/utils-model';
 
 /**
  * Interface for a class LegendTitle

@@ -1,4 +1,4 @@
-import { Chart, Alignment } from '..';
+import { Chart, Alignment, Font } from '..';
 import { AxisModel } from '../axis/axis-model';
 import { Axis, VisibleRangeModel } from '../axis/axis';
 import { SeriesModel } from '../series/chart-series-model';
@@ -9,7 +9,7 @@ import { AccPoints, AccumulationSeries } from '../../accumulation-chart/model/ac
 import { ScrollbarSettingsRangeModel } from './chart-base-model';
 import { ChartLocation, LabelLocation } from '../../common/utils/helper';
 import { ItemModel } from '@syncfusion/ej2-navigations';
-import { Size } from '@syncfusion/ej2-svg-base';
+import { Rect, Size } from '@syncfusion/ej2-svg-base';
 import { AccumulationChart } from '../../accumulation-chart';
 import { StockChart } from '../../stock-chart/stock-chart';
 
@@ -223,8 +223,11 @@ export interface ITextRenderEventArgs extends IChartEventArgs {
     color: string;
     /** Defines the current label border. */
     border: BorderModel;
-    /** Defines the current label template. */
-    template: string;
+    /** Defines the current label template. 
+     * 
+     * @aspType string 
+     */
+    template: string | Function;
     /** Defines the current font. */
     font: FontModel;
     /** Defines the current data label position can change. */
@@ -365,6 +368,25 @@ export interface IThemeStyle {
     selectionRectStroke: string;
     selectionCircleStroke: string;
     tabColor: string;
+    bearFillColor: string;
+    bullFillColor : string;
+    toolkitSelectionColor: string;
+    toolkitFill: string;
+    toolkitIconRectOverFill: string;
+    toolkitIconRectSelectionFill : string;
+    toolkitIconRect: Rect;
+    histogram?: string;
+    chartTitleFont : FontModel;
+    axisLabelFont: FontModel;
+    legendTitleFont: FontModel;
+    legendLabelFont: FontModel;
+    tooltipOpacity?: number;
+    tooltipLabelFont: FontModel;
+    axisTitleFont: FontModel;
+    crosshairLabelFont: FontModel;
+    chartSubTitleFont: FontModel;
+    stripLineLabelFont: FontModel;
+    datalabelFont: FontModel;
 }
 
 export interface IRangeSelectorRenderEventArgs extends IChartEventArgs {

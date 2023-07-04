@@ -431,5 +431,27 @@ describe('Merge ->', () => {
                 done();
             });
         });
+        describe('I834951 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }],
+                    rows: [{ cells: [{ colSpan:2 }, { index: 2, colSpan:2 }, { index: 4, colSpan:2 }, { index: 6, colSpan:2 }] }] 
+                }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('While scrolling the frozen column applied sheet merged cells get messed up with each other', (done: Function) => {
+                helper.invoke('goTo', ['S1']);
+                setTimeout(()=>{
+                    let td: HTMLTableCellElement = helper.invoke('getCell', [0, 3]);
+                    expect(td.style.display).toBe('');
+                    helper.invoke('goTo', ['A1']);
+                    setTimeout(()=>{
+                        expect(td.style.display).toBe('none');
+                        done();
+                    }, 50);
+                }, 50)
+            });
+        });
     });
 });

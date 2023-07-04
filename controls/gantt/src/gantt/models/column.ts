@@ -133,8 +133,9 @@ export class Column {
      * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
      *
      * @default null
+     * @aspType string
      */
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
 
     /**
      * Defines the header text of column which is used to display in column header.
@@ -180,8 +181,9 @@ export class Column {
      * It accepts either template string or HTML element ID.
      *
      * @default null
+     * @aspType string
      */
-    public template: string;
+    public template: string | Function;
 
     /**
      * Defines the alignment of the column in both header and content cells.
@@ -358,8 +360,9 @@ export interface ColumnModel {
      * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
      *
      * @default null
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * Defines the header text of column which is used to display in column header.
@@ -405,8 +408,9 @@ export interface ColumnModel {
      * It accepts either template string or HTML element ID.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Defines the alignment of the column in both header and content cells.

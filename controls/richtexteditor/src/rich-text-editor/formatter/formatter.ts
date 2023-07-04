@@ -50,6 +50,7 @@ export class Formatter {
             && args.item.command !== 'Files'
             && args.item.command !== 'Audios'
             && args.item.command !== 'Videos'
+            && args.item.command !== 'EmojiPicker'
             && range
             && !(self.contentModule.getEditPanel().contains(this.getAncestorNode(range.commonAncestorContainer))
                 || self.contentModule.getEditPanel() === range.commonAncestorContainer
@@ -114,13 +115,14 @@ export class Formatter {
             && args.item.command !== 'Font')
             || ((args.item.subCommand === 'FontName' || args.item.subCommand === 'FontSize') && args.name === 'dropDownSelect')
             || ((args.item.subCommand === 'BackgroundColor' || args.item.subCommand === 'FontColor')
-                && args.name === 'colorPickerChanged') || args.item.subCommand === 'FormatPainter')) {
+                && args.name === 'colorPickerChanged') || args.item.subCommand === 'FormatPainter' || args.item.subCommand === 'EmojiPicker')) {
             extend(args, args, { requestType: args.item.subCommand, cancel: false, itemCollection: value, selectType: args.name }, true);
             self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                 if (!actionBeginArgs.cancel) {
-                    const formatPainterCopyAction: boolean = !isNOU(actionBeginArgs.name) && actionBeginArgs.name === 'format-copy';
-                    if (this.getUndoRedoStack().length === 0 && actionBeginArgs.item.command !== 'Links'
-                        && actionBeginArgs.item.command !== 'Images' && !formatPainterCopyAction) {
+                    const formatPainterCopy: boolean = !isNOU(actionBeginArgs.requestType) && actionBeginArgs.requestType === 'FormatPainter' && actionBeginArgs.name === 'format-copy';
+                    const formatPainterPaste: boolean = !isNOU(actionBeginArgs.requestType) && actionBeginArgs.requestType === 'FormatPainter' && actionBeginArgs.name === 'format-paste';
+                    if ((this.getUndoRedoStack().length === 0 && actionBeginArgs.item.command !== 'Links' && actionBeginArgs.item.command !== 'Images' && !formatPainterCopy)
+                    || formatPainterPaste) {
                         this.saveData();
                     }
                     self.isBlur = false;
@@ -138,7 +140,8 @@ export class Formatter {
                         this.editorManager.execCommand(
                             actionBeginArgs.item.command,
                             actionBeginArgs.item.subCommand,
-                            event, this.onSuccess.bind(this, self),
+                            event,
+                            this.onSuccess.bind(this, self),
                             (actionBeginArgs.item as IDropDownItemModel).value,
                             actionBeginArgs.item.subCommand === 'Pre' && actionBeginArgs.selectType === 'dropDownSelect' ?
                                 { name : actionBeginArgs.selectType } : value,
@@ -149,7 +152,7 @@ export class Formatter {
                 }
             });
         }
-        if (isNOU(event) || event && (event as KeyboardEventArgs).action !== 'copy') {
+        if ((isNOU(event) || event && (event as KeyboardEventArgs).action !== 'copy')) {
             this.enableUndo(self);
         }
     }

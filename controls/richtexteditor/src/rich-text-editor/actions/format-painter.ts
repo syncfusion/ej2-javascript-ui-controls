@@ -1,9 +1,9 @@
 import { addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
-import { ActionBeginEventArgs, IExecutionGroup, IFormatPainterArgs, IRichTextEditor, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../base/interface';
+import { ActionBeginEventArgs, IExecutionGroup, IFormatPainter, IFormatPainterArgs, IRichTextEditor, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { ClickEventArgs } from '@syncfusion/ej2-buttons';
 
-export class FormatPainter  {
+export class FormatPainter implements IFormatPainter {
     private parent: IRichTextEditor;
     private isSticky: boolean = false;
     private isActive: boolean = false;
@@ -21,10 +21,16 @@ export class FormatPainter  {
         this.parent.on(events.destroy, this.destroy, this);
     }
 
-    private toolbarClick(args: NotifyArgs): void {
-        this.isActive = true;
+    private toolbarClick(clickargs: NotifyArgs): void {
         this.parent.focusIn();
-        this.actionHandler(args, 'click');
+        if (!this.isSticky) {
+            this.isActive = true;
+            this.actionHandler(clickargs, 'click');
+        } else {
+            // Handling the format painter double click toolbar esape action
+            (clickargs.args as KeyboardEventArgs).action = 'escape';
+            this.actionHandler(clickargs, 'keyBoard');
+        }
     }
 
     private toolbarDoubleClick(args: NotifyArgs): void {
@@ -36,14 +42,10 @@ export class FormatPainter  {
 
     private onKeyDown(event: NotifyArgs): void {
         const originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
-        if ((originalEvent.ctrlKey && originalEvent.shiftKey && (originalEvent.action === 'format-copy' ||  originalEvent.action === 'format-paste'))
+        if ((originalEvent.altKey && originalEvent.shiftKey && (originalEvent.action === 'format-copy' ||  originalEvent.action === 'format-paste'))
             || (originalEvent.action === 'escape' && (this.previousAction === 'format-copy' || this.previousAction === 'format-paste' ))) {
-            if (!isNOU(originalEvent.key) && originalEvent.key.toLowerCase() === 'c'){
-                originalEvent.preventDefault();
-            }
-            if (!isNOU(originalEvent.key) && originalEvent.key.toLowerCase() === 'v' &&
-                this.previousAction === 'format-copy' || this.previousAction === 'format-paste' || this.isSticky) {
-                originalEvent.preventDefault();
+            if ((originalEvent.action === 'format-copy' ||  originalEvent.action === 'format-paste')) {
+                originalEvent.stopPropagation();
             }
             this.actionHandler(event, 'keyBoard');
         }
@@ -130,8 +132,7 @@ export class FormatPainter  {
     }
 
     public destroy(): void {
-        /**Removeeventlistener */
-        if (this.parent.isDestroyed) {
+        if (isNOU(this.parent) || this.parent.isDestroyed) {
             return;
         }
         this.parent.off(events.formatPainterClick, this.toolbarClick);
@@ -139,6 +140,13 @@ export class FormatPainter  {
         this.parent.off(events.formatPainterDoubleClick, this.toolbarDoubleClick);
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.destroy, this.destroy);
+        if (!isNOU(this.parent.formatter.editorManager.formatPainterEditor)) {
+            this.parent.formatter.editorManager.formatPainterEditor.destroy();
+        }
+        this.parent = undefined;
+        this.isSticky = undefined;
+        this.isActive = undefined;
+        this.previousAction = undefined;
     }
 
     /**

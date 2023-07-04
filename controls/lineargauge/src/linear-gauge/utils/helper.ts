@@ -216,11 +216,13 @@ export function getLabelFormat(format: string): string {
 
 /** @private */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getTemplateFunction(template: string, gauge: LinearGauge): any {
+export function getTemplateFunction(template: string | Function, gauge: LinearGauge): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
     try {
-        if (document.querySelectorAll(template).length) {
+        if (typeof template === 'function') {
+            templateFn = templateComplier(template);
+        } else if (document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } else if ((gauge as any).isVue || (gauge as any).isVue3) {
@@ -554,6 +556,14 @@ export function getRangePalette(theme: LinearGaugeTheme): string[] {
     case 'fluentdark':
         palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
             '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
+        break;
+    case 'material3':
+        palette = ['#6200EE', '#E77A16', '#82C100', '#7107DC', '#05BB3D',
+            '#D21020', '#FAD200', '#0085FF', '#9204EA', '#08EE9B'];
+        break;
+    case 'material3dark':
+        palette = ['#4EAAFF', '#FA4EAB', '#FFF500', '#17EA58', '#38FFE7',
+            '#FF9E45', '#B3F32F', '#B93CE4', '#FC5664', '#9B55FF'];
         break;
     default:
         palette = ['#ff5985', '#ffb133', '#fcde0b', '#27d5ff', '#50c917'];

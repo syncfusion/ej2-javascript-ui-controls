@@ -171,8 +171,10 @@ export class Page implements IAction {
      */
     public updateModel(e?: NotifyArgs): void {
         this.parent.pageSettings.totalRecordsCount = e.count;
-        if (this.pagerObj.isAllPage && ((e.action === 'add' && e.requestType === 'save') || (e.requestType === 'batchsave'))) {
-            this.pagerObj.setProperties({ pageSize: e.count }, true);
+        if ((e.action === 'add' && e.requestType === 'save') || (e.requestType === 'batchsave')) {
+            if (this.pagerObj.isAllPage && (e.count === this.pageSettings.pageSize)) {
+                this.pagerObj.setProperties({ pageSize: e.count }, true);
+            }
         }
         this.parent.dataBind();
     }

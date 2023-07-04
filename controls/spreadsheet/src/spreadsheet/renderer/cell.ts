@@ -155,7 +155,7 @@ export class CellRenderer implements ICellRenderer {
                 args.td.classList.remove('e-wraptext');
             }
         }
-        if (args.cell && args.cell.formula) {
+        if (args.cell && args.cell.formula && !args.isRandomFormula) {
             this.calculateFormula(args);
         }
         const formatArgs: NumberFormatArgs = { value: args.cell && args.cell.value,
@@ -281,7 +281,7 @@ export class CellRenderer implements ICellRenderer {
         }
         const isFormula: boolean = checkIsFormula(args.cell.formula);
         const eventArgs: { [key: string]: string | number | boolean } = { action: 'refreshCalculate', value: args.cell.formula, rowIndex:
-            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing, isDependentRefresh: args.isDependentRefresh};
+            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing, isDependentRefresh: args.isDependentRefresh, isRandomFormula: args.isRandomFormula };
         this.parent.notify(workbookFormulaOperation, eventArgs);
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :
@@ -516,7 +516,7 @@ export class CellRenderer implements ICellRenderer {
         return '';
     }
 
-    private compileCellTemplate(template: string, cell: CellModel): string {
+    private compileCellTemplate(template: string | Function, cell: CellModel): string {
         let compiledStr: Function;
         if (typeof template === 'string') {
             let templateString: string;
@@ -623,7 +623,7 @@ export class CellRenderer implements ICellRenderer {
 
     public refresh(
         rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
-        skipFormatCheck?: boolean): void {
+        skipFormatCheck?: boolean, isRandomFormula?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (!element && (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx))) {
             return;
@@ -634,7 +634,7 @@ export class CellRenderer implements ICellRenderer {
                 return;
             }
             const args: CellRenderArgs = { rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(rowIdx, colIdx, sheet), isRefresh: true,
-                lastCell: lastCell, isHeightCheckNeeded: true, manualUpdate: true, first: '', skipFormatCheck: skipFormatCheck };
+                lastCell: lastCell, isHeightCheckNeeded: true, manualUpdate: true, first: '', skipFormatCheck: skipFormatCheck, isRandomFormula: isRandomFormula };
             this.update(args);
             if (checkCF && sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [rowIdx, colIdx], isAction: true });

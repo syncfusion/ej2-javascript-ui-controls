@@ -268,6 +268,7 @@ export type LabelPlacement =
  * * triangle - Renders a triangle.
  * * diamond - Renders a diamond.
  * * cross - Renders a cross.
+ * * Plus - Renders a Plus.
  * * horizontalLine - Renders a horizontalLine.
  * * verticalLine - Renders a verticalLine.
  * * pentagon- Renders a pentagon.
@@ -275,27 +276,29 @@ export type LabelPlacement =
  * * image - Renders a image.
  */
 export type ChartShape =
-    /** Render a circle. */
+    /** Specifies the shape of the marker as a circle symbol. */
     'Circle' |
-    /** Render a Rectangle. */
+    /** Specifies the shape of the marker as a Rectangle symbol. */
     'Rectangle' |
-    /** Render a Triangle. */
+    /** Specifies the shape of the marker as a Triangle symbol. */
     'Triangle' |
-    /** Render a Diamond. */
+    /** Specifies the shape of the marker as a Diamond symbol. */
     'Diamond' |
-    /** Render a Cross. */
+    /** Specifies the shape of the marker as a cross symbol. */
     'Cross' |
-    /** Render a HorizontalLine. */
+    /** Specifies the shape of the marker as a plus symbol. */
+    'Plus' |
+    /** Specifies the shape of the marker as a HorizontalLine symbol. */
     'HorizontalLine' |
-    /** Render a VerticalLine. */
+    /** Specifies the shape of the marker as a VerticalLine symbol. */
     'VerticalLine' |
-    /** Render a Pentagon. */
+    /** Specifies the shape of the marker as a Pentagon symbol. */
     'Pentagon' |
-    /** Render a InvertedTriangle. */
+    /** Specifies the shape of the marker as a InvertedTriangle symbol. */
     'InvertedTriangle' |
-    /** Render a Image. */
+    /** Specifies the shape of the marker as a Image symbol. */
     'Image' |
-    /** Render a none */
+    /** Specifies the shape of the marker as a none */
     'None';
 
 /**
@@ -652,7 +655,11 @@ export type ChartTheme =
     /**  Render a chart with Fluent theme. */
     'Fluent' |
     /**  Render a chart with FluentDark theme. */
-    'FluentDark';
+    'FluentDark' |
+    /**  Render a accumulation chart with Material 3 theme. */
+    'Material3' |
+    /**  Render a accumulation chart with Material 3 dark theme. */
+    'Material3Dark';
 
 /**
  *  Specifies the order of the strip line. `Over` | `Behind`.
@@ -704,6 +711,18 @@ export type FadeOutMode =
     'Click' |
     /** Used to remove the tooltip with some delay  */
     'Move';
+
+/** 
+ * Defines the tooltip position. They are 
+ * * fixed - Place the tooltip in the fixed position. 
+ * * nearest- Tooltip moves along with the mouse. 
+ * * 
+ */ 
+export type TooltipPosition = 
+    /** Place the tooltip in the fixed position. */ 
+    'Fixed' | 
+    /** Tooltip moves along with the mouse. */ 
+    'Nearest'; 
 
 /**
  * Defines the type of technical indicators. They are

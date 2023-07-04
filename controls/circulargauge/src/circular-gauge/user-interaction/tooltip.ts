@@ -116,8 +116,8 @@ export class GaugeTooltip {
             };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const pointerTooltip: any = (tooltipArgs: ITooltipRenderEventArgs) => {
-                let template: string = tooltipArgs.tooltip.template;
-                if (template !== null && template.length === 1) {
+                let template: string | Function = tooltipArgs.tooltip.template;
+                if (template !== null && template.length === 1 && typeof template !== 'function') {
                     template = template[template[0]];
                 }
                 if (!tooltipArgs.tooltip.showAtMousePosition) {
@@ -137,8 +137,9 @@ export class GaugeTooltip {
                         color: tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor,
                         opacity: tooltipArgs.tooltip.textStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity,
                         fontFamily: tooltipArgs.tooltip.textStyle.fontFamily || this.gauge.themeStyle.fontFamily,
+                        fontWeight: tooltipArgs.tooltip.textStyle.fontWeight || this.gauge.themeStyle.fontWeight,
                         fontStyle: tooltipArgs.tooltip.textStyle.fontStyle,
-                        fontWeight: tooltipArgs.tooltip.textStyle.fontWeight, size: tooltipArgs.tooltip.textStyle.size
+                        size: tooltipArgs.tooltip.textStyle.size || this.gauge.themeStyle.tooltipFontSize
                     };
                     this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, tooltipArgs, template, this.arrowInverted, this.tooltipRect,
                                                             this.gauge, tooltipArgs.tooltip.fill, pointerTextStyle,
@@ -207,11 +208,11 @@ export class GaugeTooltip {
             };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const rangeTooltip: any = (rangeTooltipArgs: ITooltipRenderEventArgs) => {
-                let rangeTemplate: string = rangeTooltipArgs.tooltip.rangeSettings.template;
-                if (rangeTemplate !== null && rangeTemplate.length === 1) {
+                let rangeTemplate: string | Function = rangeTooltipArgs.tooltip.rangeSettings.template;
+                if (rangeTemplate !== null && rangeTemplate.length === 1 && typeof rangeTemplate !== 'function') {
                     rangeTemplate = rangeTemplate[rangeTemplate[0]];
                 }
-                if (rangeTemplate) {
+                if (typeof rangeTemplate !== 'function' && rangeTemplate) {
                     rangeTemplate = rangeTemplate.replace(/[$]{start}/g, startData);
                     rangeTemplate = rangeTemplate.replace(/[$]{end}/g , endData);
                 }
@@ -232,8 +233,12 @@ export class GaugeTooltip {
                         this.gauge.themeStyle.tooltipFontColor;
                     rangeTooltipTextStyle.fontFamily = rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily
                         || this.gauge.themeStyle.fontFamily;
+                    rangeTooltipTextStyle.fontWeight = rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontWeight
+                        || this.gauge.themeStyle.fontWeight;
                     rangeTooltipTextStyle.opacity = rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity ||
                         this.gauge.themeStyle.tooltipTextOpacity;
+                    rangeTooltipTextStyle.size = rangeTooltipArgs.tooltip.rangeSettings.textStyle.size
+                    || this.gauge.themeStyle.tooltipFontSize;
                     this.svgTooltip = this.svgTooltipCreate (this.svgTooltip, rangeTooltipArgs, rangeTemplate, this.arrowInverted,
                                                              this.tooltipRect, this.gauge, rangeTooltipArgs.tooltip.rangeSettings.fill,
                                                              rangeTooltipTextStyle, rangeTooltipArgs.tooltip.rangeSettings.border);
@@ -282,8 +287,8 @@ export class GaugeTooltip {
             };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const annotationTooltip: any = (annotationTooltipArgs: ITooltipRenderEventArgs) => {
-                let annotationTemplate: string = annotationTooltipArgs.tooltip.annotationSettings.template;
-                if (annotationTemplate !== null && annotationTemplate.length === 1) {
+                let annotationTemplate: string | Function = annotationTooltipArgs.tooltip.annotationSettings.template;
+                if (annotationTemplate !== null && annotationTemplate.length === 1 && typeof annotationTemplate !== 'function') {
                     annotationTemplate = annotationTemplate[annotationTemplate[0]];
                 }
                 const elementSizeAn: ClientRect = this.annotationTargetElement.getBoundingClientRect();
@@ -296,10 +301,10 @@ export class GaugeTooltip {
                     const annotationTextStyle: FontModel = {
                         color: annotationTooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor,
                         fontFamily: annotationTooltipArgs.tooltip.textStyle.fontFamily || this.gauge.themeStyle.fontFamily,
-                        fontWeight: annotationTooltipArgs.tooltip.textStyle.fontWeight,
+                        fontWeight: annotationTooltipArgs.tooltip.textStyle.fontWeight || this.gauge.themeStyle.fontWeight,
                         opacity: annotationTooltipArgs.tooltip.textStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity,
                         fontStyle:  annotationTooltipArgs.tooltip.textStyle.fontStyle,
-                        size:  annotationTooltipArgs.tooltip.textStyle.size
+                        size:  annotationTooltipArgs.tooltip.textStyle.size || this.gauge.themeStyle.fontSize
                     };
                     this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, annotationTooltipArgs,
                                                             annotationTemplate, this.arrowInverted, this.tooltipRect,
@@ -323,7 +328,7 @@ export class GaugeTooltip {
                 if (((this.gauge as any).isVue || (this.gauge as any).isVue3)) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.gauge as any).clearTemplate([this.tooltipEle.children[0].id], [0]);
-                } else {
+                } else if (!(this.gauge as any).isAngular) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.gauge as any).clearTemplate();
                 }
@@ -355,12 +360,12 @@ export class GaugeTooltip {
      * @param {BorderModel} border - Specifies the border of the tooltip.
      * @returns {Tooltip} - Returns the tooltip.
      */
-    private svgTooltipCreate(svgTooltip: Tooltip, tooltipArg: ITooltipRenderEventArgs, template: string, arrowInverted: boolean,
+    private svgTooltipCreate(svgTooltip: Tooltip, tooltipArg: ITooltipRenderEventArgs, template: string | Function, arrowInverted: boolean,
                              tooltipRect: Rect, gauge: CircularGauge, fill: string, textStyle: FontModel, border: BorderModel ): Tooltip {
         svgTooltip = new Tooltip({
             enable: true,
             data: { value: tooltipArg.content },
-            template: template,
+            template: template as any,
             enableRTL: gauge.enableRtl,
             enableAnimation: tooltipArg.tooltip.enableAnimation,
             content: [SanitizeHtmlHelper.sanitize(tooltipArg.content)],

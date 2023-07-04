@@ -89,7 +89,11 @@ export type AccumulationTheme =
     /**  Render a accumulation chart with Fluent theme. */
     'Fluent' |
     /**  Render a accumulation chart with FluentDark theme. */
-    'FluentDark';
+    'FluentDark' |
+    /**  Render a accumulation chart with Material 3 theme. */
+    'Material3' |
+    /**  Render a accumulation chart with Material 3 dark theme. */
+    'Material3Dark';
 
 /**
  * Defines the empty point mode of the chart.

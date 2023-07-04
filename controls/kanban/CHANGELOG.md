@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 22.1.37 (2023-07-04)
+
+### Kanban
+
+#### New Features
+
+- **Virtual Scrolling**: This feature allows users to load data on demand when scrolling through columns for a smoother experience with large datasets.
+
+## 21.1.39 (2023-04-11)
 
 ### Kanban
 

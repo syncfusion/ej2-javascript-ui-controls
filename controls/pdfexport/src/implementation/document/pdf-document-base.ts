@@ -8,6 +8,7 @@ import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { Encoding } from '@syncfusion/ej2-file-utils';
 import { PdfDocument } from './pdf-document';
 import { PdfReference } from './../primitives/pdf-reference';
+import { PdfViewerPreferences } from './pdf-viewer-preferences';
 /**
  * `PdfDocumentBase` class represent common properties of PdfDocument classes.
  * @private
@@ -94,6 +95,20 @@ export class PdfDocumentBase {
     }
     public set catalog(value : PdfCatalog) {
         this.pdfCatalog = value;
+    }
+    /**
+     * Gets viewer preferences for presenting the PDF document in a viewer.
+     * ```typescript
+     * // Create a new PDF document
+     * let document : PdfDocument = new PdfDocument();
+     * // Gets viewer preferences
+     * let viewerPreferences : PdfViewerPreferences = document.viewerPreferences;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public get viewerPreferences() : PdfViewerPreferences {
+        return this.pdfCatalog.viewerPreferences;
     }
     //Public methods
     /**

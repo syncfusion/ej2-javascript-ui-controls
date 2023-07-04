@@ -53,8 +53,9 @@ export interface PageSettingsModel {
      * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Specifies the mode of record count in a page. The options are,

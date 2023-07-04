@@ -358,6 +358,13 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     @Property(true)
     public enabled: boolean;
     /**
+     * Specifies the component popup display full screen in mobile devices.
+     *
+     * @default false
+     */
+    @Property(false)
+    public fullScreenMode : boolean;
+    /**
      * Specifies the component in readonly state.
      *
      * @default false
@@ -664,9 +671,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private validateDisable(): void {
         this.setMinMax(this.initMin, this.initMax);
-        this.popupCreation();
-        this.popupObj.destroy();
-        this.popupWrapper = this.popupObj = null;
+        if(!isNullOrUndefined(this.value)){
+            this.popupCreation();
+            this.popupObj.destroy();
+            this.popupWrapper = this.popupObj = null;
+        }
         if ((!isNaN(+this.value) && this.value !== null)) {
             if (!this.valueIsDisable(this.value)) {
                 //disable value given in value property so reset the date based on current date
@@ -758,6 +767,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return (!isNullOrUndefined(value) && value instanceof Date && !isNaN(+value)) ? value : null;
     }
     private createInputElement(): void {
+        if(this.fullScreenMode && Browser.isDevice){
+            this.cssClass = "e-popup-expand";
+        }
         let updatedCssClassesValue: string = this.cssClass;
         const isBindClearAction: boolean = this.enableMask ? false : true;
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
@@ -954,7 +966,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.generateList();
             append([this.listWrapper], this.popupWrapper);
         }
-        this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
         this.addSelection();
         this.renderPopup();
         detach(this.popupWrapper);
@@ -1001,8 +1012,28 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         });
         if (!Browser.isDevice) {
             this.popupObj.collision = { X: 'none', Y: 'flip' };
+        }        
+        if(Browser.isDevice && this.fullScreenMode){
+            this.popupObj.element.style.maxHeight = "100%";
+            this.popupObj.element.style.width = "100%";
+        } else {
+            this.popupObj.element.style.maxHeight = POPUPDIMENSION;
         }
-        this.popupObj.element.style.maxHeight = POPUPDIMENSION;
+        
+        if (Browser.isDevice && this.fullScreenMode) {
+            const modelHeader: HTMLElement = this.createElement('div', { className: 'e-model-header' });
+            const modelTitleSpan = this.createElement("span", { className: "e-model-title" });
+            modelTitleSpan.textContent = "Select time";
+            const modelCloseIcon = this.createElement("span", { className: "e-popup-close" });
+            EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.timePopupCloseHandler, this);
+            modelHeader.appendChild(modelCloseIcon);
+            modelHeader.appendChild(modelTitleSpan);
+            this.popupWrapper.insertBefore(modelHeader, this.popupWrapper.firstElementChild);
+        }
+    }
+
+    private timePopupCloseHandler(e: MouseEvent| TouchEvent): void {
+        this.hide();
     }
 
     //util function
@@ -1373,6 +1404,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             case 'end':
             case 'up':
             case 'down':
+                if (!this.isPopupOpen()) {
+                    this.popupCreation();
+                    this.popupObj.destroy();
+                    this.popupObj = this.popupWrapper = null;
+                }
                 if (this.enableMask && !this.readonly && !this.isPopupOpen())
                 {
                     event.preventDefault();
@@ -1547,9 +1583,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.checkValue(li.getAttribute('data-value'));
             if (this.enableMask)
             {
-                this.notify('createMask', {
-                    module: 'MaskedDateTime', navigated: true
-                });
+                this.createMask();
             }
             this.selectedElement = li;
             this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
@@ -2212,7 +2246,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.prevDate = this.valueWithMinutes = date;
         if ((typeof date !== 'number') || (this.value && +new Date(+this.value).setMilliseconds(0)) !== +date) {
             this.setProperties({ value: date }, true);
-            if (this.enableMask)
+            if (this.enableMask && this.value)
             {
                 this.createMask();
             }
@@ -2744,7 +2778,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.invalidValueString = null;
                 this.checkInvalidValue(newProp.value);
                 newProp.value = this.value;
-                if (!this.invalidValueString && !this.enableMask) {
+                if (!this.invalidValueString) {
                     if (typeof newProp.value === 'string') {
                         this.setProperties({ value: this.checkDateValue(new Date(newProp.value)) }, true);
                         newProp.value = this.value;
@@ -2755,13 +2789,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     }
                     this.initValue = newProp.value;
                     newProp.value = this.compareFormatChange(this.checkValue(newProp.value));
-                } else if (this.enableMask) {
-                    this.updateInputValue(this.maskedDateValue);
-                    this.checkErrorState(this.maskedDateValue);
                 } else {
                     this.updateInputValue(this.invalidValueString);
                     this.checkErrorState(this.invalidValueString);
                 }
+                if (this.enableMask && isNullOrUndefined(newProp.value)) {
+                        this.updateInputValue(this.maskedDateValue);
+                        this.checkErrorState(this.maskedDateValue);
+                    } 
                 this.checkValueChange(null, false);
                 if (this.isPopupOpen()) {
                     this.setScrollPosition();

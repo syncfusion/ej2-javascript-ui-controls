@@ -3,7 +3,8 @@ import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf
 import { DialogBeforeOpenEventArgs } from '../common/index';
 import { L10n, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
-import { ToolbarFind, goto, FindOptions, showDialog, replaceAllDialog, findKeyUp, replace, replaceAll } from '../../workbook/index';
+import { ToolbarFind, goto, FindOptions, showDialog, replaceAllDialog, findKeyUp, replace, replaceAll, SheetModel } from '../../workbook/index';
+import { getRangeIndexes, getSwapRange } from '../../workbook/common/index';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -54,16 +55,17 @@ export class FindAndReplace {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             const dlg: DialogModel = {
                 isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg',
-                header: l10n.getConstant('FindAndReplace'), closeOnEscape: false,
+                header: l10n.getConstant('FindAndReplace'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = { dialogName: 'FindAndReplaceDialog', element: args.element, target:
                         args.target, cancel: args.cancel };
                     this.parent.trigger('dialogBeforeOpen', dlgArgs);
                     if (dlgArgs.cancel) {
                         args.cancel = true;
+                    } else {
+                        dialogInst.dialogInstance.content = this.findandreplaceContent();
+                        dialogInst.dialogInstance.dataBind();
                     }
-                    dialogInst.dialogInstance.content = this.findandreplaceContent();
-                    dialogInst.dialogInstance.dataBind();
                     focus(this.parent.element);
                 },
                 buttons: [{
@@ -139,8 +141,10 @@ export class FindAndReplace {
                     this.parent.trigger('dialogBeforeOpen', dlgArgs);
                     if (dlgArgs.cancel) {
                         args.cancel = true;
+                    } else {
+                        dialogInst.dialogInstance.content = this.GotoContent();
+                        dialogInst.dialogInstance.dataBind();
                     }
-                    dialogInst.dialogInstance.content = this.GotoContent(); dialogInst.dialogInstance.dataBind();
                     focus(this.parent.element);
                 },
                 buttons: [{
@@ -148,11 +152,11 @@ export class FindAndReplace {
                         content: l10n.getConstant('Ok'), isPrimary: true, cssClass: 'e-btn-goto-ok'
                     },
                     click: (): void => {
-                        this.gotoHandler();
+                        if (this.gotoHandler()) {
+                            dialogInst.hide();
+                        }
                     }
-                }], close: (): void => {
-                    dialogInst.hide();
-                }, open: (): void => {
+                }], open: (): void => {
                     this.textFocus();
                 }
 
@@ -180,6 +184,10 @@ export class FindAndReplace {
         }
         const value: string = findInput.value;
         if (findInput.value !== '') {
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            if (sheet.isProtected && !sheet.protectSettings.selectCells && !sheet.protectSettings.selectUnLockedCells) {
+                return;
+            }
             const sheetIndex: number = this.parent.activeSheetIndex;
             const checkCase: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkcase') as HTMLElement;
             let isCSen: boolean;
@@ -233,21 +241,42 @@ export class FindAndReplace {
                 findOpt: 'next', replaceValue: replaceValue, replaceBy: action, sheetIndex: this.parent.activeSheetIndex, isAction: true });
     }
 
-    private gotoHandler(address?: { [key: string]: string }): void {
+    private gotoHandler(address?: { [key: string]: string }): boolean {
+        let isNotAlertShown: boolean = true;
         if (address) {
             this.parent.goTo(address.address);
         } else {
-            const item: HTMLInputElement = this.parent.element.querySelector('.e-text-goto') as HTMLInputElement;
-            const gotoaddress: string = item.value;
-            const splitAddress: string[] = gotoaddress.split('');
-            if ((gotoaddress === '') || isNaN(parseInt(splitAddress[1], 10))) {
+            let gotoAddress: string = (this.parent.element.querySelector('.e-text-goto') as HTMLInputElement).value;
+            for (let nameIdx: number = 0; nameIdx < this.parent.definedNames.length; nameIdx++) {
+                if (this.parent.definedNames[nameIdx as number].name === gotoAddress) {
+                    gotoAddress = this.parent.definedNames[nameIdx as number].refersTo.slice(1);
+                    break;
+                }
+            }
+            let addr: string = gotoAddress;
+            if (gotoAddress.includes('!')) {
+                addr = gotoAddress.split('!')[1];
+            }
+            addr = addr.split('$').join('');
+            if (addr.includes(':')) {
+                addr = addr.split(':')[0];
+            }
+            const rowMatch: RegExpMatchArray = addr.match(/\d+/);
+            const colMatch: RegExpMatchArray = addr.match(/[A-Z]+/i);
+            if (!rowMatch || !colMatch || colMatch.index !== 0) {
                 this.gotoAlert();
-                return;
+                isNotAlertShown = false;
             } else {
-                const address: string = gotoaddress.toString().toUpperCase();
-                this.parent.goTo(address);
+                const indexes: number[] = getSwapRange(getRangeIndexes(addr));
+                if (indexes[2] >= 1048576 || indexes[3] >= 16384) {
+                    this.gotoAlert();
+                    isNotAlertShown = false;
+                } else {
+                    this.parent.goTo(gotoAddress);
+                }
             }
         }
+        return isNotAlertShown;
     }
 
     private gotoAlert(): void {
@@ -300,7 +329,7 @@ export class FindAndReplace {
         const findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
         const replaceValue: string = (this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement).value;
         if (!isNullOrUndefined(findValue) && !isNullOrUndefined(replaceValue) && (findValue !== '') && (replaceValue !== '')) {
-            if (this.parent.getActiveSheet().isProtected === false) {
+            if (!this.parent.getActiveSheet().isProtected) {
                 (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = false;
                 (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = false;
             }

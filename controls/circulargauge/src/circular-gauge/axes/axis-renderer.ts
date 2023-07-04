@@ -170,6 +170,7 @@ export class AxisRenderer {
                 continue;
             }
             style.font.fontFamily = style.font.fontFamily || this.gauge.themeStyle.labelFontFamily;
+            style.font.fontWeight = style.font.fontWeight || this.gauge.themeStyle.fontWeight;
             if (axis.hideIntersectingLabel && (i !== 0)) {
                 //To remove the labels which is intersecting with last label.
                 const lastlabel: boolean = ((i !== (labelCollection.length - 1)) && ((isCompleteAngle(axis.startAngle, axis.endAngle) ||

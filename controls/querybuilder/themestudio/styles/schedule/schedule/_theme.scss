@@ -13,7 +13,12 @@
     }
 
     .e-header-calendar {
-      background-color: $schedule-calendar-background;
+      @if ($skin-name == 'Material3') {
+        background: $schedule-calendar-background;
+      }
+      @else {
+        background-color: $schedule-calendar-background;
+      }
       box-shadow: $schedule-calendar-shadow;
     }
 
@@ -154,7 +159,7 @@
       }
 
       .e-previous-timeline {
-        border-top: 1px dotted $schedule-active-border-color;
+        border-top: 1px $schedule-alternate-cell-border $schedule-active-border-color;
       }
 
       &.e-by-date {
@@ -217,7 +222,9 @@
         background: $schedule-current-date-bg-color;
         border-radius: 50%;
         color: $schedule-current-date-header-font-color;
-        width: 20px;
+        min-width: 20px;
+        padding: 0 4px;
+        width: fit-content;
       }
 
       .e-selected-cell {
@@ -253,7 +260,7 @@
       }
 
       .e-current-date .e-date-header {
-        width: 24px;
+        min-width: 24px;
       }
     }
 

@@ -104,7 +104,7 @@ export class Print {
         const scheduleTemplates: string[] = ['cellHeaderTemplate', 'dayHeaderTemplate', 'monthHeaderTemplate', 'cellTemplate',
             'dateHeaderTemplate', 'dateRangeTemplate', 'eventTemplate', 'resourceHeaderTemplate', 'headerIndentTemplate'];
         const scheduleEvents: string[] = ['actionBegin', 'actionComplete', 'actionFailure', 'created', 'dataBinding', 'dataBound',
-            'destroyed', 'eventRendered', 'moreEventsClick', 'navigating', 'popupOpen', 'popupClose', 'renderCell']
+            'destroyed', 'eventRendered', 'moreEventsClick', 'navigating', 'popupOpen', 'popupClose', 'renderCell'];
         let eventSettings: EventSettingsModel;
         let group: GroupModel;
         let timeScale: TimeScaleModel;
@@ -114,7 +114,7 @@ export class Print {
             case 'eventSettings': {
                 eventSettings = Object.assign({}, (this.parent.eventSettings as Record<string, any>).properties);
                 eventSettings.dataSource = this.parent.eventsData;
-                const eventTemplate: string = !isNullOrUndefined(printOptions.eventSettings) &&
+                const eventTemplate: string | Function = !isNullOrUndefined(printOptions.eventSettings) &&
                     !isNullOrUndefined(printOptions.eventSettings.template) ? printOptions.eventSettings.template : eventSettings.template;
                 eventSettings.template = typeof (eventTemplate) === 'function' ? null : eventTemplate;
                 printModel.eventSettings = eventSettings;

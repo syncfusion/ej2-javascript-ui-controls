@@ -575,8 +575,9 @@ export interface GroupSettingsModel {
      * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
      *
      * @default ''
+     * @aspType string
      */
-    captionTemplate?: string | Object;
+    captionTemplate?: string | Object | Function;
 
     /**
      * The Lazy load grouping, allows the Grid to render only the initial level caption rows in collapsed state while grouping.
@@ -651,7 +652,7 @@ export interface EditSettingsModel {
      * @default ''
      * @aspType string
      */
-    template?: string | Object;
+    template?: string | Object | Function;
 
     /**
      * Defines the custom edit elements for the dialog header template.
@@ -659,7 +660,7 @@ export interface EditSettingsModel {
      * @default ''
      * @aspType string
      */
-    headerTemplate?: string | Object;
+    headerTemplate?: string | Object | Function;
 
     /**
      * Defines the custom edit elements for the dialog footer template.
@@ -667,7 +668,7 @@ export interface EditSettingsModel {
      * @default ''
      * @aspType string
      */
-    footerTemplate?: string | Object;
+    footerTemplate?: string | Object | Function;
 
     /**
      * Defines the position of adding a new row. The available position are:
@@ -1120,7 +1121,7 @@ export interface GridModel extends ComponentModel{
     /**
      * Configures the column chooser in the Grid.
      *
-     * @default { columnChooserOperator: 'wildCard' }
+     * @default { columnChooserOperator: 'startsWith' }
      */
     columnChooserSettings?: ColumnChooserSettingsModel;
 
@@ -1169,8 +1170,9 @@ export interface GridModel extends ComponentModel{
      * > Check the [`Row Template`](../../grid/row/) customization.
      *
      * @default ''
+     * @aspType string
      */
-    rowTemplate?: string;
+    rowTemplate?: string | Function;
 
     /**
      * The detail template allows you to show or hide additional information about a particular row.
@@ -1180,8 +1182,9 @@ export interface GridModel extends ComponentModel{
      * {% codeBlock src="grid/detail-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default ''
+     * @aspType string
      */
-    detailTemplate?: string;
+    detailTemplate?: string | Function;
 
     /**
      * Defines Grid options to render child Grid.
@@ -1337,15 +1340,17 @@ export interface GridModel extends ComponentModel{
      * It used to render toolbar template
      *
      * @default null
+     * @aspType string
      */
-    toolbarTemplate?: string;
+    toolbarTemplate?: string | Function;
 
     /**
      * It used to render pager template
      *
      * @default null
+     * @aspType string
      */
-    pagerTemplate?: string;
+    pagerTemplate?: string | Function;
 
     /**
      * Gets or sets the number of frozen rows.
