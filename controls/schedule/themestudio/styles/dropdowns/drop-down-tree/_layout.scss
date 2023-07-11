@@ -41,7 +41,7 @@
           min-height: $ddt-close-icon-min-height;
         }
         @if $ddt-skin-name == 'Material3' {
-          padding: $ddt-close-icon-padding;
+          margin: $ddt-dd-icon-margin;
         }
       }
 
@@ -57,7 +57,6 @@
 
         @if $ddt-skin-name == 'Material3' {
           font-size: $ddt-chip-icon-line-height;
-          padding: $ddt-dd-icon-padding;
           margin: $ddt-dd-icon-margin;
           line-height: $ddt-chip-icon-line-height;
         }
@@ -73,6 +72,9 @@
           bottom: $ddt-close-icon-bottom;
           position: absolute;
           right: 0;
+          @if $ddt-skin-name == 'Material3' {
+            margin: 0;
+          }
         }
 
         &.e-show-dd-icon .e-clear-icon {
@@ -116,7 +118,7 @@
 
         &::before {
           font-size: $ddt-chip-close-font;
-          @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'material' and $ddt-skin-name != 'material-dark' {
+          @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'material' and $ddt-skin-name != 'material-dark' and $ddt-skin-name != 'Material3' {
             vertical-align: middle;
           }
         }
@@ -375,7 +377,7 @@
             @if $ddt-skin-name == 'FluentUI' {
               line-height: 30px;
             }
-            @else if $ddt-skin-name != 'Material3' {
+            @else {
               padding-top: $ddt-overflow-count-padding-top;
             }
           }
@@ -434,7 +436,7 @@
     }
 
     &.e-popup {
-      @if $skin-name != 'material' and $skin-name != 'FluentUI' {
+      @if $skin-name != 'material' and $skin-name != 'FluentUI' and $skin-name != 'Material3' {
         border: 1px solid $ddt-popup-border-color;
       }
 
@@ -443,8 +445,12 @@
         margin-top: 4px;
       }
 
-      @if $skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' or $skin-name == 'Material3' {
         border-radius: $ddt-chip-radius;
+      }
+
+      @if $skin-name == 'Material3' {
+        margin-top: 2px;
       }
 
       @if $skin-name == 'FluentUI' {
@@ -518,7 +524,7 @@
 
       & .e-filter-wrap .e-input,
       & .e-filter-wrap .e-input:focus {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' {
           padding: $ddt-list-filter-text-indent;
         }
       }

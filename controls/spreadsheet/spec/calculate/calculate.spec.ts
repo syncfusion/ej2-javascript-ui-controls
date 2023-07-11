@@ -88,6 +88,46 @@ describe('Autocorrection with arithmetic formulas', () => {
         result = calculate.getKeyValue('F');
         expect(result === 'invalid expression').toBeTruthy;
     });
+    it('calculate invalid cell reference', () => {
+        forceCalc = false;
+        formula.value = '=Residential1';
+        document.body.appendChild(formula);
+        calculate.setKeyValue('F', formula.value);
+        result = calculate.getKeyValue('F');
+        expect(result === '#NAME?').toBeTruthy;
+    });
+    it('calculate valid cell reference', () => {
+        forceCalc = false;
+        formula.value = '=gfh4';
+        document.body.appendChild(formula);
+        calculate.setKeyValue('F', formula.value);
+        result = calculate.getKeyValue('F');
+        expect(result === '0').toBeTruthy;
+    });
+    it('calculate cell reference with cell referring 0', () => {
+        forceCalc = false;
+        formula.value = '=fdg0';
+        document.body.appendChild(formula);
+        calculate.setKeyValue('F', formula.value);
+        result = calculate.getKeyValue('F');
+        expect(result === '#NAME?').toBeTruthy;
+    });
+    it('calculate cell reference with invalid cell number', () => {
+        forceCalc = false;
+        formula.value = '=sgd656576565';
+        document.body.appendChild(formula);
+        calculate.setKeyValue('F', formula.value);
+        result = calculate.getKeyValue('F');
+        expect(result === '#NAME?').toBeTruthy;
+    });
+    it('calculate cell reference with number first', () => {
+        forceCalc = false;
+        formula.value = '=5hfg';
+        document.body.appendChild(formula);
+        calculate.setKeyValue('F', formula.value);
+        result = calculate.getKeyValue('F');
+        expect(result === '0').toBeTruthy;
+    });
     it('calculate worst case using special symbol &', () => {
         forceCalc = true;
         formula.value = '=5&';

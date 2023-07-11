@@ -1,4 +1,4 @@
-import { Smithchart} from '../../index';
+import { Smithchart, SmithchartFontModel} from '../../index';
 
 /**
  * Specifies Smithchart Events
@@ -119,8 +119,10 @@ export interface ISmithChartTooltipEventArgs extends ISmithchartEventArgs {
     headerText: string;
     /** Defines point of the tooltip. */
     point: ISmithChartPoint;
-    /** template. */
-    template: string;
+    /** template.
+     * @aspType string
+     */
+    template: string | Function;
 }
 
 
@@ -156,6 +158,14 @@ export interface ISmithchartThemeStyle {
     tooltipHeaderLine: string;
     fontFamily?: string;
     fontSize?: string;
+    tooltipFontSize?: string;
+    tooltipFontFamily?: string;
+    smithchartTitleFont: SmithchartFontModel;
+    legendLabelFont: SmithchartFontModel;
+    legendTitleFont: SmithchartFontModel;
+    dataLabelFont: SmithchartFontModel;
+    axisLabelFont: SmithchartFontModel;
+    smithchartSubtitleFont: SmithchartFontModel;
     labelFontFamily?: string;
     tooltipFillOpacity?: number;
     tooltipTextOpacity?: number;

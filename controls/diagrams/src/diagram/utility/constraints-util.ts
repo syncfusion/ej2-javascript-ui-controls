@@ -10,6 +10,7 @@ import { PointPortModel } from './../objects/port-model';
 import { Selector } from './../objects/node';
 import { SelectorModel } from './../objects/node-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
+import { PointPort } from '../objects/port';
 
 
 /**
@@ -213,7 +214,6 @@ export function canShadow(node: NodeModel): number {
 export function canInConnect(node: NodeModel): number {
     if ((node instanceof Node) && (node.constraints & NodeConstraints.InConnect)) {
         return node.constraints & NodeConstraints.InConnect;
-
     }
     return 0;
 }
@@ -247,7 +247,6 @@ export function canPortInConnect(port: PointPortModel): number {
 export function canOutConnect(node: NodeModel): number {
     if ((node instanceof Node) && (node.constraints & NodeConstraints.OutConnect)) {
         return node.constraints & NodeConstraints.OutConnect;
-
     }
     return 0;
 }
@@ -344,7 +343,7 @@ export function canVitualize(diagram: Diagram): number {
  * @param {Diagram} diagram - provide the Diagram value.
  * @private
  */
-export function canEnableToolTip(node: ConnectorModel | NodeModel, diagram: Diagram): number {
+export function canEnableToolTip(node: ConnectorModel | NodeModel | PointPortModel, diagram: Diagram): number {
     let state: number = 0;
     if (node instanceof Connector) {
         if (node.constraints & ConnectorConstraints.Tooltip) {
@@ -352,7 +351,13 @@ export function canEnableToolTip(node: ConnectorModel | NodeModel, diagram: Diag
         } else if (node.constraints & ConnectorConstraints.InheritTooltip) {
             state = diagram.constraints & DiagramConstraints.Tooltip;
         }
-    } else {
+    } else if (node instanceof PointPort) {
+        if (node.constraints & PortConstraints.ToolTip) {
+            state = node.constraints & PortConstraints.ToolTip;
+        } else if (node.constraints & PortConstraints.InheritTooltip) {
+            state = diagram.constraints & DiagramConstraints.Tooltip;
+        }
+    }  else {
         if (node.constraints & NodeConstraints.Tooltip) {
             state = node.constraints & NodeConstraints.Tooltip;
         } else if (node.constraints & NodeConstraints.InheritTooltip) {

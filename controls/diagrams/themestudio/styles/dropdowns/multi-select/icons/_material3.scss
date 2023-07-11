@@ -1,6 +1,6 @@
 @include export-module('multiselect-Material3-icons') {
   .e-multiselect.e-input-group .e-ddl-icon::before {
-    content: '\e969';
+    content: '\e70d';
     font-family: 'e-icons';
   }
 
@@ -13,11 +13,10 @@
   }
 
   .e-multi-select-wrapper .e-close-hooker::before {
-    content: '\e7a7';
+    content: '\e7e7';
     cursor: pointer;
-    left: $ddl-overall-close-left;
+    margin: auto;
     position: relative;
-    top: $ddl-overall-close-top;
   }
 
   .e-multiselect.e-input-group .e-ddl-disable-icon::before {

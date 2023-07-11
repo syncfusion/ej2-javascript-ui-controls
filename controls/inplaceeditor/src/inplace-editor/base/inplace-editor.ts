@@ -221,9 +221,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      *
      * @default ''
      * @blazorType string
+     * @aspType string
      */
     @Property('')
-    public template: string | HTMLElement;
+    public template: string | HTMLElement | Function;
     /**
      * Defines whether to allow the cross-scripting site or not.
      *
@@ -1181,7 +1182,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private checkIsTemplate(): void {
         this.isTemplate = (!isNOU(this.template) && this.template !== '') ? true : false;
     }
-    private templateCompile(trgEle: HTMLElement, tempStr: string): void {
+    private templateCompile(trgEle: HTMLElement, tempStr: string | Function): void {
         let tempEle: HTMLElement[];
         const blazorContain: string[] = Object.keys(window) as string[];
         if (typeof tempStr === 'string') {
@@ -1189,7 +1190,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         const compiler: Function = compile(tempStr);
         if (!isNOU(compiler)) {
-            const isString: boolean = (isBlazor() &&
+            const isString: boolean = (isBlazor() && typeof tempStr !== 'function' &&
             !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) ?
                 this.isStringTemplate : true;
             tempEle = compiler({}, this, 'template', this.element.id + 'template', isString);
@@ -1198,7 +1199,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             [].slice.call(tempEle).forEach((el: HTMLElement): void => {
                 trgEle.appendChild(el);
             });
-            if (isBlazor() && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
+            if (isBlazor() && !this.isStringTemplate && typeof tempStr !== 'function' &&
+                (tempStr).indexOf('<div>Blazor') === 0) {
                 updateBlazorTemplate(this.element.id + 'template', 'Template', this);
             }
         }
@@ -1226,10 +1228,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         return value;
     }
-    private appendTemplate(trgEle: HTMLElement, tempStr: string | HTMLElement): void {
+    private appendTemplate(trgEle: HTMLElement, tempStr: string | HTMLElement | Function): void {
         tempStr = typeof(tempStr) === 'string' ? this.sanitizeHelper(tempStr) : tempStr;
         this.setProperties({ template: tempStr }, true);
-        if (typeof tempStr === 'string' || isNOU((<HTMLElement>tempStr).innerHTML)) {
+        if (typeof tempStr === 'function') {
+            this.templateCompile(trgEle, tempStr);
+        } else if (typeof tempStr === 'string' || isNOU((<HTMLElement>tempStr).innerHTML)) {
             if ((<string>tempStr)[0] === '.' || (<string>tempStr)[0] === '#') {
                 if (document.querySelectorAll(<string>tempStr).length) {
                     this.templateEle = document.querySelector(<string>tempStr);

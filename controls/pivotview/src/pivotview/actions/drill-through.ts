@@ -114,7 +114,7 @@ export class DrillThrough {
                 if (this.parent.dataSourceSettings.mode === 'Server') {
                     this.parent.getEngine('fetchRawData', null, null, null, null, null, null, { rowIndex: rowIndex, columnIndex: colIndex });
                 } else {
-                    if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
+                    if (this.parent.allowDataCompression) {
                         const indexArray: string[] = Object.keys(pivotValue.indexObject);
                         this.drillThroughDialog.indexString = [];
                         for (const cIndex of indexArray) {

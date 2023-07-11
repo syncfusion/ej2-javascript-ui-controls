@@ -154,8 +154,9 @@ describe('Chart Control', () => {
 
             tooltip = document.getElementById('chartContainer_tooltip');
             expect(tooltip !== null).toBe(true);
-            
+            trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
             done();
+            
         });
         it('Shared Tooltip', (done: Function) => {
 
@@ -172,6 +173,7 @@ describe('Chart Control', () => {
                 expect(tooltip !== null).toBe(true);
                 let element: HTMLElement = document.getElementById('chartContainer_tooltip_path');
                 expect(element.getAttribute('d') !== null).toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -318,6 +320,7 @@ describe('Chart Control', () => {
 
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -338,6 +341,7 @@ describe('Chart Control', () => {
 
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -809,6 +813,7 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
                 expect(target.getAttribute('opacity') === '0.5').toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -986,10 +991,10 @@ describe('Chart Control', () => {
         it('Checking datalabel with axis interval', (done: Function) => {
             loaded = (args: Object): void => {
                 ele = document.getElementById('chartContainer_Series_0_Point_1_Text_0');
-                expect(ele.getAttribute('x') === '452.8484644601701' || ele.getAttribute('x') === '575.34846446017' 
+                expect(ele.getAttribute('x') === '464.70201785076335' || ele.getAttribute('x') === '575.34846446017' 
                 || ele.getAttribute('x') === '696.9949110695768' || ele.getAttribute('x') === '458.70201785076335'
                 || ele.getAttribute('x') === '711.84846446017' || ele.getAttribute('x') === '464.20201785076335').toBe(true);
-                expect(ele.getAttribute('y') === '155.02653553982995' || ele.getAttribute('y') ==='155.02653553982995' 
+                expect(ele.getAttribute('y') === '154.67298214923667' || ele.getAttribute('y') ==='155.02653553982995' 
                 || ele.getAttribute('y') === '155.3800889304232' || ele.getAttribute('y') === '153.92298214923667').toBe(true);
                 done();
             };
@@ -1026,6 +1031,7 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
                 expect(target.getAttribute('opacity') === '0.5').toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -1458,6 +1464,7 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('chartContainer_tooltip');
                 expect(tooltip !== null).toBe(true);
                 //  expect(target.getAttribute('opacity') === '0.5').toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -1575,12 +1582,12 @@ describe('Chart Control', () => {
         });
         it('Checking with ColumnSeries OnTicks label', () => {
            let point: Element = document.getElementById('customerIssue_Series_0_Point_1');
-           expect(point.getAttribute('d')).toBe('M 290.075 224.625 A 94.425 94.425 0 0 1 317.7313754179358 157.85650895505148 L 273.218959029893 113.34418159175245 A 157.375 157.375 1 0 0 227.125 224.62500000000003 Z');
+           expect(point.getAttribute('d')).toBe('M 290.375 225.125 A 94.125 94.125 0 0 1 317.9435076644237 158.56864077727528 L 273.5725127740395 114.19773462879215 A 156.875 156.875 1 0 0 227.625 225.12500000000003 Z');
         });
         it('checking columnSeries with between ticks', (done: Function) => {
             chartObj.loaded = () => {
                 let point: Element = document.getElementById('customerIssue_Series_0_Point_1');
-                expect(point.getAttribute('d')).toBe('M 317.73144218646024 291.39355781353976 A 94.425 94.425 0 0 1 290.0750000000472 224.62509442500001 L 227.1250000000787 224.62515737500004 A 157.375 157.375 1 0 0 273.2190703107671 335.90592968923295 Z');
+                expect(point.getAttribute('d')).toBe('M 317.94357422081623 291.68142577918377 A 94.125 94.125 0 0 1 290.37500000004707 225.12509412500003 L 227.62500000007844 225.12515687500004 A 156.875 156.875 1 0 0 273.5726237013604 336.0523762986396 Z');
                 done();
             };
             chartObj.primaryXAxis.labelPlacement = 'BetweenTicks';
@@ -1641,12 +1648,12 @@ describe('Chart Control', () => {
         });
         it('Checking with OnTicks label', () => {
            let point: Element = document.getElementById('container_Series_0_Point_0');
-           expect(point.getAttribute('d')).toBe('M 274.68886110046446 210.01160714285714 L 299.9999707732143 195.3982142857289 L 300 224.625 L 300 224.625 Z');
+           expect(point.getAttribute('d')).toBe('M 274.7692777451016 210.5580357142857 L 299.9999708660714 195.991071428586 L 300 225.125 L 300 225.125 Z');
         });
         it('checking with between ticks', (done: Function) => {
             chartObj.loaded = () => {
                 let point: Element = document.getElementById('container_Series_0_Point_0');
-                expect(point.getAttribute('d')).toBe('M 300 195.3982142857143 L 325.31112428613005 210.01158183172555 L 300 224.625 L 300 224.625 Z');
+                expect(point.getAttribute('d')).toBe('M 300 195.99107142857142 L 325.2307076879215 210.55801048357074 L 300 225.125 L 300 225.125 Z');
                 done();
             };
             chartObj.primaryXAxis.labelPlacement = 'BetweenTicks';
@@ -1736,7 +1743,7 @@ describe('Chart Control', () => {
         it('Polar Chart: datalabel count check with X axis label outside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 30 || datalabel.childElementCount === 31 || datalabel.childElementCount === 32 ).toBe(true);
+                expect(datalabel.childElementCount === 28 || datalabel.childElementCount === 31 || datalabel.childElementCount === 32 ).toBe(true);
                 done();
             };
             chartObj.refresh();
@@ -1744,7 +1751,7 @@ describe('Chart Control', () => {
         it('Polar Chart: datalabel count check with X axis label inside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 18 || datalabel.childElementCount === 19).toBe(true);
+                expect(datalabel.childElementCount === 16 || datalabel.childElementCount === 19).toBe(true);
                 done();
             };
             chartObj.primaryXAxis.labelPosition = 'Inside';
@@ -1753,7 +1760,7 @@ describe('Chart Control', () => {
         it('Polar Chart: datalabel count check with Y axis label inside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 15 || datalabel.childElementCount === 16 || datalabel.childElementCount === 17).toBe(true);
+                expect(datalabel.childElementCount === 14 || datalabel.childElementCount === 16 || datalabel.childElementCount === 17).toBe(true);
                 done();
             };
             chartObj.primaryYAxis.labelPosition = 'Inside';
@@ -1762,7 +1769,7 @@ describe('Chart Control', () => {
         it('Radar Chart: datalabel count check with X axis label outside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 30 || datalabel.childElementCount === 31 || datalabel.childElementCount === 32).toBe(true);
+                expect(datalabel.childElementCount === 36 || datalabel.childElementCount === 28 || datalabel.childElementCount === 32).toBe(true);
                 done();
             };
             chartObj.series[0].type = 'Radar';
@@ -1772,7 +1779,7 @@ describe('Chart Control', () => {
         it('Radar Chart: datalabel count check with X axis label inside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 18 || datalabel.childElementCount === 19).toBe(true);
+                expect(datalabel.childElementCount === 16 || datalabel.childElementCount === 19).toBe(true);
                 done();
             };
             chartObj.primaryXAxis.labelPosition = 'Inside';
@@ -1781,7 +1788,7 @@ describe('Chart Control', () => {
         it('Radar Chart: datalabel count check with Y axis label inside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 15 || datalabel.childElementCount === 16 || datalabel.childElementCount === 17).toBe(true);
+                expect(datalabel.childElementCount === 14 || datalabel.childElementCount === 16 || datalabel.childElementCount === 17).toBe(true);
                 done();
             };
             chartObj.primaryYAxis.labelPosition = 'Inside';

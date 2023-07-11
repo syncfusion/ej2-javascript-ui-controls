@@ -10,7 +10,7 @@ import { DropDownList, MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dr
 import { Slider } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateRangePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { profile , inMB, getMemoryProfile } from './common.spec';
-import { DataManager, ODataAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 
 MultiSelect.Inject(CheckBoxSelection);
 
@@ -1655,7 +1655,7 @@ describe('QueryBuilder', () => {
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(0);
             queryBuilder.setRulesFromSql("EmployeeID BETWEEN 0 AND 0 and Title IN ('Sales Manager') and City LIKE ('u%')");
-            expect(JSON.stringify(queryBuilder.getRulesFromSql("EmployeeID BETWEEN 0 AND 0 and Title IN ('Sales Manager') and City LIKE ('u%')").rules)).toEqual('[{"label":"EmployeeID","field":"EmployeeID","operator":"between","type":"number","value":[0,0]},{"label":"Title","field":"Title","operator":"in","type":"string","value":["Sales Manager"]},{"label":"City","field":"City","operator":"startswith","value":"u","type":"string"}]');
+            expect(JSON.stringify(queryBuilder.getRulesFromSql("EmployeeID BETWEEN 0 AND 0 and Title IN ('Sales Manager') and City LIKE ('u%')").rules)).toEqual('[{"label":"Employee ID","field":"EmployeeID","operator":"between","type":"number","value":[0,0]},{"label":"Title","field":"Title","operator":"in","type":"string","value":["Sales Manager"]},{"label":"City","field":"City","operator":"startswith","value":"u","type":"string"}]');
         });
         it(' Multiple value in textbox  Checking', () => {
             let valRule: RuleModel = {'condition': 'and',
@@ -3445,8 +3445,9 @@ describe('QueryBuilder', () => {
     });
     describe('Data Manager', () => {
         let data: DataManager = new DataManager({
-            url: 'https://js.syncfusion.com/ejServices/Wcf/Northwind.svc/Orders/',
-            adaptor: new ODataAdaptor
+            url: 'https://services.syncfusion.com/js/production/api/orders',
+            adaptor: new WebApiAdaptor,
+	    crossDomain: true
         });
         let valRule: RuleModel = {
             'condition': 'and',

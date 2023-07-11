@@ -11,7 +11,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
-import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';
+import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax, isBlazor, blazorTemplates, Fetch } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Browser, ModuleDeclaration, Event, EmitType } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
@@ -19,7 +19,7 @@ import { DiagramModel } from './diagram-model';
 import { CanvasRenderer } from './rendering/canvas-renderer';
 import { SvgRenderer } from './rendering/svg-renderer';
 import { DiagramRenderer } from './rendering/renderer';
-import { BaseAttributes } from './rendering/canvas-interface';
+import { BaseAttributes, IKeyDownType } from './rendering/canvas-interface';
 import { PageSettings, ScrollSettings } from './diagram/page-settings';
 import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';
 import { DiagramElement } from './core/elements/diagram-element';
@@ -160,6 +160,11 @@ import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel, FixedUserHandl
 import { LinearGradient, RadialGradient } from './core/appearance';
 import { SegmentThumbShapes } from './enum/enum';
 import { Point } from './primitives/point';
+import { EJ1SerializationModule } from './load-utility/modelProperties';
+import { NodeProperties } from './load-utility/nodeProperties';
+import { ConnectorProperties } from './load-utility/connectorProperties';
+import { PortProperties } from './load-utility/portProperties';
+import { LabelProperties } from './load-utility/labelProperties';
 /**
  * Represents the Diagram control
  * ```html
@@ -214,6 +219,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public snappingModule: Snapping;
+    /**
+     * `modelProperties` is used to Snap the objects
+     *
+     * @private
+     */
+
+    public modelProperties : EJ1SerializationModule;
 
     /**
      * `printandExportModule` is used to print or export the objects
@@ -335,7 +347,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Defines the segmentThumbShape
-     * 
+     *
      * @default 'Rhombus'
      */
     @Property('Rhombus')
@@ -629,25 +641,28 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Customizes the node template
      *
      * @default undefined
+     * @aspType string
      */
     @Property()
-    public nodeTemplate: string;
+    public nodeTemplate: string | Function;
 
     /**
      * Customizes the annotation template
      *
      * @default undefined
+     * @aspType string
      */
     @Property()
-    public annotationTemplate: string;
+    public annotationTemplate: string | Function;
 
     /**
      * This property represents the template content of a user handle. The user can define any HTML element as a template.
      *
      * @default undefined
+     * @aspType string
      */
     @Property()
-    public userHandleTemplate: string;
+    public userHandleTemplate: string | Function;
 
     /**
      * Helps to return the default properties of node
@@ -1423,14 +1438,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public drop: EmitType<IDropEventArgs>;
 
-    /** 
-     * This event is triggered when we drag the segment thumb of Orthogonal/ Straight /Bezier connector 
-     * 
-     * @event 
-     * @deprecated 
-     */ 
+    /**
+     * This event is triggered when we drag the segment thumb of Orthogonal/ Straight /Bezier connector
+     *
+     * @event
+     * @deprecated
+     */
     @Event()
-    public segmentChange: EmitType<ISegmentChangeEventArgs>; 
+    public segmentChange: EmitType<ISegmentChangeEventArgs>;
 
     //private variables
     /** @private */
@@ -1540,6 +1555,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public previousSelectedObject: (NodeModel | ConnectorModel)[];
     public canLayout: boolean = true;
+    private isRefreshed: boolean = false;
     /** @private */
     public swimlaneChildTable: {} = {};
     /** @private */
@@ -1930,18 +1946,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             /**Feature(EJ2-60228): Need to add Object ID in the history change event argument*/
             if (!refereshColelction && (this.canLogChange()) && (this.modelChanged(newProp, oldProp))) {
                 let propertyObjects: string[] = [];
-                let nodeObjects: string[] = [];
-                let connObjects: string[] = [];
+                const nodeObjects: string[] = [];
+                const connObjects: string[] = [];
 
                 if (newProp.nodes && Object.keys(newProp.nodes).length > 0) {
                     for (const key of Object.keys(newProp.nodes)) {
-                        let nodeIndex: number = parseInt(key);
+                        const nodeIndex: number = parseInt(key);
                         nodeObjects.push(this.nodes[parseInt(nodeIndex.toString(), 10)].id);
                     }
                 }
                 if (newProp.connectors && Object.keys(newProp.connectors).length > 0) {
                     for (const key of Object.keys(newProp.connectors)) {
-                        let connIndex: number = parseInt(key);
+                        const connIndex: number = parseInt(key);
                         connObjects.push(this.connectors[parseInt(connIndex.toString(), 10)].id);
                     }
                 }
@@ -1993,10 +2009,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private updateGradient(newProp: NodeModel, oldProp: NodeModel, nodeObj: Node): void {
 
         if (nodeObj.oldGradientValue) {
-            let linearNode: LinearGradient = (nodeObj as NodeModel) as LinearGradient;
-            let radialNode: RadialGradient = (nodeObj as NodeModel) as RadialGradient;
-            let linearProp: LinearGradient = oldProp.style.gradient as LinearGradient;
-            let radialProp: RadialGradient = oldProp.style.gradient as RadialGradient;
+            const linearNode: LinearGradient = (nodeObj as NodeModel) as LinearGradient;
+            const radialNode: RadialGradient = (nodeObj as NodeModel) as RadialGradient;
+            const linearProp: LinearGradient = oldProp.style.gradient as LinearGradient;
+            const radialProp: RadialGradient = oldProp.style.gradient as RadialGradient;
             for (const key of Object.keys(newProp.style.gradient)) {
                 switch (key) {
                 case 'type':
@@ -2051,7 +2067,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     break;
                 case 'stops':
                     if ((nodeObj.oldGradientValue as LinearGradient | RadialGradient).stops) {
-                        let stops: StopModel[] = ((Object as any).values(cloneObject((nodeObj.oldGradientValue as LinearGradient |
+                        const stops: StopModel[] = ((Object as any).values(cloneObject((nodeObj.oldGradientValue as LinearGradient |
                         RadialGradient).stops))); stops.pop();
                         oldProp.style.gradient.stops = stops;
                     }
@@ -2157,6 +2173,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.eventHandler = new DiagramEventHandler(this, this.commandHandler);
         this.spatialSearch = new SpatialSearch(this.nameTable);
         this.scroller = new DiagramScroller(this);
+        this.modelProperties = new EJ1SerializationModule(this);
     }
 
     private initializeServices(): void {
@@ -2179,6 +2196,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.refreshing && this.dataSourceSettings.dataSource && !this.isLoading) {
             this.nodes = []; this.connectors = [];
         }
+        // Bug 832897: Need to improve performance while rendering layout with large number of nodes.
+        this.isRefreshed = false;
         this.ignoreCollectionWatch = true;
         const domTable: string = 'domTable';
         window[`${domTable}`] = {};
@@ -2281,7 +2300,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.trigger('load');
         this.scroller.setSize();
         this.scroller.updateScrollOffsets();
+        // Bug 832897: Need to improve performance while rendering layout with large number of nodes.
+        // If diagram not refreshed, then we will refresh the diagram.
+        if(!this.isRefreshed){
         this.refreshDiagramLayer();
+        }
         if (this.scrollSettings.verticalOffset > 0 || this.scrollSettings.horizontalOffset > 0) {
             this.updateScrollOffset();
         }
@@ -2402,8 +2425,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const tempObj: Diagram = this;
         /* eslint-enable */
         if (tempObj.dataSourceSettings.crudAction.read) {
-            const callback: Ajax = new Ajax(
-                tempObj.dataSourceSettings.crudAction.read, 'GET', false
+            const callback: Fetch = new Fetch(
+                tempObj.dataSourceSettings.crudAction.read, 'GET'
             );
             callback.onSuccess = (data: string): void => {
                 if (tempObj.dataSourceSettings.dataManager) {
@@ -2416,8 +2439,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             callback.send().then();
         }
         if (tempObj.dataSourceSettings.connectionDataSource.crudAction.read) {
-            const callback: Ajax = new Ajax(
-                tempObj.dataSourceSettings.connectionDataSource.crudAction.read, 'GET', false
+            const callback: Fetch = new Fetch(
+                tempObj.dataSourceSettings.connectionDataSource.crudAction.read, 'GET'
             );
             callback.onSuccess = (data: string): void => {
                 tempObj.dataSourceSettings.connectionDataSource.dataManager = JSON.parse(data);
@@ -2492,12 +2515,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 args: [this]
             });
         }
-
+        modules.push({
+            member: 'EJ1SerializationModule',
+            args: [this]
+        });
         modules.push({
             member: 'PrintandExport',
             args: [this]
         });
-
+    
 
         if (this.contextMenuSettings.show) {
             modules.push({
@@ -2676,6 +2702,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns { void } Selects the given collection of objects .\
      * @param {NodeModel | ConnectorModel} objects - Defines the collection of nodes and connectors to be selected
      * @param {boolean} multipleSelection -Defines whether the existing selection has to be cleared or not
+     * @param {NodeModel | ConnectorModel} oldValue - Defines the old value
      *
      */
     public select(objects: (NodeModel | ConnectorModel)[], multipleSelection?: boolean, oldValue?: (NodeModel | ConnectorModel)[]): void {
@@ -2696,30 +2723,42 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     //Feature (EJ2-18451) : For all client side events, cause argument data type should be string instead of flag enum and value should be easier to understand.
     public getDiagramAction(diagramAction: DiagramAction): string {
         let action: string;
-        if (diagramAction === 2 && DiagramAction.Render)
+        if (diagramAction === 2 && DiagramAction.Render){
             action = 'Render';
-        else if (diagramAction & DiagramAction.UndoRedo)
+        }
+        else if (diagramAction & DiagramAction.UndoRedo){
             action = 'UndoRedo';
-        else if (diagramAction & DiagramAction.PublicMethod)
+        }
+        else if (diagramAction & DiagramAction.PublicMethod){
             action = 'PublicMethod';
-        else if (diagramAction & DiagramAction.ToolAction)
+        }
+        else if (diagramAction & DiagramAction.ToolAction){
             action = 'ToolAction';
-        else if (diagramAction & DiagramAction.TextEdit)
+        }
+        else if (diagramAction & DiagramAction.TextEdit){
             action = 'TextEdit';
-        else if (diagramAction & DiagramAction.Group)
+        }
+        else if (diagramAction & DiagramAction.Group){
             action = 'Group';
-        else if (diagramAction & DiagramAction.Interactions)
+        }
+        else if (diagramAction & DiagramAction.Interactions){
             action = 'Interactions';
-        else if (diagramAction & DiagramAction.PreventHistory)
+        }
+        else if (diagramAction & DiagramAction.PreventHistory){
             action = 'PreventHistory';
-        else if (diagramAction & DiagramAction.DecoratorPropertyChange)
+        }
+        else if (diagramAction & DiagramAction.DecoratorPropertyChange){
             action = 'DecoratorPropertyChange';
-        else if (diagramAction & DiagramAction.PreventZIndexOnDragging)
+        }
+        else if (diagramAction & DiagramAction.PreventZIndexOnDragging){
             action = 'PreventZIndexOnDragging';
-        else if (diagramAction & DiagramAction.isGroupDragging)
+        }
+        else if (diagramAction & DiagramAction.isGroupDragging){
             action = 'isGroupDragging';
-        else if (diagramAction & DiagramAction.DragUsingMouse)
+        }
+        else if (diagramAction & DiagramAction.DragUsingMouse){
             action = 'DragUsingMouse';
+        }
         return action;
     }
 
@@ -3160,7 +3199,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private nudgeCommand(direction: NudgeDirection, x?: number, y?: number): void {
         if (typeof direction !== 'object' && (this.selectedItems.nodes.length || this.selectedItems.connectors.length) > 0) {
-            this.nudge(direction);
+            let type: string;
+            if((x as IKeyDownType).type && (x as IKeyDownType).type === 'KEYDOWN'){
+                type = (x as IKeyDownType).type;
+            }
+            this.nudge(direction,undefined,undefined,type);
         }
     }
 
@@ -3172,7 +3215,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {number} x - Defines the distance by which the selected objects have to be horizontally moved
      * @param {number} y -  Defines the distance by which the selected objects have to be vertically moved
      */
-    public nudge(direction: NudgeDirection, x?: number, y?: number): void {
+    public nudge(direction: NudgeDirection, x?: number, y?: number, type?: string): void {
         let tx: number = 0; let ty: number = 0;
         let negativeDirection: boolean;
         if (direction === 'Left' || direction === 'Right') {
@@ -3181,6 +3224,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             negativeDirection = (direction === 'Up');
             ty = (negativeDirection ? -1 : 1) * (y ? y : 1);
+        }
+        if(type === 'KEYDOWN'){
+            tx*=5;
+            ty*=5;
         }
         const obj: SelectorModel = this.selectedItems;
         const annotation: DiagramElement = this.selectedItems.wrapper.children[0];
@@ -3290,9 +3337,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.selectionConnectorsList = [];
         }
-        if (!(this.diagramActions & DiagramAction.ToolAction) && !(this.diagramActions & DiagramAction.DragUsingMouse)) {
-            this.updateSelector();
-        }
+        // Bug 832880: Need to improve performance while nudging multiple nodes.
+        // Removed one if condition here to improve performance.
         if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction)) &&
             (!(this.blazorActions & BlazorAction.GroupClipboardInProcess))) {
             this.commandHandler.getBlazorOldValues();
@@ -3565,6 +3611,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @returns { void } Adds the given change in the diagram control to the track \
      * @param {HistoryEntry} entry - Defines the entry/information about a change in diagram
+     * @param {string[]} sourceId - Defines the source id
      */
     public addHistoryEntry(entry: HistoryEntry, sourceId?: string[]): void {
         if (this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo)
@@ -3668,13 +3715,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             /**Feature(EJ2-60228): Need to add Object ID in the history change event argument*/
             let arg: IHistoryChangeArgs | IBlazorHistoryChangeArgs;
-            let nodeSourceId: string[] = [];
-            let connectorSourceId: string[] = [];
+            const nodeSourceId: string[] = [];
+            const connectorSourceId: string[] = [];
             if (sourceId === undefined && entry.type === 'PropertyChanged') {
                 for (let i: number = 0; i < Object.keys(entry.undoObject).length; i++) {
                     if (Object.keys(entry.undoObject)[parseInt(i.toString(), 10)] === 'nodes') {
                         for (const key of Object.keys((entry.undoObject as DiagramModel).nodes)) {
-                            let undoIndex: number = parseInt(key);
+                            const undoIndex: number = parseInt(key);
                             nodeSourceId.push((this.nodes[parseInt(undoIndex.toString(), 10)] as NodeModel).id);
                         }
                     }
@@ -3682,7 +3729,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 for (let i: number = 0; i < Object.keys(entry.undoObject).length; i++) {
                     if (Object.keys(entry.undoObject)[parseInt(i.toString(), 10)] === 'connectors') {
                         for (const key of Object.keys((entry.undoObject as DiagramModel).connectors)) {
-                            let undoIndex: number = parseInt(key);
+                            const undoIndex: number = parseInt(key);
                             connectorSourceId.push((this.connectors[parseInt(undoIndex.toString(), 10)] as ConnectorModel).id);
                         }
                     }
@@ -3691,7 +3738,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             arg = {
                 cause: entry.category, source: cloneBlazorObject(source) as NodeModel[], change: cloneBlazorObject(change),
-                action: action, sourceId: sourceId,
+                action: action, sourceId: sourceId
             };
             if (isBlazor()) {
 
@@ -3850,7 +3897,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private updateBlazorDiagramProperties(attribute: string[], canCall?: boolean): void {
         if (isBlazor() && !canCall) {
             //Need to send the client changes into server side for public APIs changes.
-            let isServerDataBindEnabled: boolean = this.allowServerDataBinding;
+            const isServerDataBindEnabled: boolean = this.allowServerDataBinding;
             this.enableServerDataBinding(true);
             for (let i: number = 0; i < attribute.length; i++) {
                 this.oldDiagramObject[attribute[parseInt(i.toString(), 10)]] = cloneObject(this[attribute[parseInt(i.toString(), 10)]]);
@@ -3908,6 +3955,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {number} horizontalOffset - Defines the horizontal distance to which the diagram has to be scrolled
      * @param {number} verticalOffset - Defines the vertical distance to which the diagram has to be scrolled
      * @param {PointModel} focusedPoint - Provide the focusedPoint value
+     * @param {boolean} isInteractiveZoomPan - Provide the isInteractiveZoomPan value
      */
     public pan(horizontalOffset: number, verticalOffset: number, focusedPoint?: PointModel, isInteractiveZoomPan?: boolean): void {
         const attribute: string[] = this.getZoomingAttribute();
@@ -4451,7 +4499,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (args.cancel && this.drawingObject) {
                 this.removeElements(args.element as NodeModel | ConnectorModel);
                 this.tooltipObject.close();
-                let sourceNodee: NodeModel = this.getObject((args.element as Connector).sourceID);
+                const sourceNodee: NodeModel = this.getObject((args.element as Connector).sourceID);
                 let isOutEdgee: boolean;
                 if (getObjectType(args.element) === Connector) {
                     if ((args.element as Connector).sourceID) {
@@ -4676,15 +4724,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             // Checking whether the node is children of Lane.
             if ((node as Node).parentId)
             {
-                let nodeParent:NodeModel = this.nameTable[(node as Node).parentId];
-                
+                const nodeParent: NodeModel = this.nameTable[(node as Node).parentId];
+
                 if (nodeParent && (nodeParent as Node).isLane)
                 {
                     // Getting swimlane node using lane parent Id and setting isTextNode property to true to provide
                     // drag support for bpmn text annotation while dragging swimlane.
-                    let swimlane:NodeModel = this.nameTable[(nodeParent as Node).parentId];
+                    const swimlane: NodeModel = this.nameTable[(nodeParent as Node).parentId];
                     (swimlane as Node).isTextNode = true;
-                } 
+                }
             }
         }
     }
@@ -4814,7 +4862,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             //EJ2-63598 - Added below code to check whether platform is Angular or not.
                             // If angular then we do not remove the node html element wrapper to retain the HTML element in it.
                             let canUpdate: boolean = true;
-                            let parent: NodeModel = this.nameTable[(currentObj as Node).parentId];
+                            const parent: NodeModel = this.nameTable[(currentObj as Node).parentId];
                             if ((((this as any).isAngular || (this as any).isReact ) || (this as any).isVue ) && parent && (parent as Node).isLane) {
                                 canUpdate = false;
                             }
@@ -5130,10 +5178,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                     // EJ2-57179 - Below lines added to remove the childs to swimlane after Redo.
-                    let swimlaneNode: NodeModel = this.getObject((parentNode as Node).parentId);
+                    const swimlaneNode: NodeModel = this.getObject((parentNode as Node).parentId);
                     if (swimlaneNode && (swimlaneNode as Node).shape instanceof SwimLane) {
                         for (let h: number = 0; h < ((swimlaneNode as Node).shape as SwimLane).lanes.length; h++) {
-                            let laneId = (node as Node).parentId.split((swimlaneNode as Node).id);
+                            const laneId = (node as Node).parentId.split((swimlaneNode as Node).id);
                             if (((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].id === laneId[1].slice(0, -1)) {
                                 for (let y: number = 0; y < ((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children.length; y++) {
                                     if ((node as Node).id === ((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children[parseInt(y.toString(), 10)].id) {
@@ -5187,10 +5235,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     parentNode.children.push(id);
                     parentNode.wrapper.children.push(childNode.wrapper);
                     // SF-362880 - Below lines added for adding the childs to swimlane after Undo.
-                    let swimlane: NodeModel = this.getObject((node as Node).parentId);
+                    const swimlane: NodeModel = this.getObject((node as Node).parentId);
                     if (swimlane && (swimlane as Node).shape instanceof SwimLane) {
                         for (let h: number = 0; h < ((swimlane as Node).shape as SwimLane).lanes.length; h++) {
-                            let laneId = (childNode as Node).parentId.split((node as Node).parentId);
+                            const laneId = (childNode as Node).parentId.split((node as Node).parentId);
                             if (((swimlane as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].id === laneId[1].slice(0, -1)) {
                                 ((swimlane as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children.push(childNode);
                                 break;
@@ -5239,11 +5287,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             objects = collection;
         }
         this.diagramActions = this.diagramActions | DiagramAction.Clear;
-        if (isBlazor() && blazorTemplates["diagramsf_node_template"]) {
+        if (isBlazor() && blazorTemplates['diagramsf_node_template']) {
             this.resetTemplate();
-            let length: number = blazorTemplates["diagramsf_node_template"].length
+            const length: number = blazorTemplates['diagramsf_node_template'].length;
             if (length > 0) {
-                blazorTemplates["diagramsf_node_template"].splice(0, length - 1);
+                blazorTemplates['diagramsf_node_template'].splice(0, length - 1);
             }
         }
         for (const obj of objects) {
@@ -5361,7 +5409,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         y = ((((textWrapper.bounds.center.y + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
                     }
                     if (node instanceof Connector && node.type === 'Bezier') {
-                        let getCenterPoint = this.getMidPoint(node);
+                        const getCenterPoint = this.getMidPoint(node);
                         x = (((((getCenterPoint as any).cx + transform.tx) * transform.scale) - (bounds.width / 2) * scale) - 2.5);
                         y = (((((getCenterPoint as any).cy + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
                     }
@@ -5574,6 +5622,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.updatePage();
                 if ((!(this.diagramActions & DiagramAction.Render)) || this.mode === 'Canvas') {
                     this.refreshDiagramLayer();
+                    this.isRefreshed = true;
                 }
             }
             if (!propChange) {
@@ -5619,7 +5668,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {string} data - Defines the behavior of the diagram to be loaded
      * @deprecated
      */
-    public loadDiagram(data: string): Object {
+    public loadDiagram(data: string, isEJ1Data?: boolean): Object {
+        if(isEJ1Data && this.modelProperties){
+            let ejDiagram : Diagram = JSON.parse(data);
+            data = this.modelProperties.getSerializedData(ejDiagram);
+        }
         return deserialize(data, this);
     }
 
@@ -6270,11 +6323,19 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             'id': this.element.id + '_grid_rect', 'x': '0', 'y': '0', 'width': '100%', 'height': '100%'
         });
         if (checkBrowserInfo()) {
-            rect.setAttribute('fill', 'url(' + location.protocol + '//' + location.host + location.pathname +
-                '#' + this.element.id + '_pattern)');
-        } else {
+            //EJ2-832888-To remove the black grid lines appearing in the safari browser.
+            const url = new URL(window.location.href); 
+           // Check if the URL contains a query string 
+           if (url.search !== '')
+           {
             rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
-        }
+           }
+           else{
+            rect.setAttribute('fill', 'url(' + location.protocol + '//' + location.host + location.pathname +
+            '#' + this.element.id + '_pattern)');}
+           } else {
+            rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
+            }
         svgGrid.appendChild(rect);
         svgGridSvg.appendChild(svgGrid);
         this.diagramCanvas.appendChild(svgGridSvg);
@@ -6590,8 +6651,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private addToLayer(obj: NodeModel | ConnectorModel, hasLayers: boolean): void {
         let layer: LayerModel;
-        let isSourceId: boolean = false;
-        let isTargetId: boolean = false;
+        const isSourceId: boolean = false;
+        const isTargetId: boolean = false;
         if (hasLayers) {
             layer = this.commandHandler.getObjectLayer(obj.id);
         }
@@ -6603,19 +6664,19 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if ((obj instanceof Node || obj instanceof Connector) &&
             (obj.shape.type !== 'SwimLane' || ((obj as Node).children && (obj as Node).children.length > 0))) {
             if (obj.parentId) {
-                let zIndex: number = this.swimlaneZIndexTable[obj.parentId];
+                const zIndex: number = this.swimlaneZIndexTable[obj.parentId];
                 //EJ2-69247 - Unable to select node in swimlane after save and load
-                let childzIndex:number = this.swimlaneChildTable[obj.id];
+                const childzIndex: number = this.swimlaneChildTable[obj.id];
                 if ((zIndex && zIndex !== -1) || ((childzIndex && childzIndex !== -1))) {
                     obj.zIndex = this.swimlaneChildTable[obj.id];
                 }
             }
             if (obj instanceof Connector && (obj.sourceID && obj.targetID)) {
-               //EJ2-69577 - We have removed findNodeInLane method to improve the performance.
-               if (this.activeLayer.objects.indexOf(obj.sourceID) !== -1 &&
-                    this.activeLayer.objects.indexOf(obj.targetID) !== -1) { 
-                        this.setZIndex(layer || this.activeLayer, obj);
-                    }
+                //EJ2-69577 - We have removed findNodeInLane method to improve the performance.
+                if (this.activeLayer.objects.indexOf(obj.sourceID) !== -1 &&
+                    this.activeLayer.objects.indexOf(obj.targetID) !== -1) {
+                    this.setZIndex(layer || this.activeLayer, obj);
+                }
             } else {
                 this.setZIndex(layer || this.activeLayer, obj);
             }
@@ -7607,7 +7668,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         if (this.diagramActions & DiagramAction.Interactions) {
                             this.updateCanupdateStyle(obj.wrapper.children, true);
                         }
-                        let centerPoint = this.getMidPoint(obj);
+                        const centerPoint = this.getMidPoint(obj);
                         this.diagramRenderer.updateNode(
                             obj.wrapper as DiagramElement, diagramElementsLayer,
                             htmlLayer, undefined, canIgnoreIndex ? undefined : this.getZindexPosition(obj, view.element.id), centerPoint);
@@ -7632,14 +7693,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     //Method used to get mid point of Bezier Curve
     private getMidPoint(obj: (NodeModel | ConnectorModel)) {
-        let centerPoint: number | PointModel;
-        centerPoint = obj.annotations[0] ? obj.annotations[0].offset : 0.5;
+        const centerPoint: number | PointModel = obj.annotations[0] ? obj.annotations[0].offset : 0.5;
         let finalPoint: object;
         if (obj instanceof Connector && obj.type === 'Bezier') {
-            let totalPoints: PointModel[] = this.getBezierPoints(obj);
-            let totalLength: number = Point.getLengthFromListOfPoints(totalPoints);
-            let absoluteLength: number = centerPoint as number * totalLength;
-            let position: PointModel = this.commandHandler.getPointAtLength(absoluteLength, totalPoints, 0);
+            const totalPoints: PointModel[] = this.getBezierPoints(obj);
+            const totalLength: number = Point.getLengthFromListOfPoints(totalPoints);
+            const absoluteLength: number = centerPoint as number * totalLength;
+            const position: PointModel = this.commandHandler.getPointAtLength(absoluteLength, totalPoints, 0);
             finalPoint = { cx: position.x, cy: position.y };
             this.applyMarginBezier(obj, finalPoint);
             // EJ2-64114 -Horizontal and Vertical alignment not applied properly for the bezier connector annotation
@@ -7650,13 +7710,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Apply alignment to bezier annotation
-     * @param obj 
-     * @param finalPoint 
+     * @param {ConnectorModel | NodeModel} obj - provide the obj value.
+     * @param finalPoint
      */
-    private applyAlignment(obj:ConnectorModel | NodeModel, finalPoint:any) {
+    private applyAlignment(obj: ConnectorModel | NodeModel, finalPoint: any) {
         for (let i: number = 0; i < obj.wrapper.children.length; i++) {
             if (obj.wrapper && obj.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
-                let child: DiagramElement = obj.wrapper.children[parseInt(i.toString(), 10)];
+                const child: DiagramElement = obj.wrapper.children[parseInt(i.toString(), 10)];
                 switch (child.horizontalAlignment) {
                 case 'Auto':
                 case 'Left':
@@ -7689,12 +7749,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     //(EJ2-62683) Method used to get total points in bezier connector
     private getBezierPoints(obj: ConnectorModel) {
-        let points: PointModel[] = [];
+        const points: PointModel[] = [];
         let i: number;
         let source: PointModel = { x: obj.sourcePoint.x, y: obj.sourcePoint.y };
         points.push(source as PointModel);
         for (i = 0; i < obj.segments.length; i++) {
-            let total: PointModel[] = (obj.segments[parseInt(i.toString(), 10)] as BezierSegment).getPoints(obj.segments[parseInt(i.toString(), 10)] as BezierSegment, source);
+            const total: PointModel[] = (obj.segments[parseInt(i.toString(), 10)] as BezierSegment).getPoints(obj.segments[parseInt(i.toString(), 10)] as BezierSegment, source);
             points.push.apply(points, total);
             source = points[points.length - 1];
         }
@@ -7805,7 +7865,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     view.scroller.currentZoom, 0, 0, view.scroller.currentZoom, 0, 0);
                 (view.diagramLayer as HTMLCanvasElement).getContext('2d').scale(1.5, 1.5);
             } else {
-                let element: HTMLElement = document.getElementById(view.element.id + '_nativeLayer');
+                const element: HTMLElement = document.getElementById(view.element.id + '_nativeLayer');
                 if (element.children.length > 0) {
                     view.updateView(view);
                 }
@@ -8031,21 +8091,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (renderNode && !(renderNode.parentId) && layer.visible &&
                     (!(renderNode.processId) || this.refreshing)) {
                     //EJ2-68738 - Overview content not updated properly on zoom out the diagram
-                     let  transformValue:TransformFactor
-                     if(this.scroller.currentZoom < 1){
-                         transformValue = {
-                             tx:(-pageBounds.x)/this.scroller.currentZoom,
-                             ty:(-pageBounds.y)/this.scroller.currentZoom,
-                             scale: this.scroller.transform.scale
-                         }
-                     }
-                     else{
-                         transformValue = {
-                         tx: this.scroller.transform.tx,
-                         ty: this.scroller.transform.ty,
-                         scale: this.scroller.transform.scale
-                         };
-                     }
+                    let  transformValue: TransformFactor;
+                    //828826 - In canvas mode diagram transform values are not updated properly while Zoom out action
+                    if (this.scroller.currentZoom < 1 && this.mode == 'SVG'){
+                        transformValue = {
+                            tx: (-pageBounds.x) / this.scroller.currentZoom,
+                            ty: (-pageBounds.y) / this.scroller.currentZoom,
+                            scale: this.scroller.transform.scale
+                        };
+                    }
+                    else{
+                        transformValue = {
+                            tx: this.scroller.transform.tx,
+                            ty: this.scroller.transform.ty,
+                            scale: this.scroller.transform.scale
+                        };
+                    }
                     if (canVitualize(this)) {
                         if (this.scroller.currentZoom < 1) {
                             if (pageBounds.x < 0 || this.scroller.horizontalOffset < 0) {
@@ -8652,9 +8713,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let canRender: boolean = true;
                 if (selectionHasConnector(this, selector)) {
                     const eventHandler: string = 'eventHandler';
-                    let rotate: string = this[`${eventHandler}`].action;
-                    let isRotate: boolean = rotate.includes('Rotate');
-                    let isSelect: boolean = rotate.includes('None') || rotate.includes('Select') || rotate.includes('Drag');
+                    const rotate: string = this[`${eventHandler}`].action;
+                    const isRotate: boolean = rotate.includes('Rotate');
+                    const isSelect: boolean = rotate.includes('None') || rotate.includes('Select') || rotate.includes('Drag');
                     if (isRotate || isSelect) {
                         canRender = false;
                     }
@@ -9637,17 +9698,35 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.updatePorts(updateNode, node.flip);
                     }
                 }
-            } else {
-                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All'))
+                //EJ2-826617 - Flip option for BPMN node
+                else{
+                    this.updatePorts(actualObject, actualObject.flip);
+                }
+            }  else {
+                if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All')){
                     this.updatePorts(actualObject, node.flip);
+                }
+                //EJ2-826617 - Flip 'None' is not working properly
+                else if(actualObject.flip === 'None'){
+                    this.updatePorts(actualObject, node.flip);
+                }
             }
         }
         // EJ2-71981 - Flip mode "Port" is not working properly while dragging multiselected node
         if (node.flipMode !== undefined) {
             update = true;
             updateConnector = true;
-            if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All'))
-            this.updatePorts(actualObject, actualObject.flip);
+            if (actualObject.flipMode && (actualObject.flipMode === 'Port' || actualObject.flipMode === 'All')){
+                this.updatePorts(actualObject, actualObject.flip);
+            }
+            //EJ2-826617 - Flip mode 'Label' does not triggers the port
+            else if( actualObject.flipMode === 'Label'){
+                this.updatePorts(actualObject, 'None');
+            }
+            //EJ2-826617 - Flip mode 'None' is not working properly
+            else if(actualObject.flipMode === 'None'){
+                this.updatePorts(actualObject, actualObject.flipMode);
+            }
         }
         if (node.rotateAngle !== undefined && (actualObject.constraints & NodeConstraints.Rotate)) {
             if (actualObject.children && rotate) {
@@ -9760,7 +9839,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 (actualObject.wrapper.children[0] as TextElement).refreshTextElement();
             }
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height), actualObject.id,
-                                   this.onLoadImageSize.bind(this));
+                                         this.onLoadImageSize.bind(this));
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize); this.updateObject(actualObject, oldObject, node);
             if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol && !(this.diagramActions & DiagramAction.ToolAction)) {
                 updateHeaderMaxWidth(this, actualObject);
@@ -9784,7 +9863,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 // EJ2-57436 - Added the below code to check if node has parent id or not.
                 // If node has parentId means then send the parent node to updatequad method to add the parent node in negative quadrant
                 if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
-                    let parentNode: NodeModel = this.nameTable[actualObject.parentId];
+                    const parentNode: NodeModel = this.nameTable[actualObject.parentId];
                     this.updateQuad(parentNode as IElement);
                 }
             }
@@ -9838,12 +9917,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.updateDiagramObject(actualObject as NodeModel);
                         // EJ2-63939 - Added below code to provide drag support for the bpmn text annotation while drag the swimlane
                         if(this.bpmnModule !== undefined && (actualObject as NodeModel).shape.type === 'SwimLane' && (actualObject as Node).isTextNode) {
-                            let swimlane: NodeModel = actualObject as NodeModel;
+                            const swimlane: NodeModel = actualObject as NodeModel;
                             for (let i: number = 0 ; i < (swimlane.shape as SwimLaneModel).lanes.length ; i++) {
                                 // EJ2-63939 - Get the lane from swimlane
-                                let lane: LaneModel = (swimlane.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)];
+                                const lane: LaneModel = (swimlane.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)];
                                 for (let j: number = 0 ;j < lane.children.length ; j++) {
-                                    let children: NodeModel = lane.children[parseInt(j.toString(), 10)];
+                                    const children: NodeModel = lane.children[parseInt(j.toString(), 10)];
                                     // EJ2-63939 - Check whether the swimlane children type is BPMN or not.
                                     if(children.shape.type === 'Bpmn') {
                                         this.bpmnModule.updateTextAnnotationProp(children as Node, { offsetX: (children.offsetX), offsetY: (children.offsetY) } as Node, this, false);
@@ -10032,7 +10111,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             sourceNode.wrapper, actualObject.sourcePortID) : undefined;
                     }
                     this.removePortEdges(this.nameTable[oldProp.sourceID] || sourceNode,
-                                            oldProp.sourcePortID || actualObject.sourcePortID, actualObject.id, false);
+                                         oldProp.sourcePortID || actualObject.sourcePortID, actualObject.id, false);
                 }
                 if (newProp.sourceID !== undefined && oldProp.sourceID !== undefined && oldProp.sourceID !== '') {
                     const oldSource: Node = this.nameTable[oldProp.sourceID];
@@ -10051,7 +10130,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             targetNode.wrapper, actualObject.targetPortID) : undefined;
                     }
                     this.removePortEdges(this.nameTable[oldProp.targetID] || targetNode,
-                                            oldProp.targetPortID || actualObject.targetPortID, actualObject.id, true);
+                                         oldProp.targetPortID || actualObject.targetPortID, actualObject.id, true);
                 }
                 if (oldProp !== undefined && oldProp.targetID !== undefined && oldProp.targetID !== '') {
                     const oldTarget: Node = this.nameTable[oldProp.targetID];
@@ -10090,8 +10169,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.lineRoutingModule.renderVirtualRegion(this, true);
                 // EJ2-65876 - Exception occurs on line routing injection module
                 if (actualObject.sourceID !== actualObject.targetID && actualObject.segments.length>1){
-                    //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module 
-                        this.lineRoutingModule.refreshConnectorSegments(this, actualObject, false);
+                    //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module
+                    this.lineRoutingModule.refreshConnectorSegments(this, actualObject, false);
                 }
             }
             points = this.getPoints(actualObject);
@@ -10105,7 +10184,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
                 actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
                 // eslint-disable-next-line max-len
-                this.updateConnectorAnnotation(actualObject); this.updateConnectorfixedUserHandles(actualObject); this.updateObject(actualObject, oldProp, newProp);
+                this.updateConnectorAnnotation(actualObject);
+                this.updateConnectorfixedUserHandles(actualObject); 
+                this.updateObject(actualObject, oldProp, newProp);
             } //work-around to update intersected connector bridging
         }
         if ((newProp.sourcePoint || newProp.targetPoint || newProp.segments)
@@ -10114,11 +10195,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.commandHandler.updatePathElementOffset(actualObject);
         }
         // eslint-disable-next-line max-len
-        if (!disableBridging) { this.updateBridging(); } this.updateAnnotations(newProp, actualObject); this.updatefixedUserHandle(newProp, actualObject);
+        if (!disableBridging) { this.updateBridging(); } 
+        this.updateAnnotations(newProp, actualObject); 
+        this.updatefixedUserHandle(newProp, actualObject);
         actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         if (existingBounds.equals(existingBounds, actualObject.wrapper.bounds) === false) {
-            this.updateQuad(actualObject);
+            this.updateQuad(actualObject); 
         }
         if (updateSelector === true && this.checkSelectedItem(actualObject) && (!(this.diagramActions & DiagramAction.ToolAction)
             || (this.diagramActions & DiagramAction.UndoRedo))) { this.updateSelector(); }
@@ -10356,7 +10439,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-
     private updatefixedUserHandle(newProp: Connector, actualObject: Connector): void {
         if (newProp.fixedUserHandles !== undefined) {
             let index: number;
@@ -10372,6 +10454,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
 
+    
     /**
      * updateConnectorfixedUserHandle method \
      *
@@ -10970,6 +11053,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.diagramActions & DiagramAction.DragUsingMouse) {
             this.renderPageBreaks();
+            //EJ2-826378 - Scroller not updated properly when we drag node outside viewport.
+            // While dragging, we need to update the scroller.
+            this.scroller.updateScrollOffsets();
+            this.scroller.setSize();
         }
     }
 
@@ -11129,7 +11216,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     let nodeDragSize: SymbolSizeModel; let nodePreviewSize: SymbolSizeModel; let paletteDragSize: SymbolSizeModel;
                     let preview: Size;
                     if (!paletteId && args.dragData) {
-                        let arg: IDragEnterEventArgs | IBlazorDragEnterEventArgs = {
+                        const arg: IDragEnterEventArgs | IBlazorDragEnterEventArgs = {
                             source: null, element: newObj as Node, cancel: false,
                             diagram: this,
                             dragData: args.dragData.draggedElement.ej2_instances[0].dragData,
@@ -11541,6 +11628,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.triggerEvent(DiagramEvent.dragLeave, args);
                 if (this.mode !== 'SVG') { this.refreshDiagramLayer(); } else {
                     this.removeElements(this.currentSymbol);
+                    //EJ2-833020-To remove the child element from the group node while dragging the group node from palette
+                      if((this.currentSymbol as Node).children && (this.currentSymbol as Node).children.length > 0) {
+                        for(let i:number = 0; i < (this.currentSymbol as Node).children.length; i++) {
+                            let child :NodeModel= this.nameTable[(this.currentSymbol as Node).children[parseInt(i.toString(), 10)]];
+                            this.removeElements(child);
+                            delete this.nameTable[(this.currentSymbol as Node).children[parseInt(i.toString(), 10)]];
+                        }
+                    }
                 }
                 this.currentSymbol = null; const selectedSymbols: string = 'selectedSymbols';
                 this.droppable[`${selectedSymbols}`].style.opacity = '1';
@@ -11654,8 +11749,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (length > 1) {
-            this.commandHandler.moveSvgNode(node.id, currentLayer.objects[length - 2]);
-            this.commandHandler.moveSvgNode(currentLayer.objects[length - 2], node.id);
+            // Bug 830365: Exception raised on adding group node in layers dynamically.
+            // Added below code to check the group node and iterate its children in layer to find the last object in the layer.
+            let num = 2;
+            if((node as NodeModel).children && (node as NodeModel).children.length > 0) {
+                while((node as NodeModel).children.indexOf(currentLayer.objects[length - num]) > -1) {
+                    num++;
+                }
+            }
+            this.commandHandler.moveSvgNode(node.id, currentLayer.objects[length - num]);
+            this.commandHandler.moveSvgNode(currentLayer.objects[length - num], node.id);
         } else {
             if (targetLayer) {
                 const targetObject: string = this.commandHandler.getLayer(this.layerZIndexTable[targetLayer.zIndex]).objects[0];
@@ -11840,8 +11943,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private raiseAjaxPost(value: string, url: string): void {
-        const callback: Ajax = new Ajax(
-            url, 'POST', true, 'application/json'
+        const callback: Fetch = new Fetch(
+            url, 'POST', 'application/json'
         );
         const data: string = JSON.stringify(JSON.parse(value));
         callback.send(data).then();

@@ -101,7 +101,7 @@ export class Print {
         // set default zoomFactor value.
         const jsonObject: object = {
             pageNumber: pageIndex.toString(), documentId: this.pdfViewerBase.documentId,
-            hashId: this.pdfViewerBase.hashId, zoomFactor: "2",
+            hashId: this.pdfViewerBase.hashId, zoomFactor: "1",
             action: 'PrintImages',
             elementId: this.pdfViewer.element.id,
             uniqueId: this.pdfViewerBase.documentId,
@@ -227,6 +227,7 @@ export class Print {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.print);
         };
     }
+
     // eslint-disable-next-line
     private renderFieldsForPrint(pageIndex: number, heightRatio: number, widthRatio: number): any {
         // eslint-disable-next-line
@@ -464,8 +465,12 @@ export class Print {
             printDocument = this.printWindow.document;
         }
         for (let i: number = 0; i < this.printViewerContainer.children.length; i++) {
+            /*
+            Create a new Base64-encoded image with increased quality
+            Also help to reduce the file size while save as pdf
+            */
             // eslint-disable-next-line max-len
-            const canvasUrl: string = (this.printViewerContainer.children[i] as HTMLCanvasElement).toDataURL();
+            const canvasUrl: string = (this.printViewerContainer.children[i] as HTMLCanvasElement).toDataURL('image/jpeg', 0.75);
             printDocument.write('<div style="margin:0mm;width:' + this.printWidth.toString() + 'px;height:' + this.printHeight.toString() + 'px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:' + this.printWidth.toString() + 'px;height:' + this.printHeight.toString() + 'px;z-index:2"></div></div>');
             if (this.pdfViewer.formFieldsModule || this.pdfViewer.formDesignerModule) {
                 const pageWidth: number = this.pdfViewerBase.pageSize[i].width;

@@ -143,7 +143,7 @@ export class CanvasRenderer implements IRenderer {
         }
         ctx.setLineDash(dashArray);
         if (style.gradient && style.gradient.type !== 'None') {
-                if ((style as BaseAttributes).shapeType === "Rectangle") {
+                if ((style as BaseAttributes).shapeType === 'Rectangle') {
                     this.renderGradient(style, ctx, (style as BaseAttributes).x, (style as BaseAttributes).y);
                 } else {
                     this.renderGradient(style, ctx, 0, 0);
@@ -220,6 +220,8 @@ export class CanvasRenderer implements IRenderer {
      *
      *  @param { SVGElement} canvas - Provide the SVG .
      *  @param { RectAttributes} options - Provide the Rect attributes .
+     *  @param { string} diagramId - Provide the diagram id .
+     *  @param { boolean} isExport - Provide the isExport .
      *  @private
      */
     public drawRectangle(canvas: HTMLCanvasElement, options: RectAttributes, diagramId: string, isExport: boolean): void {

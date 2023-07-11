@@ -161,7 +161,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * Options to customize the legend text.
      */
 
-    @Complex<FontModel>(Theme.legendLabelFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -278,7 +278,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * Options to customize the legend title.
      */
 
-    @Complex<FontModel>(Theme.legendTitleFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
     public titleStyle: FontModel;
 
     /**
@@ -622,7 +622,7 @@ export class BaseLegend {
             subtractThickness(rect, new Thickness(0, 0, 0, legendHeight));
         } else if (position === 'Top') {
             let axisTextSize: Size;
-            if (this.isChartControl) { axisTextSize = measureText('100', (this.chart as Chart).verticalAxes[0].labelStyle); }
+            if (this.isChartControl) { axisTextSize = measureText('100', (this.chart as Chart).verticalAxes[0].labelStyle, this.chart.themeStyle.legendLabelFont); }
             legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
             legendBounds.y = rect.y + padding + this.legend.margin.top;
             legendBounds.y -= (isBulletChart && bulletChart.opposedPosition && !labelIns && !ticklIns &&
@@ -808,7 +808,7 @@ export class BaseLegend {
                 }
                 this.accessbilityText = (this.isBulletChartControl) ?  'Legend of bullet chart' + '' + legendOption.text
                     : 'Click to show or hide the ' + legendOption.text + ' series';
-                if (legendOption.render && legendOption.text !== '') {
+                if (legendOption.render && legendOption.text && legendOption.text !== '') {
                     legendSeriesGroup = chart.renderer.createGroup({
                         id: this.legendID + this.generateId(legendOption, '_g_', legendIndex)});
                     if  (legendSeriesGroup) {
@@ -923,8 +923,8 @@ export class BaseLegend {
         }
         const startLabel: string = previousLegend.text.toString();
         const endLabel: string = nextLegend.text.toString();
-        const startTextSize: Size = measureText(startLabel, legend.textStyle);
-        const endTextSize: Size = measureText(endLabel, legend.textStyle);
+        const startTextSize: Size = measureText(startLabel, legend.textStyle, this.chart.themeStyle.legendLabelFont);
+        const endTextSize: Size = measureText(endLabel, legend.textStyle, this.chart.themeStyle.legendLabelFont);
         const textWidth: number = startTextSize.width > endTextSize.width ? startTextSize.width : endTextSize.width;
         const textHeight: number = startTextSize.height > endTextSize.height ? startTextSize.height : endTextSize.height;
         let otherSpaces: number = (2 * textWidth) + (4 * legend.padding);
@@ -970,19 +970,19 @@ export class BaseLegend {
         let textOptions: TextOption = new TextOption('', startLabelX, startLabelY, anchor, startLabel);
         const hiddenColor: string = '#D3D3D3';
         textOptions.id = this.legendID + this.generateId(previousLegend, '_text_', 1);
-        const fontcolor: string = previousLegend.visible ? legend.textStyle.color || chart.themeStyle.legendLabel : hiddenColor;
+        const fontcolor: string = previousLegend.visible ? legend.textStyle.color || chart.themeStyle.legendLabelFont.color : hiddenColor;
         const isCanvas: boolean = this.isStockChartControl ? false : (this.chart as Chart).enableCanvas;
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, legendTranslateGroup, false, false, false, false,
             // tslint:disable-next-line:align
                     null, this.currentPageNumber && isCanvas ?
-                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
+                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
 
         textOptions = new TextOption('', endLabelX, endLabelY, anchor, endLabel);
         textOptions.id = this.legendID + this.generateId(previousLegend, '_text_', 2);
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, legendTranslateGroup, false, false, false, false,
             // tslint:disable-next-line:align
                     null, this.currentPageNumber && isCanvas ?
-                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
+                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
         const gradientLegend: Element = chart.renderer.drawRectangle({
             width: linearBarWidth,
             height: linearBarHeight,
@@ -1005,7 +1005,7 @@ export class BaseLegend {
     private findFirstLegendPosition(legendCollection: LegendOptions[]): number {
         let count: number = 0;
         for ( const legend of legendCollection) {
-            if (legend.render && legend.text !== '') {
+            if (legend.render && legend.text && legend.text !== '') {
                 break;
             }
             count++;
@@ -1024,12 +1024,12 @@ export class BaseLegend {
             this.isTop = legend.titlePosition === 'Top';
             const padding: number = legend.titleStyle.textOverflow === 'Trim' ? 2 * legend.padding : 0;
             if (this.isTop || this.isVertical) {
-                this.legendTitleCollections = getTitle(legend.title, legend.titleStyle, (legendBounds.width - padding));
+                this.legendTitleCollections = getTitle(legend.title, legend.titleStyle, (legendBounds.width - padding), this.chart.themeStyle.legendTitleFont);
             } else {
-                this.legendTitleCollections[0] = textTrim(legend.maximumTitleWidth, legend.title, legend.titleStyle);
+                this.legendTitleCollections[0] = textTrim(legend.maximumTitleWidth, legend.title, legend.titleStyle, this.chart.themeStyle.legendTitleFont);
             }
             const text: string = this.isTop ? legend.title : this.legendTitleCollections[0];
-            this.legendTitleSize = measureText(text, legend.titleStyle);
+            this.legendTitleSize = measureText(text, legend.titleStyle, this.chart.themeStyle.legendTitleFont);
             this.legendTitleSize.height *= this.legendTitleCollections.length;
         } else {
             this.legendTitleSize = new Size(0, 0);
@@ -1060,7 +1060,7 @@ export class BaseLegend {
         const y: number = legendBounds.y + (!this.isTop && !this.isVertical ? topPadding :
             (this.legendTitleSize.height / this.legendTitleCollections.length));
         const legendTitleTextOptions: TextOption = new TextOption(this.legendID + '_title', x, y, anchor, this.legendTitleCollections);
-        textElement(chart.renderer, legendTitleTextOptions, legend.titleStyle, legend.titleStyle.color, legendGroup);
+        textElement(chart.renderer, legendTitleTextOptions, legend.titleStyle, legend.titleStyle.color || this.chart.themeStyle.legendTitleFont.color, legendGroup, null, null, null, null, null, null, null, null, null, null, this.chart.themeStyle.legendTitleFont);
     }
     /**
      * To create legend rendering elements for chart and accumulation chart
@@ -1133,8 +1133,9 @@ export class BaseLegend {
     protected renderSymbol(legendOption: LegendOptions, group: Element, legendIndex: number): void {
         const control: BulletChart = this.isBulletChartControl ? this.chart as BulletChart : null;
         const symbolColor: string = legendOption.visible ? legendOption.fill : '#D3D3D3';
-        const isStrokeWidth: boolean = ((this.chart.getModuleName() === 'chart' || this.chart.getModuleName() === 'stockChart') && (legendOption.shape === 'SeriesType') &&
-            (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
+        const isStrokeWidth: boolean = (this.chart.getModuleName() === 'chart' || this.chart.getModuleName() === 'stockChart') && ((legendOption.shape === 'SeriesType') &&
+            (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1)) ||
+            ((legendOption.shape === 'HorizontalLine') || (legendOption.shape === 'VerticalLine') || (legendOption.shape === 'Cross'));
         const isCustomBorder: boolean = (this.chart.getModuleName() === 'chart' || this.chart.getModuleName() === 'stockChart') &&
             (legendOption.type === 'Scatter' || legendOption.type === 'Bubble');
         const isCanvas: boolean = this.isStockChartControl ? false : (this.chart as Chart).enableCanvas;
@@ -1155,7 +1156,7 @@ export class BaseLegend {
         const symbolOption: PathOption = new PathOption(
             this.legendID + this.generateId(legendOption, '_shape_', legendIndex), symbolColor, strokewidth,
             (isCustomBorder ? borderColor : symbolColor), 1, legendOption.dashArray, '');
-        const textSize: Size = measureText(legendOption.text, this.legend.textStyle);
+        const textSize: Size = measureText(legendOption.text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
         const x: number = this.legend.isInversed && !this.isRtlEnable ? legendOption.location.x + textSize.width + this.legend.shapePadding
             : legendOption.location.x;
         const y: number = legendOption.location.y;
@@ -1228,7 +1229,7 @@ export class BaseLegend {
         i: number, legendIndex: number): void {
         const legend: LegendSettingsModel = chart.legendSettings;
         const hiddenColor: string = '#D3D3D3';
-        const fontcolor: string = legendOption.visible ? legend.textStyle.color || chart.themeStyle.legendLabel : hiddenColor;
+        const fontcolor: string = legendOption.visible ? legend.textStyle.color || chart.themeStyle.legendLabelFont.color : hiddenColor;
         const isCanvas: boolean = this.isStockChartControl ? false : (this.chart as Chart).enableCanvas;
         textOptions.id = this.legendID + this.generateId(legendOption, '_text_', legendIndex);
         textOptions.text = legendOption.textCollection.length > 0 ? legendOption.textCollection : legendOption.text;
@@ -1236,7 +1237,7 @@ export class BaseLegend {
             textOptions.x = legendOption.location.x - (legend.shapeWidth / 2);
         }
         else if (this.isRtlEnable) {
-            textOptions.x = legendOption.location.x - (measureText(legendOption.text, legend.textStyle).width + legend.shapeWidth / 2 + legend.shapePadding);
+            textOptions.x = legendOption.location.x - (measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont).width + legend.shapeWidth / 2 + legend.shapePadding);
         }
         else {
             textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
@@ -1245,9 +1246,9 @@ export class BaseLegend {
         const element : Element =
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false,
                     null, this.currentPageNumber &&  isCanvas ?
-                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber ), 0, 0) : null);
+                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber ), 0, 0) : null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
         if (isCanvas) {
-            const textSize: Size = measureText(legendOption.text, legend.textStyle);
+            const textSize: Size = measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont);
             this.legendRegions[i as number].rect.y = textOptions.y < this.legendRegions[i as number].rect.y ? textOptions.y : this.legendRegions[i as number].rect.y;
             this.legendRegions[i as number].rect.width += textSize.width;
             this.legendRegions[i as number].rect.height = textSize.height;
@@ -1335,7 +1336,7 @@ export class BaseLegend {
             y = legend.title && this.isTop ? (bounds.y + padding + titleHeight + (iconSize / 1) + 0.5) :
                 (bounds.y + padding + iconSize + 0.5);
         }
-        const size: Size = measureText(this.totalPages + '/' + this.totalPages, legend.textStyle);
+        const size: Size = measureText(this.totalPages + '/' + this.totalPages, legend.textStyle, this.chart.themeStyle.legendLabelFont);
         const translateX: number = (this.isRtlEnable) ?  legend.border.width + (iconSize / 2) : bounds.width - (2 * (iconSize + padding) + padding + size.width);
         if (!isCanvas) {
             if (this.isVertical && !legend.enablePages && !this.isBulletChartControl) {
@@ -1362,7 +1363,7 @@ export class BaseLegend {
         textOption.y = y + (size.height / 4);
         textOption.id = this.legendID + '_pagenumber';
         textOption.text = !this.isRtlEnable ? '1/' + this.totalPages : this.totalPages + '/1';
-        const color: string = (this.chart.theme.indexOf('Dark') > -1 || this.chart.theme.indexOf('Contrast') > -1) ? '#FFFFFF' : legend.textStyle.color;
+        const color: string = (this.chart.theme.indexOf('Dark') > -1 || this.chart.theme.indexOf('Contrast') > -1) ? '#FFFFFF' : legend.textStyle.color || this.chart.themeStyle.legendLabelFont.color;
         if (isCanvas && this.totalNoOfPages) {
             textOption.text = !this.isRtlEnable ? this.currentPageNumber  + '/' + this.totalNoOfPages : this.totalNoOfPages + '/' +  this.currentPageNumber;
         }
@@ -1370,7 +1371,7 @@ export class BaseLegend {
             pageTextElement = textElement(
                 chart.renderer, textOption, legend.textStyle, color, paginggroup,
                 false, false, false, false, null,
-                new Rect(translateX, 0, 0, 0)
+                new Rect(translateX, 0, 0, 0), null, null, null, null, this.chart.themeStyle.legendLabelFont
             );
         }
         // Page right arrow rendering calculation started here

@@ -648,9 +648,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * > For more information, refer to the [template](../../uploader/template/) section from the documentation.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Specifies a Boolean value that indicates whether the multiple files can be browsed or
@@ -1129,7 +1130,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.updateDirectoryAttributes();
                 break;
             case 'template':
-                this.clearAll();
+                const ejInstance: any = getValue('ej2_instances', this.element);
+                if(ejInstance[0].isReact){
+                    this.reRenderFileList();
+                }else{
+                    this.clearAll();
+                }
                 break;
             case 'minFileSize':
             case 'maxFileSize':
@@ -1212,7 +1218,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             detach(this.listParent);
             this.listParent = null;
             this.fileList = [];
-            this.createFileList(this.filesData);
+            this.internalCreateFileList(this.filesData);
             if (this.actionButtons) {
                 this.removeActionButtons();
                 this.renderActionButtons();
@@ -1457,7 +1463,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private renderPreLoadFiles(): void {
         if (this.files.length) {
             if (this.enablePersistence && this.filesData.length) {
-                this.createFileList(this.filesData);
+                this.internalCreateFileList(this.filesData);
                 return;
             }
             if (isNullOrUndefined(this.files[0].size)) {
@@ -1483,7 +1489,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 filesData.push(fileData);
                 this.filesData.push(fileData);
             }
-            this.createFileList(filesData);
+            this.internalCreateFileList(filesData);
             if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
                 this.renderActionButtons();
             }
@@ -2254,12 +2260,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     const dataFiles: FileInfo[] = this.allTypes ? eventArgs.modifiedFilesData :
                         this.checkExtension(eventArgs.modifiedFilesData);
                     this.updateSortedFileList(dataFiles);
-                    this.filesData = dataFiles;
+                    this.filesData =  this.filesData.concat(dataFiles);
                     if (!this.isForm || this.allowUpload()) {
                         this.checkAutoUpload(dataFiles);
                     }
                 } else {
-                    this.createFileList(fileData, true);
+                    this.internalCreateFileList(fileData);
                     this.filesData = this.filesData.concat(fileData);
                     if (!this.isForm || this.allowUpload()) {
                         this.checkAutoUpload(fileData);
@@ -2318,15 +2324,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 const liElement: HTMLElement = this.listParent.querySelectorAll('li')[i as number];
                 previousListClone.appendChild(liElement.cloneNode(true));
             }
-            removedList = <HTMLElement[] & NodeListOf<HTMLLIElement>>this.listParent.querySelectorAll('li');
-            for (const item of removedList) {
-                detach(item);
-            }
             this.removeActionButtons();
             const oldList: HTMLElement[] = [].slice.call(previousListClone.childNodes);
-            detach(this.listParent);
-            this.listParent = null;
-            this.fileList = [];
             this.createParentUL();
             for (let index: number = 0; index < filesData.length; index++) {
                 for (let j: number = 0; j < this.filesData.length; j++) {
@@ -2338,11 +2337,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     }
                 }
                 if (added !== index) {
-                    this.createFileList([filesData[index as number]]);
+                    this.internalCreateFileList([filesData[index as number]]);
                 }
             }
         } else {
-            this.createFileList(filesData);
+            this.internalCreateFileList(filesData);
         }
     }
 
@@ -2646,8 +2645,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @param { FileInfo[] } fileData - Specifies the files data for file list creation.
      * @returns {void}
      */
-    public createFileList(fileData: FileInfo[], isSelectedFile?: boolean): void {
-    /* eslint-enable valid-jsdoc, jsdoc/require-param */
+    public createFileList(fileData: FileInfo[]): void {
+        this.filesData = this.filesData && this.filesData.length > 0 ? this.filesData.concat(fileData) : fileData;
+        this.internalCreateFileList(fileData);
+    }
+
+    private internalCreateFileList(fileData: FileInfo[]): void {
+        /* eslint-enable valid-jsdoc, jsdoc/require-param */
         this.createParentUL();
         if (this.template !== '' && !isNullOrUndefined(this.template)) {
             if (this.isFormUpload()) {
@@ -3173,10 +3177,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
     }
 
-    private templateComplier(uploadTemplate: string): Function {
+    private templateComplier(uploadTemplate: string | Function): Function {
         if (uploadTemplate) {
             try {
-                if (selectAll(uploadTemplate, document).length) {
+                if (typeof uploadTemplate !== 'function' && selectAll(uploadTemplate, document).length) {
                     return compile(select(uploadTemplate, document).innerHTML.trim());
                 } else {
                     return compile(uploadTemplate);

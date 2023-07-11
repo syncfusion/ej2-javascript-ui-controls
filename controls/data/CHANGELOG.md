@@ -2,13 +2,21 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 22.1.38 (2023-07-11)
 
 ### DataManager
 
 #### Bug Fixes
 
-- `#I440048` - Data not bound when using `ODataV4 Adaptor` with version 4.01 protocol has been fixed.
+- `#I473827` - The issue related to parsing a date value without seconds and encountering an "invalid date" has been resolved.
+
+## 22.1.36 (2023-06-28)
+
+### DataManager
+
+#### Features
+
+- `#I361245` - Provided support for persistence in DataManager. By setting, the `enablePersistence` and `id` properties in DataManager, you can store and retain actions such as sorting, filtering, grouping, and searching. Additionally, you can selectively exclude specific queries from persistence by setting a value for the `ignoreOnPersist` property.
 
 ## 21.1.35 (2023-03-23)
 

@@ -30,9 +30,15 @@ function dateObjToNum(date: Date): number {
 function dateValue(date: string): number {
     return (new Date(date).valueOf());
 }
-function loadCultureFiles(name: string, base?: boolean): void {
-    let files: string[] = !base ?
+function loadCultureFiles(name: string, mode: string = 'gregorian', base?: boolean ): void {
+    let files: string[] = []
+    if(mode === 'gregorian'){
+        files = !base ?
         ['ca-gregorian.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'] : ['numberingSystems.json', 'weekData.json'];
+    } else {        
+        files = !base ?
+        ['ca-islamic.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'] : ['numberingSystems.json', 'weekData.json'];
+    }
     files.push('weekData.json');
     for (let prop of files) {
         let val: Object;
@@ -1162,7 +1168,7 @@ describe('Calendar', () => {
 
 
         it(' firstDayOfWeek based on the culture "de" test case', () => {
-            loadCultureFiles('de', true);
+            loadCultureFiles('de', 'gregorian', true);
             loadCultureFiles('de');
             calendar = new Calendar({ value: new Date('2/2/2017'), locale: 'de' });
             calendar.appendTo('#calendar');
@@ -1171,7 +1177,7 @@ describe('Calendar', () => {
         });
 
         it(' firstDayOfWeek based on the culture "ar" test case', () => {
-            loadCultureFiles('ar', true);
+            loadCultureFiles('ar', 'gregorian', true);
             loadCultureFiles('ar');
             calendar = new Calendar({ value: new Date('2/2/2017'), locale: 'ar' });
             calendar.appendTo('#calendar');
@@ -3792,6 +3798,36 @@ describe(' Islamic Calendar', () => {
             (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
             (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
             expect(calendar.globalize.formatDate(new Date("12/11/2018"), { format: 'MMMMy', type: 'dateTime', calendar: 'islamic' })).toBe('Rabiʻ II1440');
+        });
+        it('decade view based on the culture "ar" test case', () => {
+            loadCultureFiles('ar','islamic', true);
+            loadCultureFiles('ar', 'islamic');
+            Calendar.Inject(Islamic)
+            calendar = new Calendar({ value: new Date('1/1/2022'), calendarMode: 'Islamic', locale: 'ar' });
+            calendar.appendTo('#calendar');
+            // ClDR data 
+            /* month view */
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('جمادى الأولى١٤٤٣');
+            expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
+            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('٢٨');
+            (<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).click();
+            /* year view */
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('١٤٤٣');
+            expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
+            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('جمادى الأولى');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('١٤٤٤');
+            expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(0);
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            (<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).click();
+            /* decade view */
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('١٤٤١ - ١٤٥٠');
+            expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
+            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('١٤٤٣');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('١٤٣١ - ١٤٤٠');
+            expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(0);
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
         });
         it(' multiselection test case  ', () => {
             Calendar.Inject(Islamic)

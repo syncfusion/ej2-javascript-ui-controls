@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { createElement, L10n, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, L10n, classList, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { DocumentEditor, HighlightColor } from '../../document-editor/index';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -435,9 +435,11 @@ export class Text {
         /* eslint-disable */
         let fontStyle: { [key: string]: any }[];
         let isStringTemplate: boolean = false;
-        let itemTemplate: string = '';
+        let itemTemplate: string | Function = '';
         if (!this.container.enableCsp) {
-            itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
+            itemTemplate = initializeCSPTemplate(
+                function (data: any): string { return `<span style="font-family: ${data.FontName};">${data.FontName}</span>`; }
+            );
             isStringTemplate = true;
         }
         this.fontFamily = new ComboBox({

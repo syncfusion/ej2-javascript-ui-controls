@@ -662,6 +662,18 @@ export class ContentRender implements IRenderer {
             tbody.appendChild(frag);
             this.getTable().appendChild(tbody);
         }
+        if (this.parent.rowRenderingMode === 'Vertical' && this.parent.allowTextWrap && (this.parent.textWrapSettings.wrapMode === 'Header'
+            || this.parent.textWrapSettings.wrapMode === 'Both')) {
+            const cells: NodeListOf<HTMLTableCellElement> = tbody.querySelectorAll('td');
+            for (let i: number = 0; i < cells.length; i++) {
+                const headerCellHeight: number = parseFloat(document.defaultView.getComputedStyle(cells[parseInt(i.toString(), 10)], '::before').getPropertyValue('height'));
+                const cellHeight: number = cells[parseInt(i.toString(), 10)].offsetHeight;
+                if (headerCellHeight > cellHeight) {
+                    cells[parseInt(i.toString(), 10)].style.height = headerCellHeight + 'px';
+                    cells[parseInt(i.toString(), 10)].style.boxSizing = 'content-box';
+                }
+            }
+        }
     }
 
     private setRowsInLazyGroup(row: Row<Column>, index: number): void {

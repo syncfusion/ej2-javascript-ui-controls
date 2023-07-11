@@ -769,6 +769,18 @@ export class Magnification {
                     this.pdfViewer.annotationModule.textMarkupAnnotationModule.rerenderAnnotationsPinch(parseInt(pageNumber));
                 }
             }
+            if (Browser.isDevice) {
+                if (this.pdfViewer.formDesignerModule) {
+                    let fomrFieldCollection: any;
+                    let pageNumber: number = this.pdfViewer.currentPageNumber;
+                    fomrFieldCollection = this.pdfViewer.formFieldCollection.filter(function (data) { return data.pageNumber === pageNumber; });
+                    for (let i: number = 0; i < fomrFieldCollection.length; i++) {
+                        document.querySelectorAll(`[id^=` + fomrFieldCollection[parseInt(i.toString(), 10)].id + `]`).forEach(function (formField) { return (formField as any).style.display = 'none'; });
+                    }
+                } else {
+                    document.querySelectorAll(`[id^="pdfViewerinput_"]`).forEach(function (formField) { return formField.parentElement.style.display = 'none'; });
+                }
+            }
             this.pdfViewerBase.pageViewScrollChanged(this.reRenderPageNumber);
             this.isPagePinchZoomed = false;
             this.rerenderOnScrollTimer = setTimeout(
@@ -933,10 +945,10 @@ export class Magnification {
      */
     public resizeCanvas(pageNumber: number): void {
         let annotationModule : any = this.pdfViewer.annotationModule;
-        if (annotationModule && annotationModule.inkAnnotationModule) {
+        if (annotationModule && annotationModule.inkAnnotationModule && annotationModule.inkAnnotationModule.outputString !== '') {
             // eslint-disable-next-line
-            let currentPageNumber: number = parseInt(annotationModule.inkAnnotationModule.currentPageNumber);
-            annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+            annotationModule.inkAnnotationModule.inkPathDataCollection.push({pathData:annotationModule.inkAnnotationModule.outputString, zoomFactor:annotationModule.inkAnnotationModule.inkAnnotationInitialZoom})
+            annotationModule.inkAnnotationModule.outputString = '';
         }
         if (annotationModule && annotationModule.freeTextAnnotationModule) {
             // eslint-disable-next-line
@@ -1275,6 +1287,7 @@ export class Magnification {
             }
             this.calculateScrollValues(scrollValue);
             this.isTapToFitZoom = !this.isTapToFitZoom;
+            setTimeout(() => { this.isMagnified = false; }, 500);
             this.isDoubleTapZoom = false;
         } else {
             if (isBlazor()) {

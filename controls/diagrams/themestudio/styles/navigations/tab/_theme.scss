@@ -48,6 +48,10 @@
           background: $tab-item-hover-bg;
         }
 
+        &.e-active:hover {
+          background: $tab-item-active-hover-bg;
+        }
+
         .e-ripple-element {
           background: $tab-ripple-bg-color;
         }
@@ -112,8 +116,14 @@
               content: $tab-active-wrap-before-content;
               display: $tab-active-wrap-before-display;
               position: $tab-active-wrap-before-position;
-              top: $tab-active-wrap-before-top;
               width: $tab-active-wrap-before-width;
+              @if ($skin-name == 'Material3') {
+                border-radius: 3px 3px 0 0;
+                bottom: $tab-active-wrap-before-top;
+              }
+              @else {
+                top: $tab-active-wrap-before-top;
+              }
             }
           }
 
@@ -132,6 +142,10 @@
             .e-tab-text {
               color: $tab-comb-text-color;
             }
+          }
+
+          .e-close-icon {
+            color: $tab-active-close-icon-color;
           }
         }
 
@@ -561,6 +575,16 @@
     &.e-focused > .e-tab-header {
 
       .e-toolbar-item {
+        @if ($skin-name == 'Material3') {
+          &.e-active .e-tab-wrap:focus {
+            background: $tab-active-focus-bg-color;
+
+            .e-tab-icon,
+            .e-tab-text {
+              color: $tab-active-text-color;
+            }
+          }
+        }
 
         .e-tab-wrap:focus {
           background: $tab-focus-bg-color;
@@ -692,6 +716,14 @@
 
           &.e-active {
             border: 0;
+
+            &.e-disable.e-overlay {
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-fill-background-disable-text-color;
+              }
+            }
 
             .e-tab-wrap {
               background: $tab-fill-active-bg-color;
@@ -938,6 +970,14 @@
             margin: 0;
             background: $tab-background-active-bg;
 
+            &.e-disable.e-overlay {
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-fill-background-disable-text-color;
+              }
+            }
+
             .e-tab-wrap {
               background: $tab-background-active-wrap-bg;
               border-color: $tab-background-active-wrap-border-color;
@@ -1013,6 +1053,9 @@
 
             .e-text-wrap::before {
               border: $tab-nrml-bottom-wrap-before-top;
+              @if ($skin-name == 'Material3') {
+                border-radius: 3px 3px 0 0;
+              }
             }
 
             .e-tab-text,

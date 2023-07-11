@@ -543,41 +543,24 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
 
 /**
  * Defines the expand type of the TreeView node.
+ * ```props
+ * Auto :- The expand/collapse operation happens when you double-click on the node in desktop.
+ * Click :- The expand/collapse operation happens when you single-click on the node in desktop.
+ * DblClick :- The expand/collapse operation happens when you double-click on the node in desktop.
+ * None :- The expand/collapse operation will not happen.
+ * ```
  */
- export type ExpandOnSettings =
- /**
- * The expand/collapse operation happens when you double-click on the node in desktop.
- */
- 'Auto' |
- /**
- * The expand/collapse operation happens when you single-click on the node in desktop.
- */
- 'Click' |
- /**
- * The expand/collapse operation happens when you double-click on the node in desktop.
- */
- 'DblClick' |
- /**
- * The expand/collapse operation will not happen.
- */
- 'None';
+ export type ExpandOnSettings = 'Auto' | 'Click' | 'DblClick' | 'None';
 
 /**
  * Defines the sorting order type for TreeView.
+ * ```props
+ * None :- Indicates that the nodes are not sorted.
+ * Ascending :- Indicates that the nodes are sorted in the ascending order.
+ * Descending :- Indicates that the nodes are sorted in the descending order
+ * ```
  */
- export type SortOrder =
- /**
- * Indicates that the nodes are sorted in the ascending order.
- */
-  'Ascending' |
-  /**
-  *  Indicates that the nodes are sorted in the descending order
-  */
-   'Descending' |
-  /**
-  * Indicates that the nodes are not sorted.
-  */
-   'None';
+ export type SortOrder = 'None' | 'Ascending' | 'Descending';
 
 /**
  * Configures animation settings for the TreeView component.
@@ -978,9 +961,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * [Template](../../treeview/template/).
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public nodeTemplate: string;
+    public nodeTemplate: string | Function;
 
     /**
      * Represents the selected nodes in the TreeView component. We can set the nodes that need to be
@@ -1390,14 +1377,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     // eslint-disable-next-line
-    private templateComplier(template: string): Function {
+    private templateComplier(template: string | Function): Function {
         if (template) {
             this.hasTemplate = true;
             // eslint-disable-next-line
             let e: Object;
             this.element.classList.add(INTERACTION);
             try {
-                if (document.querySelectorAll(template).length) {
+                if (typeof template !== 'function' && document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
                 } else {
                     return compile(template);
@@ -3946,6 +3933,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             enableTailMode: true, enableAutoScroll: true,
             dragArea: this.dragArea,
             dragTarget: '.' + TEXTWRAP,
+            enableTapHold: true,
+            tapHoldThreshold: 100,
             helper: (e: { sender: MouseEvent & TouchEvent, element: HTMLElement }) => {
                 this.dragTarget = <Element>e.sender.target;
                 let dragRoot: Element = closest(this.dragTarget, '.' + ROOT);
@@ -4355,7 +4344,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             (dropUl as HTMLElement).style.display = 'none';
         }
         if (isNOU(dropUl)) {
-            this.trigger('nodeExpanding', this.getExpandEvent(dropLi, null));
+            let args: any = this.expandArgs as any;
+            if (isNOU(args) || args.name != 'nodeExpanding') {
+                this.trigger('nodeExpanding', this.getExpandEvent(dropLi, null));
+            }
             if (isNOU(dropIcon)) {
             ListBase.generateIcon(this.createElement, dropLi as HTMLElement, COLLAPSIBLE, this.listBaseOption);
             }
@@ -4717,6 +4709,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         refNode = dropUl.childNodes[index];
         if(!this.isFirstRender || this.dataType === 1){
+            let args: any = this.expandArgs as any;
             if(refNode || this.sortOrder === 'None'){
                 for (let i: number = 0; i < li.length; i++) {
                     dropUl.insertBefore(li[i], refNode);
@@ -4724,7 +4717,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
                     this.preventExpand = false;
                     let dropIcon: Element = select('div.' + ICON, dropLi);
-                    if (dropIcon && dropIcon.classList.contains(EXPANDABLE)) {
+                    if (dropIcon && dropIcon.classList.contains(EXPANDABLE) && (isNOU(args) || args.name != 'nodeExpanding')) {
                         this.expandAction(dropLi, dropIcon, null);
                     }
                 }
@@ -4738,7 +4731,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
                         this.preventExpand = false;
                         let dropIcon: Element = select('div.' + ICON, dropLi);
-                        if (dropIcon && dropIcon.classList.contains(EXPANDABLE)) {
+                        if (dropIcon && dropIcon.classList.contains(EXPANDABLE) && (isNOU(args) || args.name != 'nodeExpanding')) {
                             this.expandAction(dropLi, dropIcon, null);
                         }
                     } 

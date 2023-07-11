@@ -14,8 +14,8 @@ let accountURL: string;
 class LicenseValidator {
     private isValidated: boolean = false;
     public isLicensed: boolean = true;
-    public version: string = '21';
-    public platform: RegExp = /JavaScript|ASPNET|ASPNETCORE|ASPNETMVC|FileFormats/i;
+    public version: string = '22';
+    public platform: RegExp = /JavaScript|ASPNET|ASPNETCORE|ASPNETMVC|FileFormats|essentialstudio/i;
     private errors: IErrorType = {
         noLicense: '<span>This application was built using a trial version of Syncfusion Essential Studio.' +
             ' To remove the license validation message permanently, a valid license key must be included.</span>',
@@ -114,7 +114,7 @@ class LicenseValidator {
                 }
             }
             if (validateMsg && typeof document !== 'undefined' && !isNullOrUndefined(document)) {
-                 accountURL = (validateURL && validateURL !== '')?  validateURL : "https://www.syncfusion.com/account/claim-license-key?pl=SmF2YVNjcmlwdA==&vs=MjE=";
+                 accountURL = (validateURL && validateURL !== '')?  validateURL : "https://www.syncfusion.com/account/claim-license-key?pl=SmF2YVNjcmlwdA==&vs=MjI=&utm_source=license&utm_medium=listing&utm_campaign=license-information";
                 const errorDiv: HTMLElement = createElement('div', {
                     innerHTML: `<img src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE5OV80KSI+CjxwYXRoIGQ9Ik0xMiAyMUMxNi45NzA2IDIxIDIxIDE2Ljk3MDYgMjEgMTJDMjEgNy4wMjk0NCAxNi45NzA2IDMgMTIgM0M3LjAyOTQ0IDMgMyA3LjAyOTQ0IDMgMTJDMyAxNi45NzA2IDcuMDI5NDQgMjEgMTIgMjFaIiBzdHJva2U9IiM3MzczNzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xMS4yNSAxMS4yNUgxMlYxNi41SDEyLjc1IiBmaWxsPSIjNjE2MDYzIi8+CjxwYXRoIGQ9Ik0xMS4yNSAxMS4yNUgxMlYxNi41SDEyLjc1IiBzdHJva2U9IiM3MzczNzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xMS44MTI1IDlDMTIuNDMzOCA5IDEyLjkzNzUgOC40OTYzMiAxMi45Mzc1IDcuODc1QzEyLjkzNzUgNy4yNTM2OCAxMi40MzM4IDYuNzUgMTEuODEyNSA2Ljc1QzExLjE5MTIgNi43NSAxMC42ODc1IDcuMjUzNjggMTAuNjg3NSA3Ljg3NUMxMC42ODc1IDguNDk2MzIgMTEuMTkxMiA5IDExLjgxMjUgOVoiIGZpbGw9IiM3MzczNzMiLz4KPC9nPgo8ZGVmcz4KPGNsaXBQYXRoIGlkPSJjbGlwMF8xOTlfNCI+CjxyZWN0IHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0id2hpdGUiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4K' style="top: 6px;
                     position: absolute;
@@ -321,23 +321,23 @@ border-top-right-radius: 20px;
         line-height: 180%;
         ">
                 <li><span>Access to a 30-day free trial of any of our products.</span></li>
-                <li><span>Access to 24x5 support by developers via the <a href="https://support.syncfusion.com/create" style="text-decoration: none;
+                <li><span>Access to 24x5 support by developers via the <a href="https://support.syncfusion.com/create?utm_source=license&utm_medium=listing&utm_campaign=license-information" style="text-decoration: none;
                 color: #0D6EFD;
-                font-weight: 500;">support tickets</a>, <a href="https://www.syncfusion.com/forums" style="text-decoration: none;
+                font-weight: 500;">support tickets</a>, <a href="https://www.syncfusion.com/forums?utm_source=license&utm_medium=listing&utm_campaign=license-information" style="text-decoration: none;
                 color: #0D6EFD;
-                font-weight: 500;">forum</a>, <a href="https://www.syncfusion.com/feedback" style="text-decoration: none;
+                font-weight: 500;">forum</a>, <a href="https://www.syncfusion.com/feedback?utm_source=license&utm_medium=listing&utm_campaign=license-information" style="text-decoration: none;
                 color: #0D6EFD;
                 font-weight: 500;">feature &amp; feedback page</a> and chat.</span></li>
-                <li><span>200+ <a href="https://www.syncfusion.com/succinctly-free-ebooks" style="text-decoration: none;
+                <li><span>200+ <a href="https://www.syncfusion.com/succinctly-free-ebooks?utm_source=license&utm_medium=listing&utm_campaign=license-information" style="text-decoration: none;
                 color: #0D6EFD;
                 font-weight: 500;">ebooks </a>on the latest technologies, industry trends, and research topics.</span>
                 </li>
-                <li><span>Largest collection of over 7,000 flat and wireframe icons for free with Syncfusion <a href="https://www.syncfusion.com/succinctly-free-ebooks" style="text-decoration: none;
+                <li><span>Largest collection of over 7,000 flat and wireframe icons for free with Syncfusion <a href="https://www.syncfusion.com/downloads/metrostudio?utm_source=license&utm_medium=listing&utm_campaign=license-information" style="text-decoration: none;
                 color: #0D6EFD;
                 font-weight: 500;">Metro Studio.</a></span></li>
-                <li><span>Free and unlimited access to Syncfusion technical <a href="https://www.syncfusion.com/blogs/" style="text-decoration: none;
+                <li><span>Free and unlimited access to Syncfusion technical <a href="https://www.syncfusion.com/blogs/?utm_source=license&utm_medium=listing&utm_campaign=license-information" style="text-decoration: none;
                 color: #0D6EFD;
-                font-weight: 500;">blogs</a> and <a href="https://www.syncfusion.com/resources/techportal/whitepapers" style="text-decoration: none;
+                font-weight: 500;">blogs</a> and <a href="https://www.syncfusion.com/resources/techportal/whitepapers?utm_source=license&utm_medium=listing&utm_campaign=license-information" style="text-decoration: none;
                 color: #0D6EFD;
                 font-weight: 500;">whitepapers.</a></span></li>
             </ul>

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.1.38 (2023-07-11)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#FB182978` - Resolved an issue Hidden save and cancel icons when focused on using tab key navigation.
+
 ## 20.4.54 (2023-03-14)
 
 ### In-place Editor

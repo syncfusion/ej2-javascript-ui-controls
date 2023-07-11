@@ -1,7 +1,7 @@
 import { IDataSet } from '../../src/base/engine';
 import { pivot_dataset } from '../base/datasource.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
 import { ConditionalFormatting } from '../../src/common/conditionalformatting/conditional-formatting';
 import { LoadEventArgs } from '../../src';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
@@ -18,8 +18,9 @@ describe('Conditional Formatting', () => {
     describe(' - Code Behind', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
-        beforeAll(() => {
+        beforeAll((done: Function) => {
             document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
             pivotGridObj = new PivotView(
                 {
                     dataSourceSettings: {
@@ -153,12 +154,13 @@ describe('Conditional Formatting', () => {
                         ]
                     },
                     height: 400,
-                    allowConditionalFormatting: true
+                    allowConditionalFormatting: true,
+                    dataBound: dataBound,
                 });
             pivotGridObj.appendTo('#PivotGrid');
         });
         beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 1000);
+            setTimeout(() => { done(); }, 100);
         });
         it('Check Default Format', () => {
             expect((pivotGridObj.pivotValues[3][1] as any).cssClass === 'formatPivotGrid6').toBeTruthy();
@@ -286,7 +288,6 @@ describe('Conditional Formatting', () => {
                     }
                 ]
             };
-            //pivotGridObj.enableValueSorting = true;
         });
         it('With Value Sorting', () => {
             expect((pivotGridObj.pivotValues[3][3] as any).cssClass === 'formatPivotGrid0').toBeTruthy();
@@ -319,7 +320,6 @@ describe('Conditional Formatting', () => {
                     }
                 ]
             };
-            //pivotGridObj.enableValueSorting = false;
         });
         it('With Default Sorting', () => {
             expect((pivotGridObj.pivotValues[4][3] as any).cssClass === 'formatPivotGrid0').toBeTruthy();
@@ -345,7 +345,7 @@ describe('Conditional Formatting', () => {
             };
         });
         it('Check empty cell', () => {
-            expect((pivotGridObj.pivotValues[4][3] as any).cssClass === 'formatPivotGrid0').toBeFalsy();
+            expect((pivotGridObj.pivotValues[5][1] as any).cssClass === 'formatPivotGrid0').toBeTruthy();
         });
         afterAll(() => {
             if (pivotGridObj) {
@@ -358,8 +358,9 @@ describe('Conditional Formatting', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
         PivotView.Inject(ConditionalFormatting);
-        beforeAll(() => {
+        beforeAll((done: Function) => {
             document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
             pivotGridObj = new PivotView(
                 {
                     dataSourceSettings: {
@@ -391,12 +392,13 @@ describe('Conditional Formatting', () => {
                             }
                         ]
                     },
-                    allowConditionalFormatting: true
+                    allowConditionalFormatting: true,
+                    dataBound: dataBound,
                 });
             pivotGridObj.appendTo('#PivotGrid');
         });
         beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 1000);
+            setTimeout(() => { done(); }, 100);
         });
         it('Check code behind format', () => {
             expect((pivotGridObj.pivotValues[3][2] as any).cssClass === 'formatPivotGrid0').toBeTruthy();
@@ -525,8 +527,9 @@ describe('Conditional Formatting', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
         PivotView.Inject(ConditionalFormatting);
-        beforeAll(() => {
+        beforeAll((done: Function) => {
             document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
             pivotGridObj = new PivotView(
                 {
                     dataSourceSettings: {
@@ -561,12 +564,13 @@ describe('Conditional Formatting', () => {
                     load: (args: LoadEventArgs) => {
                         pivotGridObj.isAdaptive = true;
                     },
-                    allowConditionalFormatting: true
+                    allowConditionalFormatting: true,
+                    dataBound: dataBound,
                 });
             pivotGridObj.appendTo('#PivotGrid');
         });
         beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 1000);
+            setTimeout(() => { done(); }, 100);
         });
         it('Check code behind format', () => {
             expect((pivotGridObj.pivotValues[3][2] as any).cssClass === 'formatPivotGrid0').toBeTruthy();
@@ -701,7 +705,6 @@ describe('Conditional Formatting', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);
         //Check average change in memory samples to not be over 10MB
-        //expect(average).toBeLessThan(10);
         let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);

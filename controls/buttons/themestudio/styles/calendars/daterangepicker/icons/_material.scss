@@ -96,4 +96,24 @@
     min-height: $zero-value;
     min-width: 20px;
   }
+
+  .e-daterangepick-mob-popup-wrap {
+    
+    #{if(&, '&', '*')} .e-daterangepicker.e-popup-expand {
+  
+      #{if(&, '&', '*')} .e-range-header,
+      #{if(&, '&', '*')} .e-model-header {
+  
+        #{if(&, '&', '*')} .e-popup-close::before {
+          content: '\e932';
+          font-family: 'e-icons';
+        }
+
+        #{if(&, '&', '*')} .e-apply::before {
+          content: '\e7ff';
+          font-family: 'e-icons';
+        }
+      }
+    }
+  }
 }

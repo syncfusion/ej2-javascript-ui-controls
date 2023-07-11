@@ -31,6 +31,7 @@ let arrayOfObj = [
     }
 ];
 let specialCharValue = [{'@ShipCountry': 'France'}];
+let dsJSONArrayBoolean: any=[{name: true,info:{ id:'01'} }, { name: false, info: { id:'02'} }];
 let dsJSONArray: any = [{ name: 'one', info: { id: '01' } }, { name: 'two', info: { id: '02' } }];
 let dsSubArray: any = [{ name: 'one', items: ['AR Item1', 'AR Item2'] }, { name: 'two', items: ['AR Item1', 'AR Item2'] }];
 let dsJSONSubArray: any = [{ name: 'one', info: { id: '01', items: ['AR Item1', 'AR Item2'] } }, { name: 'two', info: { id: '02', items: ['AR Item1', 'AR Item2'] } }];
@@ -255,6 +256,14 @@ describe('Template', () => {
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
     });
 
+    it('JSON Array Input With IF ELSE Condition Boolean', () => {
+        let templateStr: string = '<div>${if(name===true)}${info.id}${else}${name}${/if}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: '01' }));
+        result.push(createElement('div', { innerHTML: 'false' }));
+        expect(outDOM(template.compile(templateStr), dsJSONArrayBoolean)).toEqual(result);
+    });
+    
     it('JSON Array Input With Multiple IF Condition', () => {
         let templateStr: string = '<div>${if(name=="one" && info.id != "01")}${info.id}${/if}</div>';
         let result: Element[] = [];
@@ -410,6 +419,52 @@ describe('Template', () => {
         let result: Element[] = [];
         result.push(createElement('div', { innerHTML: 'true' }));
         expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
+    });
+
+    it('JSON Array Input with function template', () => {
+        let templateFunc: Function = (data: any) => `<span>${data['IDPRATICA']}</span>`;
+        let result: HTMLElement = document.createElement('span');
+        result.textContent = '700';
+        expect(outDOM(template.compile(templateFunc), arrayOfObj)[0]).toEqual(result);
+    });
+
+    it('JSON Array Input with function template with if condition', () => {;
+        let templateFunc: Function = (data: any) => `${data['IDPRATICA'] === 700 ? `<span>${data['IDPRATICA']}</span>` : ''}`;
+        let result: HTMLElement = document.createElement('span');
+        result.textContent = '700';        
+        expect(outDOM(template.compile(templateFunc), arrayOfObj)[0]).toEqual(result);
+    });
+
+    it('JSON Array Input with complex function template', () => {
+        let data: any = {
+            people: [
+                { firstName: "Todd", age: 16 },
+                { firstName: "Mike", age: 23, driver: true },
+                { firstName: "Amanda", age: 21 },
+                { firstName: "Stacy", age: 19 }
+            ]
+        };
+        let output: string = "<ul><li style='color: red;'>Name: Todd Age: 16</li><li style='color: green;'>Name: Mike Age: 23 is a driver.</li><li style='color: blue;'>Name: Amanda Age: 21</li><li style='color: red;'>Name: Stacy Age: 19</li></ul>";
+        var templateFunc: (data: any) => string = ({ people }) => {
+            var result = "<ul>";
+            for (let i = 0; i < people.length; i++) {
+                let person = people[i];
+
+                if (person.age > 20) {
+                    if (person.driver) {
+                        result += `<li style='color: green;'>Name: ${person.firstName} Age: ${person.age} is a driver.</li>`;
+                    } else {
+                        result += `<li style='color: blue;'>Name: ${person.firstName} Age: ${person.age}</li>`;
+                    }
+                } else {
+                    result += `<li style='color: red;'>Name: ${person.firstName} Age: ${person.age}</li>`;
+                }
+            }
+            result += "</ul>";
+            return result;
+        };
+        let outputDOM: Function = template.compile(templateFunc);
+        expect(outputDOM(data)).toEqual(output);
     });
 
 });

@@ -443,9 +443,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      *
      * @default ''
      * @blazorType string
+     * @aspType string
      */
     @Property('')
-    public content: string | HTMLElement;
+    public content: string | HTMLElement | Function;
     /**
      * Defines whether to allow the cross-scripting site or not.
      *
@@ -483,9 +484,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      *
      * @default ''
      * @blazorType string
+     * @aspType string
      */
     @Property('')
-    public header: string | HTMLElement;
+    public header: string | HTMLElement | Function;
     /**
      * Specifies the value that represents whether the dialog component is visible.
      *
@@ -566,9 +568,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      *
      * @default ''
      * @blazorType string
+     * @aspType string
      */
     @Property('')
-    public footerTemplate: HTMLElement | string;
+    public footerTemplate: HTMLElement | string | Function;
     /**
      * Specifies the value whether the dialog component can be dragged by the end-user.
      * The dialog allows to drag by selecting the header and dragging it for re-position the dialog.
@@ -1363,7 +1366,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private setTemplate(template: string | HTMLElement, toElement: HTMLElement, prop: string): void {
+    private setTemplate(template: string | HTMLElement | Function, toElement: HTMLElement, prop: string): void {
         let templateFn: Function;
         let templateProps: string;
         // eslint-disable-next-line
@@ -1781,8 +1784,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             case 'position':
                 this.checkPositionData();
                 if (this.isModal) {
-                    const positionX: string | number = isNullOrUndefined(oldProp.position.X) ? this.position.X : oldProp.position.X;
-                    const positionY: string | number = isNullOrUndefined(oldProp.position.Y) ? this.position.Y : oldProp.position.Y;
+                    const positionX: string | number = !isNullOrUndefined(oldProp.position) && !isNullOrUndefined(oldProp.position.X) ? oldProp.position.X: this.position.X;
+                    const positionY: string | number = !isNullOrUndefined(oldProp.position) && !isNullOrUndefined(oldProp.position.Y) ? oldProp.position.Y :this.position.Y;
                     if (this.dlgContainer.classList.contains('e-dlg-' + positionX + '-' + positionY )) {
                         this.dlgContainer.classList.remove('e-dlg-' + positionX + '-' + positionY );
                     }
@@ -2327,7 +2330,7 @@ export namespace DialogUtility {
 
     // eslint-disable-next-line
     function formOptions(options: DialogModel, option: AlertDialogArgs): DialogModel {
-        options.header = !isNullOrUndefined(option.title) ? option.title : DLG_UTIL_DEFAULT_TITLE;
+        options.header = !isNullOrUndefined(option.title) ? option.title : null;
         options.content = !isNullOrUndefined(option.content) ? option.content : '';
         options.isModal = !isNullOrUndefined(option.isModal) ? option.isModal : true;
         options.showCloseIcon = !isNullOrUndefined(option.showCloseIcon) ? option.showCloseIcon : false;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/triple-slash-reference */
 /// <reference path='../common/menu-base-model.d.ts'/>
 import { attributes, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
-import { Browser, Complex, getUniqueID, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
+import { Browser, Complex, getUniqueID, SanitizeHtmlHelper, compile  } from '@syncfusion/ej2-base';
 import { MenuBase, FieldSettings } from '../common/menu-base';
 import { MenuItemModel, FieldSettingsModel } from '../common/menu-base-model';
 import { MenuModel } from './menu-model';
@@ -60,9 +60,10 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
      * Specifies the template for Menu item.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Specifies whether to enable / disable the scrollable option in Menu.
@@ -138,7 +139,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
         this.element.id = this.element.id || getUniqueID('ej2-menu');
         if (this.template) {
             try {
-                if (document.querySelectorAll(this.template).length) {
+                if (typeof this.template !== 'function' && document.querySelectorAll(this.template).length) {
                     this.template = document.querySelector(this.template).innerHTML.trim();
                     this.clearChanges();
                 }

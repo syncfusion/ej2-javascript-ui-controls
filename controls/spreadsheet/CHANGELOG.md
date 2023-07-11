@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 22.1.34 (2023-06-21)
+
+### Spreadsheet
+
+#### Features
+
+- `#F181385` - Now, you can insert the `line chart` with or without `marker` on the sheet.
+
+## 21.2.8 (2023-05-30)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I462789` - Issue with "formula calculation is not updated properly when cells contain the decimal values" has been resolved.
+
 ## 21.2.3 (2023-05-03)
 
 ### Spreadsheet

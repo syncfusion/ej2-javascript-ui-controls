@@ -20,8 +20,9 @@ export class InterSectionObserver {
         'up': {
             check: (rect: ClientRect, info: SentinelType) => {
                 const top: number = rect.top - this.containerRect.top;
+                const bottom: number = this.containerRect.bottom > rect.bottom ? this.containerRect.bottom - rect.bottom : 0;
                 info.entered = top >= 0;
-                return top + (this.options.pageHeight / 2) >= 0;
+                return top + (this.options.pageHeight / 2) >= 0 || (bottom > 0 && rect.bottom > 0);
             },
             axis: 'Y'
         },

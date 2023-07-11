@@ -155,7 +155,7 @@ export interface IAnnotationRenderEventArgs extends ICircularGaugeEventArgs {
     /**
      * Specifies the content of the annotation in circular gauge.
      */
-    content?: string;
+    content?: string | Function;
     /**
      * Specifies the style of the text in annotation of circular gauge.
      */
@@ -327,6 +327,8 @@ export interface IThemeStyle {
     tooltipFillColor: string;
     /** Specifies the font color for tooltip of the circular gauge. */
     tooltipFontColor: string;
+    /** Specifies the font size for tooltip of the circular gauge. */
+    tooltipFontSize: string;
     /** Specifies the color for the axis line in circular gauge. */
     lineColor: string;
     /** Specifies the axis label in circular gauge. */
@@ -347,6 +349,8 @@ export interface IThemeStyle {
     fontFamily?: string;
     /** Specifies the font size for the text in circular gauge. */
     fontSize?: string;
+    /** Specifies the font weight for the text in circular gauge. */
+    fontWeight?: string;
     /** Specifies the font-family for the axis label in circular gauge. */
     labelFontFamily?: string;
     /** Specifies the opacity for the tooltip in circular gauge. */

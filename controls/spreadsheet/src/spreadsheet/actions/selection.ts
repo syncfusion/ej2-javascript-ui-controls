@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange } from '../common/index';
+import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue } from '../common/index';
 import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder, hideAutoFillElement } from '../common/index';
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
@@ -324,6 +324,10 @@ export class Selection {
                             range = [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]);
                         }
                     }
+                    if (isTouchStart(e) && !(isRowSelected || isColSelected) && range) {
+                        let colRowSelectArgs: { isRowSelected: boolean, isColSelected: boolean } = this.isRowColSelected(range);
+                        this.isRowSelected = colRowSelectArgs.isRowSelected; this.isColSelected = colRowSelectArgs.isColSelected;
+                    }
                     const preventEvt: boolean = e.ctrlKey && range && sheet.selectedRange.includes(getRangeAddress(range));
                     if (!preventEvt && mode === 'Multiple' && (!isTouchEnd(e) && (!isTouchStart(e) ||
                         (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
@@ -559,7 +563,7 @@ export class Selection {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let left: number = 0;
         if (e.isImage) {
-            left = Number(this.addDPRValue(e.clientX).toFixed(2));
+            left = e.clientX;
         } else {
             const cliRect: ClientRect = document.getElementById(this.parent.element.id + '_sheet').getBoundingClientRect();
             if (this.parent.enableRtl) {
@@ -580,11 +584,8 @@ export class Selection {
         }
         let size: number;
         for (let i: number = 0; ; i++) {
-            size = width += getColumnWidth(sheet, i, null, true);
-            if (e.isImage) {
-                size = Number(size.toFixed(2));
-            }
-            if (left < size || (this.parent.scrollSettings.isFinite && i === sheet.colCount - 1)) {
+            size = width += getColumnWidth(sheet, i, null, !e.isImage);
+            if (left < (e.isImage ? Number(addDPRValue(size).toFixed(2)) : size) || (this.parent.scrollSettings.isFinite && i === sheet.colCount - 1)) {
                 if (!e.isImage) { e.size = left; }
                 e.clientX = i;
                 return i;
@@ -601,20 +602,12 @@ export class Selection {
         }
     }
 
-    private addDPRValue(size: number): number {
-        if (window.devicePixelRatio % 1 > 0) {
-            const pointValue: number = (size * window.devicePixelRatio) % 1;
-            return size + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
-        }
-        return size;
-    }
-
     private getRowIdxFromClientY(args: { clientY: number, isImage?: boolean, target?: Element, size?: number }): number {
         let height: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
         let top: number = 0;
         if (args.isImage) {
-            top = Number(this.addDPRValue(args.clientY).toFixed(2));
+            top = args.clientY;
         } else {
             const sheetEle: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
             top = args.clientY + this.parent.viewport.beforeFreezeHeight -
@@ -625,11 +618,8 @@ export class Selection {
         }
         let size: number;
         for (let i: number = 0; ; i++) {
-            size = height += getRowHeight(sheet, i, true);
-            if (args.isImage) {
-                size = Number(size.toFixed(2));
-            }
-            if (top < size || (this.parent.scrollSettings.isFinite && i === sheet.rowCount - 1)) {
+            size = height += getRowHeight(sheet, i, !args.isImage);
+            if (top < (args.isImage ? Number(addDPRValue(size).toFixed(2)) : size) || (this.parent.scrollSettings.isFinite && i === sheet.rowCount - 1)) {
                 if (!args.isImage) { args.size = top; }
                 args.clientY = i;
                 return i;

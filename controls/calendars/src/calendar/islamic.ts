@@ -315,7 +315,11 @@ export class Islamic {
         let endFullYr: number = endYr.getFullYear();
         let startHdrYr: any = this.calendarInstance.globalize.formatDate(
             startYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
-        let endHdrYr: any = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+        let endHdrYr: any = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });        
+        if(this.calendarInstance.locale === 'ar'){
+            startHdrYr = Number(startHdrYr.replace(/[٠١٢٣٤٥٦٧٨٩]/g, (d: any) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48)));
+            endHdrYr = Number(endHdrYr.replace(/[٠١٢٣٤٥٦٧٨٩]/g, (d: any) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48)));
+        }
         const splityear: any = this.calendarInstance.headerElement.textContent.split('-');
         if ((!isNullOrUndefined(e) && (splityear[0] !== startHdrYr) && (e as KeyboardEventArgs).action === 'home') || (!isNullOrUndefined(e) && e.type === 'keydown' && (e as KeyboardEventArgs).action === 'end')) {
             startHdrYr = this.calendarInstance.headerElement.textContent.split('-')[0].trim();
@@ -377,7 +381,13 @@ export class Islamic {
                 ? (parseInt(endHdrYr, 10) + 2).toString() : endHdrYr - startHdrYr === 8
                     ? (parseInt(endHdrYr, 10) + 1).toString() : endHdrYr;
         }
-        this.calendarInstance.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
+        if(this.calendarInstance.locale === 'ar'){
+            const startHeaderYear: any = this.calendarInstance.globalize.formatDate(startYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+            const endHeaderYear: any = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+            this.calendarInstance.headerTitleElement.textContent = startHeaderYear + ' - ' + (endHeaderYear);
+        } else {
+            this.calendarInstance.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
+        }        
         this.calendarInstance.nextIconClicked = this.calendarInstance.previousIconClicked = false;
         const year: any = (parseInt(startHdrYr, 10) - 2).toString();
         startFullYr = Math.round(parseInt(startHdrYr, 10) * 0.97 + 622);

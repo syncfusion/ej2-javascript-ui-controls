@@ -176,7 +176,7 @@ export interface CommandModel {
 
     /**
      * Defines any additional parameters that are required at runtime
-     * 
+     *
      * @default ''
      */
     parameter?: string;

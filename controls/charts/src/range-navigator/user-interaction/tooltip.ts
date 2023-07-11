@@ -66,7 +66,7 @@ export class RangeTooltip {
                 0, this.control.tooltip.template, this.control).getBoundingClientRect().width;
         } else {
             // 20 for tooltip padding
-            width = measureText(value[0], font).width + 20;
+            width = measureText(value[0], font, this.control.themeStyle.tooltipLabelFont).width + 20;
         }
         return width;
     }
@@ -107,7 +107,7 @@ export class RangeTooltip {
             } else {
                 const stockChart: StockChart = this.control.stockChart;
                 getElement(stockChart.element.id + '_Secondary_Element').appendChild(element);
-                element.style.transform = 'translateY(' +   (((stockChart.availableSize.height - stockChart.toolbarHeight - 80) +
+                element.style.transform = 'translateY(' +   (((stockChart.availableSize.height - stockChart.toolbarHeight - 51) +
                                                                      stockChart.toolbarHeight) + stockChart.titleSize.height) + 'px)';
             }
             return element;
@@ -136,14 +136,14 @@ export class RangeTooltip {
                 {
                     location: { x: pointX, y: control.rangeSlider.sliderY },
                     content: argsData.text, marginX: 2,
-                    enableShadow: (this.control.theme === 'Fluent' || this.control.theme === 'FluentDark') ? true : false,
-                    marginY: 2, arrowPadding: 8, rx: 0, ry: 0,
+                    enableShadow: false,
+                    marginY: 2, arrowPadding: 8, rx: 4, ry: 4,
                     inverted: control.series.length > 0,
                     areaBounds: bounds, fill: tooltip.fill ? tooltip.fill : this.control.themeStyle.tooltipBackground,
                     theme: this.control.theme,
                     clipBounds: { x: left },
-                    border: tooltip.border, opacity: tooltip.opacity,
-                    template: tooltip.template,
+                    border: tooltip.border, opacity: tooltip.opacity ?  tooltip.opacity : ((this.control.theme === 'Material3' || this.control.theme === 'Material3Dark') ? 1 : 0.75),
+                    template: tooltip.template as any,
                     textStyle: argsData.textStyle,
                     availableSize: control.availableSize,
                     controlName: 'RangeNavigator',

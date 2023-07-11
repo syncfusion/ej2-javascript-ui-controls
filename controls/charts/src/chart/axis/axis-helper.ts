@@ -55,11 +55,6 @@ export class NiceInterval extends Double {
                 axis.actualIntervalType = 'Years';
                 return interval;
             }
-            interval = this.calculateNumericNiceInterval(axis, (totalDays / 365) * 4, size);
-            if (interval >= 1 && !isChart) {
-                (axis.actualIntervalType as RangeIntervalType) = 'Quarter';
-                return interval;
-            }
 
             interval = this.calculateNumericNiceInterval(axis, totalDays / 30, size);
             if (interval >= 1) {

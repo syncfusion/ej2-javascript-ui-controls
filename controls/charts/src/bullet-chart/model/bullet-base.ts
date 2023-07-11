@@ -3,7 +3,6 @@ import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { BorderModel, MarginModel } from '../../common/model/base-model';
 import { Border, Margin } from '../../common/model/base';
 import { Alignment, TextOverflow } from '../../common/utils/enum';
-import { BulletChartTheme } from '../utils/theme';
 import { LegendShape, LegendPosition } from '../../chart/utils/enum';
 import { Location } from '../../common/legend/legend';
 import { LocationModel } from '../../common/legend/legend-model';
@@ -286,13 +285,13 @@ export class BulletTooltipSettings extends ChildProperty<BulletTooltipSettings> 
      * Options to customize the ToolTip text.
      */
 
-    @Complex<BulletLabelStyleModel>(BulletChartTheme.tooltipLabelFont, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
     public textStyle: BulletLabelStyleModel;
 
     /**
      * Options to customize tooltip borders.
      */
-    @Complex<BorderModel>({ color: '#cccccc', width: 0.5 }, Border)
+    @Complex<BorderModel>({ color: null, width: null }, Border)
     public border: BorderModel;
 
 
@@ -300,10 +299,11 @@ export class BulletTooltipSettings extends ChildProperty<BulletTooltipSettings> 
      * The default value of tooltip template.
      *
      * @default null
+     * @aspType string
      */
 
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
 }
 
@@ -325,7 +325,7 @@ export class BulletDataLabel extends ChildProperty<BulletDataLabel> {
      * Options to customize the data label text.
      */
 
-    @Complex<BulletLabelStyleModel>(BulletChartTheme.dataLabelFont, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
     public labelStyle: BulletLabelStyleModel;
 
 }
@@ -401,7 +401,7 @@ export class BulletChartLegendSettings extends ChildProperty<BulletChartLegendSe
     /**
      * Options to customize the bullet chart legend text.
      */
-    @Complex<BulletLabelStyleModel>(BulletChartTheme.legendLabelFont, BulletLabelStyle)
+    @Complex<BulletLabelStyleModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, BulletLabelStyle)
     public textStyle: BulletLabelStyleModel;
 
     /**

@@ -114,8 +114,6 @@ export const deInitProperties: string = 'deInitProperties';
 /** @hidden */
 export const activeSheetChanged: string = 'activeSheetChanged';
 /** @hidden */
-export const renameSheet: string = 'renameSheet';
-/** @hidden */
 export const initiateCustomSort: string = 'initiateCustomSort';
 /** @hidden */
 export const applySort: string = 'applySort';
@@ -310,8 +308,6 @@ export const selectAutoFillRange: string = 'selectAutoFillRange';
 /** @hidden */
 export const autoFill: string = 'autoFill';
 /** @hidden */
-export const fillRange: string = 'fillRange';
-/** @hidden */
 export const hideAutoFillElement: string = 'hideAutoFillElement';
 /** @hidden */
 export const unProtectSheetPassword: string = 'unProtectSheetPassword';
@@ -327,7 +323,5 @@ export const beforeCheckboxRender: string = 'beforeCheckboxfilterRenderer';
 export const refreshCheckbox: string = 'refreshCheckbox';
 /** @hidden */
 export const renderInsertDlg: string = 'renderInsertDlg';
-/** @hidden */
-export const toggleFormulaBar: string = 'toggleFormulaBar';
 /** @hidden */
 export const toggleProtect: string = 'toggleProtect';

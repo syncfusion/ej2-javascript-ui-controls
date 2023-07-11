@@ -90,6 +90,7 @@ export class VerticalEvent extends EventBase {
             removeClass(this.allDayElement, cls.ALLDAY_ROW_ANIMATE_CLASS);
             this.slots.push(this.parent.activeView.renderDates.map((date: Date) => +date) as any);
             this.renderEvents('allDayEvents');
+            this.animation.animate(this.allDayElement[0] as HTMLElement);
         }
         this.parent.notify(events.contentReady, {});
         addClass(this.allDayElement, cls.ALLDAY_ROW_ANIMATE_CLASS);
@@ -196,6 +197,9 @@ export class VerticalEvent extends EventBase {
         const resources: number[] = this.getResourceList();
         let dateCount: number = this.getStartCount();
         let isRender: boolean;
+        const appHeight: number = eventType === 'allDayEvents' ? util.getElementHeightFromClass(
+            this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS), cls.APPOINTMENT_CLASS) : 0;
+        const allDayRowTop: number = eventType === 'allDayEvents' && this.allDayElement.length > 0 ? this.allDayElement[0].offsetTop : 0;
         for (const resource of resources) {
             isRender = true;
             if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction && eventType !== 'allDayEvents'
@@ -222,7 +226,7 @@ export class VerticalEvent extends EventBase {
                             this.setValues(event, resource);
                         }
                         if (eventType === 'allDayEvents') {
-                            this.renderAllDayEvents(event, day, resource, dateCount);
+                            this.renderAllDayEvents(event, day, resource, dateCount, false, allDayRowTop, appHeight);
                         } else {
                             if (this.isAllDayAppointment(event)) {
                                 this.allDayEvents.push(extend({}, event, null, true) as Record<string, any>);
@@ -456,7 +460,8 @@ export class VerticalEvent extends EventBase {
         return true;
     }
 
-    public renderAllDayEvents(eventObj: Record<string, any>, dayIndex: number, resource: number, dayCount: number, inline?: boolean): void {
+    // eslint-disable-next-line max-len
+    public renderAllDayEvents(eventObj: Record<string, any>, dayIndex: number, resource: number, dayCount: number, inline: boolean, cellTop: number, eventHeight: number): void {
         let currentDates: Date[] = this.getRenderedDates(this.dateRender[parseInt(resource.toString(), 10)]) ||
             this.dateRender[parseInt(resource.toString(), 10)];
         if (this.parent.activeViewOptions.group.byDate) {
@@ -464,8 +469,6 @@ export class VerticalEvent extends EventBase {
             currentDates = [this.dateRender[parseInt(resource.toString(), 10)][parseInt(dayIndex.toString(), 10)]];
         }
         const record: Record<string, any> = this.splitEvent(eventObj, currentDates)[0];
-        const allDayRowCell: Element = this.element.querySelector('.' + cls.ALLDAY_CELLS_CLASS + ':first-child');
-        const cellTop: number = (<HTMLElement>allDayRowCell).offsetTop;
         const eStart: Date = new Date((record[this.parent.eventFields.startTime] as Date).getTime());
         const eEnd: Date = new Date((record[this.parent.eventFields.endTime] as Date).getTime());
         let appWidth: number = 0;
@@ -481,7 +484,7 @@ export class VerticalEvent extends EventBase {
                     isAlreadyRendered = isAlreadyRendered.filter((event: Record<string, any>) =>
                         event[this.parent.eventFields.startTime] >= currentDates[parseInt(dayIndex.toString(), 10)] &&
                         event[this.parent.eventFields.endTime] <=
-                           util.addDays(new Date(+currentDates[parseInt(dayIndex.toString(), 10)]), 1)
+                        util.addDays(new Date(+currentDates[parseInt(dayIndex.toString(), 10)]), 1)
                     );
                 }
             }
@@ -516,8 +519,7 @@ export class VerticalEvent extends EventBase {
                 this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
                     if (!eventArgs.cancel) {
                         eventWrapper.appendChild(appointmentElement);
-                        const appHeight: number = appointmentElement.offsetHeight;
-                        topValue += (allDayIndex === 0 ? cellTop : (cellTop + (allDayIndex * appHeight))) + 1;
+                        topValue += (allDayIndex === 0 ? cellTop : (cellTop + (allDayIndex * eventHeight))) + 1;
                         setStyleAttribute(appointmentElement, { 'width': appWidth + '%', 'top': formatUnit(topValue) });
                         if (allDayIndex > 1) {
                             this.moreEvents.push(appointmentElement);
@@ -525,9 +527,9 @@ export class VerticalEvent extends EventBase {
                                 this.createMoreIndicator(allDayRow, count, wIndex);
                             }
                         }
-                        allDayRowCell.setAttribute('data-count', this.allDayLevel.toString());
+                        this.allDayElement[0].setAttribute('data-count', this.allDayLevel.toString());
                         const allDayRowHeight: number = ((!this.parent.uiStateValues.expand && this.allDayLevel > 2) ?
-                            (3 * appHeight) : ((this.allDayLevel + 1) * appHeight)) + 4;
+                            (3 * eventHeight) : ((this.allDayLevel + 1) * eventHeight)) + 4;
                         this.setAllDayRowHeight(allDayRowHeight);
                         this.addOrRemoveClass();
                         this.wireAppointmentEvents(appointmentElement, eventObj);
@@ -750,13 +752,11 @@ export class VerticalEvent extends EventBase {
             allDayRow.style.height = (height / 12) + 'em';
             this.parent.eventBase.allDayExpandScroll(dateHeader);
         } else {
-            dateHeader.scrollTop = 0;
             for (const element of this.allDayElement) {
                 (<HTMLElement>element).style.height = (height / 12) + 'em';
             }
             removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
         }
-        this.animation.animate(this.allDayElement[0] as HTMLElement);
     }
 
     private addOrRemoveClass(): void {
@@ -813,8 +813,10 @@ export class VerticalEvent extends EventBase {
             target.setAttribute('title', this.parent.localeObj.getConstant('expandAllDaySection'));
             target.setAttribute('aria-label', 'Expand section');
             rowHeight = (3 * this.getEventHeight()) + 4;
+            this.parent.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS).scrollTop = 0;
         }
         this.setAllDayRowHeight(rowHeight);
+        this.animation.animate(this.allDayElement[0] as HTMLElement);
         this.addOrRemoveClass();
         this.animation.animate(target);
     }

@@ -178,7 +178,7 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
 export function getCellPosition(
     sheet: SheetModel, indexes: number[],
     frozenRow?: number, frozenColumn?: number, freezeScrollHeight?: number, freezeScrollWidth?: number,
-    rowHdrWidth?: number): { top: number, left: number } {
+    rowHdrWidth?: number, isOverlay?: Boolean): { top: number, left: number } {
     let i: number; const offset: { left: IOffset, top: IOffset } = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } };
     let top: number = offset.top.size;
     let left: number = offset.left.size;
@@ -186,11 +186,11 @@ export function getCellPosition(
         if (frozenRow) {
             if (frozenRow - 1 < indexes[0] && i < frozenRow) { continue; }
         }
-        top += getRowHeight(sheet, i, true);
+        top += getRowHeight(sheet, i, !isOverlay);
     }
     for (i = offset.left.idx; i < indexes[1]; i++) {
         if (frozenColumn && frozenColumn - 1 < indexes[1] && i < frozenColumn) { continue; }
-        left += getColumnWidth(sheet, i, null, true);
+        left += getColumnWidth(sheet, i, null, !isOverlay);
     }
     if (frozenRow && indexes[0] < frozenRow) {
         if (sheet.showHeaders) { top += 30; }
@@ -1547,7 +1547,7 @@ export function updateAction(
         if (isRedo === false) {
             spreadsheet.notify(deleteChart, { id: eventArgs.id, range: eventArgs.range, isUndoRedo: true });
         } else {
-            const chartOptions: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+            const chartOptions: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings, isSeriesInRows: eventArgs.isSeriesInRows,
                 range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width }];
             spreadsheet.notify(
                 setChart, { chart: chartOptions, isUndoRedo: false, range: eventArgs.posRange });
@@ -1555,7 +1555,7 @@ export function updateAction(
         break;
     case 'deleteChart':
         if (isRedo === false) {
-            const chartOpts: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+            const chartOpts: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings, isSeriesInRows: eventArgs.isSeriesInRows,
                 range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
                 left: eventArgs.left }];
             spreadsheet.notify(
@@ -1694,7 +1694,7 @@ export function setRowEleHeight(
         row.style.height = `${dprHgt}px`;
     }
     if (sheet.frozenColumns) {
-        hRow = parent.getRow(rowIdx, null, frozenCol - 1);
+        hRow = hRow || parent.getRow(rowIdx, null, frozenCol - 1);
     } else {
         const frozenRow: number = parent.frozenRowCount(sheet);
         hRow = hRow || parent.getRow(rowIdx, rowIdx < frozenRow ? parent.sheetModule.getSelectAllTable() : parent.getRowHeaderTable());
@@ -2103,4 +2103,46 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
  */
 export function isImported(context: Spreadsheet): boolean {
     return context.allowOpen && context.openModule.preventFormatCheck;
+}
+/** @hidden */
+export function getBottomOffset(parent: Spreadsheet, top: number): { index: number, height: number } {
+    let hgt: number = 0;
+    const sheet: SheetModel = parent.getActiveSheet();
+    const viewPortHeight: number = (sheet.frozenRows ? parent.viewport.height - parent.sheetModule.getColHeaderHeight(sheet, true) :
+        parent.viewport.height) - 17 || 20;
+    for (let rowIdx: number = top; ; rowIdx++) {
+        hgt += getRowHeight(sheet, rowIdx, true);
+        if (hgt >= viewPortHeight) {
+            return { index: rowIdx, height: hgt };
+        }
+    }
+}
+
+/** @hidden */
+export function getRightIdx(parent: Spreadsheet, left: number): number {
+    let width: number = 0;
+    const sheet: SheetModel = parent.getActiveSheet();
+    const contWidth: number = (parent.getMainContent() as HTMLElement).parentElement.offsetWidth -
+        parent.sheetModule.getRowHeaderWidth(sheet) - parent.sheetModule.getScrollSize();
+    for (let i: number = left; ; i++) {
+        width += getColumnWidth(sheet, i, null, true);
+        if (width >= contWidth) {
+            return i;
+        }
+    }
+}
+
+/**
+ * Calculating resolution based windows value
+ *
+ * @param {number} size - Specify the end column index.
+ * @returns {number} - get excluded column width.
+ * @hidden
+ */
+export function addDPRValue(size: number): number {
+    if (window.devicePixelRatio % 1 > 0) {
+        const pointValue: number = (size * window.devicePixelRatio) % 1;
+        return size + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
+    }
+    return size;
 }

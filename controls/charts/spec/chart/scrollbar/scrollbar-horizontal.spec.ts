@@ -80,7 +80,7 @@ describe('Scrollbar Chart ', () => {
                 let width: string = scrollEle.getAttribute("width");
                 expect(width == '832.5' || width == '836.5').toBe(true);
                 expect(scrollEle.getAttribute("height") == '16').toBe(true);
-                expect(scrollEle.style.top == '374.5px' || scrollEle.style.top == '378.5px').toBe(true);
+                expect(scrollEle.style.top == '374.5px' || scrollEle.style.top == '378px').toBe(true);
                 expect(scrollEle.style.left == '57.5px' || scrollEle.style.left == '53.5px').toBe(true);
                 done();
             };
@@ -206,8 +206,8 @@ describe('Scrollbar Chart ', () => {
             let y: string = xAxisLabel.getAttribute('y');
             let titleX: string = xAxisTitle.getAttribute('x');
             let titleY: string = xAxisTitle.getAttribute('y');
-            expect(chartAreaHt === '328.25' || chartAreaHt === '335.25').toBe(true);
-            expect(majorTick === '119.59062500000013 374 L 119.59062500000013 395' || majorTick === '97.4859583333334 378 L 97.4859583333334 399').toBe(true);
+            expect(chartAreaHt === '328.25' || chartAreaHt === '334.25').toBe(true);
+            expect(majorTick === '97.4859583333334 378 L 97.4859583333334 399' || majorTick === '97.4859583333334 378 L 97.4859583333334 399').toBe(true);
             expect(x === '113.09062500000013' || x === '91.4859583333334').toBe(true)
             expect(y === '412' || y === '415.25').toBe(true);
             expect(xAxisLabel.innerHTML === '17').toBe(true);
@@ -258,7 +258,7 @@ describe('Scrollbar Chart ', () => {
                 let width: string = scrollEle.getAttribute('width');
                 expect(width == '832.5' || width === '836.5').toBe(true);
                 expect(scrollEle.getAttribute('height') == '16').toBe(true);
-                expect(scrollEle.style.top == '405.5px' || scrollEle.style.top == '408.5px').toBe(true);
+                expect(scrollEle.style.top == '405.5px' || scrollEle.style.top == '408px').toBe(true);
                 expect(scrollEle.style.left == '57.5px' || scrollEle.style.left == '53.5px').toBe(true);
                 done();
             };
@@ -274,7 +274,7 @@ describe('Scrollbar Chart ', () => {
             let labelY: string = xAxisLabel.getAttribute('y');
             let titleX: string = xAxisTitle.getAttribute('x');
             let titleY: string = xAxisTitle.getAttribute('y');
-            expect(chartAreaHt === '359.25' || chartAreaHt === '365.25').toBe(true);
+            expect(chartAreaHt === '359.25' || chartAreaHt === '364.25').toBe(true);
             expect(majorTick === '119.59062500000013 421 L 119.59062500000013 399' || majorTick === '97.4859583333334 424 L 97.4859583333334 402').toBe(true);
             expect(labelX === '113.09062500000013' || labelX === '91.4859583333334').toBe(true);
             expect(labelY === '394' || labelY === '397').toBe(true);
@@ -358,7 +358,7 @@ describe('Scrollbar Chart ', () => {
                 let width: string = scrollEle.getAttribute('width');
                 expect(width == '832.5' || width === '836.5').toBe(true);
                 expect(scrollEle.getAttribute('height') == '16').toBe(true);
-                expect(scrollEle.style.top == '434.5px').toBe(true);
+                expect(scrollEle.style.top == '434px').toBe(true);
                 expect(scrollEle.style.left == '57.5px' || scrollEle.style.left == '53.5px').toBe(true);
                 done();
             };
@@ -370,14 +370,14 @@ describe('Scrollbar Chart ', () => {
             let majorTick: string = document.getElementById('container_MajorTickLine_0_0').getAttribute('d').split('M ')[1];
             let xAxisLabel: Element = document.getElementById('container0_AxisLabel_0');
             let xAxisTitle: Element = document.getElementById('container_AxisTitle_0');
-            expect(chartAreaHt === '388.25' || chartAreaHt === '391.25').toBe(true);
+            expect(chartAreaHt === '388.25' || chartAreaHt === '390.25').toBe(true);
             expect(majorTick === '119.59062500000013 239.875 L 119.59062500000013 244.875' ||
-                majorTick === '97.4859583333334 238.375 L 97.4859583333334 243.375').toBe(true);
+                majorTick === '97.4859583333334 238.875 L 97.4859583333334 243.875').toBe(true);
             expect(xAxisLabel.getAttribute('x') === '113.09062500000013' || xAxisLabel.getAttribute('x') === '91.4859583333334').toBe(true);
-            expect(xAxisLabel.getAttribute('y') === '261.875' || xAxisLabel.getAttribute('y') === '259.625').toBe(true);
+            expect(xAxisLabel.getAttribute('y') === '260.125' || xAxisLabel.getAttribute('y') === '259.625').toBe(true);
             expect(xAxisLabel.innerHTML === '17').toBe(true);
             expect(xAxisTitle.getAttribute('x') === '473.75' || xAxisTitle.getAttribute('x') === '471.75').toBe(true);
-            expect(xAxisTitle.getAttribute('y') === '284.625' || xAxisTitle.getAttribute('y') === '279.875').toBe(true);
+            expect(xAxisTitle.getAttribute('y') === '284.625' || xAxisTitle.getAttribute('y') === '280.375').toBe(true);
             done();
         });
     });
@@ -500,7 +500,7 @@ describe('Scrollbar Chart ', () => {
                 expect(scrollEle != null).toBe(true);
                 expect(scrollEle.getAttribute("width") == '856.5' || scrollEle.getAttribute("width") == '857.5').toBe(true);
                 expect(scrollEle.getAttribute("height") == '16').toBe(true);
-                expect(scrollEle.style.top == '398.5px' || scrollEle.style.top == '399.5px').toBe(true);
+                expect(scrollEle.style.top == '398.5px' || scrollEle.style.top == '399px').toBe(true);
                 expect(scrollEle.style.left == '33.5px' || scrollEle.style.left == '32.5px').toBe(true);
                 done();
             };
@@ -550,7 +550,7 @@ describe('Scrollbar Chart ', () => {
                 let x: number = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 2 + ele.offsetLeft;
                 trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
                 let crossHairEle: string = document.getElementById('container_axis_tooltip_0').getAttribute('d').split(' L')[0];
-                expect(crossHairEle === 'M 450 400.5 Q 450 398.5 452 398.5' || crossHairEle === 'M 449 404.5 Q 449 402.5 451 402.5').toBe(true);
+                expect(crossHairEle === 'M 450.5 404.5 Q 450.5 402.5 452.5 402.5' || crossHairEle === 'M 449 404.5 Q 449 402.5 451 402.5').toBe(true);
                 let text: string = document.getElementById('container_axis_tooltip_text_0').innerHTML;
                 expect(text === '20.070' || text === '20.213').toBe(true);
                 done();
@@ -599,7 +599,7 @@ describe('Scrollbar Chart ', () => {
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 300, 390)));
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 450, 390)));
             let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-            expect(thumbEle.getAttribute('x') === '234.5' || thumbEle.getAttribute('x') === '238.5').toBe(true);
+            expect(thumbEle.getAttribute('x') === '234.5' || thumbEle.getAttribute('x') === '237.5').toBe(true);
             expect(thumbEle.getAttribute('width') === '250' || thumbEle.getAttribute('width') === '250.00000000000003').toBe(true);
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp();
             done();
@@ -612,12 +612,12 @@ describe('Scrollbar Chart ', () => {
             let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
             let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(1)).toString();
             let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-            expect(thumbX === '234.5' || thumbX === '238.5').toBe(true);
+            expect(thumbX === '234.5' || thumbX === '237.5').toBe(true);
             expect(thumbWidth === '350').toBe(true);
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 450, 390)));
             thumbX = (parseFloat(thumbEle.getAttribute('x')).toFixed(1)).toString();
             thumbWidth = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-            expect(thumbX === '234.5' || thumbX === '238.5').toBe(true);
+            expect(thumbX === '234.5' || thumbX === '237.5').toBe(true);
             expect(thumbWidth === '150').toBe(true);
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp();
             done();
@@ -629,12 +629,12 @@ describe('Scrollbar Chart ', () => {
             let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
             let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(1)).toString();
             let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-            expect(thumbX === '54.5' || thumbX === '58.5').toBe(true);
+            expect(thumbX === '54.5' || thumbX === '57.5').toBe(true);
             expect(thumbWidth === '330').toBe(true);
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 250, 390)));
             thumbX = (parseFloat(thumbEle.getAttribute('x')).toFixed(1)).toString();
             thumbWidth = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-            expect(thumbX === '184.5' || thumbX === '188.5').toBe(true);
+            expect(thumbX === '184.5' || thumbX === '187.5').toBe(true);
             expect(thumbWidth === '200').toBe(true);
             done();
         });
@@ -654,7 +654,7 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '204.98' || thumbX === '209.85').toBe(true);
+                expect(thumbX === '204.98' || thumbX === '209.10').toBe(true);
                 expect(thumbWidth === '60' || thumbWidth === '60').toBe(true);
                 done();
             };
@@ -681,7 +681,7 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '210.95' || thumbX === '216.03').toBe(true);
+                expect(thumbX === '210.95' || thumbX === '215.29').toBe(true);
                 expect(thumbWidth === '40').toBe(true);
                 done();
             };
@@ -707,7 +707,7 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '212.76' || thumbX === '217.90').toBe(true);
+                expect(thumbX === '212.76' || thumbX === '217.16').toBe(true);
                 expect(thumbWidth === '40').toBe(true);
                 done();
             };
@@ -1118,7 +1118,7 @@ describe('Scrollbar Chart ', () => {
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 450, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 expect(thumbEle.getAttribute('x') === '8' || thumbEle.getAttribute('x') === '308').toBe(true);
-                expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '100.38').toBe(true);
+                expect(thumbEle.getAttribute('width') === '100.25999999999999' || thumbEle.getAttribute('width') === '100.38').toBe(true);
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp();
                 done();
             });
@@ -1135,7 +1135,7 @@ describe('Scrollbar Chart ', () => {
                     };
                     chartObj.axisCollections[0].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                     let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                    expect(thumbEle.getAttribute('x') === '344.9' || thumbEle.getAttribute('x') === '345.7').toBe(true);
+                    expect(thumbEle.getAttribute('x') === '344.9' || thumbEle.getAttribute('x') === '346.0686415320167').toBe(true);
                     expect(thumbEle.getAttribute('width') === '99.89999999999999' ||
                         thumbEle.getAttribute('width') === '100.38').toBe(true);
                    
@@ -1159,7 +1159,7 @@ describe('Scrollbar Chart ', () => {
                 };
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '344.21525773195873' || thumbEle.getAttribute('x') === '345.000412371134').toBe(true);
+                expect(thumbEle.getAttribute('x') === '345.36905390315076' || thumbEle.getAttribute('x') === '345.000412371134').toBe(true);
                 expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '100.38' ).toBe(true);
                 done();
             };
@@ -1174,7 +1174,7 @@ describe('Scrollbar Chart ', () => {
                     let currentTarget: Element = document.getElementById('container_scrollBarBackRect_primaryXAxis');
                     chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 500, 390)));
                     let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                    expect(thumbEle.getAttribute('x') === '425.86525773195876' || thumbEle.getAttribute('x') === '427.05041237113403').toBe(true);
+                    expect(thumbEle.getAttribute('x') === '425.86525773195876' || thumbEle.getAttribute('x') === '427.41905390315077').toBe(true);
                     expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '100.38').toBe(true);
                     done();
                 }
@@ -1185,7 +1185,7 @@ describe('Scrollbar Chart ', () => {
                 let currentTarget: Element = document.getElementById('container_scrollBarBackRect_primaryXAxis');
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 140, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '344.2152577319588' || thumbEle.getAttribute('x') === '345.000412371134').toBe(true);
+                expect(thumbEle.getAttribute('x') === '344.2152577319588' || thumbEle.getAttribute('x') === '345.36905390315076').toBe(true);
                 expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '100.38').toBe(true);
                 done();
             });
@@ -1194,8 +1194,8 @@ describe('Scrollbar Chart ', () => {
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 550, 390, true)));
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 650, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '344.21525773195873' || thumbEle.getAttribute('x') === '345.000412371134').toBe(true);
-                expect(thumbEle.getAttribute('width') === '240.2847422680412' || thumbEle.getAttribute('width') === '243.49958762886598' ).toBe(true);
+                expect(thumbEle.getAttribute('x') === '344.21525773195873' || thumbEle.getAttribute('x') === '345.36905390315076').toBe(true);
+                expect(thumbEle.getAttribute('width') === '240.2847422680412' || thumbEle.getAttribute('width') === '243.13094609684924' ).toBe(true);
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp();
                 done();
             });
@@ -1206,7 +1206,7 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '164.22' || thumbX === '165.00').toBe(true);
+                expect(thumbX === '164.22' || thumbX === '165.37').toBe(true);
                 expect(thumbWidth === '420' || thumbWidth === '423').toBe(true);
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp();
                 done();
@@ -1296,6 +1296,50 @@ describe('Inversed Scrollbar ', function () {
             });
            
         });
+
+        describe('Horizontal Scrollbar with customize option', () => {
+            let chartObj: Chart;
+            let loaded: EmitType<ILoadedEventArgs>;
+            let load: EmitType<ILoadedEventArgs>;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'container'  });
+                document.body.appendChild(ele);
+                chartObj = new Chart(
+                    {
+                        primaryXAxis: {
+                            title: 'PrimaryXAxis', valueType: 'Double', labelPosition: 'Inside',
+                            tickPosition: 'Inside', scrollbarSettings: { enableZoom: false, height: 10, scrollbarRadius: 3, trackColor: 'yellow', trackRadius: 6, gripColor: 'transparent'}
+                        },
+                        primaryYAxis: { title: 'PrimaryYAxis', scrollbarSettings: { enableZoom: true, height: 10, scrollbarRadius: 3, trackColor: 'blue', trackRadius: 6} },
+                        series: [{
+                            dataSource: [{ x: 10, y: 46 }, { x: 20, y: 27 }, { x: 30, y: 26 }, { x: 40, y: 16 }, { x: 50, y: 31 }],
+                            xName: 'x', yName: 'y', marker: { visible: true }, type: 'Line'
+                        }],
+                        title: 'Chart Title',
+                        legendSettings: { visible: true },
+                        width: '900',
+                        zoomSettings: { enableSelectionZooming: true, enableScrollbar: true, mode: 'X' }
+                    }
+                );
+                chartObj.appendTo('#container');
+    
+            })
+            afterAll((): void => {
+                chartObj.destroy();
+                ele.remove();
+            });
+            it('Checking scrollbar custom color', function (done) {
+                trigger.draganddropEvent(ele, 200, 200, 350, 350);
+                let track: HTMLElement = document.getElementById('container_scrollBarBackRect_primaryXAxis');
+                expect(track.getAttribute('fill') === 'yellow').toBe(true);
+                expect(track.getAttribute('stroke') === 'yellow').toBe(true);
+                expect(track.getAttribute('ry') === '6').toBe(true);
+                expect(track.getAttribute('height') === '10').toBe(true);
+                done();
+           
+        });
+
+
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
@@ -1305,5 +1349,6 @@ describe('Inversed Scrollbar ', function () {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
      
 });

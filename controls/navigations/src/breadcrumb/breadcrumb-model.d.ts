@@ -97,15 +97,17 @@ export interface BreadcrumbModel extends ComponentModel{
      * Specifies the template for Breadcrumb item.
      *
      * @default null
+     * @aspType string
      */
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
 
     /**
      * Specifies the separator template for Breadcrumb.
      *
      * @default '/'
+     * @aspType string
      */
-    separatorTemplate?: string;
+    separatorTemplate?: string | Function;
 
     /**
      * Enable or disable the item's navigation, when set to false, each item navigation will be prevented.

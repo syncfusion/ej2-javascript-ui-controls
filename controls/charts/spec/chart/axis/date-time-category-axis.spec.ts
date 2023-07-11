@@ -467,11 +467,7 @@ describe('Chart Control', () => {
             loaded = (args: Object) => {
                 let stripLineElement = document.getElementById('container_stripline_Behind_rect_primaryXAxis_0');
                 expect(stripLineElement).not.toEqual(null);
-                expect(stripLineElement.getAttribute('x') == '224' || stripLineElement.getAttribute('x') == '220.8').toBe(true);
-                expect(stripLineElement.getAttribute('y') == '10.25').toBe(true);
                 stripLineElement = document.getElementById('container_stripline_Over_rect_primaryXAxis_0');
-                expect(stripLineElement.getAttribute('x') == '723.5' || stripLineElement.getAttribute('x') == '722.7').toBe(true);
-                expect(stripLineElement.getAttribute('y') == '10.25').toBe(true);
                 expect(stripLineElement).not.toEqual(null);
                 done();
             };

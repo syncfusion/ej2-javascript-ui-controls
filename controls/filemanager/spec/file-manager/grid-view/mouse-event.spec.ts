@@ -144,7 +144,7 @@ describe('FileManager control Grid view', () => {
                 let li2: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                 expect((li[0] as Element).classList.contains('e-active')).toBe(false);
                 expect((li[1] as Element).classList.contains('e-active')).toBe(true);
-                expect(li2.length).toEqual(9);
+                expect(li2.length).toEqual(5);
                 mouseEventArgs.target = li[2].querySelector('.e-fullrow');
                 treeObj.touchClickObj.tap(tapEvent);
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -156,7 +156,7 @@ describe('FileManager control Grid view', () => {
                     let li3: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                     expect((li[1] as Element).classList.contains('e-active')).toBe(false);
                     expect((li[2] as Element).classList.contains('e-active')).toBe(true);
-                    expect(li3.length).toEqual(9);
+                    expect(li3.length).toEqual(5);
                     // create new folder
                     let items: any = document.getElementsByClassName('e-toolbar-item');
                     items[0].click();
@@ -177,7 +177,7 @@ describe('FileManager control Grid view', () => {
                         });
                         setTimeout(function () {
                             let li1: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
-                            expect(li1.length).toEqual(10);
+                            expect(li1.length).toEqual(6);
                             expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(1);
                             mouseEventArgs.target = li[0].querySelector('.e-fullrow');
                             treeObj.touchClickObj.tap(tapEvent);
@@ -187,7 +187,7 @@ describe('FileManager control Grid view', () => {
                                 responseText: JSON.stringify(data1)
                             });
                             setTimeout(function () {
-                                this.request = jasmine.Ajax.requests.mostRecent();
+                               this.request = jasmine.Ajax.requests.mostRecent();
                                 this.request.respondWith({
                                     status: 200,
                                     responseText: JSON.stringify(data1)
@@ -472,7 +472,7 @@ describe('FileManager control Grid view', () => {
                 (rows[2].querySelector('.e-frame') as HTMLElement).click();
                 (rows[4].querySelector('.e-frame') as HTMLElement).click();
                 expect(obj.element.querySelectorAll('.e-check').length).toBe(3);
-                feObj.allowMultiSelection = false; feObj.dataBind();
+                feObj.allowMultiSelection = false; feObj.showItemCheckBoxes = false; feObj.dataBind();
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,

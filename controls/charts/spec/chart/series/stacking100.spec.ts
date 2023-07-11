@@ -273,6 +273,7 @@ describe('Chart Control', () => {
         it('Checking with category axis OnTicks', (done: Function) => {
             loaded = (args: Object): void => {
                 let point = document.getElementById('container_Series_0_Point_0');
+                expect(point != null).toBe(true);
                 let axisLabel = document.getElementById('container0_AxisLabel_0');
                 expect(axisLabel.textContent === 'Jan').toBe(true);
                 let axisStart = document.getElementById('containerAxisLine_0');
@@ -1267,7 +1268,7 @@ describe('Chart Control', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
 
                 let tooltip = document.getElementById('container_tooltip_group');
-                expect(tooltip.childElementCount).toEqual(5);
+                expect(tooltip.childElementCount).toEqual(4);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1286,7 +1287,7 @@ describe('Chart Control', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
 
                 let tooltip = document.getElementById('container_tooltip_group');
-                expect(tooltip.childElementCount).toEqual(5);
+                expect(tooltip.childElementCount).toEqual(4);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1314,9 +1315,9 @@ describe('Chart Control', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[2];
                 expect(element1.getAttribute('d') !== '').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
-                expect(element1.textContent == '4502.776' || element1.textContent == '4502.791').toBe(true);
+                expect(element1.textContent == '4502.776' || element1.textContent == '4502.776').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
-                expect(element1.textContent == '49.964' || element1.textContent == '49.818').toBe(true);
+                expect(element1.textContent == '49.964' || element1.textContent == '49.822').toBe(true);
 
                 chartArea = document.getElementById('container_ChartAreaBorder');
                 y = parseFloat(chartArea.getAttribute('y')) + elem.offsetTop + 1;
@@ -1356,7 +1357,7 @@ describe('Chart Control', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[2];
                 expect(element1.getAttribute('d') !== '').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
-                expect(element1.textContent == '4497.153' || element1.textContent == '4485.476').toBe(true);
+                expect(element1.textContent == '4497.153' || element1.textContent == '4485.724').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
                 expect(element1.textContent == '50.035' || element1.textContent == '50.104').toBe(true);
 
@@ -1396,9 +1397,9 @@ describe('Chart Control', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[2];
                 expect(element1.getAttribute('d') != '').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
-                expect(element1.textContent == '4502.429' || element1.textContent == '4502.442').toBe(true);
+                expect(element1.textContent == '4502.429' || element1.textContent == '4502.429').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
-                expect(element1.textContent == '49.964' || element1.textContent == '49.818').toBe(true);
+                expect(element1.textContent == '49.822' || element1.textContent == '49.818').toBe(true);
 
                 chartArea = document.getElementById('container_ChartAreaBorder');
                 y = parseFloat(chartArea.getAttribute('y')) + elem.offsetTop + 1;

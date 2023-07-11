@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, closest, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';import { MaskPlaceholderModel } from '../common/maskplaceholder-model';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, closest, attributes, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';import { MaskPlaceholderModel } from '../common/maskplaceholder-model';
 import {FormatObject,PopupObjectArgs,PreventableEventArgs} from "./datepicker";
 import {CalendarModel} from "../calendar/calendar-model";
 
@@ -59,6 +59,13 @@ export interface DatePickerModel extends CalendarModel{
      * @default true
      */
     enabled?: boolean;
+
+    /**
+     * Specifies the component popup display full screen in mobile devices.
+     *
+     * @default false
+     */
+    fullScreenMode?: boolean;
 
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.

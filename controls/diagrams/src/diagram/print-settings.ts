@@ -58,7 +58,7 @@ export class PrintAndExport {
             if ((options as any).Mode === 0) {
                 options.mode = 'Download';
             } else {
-                options.mode = 'Data'
+                options.mode = 'Data';
             }
         }
         const mode: string = options && options.mode ? options.mode : 'Download';
@@ -165,12 +165,12 @@ export class PrintAndExport {
     private canvasMultiplePage(
         options: IExportOptions, canvas: HTMLCanvasElement, margin: MarginModel, image: string, fileName: string): void {
         let images: HTMLElement | string[] = [];
-        let imageData = image.substring(image.indexOf(":") + 1, image.indexOf(";"));
-        let imageFormat = imageData.substring(imageData.indexOf("/") + 1);
+        const imageData = image.substring(image.indexOf(':') + 1, image.indexOf(';'));
+        let imageFormat = imageData.substring(imageData.indexOf('/') + 1);
         if (imageFormat === 'jpeg') {
             imageFormat = undefined;
         } else {
-            imageFormat = imageFormat.toUpperCase()
+            imageFormat = imageFormat.toUpperCase();
         }
         const fileType: string = imageFormat || 'JPG';
 
@@ -540,7 +540,7 @@ export class PrintAndExport {
 
     private scaleGradientValue(node: NodeModel, scaleValue: number, isExport: boolean) {
         if (node.style.gradient.stops.length > 0) {
-            let gradients: DiagramGradientModel = node.style.gradient;
+            const gradients: DiagramGradientModel = node.style.gradient;
             if (node.style.gradient instanceof LinearGradient) {
 
                 gradients.x1 = isExport ? gradients.x1 * scaleValue : gradients.x1 / scaleValue;
@@ -761,7 +761,7 @@ export class PrintAndExport {
                         '</style><title></title></head>');
                     printWind.addEventListener('load', (event) => {
                         setTimeout(() => {
-                            printWind.window.print()
+                            printWind.window.print();
                         }, 3000);
                     });
                     printWind.document.write('<center>' + div.innerHTML + '</center>');
@@ -797,7 +797,7 @@ export class PrintAndExport {
     /** @private */
     public getDiagramContent(styleSheets?: StyleSheetList): string {
         if (this.diagram.scroller.currentZoom === 1) {
-            let htmlData: string = this.getContent(styleSheets);
+            const htmlData: string = this.getContent(styleSheets);
             /* tslint:disable */
             // eslint-disable-next-line quotes
             return checkBrowserInfo() ? htmlData.replace("url(" + location.protocol + '//' + location.host + location.pathname + "#diagram_pattern ", "url(#diagram_pattern)") : htmlData;
@@ -828,7 +828,7 @@ export class PrintAndExport {
             this.diagram.scroller.verticalOffset = -scrollY;
             this.diagram.scroller.setSize();
             this.diagram.setSize(bounds.width, bounds.height);
-            let htmlData: string = this.getContent(styleSheets);
+            const htmlData: string = this.getContent(styleSheets);
             this.diagram.setSize(oldWidth, oldHeight);
             this.diagram.scroller.zoom(oldZoom / this.diagram.scrollSettings.currentZoom);
             this.diagram.dataBind();

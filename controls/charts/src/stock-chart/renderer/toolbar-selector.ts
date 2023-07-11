@@ -43,12 +43,14 @@ export class ToolBarSelector {
         const height : number = this.stockChart.toolbarHeight;
         this.stockChart.periodSelector.appendSelector({thumbSize: 0, element: htmlElement, width: rect.width, height: height},
                                                       rect.x);
-        this.initializeSeriesSelector();
+        if (this.stockChart.seriesType.length > 0) {
+            this.initializeSeriesSelector();
+        }
         this.initializeIndicatorSelector();
-        this.initializeTrendlineSelector();
+        if (this.stockChart.trendlineType.length > 0) {
+            this.initializeTrendlineSelector();
+        }
         this.exportButton();
-        this.printButton();
-        this.resetButton();
     }
 
     /**
@@ -103,6 +105,12 @@ export class ToolBarSelector {
         }
     }
     public initializeSeriesSelector(): void {
+        if (this.stockChart.seriesType.indexOf('HiloOpenClose') > -1) {
+            this.stockChart.seriesType[this.stockChart.seriesType.indexOf('HiloOpenClose')] = 'OHLC' as ChartSeriesType;
+        }
+        if (this.stockChart.seriesType.indexOf('Candle') > -1 && this.stockChart.seriesType.indexOf('Hollow Candle' as ChartSeriesType) === -1) {
+            this.stockChart.seriesType[this.stockChart.seriesType.length] = 'Hollow Candle' as ChartSeriesType;
+        }
         const seriesType: DropDownButton = new DropDownButton({
             items: this.getDropDownItems(this.stockChart.seriesType),
             select: (args: MenuEventArgs) => {
@@ -124,56 +132,13 @@ export class ToolBarSelector {
     private trendline: TrendlineTypes;
     private indicators: TechnicalIndicators[] = [];
     private secondayIndicators: TechnicalIndicators[] = [];
-    public resetButton(): void {
-        const isProtect: string = 'isProtectedOnChange';
-        this.stockChart[isProtect as string]  = true;
-        const reset: Button = new Button();
-        reset.appendTo('#' + this.stockChart.element.id + '_reset');
-        document.getElementById(this.stockChart.element.id + '_reset').onclick = () => {
-            let indicatorlength: number = this.indicators.length;
-            while (indicatorlength) {
-                this.stockChart.indicators.pop();
-                indicatorlength--;
-            }
-            this.indicators = [];
-            this.secondayIndicators = [];
-            if (!this.stockChart.isSingleAxis) {
-                if (this.stockChart.rows.length > 2) {
-                    this.stockChart.rows.splice(2, this.stockChart.rows.length - 1);
-                }
-                if (this.stockChart.axes.length > 2) {
-                    this.stockChart.axes.splice(1, this.stockChart.axes.length - 1);
-                    this.stockChart.axes[0].rowIndex = 1;
-                }
-            } else {
-                this.stockChart.rows = [{}];
-            }
-            for (let i: number = 0; i < this.stockChart.series.length; i++) {
-                if (this.stockChart.series[i as number].yName === 'volume') {
-                    continue;
-                }
-                this.stockChart.series[i as number].type = this.stockChart.tempSeriesType[i as number];
-                if (this.stockChart.series[i as number].trendlines.length !== 0) {
-                    this.stockChart.series[i as number].trendlines[0].width = 0;
-                }
-            }
-            this.stockChart.indicatorElements = null;
-            this.stockChart.resizeTo = null;
-            this.stockChart.zoomChange = false;
 
-            this.stockChart.refresh();
-            this.stockChart[isProtect as string]  = true;
-        };
-    }
     public initializeTrendlineSelector(): void {
         this.trendlineDropDown = new DropDownButton({
             items: this.stockChart.resizeTo ? this.trendlineDropDown.items :
                 this.getDropDownItems(this.stockChart.trendlineType),
             select: (args: MenuEventArgs) => {
-                let text: string = this.tickMark(args);
-                text = text.split(' ')[0].toLocaleLowerCase() + (text.split(' ')[1] ? text.split(' ')[1] : '');
-                text = text.substr(0, 1).toUpperCase() + text.substr(1);
-                const type: TrendlineTypes = <TrendlineTypes>text;
+                const type: TrendlineTypes = <TrendlineTypes>this.tickMark(args);
                 this.selectedTrendLine = this.selectedTrendLine === '' ? type : this.selectedTrendLine + ',' + type;
                 if (this.trendline !== type) {
                     this.trendline = type;
@@ -344,49 +309,43 @@ export class ToolBarSelector {
         }
         return text;
     }
-    public printButton(): void {
-        if (this.stockChart.exportType.indexOf('Print') > -1) {
-            const print: Button = new Button();
-            print.appendTo('#' + this.stockChart.element.id + '_print');
-            document.getElementById(this.stockChart.element.id + '_print').onclick = () => {
-                this.stockChart.chart.print(this.stockChart.element.id);
-            };
-        }
-    }
     public exportButton(): void {
         const exportChart: DropDownButton = new DropDownButton({
             items: this.getDropDownItems(this.stockChart.exportType),
             select: (args: MenuEventArgs) => {
                 const type: ExportType = <ExportType>args.item.text;
+                if (this.stockChart.chart.exportModule) {
                 const stockChart: StockChart = this.stockChart;
                 const stockID: string = stockChart.element.id + '_stockChart_';
                 let additionalRect: ClientRect;
                 const svgHeight: ClientRect = stockChart.svgObject.getBoundingClientRect();
-                if (stockChart.chart.exportModule) {
-                    this.stockChart.svgObject.insertAdjacentElement('afterbegin', this.addExportSettings());
-                    additionalRect = stockChart.svgObject.firstElementChild.getBoundingClientRect();
-                    this.stockChart.svgObject.setAttribute('height', (svgHeight.height + additionalRect.height).toString());
-                    (getElement(stockID + 'chart') as HTMLElement).style.transform = 'translateY(' + additionalRect.height + 'px)';
-                    if (stockChart.enableSelector) {
-                        (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
-                            // eslint-disable-next-line @typescript-eslint/indent
-                            'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
-                    }
-                    if (this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
-                        (getElement(stockChart.element.id + '_chart_legend_g') as HTMLElement).style.transform = 'translateY(' + additionalRect.height + 'px)';
-                    }
+                this.stockChart.svgObject.insertAdjacentElement('afterbegin', this.addExportSettings(type === 'Print'));
+                additionalRect = stockChart.svgObject.firstElementChild.getBoundingClientRect();
+                this.stockChart.svgObject.setAttribute('height', (svgHeight.height + additionalRect.height).toString());
+                (getElement(stockID + 'chart') as HTMLElement).style.transform = 'translateY(' + additionalRect.height + 'px)';
+                if (stockChart.enableSelector) {
+                    (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
+                        'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
+                }
+                if (this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
+                    (getElement(stockChart.element.id + '_chart_legend_g') as HTMLElement).style.transform = 'translateY(' + additionalRect.height + 'px)';
+                }
+                if (type === 'Print') {
+                    this.stockChart.chart.print(this.stockChart.svgObject.id);
+                }
+                else {
                     stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
-                    remove(getElement(this.stockChart.element.id + '_additionalExport'));
-                    (getElement(stockID + 'chart') as HTMLElement).style.transform = 'translateY(0px)';
-                    if (stockChart.enableSelector) {
-                        (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
-                            // eslint-disable-next-line @typescript-eslint/indent
-                            'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
-                    }
-                    if (this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
-                        (getElement(stockChart.element.id + '_chart_legend_g') as HTMLElement).style.transform = 'translateY(0px)';
-                    }
-                    this.stockChart.svgObject.setAttribute('height', (svgHeight.height).toString());
+                }
+                remove(getElement(this.stockChart.element.id + '_additionalExport'));
+                (getElement(stockID + 'chart') as HTMLElement).style.transform = 'translateY(0px)';
+                if (stockChart.enableSelector) {
+                    (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
+                        'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
+                }
+                if (this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
+                    (getElement(stockChart.element.id + '_chart_legend_g') as HTMLElement).style.transform = 'translateY(0px)';
+                }
+                this.stockChart.svgObject.setAttribute('height', (svgHeight.height).toString());
                 }
             }
         });
@@ -431,20 +390,24 @@ export class ToolBarSelector {
      * Text elements added to while export the chart
      * It details about the seriesTypes, indicatorTypes and Trendlines selected in chart.
      */
-    private addExportSettings(): Element {
+    private addExportSettings(isPrint?: boolean): Element {
         const exportElement: Element = this.stockChart.renderer.createGroup({
             id: this.stockChart.element.id + '_additionalExport',
-            width: this.stockChart.availableSize.width
+            width: this.stockChart.availableSize.width,
+            fill: this.stockChart.background ? this.stockChart.background : 'transparent'
         });
-        const titleHeight: number =  measureText(this.stockChart.title, this.stockChart.titleStyle).height;
+        const titleHeight: number =  measureText(this.stockChart.title, this.stockChart.titleStyle, this.stockChart.themeStyle.chartTitleFont).height;
         const options: TextOption = new TextOption(
             exportElement.id + '_Title',
             titlePositionX(new Rect(0, 0, this.stockChart.availableSize.width, 0), this.stockChart.titleStyle),
             0, 'middle', this.stockChart.title, '', 'text-before-edge'
         );
         textElement(this.stockChart.renderer as SvgRenderer, options, this.stockChart.titleStyle,
-                    this.stockChart.titleStyle.color, exportElement);
-        const style: FontModel = { size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' };
+                    this.stockChart.titleStyle.color || this.stockChart.themeStyle.chartTitleFont.color, exportElement, null, null, null, null, null, null, null, null, null, null, this.stockChart.themeStyle.chartTitleFont);
+        if (isPrint) {
+            return exportElement;
+        }
+        const style: FontModel = { size: '16px', fontWeight: '600', color: this.stockChart.themeStyle.chartTitleFont.color, fontStyle: 'Normal', fontFamily: this.stockChart.themeStyle.chartTitleFont.fontFamily };
         let x: number = measureText('Series: ' + this.selectedSeries, style).width / 2;
         const y: number = titleHeight;
         this.textElementSpan(

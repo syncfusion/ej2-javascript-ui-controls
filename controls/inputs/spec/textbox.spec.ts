@@ -343,13 +343,13 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             expect(inputObj.textboxWrapper.container.classList.contains('e-input-group-icon')).toBe(false);
         });
-        it('showClearButton api not to set -', () => {
+        it('Check showClearButton api is set -', () => {
             inputObj = new TextBox({ showClearButton: true});
             inputObj.appendTo('#textbox');
-            expect(isNullOrUndefined(inputObj.element.parentElement.querySelector('.e-clear-icon'))).toBe(true);
+            expect(!isNullOrUndefined(inputObj.element.parentElement.querySelector('.e-clear-icon'))).toBe(true);
             inputObj.showClearButton = true;
             inputObj.dataBind();
-            expect(isNullOrUndefined(inputObj.element.parentElement.querySelector('.e-clear-icon'))).toBe(true);
+            expect(!isNullOrUndefined(inputObj.element.parentElement.querySelector('.e-clear-icon'))).toBe(true);
         });
         it('Check other attributes -',() =>{
             inputObj = new TextBox();
@@ -1061,13 +1061,13 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             expect(inputObj.textboxWrapper.container.classList.contains('e-input-group-icon')).toBe(false);
         });
-        it('showClearButton api not to set -', () => {
+        it('Check showClearButton api is set -', () => {
             inputObj = new TextBox({ multiline: true, showClearButton: true});
             inputObj.appendTo('#textbox');
-            expect(isNullOrUndefined(inputObj.textarea.parentElement.querySelector('.e-clear-icon'))).toBe(true);
+            expect(!isNullOrUndefined(inputObj.textarea.parentElement.querySelector('.e-clear-icon'))).toBe(true);
             inputObj.showClearButton = true;
             inputObj.dataBind();
-            expect(isNullOrUndefined(inputObj.textarea.parentElement.querySelector('.e-clear-icon'))).toBe(true);
+            expect(!isNullOrUndefined(inputObj.textarea.parentElement.querySelector('.e-clear-icon'))).toBe(true);
         });
         it('Check the attributes with initially enabled multiline -',() =>{
             inputObj = new TextBox({ multiline: true });
@@ -3156,4 +3156,29 @@ describe('TextBox ', () => {
             expect(textbox.textboxWrapper.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
          });
     });
-})
+    describe('Check float label type', function (){
+        let textbox: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'textbox'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (textbox) {
+                textbox.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Using long placeholder ',function() {
+            textbox = new TextBox({
+                placeholder: 'Select a value for input text box component',
+                width: '100px',
+                floatLabelType: 'Auto',
+                cssClass: 'e-outline',
+            });
+            textbox.appendTo('#textbox');
+            textbox.addIcon('append', 'e-down-icon');
+            expect(textbox.element.parentElement.classList.contains('e-input-group')).toBe(true);
+
+         });
+    });
+});

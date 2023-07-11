@@ -161,7 +161,8 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
             const item: string = e.tbItems[j as number].subCommand;
             const itemStr: string = item && item.toLocaleLowerCase();
             if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist') ||
-            (itemStr === 'pre' && key === 'insertcode')) {
+            (itemStr === 'pre' && key === 'insertcode') || (item === 'NumberFormatList' && key === 'numberFormatList' ||
+            item === 'BulletFormatList' && key === 'bulletFormatList')) {
                 if (typeof data[`${key}`] === 'boolean') {
                     if (data[`${key}`] === true) {
                         addClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]);
@@ -209,7 +210,6 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         const fontNameContent: string = isNOU(e.parent.fontFamily.default) ? fontNameItems[0].text :
                             e.parent.fontFamily.default;
                         const name: string = (isNOU(result) ? fontNameContent : result);
-                        e.tbElements[j as number].title = name;
                         dropDown.fontNameDropDown.content = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontFamily.width + '" >' +
                             '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'

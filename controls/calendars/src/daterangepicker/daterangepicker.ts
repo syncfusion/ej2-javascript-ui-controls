@@ -3,7 +3,7 @@
 import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';
 import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';
 import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -253,6 +253,9 @@ export class DateRangePicker extends CalendarBase {
     private mobileRangePopupWrap: HTMLElement;
     protected isAngular: boolean = false;
     protected preventChange: boolean = false;
+    protected touchRangeModule: Touch;
+    protected touchRangeStart: boolean;
+    protected iconRangeRight: string;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -330,6 +333,13 @@ export class DateRangePicker extends CalendarBase {
      */
     @Property(false)
     public openOnFocus : boolean;
+    /**
+     * Specifies the component popup display full screen in mobile devices.
+     *
+     * @default false
+     */
+    @Property(false)
+    public fullScreenMode : boolean;
     /**
      * Triggers when Calendar is created.
      *
@@ -737,7 +747,9 @@ export class DateRangePicker extends CalendarBase {
         if (this.element.hasAttribute('data-val')) {
             this.element.setAttribute('data-val', 'false');
         }
-        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        if (this.floatLabelType === 'Auto') {
+            Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        }
         if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
             this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
         }
@@ -777,7 +789,7 @@ export class DateRangePicker extends CalendarBase {
         /**
          * Mobile View
          */
-        this.isMobile = window.matchMedia('(max-width:550px)').matches;
+        this.isMobile = (Browser.isDevice && this.fullScreenMode) ? true : window.matchMedia('(max-width:550px)').matches;
         this.inputElement = <HTMLInputElement>this.element;
         this.angularTag = null;
         if (this.element.tagName === 'EJS-DATERANGEPICKER') {
@@ -1091,7 +1103,7 @@ export class DateRangePicker extends CalendarBase {
 
     private updateHiddenInput(): void {
         if (this.firstHiddenChild && this.secondHiddenChild) {
-            const format: Object = { type: 'datetime', skeleton: 'yMd' };
+            const format: Object = { format: this.formatString, type: 'datetime', skeleton: 'yMd' };
             if (typeof this.startDate === 'string') {
                 this.startDate = this.globalize.parseDate(this.startDate, format);
             }
@@ -1504,7 +1516,6 @@ export class DateRangePicker extends CalendarBase {
             this.trigger('focus', focusArguments);
         }
         this.updateClearIconState();
-        this.updateHiddenInput();
         if (this.openOnFocus && !this.preventFocus) {
             this.preventFocus = true;
             this.show();
@@ -3153,6 +3164,16 @@ export class DateRangePicker extends CalendarBase {
     private createControl(): void {
         const controlContainer: HTMLElement = this.createElement('div', { className: RANGECONTAINER });
         const headerContainer: HTMLElement = this.createElement('div', { className: RANGEHEADER });
+        if (this.isMobile && this.fullScreenMode) {
+            const modelHeaderIconWrapper = this.createElement("div", { className: "e-model-header-wrapper" });
+            const modelCloseIcon = this.createElement("span", { className: "e-popup-close" });
+            EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.modelRangeCloseHandler, this);
+            const modelApplyButton = this.createElement("span", { className: "e-apply" });
+            EventHandler.add(modelApplyButton, 'mousedown touchstart', this.applyFunction, this);
+            modelHeaderIconWrapper.appendChild(modelCloseIcon);
+            modelHeaderIconWrapper.appendChild(modelApplyButton);
+            headerContainer.appendChild(modelHeaderIconWrapper);
+        }
         const labelContainer: HTMLElement = this.createRangeHeader();
         headerContainer.appendChild(labelContainer);
         const daySpan: HTMLElement = this.createElement('div', { className: DAYSPAN });
@@ -3192,6 +3213,11 @@ export class DateRangePicker extends CalendarBase {
         }
         this.renderPopup();
     }
+
+    private modelRangeCloseHandler(e: MouseEvent| TouchEvent): void {
+        this.hide();
+    }
+
     private cancelFunction(eve?: MouseEvent): void {
         if (document.activeElement !== this.inputElement) {
             this.preventFocus = true;
@@ -3402,7 +3428,23 @@ export class DateRangePicker extends CalendarBase {
             this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.presetElement.querySelectorAll('.' + LISTCLASS);
             this.wireListEvents();
             if (this.isMobile) {
-                this.presetElement.style.width = this.inputWrapper.container.getBoundingClientRect().width + 'px';
+                if(this.fullScreenMode) {
+                    const modelWrapper: HTMLElement = createElement('div', { className: 'e-range-mob-popup-wrap' });
+                    const modelHeader: HTMLElement = this.createElement('div', { className: 'e-model-header' });
+                    const modelTitleSpan = this.createElement("span", { className: "e-model-title" });
+                    modelTitleSpan.textContent = "Select Preset";
+                    const modelCloseIcon = this.createElement("span", { className: "e-popup-close" });
+                    EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.modelRangeCloseHandler, this);
+                    const presetContent: HTMLElement = this.presetElement;
+                    modelHeader.appendChild(modelCloseIcon);
+                    modelHeader.appendChild(modelTitleSpan);
+                    modelWrapper.appendChild(modelHeader);
+                    modelWrapper.appendChild(presetContent);
+                    this.popupWrapper.insertBefore(modelWrapper, this.popupWrapper.firstElementChild);
+                    this.presetElement.style.width = '100%';
+                } else {
+                    this.presetElement.style.width = this.inputWrapper.container.getBoundingClientRect().width + 'px';
+                }
             }
             if (!isNullOrUndefined(this.activeIndex) && this.activeIndex > -1) {
                 addClass([this.liCollections[this.activeIndex]], ACTIVE);
@@ -3451,12 +3493,25 @@ export class DateRangePicker extends CalendarBase {
             enableRtl: this.enableRtl,
             zIndex: this.zIndex,
             open: () => {
+                if (this.isMobile && this.fullScreenMode) {
+                    this.iconRangeRight = this.calendarElement && window.getComputedStyle(this.calendarElement.querySelector('.e-header.e-month .e-prev')).cssFloat;
+                    if(this.iconRangeRight) {
+                        this.touchRangeModule = new Touch(<HTMLElement>this.calendarElement.querySelector(".e-content.e-month"), {
+                            swipe: this.dateRangeSwipeHandler.bind(this)
+                        });
+                        EventHandler.add(<HTMLElement>this.calendarElement.querySelector(".e-content.e-month"), "touchstart", this.touchStartRangeHandler, this)
+                    }
+                }
                 attributes(this.inputElement, { 'aria-expanded': 'true', 'aria-owns': this.inputElement.id + '_options' });
                 if (this.value){
                     attributes(this.inputElement, { 'aria-activedescendant': this.inputElement.id});
                 }
                 else{
                     this.inputElement.removeAttribute('aria-activedescendant');
+                }
+                if(this.enableRtl){
+                    const popupLeft: number = parseFloat(this.popupWrapper.style.left) -(this.popupWrapper.offsetWidth - this.inputWrapper.container.offsetWidth);
+                    this.popupWrapper.style.left = popupLeft > 0 ?  popupLeft  + "px": this.popupWrapper.style.left ;
                 }
                 addClass([this.inputWrapper.buttons[0]], ACTIVE);
                 if (!this.isMobile) {
@@ -3550,6 +3605,45 @@ export class DateRangePicker extends CalendarBase {
             this.modal.style.display = 'block';
         }
         EventHandler.add(document, 'mousedown touchstart', this.documentHandler, this);
+    }
+
+    private dateRangeSwipeHandler(e: SwipeEventArgs): void {
+        let direction: number = 0;
+        if (this.iconRangeRight == 'left') {
+            switch (e.swipeDirection) {
+                case "Left":
+                    direction = 1;
+                    break;
+                case "Right":
+                    direction = -1;
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            switch (e.swipeDirection) {
+                case "Up":
+                    direction = 1;
+                    break;
+                case "Down":
+                    direction = -1;
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (this.touchRangeStart) {
+            if (direction === 1) {
+                this.navigateNext(e);
+            } else if (direction === -1) {
+                this.navigatePrevious(e);
+            }
+            this.touchRangeStart = false;
+        }
+    }
+
+    private touchStartRangeHandler(e: MouseEvent) {
+        this.touchRangeStart = true;
     }
 
     protected popupCloseHandler(e: KeyboardEventArgs): void {
@@ -3793,6 +3887,9 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private createInput(): void {
+        if(this.fullScreenMode && this.isMobile){
+            this.cssClass += ' ' + "e-popup-expand";
+        }
         let updatedCssClassValue: string = this.cssClass;
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();

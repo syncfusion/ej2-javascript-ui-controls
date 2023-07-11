@@ -185,6 +185,7 @@ export class DiagramRenderer {
      * @param {boolean } fromPalette - Provide the boolean value.
      * @param {number } indexValue - Provide the indexValue value.
      * @param {boolean } isPreviewNode - Provide the isPreviewNode value.
+     * @param {object } centerPoint - Provide the centerPoint value.
      * @private
      */
     public renderElement(
@@ -196,7 +197,7 @@ export class DiagramRenderer {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             isElement = false;
             element.id = element.id ? element.id : randomId();
-            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode,centerPoint);
+            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode, centerPoint);
         } else if (element instanceof ImageElement) {
             this.renderImageElement(element, canvas, transform, parentSvg, fromPalette);
         } else if (element instanceof PathElement) {
@@ -226,7 +227,7 @@ export class DiagramRenderer {
      * @private
      */
     public drawSelectionRectangle(x: number, y: number, w: number, h: number, canvas: HTMLCanvasElement | SVGElement, t: Transforms):
-        void {
+    void {
         x = (x + t.tx) * t.scale;
         y = (y + t.ty) * t.scale;
         const options: BaseAttributes = {
@@ -278,7 +279,7 @@ export class DiagramRenderer {
      * @param {number } isFirst - Provide the boolean value.
      * @private
      */
-     public renderSelectionRectangle(element: DiagramElement, canvas: SVGElement, transform: Transforms, isFirst: boolean): void {
+    public renderSelectionRectangle(element: DiagramElement, canvas: SVGElement, transform: Transforms, isFirst: boolean): void {
         const width: number = element.actualSize.width || 2;
         const height: number = element.actualSize.height || 2;
         let x: number = element.offsetX - width * element.pivot.x;
@@ -288,7 +289,7 @@ export class DiagramRenderer {
         const options: RectAttributes = {
             width: width * transform.scale, height: height * transform.scale,
             x: x, y: y, fill: 'transparent', stroke: '#00cc00', angle: element.rotateAngle,
-            pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: isFirst? 2 : 1,
+            pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: isFirst ? 2 : 1,
             dashArray: '', opacity: 1, cornerRadius: 0,
             visible: true, id: element.id + '_highlighter', class: 'e-diagram-selection-indicator'
         };
@@ -317,13 +318,13 @@ export class DiagramRenderer {
             options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
             options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
         }
-        if(transform) {
+        if (transform) {
             options.x = options.x * transform.scale;
             options.y = options.y * transform.scale;
         }
-        options.stroke = "#00cc00";
+        options.stroke = '#00cc00';
         options.strokeWidth = isFirst ? 2 : 1;
-        options.class = "e-diagram-selection-indicator";
+        options.class = 'e-diagram-selection-indicator';
         const parentSvg: SVGSVGElement = this.getParentSvg(element, 'selector');
         this.svgRenderer.drawPath(canvas as SVGElement, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel, transform.scale);
     }
@@ -446,6 +447,7 @@ export class DiagramRenderer {
      * @param { number } enableNode - Provide the enableNode value.
      * @param { boolean } nodeConstraints - Provide the nodeConstraints  value.
      * @param { boolean } isSwimlane - Provide the isSwimlane boolean value.
+     * @param { number } handleSize - Provide the handleSize value.
      * @private
      */
     public renderResizeHandle(
@@ -545,6 +547,8 @@ export class DiagramRenderer {
      * @param { boolean } connectedSource - Provide the connectedSource boolean value.
      * @param { boolean } connectedTarget - Provide the connectedTarget boolean value.
      * @param { boolean } isSegmentEditing - Provide the isSegmentEditing boolean value.
+     * @param { boolean } canShowBezierPoints - Provide the canShowBezierPoints boolean value.
+     * @param {number} handleSize - Provide the handleSize value.
      * @private
      */
     public renderEndPointHandle(
@@ -570,7 +574,7 @@ export class DiagramRenderer {
             if ((selector.type === 'Straight' || selector.type === 'Bezier') && selector.segments.length > 0) {
                 for (i = 0; i < selector.segments.length - 1; i++) {
                     segment = selector.segments[parseInt(i.toString(), 10)] as StraightSegment | BezierSegment;
-                    let className: string = selector.type === 'Bezier' ? "e-diagram-bezier-segment-handle" : "e-diagram-straight-segment-handle";
+                    const className: string = selector.type === 'Bezier' ? 'e-diagram-bezier-segment-handle' : 'e-diagram-straight-segment-handle';
                     this.renderCircularHandle(
                         ('segementThumb_' + (i + 1)), wrapper, segment.point.x, segment.point.y, canvas, true,
                         constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, className, handleSize);
@@ -594,24 +598,19 @@ export class DiagramRenderer {
                         start = 1;
                         end = selector.segments.length - 1;
                     }
-                    // (EJ2-57115) - If segments length is greater than maxSegmentThumb + 2 means then set start as 2 
+                    // (EJ2-57115) - If segments length is greater than maxSegmentThumb + 2 means then set start as 2
                     start = selector.segments.length > selector.maxSegmentThumb + 2 ? 2 : start;
-                    // (EJ2-57115) - If segments length is greater than maxSegmentThumb + 2 means then set end as last before segment 
+                    // (EJ2-57115) - If segments length is greater than maxSegmentThumb + 2 means then set end as last before segment
                     end = selector.segments.length > selector.maxSegmentThumb + 2 ? selector.segments.length - 2 : end;
-                    if(selector.segments.length === 1 && (selector.segments[0] as OrthogonalSegment).points.length <= 2) {
+                    if (selector.segments.length === 1 && (selector.segments[0] as OrthogonalSegment).points.length <= 2) {
                         start = 1;
                         end = selector.segments.length;
                     }
-                    for (i = 0; i < selector.segments.length; i++) {
+                    for (i = start; i < end; i++) {
                         const seg: OrthogonalSegment = (selector.segments[parseInt(i.toString(), 10)] as OrthogonalSegment);
-                        // EJ2-71073 - Added below code to set the allowDrag property of the segment thumb as false if we does not render that segment thumb
-                        if (i >= start && i < end) {
-                            this.renderOrthogonalThumbs(
-                                'orthoThumb_' + (i + 1), wrapper, seg, canvas,
-                                canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform, selector);
-                        } else {
-                            seg.allowDrag = false;
-                        }
+                        this.renderOrthogonalThumbs(
+                            'orthoThumb_' + (i + 1), wrapper, seg, canvas,
+                            canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform, selector);
                     }
                 }
             }
@@ -625,8 +624,8 @@ export class DiagramRenderer {
 
                 let bezierPoint: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1
                     : segment.bezierPoint1;
-                if (controlPointsVisibility != null && (i == 0 && canShowControlPoints(controlPointsVisibility, 'Source'))
-                    || (i != 0 && canShowControlPoints(controlPointsVisibility, 'Intermediate'))) {
+                if (controlPointsVisibility != null && (i === 0 && canShowControlPoints(controlPointsVisibility, 'Source'))
+                    || (i !== 0 && canShowControlPoints(controlPointsVisibility, 'Intermediate'))) {
                     this.renderCircularHandle(
                         'bezierPoint_' + (i + 1) + '_1', wrapper, bezierPoint.x, bezierPoint.y, canvas,
                         canShowCorner(selectorConstraints, 'ConnectorSourceThumb'),
@@ -642,8 +641,8 @@ export class DiagramRenderer {
                 }
 
                 bezierPoint = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
-                if (controlPointsVisibility != null && (i == segmentCount && canShowControlPoints(controlPointsVisibility, 'Target'))
-                    || (i != segmentCount && canShowControlPoints(controlPointsVisibility, 'Intermediate'))) {
+                if (controlPointsVisibility != null && (i === segmentCount && canShowControlPoints(controlPointsVisibility, 'Target'))
+                    || (i !== segmentCount && canShowControlPoints(controlPointsVisibility, 'Intermediate'))) {
                     this.renderCircularHandle(
                         'bezierPoint_' + (i + 1) + '_2', wrapper, bezierPoint.x, bezierPoint.y,
                         canvas, canShowCorner(selectorConstraints, 'ConnectorTargetThumb'),
@@ -672,9 +671,10 @@ export class DiagramRenderer {
      * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element value.
      * @param { boolean } visibility - Provide the visibility value .
      * @param { Transforms } t - Provide the Transforms value.
+     * @param { ConnectorModel } connector - Provide the connector value.
      * @private
      */
-     public renderOrthogonalThumbs(
+    public renderOrthogonalThumbs(
         id: string, selector: DiagramElement, segment: OrthogonalSegment, canvas: HTMLCanvasElement | SVGElement,
         visibility: boolean, t: Transforms, connector: ConnectorModel): void {
         let orientation: string; let visible: boolean; let length: number; let j: number = 0;
@@ -694,9 +694,9 @@ export class DiagramRenderer {
             // Set the start value as 1 if segment points is greater than 3
             let start = segment.points.length < 3 ? 0 : 1;
             // set the end value as segment.points.length - 2 if segment points is greater then 3
-            let end = segment.points.length < 3 ? segment.points.length-1 : segment.points.length - 2;
-            start = connector.segments.length === 1 ? start: 0;
-            end = connector.segments.length === 1 ? end: segment.points.length-1;
+            let end = segment.points.length < 3 ? segment.points.length - 1 : segment.points.length - 2;
+            start = connector.segments.length === 1 ? start : 0;
+            end = connector.segments.length === 1 ? end : segment.points.length - 1;
             for (j = start; j < end; j++) {
                 length = Point.distancePoints(segment.points[parseInt(j.toString(), 10)], segment.points[j + 1]);
                 orientation = (segment.points[parseInt(j.toString(), 10)].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
@@ -727,88 +727,88 @@ export class DiagramRenderer {
         id: string, selector: DiagramElement, x: number, y: number, canvas: HTMLCanvasElement | SVGElement,
         visible: boolean, orientation: string, t: Transforms): void {
         let path: string; let h: number; let v: number;
-        let diagramElement = document.getElementById(this.diagramId);
-        let instance = 'ej2_instances';
+        const diagramElement = document.getElementById(this.diagramId);
+        const instance = 'ej2_instances';
         let diagram;
         if (diagramElement) {
             diagram = diagramElement[`${instance}`][0];
         }
         if (orientation === 'horizontal') {
             path = getSegmentThumbShapeHorizontal(diagram.segmentThumbShape);
-            switch(diagram.segmentThumbShape)
+            switch (diagram.segmentThumbShape)
             {
-                case 'Arrow':
-                case 'OpenArrow':
-                case 'DoubleArrow':
-                    h = -15;
-                    v = -15;
-                    break;
-                case 'Square':
-                case 'Rectangle':
-                case 'Ellipse':
-                    h = -5;
-                    v = -5;
-                    break;
-                case 'Rhombus':
-                case 'Circle':
-                case 'Diamond':
-                    h = -10;
-                    v = -5;
-                    break;
-                case 'IndentedArrow':
-                case 'OutdentedArrow':
-                    h = -5;
-                    v = -4;
-                    break;
-                case 'Fletch':
-                case 'OpenFetch':
-                    h = -5;
-                    v = -4.5;
-                    break;
+            case 'Arrow':
+            case 'OpenArrow':
+            case 'DoubleArrow':
+                h = -15;
+                v = -15;
+                break;
+            case 'Square':
+            case 'Rectangle':
+            case 'Ellipse':
+                h = -5;
+                v = -5;
+                break;
+            case 'Rhombus':
+            case 'Circle':
+            case 'Diamond':
+                h = -10;
+                v = -5;
+                break;
+            case 'IndentedArrow':
+            case 'OutdentedArrow':
+                h = -5;
+                v = -4;
+                break;
+            case 'Fletch':
+            case 'OpenFetch':
+                h = -5;
+                v = -4.5;
+                break;
             }
         }
         else {
             path = getSegmentThumbShapeVertical(diagram.segmentThumbShape);
-            switch(diagram.segmentThumbShape)
+            switch (diagram.segmentThumbShape)
             {
-                case 'Arrow':
-                case 'OpenArrow':
-                case  'DoubleArrow':
-                    h = -15;
-                    v = -15;
-                    break;
-                case 'Square':
-                case 'IndentedArrow':
-                case 'OutdentedArrow':
-                case 'Fletch':
-                case 'OpenFetch':
-                    h = -5;
-                    v = -5;
-                    break;
-                case 'Rhombus':
-                case 'Diamond':
-                    h = -5;
-                    v = -15;
-                    break;
-                case 'Rectangle':
-                    h = -7;
-                    v = -5;
-                    break;
-                case 'Circle':
-                    h = -5;
-                    v = -7;
-                   break;
-                case 'Ellipse':
-                    h = -7;
-                    v = -7;
-                    break;
+            case 'Arrow':
+            case 'OpenArrow':
+            case  'DoubleArrow':
+                h = -15;
+                v = -15;
+                break;
+            case 'Square':
+            case 'IndentedArrow':
+            case 'OutdentedArrow':
+            case 'Fletch':
+            case 'OpenFetch':
+                h = -5;
+                v = -5;
+                break;
+            case 'Rhombus':
+            case 'Diamond':
+                h = -5;
+                v = -15;
+                break;
+            case 'Rectangle':
+                h = -7;
+                v = -5;
+                break;
+            case 'Circle':
+                h = -5;
+                v = -7;
+                break;
+            case 'Ellipse':
+                h = -7;
+                v = -7;
+                break;
             }
-         }
+        }
         const options: PathAttributes = {
             x: ((x + t.tx) * t.scale) + h, y: ((y + t.ty) * t.scale) + v, angle: 0,
             fill: '#e2e2e2', stroke: 'black', strokeWidth: 1, dashArray: '', data: path,
             width: 20, height: 20, pivotX: 0, pivotY: 0, opacity: 1, visible: visible, id: id,
-            class:'e-diagram-ortho-segment-handle'
+            class: 'e-diagram-ortho-segment-handle'
         };
         this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId);
     }
@@ -908,19 +908,19 @@ export class DiagramRenderer {
      * @param { Object } ariaLabel - Provide the label properties .
      * @param { number } count - Provide the count value  .
      * @param { string } className - Provide the class name for this element .
+     * @param { number } handleSize - Provide the handle size value .
+     * 
      * @private
      */
-	 /**
-	 *Feature (EJ2-44346) Provide support to increase the size of the resize thumb
-	 */
-     public renderCircularHandle(
+    // Feature (EJ2-44346) Provide support to increase the size of the resize thumb
+    public renderCircularHandle(
         id: string, selector: DiagramElement, cx: number, cy: number, canvas: HTMLCanvasElement | SVGElement,
         visible: boolean, enableSelector?: number, t?: Transforms, connected?: boolean, canMask?: boolean,
         ariaLabel?: Object, count?: number, className?: string, handleSize ?: number)
         :
         void {
         const wrapper: DiagramElement = selector;
-        
+
         let newPoint: PointModel = { x: cx, y: cy };
 
         if (wrapper.rotateAngle !== 0 || wrapper.parentTransform !== 0) {
@@ -938,7 +938,7 @@ export class DiagramRenderer {
         } else {
             options.fill = connected ? '#8CC63F' : 'white';
         }
-        options.cornerRadius =  handleSize/2;
+        options.cornerRadius =  handleSize / 2;
         options.angle = selector.rotateAngle;
         options.id = id;
         options.visible = visible;
@@ -956,8 +956,8 @@ export class DiagramRenderer {
         if (canMask) {
             options.visible = false;
         }
-       const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
-       this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true, parentSvg, ariaLabel, true,enableSelector);
+        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
+        this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true, parentSvg, ariaLabel, true, enableSelector);
     }
 
     /**
@@ -1304,21 +1304,21 @@ export class DiagramRenderer {
                 let d: number = isLine ? space + intervals[parseInt(i.toString(), 10)] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
                 if (isLine) {
-                    if(dashArray.toString() === '') {
-                    attr = {
-                        'stroke-width': intervals[parseInt(i.toString(), 10)], 
-                        'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
-                        'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
-                        'stroke': snapSettings.horizontalGridlines.lineColor
-                    };
-                } else {
-                    attr = {
-                        'stroke-width': intervals[parseInt(i.toString(), 10)], 'stroke': snapSettings.horizontalGridlines.lineColor,
-                        'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
-                        'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
-                        'dashArray': dashArray.toString()
-                    };
-                }
+                    if (dashArray.toString() === '') {
+                        attr = {
+                            'stroke-width': intervals[parseInt(i.toString(), 10)],
+                            'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
+                            'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                            'stroke': snapSettings.horizontalGridlines.lineColor
+                        };
+                    } else {
+                        attr = {
+                            'stroke-width': intervals[parseInt(i.toString(), 10)], 'stroke': snapSettings.horizontalGridlines.lineColor,
+                            'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
+                            'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                            'dashArray': dashArray.toString()
+                        };
+                    }
                     setAttributeSvg(hLine, attr);
                     pattern.appendChild(hLine);
                     space += intervals[i + 1] + intervals[parseInt(i.toString(), 10)];
@@ -1384,7 +1384,7 @@ export class DiagramRenderer {
                             'stroke-width': intervals[parseInt(i.toString(), 10)],
                             'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
                             'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
-                            'stroke': snapSettings.verticalGridlines.lineColor,
+                            'stroke': snapSettings.verticalGridlines.lineColor
                         };
                     } else {
                         attr = {
@@ -1392,8 +1392,8 @@ export class DiagramRenderer {
                             'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
                             'stroke': snapSettings.verticalGridlines.lineColor,
                             'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
-                            'dashArray': dashArray.toString(),
-                            
+                            'dashArray': dashArray.toString()
+
                         };
                     }
                     setAttributeSvg(vLine, attr);
@@ -1538,6 +1538,7 @@ export class DiagramRenderer {
      * @param { Transforms } transform - Provide the transform value  .
      * @param { SVGSVGElement } parentSvg - Provide the SVG layer element .
      * @param { boolean } fromPalette - Provide the boolean value .
+     * @param { object } centerPoint - Provide the center point value .
      * @private
      */
     public renderTextElement(
@@ -1548,8 +1549,10 @@ export class DiagramRenderer {
 
         const options: BaseAttributes = this.getBaseAttributes(element, transform);
         if (centerPoint) {
-            options.x = (centerPoint as any).cx - 2;
-            options.y = (centerPoint as any).cy - 2;
+            //Bug 827039: Bezier annotation content alignment is not working properly.
+            // Removed -2 cx-2 and cy-2 from the below two line to resolve the alignment issue.
+            options.x = (centerPoint as any).cx;
+            options.y = (centerPoint as any).cy;
             // (EJ2-56874) - Set the calculated x and y position to the bezier connector annotation's(text element) bounds x,y position
             element.bounds.x = options.x;
             element.bounds.y = options.y;
@@ -1612,28 +1615,28 @@ export class DiagramRenderer {
         (options as RectAttributes).stroke = 'transparent';
         this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
         switch (element.scale) {
-            case 'None':
-                templateWidth = element.contentSize.width;
-                templateHeight = element.contentSize.height;
-                break;
-            case 'Stretch':
-                templateWidth = element.actualSize.width;
-                templateHeight = element.actualSize.height;
-                break;
-            case 'Meet':
-                if (element.actualSize.width <= element.actualSize.height) {
-                    templateWidth = templateHeight = element.actualSize.width;
-                } else {
-                    templateWidth = templateHeight = element.actualSize.height;
-                }
-                break;
-            case 'Slice':
-                if (element.actualSize.width >= element.actualSize.height) {
-                    templateWidth = templateHeight = element.actualSize.width;
-                } else {
-                    templateWidth = templateHeight = element.actualSize.height;
-                }
-                break;
+        case 'None':
+            templateWidth = element.contentSize.width;
+            templateHeight = element.contentSize.height;
+            break;
+        case 'Stretch':
+            templateWidth = element.actualSize.width;
+            templateHeight = element.actualSize.height;
+            break;
+        case 'Meet':
+            if (element.actualSize.width <= element.actualSize.height) {
+                templateWidth = templateHeight = element.actualSize.width;
+            } else {
+                templateWidth = templateHeight = element.actualSize.height;
+            }
+            break;
+        case 'Slice':
+            if (element.actualSize.width >= element.actualSize.height) {
+                templateWidth = templateHeight = element.actualSize.width;
+            } else {
+                templateWidth = templateHeight = element.actualSize.height;
+            }
+            break;
         }
         if (this.svgRenderer) {
             this.svgRenderer.drawNativeContent(element, nativeLayer, templateHeight, templateWidth, nativeSvg);
@@ -1690,26 +1693,26 @@ export class DiagramRenderer {
 
             let ratio: number;
             switch (element.stretch) {
-                case 'Meet':
-                    ratio = Math.min(widthRatio, heightRatio);
-                    imageWidth = contentWidth * ratio;
-                    imageHeight = contentHeight * ratio;
-                    options.x += Math.abs(options.width - imageWidth) / 2;
-                    options.y += Math.abs(options.height - imageHeight) / 2;
-                    break;
-                case 'Slice':
-                    widthRatio = options.width / contentWidth;
-                    heightRatio = options.height / contentHeight;
-                    ratio = Math.max(widthRatio, heightRatio);
-                    imageWidth = contentWidth * ratio;
-                    imageHeight = contentHeight * ratio;
-                    sourceWidth = options.width / imageWidth * contentWidth;
-                    sourceHeight = options.height / imageHeight * contentHeight;
-                    break;
-                case 'None':
-                    imageWidth = contentWidth;
-                    imageHeight = contentHeight;
-                    break;
+            case 'Meet':
+                ratio = Math.min(widthRatio, heightRatio);
+                imageWidth = contentWidth * ratio;
+                imageHeight = contentHeight * ratio;
+                options.x += Math.abs(options.width - imageWidth) / 2;
+                options.y += Math.abs(options.height - imageHeight) / 2;
+                break;
+            case 'Slice':
+                widthRatio = options.width / contentWidth;
+                heightRatio = options.height / contentHeight;
+                ratio = Math.max(widthRatio, heightRatio);
+                imageWidth = contentWidth * ratio;
+                imageHeight = contentHeight * ratio;
+                sourceWidth = options.width / imageWidth * contentWidth;
+                sourceHeight = options.height / imageHeight * contentHeight;
+                break;
+            case 'None':
+                imageWidth = contentWidth;
+                imageHeight = contentHeight;
+                break;
             }
         }
         options.width = imageWidth;
@@ -1741,6 +1744,7 @@ export class DiagramRenderer {
      * @param { boolean } fromPalette - Provide the boolean value  .
      * @param { number } indexValue - Provide the indexValue value .
      * @param { boolean } isPreviewNode - Provide the boolean value .
+     * @param { object } centerPoint - Provide the centerPoint value .
      * @private
      */
     public renderContainer(
@@ -1798,11 +1802,23 @@ export class DiagramRenderer {
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
                     this.renderFlipElement(child, parentG, child.flip);
                 }
-                if ((child.elementActions & ElementAction.ElementIsPort) && parentG) {
-                    this.renderFlipElement(group, parentG, child.flip);
+                //EJ2-826617 - for BPMN node label
+                if(child instanceof TextElement && parentG && (group.elementActions & ElementAction.ElementIsGroup)){
+                    this.renderFlipElement(child, parentG, child.flip);
                 }
+                if ((child.elementActions & ElementAction.ElementIsPort) && parentG) {
+                    //EJ2-826617 - for BPMN node port
+                    if(parentG.id.includes("bpmn")){
+                        this.renderFlipElement(group, parentG, child.flip);
+                        child.flip ='None';
+                    }
+                    else{
+                        this.renderFlipElement(group, parentG, child.flip);
+                    }
+                }
+                //EJ2-826617 - for BPMN node child rendering
                 if (!(child instanceof TextElement) && group.flip !== 'None' &&
-                    (group.elementActions & ElementAction.ElementIsGroup)) {
+                    (group.elementActions & ElementAction.ElementIsGroup) && !(child.elementActions & ElementAction.ElementIsPort) && parentG) {
                     this.renderFlipElement(child, parentG || canvas, group.flip);
                 }
             }
@@ -1846,7 +1862,53 @@ export class DiagramRenderer {
                             this.renderFlipElement(group, innerNodeContent, group.flip);
                     }
                     //Below code to check and flip the text element in the node.
-                    else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
+                    else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None' && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
+                        for (let i = 0; i < selectedNode.wrapper.children.length; i++) {
+                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
+                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
+                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                                return;
+                            }
+                        }
+                    }
+                    //Below code to check and flip for flip mode all in the node.
+                    else if(group.flip !== 'None' && selectedNode.flipMode === 'All'){
+                        for (var i = 0; i < selectedNode.wrapper.children.length; i++) {
+                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
+                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
+                                this.renderFlipElement(group, innerLabelContent, group.flip);
+                            }
+                        }
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                    //Below code to check and flip the element for None in the node.
+                    else {
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                }
+            }
+            //EJ2-826617 - Flip and flip mode option for BPMN node
+            if ((group.elementActions & ElementAction.ElementIsGroup) && diagram instanceof Diagram && (diagram as Diagram).nameTable[group.id] && (diagram as Diagram).nameTable[group.id].propName !== 'connectors') {
+                if (isNodeSelected && selectedNode) {
+                    if (group.children && group.children[0] instanceof DiagramNativeElement) {
+                        innerNodeContent = document.getElementById(selectedNode.id + '_content_inner_native_element');
+                    } else {
+                        innerNodeContent = document.getElementById(selectedNode.id + '_content_groupElement');
+                    }
+                    //Below code to check and flip the node.
+                    if (!(group.children[0] instanceof DiagramNativeElement) && selectedNode.shape.type !== 'Text' && selectedNode.flipMode !== 'None' && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' || (group.children[0] instanceof DiagramNativeElement && selectedNode.flipMode === 'Port')) {
+                        this.renderFlipElement(group, innerNodeContent, selectedNode.flip);
+                        return;
+                    } 
+                    //Below code to check and flip the node except for flip mode Port.
+                    else if (group.children[0] instanceof DiagramNativeElement && (selectedNode.flipMode === 'All' || selectedNode.flipMode === 'Label') || (selectedNode.flipMode === 'Label') || (selectedNode.shape.type === 'Image' && selectedNode.flipMode === 'Label')) {
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                    if (group.flip !== 'None' && selectedNode.flipMode === 'None') {
+                            this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
+                    //Below code to check and flip the text element in the node.
+                    else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && group.flip !== 'None' && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
                         for (let i = 0; i < selectedNode.wrapper.children.length; i++) {
                             if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
                                 innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
@@ -2143,6 +2205,7 @@ export class DiagramRenderer {
      *  @param { HTMLCanvasElement} htmlLayer -Provide the html element .
      *  @param { HTMLCanvasElement} transform - Provide the transform value .
      *  @param { HTMLCanvasElement} insertIndex - Provide the index value.
+     *  @param { object} centerPoint - Provide the center point value.
      *  @private
      */
     public updateNode(

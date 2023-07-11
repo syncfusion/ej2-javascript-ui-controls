@@ -329,8 +329,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
 
     private renderTitle(title: TitleModel, type: string, groupEle: Element): void {
-        const font: SmithchartFontModel = title.font ? title.font : title.textStyle;
-        let textSize: SmithchartSize = measureText(title.text, font);
+        const font: SmithchartFontModel = title.textStyle;
+        let textSize: SmithchartSize = measureText(title.text, font, this.themeStyle.smithchartTitleFont);
         let x: number;
         const textAlignment: string = title.textAlignment;
         let titleText: string = title.text;
@@ -347,8 +347,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         }
         const y: number = this.margin.top + textSize['height'] / 2 + this.elementSpacing;
         if (title.enableTrim && titleWidthEnable) {
-            titleText = textTrim(maxTitleWidth, title.text, font);
-            textSize = measureText(titleText, font);
+            titleText = textTrim(maxTitleWidth, title.text, font, this.themeStyle.smithchartTitleFont);
+            textSize = measureText(titleText, font, this.themeStyle.smithchartTitleFont);
         }
         groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
         const titleEventArgs: ITitleRenderEventArgs = {
@@ -364,9 +364,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 options = new TextOption(
                     this.element.id + '_Smithchart_' + type, args.x, args.y, 'start', args.text
                 );
-                font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
-                font.size = this.themeStyle.fontSize || title.textStyle.size;
-                const element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
+                const element: Element = renderTextElement(options, font, font.color || this.themeStyle.smithchartTitleFont.color, groupEle, this.themeStyle.smithchartTitleFont);
                 element.setAttribute('tabindex', '0');
                 const titleLocation: { x: number, y: number, textSize: SmithchartSize } = { x: args.x, y: args.y, textSize: textSize };
                 this.svgObject.appendChild(groupEle);
@@ -384,12 +382,12 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         titleLocation: { x: number, y: number, textSize: SmithchartSize }, groupEle: Element): void {
         const font: SmithchartFontModel = title.subtitle.textStyle;
         const subTitle: SubtitleModel = title.subtitle;
-        const subTitleSize: SmithchartSize = measureText(subTitle.text, font);
+        const subTitleSize: SmithchartSize = measureText(subTitle.text, font, this.themeStyle.smithchartSubtitleFont);
         let subTitleText: string = subTitle.text;
         const maxSubTitleWidth: number = isNullOrUndefined(subTitle.maximumWidth) ?
             (this.bounds.width * 0.75) : subTitle.maximumWidth;
         if (subTitle.enableTrim && subTitleSize.width > maxSubTitleWidth) {
-            subTitleText = textTrim(maxSubTitleWidth, subTitle.text, font);
+            subTitleText = textTrim(maxSubTitleWidth, subTitle.text, font, this.themeStyle.smithchartSubtitleFont);
         }
         const x: number = title['subtitle'].textAlignment === 'Far' ? (titleLocation.x + (titleLocation.textSize.width)) :
             (title['subtitle'].textAlignment === 'Near') ? titleLocation.x :
@@ -409,7 +407,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 const options: TextOption = new TextOption(
                     this.element.id + '_Smithchart_' + type, args.x, args.y, textAnchor, args.text
                 );
-                const element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
+                const element: Element = renderTextElement(options, font, font.color || this.themeStyle.smithchartSubtitleFont.color, groupEle, this.themeStyle.smithchartSubtitleFont);
                 element.setAttribute('aria-label', subTitle.description || args.text);
                 groupEle.appendChild(element);
             }

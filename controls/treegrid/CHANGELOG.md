@@ -2,43 +2,43 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 22.1.38 (2023-07-11)
 
 ### Tree Grid
 
-#### Bug Fixes
+#### Bug fixes
 
-- `#I440455`, `#F180980` - Resolved the issue where the data source was not being rendered in the row template sample.
+- `#I471838` - Fixed a bug in the virtualization feature that caused a white space issue when changing the page size using the `databound` event.
+- `#I459187` - Fixed an issue where a white space would occur when deleting a parent record in virtualization.
+- `#F182900` - Fixed the issue where the newly added form was placed incorrectly when selecting two records and performing an add action.
 
-## 21.1.41 (2023-04-18)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I448090` - The excel filtering dialog box has been fixed to display the data source after filtering a column.
-- `#I414166` - Virtualization has been resolved when enabling it in the load event.
-
-## 21.1.38 (2023-04-04)
+## 22.1.37 (2023-07-04)
 
 ### Tree Grid
 
-#### Bug Fixes
+#### Bug fixes
 
-- `#I407372`, `#I449067`, `#I424805` - Fixed console error when dragging and dropping a record and then pressing the tab key.
-- `#I441661` - Fixed incorrect checkbox selection update after selecting a record and collapsing in checkboxOnly mode.
-- `#I449191` - Fixed incorrect cell index selection in the getSelectedRowCellIndexes method when collapsing a record.
-- `#I442710` - Resolved issue of row dropping at the bottom segment (with the last record) not working properly.
-- `#I444506` - Resolved issue of last row border not being added when reordering a row to the last index.
+- `#I461924`, `#I473131` - Resolved the collapsed event multiple times triggered issue in virtualization enabled samples.
+- `#I471838` - Resolved white space issue occurred in virtualization feature when changing the page size using databound event.
 
-## 21.1.35 (2023-03-23)
+## 22.1.36 (2023-06-28)
 
 ### Tree Grid
 
-#### Breaking Changes
+#### Bug fixes
 
-- Unnecessary role attributes for Tree Grid row cell and header elements have been removed to enhance accessibility standards.
-- The `td` element for `e-detailcell` in [detail element](https://ej2.syncfusion.com/documentation/treegrid/row/detail-template/) has been only changed from a `td` element to the `th` element to enhance accessibility standards.
+- `#I469071` - Fixed issue where scrolling down using the scroll bar would cause some records to not be displayed and scrolling using the mouse would repeat some records in virtualization.
+- `#F182421` - Fixed an issue where the stacked column was not functioning properly when resizing was enabled in the treegrid.
+- `#I182710` - Fixed an issue where the child aggregates row would display in the current view records.
+
+## 22.1.34 (2023-06-21)
+
+### Tree Grid
+
+#### Features
+
+- Provided support for inline editing with virtualization enabled. Please find the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/tree-grid/virtual-scrolling.html).
+- `#I323425`, `#I332700`, `#I344742`, `#I375307` - Provided support for frozen column with virtualization enabled.
 
 ## 20.2.36 (2022-06-30)
 

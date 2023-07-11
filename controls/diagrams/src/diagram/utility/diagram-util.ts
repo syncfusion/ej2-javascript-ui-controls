@@ -61,7 +61,7 @@ import { GridPanel } from '../core/containers/grid';
 import { isBlazor, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeInfo, INode } from '../layout/layout-base';
 import { MouseEventArgs } from '../interaction/event-handlers';
-import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs } from '../objects/interface/IElement';
+import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs, IElement } from '../objects/interface/IElement';
 import { ConnectorFixedUserHandleModel, NodeFixedUserHandleModel } from '../objects/fixed-user-handle-model';
 import { ConnectorFixedUserHandle } from '../objects/fixed-user-handle';
 import { SymbolPaletteModel } from '../../symbol-palette';
@@ -205,65 +205,65 @@ export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: 
         const shape: UmlActivityShapes = (isBlazor() ? (child.shape as DiagramShape).umlActivityShape :
             (child.shape as UmlActivityShape).shape);
         switch (shape) {
-            case 'JoinNode':
-                if (!(child as NodeModel).width) {
-                    node.width = 20;
-                }
-                if (!(child as NodeModel).height) {
-                    node.height = 90;
-                }
-                if (!child.style || !child.style.fill) {
-                    node.style.fill = 'black';
-                }
-                break;
-            case 'ForkNode':
-                if (!(child as NodeModel).width) {
-                    node.width = 90;
-                }
-                if (!(child as NodeModel).height) {
-                    node.height = 20;
-                }
-                if (!child.style || !child.style.fill) {
-                    node.style.fill = 'black';
-                }
-                break;
-            case 'InitialNode':
-                if (!child.style || !child.style.fill) {
-                    node.style.fill = 'black';
-                }
-                break;
-            case 'FinalNode':
-                if (!child.style || !child.style.fill) {
-                    node.style.fill = 'black';
-                }
-                break;
+        case 'JoinNode':
+            if (!(child as NodeModel).width) {
+                node.width = 20;
+            }
+            if (!(child as NodeModel).height) {
+                node.height = 90;
+            }
+            if (!child.style || !child.style.fill) {
+                node.style.fill = 'black';
+            }
+            break;
+        case 'ForkNode':
+            if (!(child as NodeModel).width) {
+                node.width = 90;
+            }
+            if (!(child as NodeModel).height) {
+                node.height = 20;
+            }
+            if (!child.style || !child.style.fill) {
+                node.style.fill = 'black';
+            }
+            break;
+        case 'InitialNode':
+            if (!child.style || !child.style.fill) {
+                node.style.fill = 'black';
+            }
+            break;
+        case 'FinalNode':
+            if (!child.style || !child.style.fill) {
+                node.style.fill = 'black';
+            }
+            break;
         }
     } else {
         const flow: UmlActivityFlows = (isBlazor() ?
             (child.shape as DiagramConnectorShape).umlActivityFlow : (child.shape as ActivityFlow).flow);
         switch (flow) {
-            case 'Object':
-                if (!child.style || !child.style.strokeDashArray) {
-                    node.style.strokeDashArray = '8 4';
-                }
-                if (!child.style || !child.style.strokeWidth) {
-                    node.style.strokeWidth = 2;
-                }
-                if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
-                    (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
-                }
-                break;
-            case 'Control':
-                if (!child.style || !child.style.strokeWidth) {
-                    node.style.strokeWidth = 2;
-                }
-                if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
-                    (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
-                }
-                if (!(child as ConnectorModel).sourceDecorator || !(child as ConnectorModel).sourceDecorator.shape) {
-                    (node as ConnectorModel).sourceDecorator.shape = 'None';
-                }
-                break;
+        case 'Object':
+            if (!child.style || !child.style.strokeDashArray) {
+                node.style.strokeDashArray = '8 4';
+            }
+            if (!child.style || !child.style.strokeWidth) {
+                node.style.strokeWidth = 2;
+            }
+            if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
+                (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
+            }
+            break;
+        case 'Control':
+            if (!child.style || !child.style.strokeWidth) {
+                node.style.strokeWidth = 2;
+            }
+            if (!(child as ConnectorModel).targetDecorator || !(child as ConnectorModel).targetDecorator.shape) {
+                (node as ConnectorModel).targetDecorator.shape = 'OpenArrow';
+            }
+            if (!(child as ConnectorModel).sourceDecorator || !(child as ConnectorModel).sourceDecorator.shape) {
+                (node as ConnectorModel).sourceDecorator.shape = 'None';
+            }
+            break;
         }
     }
 }
@@ -575,7 +575,7 @@ export function updateDefaultValues(
 export function updateLayoutValue(actualNode: TreeInfo, defaultValue: object, nodes?: INode[], node?: INode): void {
     // eslint-disable-next-line @typescript-eslint/ban-types
     let keyObj: object;
-    let assistantKey: string = "Role";
+    let assistantKey: string = 'Role';
     if (defaultValue) {
         for (const key of Object.keys(defaultValue)) {
             keyObj = defaultValue[`${key}`];
@@ -584,7 +584,7 @@ export function updateLayoutValue(actualNode: TreeInfo, defaultValue: object, no
                     // Iterate the node data and get the assistant.
                     for (const dataValue of Object.keys(node.data)) {
                         assistantKey = dataValue;
-                        if(node.data[`${assistantKey}`] === defaultValue[`${key}`]['root']) {
+                        if (node.data[`${assistantKey}`] === defaultValue[`${key}`]['root']) {
                             break;
                         }
                     }
@@ -766,16 +766,18 @@ export function getPoints(element: DiagramElement, corners: Corners, padding?: n
  * @returns {  PointModel[] } getTooltipOffset method .\
  * @param {number} diagram - provide the diagram  value.
  * @param { number} mousePosition - provide the mousePosition  value.
- * @param { NodeModel | ConnectorModel} node - provide the node  value.
+ * @param { NodeModel | ConnectorModel | PointPortModel} node - provide the node  value.
  * @param { string} type - provide the type  value.
  * @private
  */
-export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, node: NodeModel | ConnectorModel, type?: string): PointModel {
+export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, node: NodeModel | ConnectorModel | PointPortModel, type?: string): PointModel {
     //let offset: PointModel;
     const inheritTooltip: number = (node instanceof Node) ? ((node as NodeModel).constraints & NodeConstraints.InheritTooltip)
-        : (node.constraints & ConnectorConstraints.InheritTooltip);
+        : (node instanceof Connector) ? ((node as ConnectorModel).constraints & ConnectorConstraints.InheritTooltip) 
+        : ((node as PointPort).constraints & PortConstraints.InheritTooltip);
     const objectTooltip: number = (node instanceof Node) ? ((node as NodeModel).constraints & NodeConstraints.Tooltip)
-        : (node.constraints & ConnectorConstraints.Tooltip);
+        : (node instanceof Connector) ? ((node as ConnectorModel).constraints & ConnectorConstraints.Tooltip) 
+        : ((node as PointPort).constraints & PortConstraints.ToolTip);
     let isMouseBased: boolean = ((!inheritTooltip && objectTooltip ? node.tooltip.relativeMode
         : diagram.tooltip.relativeMode) === 'Mouse') ? true : false;
     if (type === 'Mouse') {
@@ -791,51 +793,61 @@ export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, no
  * tooltipOffset method \
  *
  * @returns { PointModel } tooltipOffset method .\
- * @param {NodeModel | ConnectorModel} node - provide the node  value.
+ * @param {NodeModel | ConnectorModel | PointPortModel} node - provide the node  value.
  * @param { PointModel} mousePosition - provide the mousePosition  value.
  * @param { Diagram } diagram - provide the diagram  value.
  * @param { boolean} isMouseBased - provide the isMouseBased  value.
  * @private
  */
-function tooltipOffset(node: NodeModel | ConnectorModel, mousePosition: PointModel, diagram: Diagram, isMouseBased: boolean): PointModel {
+function tooltipOffset(node: NodeModel | ConnectorModel | PointPortModel, mousePosition: PointModel, diagram: Diagram, isMouseBased: boolean): PointModel {
     let point: PointModel = {};
     //let scale: number = diagram.scroller.transform.scale;
     const element: HTMLElement = document.getElementById(diagram.element.id);
-    const bounds: Rect = node.wrapper.bounds;
+    let bounds: Rect;
+    //EJ2-62120-Tooltip support for ports
+    if (node instanceof Node || node instanceof Connector) {
+        bounds = node.wrapper.bounds;
+    }
+    else {
+        const objects: IElement[] = diagram.findObjectsUnderMouse(mousePosition);
+        const obj: IElement = diagram.findObjectUnderMouse(objects, 'Select', false);
+        const portElement: DiagramElement = diagram.findElementUnderMouse(obj, mousePosition);
+        bounds = portElement.bounds;
+    }
 
     const rect: Rect = element.getBoundingClientRect() as Rect;
     /* eslint-enable */
     //let horizontalOffset: number = diagram.scroller.horizontalOffset;
     //let verticalOffset: number = diagram.scroller.verticalOffset;
     switch (diagram.tooltipObject.position) {
-        case 'BottomCenter':
-            point = offsetPoint(mousePosition, bounds.bottomCenter, diagram, isMouseBased, (rect.width / 2), rect.height);
-            break;
-        case 'BottomLeft':
-        case 'LeftBottom':
-            point = offsetPoint(mousePosition, bounds.bottomLeft, diagram, isMouseBased, 0, rect.height);
-            break;
-        case 'BottomRight':
-        case 'RightBottom':
-            point = offsetPoint(mousePosition, bounds.bottomRight, diagram, isMouseBased, rect.width, rect.height);
-            break;
-        case 'LeftCenter':
-            point = offsetPoint(mousePosition, bounds.middleLeft, diagram, isMouseBased, 0, (rect.height / 2));
-            break;
-        case 'LeftTop':
-        case 'TopLeft':
-            point = offsetPoint(mousePosition, bounds.topLeft, diagram, isMouseBased, 0, 0);
-            break;
-        case 'RightCenter':
-            point = offsetPoint(mousePosition, bounds.middleRight, diagram, isMouseBased, rect.width, (rect.height / 2));
-            break;
-        case 'RightTop':
-        case 'TopRight':
-            point = offsetPoint(mousePosition, bounds.topRight, diagram, isMouseBased, rect.width, 0);
-            break;
-        case 'TopCenter':
-            point = offsetPoint(mousePosition, bounds.topCenter, diagram, isMouseBased, (rect.width / 2), 0);
-            break;
+    case 'BottomCenter':
+        point = offsetPoint(mousePosition, bounds.bottomCenter, diagram, isMouseBased, (rect.width / 2), rect.height);
+        break;
+    case 'BottomLeft':
+    case 'LeftBottom':
+        point = offsetPoint(mousePosition, bounds.bottomLeft, diagram, isMouseBased, 0, rect.height);
+        break;
+    case 'BottomRight':
+    case 'RightBottom':
+        point = offsetPoint(mousePosition, bounds.bottomRight, diagram, isMouseBased, rect.width, rect.height);
+        break;
+    case 'LeftCenter':
+        point = offsetPoint(mousePosition, bounds.middleLeft, diagram, isMouseBased, 0, (rect.height / 2));
+        break;
+    case 'LeftTop':
+    case 'TopLeft':
+        point = offsetPoint(mousePosition, bounds.topLeft, diagram, isMouseBased, 0, 0);
+        break;
+    case 'RightCenter':
+        point = offsetPoint(mousePosition, bounds.middleRight, diagram, isMouseBased, rect.width, (rect.height / 2));
+        break;
+    case 'RightTop':
+    case 'TopRight':
+        point = offsetPoint(mousePosition, bounds.topRight, diagram, isMouseBased, rect.width, 0);
+        break;
+    case 'TopCenter':
+        point = offsetPoint(mousePosition, bounds.topCenter, diagram, isMouseBased, (rect.width / 2), 0);
+        break;
     }
     return point;
 }
@@ -984,7 +996,7 @@ export function getOffsetOfConnector(points: PointModel[], annotation: PathAnnot
  * getAlignedPosition method \
  *
  * @returns {number } getAlignedPosition method .\
- * @param {PointModel[]} annotation - provide the annotation  value.
+ * @param {PointModel[]} annotation - provide the annotation value.
  * @private
  */
 export function getAlignedPosition(annotation: PathAnnotation | ConnectorFixedUserHandle): number {
@@ -995,18 +1007,19 @@ export function getAlignedPosition(annotation: PathAnnotation | ConnectorFixedUs
 
     let state: number = 0;
     switch (annotation.alignment) {
-        case 'Center':
-            state = 0;
-            break;
-        case 'Before':
-            state = -((0) / 2 + cnst);
-            break;
-        case 'After':
-            state = ((0) / 2 + cnst);
-            break;
+    case 'Center':
+        state = 0;
+        break;
+    case 'Before':
+        state = -((0) / 2 + cnst);
+        break;
+    case 'After':
+        state = ((0) / 2 + cnst);
+        break;
     }
     return state;
 }
+
 /**
  * alignLabelOnSegments method \
  *
@@ -1022,47 +1035,47 @@ export function alignLabelOnSegments(obj: PathAnnotation | ConnectorFixedUserHan
     const fourty5: number = 45; const one35: number = 135; const two25: number = 225; const three15: number = 315;
     let vAlign: string; let hAlign: string;
     switch (obj.alignment) {
-        case 'Before':
-            if (ang >= fourty5 && ang <= one35) {
-                hAlign = 'right'; vAlign = obj.offset === 0.5 ? 'center' : 'top';
-            } else if (ang >= two25 && ang <= three15) {
-                hAlign = 'left'; vAlign = obj.offset === 0.5 ? 'center' : 'bottom';
-            } else if (ang > fourty5 && ang < two25) {
-                vAlign = 'top'; hAlign = obj.offset === 0.5 ? 'center' : 'right';
-            } else { vAlign = 'bottom'; hAlign = (obj.offset === 0.5) ? 'center' : 'left'; }
-            break;
-        case 'After':
-            if (ang >= fourty5 && ang <= one35) {
-                hAlign = 'left'; vAlign = obj.offset === 0.5 ? 'center' : 'top';
-            } else if (
-                ang >= two25 && ang <= three15) {
-                hAlign = 'right'; vAlign = obj.offset === 0.5 ? 'center' : 'bottom';
-            } else if (
-                ang > fourty5 && ang < two25) {
-                vAlign = 'bottom'; hAlign = obj.offset === 0.5 ? 'center' : 'right';
-            } else { vAlign = 'top'; hAlign = obj.offset === 0.5 ? 'center' : 'left'; }
-            break;
-        case 'Center':
-            hAlign = !isNullOrUndefined((obj as PathAnnotation).horizontalAlignment) ? ((obj as PathAnnotation).horizontalAlignment as string).toLowerCase() : "center";;
-            vAlign = !isNullOrUndefined((obj as PathAnnotation).verticalAlignment) ? ((obj as PathAnnotation).verticalAlignment as string).toLowerCase() : "center";
-            break;
+    case 'Before':
+        if (ang >= fourty5 && ang <= one35) {
+            hAlign = 'right'; vAlign = obj.offset === 0.5 ? 'center' : 'top';
+        } else if (ang >= two25 && ang <= three15) {
+            hAlign = 'left'; vAlign = obj.offset === 0.5 ? 'center' : 'bottom';
+        } else if (ang > fourty5 && ang < two25) {
+            vAlign = 'top'; hAlign = obj.offset === 0.5 ? 'center' : 'right';
+        } else { vAlign = 'bottom'; hAlign = (obj.offset === 0.5) ? 'center' : 'left'; }
+        break;
+    case 'After':
+        if (ang >= fourty5 && ang <= one35) {
+            hAlign = 'left'; vAlign = obj.offset === 0.5 ? 'center' : 'top';
+        } else if (
+            ang >= two25 && ang <= three15) {
+            hAlign = 'right'; vAlign = obj.offset === 0.5 ? 'center' : 'bottom';
+        } else if (
+            ang > fourty5 && ang < two25) {
+            vAlign = 'bottom'; hAlign = obj.offset === 0.5 ? 'center' : 'right';
+        } else { vAlign = 'top'; hAlign = obj.offset === 0.5 ? 'center' : 'left'; }
+        break;
+    case 'Center':
+        hAlign = !isNullOrUndefined((obj as PathAnnotation).horizontalAlignment) ? ((obj as PathAnnotation).horizontalAlignment as string).toLowerCase() : 'center';
+        vAlign = !isNullOrUndefined((obj as PathAnnotation).verticalAlignment) ? ((obj as PathAnnotation).verticalAlignment as string).toLowerCase() : 'center';
+        break;
     }
     if (obj.offset === 0 || obj.offset === 1) {
         //let direction: string;
         const direction: string = getBezierDirection(pts[0], pts[1]);
         switch (direction) {
-            case 'left':
-                hAlign = obj.offset === 0 ? 'right' : 'left';
-                break;
-            case 'right':
-                hAlign = obj.offset === 0 ? 'left' : 'right';
-                break;
-            case 'bottom':
-                vAlign = obj.offset === 0 ? 'top' : 'bottom';
-                break;
-            case 'top':
-                vAlign = obj.offset === 0 ? 'bottom' : 'top';
-                break;
+        case 'left':
+            hAlign = obj.offset === 0 ? 'right' : 'left';
+            break;
+        case 'right':
+            hAlign = obj.offset === 0 ? 'left' : 'right';
+            break;
+        case 'bottom':
+            vAlign = obj.offset === 0 ? 'top' : 'bottom';
+            break;
+        case 'top':
+            vAlign = obj.offset === 0 ? 'bottom' : 'top';
+            break;
         }
     }
     return { hAlign: hAlign, vAlign: vAlign };
@@ -1262,13 +1275,9 @@ function preventArrayDefaults(clonedObject: object, defaultObject: object, model
         }
     } else {
         let i: number;
-        if (property === 'layers') {
-            clonedObject[`${property}`].splice(0, 1);
-            if (clonedObject[`${property}`].length === 0) {
-                delete clonedObject[`${property}`];
-            }
-        }
-        if (clonedObject[`${property}`]) {
+        // Bug 826717: Unable to select swimlane child nodes after serializing the diagram when we enable preventDefault property.
+        // Removed the codition to delete the layers from clonedObject.
+        if (clonedObject[`${property}`] && property !== 'layers') {
             for (i = clonedObject[`${property}`].length - 1; i >= 0; i--) {
                 if (property === 'nodes' || property === 'connectors') {
                     clonedObject[`${property}`][parseInt(i.toString(), 10)].wrapper = null;
@@ -1408,7 +1417,7 @@ function getConstructor(model: object, defaultObject: object): object {
 /* eslint-enable */
 /* eslint-disable */
 /** @private */
-export function deserialize(model: string, diagram: Diagram): Object {
+export function deserialize(model: string|Object, diagram: Diagram): Object {
     diagram.enableServerDataBinding(false);
     const blazorAction: BlazorAction = diagram.blazorActions;
     diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);
@@ -1430,8 +1439,13 @@ export function deserialize(model: string, diagram: Diagram): Object {
 
     const nodeDefaults: Function | string = diagram.getNodeDefaults;
     const connectorDefaults: Function | string = diagram.getConnectorDefaults;
-
-    let dataObj: Diagram = JSON.parse(model);
+    let dataObj: Diagram;
+     if(!(model instanceof Object)){
+         dataObj = JSON.parse(model as string);
+     }
+     else{
+        dataObj = model as Diagram;
+     }
     dataObj = upgrade(dataObj);
     diagram.contextMenuSettings = dataObj.contextMenuSettings || {};
     diagram.constraints = dataObj.constraints || DiagramConstraints.Default;
@@ -1464,6 +1478,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
     // EJ2-66465 - Added below code to empty the segment collection if connector type is bezier
     if (dataObj.connectors) {
         for (let i: number = 0; i < dataObj.connectors.length; i++) {
+            // EJ2-69816 - Added below code to empty the segment collection if connector type is bezier and allowSegmentsReset is true
             if (dataObj.connectors[i].type === 'Bezier' && dataObj.connectors[i].segments.length > 0 && dataObj.connectors[i].bezierSettings.allowSegmentsReset) {
                 dataObj.connectors[i].segments = [];
             }
@@ -1551,6 +1566,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
       {
           for(j=0;j<dataObj.layers[i].objects.length;j++)
           {
+            if(dataObj.nodes){
               for(k=0;k<dataObj.nodes.length;k++)
               {
                   if(dataObj.layers[i].objects[j]===dataObj.nodes[k].id)
@@ -1559,9 +1575,11 @@ export function deserialize(model: string, diagram: Diagram): Object {
                       layers.push(dataObj.layers[i].objects[j] as LayerModel);
                   }
               }
+            }
           }
           for(j=0;j<dataObj.layers[i].objects.length;j++)
           {
+            if(dataObj.connectors){
               for(k=0;k<dataObj.connectors.length;k++)
               {
                   if(dataObj.layers[i].objects[j]===dataObj.connectors[k].id)
@@ -1570,6 +1588,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
                       layers.push(dataObj.layers[i].objects[j] as LayerModel);
                   }
               }
+            }
           }
           dataObj.layers[i].objects = layers as string[];
           layers = [];
@@ -1617,60 +1636,60 @@ export function updateStyle(changedObject: TextStyleModel, target: DiagramElemen
     target.canApplyStyle = true;
     for (const key of Object.keys(changedObject)) {
         switch (key) {
-            case 'fill':
-                style.fill = changedObject.fill;
-                if (style instanceof StrokeStyle) {
-                    /* tslint:disable:no-string-literal */
-                    style['fill'] = 'transparent';
-                }
+        case 'fill':
+            style.fill = changedObject.fill;
+            if (style instanceof StrokeStyle) {
+                /* tslint:disable:no-string-literal */
+                style['fill'] = 'transparent';
+            }
+            break;
+        case 'textOverflow':
+            style.textOverflow = changedObject.textOverflow;
+            break;
+        case 'opacity':
+            style.opacity = changedObject.opacity;
+            break;
+        case 'strokeColor':
+            style.strokeColor = changedObject.strokeColor;
+            break;
+        case 'strokeDashArray':
+            style.strokeDashArray = changedObject.strokeDashArray;
+            break;
+        case 'strokeWidth':
+            style.strokeWidth = changedObject.strokeWidth;
+            break;
+        case 'bold':
+            style.bold = changedObject.bold;
+            break;
+        case 'color':
+            style.color = changedObject.color;
+            break;
+        case 'textWrapping':
+            style.textWrapping = changedObject.textWrapping;
+            break;
+        case 'fontFamily':
+            style.fontFamily = changedObject.fontFamily;
+            break;
+        case 'fontSize':
+            style.fontSize = changedObject.fontSize;
+            break;
+        case 'italic':
+            style.italic = changedObject.italic;
+            break;
+        case 'textAlign':
+            style.textAlign = changedObject.textAlign;
+            break;
+        case 'whiteSpace':
+            style.whiteSpace = changedObject.whiteSpace;
+            break;
+        case 'textDecoration':
+            style.textDecoration = changedObject.textDecoration;
+            break;
+        case 'gradient':
+            if (style.gradient) {
+                updateGradient(changedObject.gradient, style.gradient);
                 break;
-            case 'textOverflow':
-                style.textOverflow = changedObject.textOverflow;
-                break;
-            case 'opacity':
-                style.opacity = changedObject.opacity;
-                break;
-            case 'strokeColor':
-                style.strokeColor = changedObject.strokeColor;
-                break;
-            case 'strokeDashArray':
-                style.strokeDashArray = changedObject.strokeDashArray;
-                break;
-            case 'strokeWidth':
-                style.strokeWidth = changedObject.strokeWidth;
-                break;
-            case 'bold':
-                style.bold = changedObject.bold;
-                break;
-            case 'color':
-                style.color = changedObject.color;
-                break;
-            case 'textWrapping':
-                style.textWrapping = changedObject.textWrapping;
-                break;
-            case 'fontFamily':
-                style.fontFamily = changedObject.fontFamily;
-                break;
-            case 'fontSize':
-                style.fontSize = changedObject.fontSize;
-                break;
-            case 'italic':
-                style.italic = changedObject.italic;
-                break;
-            case 'textAlign':
-                style.textAlign = changedObject.textAlign;
-                break;
-            case 'whiteSpace':
-                style.whiteSpace = changedObject.whiteSpace;
-                break;
-            case 'textDecoration':
-                style.textDecoration = changedObject.textDecoration;
-                break;
-            case 'gradient':
-                if (style.gradient) {
-                    updateGradient(changedObject.gradient, style.gradient);
-                    break;
-                }
+            }
         }
     }
     if (target instanceof TextElement) {
@@ -1691,39 +1710,39 @@ function updateGradient(
 ): void {
     for (const key of Object.keys(changedGradient)) {
         switch (key) {
-            case 'type':
-                targetGradient.type = changedGradient.type;
-                break;
-            case 'x1':
-                (targetGradient as LinearGradient).x1 = (changedGradient as LinearGradient).x1;
-                break;
-            case 'x2':
-                (targetGradient as LinearGradient).x2 = (changedGradient as LinearGradient).x2;
-                break;
-            case 'y1':
-                (targetGradient as LinearGradient).y1 = (changedGradient as LinearGradient).y1;
-                break;
-            case 'y2':
-                (targetGradient as LinearGradient).y2 = (changedGradient as LinearGradient).y2;
-                break;
-            case 'cx':
-                (targetGradient as RadialGradient).cx = (changedGradient as RadialGradient).cx;
-                break;
-            case 'cy':
-                (targetGradient as RadialGradient).cy = (changedGradient as RadialGradient).cy;
-                break;
-            case 'fx':
-                (targetGradient as RadialGradient).fx = (changedGradient as RadialGradient).fx;
-                break;
-            case 'fy':
-                (targetGradient as RadialGradient).fy = (changedGradient as RadialGradient).fy;
-                break;
-            case 'r':
-                (targetGradient as RadialGradient).r = (changedGradient as RadialGradient).r;
-                break;
-            case 'stops':
-                targetGradient.stops = changedGradient.stops;
-                break;
+        case 'type':
+            targetGradient.type = changedGradient.type;
+            break;
+        case 'x1':
+            (targetGradient as LinearGradient).x1 = (changedGradient as LinearGradient).x1;
+            break;
+        case 'x2':
+            (targetGradient as LinearGradient).x2 = (changedGradient as LinearGradient).x2;
+            break;
+        case 'y1':
+            (targetGradient as LinearGradient).y1 = (changedGradient as LinearGradient).y1;
+            break;
+        case 'y2':
+            (targetGradient as LinearGradient).y2 = (changedGradient as LinearGradient).y2;
+            break;
+        case 'cx':
+            (targetGradient as RadialGradient).cx = (changedGradient as RadialGradient).cx;
+            break;
+        case 'cy':
+            (targetGradient as RadialGradient).cy = (changedGradient as RadialGradient).cy;
+            break;
+        case 'fx':
+            (targetGradient as RadialGradient).fx = (changedGradient as RadialGradient).fx;
+            break;
+        case 'fy':
+            (targetGradient as RadialGradient).fy = (changedGradient as RadialGradient).fy;
+            break;
+        case 'r':
+            (targetGradient as RadialGradient).r = (changedGradient as RadialGradient).r;
+            break;
+        case 'stops':
+            targetGradient.stops = changedGradient.stops;
+            break;
         }
     }
 }
@@ -1856,8 +1875,8 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
                 (isBlazor() && (actualObject.shape as DiagramShape).basicShape === 'Rectangle')) {
                 element.cornerRadius = (actualObject.shape as BasicShape).cornerRadius;
             }
-            content = element;
             //EJ2-70880 - Node disappeared after changing shape and type dynamically.
+            content = element;
             updateShapeContent(content, actualObject, diagram);
             break;
         case 'Flow':
@@ -2058,17 +2077,17 @@ export function getUMLActivityShapes(umlActivityShape: PathElement, content: Dia
     umlActivityShape.data = umlActivityShapeData;
     content = umlActivityShape;
     switch (shape) {
-        case 'StructuredNode':
-            if (node.annotations) {
-                for (let i: number = 0; i < node.annotations.length; i++) {
-                    node.annotations[parseInt(i.toString(), 10)].content = '<<' + node.annotations[parseInt(i.toString(), 10)].content + '>>';
-                }
+    case 'StructuredNode':
+        if (node.annotations) {
+            for (let i: number = 0; i < node.annotations.length; i++) {
+                node.annotations[parseInt(i.toString(), 10)].content = '<<' + node.annotations[parseInt(i.toString(), 10)].content + '>>';
             }
-            content = umlActivityShape;
-            break;
-        case 'FinalNode':
-            content = getUMLFinalNode(node);
-            break;
+        }
+        content = umlActivityShape;
+        break;
+    case 'FinalNode':
+        content = getUMLFinalNode(node);
+        break;
     }
     return content;
 }
@@ -2118,7 +2137,7 @@ export function updateConnector(connector: Connector, points: PointModel[], diag
         const firstSegment: BezierSegment = (connector.segments[0] as BezierSegment);
         const lastSegment: BezierSegment = (connector.segments[connector.segments.length - 1] as BezierSegment);
         anglePoint = [!Point.isEmptyPoint(lastSegment.point2) ? lastSegment.point2 : lastSegment.bezierPoint2,
-        !Point.isEmptyPoint(firstSegment.point1) ? firstSegment.point1 : firstSegment.bezierPoint1];
+            !Point.isEmptyPoint(firstSegment.point1) ? firstSegment.point1 : firstSegment.bezierPoint1];
     } else {
         anglePoint = connector.intermediatePoints;
     }
@@ -2156,22 +2175,22 @@ export function getUserHandlePosition(selectorItem: SelectorModel, handle: UserH
 
     if (selectorItem.nodes.length > 0) {
         switch (handle.side) {
-            case 'Top':
-                point.x += left + bounds.width * offset;
-                point.y += top - (size / 2 + 12.5);
-                break;
-            case 'Bottom':
-                point.x += left + offset * bounds.width;
-                point.y += top + wrapper.actualSize.height + (size / 2 + 12.5);
-                break;
-            case 'Left':
-                point.x += left - (size / 2 + 12.5);
-                point.y += top + offset * bounds.height;
-                break;
-            case 'Right':
-                point.x += left + wrapper.actualSize.width + (size / 2 + 12.5);
-                point.y += top + offset * bounds.height;
-                break;
+        case 'Top':
+            point.x += left + bounds.width * offset;
+            point.y += top - (size / 2 + 12.5);
+            break;
+        case 'Bottom':
+            point.x += left + offset * bounds.width;
+            point.y += top + wrapper.actualSize.height + (size / 2 + 12.5);
+            break;
+        case 'Left':
+            point.x += left - (size / 2 + 12.5);
+            point.y += top + offset * bounds.height;
+            break;
+        case 'Right':
+            point.x += left + wrapper.actualSize.width + (size / 2 + 12.5);
+            point.y += top + offset * bounds.height;
+            break;
         }
         point.x += ((margin.left - margin.right) / transform.scale) +
             (size / 2) * (handle.horizontalAlignment === 'Center' ? 0 : (handle.horizontalAlignment === 'Right' ? -1 : 1));
@@ -2621,7 +2640,7 @@ export function getCollectionChangeEventArguements(
  * @param { IBlazorDropEventArgs } arg - provide the obj  value.
  * @private
  */
- export function getDropEventArguements(args: MouseEventArgs, arg: IBlazorDropEventArgs): IBlazorDropEventArgs {
+export function getDropEventArguements(args: MouseEventArgs, arg: IBlazorDropEventArgs): IBlazorDropEventArgs {
     if (isBlazor()) {
         const isConnector: boolean = (getObjectType(args.source) === Connector);
         const object: Object = cloneBlazorObject(args.source);
@@ -2672,45 +2691,45 @@ export function getPoint(
     const trans: Matrix = identityMatrix();
     rotateMatrix(trans, angle, offsetX, offsetY);
     switch (cornerPoint.x) {
+    case 0:
+        switch (cornerPoint.y) {
         case 0:
-            switch (cornerPoint.y) {
-                case 0:
-                    pivot = transformPointByMatrix(trans, ({ x: x, y: y }));
-                    break;
-                case 0.5:
-                    pivot = transformPointByMatrix(trans, ({ x: x, y: y + h / 2 }));
-                    break;
-                case 1:
-                    pivot = transformPointByMatrix(trans, ({ x: x, y: y + h }));
-                    break;
-            }
+            pivot = transformPointByMatrix(trans, ({ x: x, y: y }));
             break;
         case 0.5:
-            switch (cornerPoint.y) {
-                case 0:
-                    pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y }));
-                    break;
-                case 0.5:
-                    pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y + h / 2 }));
-                    break;
-                case 1:
-                    pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y + h }));
-                    break;
-            }
+            pivot = transformPointByMatrix(trans, ({ x: x, y: y + h / 2 }));
             break;
         case 1:
-            switch (cornerPoint.y) {
-                case 0:
-                    pivot = transformPointByMatrix(trans, ({ x: x + w, y: y }));
-                    break;
-                case 0.5:
-                    pivot = transformPointByMatrix(trans, ({ x: x + w, y: y + h / 2 }));
-                    break;
-                case 1:
-                    pivot = transformPointByMatrix(trans, ({ x: x + w, y: y + h }));
-                    break;
-            }
+            pivot = transformPointByMatrix(trans, ({ x: x, y: y + h }));
             break;
+        }
+        break;
+    case 0.5:
+        switch (cornerPoint.y) {
+        case 0:
+            pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y }));
+            break;
+        case 0.5:
+            pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y + h / 2 }));
+            break;
+        case 1:
+            pivot = transformPointByMatrix(trans, ({ x: x + w / 2, y: y + h }));
+            break;
+        }
+        break;
+    case 1:
+        switch (cornerPoint.y) {
+        case 0:
+            pivot = transformPointByMatrix(trans, ({ x: x + w, y: y }));
+            break;
+        case 0.5:
+            pivot = transformPointByMatrix(trans, ({ x: x + w, y: y + h / 2 }));
+            break;
+        case 1:
+            pivot = transformPointByMatrix(trans, ({ x: x + w, y: y + h }));
+            break;
+        }
+        break;
     }
     return { x: pivot.x, y: pivot.y };
 }
@@ -2996,9 +3015,9 @@ export function findParentInSwimlane(node: Node, diagram: Diagram, parent: strin
  * @param { selector } size - provide the selector element.
  * @private
  */
- export function selectionHasConnector(diagram: Diagram, selector: Selector): boolean {
+export function selectionHasConnector(diagram: Diagram, selector: Selector): boolean {
     if (diagram.selectedItems.connectors.length > 1 && diagram.selectedItems.nodes.length === 0 && selector.rotateAngle !== 0) {
         return true;
     }
-    return false; 
+    return false;
 }

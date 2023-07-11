@@ -41,6 +41,7 @@ describe('FileManager control Grid view', () => {
                 showThumbnail: false,
             });
             feObj.appendTo("#file1");
+            (feObj as any).isReact = true;
             (feObj as any).resizeHandler();
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({

@@ -198,4 +198,69 @@ $range-small-icon-font-size: 14px !default;
 // touch small icon
 $range-bigger-small-icon-font-size: 18px !default;
 
+// modal full-screen styles
+$modal-range-portrait-calendar-min-height: 100% !default;
+$modal-range-portrait-calendar-min-width: 100% !default;
+$modal-range-portrait-calendar-height: 100% !default;
+$modal-range-portrait-header-height: 20vh !default;
+$modal-range-portrait-header-padding: 2vh 2vw !default;
+$modal-range-portrait-month-header-padding: 2vh 2vw !default;
+$modal-range-portrait-icon-float: right !default;
+$modal-range-portrait-header-month-height: 10vh !default;
+$modal-range-month-header-line-height: 5vh !default;
+$modal-range-month-landscape-title-line-height: 8vh !default;
+$modal-range-month-header-title-line-height: inherit !default;
+$modal-range-portrait-calendar-content-height: 69vh !default;
+$modal-range-portrait-calendar-tabel-height: 69vh !default;
+$modal-range-landscape-header-big-height: 25vh !default;
+$modal-range-portrait-calendar-width: 100% !default;
+$modal-range-start-end-margin: 3vh 0 0 0 !default;
+$modal-range-start-end-tablet-margin: 5vh 0 0 0 !default;
+$modal-range-portrait-calendar-height: 70vh !default;
+$modal-range-landscape-calendar-height: 80vh !default;
+$modal-range-landscape-container-height: 75vh !default;
+$modal-range-header-height: 60vh !default;
+$modal-range-tablet-header-height: 65vh !default;
+$modal-range-calendar-padding: 0 !default;
+$modal-range-calendar-overflow: unset !default;
+$modal-range-calendar-header-border-style: solid !default;
+$modal-range-calendar-header-border-width: 0 0 1px 0 !default;
+$modal-range-prev-next-icon-size: 36px !default;
+$modal-range-prev-next-icon-padding: 10px !default;
+$modal-range-prev-next-icon-line-height: 1 !default;
+$modal-range-calendar-th-size: 48px !default;
+$modal-range-tablet-content-size: 64px !default;
+$modal-range-range-hover-radius: 0 !default;
+$modal-range-table-padding: 0 2vw !default;
+$modal-range-footer-display: none !default;
+$modal-range-landscape-header-height: 27vh !default;
+$modal-range-landscape-conetent-overflow: auto !default;
+$modal-range-table-display: table !default;
+$modal-range-start-end-size: 38px !default;
+
+// header styles for presets
+$modal-range-presets-header-height: 10% !default;
+$modal-range-presets-portrait-height: 90% !default;
+$modal-range-presets-landscape-height: 85% !default;
+$modal-range-header-padding: 2.5vh 2.5vw !default;
+$modal-range-header-display-style: flex !default;
+$modal-range-header-content-align: center !default;
+$modal-range-header-portrait-font-size: 3vh !default;
+$modal-close-icon-float: left !default;
+$modal-portrait-content-padding: 1vh 2vw !default;
+$modal-range-header-title-transform: uppercase !default;
+$modal-range-header-border-bottom: none !default;
+$modal-range-header-landscape-height: 15% !default;
+$modal-range-header-landscape-font-size: 2vw !default;
+$modal-landscape-padding: 1vh 1vw !default;
+
+// modal dialog colors
+$modal-range-header-bg-color: $primary !default;
+$modal-range-header-text-color: $grey-white !default;
+
+// tablet device style changes for modal popup
+$modal-range-tablet-font-size: 24px !default;
+
+$range-header-font-size: 16px !default;
+
 //enddefault

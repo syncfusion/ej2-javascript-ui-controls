@@ -104,9 +104,13 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
      * Specifies the content to be displayed in the Message component. It can be a paragraph, a list, or any other HTML element.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property(null)
-    public content: string;
+    public content: string | Function;
 
     /**
      * Specifies the CSS class or multiple classes separated by space that can be appended to the root element of the Message component to customize the message.

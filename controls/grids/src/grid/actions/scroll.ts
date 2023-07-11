@@ -274,7 +274,7 @@ export class Scroll implements IAction {
 
             const target: HTMLElement = (<HTMLElement>e.target);
             const left: number = target.scrollLeft;
-            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling) {
+            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling && !this.parent.isEdit) {
                 this.parent.notify(infiniteScrollHandler, { target: e.target, isLeft: this.previousValues.left !== left });
             }
             if (this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading) {
@@ -450,10 +450,10 @@ export class Scroll implements IAction {
             () => {
                 const args: NotifyArgs = { cancel: false };
                 this.parent.notify(checkScrollReset, args);
+                if (sHeight < clientHeight) {
+                    this.setLastRowCell();
+                }
                 if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
-                    if (sHeight < clientHeight) {
-                        this.setLastRowCell();
-                    }
                     if (!args.cancel) {
                         if ((this.parent.frozenRows > 0 || this.parent.isFrozenGrid()) && this.header.querySelector('.' + literals.movableHeader)) {
                             this.header.querySelector('.' + literals.movableHeader).scrollLeft = this.previousValues.left;

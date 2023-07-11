@@ -108,9 +108,11 @@ export class SparklineTooltipSettings extends ChildProperty<SparklineTooltipSett
     public fill: string;
     /**
      * To customize the tooltip template.
+     * 
+     * @aspType string
      */
     @Property('')
-    public template: string;
+    public template: string | Function;
     /**
      * To customize the tooltip format.
      */
@@ -119,12 +121,12 @@ export class SparklineTooltipSettings extends ChildProperty<SparklineTooltipSett
     /**
      * To configure tooltip border color and width.
      */
-    @Complex<SparklineBorderModel>({ color: '#cccccc', width: 0.5 }, SparklineBorder)
+    @Complex<SparklineBorderModel>({ color: null, width: null }, SparklineBorder)
     public border: SparklineBorderModel;
     /**
      * To configure tooltip text styles.
      */
-    @Complex<SparklineFontModel>({ size: '13px', fontWeight: 'Normal', fontStyle: 'Normal', fontFamily: 'Roboto, Segoe UI, Noto, Sans-serif'}, SparklineFont)
+    @Complex<SparklineFontModel>({ size: '12px', fontWeight: '400', fontStyle: 'Normal', fontFamily: null}, SparklineFont)
     public textStyle: SparklineFontModel;
     /**
      * To configure the tracker line options.
@@ -318,9 +320,9 @@ export class SparklineMarkerSettings extends ChildProperty<SparklineMarkerSettin
     /**
      * To configure the marker size.
      *
-     * @default 5
+     * @default 8
      */
-    @Property(5)
+    @Property(8)
     public size: number;
     /**
      * To configure the marker fill color.
@@ -390,7 +392,7 @@ export class SparklineDataLabelSettings extends ChildProperty<SparklineDataLabel
     /**
      * To configure Sparkline dataLabel text styles.
      */
-    @Complex<SparklineFontModel>({ size: '14px', fontWeight: 'Medium', fontStyle: 'Medium', fontFamily: 'Roboto, Segoe UI, Noto, Sans-serif' }, SparklineFont)
+    @Complex<SparklineFontModel>({ size: '12px', fontWeight: '400', fontStyle: 'Medium', fontFamily: null }, SparklineFont)
     public textStyle: SparklineFontModel;
     /**
      * To configure Sparkline dataLabel offset.

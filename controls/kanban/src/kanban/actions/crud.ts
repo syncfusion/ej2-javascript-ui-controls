@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Kanban } from '../base/kanban';
-import { isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNoU, closest } from '@syncfusion/ej2-base';
 import { ActionEventArgs, SaveChanges } from '../base/interface';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -81,12 +81,15 @@ export class Crud {
         return index;
     }
 
-    public updateCard(cardData: Record<string, any> | Record<string, any>[], index?: number): void {
+    public updateCard(
+        cardData: Record<string, any> | Record<string, any>[], index?: number,
+        isDropped?: boolean, dataDropIndexKeyFieldValue?: string, draggedKey?: string,
+        droppedKey?: string, isMultipleDrag?: boolean): void {
         const args: ActionEventArgs = {
             requestType: 'cardChange', cancel: false, addedRecords: [],
             changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
         };
-        index = isNullOrUndefined(index) ? this.getIndexFromData(args.changedRecords[0]) : index;
+        index = isNoU(index) ? this.getIndexFromData(args.changedRecords[0]) : index;
         this.parent.trigger(events.actionBegin, args, (updateArgs: ActionEventArgs) => {
             if (!updateArgs.cancel) {
                 if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
@@ -102,7 +105,10 @@ export class Crud {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
                 };
                 const type: string = (cardData instanceof Array) ? 'batch' : 'update';
-                this.parent.dataModule.updateDataManager(type, editParms, 'cardChanged', cardData as Record<string, any>, index);
+                this.parent.dataModule.updateDataManager(
+                    type, editParms, 'cardChanged',
+                    cardData as Record<string, any>, index,
+                    isDropped, dataDropIndexKeyFieldValue, draggedKey, droppedKey, isMultipleDrag);
             }
         });
     }
@@ -138,7 +144,8 @@ export class Crud {
         for (const columnKey of modifiedKey) {
             const keyData: Record<string, any>[] = cardData.filter((cardObj: Record<string, any>) =>
                 cardObj[this.parent.keyField] === columnKey);
-            columnAllDatas = this.parent.layoutModule.getColumnData(columnKey) as Record<string, any>[];
+            columnAllDatas = this.parent.enableVirtualization ? this.parent.virtualLayoutModule.getColumnData(columnKey)
+                : this.parent.layoutModule.getColumnData(columnKey) as Record<string, any>[];
             for (const data of keyData as Record<string, any>[]) {
                 if (this.parent.swimlaneSettings.keyField) {
                     const swimlaneDatas: Record<string, any>[] =
@@ -147,7 +154,7 @@ export class Crud {
                 }
             }
             keyData.forEach((key: Record<string, any>) => finalData.push(key));
-            if (!isNullOrUndefined(cardIndex)) {
+            if (!isNoU(cardIndex)) {
                 for (let j: number = 0; j < cardsId.length; j++) {
                     columnAllDatas.filter((data: Record<string, any>, index: number) => {
                         if (data[this.parent.cardSettings.headerField] === cardsId[j as number] && index <= cardIndex) {

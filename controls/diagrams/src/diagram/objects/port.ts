@@ -6,6 +6,8 @@ import { ShapeStyleModel, MarginModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { PointModel } from '../primitives/point-model';
 import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility } from '../enum/enum';
+import { DiagramTooltip } from './tooltip';
+import { DiagramTooltipModel } from './tooltip-model';
 
 
 /**
@@ -169,6 +171,14 @@ export abstract class Port extends ChildProperty<Port> {
         this.inEdges = [];
         this.outEdges = [];
     }
+
+    /**
+     * defines the tooltip for the Ports
+     *
+     * @default new DiagramToolTip();
+     */
+    @Complex<DiagramTooltipModel>({}, DiagramTooltip)
+    public tooltip: DiagramTooltipModel;
 }
 
 /**

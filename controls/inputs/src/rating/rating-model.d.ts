@@ -1,4 +1,4 @@
-import { addClass, Event, attributes, BaseEventArgs, compile, Component, EmitType, EventHandler, getUniqueID, INotifyPropertyChanged, select, Browser } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEventArgs, KeyboardEvents, MouseEventArgs, NotifyPropertyChanges, Property, remove, removeClass } from '@syncfusion/ej2-base';import { Tooltip } from '@syncfusion/ej2-popups';
+import { addClass, Event, attributes, BaseEventArgs, compile, Component, EmitType, EventHandler, getUniqueID, INotifyPropertyChanged, select, Browser, append } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEventArgs, KeyboardEvents, MouseEventArgs, NotifyPropertyChanges, Property, remove, removeClass, initializeCSPTemplate } from '@syncfusion/ej2-base';import { Tooltip } from '@syncfusion/ej2-popups';
 import {LabelPosition,PrecisionType,RatingItemEventArgs,RatingHoverEventArgs,RatingChangedEventArgs} from "./rating";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -10,9 +10,9 @@ export interface RatingModel extends ComponentModel{
     /**
      * Defines whether to show or hide the reset button in a rating component.
      * When set to "true", the reset button will be visible to the user, and they will be able to click it to reset the rating value to its default value.
-     * 
+     *
      * {% codeBlock src='rating/allowReset/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     allowReset?: boolean;
@@ -38,8 +38,9 @@ export interface RatingModel extends ComponentModel{
      * Defines the template that defines the appearance of each un-rated item in a rating component.
      *
      * @default ''
+     * @aspType string
      */
-    emptyTemplate?: string;
+    emptyTemplate?: string | Function;
 
     /**
      * Defines whether to add animation (to provide visual feedback to the user) when an item in a rating component is hovered.
@@ -60,12 +61,13 @@ export interface RatingModel extends ComponentModel{
 
     /**
      * Defines the template that defines the appearance of each rated item in a rating component.
-     * 
+     *
      * {% codeBlock src='rating/fullTemplate/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default ''
+     * @aspType string
      */
-    fullTemplate?: string;
+    fullTemplate?: string | Function;
 
     /**
      * Defines the specific number of items (symbols) in rating component.
@@ -84,9 +86,9 @@ export interface RatingModel extends ComponentModel{
      * * Bottom
      * * Left
      * * Right
-     * 
+     *
      * {% codeBlock src='rating/labelPosition/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @isenumeration true
      * @default LabelPosition.Right
      * @asptype LabelPosition
@@ -95,12 +97,13 @@ export interface RatingModel extends ComponentModel{
 
     /**
      * Defines the template that used as label over default label of the rating. The current value of rating passed as context to build the content.
-     * 
+     *
      * {% codeBlock src='rating/labelTemplate/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default ''
+     * @aspType string
      */
-    labelTemplate?: string;
+    labelTemplate?: string | Function;
 
     /**
      * Defines the value that specifies minimum rating that a user can select.
@@ -120,9 +123,9 @@ export interface RatingModel extends ComponentModel{
      * * Half
      * * Quarter
      * * Exact
-     * 
+     *
      * {% codeBlock src='rating/precision/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @isenumeration true
      * @default PrecisionType.Full
      * @asptype PrecisionType
@@ -140,9 +143,9 @@ export interface RatingModel extends ComponentModel{
     /**
      * Defines a value that specifies whether to display a label that shows the current value of a rating.
      * When set to "true", a label will be displayed that shows the current value of the rating; otherwise false.
-     * 
+     *
      * {% codeBlock src='rating/showLabel/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default false
      */
     showLabel?: boolean;
@@ -158,21 +161,22 @@ export interface RatingModel extends ComponentModel{
     /**
      * Defines the template that used as tooltip content over default tooltip content of the rating.
      * The current value of rating passed as context to build the content.
-     * 
+     *
      * {% codeBlock src='rating/tooltipTemplate/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default ''
+     * @aspType string
      */
-    tooltipTemplate?: string;
+    tooltipTemplate?: string | Function;
 
     /**
      * Defines the current rating value which used to display and update the rating selected by the user.
      * Based on "PrecisionType", users can select ratings with varying levels of precision.
      * The "value" is a decimal value that ranges from the minimum value to the items count,
      * as specified by the "min" and "itemsCount" properties of the rating.
-     * 
+     *
      * {% codeBlock src='rating/value/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @default 0.0
      * @aspType double
      */
@@ -188,9 +192,9 @@ export interface RatingModel extends ComponentModel{
 
     /**
      * Event callback that is raised before rendering each item.
-     * 
+     *
      * {% codeBlock src='rating/beforeItemRenderEvent/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @event beforeItemRender
      */
     beforeItemRender?: EmitType<RatingItemEventArgs>;
@@ -204,18 +208,18 @@ export interface RatingModel extends ComponentModel{
 
     /**
      * Event callback that is raised when a user hovers over an item.
-     * 
+     *
      * {% codeBlock src='rating/onItemHoverEvent/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @event onItemHover
      */
     onItemHover?: EmitType<RatingHoverEventArgs>;
 
     /**
      * Event callback that is raised when the value is changed.
-     * 
+     *
      * {% codeBlock src='rating/valueChangedEvent/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @event valueChanged
      */
     valueChanged?: EmitType<RatingChangedEventArgs>;

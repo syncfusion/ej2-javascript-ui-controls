@@ -128,7 +128,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartTitle');
             expect(text.textContent == 'Syncfusion Chart Title').toBe(true);            
-            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '22.75').toBe(true);
+            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '23.5').toBe(true);
         });
         it('Checking textoverflow title none', () => {
             chart.width = '100px';
@@ -137,20 +137,20 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartTitle');
             expect(text.getAttribute('text-anchor')).toBe('middle');
-            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '22.75').toBe(true);
+            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '23.5').toBe(true);
         });
         it('Checking textoverflow title wrap', () => {
             chart.titleStyle.textOverflow = 'Wrap';
             chart.dataBind();
             text = document.getElementById('container_ChartTitle');
-            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '22.75').toBe(true);
+            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '23.5').toBe(true);
         });
         it('Checking textoverflow title wrapwithtrim', () => {
             chart.title = 'Efficiency of oil-fired power productionchart';
             chart.dataBind();
             text = document.getElementById('container_ChartTitle');
             expect(text.textContent.indexOf('...') != -1).toBe(true);
-            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '22.75').toBe(true);
+            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '23.5').toBe(true);
         });
 
         it('Checking textoverflow title trim', () => {
@@ -159,7 +159,7 @@ describe('Chart Control', () => {
             text = document.getElementById('container_ChartTitle');
             expect(text.textContent.indexOf('...') != -1).toBe(true);
             expect(text.getAttribute('text-anchor')).toBe('middle');
-            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '22.75').toBe(true);
+            expect(text.getAttribute('y') == '25' || text.getAttribute('y') == '23.5').toBe(true);
         });
         it('Checking title trim', () => {
             chart.title = 'candidate joined in a year syncfusion Chart Title';
@@ -224,7 +224,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent == 'Chart SubTitle').toBe(true);
-            expect(text.getAttribute('y') == '55.25' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '52.25' || text.getAttribute('y') == '49.25').toBe(true);
        });
 
         it('Checking textoverflow subtitle none', function () {
@@ -233,7 +233,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent == 'SubTitle').toBe(true);
-            expect(text.getAttribute('y') == '55.25' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '52.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
         it('Checking textoverflow subtitle trim', function () {
@@ -243,7 +243,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent.indexOf('...') != -1).toBe(true);
-            expect(text.getAttribute('y') == '55.25' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '52.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
         it('Checking textoverflow subtitle wrap', function () {
@@ -251,7 +251,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.childNodes.length == 2).toBe(true);
-            expect(text.getAttribute('y') == '55.25' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '52.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
         it('Checking textAlignment subtitle center and subtitle is in Title width', function () {
@@ -499,7 +499,7 @@ describe('Chart Control', () => {
                 expect(parseInt(secondaryElement.style.left, 10) === 179 || parseInt(secondaryElement.style.left, 10) === 184).toBe(true);
                 let datalabel: HTMLDivElement = document.getElementById('container_Series_0_DataLabel_4') as HTMLDivElement;
                 expect(parseInt(datalabel.style.top, 10) === 227 || parseInt(datalabel.style.top, 10) === 228).toBe(true);
-                expect(parseInt(datalabel.style.left, 10)).toBe(174);
+                expect(parseInt(datalabel.style.left, 10)).toBe(172);
                 trigger.draganddropEvent(ele, 20, 100, 120, 300);
                 expect(chart.primaryXAxis.zoomFactor).toBe(1);
                 expect(chart.primaryYAxis.zoomFactor).toBe(1);
@@ -578,14 +578,14 @@ describe('Chart Control', () => {
         });
         it('checking before the legend name chage', () => {
             element = document.getElementById('seriesData_chart_legend_element');
-            expect(element.getAttribute('x') === '829' || element.getAttribute('x') === '830').toBe(true);
+            expect(element.getAttribute('x') === '828' || element.getAttribute('x') === '830').toBe(true);
             element = document.getElementById('seriesData_chart_legend_text_0');
             expect(element.textContent).toEqual('Gold');
         });
         it('checking with changing name', (done: Function) => {
             loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('seriesData_chart_legend_element');
-                expect(element.getAttribute('x') === '740' || element.getAttribute('x') === '749').toBe(true);
+                expect(element.getAttribute('x') === '741' || element.getAttribute('x') === '749').toBe(true);
                 element = document.getElementById('seriesData_chart_legend_text_0');
                 expect(element.textContent).toEqual('Olymbic gold medal');
                 done();

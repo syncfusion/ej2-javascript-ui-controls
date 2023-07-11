@@ -6,6 +6,7 @@ import { PdfSectionCollection } from './../pages/pdf-section-collection';
 import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { PdfName } from './../primitives/pdf-name';
 import { PdfReferenceHolder } from './../primitives/pdf-reference';
+import { PdfViewerPreferences } from './pdf-viewer-preferences';
 /**
  * `PdfCatalog` class represents internal catalog of the Pdf document.
  * @private
@@ -23,6 +24,7 @@ export class PdfCatalog extends PdfDictionary {
      * @private
      */
     private tempDictionaryProperties : DictionaryProperties = new DictionaryProperties();
+    private _viewerPreferences: PdfViewerPreferences;
     //constructor
     /**
      * Initializes a new instance of the `PdfCatalog` class.
@@ -48,5 +50,16 @@ export class PdfCatalog extends PdfDictionary {
         // }
         this.sections = value;
         this.items.setValue(this.tempDictionaryProperties.pages, new PdfReferenceHolder(value));
+    }
+    /**
+     * Gets the viewer preferences of the PDF document.
+     * @private
+     */
+    public get viewerPreferences() : PdfViewerPreferences {
+        if (this._viewerPreferences === null || typeof this._viewerPreferences === 'undefined') {
+            this._viewerPreferences = new PdfViewerPreferences(this);
+            this.items.setValue(this.tempDictionaryProperties.viewerPreferences, new PdfReferenceHolder(this._viewerPreferences.element));
+        }
+        return this._viewerPreferences;
     }
 }

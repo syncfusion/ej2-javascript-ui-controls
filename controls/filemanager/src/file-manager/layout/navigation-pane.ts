@@ -171,7 +171,9 @@ export class NavigationPane {
     private addChild(files: { [key: string]: Object; }[], target: string, prevent: boolean): void {
         // eslint-disable-next-line
         const directories: Object[] = getDirectories(files);
-        if (directories.length > 0) {
+        if ( directories.length > 0 &&
+            ((directories[0] as any).filterPath == null || (this.getTreeData(target)[0] as any).filterPath == null || (directories[0] as any).filterPath !== (this.getTreeData(target)[0] as any).filterPath)
+          ) {
             let length: number = 0;
             // eslint-disable-next-line
             const folders: { [key: string]: Object; }[] = <{ [key: string]: Object; }[]>directories;
@@ -216,7 +218,7 @@ export class NavigationPane {
                     const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
                     this.parent.trigger('fileSelect', selecEventArgs);
                 }
-                if(!this.isRightClick && args.node.getAttribute('data-uid') !== this.parent.pathId[this.parent.pathId.length-1])
+                if(!this.isRightClick)
                 {
                     const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
                     this.parent.trigger('fileOpen', eventArgs);

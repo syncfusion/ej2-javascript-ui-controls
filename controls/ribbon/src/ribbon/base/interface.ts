@@ -56,6 +56,10 @@ export enum RibbonItemSize {
  */
 export enum DisplayMode {
     /**
+     * The item appears in the classic layout group.
+     */
+    Classic = 1 << 2,
+    /**
      * The item appears in the simplified layout group.
      */
     Simplified = 1 << 1,
@@ -64,13 +68,9 @@ export enum DisplayMode {
      */
     Overflow = 1 << 0,
     /**
-     * The item appears in both simplified layout group and overflow popup based on ribbon overflow state.
+      * The item appears in classic layout group, simplified layout group, and overflow popup based on ribbon overflow state.
      */
-    Auto = Simplified | Overflow,
-    /**
-     * The item is hidden in simplified mode.
-     */
-    None = 0
+    Auto = Classic | Simplified | Overflow,
 }
 
 /**

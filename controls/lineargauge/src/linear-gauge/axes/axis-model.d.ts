@@ -7,7 +7,7 @@ export interface LineModel {
 
     /**
      * Sets and gets the dash-array of the axis line.
-     * 
+     *
      * @default ''
      */
 
@@ -30,7 +30,7 @@ export interface LineModel {
 
     /**
      * Sets and gets the color for the axis line.
-     * 
+     *
      * @default null
      */
     color?: string;
@@ -66,7 +66,7 @@ export interface LabelModel {
     /**
      * Sets and gets the format for the axis label. This property accepts any global format string like 'C', 'n1', 'P' etc.
      * Also accepts placeholder like '{value}°C' in which value represent the axis label e.g. 20°C.
-     * 
+     *
      * @default ''
      */
 
@@ -131,7 +131,7 @@ export interface RangeModel {
 
     /**
      * Sets and gets the color of the axis range.
-     * 
+     *
      * @default ''
      */
     color?: string;
@@ -191,7 +191,7 @@ export interface TickModel {
     /**
      * Sets and gets the color for the major or minor tick line. This property accepts value in hex code,
      * rgba string as a valid CSS color string.
-     * 
+     *
      * @default null
      */
 
@@ -298,7 +298,7 @@ export interface PointerModel {
 
     /**
      * Sets and gets the color of the pointer.
-     * 
+     *
      * @default null
      */
     color?: string;
@@ -370,7 +370,7 @@ export interface AxisModel {
 
     /**
      * Enables or disables the inversed axis.
-     * 
+     *
      * @default false
      */
 
@@ -378,7 +378,7 @@ export interface AxisModel {
 
     /**
      * Shows or hides the last label in the axis of the linear gauge.
-     * 
+     *
      * @default false
      */
 
@@ -386,7 +386,7 @@ export interface AxisModel {
 
     /**
      * Enables or disables the opposed position of the axis in the linear gauge.
-     * 
+     *
      * @default false
      */
     opposedPosition?: boolean;

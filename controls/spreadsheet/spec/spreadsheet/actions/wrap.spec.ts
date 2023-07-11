@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { getCell, getRowHeight, SheetModel, Spreadsheet, getRowsHeight } from '../../../src/index';
+import { getCell, getRowHeight, SheetModel, Spreadsheet } from '../../../src/index';
 
 describe('Wrap ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');

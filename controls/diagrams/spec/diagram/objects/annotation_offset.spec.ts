@@ -277,4 +277,57 @@ describe('Diagram Control', () => {
         })
     });
 
+    describe('Bezier connector annotation center alignment is not working properly  ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_bez' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                mode: 'SVG',
+                width: '1000px', height: '1000px',
+                nodes: [
+                    {
+                        id: 'node1', width: 100, height: 50, offsetX: 100, offsetY: 100, annotations: [ { content: 'Node1'}]
+                    },
+                    {
+                        id: 'node2', width: 100, height: 50, offsetX: 100, offsetY: 300, annotations: [ { content: 'Node2'}]
+                    },
+                    {
+                        id: 'node3', width: 100, height: 50, offsetX: 300, offsetY: 100, annotations: [ { content: 'Node3'}]
+                    },
+                    {
+                        id: 'node4', width: 100, height: 50, offsetX: 300, offsetY: 300, annotations: [ { content: 'Node4'}]
+                    },
+                ],
+                connectors: [{
+                    id: 'connector1', sourceID:'node1',targetID:'node2',type:'Orthogonal', annotations: [ {content: 'Connector',horizontalAlignment:'Center',verticalAlignment:'Center'}]
+                },{
+                    id: 'connector2', sourceID:'node3', targetID:'node4',type:'Bezier', annotations: [ {content: 'Connector',horizontalAlignment:'Center',verticalAlignment:'Center'}]
+                }]
+
+            });
+            diagram.appendTo('#diagram_bez');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking bezier connector annotation vertical and horizontal alignment as center', (done: Function) => {
+            let connector = diagram.connectors[1];
+            let textElement = connector.wrapper.children[3];
+            expect(Math.round(textElement.bounds.x) === 272 && Math.round(textElement.bounds.y) === 193).toBe(true);
+            done();
+        });
+    });
+
 });;

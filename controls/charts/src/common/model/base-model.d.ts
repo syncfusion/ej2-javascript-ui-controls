@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { EmptyPointMode, FadeOutMode } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, TextOverflow } from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
+import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { EmptyPointMode, FadeOutMode, TooltipPosition } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, TextOverflow } from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
 
 /**
  * Interface for a class Connector
@@ -532,7 +532,7 @@ export interface TooltipSettingsModel {
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
      *
-     * @default 0.75
+     * @default null
      */
 
     opacity?: number;
@@ -555,9 +555,10 @@ export interface TooltipSettingsModel {
      * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
      *
      * @default null.
+     * @aspType string
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * If set to true, ToolTip will animate while moving from one point to another.
@@ -612,6 +613,148 @@ export interface TooltipSettingsModel {
      */
 
     border?: BorderModel;
+
+}
+
+/**
+ * Interface for a class StockTooltipSettings
+ */
+export interface StockTooltipSettingsModel {
+
+    /**
+     * Enables / Disables the visibility of the tooltip.
+     *
+     * @default false.
+     */
+
+    enable?: boolean;
+
+    /**
+     * Enables / Disables the visibility of the marker.
+     *
+     * @default true.
+     */
+
+    enableMarker?: boolean;
+
+    /**
+     * If set to true, a single ToolTip will be displayed for every index.
+     *
+     * @default false.
+     */
+
+    shared?: boolean;
+
+    /**
+     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default null
+     */
+
+    fill?: string;
+
+    /**
+     * Header for tooltip. By default, the shared tooltip displays the point x value and the series name for each individual tooltip.
+     *
+     * @default null
+     */
+
+    header?: string;
+
+    /**
+     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default 0.75
+     */
+
+    opacity?: number;
+
+    /**
+     * Options to customize the ToolTip text.
+     */
+
+    textStyle?: FontModel;
+
+    /**
+     * Format the ToolTip content.
+     *
+     * @default null.
+     */
+
+    format?: string;
+
+    /**
+     * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
+     *
+     * @default null.
+     * @aspType string
+     */
+
+    template?: string | Function;
+
+    /**
+     * If set to true, ToolTip will animate while moving from one point to another.
+     *
+     * @default true.
+     */
+    enableAnimation?: boolean;
+
+    /**
+     * Duration for the ToolTip animation.
+     *
+     * @default 300
+     */
+
+    duration?: number;
+
+    /**
+     * Fade Out duration for the ToolTip hide.
+     *
+     * @default 1000
+     */
+
+    fadeOutDuration?: number;
+
+    /**
+     * Fade Out duration for the Tooltip hide.
+     *
+     * @default Move
+     */
+
+    fadeOutMode?: FadeOutMode;
+
+    /**
+     * To wrap the tooltip long text based on available space.
+     * This is only application for chart tooltip.
+     *
+     * @default false
+     */
+
+    enableTextWrap?: boolean;
+
+    /**
+     * By default, the nearest points will be included in the shared tooltip; however, you can set it to false to exclude the nearest value from the tooltip.
+     *
+     * @default true
+     */
+
+    showNearestPoint?: boolean;
+
+    /**
+     * Options to customize tooltip borders.
+     */
+
+    border?: BorderModel;
+
+    /**
+     * Specifies the tooltip position. They are, 
+     * * fixed - Place the tooltip in the fixed position. 
+     * * nearest- Tooltip moves along with the mouse. 
+     * 
+     * @default 'Fixed' 
+     */
+
+    position?: TooltipPosition; 
 
 }
 

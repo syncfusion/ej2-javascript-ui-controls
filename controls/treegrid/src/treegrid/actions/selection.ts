@@ -366,11 +366,11 @@ export class Selection {
     }
 
     private updateSelectedItems(currentRecord: ITreeData, checkState: string): void {
-        const record: ITreeData[] = this.parent.getCurrentViewRecords().filter((e: ITreeData) => {
+        const record: ITreeData[] = this.parent.grid.currentViewData.filter((e: ITreeData) => {
             return e.uniqueID === currentRecord.uniqueID;
         });
         let checkedRecord: ITreeData;
-        const recordIndex: number = this.parent.getCurrentViewRecords().indexOf(record[0]);
+        const recordIndex: number = this.parent.grid.currentViewData.indexOf(record[0]);
         const checkboxRecord: ITreeData = getParentData(this.parent, currentRecord.uniqueID);
         const tr: HTMLElement = this.parent.getRows()[parseInt(recordIndex.toString(), 10)];
         let checkbox: HTMLElement;
@@ -425,7 +425,6 @@ export class Selection {
                 checkbox.classList.add(checkBoxclass);
                 const chkstate: string = checkState === 'check' ? 'checked' : checkState === 'uncheck' ? 'unchecked' : 'mixed';
                 tr.querySelector('.e-treecheckselect').setAttribute('aria-checked', checkState === 'check' ? 'true' : checkState === 'uncheck' ? 'false' : 'mixed');
-                tr.querySelector('.e-frame').setAttribute('title', 'checkbox' + chkstate);
             }
         }
     }

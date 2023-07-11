@@ -3887,6 +3887,195 @@ describe('Toolbar Control', () => {
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.children[0].innerHTML).toEqual('Bold');
         });
+        it('Home and End arrow Key testing in VisibleElement checking Scorllable mode ', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'New', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Underline', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Bold', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Italic', htmlAttributes: { 'role': 'Toolbar' } },
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.hideItem(0, true);
+            toolbar.hideItem(3, true)
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-hidden')).toEqual(true);
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-hidden')).toEqual(true);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('Underline');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('Bold');
+            toolbar.hideItem(0, false);
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-hidden')).toEqual(false);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('New');
+            toolbar.hideItem(3, false);
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-hidden')).toEqual(false);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('Italic');
+            toolbar.enableItems(0, false);
+            toolbar.enableItems(3, false);
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-overlay')).toEqual(true);
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-overlay')).toEqual(true);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('Underline');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('Bold');
+            toolbar.enableItems(0, true);
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-overlay')).toEqual(false);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('New');
+            toolbar.enableItems(3, true);
+            expect(toolbar.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-overlay')).toEqual(false);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML).toEqual('Italic');
+        });
+        it('Home and End Key testig in VisibleElement checking Popup Mode', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 30,
+                overflowMode: 'Popup',
+                items: [
+                    { type: 'Button', text: 'New', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Underline', htmlAttributes: { 'role': 'Toolbar'} },
+                    { type: 'Button', text: 'Bold', htmlAttributes: { 'role': 'Toolbar' } },
+                    { type: 'Button', text: 'Italic', htmlAttributes: { 'role': 'Toolbar' } }
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.hideItem(0, true);
+            toolbar.hideItem(3, true)
+            expect(toolbar.popObj.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-hidden')).toEqual(true);
+            expect(toolbar.popObj.element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-hidden')).toEqual(true);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.popObj.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            toolbar.popObj.show();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML == 'Underline').toEqual(true);
+            toolbar.popObj.hide();
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: toolbar.popObj.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            toolbar.popObj.show();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML == 'Bold').toEqual(true);
+            toolbar.hideItem(0, false);
+            expect(toolbar.popObj.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-hidden')).toEqual(false);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.popObj.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            toolbar.popObj.show();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML == 'New').toEqual(true);
+            toolbar.hideItem(3, false);
+            expect(toolbar.popObj.element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-hidden')).toEqual(false);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: toolbar.popObj.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            toolbar.popObj.show();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML == 'Italic').toEqual(true);
+            toolbar.enableItems(0, false);
+            toolbar.enableItems(3, false)
+            expect(toolbar.popObj.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-overlay')).toEqual(true);
+            expect(toolbar.popObj.element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-overlay')).toEqual(true);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.popObj.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            toolbar.popObj.show();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML == 'Underline').toEqual(true);
+            toolbar.popObj.hide();
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: toolbar.popObj.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            toolbar.popObj.show();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML == 'Bold').toEqual(true);
+            toolbar.enableItems(0, true);
+            expect(toolbar.popObj.element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-overlay')).toEqual(false);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: toolbar.popObj.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            toolbar.popObj.show();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML == 'New').toEqual(true);
+            toolbar.enableItems(3, true);
+            expect(toolbar.popObj.element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-overlay')).toEqual(false);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: toolbar.popObj.element.querySelectorAll('.e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            toolbar.popObj.show();
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.children[0].innerHTML == 'Italic').toEqual(true);
+
+        });
         it('Home and End Key testig in Popup Mode', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
@@ -12646,6 +12835,54 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(popNav.getAttribute('role')).toBe('button');
             expect(popNav.getAttribute('aria-haspopup')).toBe('true');
             expect(popNav.getAttribute('aria-expanded')).toBe('true');
+        });
+    });
+
+    describe('ES-837389-Toolbar scrollable buttons are not appears while rendering the Toolbar inside the dialog', () => {
+        let toolbar: Toolbar;
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel 2 Build/PPR1.180610.009)' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.85 Mobile Safari/537.36';
+        document.body.innerHTML = '';
+        beforeEach((): void => {
+            Browser.userAgent = androidUserAgent;
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+                Browser.userAgent = uA;
+            }
+            document.body.innerHTML = '';
+        });
+        it('Checking scroll button present in mobile mode', () => {
+            toolbar = new Toolbar({
+                width: 150,
+                overflowMode: "Scrollable",
+                items: [{ text: 'Today' },
+                { text: 'Week'},    
+                { text: 'Month' },
+                { text: 'Year' },
+                { text: 'Print'},
+                { text: 'Sync'},
+                { text: 'cut'},
+                { text: 'copy'},
+                { text: 'paste'},
+                { text: 'bold'},
+                { text: 'italic'},
+                { text: 'underline'},]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            const ele: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
+            expect(ele.classList.contains('e-scroll-device')).toBe(true);
+            const right: HTMLElement = ele.querySelector('.e-scroll-right-nav');
+            expect(isNullOrUndefined(right)).toEqual(false);
+            Object.defineProperty(window, 'orientation', { value: 90 });
+            expect(ele.classList.contains('e-scroll-device')).toBe(true);
+            const rightOrientation: HTMLElement = ele.querySelector('.e-scroll-right-nav');
+            expect(isNullOrUndefined(rightOrientation)).toEqual(false);
         });
     });
 

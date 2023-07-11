@@ -364,7 +364,7 @@ describe('Chart Control', () => {
         it('checking x axis as inversed axis', (done: Function) => {
             loaded = (args: Object): void => {
                 let firstLabel: HTMLElement = document.getElementById('chartContainer0_AxisLabel_0');
-                expect(firstLabel.textContent).toEqual('Aug...');
+                expect(firstLabel.textContent).toEqual('Aug 2000');
                 let lastLabel: HTMLElement = document.getElementById('chartContainer0_AxisLabel_16');
                 expect(lastLabel.textContent).toEqual('Dec 2009');
                 expect(+firstLabel.getAttribute('x') > (+lastLabel.getAttribute('x'))).toBe(true);
@@ -385,19 +385,19 @@ describe('Chart Control', () => {
             chart.primaryXAxis.skeleton = 'medium';
             chart.primaryXAxis.skeletonType = 'Time';
             let label: HTMLElement = document.getElementById('chartContainer0_AxisLabel_0');
-            expect(label.textContent).toEqual('Aug...');
+            expect(label.textContent).toEqual('Aug 2000');
             chart.dataBind();
             label = document.getElementById('chartContainer0_AxisLabel_0');
-            expect(label.textContent).toEqual('11 Aug 2000 ...');
+            expect(label.textContent).toEqual('11 Aug ...');
             done();
         });
         it('checking custom label format isInversed false', (done: Function) => {
             chart.primaryXAxis.isInversed = false;
             let label: HTMLElement = document.getElementById('chartContainer0_AxisLabel_0');
-            expect(label.textContent).toEqual('11 Aug 2000 ...');
+            expect(label.textContent).toEqual('11 Aug ...');
             chart.dataBind();
             label = document.getElementById('chartContainer0_AxisLabel_16');
-            expect(label === null).toBe(true);
+            expect(label !== null).toBe(true);
             done();
         });
         it('checking custom label format and skeleton, type priority', (done: Function) => {
@@ -405,7 +405,7 @@ describe('Chart Control', () => {
             chart.primaryXAxis.skeleton = 'medium';
             chart.primaryXAxis.skeletonType = 'Date';
             let label: HTMLElement = document.getElementById('chartContainer0_AxisLabel_16');
-            expect(label === null).toBe(true);
+            expect(label !== null).toBe(true);
             chart.dataBind();
             label = document.getElementById('chartContainer0_AxisLabel_0');
             expect(label.textContent).toEqual('Aug 11, 2000');

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-    append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, isNullOrUndefined,
+    append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, isNullOrUndefined as isNoU,
     removeClass, closest, setStyleAttribute
 } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
@@ -309,7 +309,7 @@ export class LayoutRender extends MobileLayout {
                     if (column.transitionColumns.length > 0) {
                         columnTransition = true;
                     }
-                    if (!columnTransition && isNullOrUndefined(this.parent.swimlaneSettings.keyField)) {
+                    if (!columnTransition && isNoU(this.parent.swimlaneSettings.keyField)) {
                         const borderElem: HTMLElement = createElement('div', { className: cls.BORDER_CLASS });
                         columnWrapper.appendChild(borderElem);
                     }
@@ -355,6 +355,9 @@ export class LayoutRender extends MobileLayout {
                 'aria-selected': 'false', 'tabindex': '-1', 'role': 'option'
             }
         });
+        if (this.parent.cardHeight !== 'auto') {
+            cardElement.style.height = formatUnit(this.parent.cardHeight);
+        }
         if (this.parent.cardSettings.template) {
             addClass([cardElement], cls.TEMPLATE_CLASS);
             const templateId: string = this.parent.element.id + '_cardTemplate';
@@ -439,7 +442,7 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.parent.kanbanData.map((obj: { [key: string]: string }): void => {
                 if (!this.parent.swimlaneSettings.showEmptyRow) {
-                    if ((isNullOrUndefined(obj[this.parent.keyField])) || (obj[this.parent.keyField] === '') ||
+                    if ((isNoU(obj[this.parent.keyField])) || (obj[this.parent.keyField] === '') ||
                     (obj[this.parent.keyField] && this.columnKeys.indexOf(obj[this.parent.keyField].toString()) === -1)) {
                         return;
                     }
@@ -561,14 +564,14 @@ export class LayoutRender extends MobileLayout {
         const header: HTMLElement = this.parent.element.querySelector('.' + cls.HEADER_CLASS) as HTMLElement;
         [].slice.call(header.children).forEach((node: HTMLElement) => { node.scrollLeft = target.scrollLeft; });
         this.parent.scrollPosition.content = { left: target.scrollLeft, top: target.scrollTop };
-        if (!isNullOrUndefined(this.parent.swimlaneSettings.keyField) && this.parent.swimlaneSettings.enableFrozenRows) {
+        if (!isNoU(this.parent.swimlaneSettings.keyField) && this.parent.swimlaneSettings.enableFrozenRows) {
             this.frozenRows(e);
         }
     }
 
     private addFrozenSwimlaneDataKey(currentElem: HTMLElement): void {
         const frozenKey: string = currentElem.getAttribute('data-key');
-        if (!isNullOrUndefined(frozenKey)) {
+        if (!isNoU(frozenKey)) {
             this.frozenSwimlaneRow.setAttribute('data-key', frozenKey);
         }
     }
@@ -577,7 +580,7 @@ export class LayoutRender extends MobileLayout {
         const firstSwimlane: HTMLElement =  this.parent.element.querySelector('.' + cls.SWIMLANE_ROW_CLASS) as HTMLElement;
         const header: HTMLElement = this.parent.element.querySelector('.' + cls.HEADER_CLASS) as HTMLElement;
         const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
-        if (isNullOrUndefined(this.frozenSwimlaneRow)) {
+        if (isNoU(this.frozenSwimlaneRow)) {
             this.frozenSwimlaneRow = createElement('div', { className: cls.FROZEN_SWIMLANE_ROW_CLASS });
             const frozenRow: HTMLElement = createElement('div', { className: cls.FROZEN_ROW_CLASS });
             this.frozenSwimlaneRow.appendChild(frozenRow);
@@ -854,7 +857,7 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.kanbanRows.forEach((row: HeaderArgs) =>
                 swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj: Record<string, any>) =>
-                    !isNullOrUndefined(obj[this.parent.keyField]) &&
+                    !isNoU(obj[this.parent.keyField]) &&
                      this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
                     ((!obj[this.parent.swimlaneSettings.keyField] && this.parent.swimlaneSettings.showUnassignedRow) ?
                         '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
@@ -978,7 +981,7 @@ export class LayoutRender extends MobileLayout {
             if (this.parent.sortSettings.sortBy === 'Custom') {
                 field = this.parent.sortSettings.field;
             }
-            if (isNullOrUndefined(this.parent.swimlaneSettings.keyField)) {
+            if (isNoU(this.parent.swimlaneSettings.keyField)) {
                 index = (this.getColumnData(key, this.parent.kanbanData) as Record<string, any>[]).findIndex(
                     (colData: Record<string, any>) =>
                         colData[`${field}`] === data[`${field}`]);
@@ -1008,7 +1011,7 @@ export class LayoutRender extends MobileLayout {
             const args: CardRenderedEventArgs = { data: data, element: cardElement, cancel: false };
             this.parent.trigger(events.cardRendered, args, (cardArgs: CardRenderedEventArgs) => {
                 if (!cardArgs.cancel) {
-                    if (isNullOrUndefined(index) || cardWrapper.children.length === 0) {
+                    if (isNoU(index) || cardWrapper.children.length === 0) {
                         cardWrapper.appendChild(cardElement);
                     } else {
                         cardWrapper.insertBefore(cardElement, cardWrapper.childNodes[index as number]);
@@ -1063,7 +1066,9 @@ export class LayoutRender extends MobileLayout {
             }
         }
         const cardWrapper: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_WRAPPER_CLASS));
-        cardWrapper.forEach((wrapper: HTMLElement) => { EventHandler.remove(wrapper, 'scroll', this.onColumnScroll); });
+        if (cardWrapper.length > 0) {
+            cardWrapper.forEach((wrapper: HTMLElement) => { EventHandler.remove(wrapper, 'scroll', this.onColumnScroll); });
+        }
         if (this.parent.isAdaptive) {
             this.parent.touchModule.unWireTouchEvents();
         }

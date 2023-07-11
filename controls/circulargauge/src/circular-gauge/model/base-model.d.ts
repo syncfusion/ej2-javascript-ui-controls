@@ -109,8 +109,9 @@ export interface RangeTooltipModel {
      * as a placeholder text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Enables and disables the animation for the range tooltip. The animation is set as true by default.
@@ -164,9 +165,10 @@ export interface AnnotationTooltipModel {
      * as a placeholder text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * Enables and disables the animation of the annotation tooltip. By default, the animation is set as true.
@@ -269,9 +271,10 @@ export interface TooltipSettingsModel {
      * as a placeholder text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * Enables and disables the animation of the pointer tooltip in circular gauge.

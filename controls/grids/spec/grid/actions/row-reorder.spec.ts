@@ -12,8 +12,11 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Freeze } from '../../../src/grid/actions/freeze';
+import { Group } from '../../../src/grid/actions/group';
+import { Aggregate } from '../../../src/grid/actions/aggregate';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 
-Grid.Inject(Page, Sort, Selection, RowDD, Freeze);
+Grid.Inject(Page, Sort, Selection, RowDD, Freeze, Group, Aggregate, VirtualScroll);
 
 function copyObject(source: Object, destiation: Object): Object {
     for (let prop in source) {
@@ -1191,6 +1194,216 @@ describe('Row Drag and Drop module', () => {
             destroy(gridObj);
             gridObj = null;
         });
-    })
+    });
 
+    describe('virtualscroll Grouped Row Reorder functionalities', () => {
+        let gridObj: Grid;
+        let rowDrop: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowRowDragAndDrop: true,
+                    enableVirtualization: true,
+                    allowGrouping: true,
+                    selectionSettings: { type: 'Multiple' },
+                    groupSettings: { columns: ['CustomerID']},
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ],
+                    aggregates: [{
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                                groupFooterTemplate: 'Sum : ${Sum}'
+                            },
+                            {
+                                type: 'Average',
+                                field: 'Freight',
+                                format: 'C2',
+                                groupCaptionTemplate: 'Average: ${Average}'
+                            }
+                        ]
+                    }],
+                    rowDrop: rowDrop
+                }, done);
+        });
+
+        it('check group caption and summary before reorder', () => {
+            const captionRow: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupcaptionrow .e-groupcaption');
+            const captionSummary: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupcaptionrow .e-summarycell.e-templatecell');
+            const groupFooterRow: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupfooterrow.e-summaryrow .e-summarycell.e-templatecell');
+            expect(captionRow[0].innerHTML).toBe('Customer ID: CENTC - 1 item');
+            expect(captionSummary[0].innerHTML).toBe('Average: $3.25');
+            expect(groupFooterRow[0].innerHTML).toBe('Sum : $3.25');
+            expect(captionRow[1].innerHTML).toBe('Customer ID: CHOPS - 1 item');
+            expect(captionSummary[1].innerHTML).toBe('Average: $22.98');
+            expect(groupFooterRow[1].innerHTML).toBe('Sum : $22.98');
+            expect(captionRow[2].innerHTML).toBe('Customer ID: ERNSH - 1 item');
+            // expect(captionSummary[2].innerHTML).toBe('Average: $140.51');
+            // expect(groupFooterRow[2].innerHTML).toBe('Sum : $140.51');
+        });
+
+        it('drag and drop row action', (done: Function) => {
+            const dragRowElem: Element = gridObj.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj.getRowByIndex(2);
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.children[2].getBoundingClientRect();
+            rowDrop = (args?: any): void => {
+                args.dropIndex = 2;
+                done();
+            };
+            gridObj.rowDrop = rowDrop;
+            (gridObj.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                dragElement: dropClone,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj.rowDragAndDropModule as any).drag({
+                target: dropRowElem.children[2],
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem.children[2] }
+            });
+            (gridObj.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem.children[2],
+                element: gridObj.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem.children[2] }
+            });
+        });
+
+        it('check group caption and summary after reorder', () => {
+            const captionRow: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupcaptionrow .e-groupcaption');
+            const captionSummary: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupcaptionrow .e-summarycell.e-templatecell');
+            const groupFooterRow: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupfooterrow.e-summaryrow .e-summarycell.e-templatecell');
+            expect(captionRow[0].innerHTML).toBe('Customer ID: CHOPS - 1 item');
+            expect(captionSummary[0].innerHTML).toBe('Average: $22.98');
+            expect(groupFooterRow[0].innerHTML).toBe('Sum : $22.98');
+            expect(captionRow[1].innerHTML).toBe('Customer ID: ERNSH - 2 items');
+            // expect(captionSummary[1].innerHTML).toBe('Average: $71.88');
+            // expect(groupFooterRow[1].innerHTML).toBe('Sum : $143.76');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            rowDrop = null;
+        });
+    });
+
+    describe('Grouped Row Reorder functionalities', () => {
+        let gridObj: Grid;
+        let rowDrop: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowRowDragAndDrop: true,
+                    allowGrouping: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    groupSettings: { columns: ['CustomerID']},
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ],
+                    aggregates: [{
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                                groupFooterTemplate: 'Sum : ${Sum}'
+                            },
+                            {
+                                type: 'Average',
+                                field: 'Freight',
+                                format: 'C2',
+                                groupCaptionTemplate: 'Average: ${Average}'
+                            }
+                        ]
+                    }],
+                    rowDrop: rowDrop
+                }, done);
+        });
+
+        it('check group caption and summary before reorder', () => {
+            const captionRow: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupcaptionrow .e-groupcaption');
+            const captionSummary: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupcaptionrow .e-summarycell.e-templatecell');
+            const groupFooterRow: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupfooterrow.e-summaryrow .e-summarycell.e-templatecell');
+            expect(captionRow[0].innerHTML).toBe('Customer ID: CENTC - 1 item');
+            expect(captionSummary[0].innerHTML).toBe('Average: $3.25');
+            expect(groupFooterRow[0].innerHTML).toBe('Sum : $3.25');
+            expect(captionRow[1].innerHTML).toBe('Customer ID: CHOPS - 1 item');
+            expect(captionSummary[1].innerHTML).toBe('Average: $22.98');
+            expect(groupFooterRow[1].innerHTML).toBe('Sum : $22.98');
+            expect(captionRow[2].innerHTML).toBe('Customer ID: ERNSH - 1 item');
+            // expect(captionSummary[2].innerHTML).toBe('Average: $140.51');
+            // expect(groupFooterRow[2].innerHTML).toBe('Sum : $140.51');
+        });
+
+        it('drag and drop row action', (done: Function) => {
+            const dragRowElem: Element = gridObj.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj.getRowByIndex(2);
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.children[2].getBoundingClientRect();
+            rowDrop = (args?: any): void => {
+                args.dropIndex = 2;
+                done();
+            };
+            gridObj.rowDrop = rowDrop;
+            (gridObj.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj.rowDragAndDropModule as any).drag({
+                target: dropRowElem.children[2],
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem.children[2] }
+            });
+            (gridObj.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem.children[2],
+                element: gridObj.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem.children[2] }
+            });
+        });
+
+        it('check group caption and summary after reorder', () => {
+            const captionRow: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupcaptionrow .e-groupcaption');
+            const captionSummary: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupcaptionrow .e-summarycell.e-templatecell');
+            const groupFooterRow: NodeListOf<Element> = gridObj.getContentTable().querySelectorAll('.e-groupfooterrow.e-summaryrow .e-summarycell.e-templatecell');
+            expect(captionRow[0].innerHTML).toBe('Customer ID: CHOPS - 1 item');
+            expect(captionSummary[0].innerHTML).toBe('Average: $22.98');
+            expect(groupFooterRow[0].innerHTML).toBe('Sum : $22.98');
+            expect(captionRow[1].innerHTML).toBe('Customer ID: ERNSH - 2 items');
+            // expect(captionSummary[1].innerHTML).toBe('Average: $71.88');
+            // expect(groupFooterRow[1].innerHTML).toBe('Sum : $143.76');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            rowDrop = null;
+        });
+    });
 });

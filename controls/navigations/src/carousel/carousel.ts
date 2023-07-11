@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, EventHandler, Collection, Property, Event, EmitType, formatUnit, INotifyPropertyChanged, NotifyPropertyChanges } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Collection, Property, Event, EmitType, formatUnit, INotifyPropertyChanged, NotifyPropertyChanges, Browser } from '@syncfusion/ej2-base';
 import { ChildProperty, addClass, removeClass, setStyleAttribute, attributes, getUniqueID, compile, getInstance, L10n } from '@syncfusion/ej2-base';
 import { append, closest, isNullOrUndefined, remove, classList, Touch, SwipeEventArgs, KeyboardEvents, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -10,6 +10,7 @@ const CLS_CAROUSEL: string = 'e-carousel';
 const CLS_ACTIVE: string = 'e-active';
 const CLS_RTL: string = 'e-rtl';
 const CLS_PARTIAL: string = 'e-partial';
+const CLS_SWIPE: string = 'e-swipe';
 const CLS_SLIDE_CONTAINER: string = 'e-carousel-slide-container';
 const CLS_ITEMS: string = 'e-carousel-items';
 const CLS_CLONED: string = 'e-cloned';
@@ -74,6 +75,30 @@ export type CarouselButtonVisibility = 'Hidden' | 'Visible' | 'VisibleOnHover';
  */
 export type CarouselAnimationEffect = 'None' | 'Slide' | 'Fade' | 'Custom';
 
+/**
+ * Specifies the type of indicators.
+ * ```props
+ * Default: - Displays the indicators with a bullet design.
+ * Dynamic: - Applies a dynamic animation design to the indicators.
+ * Fraction: - Displays the slides numerically as indicators.
+ * Progress: - Represents the slides using a progress bar design.
+ * ```
+ */
+export type CarouselIndicatorsType = 'Default' | 'Dynamic' | 'Fraction' | 'Progress';
+
+/**
+ * Specifies the action (touch & mouse) which enables the slide swiping action in carousel.
+ * * Touch - Enables or disables the swiping action in touch interaction.
+ * * Mouse - Enables or disables the swiping action in mouse interaction.
+ * @aspNumberEnum
+ */
+export enum CarouselSwipeMode {
+    /** Enables or disables the swiping action in touch interaction. */
+    Touch = 1 << 0,
+    /** Enables or disables the swiping action in mouse interaction. */
+    Mouse = 1 << 1
+}
+
 /** An interface that holds details when changing the slide. */
 export interface SlideChangingEventArgs extends BaseEventArgs {
     /** Specifies the index of current slide. */
@@ -131,9 +156,10 @@ export class CarouselItem extends ChildProperty<CarouselItem>  {
      * Accepts the template for individual carousel item.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public template: string;
+    public template: string | Function;
 
     /**
      * Accepts HTML attributes/custom attributes to add in individual carousel item.
@@ -154,6 +180,11 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     private keyConfigs: Record<string, string>;
     private slideChangedEventArgs: SlideChangedEventArgs;
     private localeObj: L10n;
+    private prevPageX: number;
+    private initialTranslate: number;
+    private itemsContainer: HTMLElement;
+    private isSwipe: boolean = false;
+    private timeStampStart: number;
 
     /**
      * Allows defining the collection of carousel item to be displayed on the Carousel.
@@ -179,33 +210,37 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
      * Accepts the template for previous navigation button.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public previousButtonTemplate: string;
+    public previousButtonTemplate: string | Function;
 
     /**
      * Accepts the template for next navigation button.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public nextButtonTemplate: string;
+    public nextButtonTemplate: string | Function;
 
     /**
      * Accepts the template for indicator buttons.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public indicatorsTemplate: string;
+    public indicatorsTemplate: string | Function;
 
     /**
      * Accepts the template for play/pause button.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public playButtonTemplate: string;
+    public playButtonTemplate: string | Function;
 
     /**
      * Accepts single/multiple classes (separated by a space) to be used for carousel customization.
@@ -228,9 +263,10 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
      * Specifies the template option for carousel items.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
 
     /**
      * Specifies index of the current carousel item.
@@ -313,6 +349,19 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     public showIndicators: boolean;
 
     /**
+     * Specifies the type of indicators. The available values for this property are:
+     *
+     * * `Default`: Displays the indicators with a bullet design.
+     * * `Dynamic`: Applies a dynamic animation design to the indicators.
+     * * `Fraction`: Displays the slides numerically as indicators.
+     * * `Progress`: Represents the slides using a progress bar design.
+     *
+     * @default 'Default'
+     */
+    @Property('Default')
+    public indicatorsType: CarouselIndicatorsType;
+
+    /**
      * Defines how to show the previous, next and play pause buttons visibility. The possible values for this property as follows
      * * `Hidden`: Navigation buttons are hidden.
      * * `Visible`: Navigation buttons are visible.
@@ -332,6 +381,18 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(false)
     public partialVisible: boolean;
+
+    /**
+     * Specifies whether the slide transition should occur while performing swiping via touch/mouse.
+     * The slide swiping is enabled or disabled using bitwise operators. The swiping is disabled using ‘~’ bitwise operator.
+     * * Touch - Enables or disables the swiping action in touch interaction.
+     * * Mouse - Enables or disables the swiping action in mouse interaction.
+     *
+     * @default 'Touch'
+     * @aspNumberEnum
+     */
+    @Property(CarouselSwipeMode.Touch)
+    public swipeMode: CarouselSwipeMode;
 
     /**
      * Accepts HTML attributes/custom attributes to add in individual carousel item.
@@ -440,7 +501,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                     this.applySlideInterval();
                 }
                 this.handleNavigatorsActions(this.selectedIndex);
-                if (this.partialVisible) {
+                if (this.partialVisible || !(this.swipeMode === (~CarouselSwipeMode.Touch & ~CarouselSwipeMode.Mouse))) {
                     this.reRenderSlides();
                 }
                 break;
@@ -453,11 +514,10 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 } else {
                     removeClass(rtlElement, CLS_RTL);
                 }
-                if (this.partialVisible) {
-                    const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
-                    const cloneCount: number = this.loop ? 2 : 0;
-                    const slideWidth: number = itemsContainer.firstElementChild.clientWidth;
-                    itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex + cloneCount);
+                if (this.partialVisible || !(this.swipeMode === (~CarouselSwipeMode.Touch & ~CarouselSwipeMode.Mouse))) {
+                    const cloneCount: number = this.loop ? this.getNumOfItems() : 0;
+                    const slideWidth: number = this.itemsContainer.firstElementChild.clientWidth;
+                    this.itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex + cloneCount);
                 }
                 break;
             case 'buttonsVisibility':
@@ -496,8 +556,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 this.autoSlide();
                 break;
             case 'showIndicators':
+            case 'indicatorsType':
                 target = this.element.querySelector(`.${CLS_INDICATORS}`);
-                if (!this.showIndicators && target) {
+                if (target) {
                     this.resetTemplates(['indicatorsTemplate']);
                     remove(target);
                 }
@@ -521,6 +582,13 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 } else {
                     removeClass([this.element], CLS_PARTIAL);
                 }
+                this.reRenderSlides();
+                break;
+            case 'swipeMode':
+                EventHandler.remove(this.element, 'mousedown touchstart', this.swipeStart);
+                EventHandler.remove(this.element, 'mousemove touchmove', this.swiping);
+                EventHandler.remove(this.element, 'mouseup touchend', this.swipStop);
+                this.swipeModehandlers();
                 this.reRenderSlides();
                 break;
             }
@@ -547,6 +615,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (this.partialVisible) {
             carouselClasses.push(CLS_PARTIAL);
         }
+        if (!(this.swipeMode === (~CarouselSwipeMode.Touch & ~CarouselSwipeMode.Mouse))) {
+            carouselClasses.push(CLS_SWIPE);
+        }
         addClass([this.element], carouselClasses);
         setStyleAttribute(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
         attributes(this.element, { 'tabindex': '0', 'aria-roledescription': 'carousel', 'aria-label': this.localeObj.getConstant('slideShow') });
@@ -561,51 +632,51 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             slideContainer = this.createElement('div', { className: CLS_SLIDE_CONTAINER });
             this.element.appendChild(slideContainer);
         }
-        const itemsContainer: HTMLElement = this.createElement('div', { className: CLS_ITEMS, attrs: { 'aria-live': this.autoPlay ? 'off' : 'polite' } });
-        slideContainer.appendChild(itemsContainer);
-        if (this.partialVisible && this.loop) {
+        this.itemsContainer = this.createElement('div', { className: CLS_ITEMS, attrs: { 'aria-live': this.autoPlay ? 'off' : 'polite' } });
+        slideContainer.appendChild(this.itemsContainer);
+        const numOfItems: number = this.getNumOfItems();
+        if (numOfItems > 0 && this.loop) {
             if (this.items.length > 0) {
-                this.items.slice(-2).forEach((item: CarouselItemModel, index: number) => {
-                    this.renderSlide(item, item.template, index, itemsContainer, true);
+                this.items.slice(-numOfItems).forEach((item: CarouselItemModel, index: number) => {
+                    this.renderSlide(item, item.template, index, this.itemsContainer, true);
                 });
             }
             else if (this.dataSource.length > 0) {
-                this.dataSource.slice(-2).forEach((item: Record<string, any>, index: number) => {
-                    this.renderSlide(item, this.itemTemplate, index, itemsContainer, true);
+                this.dataSource.slice(-numOfItems).forEach((item: Record<string, any>, index: number) => {
+                    this.renderSlide(item, this.itemTemplate, index, this.itemsContainer, true);
                 });
             }
         }
         if (this.items.length > 0) {
             this.slideItems = this.items as Record<string, any>[];
             this.items.forEach((item: CarouselItemModel, index: number) => {
-                this.renderSlide(item, item.template, index, itemsContainer);
+                this.renderSlide(item, item.template, index, this.itemsContainer);
             });
         } else if (this.dataSource.length > 0) {
             this.slideItems = this.dataSource;
             this.dataSource.forEach((item: Record<string, any>, index: number) => {
-                this.renderSlide(item, this.itemTemplate, index, itemsContainer);
+                this.renderSlide(item, this.itemTemplate, index, this.itemsContainer);
             });
         }
-        if (this.partialVisible && this.loop) {
+        if (numOfItems > 0 && this.loop) {
             if (this.items.length > 0) {
-                this.items.slice(0, 2).forEach((item: CarouselItemModel, index: number) => {
-                    this.renderSlide(item, item.template, index, itemsContainer, true);
+                this.items.slice(0, numOfItems).forEach((item: CarouselItemModel, index: number) => {
+                    this.renderSlide(item, item.template, index, this.itemsContainer, true);
                 });
             }
             else if (this.dataSource.length > 0) {
-                this.dataSource.slice(0, 2).forEach((item: Record<string, any>, index: number) => {
-                    this.renderSlide(item, this.itemTemplate, index, itemsContainer, true);
+                this.dataSource.slice(0, numOfItems).forEach((item: Record<string, any>, index: number) => {
+                    this.renderSlide(item, this.itemTemplate, index, this.itemsContainer, true);
                 });
             }
         }
         this.renderTemplates();
-        if (this.partialVisible) {
-            itemsContainer.style.setProperty('--carousel-items-count', `${itemsContainer.children.length}`);
-            const slideWidth: number = itemsContainer.firstElementChild.clientWidth;
-            const cloneCount: number = this.loop ? 2 : 0;
-            itemsContainer.style.transitionProperty = 'none';
-            itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex + cloneCount);
-        }
+        this.itemsContainer.style.setProperty('--carousel-items-count', `${this.itemsContainer.children.length}`);
+        const slideWidth: number = isNullOrUndefined(this.itemsContainer.firstElementChild) ? 0 :
+            this.itemsContainer.firstElementChild.clientWidth;
+        this.itemsContainer.style.transitionProperty = 'none';
+        const cloneCount: number = this.loop ? numOfItems : 0;
+        this.itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex + cloneCount);
         this.autoSlide();
         this.renderTouchActions();
         this.renderKeyboardActions();
@@ -616,7 +687,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             `translateX(${-(slideWidth) * (count)}px)`;
     }
 
-    private renderSlide(item: Record<string, any>, itemTemplate: string, index: number, container: HTMLElement,
+    private renderSlide(item: Record<string, any>, itemTemplate: string | Function, index: number, container: HTMLElement,
                         isClone: boolean = false): void {
         const itemEle: HTMLElement = this.createElement('div', {
             id: getUniqueID('carousel_item'),
@@ -645,7 +716,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         const navigators: HTMLElement = this.createElement('div', { className: CLS_NAVIGATORS });
         const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_SLIDE_CONTAINER}`) as HTMLElement;
         itemsContainer.insertAdjacentElement('afterend', navigators);
-        if (!isNullOrUndefined(this.slideItems) && this.slideItems.length > 1){
+        if (!isNullOrUndefined(this.slideItems) && this.slideItems.length > 1) {
             this.renderNavigatorButton('Previous');
             this.renderNavigatorButton('Next');
         }
@@ -709,8 +780,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             if (isLastSlide) {
                 this.setProperties({ autoPlay: false }, true);
                 playButton.setAttribute('aria-label', this.localeObj.getConstant('playSlideTransition'));
-                const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
-                itemsContainer.setAttribute('aria-live', 'polite');
+                this.itemsContainer.setAttribute('aria-live', 'polite');
             }
             buttonObj.appendTo(playButton);
             playPauseWrap.appendChild(playButton);
@@ -725,32 +795,67 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (!this.showIndicators) {
             return;
         }
-        const indicatorWrap: HTMLElement = this.createElement('div', { className: CLS_INDICATORS });
+        let indicatorClass: string = 'e-default';
+        if (!this.indicatorsTemplate) {
+            indicatorClass = `e-${this.indicatorsType.toLowerCase()}`;
+        }
+        const indicatorWrap: HTMLElement = this.createElement('div', { className: `${CLS_INDICATORS} ${indicatorClass}` });
         const indicatorBars: HTMLElement = this.createElement('div', { className: CLS_INDICATOR_BARS });
         indicatorWrap.appendChild(indicatorBars);
+        let progress: HTMLElement;
         if (this.slideItems) {
-            this.slideItems.forEach((item: Record<string, any>, index: number) => {
-                const indicatorBar: HTMLElement = this.createElement('div', {
-                    className: CLS_INDICATOR_BAR + ' ' + (this.selectedIndex === index ? CLS_ACTIVE : ''),
-                    attrs: { 'data-index': index.toString(), 'aria-current': this.selectedIndex === index ? 'true' : 'false' }
-                });
+            switch (this.indicatorsType) {
+            case 'Fraction':
                 if (this.indicatorsTemplate) {
-                    addClass([indicatorBar], CLS_TEMPLATE);
-                    const templateId: string = this.element.id + '_indicatorsTemplate';
-                    const template: HTMLElement[] = this.templateParser(this.indicatorsTemplate)({ index: index, selectedIndex: this.selectedIndex }, this, 'indicatorsTemplate', templateId, false);
-                    append(template, indicatorBar);
+                    this.renderIndicatorTemplate(indicatorBars, this.selectedIndex + 1);
                 } else {
-                    const indicator: HTMLElement = this.createElement('button', { className: CLS_INDICATOR, attrs: { 'type': 'button', 'aria-label': this.localeObj.getConstant('slide') + ' ' + (index + 1) + ' ' + this.localeObj.getConstant('of') + ' ' + this.slideItems.length } });
-                    indicatorBar.appendChild(indicator);
-                    indicator.appendChild(this.createElement('div', {}));
-                    const buttonObj: Button = new Button({ cssClass: 'e-flat e-small' });
-                    buttonObj.appendTo(indicator);
+                    indicatorBars.innerText = `${this.selectedIndex + 1} / ${this.slideItems.length}`;
                 }
-                indicatorBars.appendChild(indicatorBar);
-                EventHandler.add(indicatorBar, 'click', this.indicatorClickHandler, this);
-            });
+                break;
+            case 'Progress':
+                if (this.indicatorsTemplate) {
+                    this.renderIndicatorTemplate(indicatorBars, this.selectedIndex + 1);
+                }
+                else {
+                    progress = this.createElement('div', { className: CLS_INDICATOR_BAR });
+                    progress.style.setProperty('--carousel-items-current', `${this.selectedIndex + 1}`);
+                    progress.style.setProperty('--carousel-items-count', `${this.slideItems.length}`);
+                    indicatorBars.appendChild(progress);
+                }
+                break;
+            case 'Default':
+            case 'Dynamic':
+                this.slideItems.forEach((item: Record<string, any>, index: number) => {
+                    const indicatorBar: HTMLElement = this.createElement('div', {
+                        className: CLS_INDICATOR_BAR + ' ' + (this.selectedIndex === index ? CLS_ACTIVE : this.selectedIndex - 1 === index ? CLS_PREV_SLIDE : this.selectedIndex + 1 === index ? CLS_NEXT_SLIDE : ''),
+                        attrs: { 'data-index': index.toString(), 'aria-current': this.selectedIndex === index ? 'true' : 'false' }
+                    });
+                    indicatorBar.style.setProperty('--carousel-items-current', `${this.selectedIndex}`);
+                    if (this.indicatorsTemplate) {
+                        this.renderIndicatorTemplate(indicatorBar, index);
+                    } else if (this.indicatorsType === 'Default') {
+                        const indicator: HTMLElement = this.createElement('button', { className: CLS_INDICATOR, attrs: { 'type': 'button', 'aria-label': this.localeObj.getConstant('slide') + ' ' + (index + 1) + ' ' + this.localeObj.getConstant('of') + ' ' + this.slideItems.length } });
+                        indicatorBar.appendChild(indicator);
+                        indicator.appendChild(this.createElement('div', {}));
+                        const buttonObj: Button = new Button({ cssClass: 'e-flat e-small' });
+                        buttonObj.appendTo(indicator);
+                    }
+                    indicatorBars.appendChild(indicatorBar);
+                    if (this.indicatorsType === 'Default') {
+                        EventHandler.add(indicatorBar, 'click', this.indicatorClickHandler, this);
+                    }
+                });
+                break;
+            }
         }
         this.element.appendChild(indicatorWrap);
+    }
+
+    private renderIndicatorTemplate(indicatorBar: HTMLElement, index: number = 0): void {
+        addClass([indicatorBar], CLS_TEMPLATE);
+        const templateId: string = this.element.id + '_indicatorsTemplate';
+        const template: HTMLElement[] = this.templateParser(this.indicatorsTemplate)({ index: index, selectedIndex: this.selectedIndex }, this, 'indicatorsTemplate', templateId, false);
+        append(template, indicatorBar);
     }
 
     private renderKeyboardActions(): void {
@@ -783,7 +888,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private autoSlide(): void {
-        if (isNullOrUndefined(this.slideItems) || this.slideItems.length <= 1){
+        if (isNullOrUndefined(this.slideItems) || this.slideItems.length <= 1) {
             return;
         }
         this.resetSlideInterval();
@@ -870,13 +975,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             this.setProperties({ selectedIndex: currentIndex }, true);
             attributes(args.currentSlide, { 'aria-hidden': 'true' });
             attributes(args.nextSlide, { 'aria-hidden': 'false' });
-            const slideIndicators: HTMLElement[] = [].slice.call(this.element.querySelectorAll(`.${CLS_INDICATOR_BAR}`));
-            if (slideIndicators.length > 0) {
-                attributes(slideIndicators[parseInt(activeIndex.toString(), 10)], { 'aria-current': 'false' });
-                attributes(slideIndicators[parseInt(currentIndex.toString(), 10)], { 'aria-current': 'true' });
-                removeClass(slideIndicators, CLS_ACTIVE);
-                addClass([slideIndicators[parseInt(currentIndex.toString(), 10)]], CLS_ACTIVE);
-            }
+            this.refreshIndicators(activeIndex, currentIndex);
             this.slideChangedEventArgs = {
                 currentIndex: args.nextIndex,
                 previousIndex: args.currentIndex,
@@ -885,24 +984,27 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 slideDirection: direction,
                 isSwiped: isSwiped
             };
-            if (this.partialVisible) {
-                const container: HTMLElement = this.element.querySelector('.' + CLS_ITEMS);
-                const slideWidth: number = allSlides[parseInt(currentIndex.toString(), 10)].clientWidth;
-                container.style.transitionProperty = 'transform';
-                if (this.loop) {
-                    if (this.slideChangedEventArgs.currentIndex === 0 && this.slideChangedEventArgs.slideDirection === 'Next') {
-                        container.style.transform = this.getTranslateX(slideWidth, allSlides.length + 2);
-                    }
-                    else if (this.slideChangedEventArgs.currentIndex === this.slideItems.length - 1 && this.slideChangedEventArgs.slideDirection === 'Previous') {
-                        container.style.transform = this.getTranslateX(slideWidth);
-                    }
-                    else {
-                        container.style.transform = this.getTranslateX(slideWidth, currentIndex + 2);
-                    }
+            const slideWidth: number = allSlides[parseInt(currentIndex.toString(), 10)].clientWidth;
+            const numOfItems: number = this.getNumOfItems();
+            if (!this.isSwipe) {
+                this.itemsContainer.style.transitionDuration = '0.6s';
+            }
+            this.isSwipe = false;
+            if ((this.animationEffect === 'Fade')) {
+                this.itemsContainer.classList.add('e-fade-in-out');
+            } else {
+                this.itemsContainer.style.transitionProperty = 'transform';
+            }
+            if (this.loop) {
+                if (this.slideChangedEventArgs.currentIndex === 0 && this.slideChangedEventArgs.slideDirection === 'Next') {
+                    this.itemsContainer.style.transform = this.getTranslateX(slideWidth, allSlides.length + numOfItems);
+                } else if (this.slideChangedEventArgs.currentIndex === this.slideItems.length - 1 && this.slideChangedEventArgs.slideDirection === 'Previous') {
+                    this.itemsContainer.style.transform = this.partialVisible ? this.getTranslateX(slideWidth) : 'translateX(0px)';
+                } else {
+                    this.itemsContainer.style.transform = this.getTranslateX(slideWidth, currentIndex + numOfItems);
                 }
-                else {
-                    container.style.transform = this.getTranslateX(slideWidth, currentIndex);
-                }
+            } else {
+                this.itemsContainer.style.transform = this.getTranslateX(slideWidth, currentIndex);
             }
             if (this.animationEffect === 'Slide') {
                 if (direction === 'Previous') {
@@ -933,13 +1035,14 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private onTransitionEnd(): void {
+        removeClass(this.element.querySelectorAll(`.${CLS_ITEMS}`), 'e-fade-in-out');
+        const numOfItems: number = this.getNumOfItems();
         if (this.slideChangedEventArgs) {
-            if (this.partialVisible && this.loop && (this.slideChangedEventArgs.currentIndex === 0 && this.slideChangedEventArgs.slideDirection === 'Next' ||
+            this.itemsContainer.style.transitionProperty = 'none';
+            if (this.loop && (this.slideChangedEventArgs.currentIndex === 0 && this.slideChangedEventArgs.slideDirection === 'Next' ||
                 this.slideChangedEventArgs.currentIndex === this.slideItems.length - 1 && this.slideChangedEventArgs.slideDirection === 'Previous')) {
-                const container: HTMLElement = this.element.querySelector('.' + CLS_ITEMS);
                 const slideWidth: number = this.slideChangedEventArgs.currentSlide.clientWidth;
-                container.style.transitionProperty = 'none';
-                container.style.transform = this.getTranslateX(slideWidth, this.slideChangedEventArgs.currentIndex + 2);
+                this.itemsContainer.style.transform = this.getTranslateX(slideWidth, this.slideChangedEventArgs.currentIndex + numOfItems);
             }
             addClass([this.slideChangedEventArgs.currentSlide], CLS_ACTIVE);
             removeClass([this.slideChangedEventArgs.previousSlide], CLS_ACTIVE);
@@ -947,6 +1050,50 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 removeClass(this.element.querySelectorAll(`.${CLS_ITEM}`), [CLS_PREV_SLIDE, CLS_NEXT_SLIDE, CLS_TRANSITION_START, CLS_TRANSITION_END]);
                 this.slideChangedEventArgs = null;
             });
+        }
+    }
+
+    private refreshIndicators(activeIndex: number, currentIndex: number): void {
+        const slideIndicator: HTMLElement = this.element.querySelector(`.${CLS_INDICATOR_BARS}`);
+        if (isNullOrUndefined(slideIndicator)) { return; }
+        const indicators: HTMLElement[] = [].slice.call(slideIndicator.childNodes);
+        switch (this.indicatorsType) {
+        case 'Default':
+        case 'Dynamic':
+            attributes(indicators[parseInt(activeIndex.toString(), 10)], { 'aria-current': 'false' });
+            attributes(indicators[parseInt(currentIndex.toString(), 10)], { 'aria-current': 'true' });
+            removeClass(indicators, [CLS_ACTIVE, CLS_PREV_SLIDE, CLS_NEXT_SLIDE]);
+            addClass([indicators[parseInt(currentIndex.toString(), 10)]], CLS_ACTIVE);
+            if (indicators[currentIndex - 1]) {
+                addClass([indicators[currentIndex - 1]], CLS_PREV_SLIDE);
+            }
+            if (indicators[currentIndex + 1]) {
+                addClass([indicators[currentIndex + 1]], CLS_NEXT_SLIDE);
+            }
+            indicators.forEach((item: HTMLElement) => item.style.setProperty('--carousel-items-current', `${this.selectedIndex}`));
+            break;
+        case 'Fraction':
+            if (this.indicatorsTemplate) {
+                if (slideIndicator.children.length > 0) {
+                    slideIndicator.removeChild(slideIndicator.firstElementChild);
+                }
+                this.renderIndicatorTemplate(slideIndicator, currentIndex + 1);
+            }
+            else {
+                slideIndicator.innerText = `${this.selectedIndex + 1} / ${this.slideItems.length}`;
+            }
+            break;
+        case 'Progress':
+            if (this.indicatorsTemplate) {
+                if (slideIndicator.children.length > 0) {
+                    slideIndicator.removeChild(slideIndicator.firstElementChild);
+                }
+                this.renderIndicatorTemplate(slideIndicator, currentIndex + 1);
+            }
+            else {
+                (slideIndicator.firstElementChild as HTMLElement).style.setProperty('--carousel-items-current', `${this.selectedIndex + 1}`);
+            }
+            break;
         }
     }
 
@@ -961,10 +1108,10 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private templateParser(template: string): Function {
+    private templateParser(template: string | Function): Function {
         if (template) {
             try {
-                if (document.querySelectorAll(template).length) {
+                if (typeof template !== 'function' && document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
                 } else {
                     return compile(template);
@@ -1013,8 +1160,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             playButton.setAttribute('aria-label', this.localeObj.getConstant(this.autoPlay ? 'pauseSlideTransition' : 'playSlideTransition'));
             buttonObj.iconCss = CLS_ICON + ' ' + (this.autoPlay ? CLS_PAUSE_ICON : CLS_PLAY_ICON);
             buttonObj.dataBind();
-            const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
-            itemsContainer.setAttribute('aria-live', this.autoPlay ? 'off' : 'polite');
+            this.itemsContainer.setAttribute('aria-live', this.autoPlay ? 'off' : 'polite');
             if (this.autoPlay && !this.loop && this.selectedIndex === this.slideItems.length - 1) {
                 this.setActiveSlide(0, 'Next');
             }
@@ -1099,8 +1245,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             if (isButtonUpdate) {
                 this.setProperties({ autoPlay: !isLastSlide }, true);
                 playButton.setAttribute('aria-label', this.localeObj.getConstant(this.autoPlay ? 'pauseSlideTransition' : 'playSlideTransition'));
-                const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
-                itemsContainer.setAttribute('aria-live', this.autoPlay ? 'off' : 'polite');
+                this.itemsContainer.setAttribute('aria-live', this.autoPlay ? 'off' : 'polite');
                 const buttonObj: Button = getInstance(playButton, Button) as Button;
                 buttonObj.iconCss = CLS_ICON + ' ' + (this.autoPlay ? CLS_PAUSE_ICON : CLS_PLAY_ICON);
                 buttonObj.dataBind();
@@ -1163,7 +1308,102 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    private getNumOfItems(): number {
+        return this.partialVisible ? 2 : 1;
+    }
+
+    private getTranslateValue(element: HTMLElement | Element): number {
+        const style: CSSStyleDeclaration = getComputedStyle(element);
+        return (<Record<string, any> & Window><unknown>window).WebKitCSSMatrix ?
+            new WebKitCSSMatrix(style.webkitTransform).m41 : 0;
+    }
+
+    private swipeStart(e: MouseEvent & TouchEvent): void {
+        if (!this.timeStampStart) {
+            this.timeStampStart = Date.now();
+        }
+        this.isSwipe = false;
+        this.itemsContainer.classList.add('e-swipe-start');
+        this.prevPageX = e.touches ? e.touches[0].pageX : e.pageX;
+        this.initialTranslate = this.getTranslateValue(this.itemsContainer);
+    }
+
+    private swiping(e: MouseEvent & TouchEvent): void {
+        if (!this.itemsContainer.classList.contains('e-swipe-start')) {
+            return;
+        }
+        e.preventDefault();
+        const pageX: number = e.touches ? e.touches[0].pageX : e.pageX;
+        const positionDiff: number = this.prevPageX - (pageX);
+        if (!this.loop && (
+            (this.enableRtl && ((this.selectedIndex === 0 && positionDiff > 0) ||
+                (this.selectedIndex === this.itemsContainer.childElementCount - 1 && positionDiff < 0))) ||
+            (!this.enableRtl && ((this.selectedIndex === 0 && positionDiff < 0) ||
+                (this.selectedIndex === this.itemsContainer.childElementCount - 1 && positionDiff > 0)))
+        )) {
+            return;
+        }
+        this.itemsContainer.style.transform = `translateX(${this.initialTranslate + (this.enableRtl ? positionDiff : -positionDiff)}px)`;
+    }
+
+    private swipStop(): void {
+        this.isSwipe = true;
+        const time: number = Date.now() - this.timeStampStart;
+        let distanceX: number = this.getTranslateValue(this.itemsContainer) - this.initialTranslate;
+        distanceX = distanceX < 0 ? distanceX * -1 : distanceX;
+        if (this.isSwipe) {
+            const offsetDist = distanceX * (Browser.isDevice ? 6 : 1.66);
+            this.itemsContainer.style.transitionDuration = (((Browser.isDevice ? distanceX : offsetDist) / time) / 10) + 's';
+        }
+        const slideWidth: number = this.itemsContainer.firstElementChild.clientWidth;
+        const threshold: number = slideWidth / 2;
+        this.itemsContainer.classList.remove('e-swipe-start');
+        const value: number = this.getTranslateValue(this.itemsContainer);
+        if (value - this.initialTranslate < -threshold) {
+            this.swipeNavigation(!this.enableRtl);
+        }
+        else if (value - this.initialTranslate > threshold) {
+            this.swipeNavigation(this.enableRtl);
+        }
+        else {
+            this.itemsContainer.style.transform = `translateX(${this.initialTranslate}px)`;
+            if (this.animationEffect === 'Fade') {
+                this.itemsContainer.classList.add('e-fade-in-out');
+            }
+        }
+    }
+
+    private swipeNavigation(isRtl: boolean): void {
+        if (isRtl) {
+            this.next();
+        } else {
+            this.prev();
+        }
+    }
+
+    private swipeModehandlers(): void {
+        if ((this.swipeMode & CarouselSwipeMode.Touch) === CarouselSwipeMode.Touch) {
+            EventHandler.add(this.itemsContainer, 'touchstart', this.swipeStart, this);
+            EventHandler.add(this.itemsContainer, 'touchmove', this.swiping, this);
+            EventHandler.add(this.itemsContainer, 'touchend', this.swipStop, this);
+        }
+        if ((this.swipeMode & CarouselSwipeMode.Mouse) === CarouselSwipeMode.Mouse) {
+            EventHandler.add(this.itemsContainer, 'mousedown', this.swipeStart, this);
+            EventHandler.add(this.itemsContainer, 'mousemove', this.swiping, this);
+            EventHandler.add(this.itemsContainer, 'mouseup', this.swipStop, this);
+        }
+        if ((this.swipeMode === 0) && (this.swipeMode & CarouselSwipeMode.Mouse & CarouselSwipeMode.Touch) ===
+            (CarouselSwipeMode.Mouse & CarouselSwipeMode.Touch)) {
+            EventHandler.add(this.itemsContainer, 'mousedown touchstart', this.swipeStart, this);
+            EventHandler.add(this.itemsContainer, 'mousemove touchmove', this.swiping, this);
+            EventHandler.add(this.itemsContainer, 'mouseup touchend', this.swipStop, this);
+        }
+    }
+
     private wireEvents(): void {
+        if (!(this.animationEffect === 'Custom')) {
+            this.swipeModehandlers();
+        }
         EventHandler.add(this.element, 'focusin focusout', this.onFocusActions, this);
         EventHandler.add(this.element, 'mouseenter mouseleave', this.onHoverActions, this);
         EventHandler.add(this.element.firstElementChild, 'animationend', this.onTransitionEnd, this);
@@ -1186,6 +1426,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.remove(this.element.firstElementChild, 'animationend', this.onTransitionEnd);
         EventHandler.remove(this.element.firstElementChild, 'transitionend', this.onTransitionEnd);
         EventHandler.clearEvents(this.element);
+        EventHandler.clearEvents(this.itemsContainer);
     }
 
     /**
@@ -1229,8 +1470,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             playButton.setAttribute('aria-label', this.localeObj.getConstant('pauseSlideTransition'));
         }
         this.setProperties({ autoPlay: true }, true);
-        const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
-        itemsContainer.setAttribute('aria-live', 'off');
+        this.itemsContainer.setAttribute('aria-live', 'off');
         this.applySlideInterval();
     }
 
@@ -1247,8 +1487,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             classList(pauseIcon, [CLS_PLAY_ICON], [CLS_PAUSE_ICON]);
         }
         this.setProperties({ autoPlay: false }, true);
-        const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
-        itemsContainer.setAttribute('aria-live', 'off');
+        this.itemsContainer.setAttribute('aria-live', 'off');
         this.resetSlideInterval();
     }
 
@@ -1294,8 +1533,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         this.destroyButtons();
         this.unWireEvents();
         [].slice.call(this.element.children).forEach((ele: HTMLElement) => { this.element.removeChild(ele); });
-        removeClass([this.element], [CLS_CAROUSEL, this.cssClass, CLS_RTL]);
+        removeClass([this.element], [CLS_CAROUSEL, this.cssClass, CLS_RTL, CLS_SWIPE]);
         ['tabindex', 'role', 'style'].forEach((attr: string): void => { this.element.removeAttribute(attr); });
+        this.itemsContainer = null;
         super.destroy();
     }
 }

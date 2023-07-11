@@ -36,7 +36,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Sets and gets the list of texts to be displayed in an axis as labels.
-     * 
+     *
      * @default null
      */
     @Property(null)
@@ -367,12 +367,12 @@ export class Axis extends ChildProperty<Axis> {
         const labelSize: Size = new Size(0, 0); const labels: string[] = this.axisLabels;
         const padding: number = (axis.border.width > 0 || axis.multiLevelLabels.length > 0) ? 10 : 0;
         let count: number = 1; const row: number = 1;
-        const interval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
+        const interval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') || (axis.textStyle.textOverflow === 'Wrap' || axis.textStyle.textOverflow === 'Trim') ?
             heatmap.initialClipRect.width / axis.axisLabelSize : heatmap.initialClipRect.width / axis.axisLabels.length;
         axis.angle = axis.labelRotation; axis.isIntersect = false;
-        if (axis.orientation === 'Horizontal' && (axis.labelIntersectAction === 'Rotate45' ||
+        if ((axis.orientation === 'Horizontal' && (axis.labelIntersectAction === 'Rotate45' ||
             (axis.labelRotation % 180 === 0 && axis.labelIntersectAction === 'Trim' || axis.enableTrim)) ||
-                axis.labelIntersectAction === 'MultipleRows') {
+                axis.labelIntersectAction === 'MultipleRows') && axis.textStyle.textOverflow !== 'Wrap' && axis.textStyle.textOverflow !== 'Trim') {
             let startX: number = heatmap.initialClipRect.x + ((!axis.isInversed) ? 0 : heatmap.initialClipRect.width);
             let previousEnd: number; let previousStart: number; this.clearMultipleRow();
             for (let i: number = 0, len: number = labels.length; i < len; i++) {
@@ -413,15 +413,35 @@ export class Axis extends ChildProperty<Axis> {
                 this.multipleRow = this.multipleRow.reverse();
             }
         }
+        let labelLength : number = 1;
         for (let i: number = 0; i < labels.length; i++) {
             const multipleRow : MultipleRow [] = this.multipleRow; let label : string;
-            if (axis.enableTrim) {
-                label = textTrim(axis.maxLabelLength, labels[i as number], axis.textStyle);
+            if (axis.enableTrim || axis.textStyle.textOverflow === 'Trim') {
+                label = textTrim((axis.textStyle.textOverflow === 'Trim' && axis.orientation === 'Horizontal' ? interval : axis.maxLabelLength), labels[i as number], axis.textStyle);
             } else { label = labels[i as number]; }
+            if (axis.textStyle.textOverflow === 'Wrap') {
+                const labelInterval: number = axis.orientation === 'Horizontal' ? interval : axis.maxLabelLength;
+                const wrappedlabels: string[] = textWrap(label, labelInterval, axis.textStyle);
+                labelLength = wrappedlabels.length > labelLength ? wrappedlabels.length : labelLength;
+                if (axis.orientation === 'Vertical' || (axis.orientation === 'Horizontal' && axis.angle % 180 !== 0))
+                {
+                    let labelWidth: number = 0;
+                    let wrappedlabelSize: Size = new Size(0, 0);
+                    for (let index: number = 0; index < wrappedlabels.length; index++)
+                    {
+                        wrappedlabelSize = measureText(wrappedlabels[index as number], axis.textStyle);
+                        if (wrappedlabelSize.width > labelWidth)
+                        {
+                            labelWidth = wrappedlabelSize.width;
+                            label = wrappedlabels[index as number];
+                        }
+                    }
+                }
+            }
             const size: Size = (axis.angle % 180 === 0) ?
                 measureText(label, axis.textStyle) : rotateTextSize(axis.textStyle, label, axis.angle);
             labelSize.width = (labelSize.width > size.width) ? labelSize.width : size.width;
-            if (axis.labelIntersectAction === 'MultipleRows' && axis.orientation === 'Horizontal' && i > 0 && axis.labelRotation === 0) {
+            if (axis.labelIntersectAction === 'MultipleRows' && axis.orientation === 'Horizontal' && axis.textStyle.textOverflow !== 'Wrap' && axis.textStyle.textOverflow !== 'Trim' && i > 0 && axis.labelRotation === 0) {
                 if (multipleRow[i as number].end >= heatmap.initialClipRect.width && i < labels.length - 1) {
                     multipleRow[i as number].row = multipleRow[i as number].row + 1;
                 }
@@ -448,12 +468,13 @@ export class Axis extends ChildProperty<Axis> {
                 this.multipleRow[i as number].index = count; axis.multilevel[count as number] = multipleRow[i as number].end;
             } else {
                 if (axis.orientation === 'Horizontal' && axis.labelIntersectAction === 'MultipleRows' && i === 0 &&
-                    axis.labelRotation === 0) {
+                    axis.labelRotation === 0 && axis.textStyle.textOverflow !== 'Wrap' && axis.textStyle.textOverflow !== 'Trim') {
                     axis.multilevel[1] = multipleRow[i as number].end;
                 }
                 labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
             }
         }
+        labelSize.height = (axis.angle % 180 === 0) ? labelSize.height * labelLength : labelSize.height;
         if (heatmap.cellSettings.border.width >= 20 && axis.orientation !== 'Horizontal') {
             labelSize.width = labelSize.width + (heatmap.cellSettings.border.width / 4);
         }

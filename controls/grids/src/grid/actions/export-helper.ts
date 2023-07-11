@@ -326,14 +326,14 @@ export class ExportValueFormatter {
         } else if (args.column.type === 'boolean' && args.value !== '') {
             return args.value ? 'true' : 'false';
             /* tslint:disable-next-line:max-line-length */
-        } else if ((args.column.type === 'date' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined) {
+        } else if ((args.column.type === 'date' || args.column.type === 'dateonly' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined) {
             if (typeof args.value === 'string') {
                 args.value = new Date(args.value);
             }
             if (typeof args.column.format === 'string') {
                 let format: DateFormatOptions;
                 const cFormat: string = args.column.format;
-                if (args.column.type === 'date') {
+                if (args.column.type === 'date' || args.column.type === 'dateonly') {
                     format = { type: 'date', skeleton: cFormat };
                 } else if (args.column.type === 'time') {
                     format = { type: 'time', skeleton: cFormat };
@@ -346,7 +346,7 @@ export class ExportValueFormatter {
                     return (args.value.toString());
                 } else {
                     let customFormat: DateFormatOptions;
-                    if (args.column.type === 'date') {
+                    if (args.column.type === 'date' || args.column.type === 'dateonly') {
                         customFormat = {
                             type: (args.column.format as DateFormatOptions).type,
                             format: args.column.format.format, skeleton: args.column.format.skeleton

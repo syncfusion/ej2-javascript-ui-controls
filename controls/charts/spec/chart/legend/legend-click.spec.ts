@@ -83,7 +83,7 @@ describe('Chart Control Legend Checking', () => {
     });
     it('checking with datalabel before legend click', () => {
         dataLabel = getElement('cartesianChart_Series_3_Point_0_Text_0') as HTMLElement;
-        expect(parseFloat(dataLabel.getAttribute('y')) == 175.79999999999998 || parseFloat(dataLabel.getAttribute('y')) == 213.75).toBe(true);
+        expect(parseFloat(dataLabel.getAttribute('y')) == 216 || parseFloat(dataLabel.getAttribute('y')) == 213.75).toBe(true);
     });
     it('checking with line series legend deselect', (done: Function) => {
         legendElement = getElement('cartesianChart_chart_legend_text_4');
@@ -114,7 +114,7 @@ describe('Chart Control Legend Checking', () => {
 
     it('checking with datalabel before legend selected', () => {
         dataLabel = getElement('cartesianChart_Series_3_Point_0_Text_0') as HTMLElement;
-        expect(+(dataLabel.getAttribute('y'))).toBeLessThanOrEqual(213.75);
+        expect(+(dataLabel.getAttribute('y'))).toBeLessThanOrEqual(216);
     });
 
     it('checking with column series legend deselect', (done: Function) => {
@@ -296,15 +296,14 @@ describe('Chart Control Legend Checking', () => {
         ];
         chart.refresh();
         let stripLine: Element = getElement('cartesianChart_stripline_Behind_rect_primaryYAxis_0');
-        expect(stripLine.getAttribute('y') == '169.875' || stripLine.getAttribute('y') == '170.875').toBe(true);
+        expect(stripLine.getAttribute('d') === 'M 38.5 219.0625 L 790 219.0625').toBe(true);
     });
     it('checked with stripline after legend click', (done: Function) => {
         legendElement = getElement('cartesianChart_chart_legend_text_4');
         trigger.clickEvent(legendElement);
         setTimeout(() => {
             let stripLine: Element = getElement('cartesianChart_stripline_Behind_rect_primaryYAxis_0');
-            expect(stripLine.getAttribute('y') == '129.59375' || stripLine.getAttribute('y') == '130.71875').toBe(true);
-            console.log("stripline_legend = " + stripLine.getAttribute('y'));
+            expect(stripLine.getAttribute('d') === 'M 32.5 190.953125 L 790 190.953125').toBe(true);
             done();
         }, 301);
     });

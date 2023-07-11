@@ -310,6 +310,10 @@ export class InfiniteScroll implements IAction {
     }
 
     private refreshInfiniteCurrentViewData(e: { args: NotifyArgs, data: Object[] }): void {
+        if (e.args.action === 'add' && e.args.requestType === 'save') {
+            this.parent.pageSettings.currentPage = Math.ceil(e.args['index'] / this.parent.pageSettings.pageSize) ?
+                Math.ceil(e.args['index'] / this.parent.pageSettings.pageSize) : 1;
+        }
         const page: number = this.parent.pageSettings.currentPage;
         const size: number = this.parent.pageSettings.pageSize;
         const blocks: number = this.parent.infiniteScrollSettings.initialBlocks;
@@ -727,10 +731,15 @@ export class InfiniteScroll implements IAction {
     }
 
     private getVirtualInfiniteData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
-        this.getVirtualInfiniteEditedData();
-        data.virtualData = this.virtualInfiniteData;
-        data.isAdd = this.isAdd;
-        data.isCancel = this.isCancel;
+        if (this.parent.infiniteScrollSettings.enableCache && this.parent.isEdit && isNullOrUndefined(data['endEdit'])) {
+            this.parent.editModule.closeEdit();
+        }
+        else {
+            this.getVirtualInfiniteEditedData();
+            data.virtualData = this.virtualInfiniteData;
+            data.isAdd = this.isAdd;
+            data.isCancel = this.isCancel;
+        }
     }
 
     private editActionBegin(e: { data: Object, index: number }): void {

@@ -1432,3 +1432,73 @@ describe('EJ2-70405 - Background Color not applied properly when nested styles a
         expect(allSpanNodes[5].style.textDecoration).toEqual('line-through');
     });
 });
+describe('EJ2-69958 - Font size fails to works properly after applying the subscript or superscript', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    it('EJ2-69958 - update the font size after applying the subscript or superscript', () => {
+        rteObj = renderRTE({
+            value: `<ol class="focusNode"><li><p>List1</p></li><li><p>List2</p></li></ol>`,
+            toolbarSettings: {
+                items: ['Subscript','FontSize']
+            }
+        });
+        let rteEle = rteObj.element;
+        let focusNode = rteObj.inputElement.querySelector('.focusNode');
+        const olTag = document.querySelector('ol'); // Select the <ol> tag
+        const range = document.createRange(); // Create a new range object
+        range.selectNode(olTag);
+        domSelection.setRange(document,range);
+        let SubscriptPicker : HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+        SubscriptPicker.click();
+        let fontSizePicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+        fontSizePicker.click();
+        var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[5];
+        fontSizeChooser.click();
+        expect(focusNode.childNodes[1].style.fontSize).toEqual('24pt');
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-70405 - Background Color not applied properly when nested styles are applied', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: `<p><span class="e-img-caption e-rte-img-caption null e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap null"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1839px; min-height: 0px;"><span class="e-img-inner null" contenteditable="true">This is the caption of the image.</span></span></span> </p>        <p>Getting started with <strong>Format </strong> Painter.</p>
+        <h2 class ='sourceformatnode' title="heading1"><span style="font-family: Tahoma, Geneva, sans-serif;">
+            <span style="color: rgb(68, 114, 196); text-decoration: inherit;">
+            <span style="background-color: rgb(204, 255, 255);">
+                <b><u>FORMAT PAINTER:</u></b>
+            </span></span></span>
+        </h2>`,
+            toolbarSettings: {
+                items: ['FontColor']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Test for background color application of selected text node', () => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('.e-img-inner').childNodes[0], 0);
+        range.setEnd(rteObj.element.querySelector('.e-img-inner').childNodes[0], 7);
+        domSelection.setRange(document, range);
+        SelectionCommands.applyFormat(document, 'bold', rteObj.element.querySelector('.e-content'), 'P');
+        SelectionCommands.applyFormat(document, 'italic', rteObj.element.querySelector('.e-content'), 'P');
+        SelectionCommands.applyFormat(document, 'underline', rteObj.element.querySelector('.e-content'), 'P');
+        SelectionCommands.applyFormat(document, 'strikethrough', rteObj.element.querySelector('.e-content'), 'P');
+        // Apply font family
+        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P', 'Arial');
+        // Apply font color
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        // Apply background color
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(0, 255, 0)');
+        // Apply font size
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', '24pt');
+        const imageCaptionWrapper = rteObj.element.querySelector('.e-img-inner');
+        expect(imageCaptionWrapper.firstChild.nodeName).toEqual('SPAN');
+        expect(imageCaptionWrapper.firstChild.style.fontSize).toEqual('24pt');
+    });
+});

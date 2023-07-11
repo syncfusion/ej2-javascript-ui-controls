@@ -3309,7 +3309,11 @@ export class Drawing {
      */
 
     public copy(): Object {
-        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.annotationModule) && (this.pdfViewer.designerMode || this.pdfViewer.enableAnnotation) && (this.pdfViewer.selectedItems.formFields.length !== 0 || this.pdfViewer.selectedItems.annotations.length !== 0)) {
+        let annotationSettings: any;
+        if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
+            annotationSettings = this.pdfViewer.annotationModule.findAnnotationSettings(this.pdfViewer.selectedItems.annotations[0]);
+        }
+        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.annotationModule) && (this.pdfViewer.designerMode || this.pdfViewer.enableAnnotation) && (this.pdfViewer.selectedItems.formFields.length !== 0 || (this.pdfViewer.selectedItems.annotations.length !== 0 && !isNullOrUndefined(annotationSettings) && !annotationSettings.isLock))) {
             this.pdfViewer.clipboardData.pasteIndex = 1;
             this.pdfViewer.clipboardData.clipObject = this.copyObjects();
         }
@@ -3452,7 +3456,7 @@ export class Drawing {
                         }
                     }
                     const addedAnnot: PdfAnnotationBaseModel | PdfFormFieldBaseModel = this.add(newNode);
-                    if (this.pdfViewer.formDesigner && addedAnnot.formFieldAnnotationType) {
+                    if (this.pdfViewer.formDesigner && addedAnnot.formFieldAnnotationType && this.pdfViewer.annotation) {
                         this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(true), null, addedAnnot as PdfFormFieldBase, 'Addition', '', addedAnnot as PdfFormFieldBase, addedAnnot as PdfFormFieldBase);
                     }
                     if ((newNode.shapeAnnotationType === 'FreeText' || newNode.enableShapeLabel) && addedAnnot) {

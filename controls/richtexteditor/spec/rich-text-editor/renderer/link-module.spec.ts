@@ -1797,4 +1797,37 @@ describe('IE 11 insert link', () => {
             expect(rteObj.inputElement.textContent === `RTE Content with RTE`).toBe(true);
         });
     });
+
+    describe('EJ2-71006 - Insert link in list ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<li>Testing</li>',
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('insert link in list', () => {
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.lastElementChild.lastChild as Element, 7);
+            let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let selectParent: any = new NodeSelection().getParentNodeCollection(range)
+            let selectNode: any = new NodeSelection().getNodeCollection(range);
+            let evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+                selectParent: selectParent, selectNode: selectNode
+            };
+            (<any>rteObj).linkModule.linkDialog(evnArg);
+            expect((<any>rteObj).linkModule.dialogObj.headerEle.innerHTML === 'Insert Link').toBe(true);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://www.google.com';
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Google';
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            expect(rteObj.inputElement.textContent == "TestingGoogle");
+        });
+    });
 });

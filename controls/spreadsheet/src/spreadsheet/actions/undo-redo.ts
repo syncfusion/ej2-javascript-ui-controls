@@ -489,7 +489,7 @@ export class UndoRedo {
                 }
             }
             if (isRefresh && !isFromUpdateAction) {
-                this.parent.notify(selectRange, { address: address[1] });
+                this.parent.notify(selectRange, { address: eventArgs.selectedRange });
                 this.parent.notify(positionAutoFillElement, {});
             } else {
                 this.checkRefreshNeeded(sheetIndex, isFromUpdateAction);

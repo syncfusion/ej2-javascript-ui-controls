@@ -258,7 +258,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /**
      * Option for customizing the  label text.
      */
-    @Complex<FontModel>({ size: null, color: null, fontStyle: null, fontWeight: 'Normal', fontFamily: null }, Font)
+    @Complex<FontModel>({ size: null, color: null, fontStyle: null, fontWeight: null, fontFamily: null }, Font)
     public labelStyle: FontModel;
     /**
      * margin size

@@ -8,7 +8,7 @@ import { identityMatrix, transformPointByMatrix, Matrix, rotateMatrix } from '..
 import { DiagramElement } from '../core/elements/diagram-element';
 import { getUserHandlePosition, checkPortRestriction, canShowControlPoints } from '../utility/diagram-util';
 import { NodeModel } from './../objects/node-model';
-import { canMove, canDragSourceEnd, canDragTargetEnd, canContinuousDraw, canDragSegmentThumb } from '../utility/constraints-util';
+import { canMove, canDragSourceEnd, canDragTargetEnd, canContinuousDraw, canDragSegmentThumb,canSingleSelect, canMultiSelect } from '../utility/constraints-util';
 import { canZoomPan, defaultTool, canDrawOnce, canDrag, canDraw, canSelect, canRotate } from '../utility/constraints-util';
 import { canShowCorner, canResizeCorner } from '../utility/diagram-util';
 import { Point } from '../primitives/point';
@@ -73,10 +73,8 @@ export function findToolToActivate(
         const paddedBounds: Rect = new Rect(selectorBnds.x, selectorBnds.y, selectorBnds.width, selectorBnds.height);
         if (hasSingleConnection(diagram) && !(diagram.selectedItems as Selector).annotation) {
             const conn: Connector = diagram.selectedItems.connectors[0] as Connector;
-            //(EJ2-69349)-Unable to drag connector end thumb, when we increase handleSize value 
-            //Sets the handle size for the source and target thumb to change the cursor
-            const sourcePaddingValue: number =  (diagram.selectedItems.handleSize/2) / diagram.scrollSettings.currentZoom;
-            const targetPaddingValue: number =  (diagram.selectedItems.handleSize/2) / diagram.scrollSettings.currentZoom;
+            const sourcePaddingValue: number = (diagram.selectedItems.handleSize/2) / diagram.scrollSettings.currentZoom;
+            const targetPaddingValue: number = (diagram.selectedItems.handleSize/2) / diagram.scrollSettings.currentZoom;
             if (canShowCorner(handle.constraints, 'ResizeAll')) {
                 if ((canShowCorner(handle.constraints, 'ConnectorSourceThumb'))
                     && canDragSourceEnd(conn as Connector) && contains(position, conn.sourcePoint, sourcePaddingValue)) {
@@ -101,8 +99,6 @@ export function findToolToActivate(
                 }
             }
         } else {
-               //(EJ2-69349)-Unable to drag connector end thumb, when we increase handleSize value 
-               //Sets the handle size for the source and target thumb
             const ten: number = (diagram.selectedItems.handleSize/2) / diagram.scroller.currentZoom;
             const tenRotate = 10 / diagram.scroller.currentZoom;
             const matrix: Matrix = identityMatrix();
@@ -130,7 +126,8 @@ export function findToolToActivate(
     }
     //Panning
     if (canZoomPan(diagram) && !obj) { return 'Pan'; }
-    if (target instanceof PointPort && (!canZoomPan(diagram))) {
+    //826364 - Drawing Tool is not activated on hovering the ports while both ZoomPan and single select constraints enabled
+      if ((target instanceof PointPort) && (!canZoomPan(diagram) || (canSingleSelect(diagram) || canMultiSelect(diagram)))) {
         const action: Actions = findPortToolToActivate(diagram, target);
         if (action !== 'None') { return action; }
     }
@@ -206,12 +203,12 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
             // The below condition is used to check the control points visibility of the connector.
             if (contains(
                 position, !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1,
-                sourcePaddingValue) && ((i === 0 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Source'))|| (i !== 0 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Intermediate')))) {
+                sourcePaddingValue) && ((i === 0 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Source')) || (i !== 0 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Intermediate')))) {
                 return 'BezierSourceThumb';
             }
             if (contains(
                 position, !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2,
-                targetPaddingValue) && ((i === conn.segments.length-1 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Target'))|| (i !== conn.segments.length-1 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Intermediate'))))  {
+                targetPaddingValue) && ((i === conn.segments.length - 1 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Target')) || (i !== conn.segments.length - 1 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Intermediate'))))  {
                 return 'BezierTargetThumb';
             }
         }
@@ -281,6 +278,12 @@ export function findPortToolToActivate(
 
 /**
  * Resize handle for container and also object.
+ * @param {Diagram} diagram - provide the options value.
+ * @param {DiagramElement} element - provide the options value.
+ * @param {PointModel} position - provide the options value.
+ * @param {number} x - provide the options value.
+ * @param {number} y - provide the options value.
+ * @returns {Actions}    Resize handle for container and also object.\
  *
  * @private
  */
@@ -323,9 +326,7 @@ function checkResizeHandleForContainer(diagram: Diagram, element: DiagramElement
 function checkForResizeHandles(
     diagram: Diagram, element: DiagramElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {
     const forty: number = 40 / diagram.scroller.currentZoom;
-    //(EJ2-69349)-Unable to drag connector end thumb, when we increase handleSize value 
-    //Sets the handle size for the source and target thumb
-    const ten: number = (diagram.selectedItems.handleSize/2) / diagram.scroller.currentZoom;
+    const ten: number =  (diagram.selectedItems.handleSize/2) / diagram.scroller.currentZoom;
     const selectedItems: Selector = diagram.selectedItems as Selector;
     const labelSelection: boolean = (selectedItems.annotation) ? true : false;
     if (element.actualSize.width >= forty && element.actualSize.height >= forty) {

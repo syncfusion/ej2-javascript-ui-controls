@@ -339,6 +339,9 @@ export class Dependency {
             ganttRecord = predecessorsCollection[count as number];
             if ((!ganttRecord.hasChildRecords && !this.parent.allowParentDependency) || this.parent.allowParentDependency) {
                this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
+                if (!ganttRecord.ganttProperties.isAutoSchedule) {
+                    this.parent.connectorLineEditModule['calculateOffset'](ganttRecord);
+                }
             }
         }
     }
@@ -396,6 +399,15 @@ export class Dependency {
         for (let count: number = 0; count < totLength; count++) {
             if (flatData[count as number].ganttProperties.predecessorsName) {
                 this.validatePredecessorDates(flatData[count as number]);
+                let predecessorCollection: IPredecessor[] = flatData[count as number].ganttProperties.predecessor;
+                if (predecessorCollection && predecessorCollection.length > 1) {
+                    for (let i: number = 0; i < predecessorCollection.length; i++) {
+                        const validateRecord: IGanttData = this.parent.getRecordByID(predecessorCollection[i as number].to);
+                        if (validateRecord) {
+                           this.validatePredecessorDates(validateRecord);
+                        }
+                    }
+                }
                 if (flatData[count as number].hasChildRecords && this.parent.editModule && !this.parent.allowUnscheduledTasks
                     && this.parent.allowParentDependency) {
                     this.parent.editModule['updateChildItems'](flatData[count as number]);
@@ -744,6 +756,9 @@ export class Dependency {
                 if (validationOn !== 'predecessor' && this.parent.isValidationEnabled) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
+                else if (!record.ganttProperties.isAutoSchedule && this.parent.UpdateOffsetOnTaskbarEdit) {
+                    this.parent.connectorLineEditModule['calculateOffset'](record);
+                }
                 if (parentGanttRecord.expanded === false || record.expanded === false) {
                     if (record) { this.validatePredecessor(record, undefined, 'successor'); }
                     continue;
@@ -757,6 +772,9 @@ export class Dependency {
                 let predecessorLength: number | IPredecessor[] = ganttProp.ganttProperties.predecessor ?
                     ganttProp.ganttProperties.predecessor.length : ganttProp.ganttProperties.predecessor;
                 if ((predecessorLength && predecessorNames !== predecessorLength)) {
+                    validUpdate = true;
+                }
+                else if (record.hasChildRecords && record.ganttProperties.predecessor.length > 0 && ganttProp.hasChildRecords && !ganttProp.ganttProperties.predecessor) {
                     validUpdate = true;
                 }
                 if ((taskBarModule.taskBarEditAction !== 'ParentDrag' && taskBarModule.taskBarEditAction !== 'ChildDrag')) {

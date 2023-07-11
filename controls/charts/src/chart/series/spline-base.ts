@@ -37,7 +37,7 @@ export class SplineBase extends LineBase {
         let realPoints: Points[] = [];
         const points: Points[] = [];
         let point: Points;
-        let pointIndex: number = 0;
+        let pointIndex: number = 0; let negativePoint: Boolean = false;
         realPoints = this.filterEmptyPoints(series);
         for (let i: number = 0; i < realPoints.length; i++) {
             point = realPoints[i as number];
@@ -59,6 +59,7 @@ export class SplineBase extends LineBase {
             series.drawPoints = [];
             series.lowDrawPoints = [];
             for (const point of points) {
+                negativePoint = negativePoint ? negativePoint : point.yValue < 0;
                 if (point.index !== 0) {
                     const previous: number = this.getPreviousIndex(points, point.index - 1, series);
                     if (series.type === 'SplineRangeArea') {
@@ -88,6 +89,7 @@ export class SplineBase extends LineBase {
                     }
                 }
             }
+            if (!negativePoint && series.yMin < 0) { series.yMin = 0 }
             if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
                 value = this.getControlPoints(
                     { xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue } as Points,

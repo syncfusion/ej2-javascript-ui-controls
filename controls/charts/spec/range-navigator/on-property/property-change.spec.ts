@@ -69,14 +69,14 @@ describe('Range navigator', () => {
             range.dataBind();
             let element: Element = document.getElementById('container_AxisLabel_0');
             expect(element.getAttribute('x')).toEqual('16');
-            expect(element.getAttribute('y')).toEqual('102');
+            expect(element.getAttribute('y')).toEqual('107');
         });
         it('checking with tickPosition change', () => {
             range.tickPosition = 'Inside';
             range.dataBind();
             let element: Element = document.getElementById('container_AxisLabel_0');
             expect(element.getAttribute('x')).toEqual('16');
-            expect(element.getAttribute('y')).toEqual('102');
+            expect(element.getAttribute('y')).toEqual('107');
         });
         it('checking labelstyle', () => {
             range.tickPosition = 'Outside';
@@ -135,7 +135,7 @@ describe('Range navigator', () => {
             range.locale = '';
             range.dataBind();
             let element: Element = document.getElementById('container_AxisLabel_0');
-            expect(element.getAttribute('fill') === '#686868').toBe(true);
+            expect(element.getAttribute('fill') === '#666666').toBe(true);
         });
         it('check with range change', () => {
             range.value = [new Date(2018, 5, 3), new Date(2018, 5, 20)];

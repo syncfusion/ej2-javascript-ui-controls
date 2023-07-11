@@ -7,7 +7,7 @@ import { ModuleDeclaration, EmitType, remove, Event, EventHandler, Touch } from 
 // eslint-disable-next-line
 import { INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';
 import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
-import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility } from './utils/helper';
+import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility, removeMeasureElement } from './utils/helper';
 import { DrawSvgCanvas, TextOption, titlePositionX, getTitle, showTooltip, getElement, SelectedCellDetails } from './utils/helper';
 import { removeElement, CanvasTooltip, getTooltipText } from './utils/helper';
 import { HeatMapModel } from './heatmap-model';
@@ -269,6 +269,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public cellClick: EmitType<ICellClickEventArgs>;
 
     /**
+     * Triggers when performing the double click operation on the cells in the HeatMap.
+     *
+     * @event cellDoubleClick
+     */
+    @Event()
+    public cellDoubleClick: EmitType<ICellClickEventArgs>;
+
+    /**
      * Triggers before the legend is rendered.
      * {% codeBlock src='heatmap/legendRender/index.md' %}{% endcodeBlock %}
      *
@@ -519,6 +527,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.setProperties({ yAxis : textSettings }, true);
             this.setProperties({ cellSettings : { textStyle : { fontFamily : 'Inter' }}}, true);
         }
+        if (this.theme === 'Material3' || this.theme === 'Material3Dark') {
+            const textSettings: LegendSettingsModel =  { title : { textStyle : { size : '14px', fontFamily : 'Roboto', fontWeight : '500' }}, textStyle : { size : '12px', fontFamily : 'Roboto' , fontWeight : '400' }};
+            this.setProperties({ titleSettings : { textStyle : { size : '16px', fontFamily : 'Roboto' }}}, true);
+            this.setProperties({ legendSettings : textSettings }, true);
+            this.setProperties({ xAxis : textSettings }, true);
+            this.setProperties({ yAxis : textSettings }, true);
+            this.setProperties({ cellSettings : { textStyle : { fontFamily : 'Roboto', fontWeight : '400' }}}, true);
+        }
         if (this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark') {
             const textSettings: LegendSettingsModel =  { title : { textStyle : { size : '12px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight : '500' }}, textStyle : { size : '12px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }};
             this.setProperties({ titleSettings : { textStyle : { size : '16px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}}, true);
@@ -639,6 +655,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 this.legendModule.createTooltipDiv();
             }
         }
+        removeMeasureElement();
     }
 
     /**
@@ -895,6 +912,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.touchInstance.destroy();
         this.touchInstance = null;
         super.destroy();
+        removeMeasureElement();
         this.element.innerHTML = '';
         this.element.classList.remove('e-heatmap');
     }
@@ -1128,6 +1146,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         const move: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
         EventHandler.add(this.element, Browser.isDevice ? start : 'click', this.heatMapMouseClick, this);
+        EventHandler.add(this.element, 'dblclick', this.heatMapMouseDoubleClick, this);
         EventHandler.add(this.element, start, this.heatMapMouseMove, this);
         EventHandler.add(this.element, stop, this.heatMapMouseLeave, this);
         EventHandler.add(this.element, move, this.heatMapMouseMove, this);
@@ -1211,6 +1230,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         const move: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
         EventHandler.remove(this.element, Browser.isDevice ? start : 'click', this.heatMapMouseClick);
+        EventHandler.remove(this.element, 'dblclick', this.heatMapMouseDoubleClick);
         EventHandler.remove(this.element, start, this.heatMapMouseMove);
         EventHandler.remove(this.element, stop, this.heatMapMouseLeave);
         EventHandler.remove(this.element, move, this.heatMapMouseMove);
@@ -1384,21 +1404,23 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.mouseY = (pageY - rect.top) - Math.max(svgCanvasRect.top - rect.top, 0);
     }
 
-    public heatMapMouseClick(e: PointerEvent): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private triggerClickEvent(e: PointerEvent, isDoubleClick: boolean): any {
         let pageX: number;
         let pageY: number;
-        // eslint-disable-next-line
-        let tooltipText: string;
         let touchArg: TouchEvent;
-
         const elementRect: ClientRect = this.element.getBoundingClientRect();
         if (e.type === 'touchstart') {
-            this.isTouch = true;
+            if (!isDoubleClick) {
+                this.isTouch = true;
+            }
             touchArg = <TouchEvent & PointerEvent>e;
             pageY = touchArg.changedTouches[0].clientY;
             pageX = touchArg.changedTouches[0].clientX;
         } else {
-            this.isTouch = false;
+            if (!isDoubleClick) {
+                this.isTouch = false;
+            }
             pageY = e.clientY;
             pageX = e.clientX;
         }
@@ -1407,7 +1429,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         const isheatmapRect: boolean = this.isHeatmapRect(pageX, pageY);
         if (isheatmapRect) {
             const currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(pageX, pageY);
-            this.trigger('cellClick', {
+            this.trigger(isDoubleClick ? 'cellDoubleClick' : 'cellClick', {
                 heatmap: this,
                 value: currentRect.value,
                 x: currentRect.x,
@@ -1420,6 +1442,21 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 event: e
             });
         }
+        return { x: pageX, y: pageY };
+    }
+
+    private heatMapMouseDoubleClick(e: PointerEvent): void {
+        this.triggerClickEvent(e, true);
+    }
+
+    /**
+     * @private
+     */
+    public heatMapMouseClick(e: PointerEvent): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const position: any = this.triggerClickEvent(e, false);
+        const pageX: number = position.x;
+        const pageY: number = position.y;
         this.notify('click', e);
         if (this.paletteSettings.type !== 'Gradient' && this.legendModule
             && this.legendSettings.visible && this.legendVisibilityByCellType) {
@@ -1653,6 +1690,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                                     Math.abs(pageX - this.initialCellX), Math.abs(pageY - this.initialCellY));
         if (((rect.width > 0) && this.enableMultiSelect && e.ctrlKey === false)) {
             this.removeSelectedCellsBorder();
+            const tooltipElement: HTMLElement = document.getElementById(this.element.id + 'Celltooltipcontainer_svg');
+            if (tooltipElement){
+                this.tooltipModule.tooltipObject = null;
+                tooltipElement.setAttribute('opacity', '0');
+            }
         }
         const parentDiv: HTMLElement = document.getElementById(this.element.id + '_CellSelection_Container');
         const svgObject: Element = this.renderer.createSvg({
@@ -1938,7 +1980,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         (document.getElementById(this.element.id + '_svg') as HTMLElement).style.cursor = 'Pointer';
                         const legendLabelTooltipContainer: HTMLElement = document.getElementById(this.element.id + 'legendLabelTooltipContainer');
                         if (!isNullOrUndefined(legendLabelTooltipContainer)) {
-                        legendLabelTooltipContainer.style.cursor = 'Pointer';
+                            legendLabelTooltipContainer.style.cursor = 'Pointer';
                         }
                     }
                     loop = false;
@@ -1968,7 +2010,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.allowSelection && this.multiSelection) {
             this.multiSelection = false;
-            if (e.type === 'mouseup' || e.type === 'touchend' || e.type === 'pointerup') {
+            if (e.type === 'mouseup' || e.type === 'mouseleave' || e.type === 'touchend' || e.type === 'pointerup') {
                 if (e.which !== 2 && e.which !== 3) {
                     if (this.isCellTapHold === false) {
                         let rect: Rect;
@@ -2022,8 +2064,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         this.isCellTapHold = false;
                     }
                 }
-            } else if (e.type === 'mouseleave' && (this.element.id + '_selectedCells')) {
-                removeElement(this.element.id + '_selectedCells');
             }
         }
         if (this.tooltipModule && this.showTooltip && e.type === 'mouseleave') {

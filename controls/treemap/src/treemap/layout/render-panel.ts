@@ -440,7 +440,7 @@ export class LayoutPanel {
         let groupId: string; let templateEle: HTMLElement; let gap: number;
         let textStyle: Font; const levels: LevelSettings[] = treeMap.levels as LevelSettings[];
         this.layoutGroup = this.renderer.createGroup({ id: elementID + '_TreeMap_' + mode + '_Layout' });
-        let itemGroup: Element; let template: string; let border: BorderModel;
+        let itemGroup: Element; let template: string | Function; let border: BorderModel;
         const templateGroup: HTMLElement = createElement('div', {
             id: treeMap.element.id + '_Label_Template_Group',
             className: 'template'
@@ -507,6 +507,7 @@ export class LayoutPanel {
                     treeMap.enableRtl ? renderText + ' [-]' : '[-] ' + renderText : renderText;
             textStyle = (isLeafItem ? leaf.labelStyle : levels[index as number].headerStyle) as Font;
             textStyle.fontFamily = this.treemap.themeStyle.labelFontFamily || textStyle.fontFamily;
+            textStyle.fontWeight = textStyle.fontWeight || this.treemap.themeStyle.fontWeight;
             border = isLeafItem ? leaf.border : levels[index as number].border;
             position = !isLeafItem ? (levels[index as number].headerAlignment) === 'Near' ? 'TopLeft' : (levels[index as number].headerAlignment) === 'Center' ?
                 'TopCenter' : 'TopRight' : leaf.labelPosition;
@@ -668,11 +669,11 @@ export class LayoutPanel {
 
     private renderTemplate(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        secondaryEle: HTMLElement, groupId: string, rect: Rect, position: LabelPosition, template: string, item: any, isLeafItem: boolean
+        secondaryEle: HTMLElement, groupId: string, rect: Rect, position: LabelPosition, template: string | Function, item: any, isLeafItem: boolean
     ): HTMLElement {
         const templateId: string = isLeafItem ? groupId + '_LabelTemplate' : groupId + '_HeaderTemplate';
         const baseTemplateId: string = isLeafItem ? '_LabelTemplate' : '_HeaderTemplate';
-        if (isNullOrUndefined(template['prototype'])) {
+        if (isNullOrUndefined(template['prototype']) && typeof template === 'string') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const keys: any[] = Object.keys(item['data']);
             for (let i: number = 0; i < keys.length; i++) {

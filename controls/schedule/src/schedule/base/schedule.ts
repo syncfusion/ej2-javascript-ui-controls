@@ -498,17 +498,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/dateHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public dateHeaderTemplate: string;
+    public dateHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the header date range.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public dateRangeTemplate: string;
+    public dateRangeTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -517,9 +519,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/cellHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public cellHeaderTemplate: string;
+    public cellHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -528,9 +531,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/dayHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public dayHeaderTemplate: string;
+    public dayHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -539,9 +543,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/monthHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public monthHeaderTemplate: string;
+    public monthHeaderTemplate: string | Function;
 
     /**
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
@@ -556,9 +561,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public cellTemplate: string;
+    public cellTemplate: string | Function;
 
     /**
      * When set to `true`, makes the Schedule to render in a read only mode. No CRUD actions will be allowed at this time.
@@ -669,9 +675,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/editorTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public editorTemplate: string;
+    public editorTemplate: string | Function;
 
     /**
      * The template option to customize the quick window. The three sections of the quick popup whereas the header, content,
@@ -763,9 +770,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/resourceHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public resourceHeaderTemplate: string;
+    public resourceHeaderTemplate: string | Function;
 
     /**
      * Template option to customize the header indent bar. Here, the template accepts either
@@ -776,9 +784,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/headerIndentTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public headerIndentTemplate: string;
+    public headerIndentTemplate: string | Function;
 
     /**
      * Allows defining the group related settings of multiple resources. When this property is non-empty, it means
@@ -1700,7 +1709,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             };
         }
         this.currentTimezoneDate = this.getCurrentTime();
-        this.activeCellsData = { startTime: new Date(this.currentTimezoneDate), endTime: new Date(this.currentTimezoneDate), isAllDay: false };
+        this.activeCellsData = {
+            startTime: new Date(this.currentTimezoneDate),
+            endTime: new Date(this.currentTimezoneDate),
+            isAllDay: false
+        };
         this.activeEventData = { event: undefined, element: undefined };
         this.getDefaultLocale();
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
@@ -2219,17 +2232,21 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Method to process the templates
      *
-     * @param {string} template Accepts the template in string
+     * @param {string | Function} template Accepts the template in string
      * @returns {CallbackFunction} Returns the callback function
      * @private
      */
-    public templateParser(template: string): CallbackFunction {
+    public templateParser(template: string | Function): CallbackFunction {
         if (template) {
             try {
-                if (document.querySelectorAll(template).length) {
-                    return compile(document.querySelector(template).innerHTML.trim());
-                } else {
+                if (typeof template === 'function') {
                     return compile(template);
+                } else {
+                    if (document.querySelectorAll(template).length) {
+                        return compile(document.querySelector(template).innerHTML.trim());
+                    } else {
+                        return compile(template);
+                    }
                 }
             } catch (error) {
                 return compile(template);

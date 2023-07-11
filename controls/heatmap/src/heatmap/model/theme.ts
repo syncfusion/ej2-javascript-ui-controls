@@ -36,7 +36,8 @@ export namespace Theme {
         fontWeight: 'Normal',
         color: null,
         fontStyle: 'Normal',
-        fontFamily: 'Segoe UI'
+        fontFamily: 'Segoe UI',
+        textOverflow: 'None'
     };
     /** @private */
     export const legendLabelFont: IFontMapping = {
@@ -222,6 +223,38 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
             palette: [{ 'color': '#292827' },
                 { 'color': '#2A72D5' },
                 { 'color': '#43B786' }]
+        };
+        break;
+    case 'material3':
+        style = {
+            heatMapTitle: '#1C1B1F',
+            axisTitle: '#1C1B1F',
+            axisLabel: '#1C1B1F',
+            cellBorder: '#C4C7C5',
+            background: 'transparent',
+            cellTextColor: '#1C1B1F',
+            toggledColor: '#F6F0FB',
+            emptyCellColor: '#F6F0FB',
+            legendLabel: '#49454E',
+            palette: [{ 'color': '#6200EE' },
+                { 'color': '#E77A16' },
+                { 'color': '#82C100' }]
+        };
+        break;
+    case 'material3dark':
+        style = {
+            heatMapTitle: '#E6E1E5',
+            axisTitle: '#E6E1E5',
+            axisLabel: '#E6E1E5',
+            cellBorder: '#444746',
+            background: 'transparent',
+            cellTextColor: '#E6E1E5',
+            toggledColor: '#49454F',
+            emptyCellColor: '#49454E',
+            legendLabel: '#CAC4D0',
+            palette: [{ 'color': '#4EAAFF' },
+                { 'color': '#FA4EAB' },
+                { 'color': '#FFF500' }]
         };
         break;
     default:

@@ -187,11 +187,12 @@ export class AutoComplete extends ComboBox {
      * Not applicable to this component.
      *
      * @default null
+     * @aspType string
      * @private
      * @deprecated
      */
     @Property(null)
-    public valueTemplate: string;
+    public valueTemplate: string | Function;
     /**
      * Not applicable to this component.
      *
@@ -500,7 +501,7 @@ export class AutoComplete extends ComboBox {
      */
     public hidePopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         super.hidePopup(e);
-        this.activeIndex = -1;
+        this.activeIndex = null;
     }
     /**
      * Dynamically change the value of properties.

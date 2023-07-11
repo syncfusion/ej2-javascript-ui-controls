@@ -77,7 +77,7 @@ describe('Sparkline marker and special point spec', () => {
             options = getMarkerOptions(ele);
             expect(options.cx).toBe(89);
             expect(options.cy).toBe(168);
-            expect(options.r).toBe(2.5);
+            expect(options.r).toBe(4);
             expect(options.fill).toBe('#00bdae');
             expect(options.strokeWidth).toBe(1);
             expect(options.stroke).toBe('#00bdae');
@@ -96,7 +96,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(5);
         expect(options.cy).toBe(94);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#00bdae');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#00bdae');
@@ -106,7 +106,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(174);
         expect(options.cy).toBe(168);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#00bdae');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#00bdae');
@@ -116,7 +116,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(258);
         expect(options.cy).toBe(130);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#00bdae');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#00bdae');
@@ -126,7 +126,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(342);
         expect(options.cy).toBe(52);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#00bdae');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#00bdae');
@@ -136,7 +136,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(426);
         expect(options.cy).toBe(5);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#00bdae');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#00bdae');
@@ -146,7 +146,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(511);
         expect(options.cy).toBe(130);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#00bdae');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#00bdae');
@@ -156,7 +156,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(595);
         expect(options.cy).toBe(195);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#00bdae');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#00bdae');
@@ -169,7 +169,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(5);
         expect(options.cy).toBe(94);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#1436cede');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#1436cede');
@@ -198,7 +198,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(595);
         expect(options.cy).toBe(195);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#b705bdde');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#b705bdde');
@@ -227,7 +227,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(426);
         expect(options.cy).toBe(5);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#df9d0fde');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#df9d0fde');
@@ -256,7 +256,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(595);
         expect(options.cy).toBe(195);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#db097cde');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#db097cde');
@@ -295,7 +295,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(343);
         expect(options.cy).toBe(200);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#db097cde');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#db097cde');
@@ -303,7 +303,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(514);
         expect(options.cy).toBe(169);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#a52505de');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#a52505de');
@@ -332,7 +332,7 @@ describe('Sparkline marker and special point spec', () => {
         options = getMarkerOptions(ele);
         expect(options.cx).toBe(0);
         expect(options.cy).toBe(36);
-        expect(options.r).toBe(2.5);
+        expect(options.r).toBe(4);
         expect(options.fill).toBe('#00bdae');
         expect(options.strokeWidth).toBe(1);
         expect(options.stroke).toBe('#00bdae');

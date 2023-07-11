@@ -630,4 +630,46 @@ describe('Adaptive renderer', () => {
             gridObj = null;
         });
     });
+    
+    describe('EJ2-824777 - Textwrap is not working properly with vertical row rendering', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    enableAdaptiveUI: true,
+                    rowRenderingMode: 'Vertical',
+                    allowFiltering: true,
+                    allowTextWrap: true, 
+                    textWrapSettings: { wrapMode: 'Both' },
+                    allowSorting: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Excel' },
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Dialog' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search'],
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ]
+                }, done);
+        });
+
+        it('Ensuring the CSS class', () => {
+            expect(gridObj.getRows()[0].classList.contains('e-verticalwrap')).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

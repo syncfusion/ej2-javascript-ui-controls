@@ -7,7 +7,7 @@ import { ITreeData, RowCollapsedEventArgs } from '../base';
 import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
 import { getExpandStatus } from '../utils';
 import { VirtualTreeContentRenderer } from '../renderer/virtual-tree-content-render';
-import { VirtualHeaderRenderer } from '@syncfusion/ej2-grids';
+import { VirtualHeaderRenderer, getTransformValues, VirtualContentRenderer } from '@syncfusion/ej2-grids';
 
 /**
  * TreeGrid Virtual Scroll module will handle Virtualization
@@ -92,7 +92,8 @@ export class VirtualScroll {
         });
         this.visualData = visualData;
         this.parent.grid.notify(events.dataListener, {data: visualData});
-        const counts: {startIndex: number, endIndex: number, count: number} = { startIndex: -1, endIndex: -1, count: pageingDetails.count };
+        const counts: { startIndex: number, endIndex: number, count: number, requestType: string } =
+            { startIndex: -1, endIndex: -1, count: pageingDetails.count, requestType: pageingDetails.actionArgs.requestType };
         this.parent.grid.notify(events.indexModifier, counts);
         let startIndex: number = counts.startIndex;
         let endIndex: number = counts.endIndex;
@@ -114,11 +115,18 @@ export class VirtualScroll {
                 (this.parent.grid.getContent() as HTMLElement).firstElementChild.scrollTop = 0;
                 this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
             }
+            if ((requestType === 'save' && pageingDetails.actionArgs.index >= (counts.count - this.parent.grid.pageSettings.pageSize)) || (requestType === 'refresh' && this.parent['isGantt'] && this.parent['isAddedFromGantt'])) {
+                startIndex = counts.startIndex + (counts.count - counts.endIndex);
+                endIndex = counts.count;
+                this.parent['isAddedFromGantt'] = false;
+            }
             //if ((this.prevendIndex !== -1 && this.prevstartIndex !== -1) &&
             //this.prevendIndex === endIndex && this.prevstartIndex === startIndex) {
+            const virtualWrapperElement: HTMLElement = (this.parent.grid.contentModule as VirtualContentRenderer).virtualEle.wrapper;
+            const translateY: number = getTransformValues(virtualWrapperElement).height;
             if (!isNullOrUndefined(this.expandCollapseRec) && (pageingDetails.actionArgs.requestType === 'virtualscroll' ||
             (pageingDetails.actionArgs.requestType === 'refresh' && startIndex !== this.prevstartIndex)) &&
-            (startIndex < this.parent.getRows().length && endIndex <= startIndex + this.parent.getRows().length)) {
+            (startIndex < this.parent.getRows().length && endIndex <= startIndex + this.parent.getRows().length) && translateY === 0) {
                 startIndex = 0;
             }
             if (!isNullOrUndefined(this.expandCollapseRec)) {
@@ -193,7 +201,7 @@ export class TreeVirtual extends GridVirtualScroll {
         if (!isNullOrUndefined(parentGrid.height) && typeof (parentGrid.height) === 'string' && parentGrid.height.indexOf('%') !== -1) {
             parentGrid.element.style.height = parentGrid.height;
         }
-        const vHeight: string | number = parentGrid.height.toString().indexOf('%') < 0 ? parentGrid.height :
+        const vHeight: string | number = parentGrid.height.toString().indexOf('%') < 0 ? parseInt(parentGrid.height.toString(), 10) :
             parentGrid.element.getBoundingClientRect().height;
         const blockSize: number = ~~(<number>vHeight / rowHeight);
         const height: number = blockSize * 2;

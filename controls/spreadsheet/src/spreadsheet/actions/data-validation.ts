@@ -224,9 +224,17 @@ export class DataValidation {
                                 args.popup.offsetX += viewport.leftIndex ? offset.left.size -
                                     getColumnsWidth(sheet, viewport.leftIndex + 1, offset.left.idx, true) : 0;
                                 args.popup.refresh();
+                                args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
                             }
                         },
-                        close: (): void => focus(this.parent.element)
+                        close: (args: PopupEventArgs): void => {
+                            if (args.event && ((args.event as KeyboardEvent).keyCode === 13 ||
+                                ((args.event as KeyboardEvent).altKey && (args.event as KeyboardEvent).keyCode === 38))) {
+                                (args.event as KeyboardEvent).preventDefault();
+                                (args.event as KeyboardEvent).stopPropagation();
+                            }
+                            focus(this.parent.element);
+                        }
                     });
                     this.listObj.appendTo('#' + this.parent.element.id + 'listValid');
                 }
@@ -440,7 +448,6 @@ export class DataValidation {
                             dialogInst.dialogInstance.content =
                                 this.dataValidationContent(true, type, operator, value1, value2, ignoreBlank, inCellDropDown, range);
                             dialogInst.dialogInstance.dataBind();
-                            focus(this.parent.element);
                         }
                     },
                     {
@@ -1253,7 +1260,7 @@ export class DataValidation {
             }
         }
         errorMsg = l10n.getConstant('ValidationError');
-        if (isValidate && cell && cell.validation && cell.validation.isHighlighted) {
+        if (isValidate && ((cell && cell.validation && cell.validation.isHighlighted) || (column && column.validation && column.validation.isHighlighted))) {
             const style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.range[0], args.range[1]]);
             if (!isHiddenRow(sheet, args.range[0])) {
                 this.parent.notify(applyCellFormat, <CellFormatArgs>{

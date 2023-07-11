@@ -3,14 +3,15 @@ import {
     TextAlignment, Underline, HighlightColor, BaselineAlignment, WidthType, Strikethrough, LineSpacingType,
     CellVerticalAlignment, HeightType, TableAlignment, BiDirectionalOverride, FootEndNoteNumberFormat,
     FootnoteRestartIndex,
-    FontScriptType
+    FontScriptType,
+    HeaderFooterType
 } from '../../base/types';
 import {
     WSectionFormat, WCharacterFormat, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WShading, WColumnFormat
 } from '../format/index';
-import { DocumentHelper, HelperMethods } from '../index';
+import { DocumentHelper, HelperMethods, PageLayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { TableWidget, ImageElementBox, ListTextElementBox } from '../viewer/page';
+import { TableWidget, ImageElementBox, ListTextElementBox, HeaderFooterWidget, HeaderFooters } from '../viewer/page';
 import { Editor } from '../index';
 import { EditorHistory } from '../editor-history/index';
 import { ModifiedLevel } from '../editor-history/history-helper';
@@ -1682,6 +1683,59 @@ export class SelectionParagraphFormat {
         }
     }
 }
+export class SelectionHeaderFooter {
+
+    private linkToPreviousIn: boolean = true;
+    private selection: Selection;
+    /**
+     * Gets or sets a value indicating whether this header footer is linked to the previous section header footer in the document.
+     *
+     * @default true
+     * @aspType bool
+     * @returns {boolean} Returns `true` if the header footer is linked to the previous section header footer; Otherwise `false`.
+     */
+    public set linkToPrevious (value: boolean) {
+        this.linkToPreviousIn = value;
+        this.notifyPropertyChanged('linkToPrevious');
+    }
+
+    public get linkToPrevious (): boolean {
+        return this.linkToPreviousIn;
+    }
+
+
+    constructor(selection?: Selection) {
+        this.selection = selection;
+    }
+
+    private notifyPropertyChanged(propertyName: string): void {
+        const selection: Selection = this.selection;
+        if (!isNullOrUndefined(selection) && (selection.isCleared || selection.owner.isPastingContent
+            || selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded)
+            && !selection.isRetrieveFormatting) {
+            return;
+        }
+        if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.start) && !selection.isRetrieveFormatting) {
+            const value: Object = this.getPropertyvalue(propertyName);
+            if (!isNullOrUndefined(value)) {
+                const headerFooterWidget: HeaderFooterWidget = selection.start.paragraph.containerWidget as HeaderFooterWidget;
+                let sectionIndex: number = headerFooterWidget.sectionIndex;
+                let headerFooterType: HeaderFooterType = headerFooterWidget.headerFooterType;
+                selection.owner.editorModule.removeInlineHeaderFooterWidget(sectionIndex, headerFooterType, propertyName, value);
+            }
+        }
+    }
+
+
+    private getPropertyvalue(propertyName: string): Object {
+        if (propertyName == "linkToPrevious") {
+            if (!isNullOrUndefined(this.linkToPrevious)) {
+                return this.linkToPrevious;
+            }
+        }
+        return undefined;
+    }
+}
 /**
  * Selection section format implementation
  */
@@ -1709,6 +1763,12 @@ export class SelectionSectionFormat {
     private lineBetweenColumnsIn: boolean;
     private columnsIn: SelectionColumnFormat[];
     private breakCodeIn: string;
+    private firstPageHeaderIn: SelectionHeaderFooter;
+    private firstPageFooterIn: SelectionHeaderFooter;
+    private oddPageHeaderIn: SelectionHeaderFooter;
+    private oddPageFooterIn: SelectionHeaderFooter;
+    private evenPageHeaderIn: SelectionHeaderFooter;
+    private evenPageFooterIn: SelectionHeaderFooter;
 
     /**
      * private
@@ -1832,6 +1892,75 @@ export class SelectionSectionFormat {
     public set headerDistance(value: number) {
         this.headerDistanceIn = value;
         this.notifyPropertyChanged('headerDistance');
+    }
+    /**
+     * Gets the first page header of the section.
+     *
+     * @aspType SelectionHeaderFooter
+     */
+
+    public set firstPageHeader(value: SelectionHeaderFooter) {
+        this.firstPageHeaderIn = value;
+    }
+
+    public get firstPageHeader():SelectionHeaderFooter {
+        return this.firstPageHeaderIn;
+    }
+    /**
+     * Gets the first page footer of the section.
+     *
+     * @aspType SelectionHeaderFooter
+     */
+
+    public set firstPageFooter(value: SelectionHeaderFooter) {
+        this.firstPageFooterIn = value;
+    }
+    public get firstPageFooter():SelectionHeaderFooter {
+        return this.firstPageFooterIn;
+    }
+    /**
+     * Gets the odd page header of the section.
+     *
+     * @aspType SelectionHeaderFooter
+     */
+    public set oddPageHeader(value: SelectionHeaderFooter) {
+        this.oddPageHeaderIn = value;
+    }
+    public get oddPageHeader():SelectionHeaderFooter {
+        return this.oddPageHeaderIn;
+    }
+    /**
+     * Gets the odd page footer of the section.
+     *
+     * @aspType SelectionHeaderFooter
+     */
+    public set oddPageFooter(value: SelectionHeaderFooter) {
+        this.oddPageFooterIn = value;
+    }
+    public get oddPageFooter():SelectionHeaderFooter {
+        return this.oddPageFooterIn;
+    }
+    /**
+     * Gets the even page header of the section.
+     *
+     * @aspType SelectionHeaderFooter
+     */
+    public set evenPageHeader(value: SelectionHeaderFooter) {
+        this.evenPageHeaderIn = value;
+    }
+    public get evenPageHeader():SelectionHeaderFooter {
+        return this.evenPageHeaderIn;
+    }
+    /**
+     * Gets the even page footer of the section.
+     *
+     * @aspType SelectionHeaderFooter
+     */
+    public set evenPageFooter(value: SelectionHeaderFooter) {
+        this.evenPageFooterIn = value;
+    }
+    public get evenPageFooter():SelectionHeaderFooter {
+        return this.evenPageFooterIn;
     }
     /**
      * Gets or sets the starting page number.
@@ -2074,6 +2203,12 @@ export class SelectionSectionFormat {
      */
     constructor(selection: Selection) {
         this.selection = selection;
+        this.firstPageHeaderIn = new SelectionHeaderFooter(selection);
+        this.firstPageFooterIn = new SelectionHeaderFooter(selection);
+        this.oddPageHeaderIn = new SelectionHeaderFooter(selection);
+        this.oddPageFooterIn = new SelectionHeaderFooter(selection);
+        this.evenPageHeaderIn = new SelectionHeaderFooter(selection);
+        this.evenPageFooterIn = new SelectionHeaderFooter(selection); 
     }
     /**
      * Copies the format.
@@ -2112,6 +2247,74 @@ export class SelectionSectionFormat {
             this.columns.push(selectCol);
         }
         this.breakCode = format.breakCode;
+        if (this.selection.owner.enableHeaderAndFooter) {
+            let headerFootersColletion: HeaderFooters[] = this.selection.documentHelper.headersFooters;
+            const headerFooterWidget: HeaderFooterWidget = this.selection.start.paragraph.containerWidget as HeaderFooterWidget;
+            let sectionIndex: number = headerFooterWidget.sectionIndex;
+            let headerFooterType: HeaderFooterType = headerFooterWidget.headerFooterType;
+            let isLinkedToPrevious: boolean = false;
+            if (sectionIndex == 0) {
+                this.oddPageHeader.linkToPrevious = false;
+                this.oddPageFooter.linkToPrevious = false;
+                this.evenPageHeader.linkToPrevious = false;
+                this.evenPageFooter.linkToPrevious = false;
+                this.firstPageHeader.linkToPrevious = false;
+                this.firstPageFooter.linkToPrevious = false;
+            }
+            else if (headerFootersColletion[sectionIndex]) {
+                let index: number = (this.selection.viewer as PageLayoutViewer).getHeaderFooter(headerFooterType);
+                let headerFooterWidget: HeaderFooterWidget = headerFootersColletion[sectionIndex][index];
+                if (isNullOrUndefined(headerFooterWidget)) {
+                    isLinkedToPrevious = true;
+                }
+                if (!isNullOrUndefined(headerFooterWidget) || isLinkedToPrevious) {
+                    switch (headerFooterType) {
+                        case "OddHeader":
+                            if (isLinkedToPrevious) {
+                                this.oddPageHeader.linkToPrevious = true;
+                            } else {
+                                this.oddPageHeader.linkToPrevious = false;
+                            }
+                            break;
+                        case "OddFooter":
+                            if (isLinkedToPrevious) {
+                                this.oddPageFooter.linkToPrevious = true;
+                            } else {
+                                this.oddPageFooter.linkToPrevious = false;
+                            }
+                            break;
+                        case "EvenHeader":
+                            if (isLinkedToPrevious) {
+                                this.evenPageHeader.linkToPrevious = true;
+                            } else {
+                                this.evenPageHeader.linkToPrevious = false;
+                            }
+                            break;
+                        case "EvenFooter":
+                            if (isLinkedToPrevious) {
+                                this.evenPageFooter.linkToPrevious = true;
+                            } else {
+                                this.evenPageFooter.linkToPrevious = false;
+                            }
+                            break;
+                        case "FirstPageHeader":
+                            if (isLinkedToPrevious) {
+                                this.firstPageHeader.linkToPrevious = true;
+                            } else {
+                                this.firstPageHeader.linkToPrevious = false;
+                            }
+                            break;
+                        case "FirstPageFooter":
+                            if (isLinkedToPrevious) {
+                                this.firstPageFooter.linkToPrevious = true;
+                            } else {
+                                this.firstPageFooter.linkToPrevious = false;
+                            }
+                            break;
+                    }
+                }
+            }
+        }
     }
     private applyColumnFormat(): void {
 
@@ -2329,6 +2532,12 @@ export class SelectionSectionFormat {
         this.restartIndexForEndnotesIn = undefined;
         this.initialEndNoteNumber = undefined;
         this.initialFootNoteNumber = undefined;
+        this.firstPageHeaderIn = undefined;
+        this.firstPageFooterIn = undefined;
+        this.oddPageHeaderIn = undefined;
+        this.oddPageFooterIn = undefined;
+        this.evenPageHeaderIn = undefined;
+        this.evenPageFooterIn = undefined;
     }
 }
 /**
@@ -3264,6 +3473,30 @@ export class SelectionImageFormat {
         return 0;
     }
     /**
+     * Gets the alternateText of the image.
+     *
+     * @aspType string
+     * @returns {string} - Returns image alternateText
+     */
+    public get alternateText(): string {
+        if (this.image) {
+            return this.image.alternateText;
+        }
+        return null;
+    }
+    /**
+     * Sets the alternateText of the image.
+     *
+     * @aspType string
+     * @returns {string} - Returns image alternateText
+     */
+    public set alternateText(value: string) {
+        if (value === this.alternateText) {
+            return;
+        }
+        this.image.alternateText = value;
+    }
+    /**
      * @param {Selection} selection - Specifies selecion module
      * @private
      */
@@ -3279,20 +3512,31 @@ export class SelectionImageFormat {
      * @returns {void}
      */
     public resize(width: number, height: number): void {
-        this.updateImageFormat(width, height);
+        this.updateImageFormat(width, height,this.alternateText);
+    }
+    /**
+     * update the image based on given alternateText.
+     *
+     * @param {string} alternateText - Specified the image alternateText
+     * @private
+     * @returns {void}
+     */
+    public applyImageAlternativeText(alternateText: string): void {
+        this.updateImageFormat(this.width,this.height,alternateText);
     }
     /**
      * Update image width and height
      *
      * @param {number} width - Specified the image width
      * @param {number} height - Specifies the image height
+     * @param {string} alternateText - Specofies the image alternateText
      * @private
      * @returns {void}
      */
-    public updateImageFormat(width: number, height: number): void {
+    public updateImageFormat(width: number, height: number,alternateText: string): void {
         if (this.image) {
             if (this.selection.owner.editorModule) {
-                this.selection.owner.editorModule.onImageFormat(this.image, width, height);
+                this.selection.owner.editorModule.onImageFormat(this.image, width, height,alternateText);
             }
         }
     }

@@ -169,9 +169,9 @@ describe('Accumulation Chart Control', () => {
             chart.loaded = () => {
                 //debugger//checked
                 let group: Element = getElement('ej2container_chart_legend_element');
-                expect(group.getAttribute('x') === '74' || group.getAttribute('x') === '85.5').toBe(true);
+                expect(group.getAttribute('x') === '75.5' || group.getAttribute('x') === '85.5').toBe(true);
                 expect(group.getAttribute('y')).toBe('11');
-                expect(group.getAttribute('width') === '452' || group.getAttribute('width') === '429').toBe(true);
+                expect(group.getAttribute('width') === '449' || group.getAttribute('width') === '429').toBe(true);
                 expect(group.getAttribute('height') === '33' || group.getAttribute('height') === '32').toBe(true);
                 done();
 
@@ -194,7 +194,7 @@ describe('Accumulation Chart Control', () => {
         it('Checking default legend shape', (done: Function) => {
             //debugger //checked
             let group: Element = getElement('ej2container_chart_legend_shape_0');
-            expect(group.getAttribute('d') == 'M 82 33 L 87 23 L 92 33 L 82 33 z' ||
+            expect(group.getAttribute('d') == 'M 83.5 32 L 88.5 22 L 93.5 32 L 83.5 32 z' ||
                 group.getAttribute('d') == 'M 93.5 32 L 98.5 22 L 103.5 32 L 93.5 32 z').toBe(true);
             done();
         });
@@ -326,8 +326,8 @@ describe('Accumulation Chart Control', () => {
             chart.loaded = () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-                expect(group.getAttribute('x') == '291' || group.getAttribute('x') == '291.5').toBe(true);
-                expect(group.getAttribute('y') == '222.44647735442126' || group.getAttribute('y') == '221.198490294752').toBe(true);
+                expect(group.getAttribute('x') == '291' || group.getAttribute('x') == '290.5').toBe(true);
+                expect(group.getAttribute('y') == '222.44647735442126' || group.getAttribute('y') == '221.948490294752').toBe(true);
                 done();
 
             };
@@ -343,8 +343,8 @@ describe('Accumulation Chart Control', () => {
             chart.loaded = () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-                expect(group.getAttribute('x') == '291' || group.getAttribute('x') == '291.5').toBe(true);
-                expect(group.getAttribute('y') == '222.44647735442126' || group.getAttribute('y') == '221.198490294752').toBe(true);
+                expect(group.getAttribute('x') == '291' || group.getAttribute('x') == '290.5').toBe(true);
+                expect(group.getAttribute('y') == '222.44647735442126' || group.getAttribute('y') == '221.948490294752').toBe(true);
                 done();
             };
             chart.series[0].dataLabel.position = 'Inside';
@@ -358,7 +358,7 @@ describe('Accumulation Chart Control', () => {
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
                 expect(group.getAttribute('x')).toBe('545');
                 expect(group.getAttribute('y') == '221.44647735442126' ||
-                    group.getAttribute('y') == '220.198490294752').toBe(true);
+                    group.getAttribute('y') == '220.948490294752').toBe(true);
                 done();
 
 
@@ -419,7 +419,7 @@ describe('Accumulation Chart Control', () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
                 expect(group.getAttribute('x')).toBe('509.78682170542635');
-                expect(group.getAttribute('y') == '221.6887596899225' ||
+                expect(group.getAttribute('y') == '221.19147286821703' ||
                     group.getAttribute('y') == '220.44147286821703').toBe(true);
                 done();
             };
@@ -435,7 +435,7 @@ describe('Accumulation Chart Control', () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
                 expect(group.getAttribute('x')).toBe('545');
-                expect(group.getAttribute('y') == '186.79308681672023' ||
+                expect(group.getAttribute('y') == '186.14003215434082' ||
                     group.getAttribute('y') == '182.39003215434082').toBe(true);
                 done();
             };
@@ -451,7 +451,7 @@ describe('Accumulation Chart Control', () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
                 expect(group.getAttribute('x')).toBe('298');
-                expect(group.getAttribute('y') == '177.69340836012861' ||
+                expect(group.getAttribute('y') == '177.066077170418' ||
                     group.getAttribute('y') == '176.316077170418').toBe(true);
                 done();
 
@@ -469,7 +469,7 @@ describe('Accumulation Chart Control', () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
                 expect(group.getAttribute('x')).toBe('545');
-                expect(group.getAttribute('y') == '176.69340836012861' ||
+                expect(group.getAttribute('y') == '176.066077170418' ||
                     group.getAttribute('y') == '175.316077170418').toBe(true);
                 done();
 
@@ -606,7 +606,7 @@ describe('Accumulation Chart Control', () => {
             chart.loaded = () => {
                 //debugger
                 let group: Element = getElement('ej2container_chart_legend_shape_0');
-                expect(group.getAttribute('d') == 'M 82 28 L 87 23 L 92 28 L 87 33 L 82 28 z' ||
+                expect(group.getAttribute('d') == 'M 83.5 27 L 88.5 22 L 93.5 27 L 88.5 32 L 83.5 27 z' ||
                     group.getAttribute('d') == 'M 93.5 27 L 98.5 22 L 103.5 27 L 98.5 32 L 93.5 27 z').toBe(true);
                 done();
             };
@@ -619,9 +619,9 @@ describe('Accumulation Chart Control', () => {
             chart.loaded = () => {
                 //debugger
                 let group: Element = getElement('ej2container_chart_legend_element');
-                expect(group.getAttribute('x') == '483' || group.getAttribute('x') == '490').toBe(true);
+                expect(group.getAttribute('x') == '484' || group.getAttribute('x') == '490').toBe(true);
                 expect(group.getAttribute('y') == '133.5' || group.getAttribute('y') == '136').toBe(true);
-                expect(group.getAttribute('width') == '107' || group.getAttribute('width') == '100').toBe(true);
+                expect(group.getAttribute('width') == '106' || group.getAttribute('width') == '100').toBe(true);
                 expect(group.getAttribute('height') == '133' || group.getAttribute('height') == '128').toBe(true);
                 done();
                 done();

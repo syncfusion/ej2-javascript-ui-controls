@@ -38,9 +38,11 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
+     *
      */
     @Property()
-    public footerTemplate: string;
+    public footerTemplate: string | Function;
     /**
      * Defines the column name to perform aggregation.
      *

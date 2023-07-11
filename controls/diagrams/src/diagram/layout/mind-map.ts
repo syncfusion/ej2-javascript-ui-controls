@@ -127,7 +127,13 @@ export class MindMap {
             orientation: layoutProp.orientation,
             root: layoutProp.fixedNode
         };
-        (layout as Layout).orientation = (side === 'Left') ? 'LeftToRight' : 'RightToLeft';
+        //(EJ2-277624)-Vertical orientation is not working in mindmap
+        if((layout as ILayout).orientation == 'Horizontal'){
+            (layout as Layout).orientation =  (side === 'Left') ? 'LeftToRight' : 'RightToLeft';
+            }
+            else{
+            (layout as Layout).orientation = (side === 'Left') ? 'TopToBottom' : 'BottomToTop';
+            }
         this.excludeFromLayout(excludeNodes, nameTable, true);
 
         const mapLayout: HierarchicalTree = new HierarchicalTree();

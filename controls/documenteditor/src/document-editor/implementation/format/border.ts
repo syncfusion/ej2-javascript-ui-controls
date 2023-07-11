@@ -164,7 +164,7 @@ export class WBorder {
             case 'DashDot':
             case 'DashDotDot':
             case 'Thick':
-                return this.lineWidth;
+                return (this.lineWidth >= 0.5 ? this.lineWidth : 0.5);
             case 'SingleWavy':
                 return (this.lineWidth === 1.5 ? 3 : 2.5); //Double wave border only draw with the fixed width
             case 'DoubleWavy':
@@ -172,9 +172,9 @@ export class WBorder {
 
             case 'DashDotStroked':
             case 'Outset':
-                return this.lineWidth;
+                return (this.lineWidth >= 0.5 ? this.lineWidth : 0.5);
         }
-        return this.lineWidth;
+        return (this.lineWidth >= 0.5 ? this.lineWidth : 0.5);
         /* eslint-enable */
     }
     private getBorderLineWidthArray(lineStyle: LineStyle, lineWidth: number): number[] {

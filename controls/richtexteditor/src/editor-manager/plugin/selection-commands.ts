@@ -8,7 +8,7 @@ import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { isNullOrUndefined as isNOU, Browser, closest, detach } from '@syncfusion/ej2-base';
 import { DOMNode } from './dom-node';
-import { FormatPainterValue } from '../plugin';
+import { FormatPainterValue } from '../base/interface';
 
 export class SelectionCommands {
     public static enterAction: string = 'P'
@@ -514,8 +514,10 @@ export class SelectionCommands {
                                 while (currentFormatNode) {
                                     const isSameTextContent: boolean = currentFormatNode.parentElement.textContent.trim()
                                         === nodes[index as number].textContent.trim();
-                                    if (!domNode.isBlockNode(currentFormatNode.parentElement) && isSameTextContent) {
-                                        currentFormatNode = currentFormatNode.parentElement;
+                                    const parent: HTMLElement = currentFormatNode.parentElement;
+                                    if (!domNode.isBlockNode(parent) && isSameTextContent &&
+                                    !(parent.nodeName === 'SPAN' && (parent as HTMLElement).classList.contains('e-img-inner'))) {
+                                        currentFormatNode = parent;
                                     } else {
                                         break;
                                     }
@@ -703,32 +705,19 @@ export class SelectionCommands {
     // Below function is used to insert the element created by the format painter plugin.
     private static insertFormatPainterElem(nodes: Node[], index: number, range: Range, nodeCutter: NodeCutter,
                                            painterValues: FormatPainterValue, domNode: DOMNode): Node {
-        let parent: HTMLElement = nodes[index as number].parentElement;
+        let parent: HTMLElement = !domNode.isBlockNode(nodes[index as number].parentElement) ?
+            nodes[index as number].parentElement as HTMLElement : nodes[index as number] as HTMLElement ;
         if (!domNode.isBlockNode(parent)) {
-            // The below code is used to remove the already present inline style from the text node.
             while (parent.textContent.trim() === parent.parentElement.textContent.trim() && !domNode.isBlockNode(parent.parentElement)){
                 parent = parent.parentElement;
             }
-            if (parent.textContent.trim() !== nodes[index as number].textContent.trim()) {
-                nodeCutter.SplitNode(range, parent, true);
-                const childELemList: NodeList = nodes[index as number].parentElement.childNodes;
-                for ( let i: number = 0; i < childELemList.length; i++) {
-                    if (childELemList[i as number].textContent.trim() === nodes[i as number].textContent.trim()) {
-                        parent.parentNode.insertBefore(childELemList[i as number], parent);
-                        break;
-                    }
-                }
-                const blockChildNodes: NodeList =  parent.parentElement.childNodes;
-                for (let k: number = 0; k < blockChildNodes.length; k++ ) {
-                    if (blockChildNodes[k as number].textContent.trim() === '' || blockChildNodes[k as number].textContent.length === 0 ) {
-                        detach(blockChildNodes[k as number]);
-                    }
-                }
-            } else {
-                InsertMethods.unwrap(parent);
-            }
+        }
+        // The below code is used to remove the already present inline style from the text node.
+        if (!isNOU(parent) && parent.nodeType === 1 && !(parent.classList.contains('e-rte-img-caption') || parent.classList.contains('e-img-inner'))) {
+            this.formatPainterCleanup(index, nodes, parent, range, nodeCutter, domNode);
         }
         const elem: HTMLElement = painterValues.element;
+        // The below code is used to apply the inline format copied.
         if (!isNOU(elem)) {
             // Step 1: Cloning the element that is created by format painter.
             // Step 2: Finding the last child of the nested elememt using the paintervalues.lastchild nodename
@@ -751,5 +740,42 @@ export class SelectionCommands {
             nodes[index as number] = lastChild;
         }
         return nodes[index as number];
+    }
+
+    private static formatPainterCleanup(index: number, nodes: Node[], parent: HTMLElement, range: Range, nodeCutter: NodeCutter
+        , domNode: DOMNode): void{
+        const INVALID_TAGS: string[] = ['A', 'AUDIO', 'IMG', 'VIDEO', 'IFRAME'];
+        if (index === 0 && parent.textContent.trim() !== nodes[index as number].textContent.trim()) {
+            nodeCutter.SplitNode(range, parent, true);
+            const childELemList: NodeList = nodes[index as number].parentElement.childNodes;
+            for ( let i: number = 0; i < childELemList.length; i++) {
+                if (childELemList[i as number].textContent.trim() === nodes[i as number].textContent.trim()) {
+                    parent.parentNode.insertBefore(childELemList[i as number], parent);
+                    break;
+                }
+            }
+            const blockChildNodes: NodeList =  parent.parentElement.childNodes;
+            for (let k: number = 0; k < blockChildNodes.length; k++ ) {
+                if (blockChildNodes[k as number].textContent.trim() === '' || blockChildNodes[k as number].textContent.length === 0 ) {
+                    detach(blockChildNodes[k as number]);
+                }
+            }
+        } else if (parent.textContent.trim() !== nodes[index as number].textContent.trim()) {
+            parent.parentElement.insertBefore(nodes[index as number], parent);
+        } else {
+            while (!isNOU(parent) && parent.nodeType !== 3 && !domNode.isBlockNode(parent)){
+                let temp: HTMLElement;
+                for (let i: number = 0; i < parent.childNodes.length; i++) {
+                    const currentChild : Node = parent.childNodes[i as number];
+                    if (currentChild.textContent.trim().length !== 0 && currentChild.nodeType !== 3) {
+                        temp = parent.childNodes[i as number] as HTMLElement;
+                    }
+                }
+                if (INVALID_TAGS.indexOf(parent.tagName) === -1) {
+                    InsertMethods.unwrap(parent);
+                }
+                parent = temp;
+            }
+        }
     }
 }

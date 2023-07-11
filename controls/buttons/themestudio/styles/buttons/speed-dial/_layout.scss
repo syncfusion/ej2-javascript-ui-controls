@@ -1,7 +1,8 @@
 @include export-module('speed-dial-layout') {
   .e-speeddial-popup {
     position: absolute;
-    z-index: 99999;
+    z-index: 100000;
+    pointer-events: none;
 
     &.e-speeddial-top {
       top: $sd-offset;
@@ -115,6 +116,7 @@
     .e-speeddial-li-icon {
       border-radius: $sd-li-icon-border-radius;
       border: 1px solid;
+      font-size: $sd-li-icon-font-size;
       height: $sd-li-icon-height;
       width: $sd-li-icon-width;
       display: inline-flex;
@@ -264,6 +266,7 @@
     .e-speeddial-li-icon {
       height: $sd-small-li-icon-height;
       width: $sd-small-li-icon-width;
+      font-size: $sd-small-li-icon-font-size;
     }
 
     &.e-speeddial-horz-right,
@@ -300,6 +303,7 @@
     .e-speeddial-li-icon {
       height: $sd-bigger-li-icon-height;
       width: $sd-bigger-li-icon-width;
+      font-size: $sd-bigger-li-icon-font-size;
     }
 
     &.e-speeddial-horz-right,
@@ -338,6 +342,7 @@
     .e-speeddial-li-icon {
       height: $sd-bigger-small-li-icon-height;
       width: $sd-bigger-small-li-icon-width;
+      font-size: $sd-bigger-small-li-icon-font-size;
     }
 
     &.e-speeddial-horz-right,

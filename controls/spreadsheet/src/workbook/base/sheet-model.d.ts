@@ -38,8 +38,9 @@ export interface RangeModel {
      * Template helps to compiles the given HTML String (or HTML Element ID) into HtML Element and append to the Cell.
      *
      *  @default ''
+     *  @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Specifies the address for updating the dataSource or template.

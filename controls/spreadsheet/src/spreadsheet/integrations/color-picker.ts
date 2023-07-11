@@ -1,5 +1,5 @@
 import { ColorPicker as ColorPickerComponent, OpenEventArgs } from '@syncfusion/ej2-inputs';
-import { ColorPickerEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
+import { ColorPickerEventArgs, ModeSwitchEventArgs, PaletteTileEventArgs } from '@syncfusion/ej2-inputs';
 import { addClass, L10n } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
 import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale, focus } from '../common/index';
@@ -20,12 +20,17 @@ export class ColorPicker {
     private render(): void {
         const id: string = this.parent.element.id;
         let input: HTMLInputElement = this.parent.createElement('input', { attrs: { 'type': 'color' } }) as HTMLInputElement;
+        const tileRenderHandler: (args: PaletteTileEventArgs) => void = (args: PaletteTileEventArgs): void => {
+            args.element.tabIndex = -1;
+        };
         this.fontColorPicker = new ColorPickerComponent({
             value: '#000000ff',
             mode: 'Palette',
             showButtons: false,
             presetColors: fontColor,
             enableOpacity: false,
+            cssClass: 'e-spreadsheet-color-popup',
+            beforeTileRender: tileRenderHandler,
             beforeClose: (): void => this.beforeCloseHandler(this.fontColorPicker),
             open: this.openHandler.bind(this),
             beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(this.fontColorPicker, args),
@@ -53,7 +58,9 @@ export class ColorPicker {
             presetColors: fillColor,
             showButtons: false,
             enableOpacity: false,
+            cssClass: 'e-spreadsheet-color-popup',
             open: this.openHandler.bind(this),
+            beforeTileRender: tileRenderHandler,
             beforeClose: (): void => this.beforeCloseHandler(this.filColorPicker),
             beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(this.filColorPicker, args),
             change: (args: ColorPickerEventArgs): void => {

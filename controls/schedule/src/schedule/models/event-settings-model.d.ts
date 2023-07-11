@@ -11,8 +11,9 @@ export interface EventSettingsModel {
      * {% codeBlock src="schedule/event-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * With this property, the event data will be bound to Schedule.
@@ -73,8 +74,9 @@ export interface EventSettingsModel {
      * {% codeBlock src="schedule/tooltip-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
-    tooltipTemplate?: string;
+    tooltipTemplate?: string | Function;
 
     /**
      * Defines the resource name, to decides the color of which particular resource level is to be applied on appointments, when

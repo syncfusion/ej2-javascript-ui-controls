@@ -199,6 +199,21 @@ describe('Template Engine', () => {
         expect(outDOM(template.compile(templateStr, cHelper), dsJSONArray)).toEqual(result);
     });
 
+    
+    it('Check initializeCSPTemplate method', () => {
+        let cHelper: any = {
+            uCase: (str: string) => {
+                return str.toUpperCase();
+            }
+        };
+        function templateStr(data: any) {
+            return `<div>${cHelper.uCase(data[0].name)}${data[0].info.id}</div>`
+        }
+        template.initializeCSPTemplate(templateStr, cHelper);
+        let result: string = templateStr(dsJSONArray);
+        expect(result).toEqual('<div>ONE01</div>');
+    });
+
     it('custom engine', () => {
         let spyCompiler = jasmine.createSpy("compile");
         class CustomEngine implements template.ITemplateEngine {

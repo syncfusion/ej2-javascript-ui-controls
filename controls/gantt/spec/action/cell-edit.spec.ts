@@ -9,6 +9,7 @@ import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, get
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
 import { RichTextEditor } from '@syncfusion/ej2-richtexteditor';
+import { Calendar } from '@syncfusion/ej2-calendars';
 
 interface EJ2Instance extends HTMLElement {
      ej2_instances: Object[];
@@ -2071,5 +2072,97 @@ describe('Assign datasource after initial load', () => {
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
 	}
+    });
+});
+describe('Edit template for start date column', () => {
+    let ganttObj: Gantt;
+    let dropdownlistObj: Calendar;
+    let elem: HTMLElement;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    notes: 'Notes',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    resourceInfo: 'Resource',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceIDMapping: 'resourceId',
+                resourceNameMapping: 'resourceName',
+                resources: resourcesData,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                renderBaseline: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowNextRowEdit: true
+                },
+                editDialogFields: [
+                    { type: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                ],
+                splitterSettings: {
+                    columnIndex: 9
+                },
+                allowUnscheduledTasks: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', editType: 'stringedit', width: 100 },
+                    { field: 'StartDate', edit: {
+                        create: () => {
+                            elem = document.createElement('div');
+                            return elem;
+                        },
+                        read: () => {
+                           return dropdownlistObj.value;
+                        },
+                        destroy: () => {
+                            dropdownlistObj.destroy();
+                        },
+                        write: (args: Object) => {
+                            dropdownlistObj = new Calendar({
+                                weekNumber: true,
+                            });
+                            dropdownlistObj.appendTo(elem);
+                        }
+                    }, width: 200 },
+                    { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'Duration', width: 100 },
+                    { field: 'Predecessor', width: 100 },
+                    { field: 'Progress', width: 100 },
+                    { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'Resource', width: 100 },
+                    { field: 'Notes', width: 100 },
+                    { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                ],
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing Task Name', () => {
+        let name: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(name, 'dblclick');
+	expect(document.getElementsByClassName('e-calendar').length).toBe(1);
     });
 });

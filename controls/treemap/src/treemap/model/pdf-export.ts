@@ -47,9 +47,10 @@ export class PdfExport {
             const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
             if (!isNullOrUndefined(backgroundElement)) {
                 const backgroundColor: string = backgroundElement.getAttribute('fill');
-                if ((treeMap.theme === 'Tailwind' || treeMap.theme === 'TailwindDark' || treeMap.theme === 'Bootstrap5' || treeMap.theme === 'Bootstrap5Dark'
-                    || treeMap.theme === 'Fluent' || treeMap.theme === 'FluentDark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                if ((treeMap.theme === 'Tailwind' || treeMap.theme === 'Bootstrap5' || treeMap.theme === 'Fluent' || treeMap.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                     (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
+                } else if ((treeMap.theme === 'TailwindDark' ||  treeMap.theme === 'Bootstrap5Dark' || treeMap.theme === 'FluentDark' || treeMap.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                    (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(0, 0, 0, 1)');
                 }
             }
 

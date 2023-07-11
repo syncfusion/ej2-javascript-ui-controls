@@ -556,6 +556,15 @@ describe('draggable', () => {
                 expect(dragEvent).not.toHaveBeenCalled();
                 instance.intDestroy(mousedown);
             });
+            it('Set enableAutoScroll and perform drag operation within the draggable area', () => {
+                instance.enableAutoScroll = true;
+                mousemove = setMouseCordinates(mousemove, 25, 35);
+                mousemove.srcElement = mousemove.targetElement = mousemove.toElement = document.body;
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                expect(instance.element.style.top).toBe('32px');
+                expect(instance.element.style.left).toBe('18px');
+                instance.intDestroy(mousedown);
+            });
         });
         describe('Drag without draggable area and negative values', () => {
             let instance: any;

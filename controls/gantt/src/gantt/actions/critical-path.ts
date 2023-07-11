@@ -739,11 +739,8 @@ export class CriticalPath {
             }
             if (element && (this.parent.viewType === 'ProjectView' || (this.parent.viewType === 'ResourceView' &&
                 !criticalData.hasChildRecords))) {
-                if (element.getElementsByClassName('e-milestone-top')[0]) {
-                    addClass(element.querySelectorAll('.e-milestone-top'), cls.criticalMilestoneTop);
-                }
-                if (element.getElementsByClassName('e-milestone-bottom')[0]) {
-                    addClass(element.querySelectorAll('.e-milestone-bottom'), cls.criticalMilestoneBottom);
+                if (element.getElementsByClassName('e-gantt-milestone')[0]) {
+                    addClass(element.querySelectorAll('.e-gantt-milestone'), cls.criticalMilestone);
                 }
                 if (element.getElementsByClassName('e-gantt-child-taskbar-inner-div').length > 0) {
                     addClass(element.querySelectorAll('.e-gantt-child-taskbar-inner-div'), cls.criticalChildTaskBarInnerDiv);
@@ -781,11 +778,9 @@ export class CriticalPath {
                                 currentdata['taskid'] + 'child' + checkint);
                             if (lineElement.length > 0) {
                                 addClass(this.parent.element.querySelectorAll('#ConnectorLineparent' + currentdata['taskid'] + 'child' +
-                                    checkint)[0].querySelectorAll('.e-line'), cls.criticalConnectorLine);
+                                    checkint)[0].querySelectorAll('.e-connector-line'), cls.criticalConnectorLineSVG);
                                 addClass(this.parent.element.querySelectorAll('#ConnectorLineparent' + currentdata['taskid'] + 'child' +
-                                    checkint)[0].querySelectorAll('.e-connector-line-right-arrow'), cls.criticalConnectorLineRightArrow);
-                                addClass(this.parent.element.querySelectorAll('#ConnectorLineparent' + currentdata['taskid'] + 'child' +
-                                    checkint)[0].querySelectorAll('.e-connector-line-left-arrow'), cls.criticalConnectorLineLeftArrow);
+                                    checkint)[0].querySelectorAll('.e-connector-line-arrow'), cls.criticalConnectorArrowSVG);
                             }
                         }
                     }

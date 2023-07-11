@@ -506,6 +506,62 @@ export class DictionaryProperties {
      */
     public readonly yStep : string = 'YStep';
     /**
+     * Specifies the value of viewer preferences.
+     * @private
+     */
+    public readonly viewerPreferences : string = 'ViewerPreferences';
+    /**
+     * Specifies the value of center window.
+     * @private
+     */
+    public readonly centerWindow : string = 'CenterWindow';
+    /**
+     * Specifies the value of display title.
+     * @private
+     */
+    public readonly displayTitle : string = 'DisplayTitle';
+    
+    /**
+     * Specifies the value of fit window.
+     * @private
+     */
+    public readonly fitWindow : string = 'FitWindow';
+    /**
+     * Specifies the value of hide menu bar.
+     * @private
+     */
+    public readonly hideMenuBar : string = 'HideMenubar';
+    /**
+     * Specifies the value of hide tool bar.
+     * @private
+     */
+    public readonly hideToolBar : string = 'HideToolbar';
+    /**
+     * Specifies the value of hide window UI.
+     * @private
+     */
+    public readonly hideWindowUI : string = 'HideWindowUI';
+    /**
+     * Specifies the value of page mode.
+     * @private
+     */
+    public readonly pageMode : string = 'PageMode';
+    /**
+     * Specifies the value of page layout.
+     * @private
+     */
+    public readonly pageLayout : string = 'PageLayout';
+    /**
+     * Specifies the value of duplex.
+     * @private
+     */
+    public readonly duplex : string = 'Duplex';
+    /**
+     * Specifies the value of print scaling.
+     * @private
+     */
+    public readonly printScaling : string = 'PrintScaling';
+    /**
      * Initialize an instance for `PdfDictionaryProperties` class.
      * @private
      */

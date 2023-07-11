@@ -52,10 +52,11 @@ export class ConnectorLineEdit {
      * @private
      */
     private getConnectorLineHoverElement(target: EventTarget): Element {
-        const isOnLine: Element = parentsUntil(target as Element, cls.connectorLine);
-        const isOnRightArrow: Element = parentsUntil(target as Element, cls.connectorLineRightArrow);
-        const isOnLeftArrow: Element = parentsUntil(target as Element, cls.connectorLineLeftArrow);
-        if (isOnLine || isOnRightArrow || isOnLeftArrow) {
+        const isOnLine: Element = parentsUntil(target as Element, cls.connectorLineSVG);
+        const isArrow: Element = parentsUntil(target as Element, cls.connectorLineArrow);
+        const isCriticalLine: Element= parentsUntil(target as Element, cls.criticalConnectorLineSVG);
+        var isCriticalArrow = parentsUntil(target as Element, cls.criticalConnectorArrowSVG);
+        if (isOnLine || isArrow || isCriticalLine || isCriticalArrow) {
             return parentsUntil(target as Element, cls.connectorLineContainer);
         } else {
             return null;
@@ -89,16 +90,13 @@ export class ConnectorLineEdit {
      */
     private addHighlight(element: Element): void {
         this.connectorLineElement = element;
-        addClass([element], [cls.connectorLineHoverZIndex]);
-        if (element.querySelectorAll('.' + cls.connectorLine)[0].classList.contains('e-criticalconnector-line')) {
-            addClass(element.querySelectorAll('.' + cls.connectorLine), [cls.criticalConnectorLineHover]);
-            addClass(element.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.criticalConnectorLineRightArrowHover]);
-            addClass(element.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.criticalConnectorLineLeftArrowHover]);
+        const pathElement = element.querySelector('.' + cls.connectorLineSVG);
+        const criticalElement = element.querySelector('.'+cls.criticalConnectorLineSVG);
+        if (pathElement) {
+            pathElement.setAttribute('stroke-width', '2');
         }
-        else {
-            addClass(element.querySelectorAll('.' + cls.connectorLine), [cls.connectorLineHover]);
-            addClass(element.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.connectorLineRightArrowHover]);
-            addClass(element.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.connectorLineLeftArrowHover]);
+        else{
+            criticalElement.setAttribute('stroke-width', '2');
         }
     }
 
@@ -109,17 +107,14 @@ export class ConnectorLineEdit {
      * @private
      */
     private removeHighlight(): void {
-        if (!isNullOrUndefined(this.connectorLineElement)) {
-            removeClass([this.connectorLineElement], [cls.connectorLineHoverZIndex]);
-            if (this.connectorLineElement.querySelectorAll('.' + cls.connectorLine)[0].classList.contains(cls.criticalConnectorLineHover)) {
-                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLine), [cls.criticalConnectorLineHover]);
-                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.criticalConnectorLineRightArrowHover]);
-                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.criticalConnectorLineLeftArrowHover]);
+        if (this.connectorLineElement) {
+            const pathElement = this.connectorLineElement.querySelector('.' + cls.connectorLineSVG);
+            const criticalElement = this.connectorLineElement.querySelector('.'+cls.criticalConnectorLineSVG);
+            if (pathElement) {
+                pathElement.setAttribute('stroke-width', '1'); 
             }
-            else {
-                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLine), [cls.connectorLineHover]);
-                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.connectorLineRightArrowHover]);
-                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.connectorLineLeftArrowHover]);
+            else{
+                criticalElement.setAttribute('stroke-width', '1');
             }
             this.connectorLineElement = null;
         }
@@ -185,8 +180,8 @@ export class ConnectorLineEdit {
         this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
             this.parent.updatedRecords : this.parent.getExpandedRecords(this.parent.updatedRecords);
         const editedConnectorLineString: string = this.getEditedConnectorLineString(editedRecord);
-        this.parent.connectorLineModule.dependencyViewContainer.innerHTML =
-            this.parent.connectorLineModule.dependencyViewContainer.innerHTML + editedConnectorLineString;
+        this.parent.connectorLineModule.svgObject.innerHTML =
+            this.parent.connectorLineModule.svgObject.innerHTML + editedConnectorLineString;
     }
 
     private idFromPredecessor(pre: string): string[] {
@@ -818,9 +813,9 @@ export class ConnectorLineEdit {
     public validateTypes(ganttRecord: IGanttData, data?:any): object {
         const predecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(ganttRecord);
         let parentGanttRecord: IGanttData;
-        let ganttTaskData: ITaskData;
         this.validationPredecessor = [];
         let violatedParent: IGanttData;
+        let ganttTaskData: ITaskData;
         let violateType: string;
         const startDate: Date = this.parent.predecessorModule.getPredecessorDate(ganttRecord, predecessor);
         if (data) {

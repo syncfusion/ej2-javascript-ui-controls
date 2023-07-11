@@ -336,6 +336,9 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         }
         this.secondaryBtnObj.activeElem = [this.element, this.secondaryBtnObj.element];
         this.secondaryBtnObj.element.querySelector('.e-btn-icon').classList.remove('e-icon-right');
+        if (this.disabled) {
+            this.wrapper.classList.add('e-splitbtn-disabled');
+        }
     }
 
     private setAria(): void {
@@ -464,6 +467,12 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
                     removeClass([this.wrapper], RTL);
                 }
                 break;
+            case 'disabled':
+                if (newProp.disabled) {
+                    addClass([this.wrapper], 'e-splitbtn-disabled');
+                } else {
+                    removeClass([this.wrapper], 'e-splitbtn-disabled');
+                }
             }
         }
     }

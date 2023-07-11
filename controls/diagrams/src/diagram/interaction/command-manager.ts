@@ -177,7 +177,7 @@ export class CommandHandler {
      * @private
      */
     public showTooltip(
-        node: IElement, position: PointModel, content: string | HTMLElement, toolName: string,
+        node: IElement, position: PointModel, content: string | HTMLElement | Function, toolName: string,
         isTooltipVisible: boolean): void {
         let targetId: string;
         let targetEle: HTMLElement;
@@ -200,7 +200,7 @@ export class CommandHandler {
             targetId = (node as Connector).id;
         }
         if (isNullOrUndefined(targetEle) && !isNullOrUndefined(targetId)) {
-            let idName: string = isNative ? '_content_native_element' : '_groupElement';
+            const idName: string = isNative ? '_content_native_element' : '_groupElement';
             targetEle = document.getElementById(targetId + idName);
         }
         if (isTooltipVisible) {
@@ -254,20 +254,18 @@ export class CommandHandler {
      * @private
      */
     public connectorSplit(droppedObject: NodeModel, targetConnector: ConnectorModel): void {
-        let droppedNodeId: string =droppedObject.id ;
-        let existingConnector: ConnectorModel = cloneObject(targetConnector)
-        let connectorIndex: number;
-        connectorIndex = this.diagram.connectors.indexOf(targetConnector)
-        let nodeIndex: number;
-        nodeIndex = this.diagram.nodes.indexOf(droppedObject)
-        let droppedNode: NodeModel = cloneObject(droppedObject)
-        let connectorOldChanges: ConnectorPropertyChanging={} ;
-        let nodeOldChanges: NodePropertyChanging={};
-        let nodeOldProperty: NodeModel = {
-            offsetX:droppedNode.offsetX,
-            offsetY:droppedNode.offsetY
+        const droppedNodeId: string = droppedObject.id ;
+        const existingConnector: ConnectorModel = cloneObject(targetConnector);
+        const connectorIndex: number = this.diagram.connectors.indexOf(targetConnector);
+        const nodeIndex: number = this.diagram.nodes.indexOf(droppedObject);
+        const droppedNode: NodeModel = cloneObject(droppedObject);
+        const connectorOldChanges: ConnectorPropertyChanging = {} ;
+        const nodeOldChanges: NodePropertyChanging = {};
+        const nodeOldProperty: NodeModel = {
+            offsetX: droppedNode.offsetX,
+            offsetY: droppedNode.offsetY
         };
-        let connectorOldProperty: ConnectorModel = {
+        const connectorOldProperty: ConnectorModel = {
             sourceID: existingConnector.sourceID,
             sourcePoint: existingConnector.sourcePoint,
             sourcePortID: existingConnector.sourcePortID,
@@ -277,11 +275,11 @@ export class CommandHandler {
         };
         connectorOldChanges[parseInt(connectorIndex.toString(), 10)] = connectorOldProperty;
         nodeOldChanges[parseInt(nodeIndex.toString(), 10)] = nodeOldProperty;
-        let connectorNewChanges: ConnectorPropertyChanging = {};
-        let nodeNewChanges: NodePropertyChanging = {};
-        let nodeNewProperty: NodeModel = {
+        const connectorNewChanges: ConnectorPropertyChanging = {};
+        const nodeNewChanges: NodePropertyChanging = {};
+        const nodeNewProperty: NodeModel = {
         };
-        let connectorNewProperty: ConnectorModel = {
+        const connectorNewProperty: ConnectorModel = {
         };
         //Split the connector based on the dropped node
         if (existingConnector.sourceID !== '' && existingConnector.targetID !== ''){
@@ -292,7 +290,7 @@ export class CommandHandler {
             connectorNewProperty.targetID = this.ConnectorTargetChange(targetConnector, droppedNodeId);
         }
         else if ((existingConnector.sourceID === '' && existingConnector.targetID === '') || (existingConnector.sourceID === '' && existingConnector.targetID !== '')) {
-            this.nodeOffsetChange(nodeNewProperty, droppedNode, targetConnector.sourcePoint)
+            this.nodeOffsetChange(nodeNewProperty, droppedNode, targetConnector.sourcePoint);
             connectorNewProperty.sourceID = this.ConnectorSourceChange(targetConnector, droppedNodeId);
         }
         connectorNewChanges[parseInt(connectorIndex.toString(), 10)] = connectorNewProperty;
@@ -301,11 +299,11 @@ export class CommandHandler {
         this.diagram.updateSelector();
         this.diagram.connectorPropertyChange(targetConnector as Connector, connectorOldProperty as Connector, connectorNewProperty as Connector);
         //Check Whether the connector connects with the node
-         if (existingConnector.sourceID !== '' && existingConnector.targetID !== ''){
-            let newConnector: ConnectorModel = { 
-            id:"connector " + droppedNodeId,
-            constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop,
-            sourceID:droppedNodeId
+        if (existingConnector.sourceID !== '' && existingConnector.targetID !== ''){
+            const newConnector: ConnectorModel = {
+                id: 'connector ' + droppedNodeId,
+                constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop,
+                sourceID: droppedNodeId
             };
             //Check whether the connector connects with the ports
             if (existingConnector.sourcePortID !== '' && existingConnector.targetPortID !== '') {
@@ -328,7 +326,7 @@ export class CommandHandler {
         };
         this.diagram.addHistoryEntry(entry1);
     }
-    
+
     private nodeOffsetChange(propertyChangeArg: NodeModel, node: NodeModel, nodeNewOffset: PointModel ): void {
         propertyChangeArg.offsetX = node.offsetX = nodeNewOffset.x;
         propertyChangeArg.offsetY = node.offsetY = nodeNewOffset.y;
@@ -1004,7 +1002,7 @@ export class CommandHandler {
     public addLayer(layer: LayerModel, objects?: Object[], isServerUpdate: boolean = true): void {
         layer.id = layer.id || randomId();
         layer.zIndex = this.diagram.layers.length;
-        let isEnableServerDatabind: boolean = this.diagram.allowServerDataBinding;
+        const isEnableServerDatabind: boolean = this.diagram.allowServerDataBinding;
         this.diagram.enableServerDataBinding(false);
         layer = new Layer(this.diagram, 'layers', layer, true);
         this.diagram.enableServerDataBinding(isEnableServerDatabind);
@@ -1032,10 +1030,12 @@ export class CommandHandler {
      */
     public getObjectLayer(objectName: string): LayerModel {
         const layers: LayerModel[] = this.diagram.layers;
-        for (let i: number = 0; i < layers.length; i++) {
-            const objIndex: number = layers[parseInt(i.toString(), 10)].objects.indexOf(objectName);
-            if (objIndex > -1) {
-                return layers[parseInt(i.toString(), 10)];
+        if(layers.length > 1){
+            for (let i: number = 0; i < layers.length; i++) {
+                const objIndex: number = layers[parseInt(i.toString(), 10)].objects.indexOf(objectName);
+                if (objIndex > -1) {
+                    return layers[parseInt(i.toString(), 10)];
+                }
             }
         }
         return this.diagram.activeLayer;
@@ -1278,7 +1278,7 @@ export class CommandHandler {
         obj.children = [];
         selectedItems = this.diagram.selectedItems.nodes;
         selectedItems = selectedItems.concat(this.diagram.selectedItems.connectors);
-        let order: (NodeModel | ConnectorModel)[] = selectedItems.sort(function (a, b) {
+        const order: (NodeModel | ConnectorModel)[] = selectedItems.sort(function (a, b) {
             return a.zIndex - b.zIndex;
         });
         for (let i: number = 0; i < order.length; i++) {
@@ -1803,9 +1803,9 @@ export class CommandHandler {
         this.diagram.removeFromAQuad(obj);
         this.diagram.removeObjectsFromLayer(this.diagram.nameTable[obj.id]);
         delete this.diagram.nameTable[obj.id];
-		//EJ2-62652 - Added below code to empty the segment collection if connector type is bezier
+        //EJ2-62652 - Added below code to empty the segment collection if connector type is bezier
         if (obj instanceof Connector && obj.type === 'Bezier' && obj.segments.length > 0
-        && ((this.diagram.drawingObject as ConnectorModel) &&(this.diagram.drawingObject as ConnectorModel).type === 'Bezier')) {
+        && ((this.diagram.drawingObject as ConnectorModel) && (this.diagram.drawingObject as ConnectorModel).type === 'Bezier')) {
             obj.segments = [];
         }
         const newObj: Node | Connector = this.diagram.add(obj);
@@ -1925,12 +1925,12 @@ export class CommandHandler {
         };
         // EJ2-57157 - Added to consider the lane header at selection change when selecting a lane.
         if (obj.length > 0 && (obj[0] && (obj[0] as SwimLaneModel).isLane)) {
-            let swimlaneNode: NodeModel = this.diagram.getObject((obj[0] as Node).parentId);
+            const swimlaneNode: NodeModel = this.diagram.getObject((obj[0] as Node).parentId);
             (obj[0].shape as any).header = [];
             let laneId: string = '';
             for (let j = 0; j < obj.length; j++) {
                 for (let i = 0; i < (swimlaneNode.shape as SwimLaneModel).lanes.length; i++) {
-                    let parentId = (obj[0] as Node).id.split((obj[0] as Node).parentId);
+                    const parentId = (obj[0] as Node).id.split((obj[0] as Node).parentId);
                     laneId = parentId[1].slice(0, -1);
                     if (laneId === (swimlaneNode.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].id) {
                         (obj[0].shape as any).header.push((swimlaneNode.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].header);
@@ -1945,7 +1945,7 @@ export class CommandHandler {
         } else {
             this.oldSelectedObjects = cloneSelectedObjects(this.diagram);
         }
-        let oldSelectedItems = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
+        const oldSelectedItems = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
         const canDoMultipleSelection: number = canMultiSelect(this.diagram);
         const canDoSingleSelection: number = canSingleSelect(this.diagram);
         if (canDoSingleSelection || canDoMultipleSelection) {
@@ -2269,8 +2269,8 @@ export class CommandHandler {
     public unSelect(obj: NodeModel | ConnectorModel): void {
         const objArray: (NodeModel | ConnectorModel)[] = [];
         objArray.push(obj);
-        let items = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
-        let selectedObjects = items.filter(function (items) {
+        const items = (this.diagram.selectedItems.nodes.concat(this.diagram.selectedItems.connectors as NodeModel));
+        const selectedObjects = items.filter(function (items) {
             return items.id !== obj.id;
         });
         let arg: ISelectionChangeEventArgs | IBlazorSelectionChangeEventArgs = {
@@ -2427,7 +2427,7 @@ export class CommandHandler {
      * @param {NodeModel | ConnectorModel} object - provide the objects value.
      * @private
      */
-     public sendToBack(object?: NodeModel | ConnectorModel): void {
+    public sendToBack(object?: NodeModel | ConnectorModel): void {
         this.diagram.protectPropertyChange(true);
         if (hasSelection(this.diagram) || object) {
             // EJ2-57772 - Added the below code to iterate all the selected nodes / connectors in the diagram and
@@ -2442,7 +2442,7 @@ export class CommandHandler {
             }
             let objectId: string = (object && object.id);
             for (let i: number = 0; i < objects.length; i++) {
-                let clonedObject = cloneObject(objects[parseInt(i.toString(), 10)]);
+                const clonedObject = cloneObject(objects[parseInt(i.toString(), 10)]);
                 objectId = objects[parseInt(i.toString(), 10)].id;
                 const index: number = this.diagram.nameTable[`${objectId}`].zIndex;
                 const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
@@ -2454,7 +2454,7 @@ export class CommandHandler {
                 //Checks whether it is not a group and the nodes behind it are not it’s children.
                 if (this.diagram.nodes.length !== 1 && (this.diagram.nameTable[`${objectId}`].children === undefined ||
                     this.checkObjectBehind(objectId, zIndexTable, index))) {
-                    let obj: NodeModel = this.diagram.nameTable[`${objectId}`];
+                    const obj: NodeModel = this.diagram.nameTable[`${objectId}`];
                     for (let i: number = index; i > 0; i--) {
                         if (zIndexTable[parseInt(i.toString(), 10)]) {
                             //When there are empty records in the zindex table
@@ -2481,7 +2481,7 @@ export class CommandHandler {
                         tempIndex = this.swapZIndexObjects(index, zIndexTable, objectId, tempTable);
                     }
                     if (this.diagram.mode === 'SVG') {
-                        let obj: NodeModel = this.diagram.nameTable[`${objectId}`];
+                        const obj: NodeModel = this.diagram.nameTable[`${objectId}`];
                         let i: number = obj.shape.type !== 'SwimLane' ? 1 : tempIndex;
                         if (i !== tempIndex) {
                             i = (obj.children && obj.children.length > 0) ? index : 1;
@@ -2494,7 +2494,7 @@ export class CommandHandler {
                         // EJ2-46656 - CR issue fix
                         target = this.resetTargetNode(objectId, target, i, zIndexTable);
                         //EJ2-69654 - Send to back command not working when there is single node in layer
-                        if(target){
+                        if (target){
                             target = this.diagram.nameTable[`${target}`].parentId ? this.checkParentExist(target) : target;
                             this.moveSvgNode(objectId, target);
                         }
@@ -2678,13 +2678,13 @@ export class CommandHandler {
                 objects = objects.concat(selectedItems.connectors);
             }
             for (let i: number = 0; i < objects.length; i++) {
-                let clonedObject = cloneObject(objects[parseInt(i.toString(), 10)]);
+                const clonedObject = cloneObject(objects[parseInt(i.toString(), 10)]);
                 objectName = objects[parseInt(i.toString(), 10)].id;
                 const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectName));
                 const zIndexTable: {} = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).zIndexTable;
                 const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
-                let tempTable: {} = JSON.parse(JSON.stringify(zIndexTable));
-                let tempIndex: number = 0;
+                const tempTable: {} = JSON.parse(JSON.stringify(zIndexTable));
+                const tempIndex: number = 0;
                 //find the maximum zIndex of the tabel
                 let tabelLength: number = Number(Object.keys(zIndexTable).sort(
                     (a: string, b: string) => { return Number(a) - Number(b); }).reverse()[0]);
@@ -2694,7 +2694,7 @@ export class CommandHandler {
                 for (let i: number = 0; i <= tabelLength; i++) {
                     oldzIndexTable.push(zIndexTable[parseInt(i.toString(), 10)]);
                 }
-                let object: NodeModel = this.diagram.nameTable[`${objectName}`];
+                const object: NodeModel = this.diagram.nameTable[`${objectName}`];
                 if (object.shape.type === 'SwimLane') {
                     for (let i: number = tabelLength; i >= index; i--) {
                         if (zIndexTable[parseInt(i.toString(), 10)] && !(this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].parentId === objectName)) {
@@ -2732,7 +2732,7 @@ export class CommandHandler {
                     let childIndex: number = -1;
                     let tempIndex: number = 0;
                     let laneIndex: number = 0;
-                    let cloneTable: {} = JSON.parse(JSON.stringify(zIndexTable));
+                    const cloneTable: {} = JSON.parse(JSON.stringify(zIndexTable));
                     for (let i: number = 0; i <= index; i++) {
                         if (zIndexTable[parseInt(i.toString(), 10)] && this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].parentId === objectName) {
                             if (childIndex === -1) {
@@ -2744,8 +2744,8 @@ export class CommandHandler {
                     }
                     for (let i: number = 0; i <= tabelLength; i++) {
                         if (tempTable[parseInt(i.toString(), 10)] && tempTable[parseInt(i.toString(), 10)] !== objectName && this.diagram.nameTable[tempTable[parseInt(i.toString(), 10)]].parentId !== objectName) {
-                            let node: Node = this.diagram.nameTable[tempTable[parseInt(i.toString(), 10)]];
-                            let swimlaneObject: Node = this.diagram.nameTable[`${objectName}`];
+                            const node: Node = this.diagram.nameTable[tempTable[parseInt(i.toString(), 10)]];
+                            const swimlaneObject: Node = this.diagram.nameTable[`${objectName}`];
                             if (node.zIndex >= swimlaneObject.zIndex) {
                                 childCount++;
                             }
@@ -2809,14 +2809,14 @@ export class CommandHandler {
                         this.diagram.diagramRenderer.renderElement(this.diagram.nameTable[`${objectName}`].wrapper, diagramLayer, htmlLayer);
                     } else {
                         Object.keys(zIndexTable).forEach((key: string) => {
-                            let zIndexValue: string = zIndexTable[`${key}`];
+                            const zIndexValue: string = zIndexTable[`${key}`];
                             if ((zIndexValue !== objectName) && (this.diagram.nameTable[`${zIndexValue}`].parentId) !== objectName) {
                                 //EJ2-42101 - SendToBack and BringToFront not working for connector with group node
                                 //Added @Dheepshiva to restrict the objects with lower zIndex
                                 if (zIndexValue !== undefined &&
                                     (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(zIndexValue))) {
-                                    let objectNode: Node | Connector = this.diagram.nameTable[`${objectName}`];
-                                    let zIndexNode: Node | Connector = this.diagram.nameTable[`${zIndexValue}`];
+                                    const objectNode: Node | Connector = this.diagram.nameTable[`${objectName}`];
+                                    const zIndexNode: Node | Connector = this.diagram.nameTable[`${zIndexValue}`];
                                     if (objectNode.parentId === '' && zIndexNode.parentId === '' && zIndexNode.parentId === undefined
                                         && objectNode.parentId !== zIndexNode.id) {
                                         this.moveSvgNode(zIndexValue, objectName);
@@ -2849,7 +2849,7 @@ export class CommandHandler {
     }
 
     private triggerOrderCommand(oldObj : NodeModel | ConnectorModel, newObj : NodeModel | ConnectorModel, obj: NodeModel | ConnectorModel){
-        let clonedObject = cloneObject(oldObj);
+        const clonedObject = cloneObject(oldObj);
         // EJ2-61653 - Added below code to get only changed values (zIndex) and passed as an argument to property change event
         const oldValue: NodeModel | ConnectorModel = {
             zIndex: (clonedObject as NodeModel | ConnectorModel).zIndex
@@ -2857,7 +2857,7 @@ export class CommandHandler {
         const newValue: NodeModel | ConnectorModel = {
             zIndex: newObj.zIndex
         };
-        let arg: IPropertyChangeEventArgs = {
+        const arg: IPropertyChangeEventArgs = {
             element: obj, cause: this.diagram.diagramActions, diagramAction : this.diagram.getDiagramAction(this.diagram.diagramActions),
             oldValue: oldValue, newValue: newValue
         };
@@ -3005,9 +3005,9 @@ export class CommandHandler {
         this.diagram.protectPropertyChange(true);
 
         if (hasSelection(this.diagram) || obj) {
-            let elements: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0]
+            const elements: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0]
                 : this.diagram.selectedItems.connectors[0]);
-            let clonedObjects = cloneObject(elements);
+            const clonedObjects = cloneObject(elements);
             let nodeId: string = (obj && obj.id);
             nodeId = nodeId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
                 : this.diagram.selectedItems.connectors[0].id);
@@ -3032,11 +3032,11 @@ export class CommandHandler {
                 }
             }
             if (intersectArray.length > 0) {
-                let node: Node = this.diagram.nameTable[zIndexTable[Number(intersectArray[0].zIndex)]];
+                const node: Node = this.diagram.nameTable[zIndexTable[Number(intersectArray[0].zIndex)]];
                 if (node.parentId) {
-                    let parentId: string = '';
-                    let parent: string = findParentInSwimlane(node, this.diagram, parentId);
-                    let obj: NodeModel = this.diagram.nameTable[`${parent}`];
+                    const parentId: string = '';
+                    const parent: string = findParentInSwimlane(node, this.diagram, parentId);
+                    const obj: NodeModel = this.diagram.nameTable[`${parent}`];
                     if (obj.id !== nodeId) {
                         intersectArray[0] = obj;
                     }
@@ -3095,9 +3095,9 @@ export class CommandHandler {
         this.diagram.protectPropertyChange(true);
 
         if (hasSelection(this.diagram) || obj) {
-            let element: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0]
+            const element: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0]
                 : this.diagram.selectedItems.connectors[0]);
-            let clonedObject = cloneObject(element);
+            const clonedObject = cloneObject(element);
             let objectId: string = (obj && obj.id);
             objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
                 : this.diagram.selectedItems.connectors[0].id);
@@ -3120,18 +3120,18 @@ export class CommandHandler {
                 }
             }
             for (let i: number = intersectArray.length - 1; i >= 0; i--) {
-                let child: Node = this.diagram.nameTable[intersectArray[parseInt(i.toString(), 10)].id];
+                const child: Node = this.diagram.nameTable[intersectArray[parseInt(i.toString(), 10)].id];
                 if (child.parentId === objectId) {
                     intersectArray.splice(i, 1);
                 }
             }
 
             if (intersectArray.length > 0) {
-                let child: Node = this.diagram.nameTable[intersectArray[intersectArray.length - 1].id];
+                const child: Node = this.diagram.nameTable[intersectArray[intersectArray.length - 1].id];
                 if (child.parentId) {
-                    let parentId: string = '';
-                    let parent: string = findParentInSwimlane(child, this.diagram, parentId);
-                    let obj: NodeModel = this.diagram.nameTable[`${parent}`];
+                    const parentId: string = '';
+                    const parent: string = findParentInSwimlane(child, this.diagram, parentId);
+                    const obj: NodeModel = this.diagram.nameTable[`${parent}`];
                     if (objectId !== obj.id) {
                         intersectArray[intersectArray.length - 1] = obj;
                     }
@@ -3151,7 +3151,7 @@ export class CommandHandler {
                 this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]].zIndex = currentObject;
                 if (this.diagram.mode === 'SVG') {
                     this.moveSvgNode(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
-                    let node: NodeModel = this.diagram.nameTable[zIndexTable[intersectArray[intersectArray.length - 1].zIndex]];
+                    const node: NodeModel = this.diagram.nameTable[zIndexTable[intersectArray[intersectArray.length - 1].zIndex]];
                     if (node.children && node.children.length > 0) {
                         this.updateNativeNodeIndex(objectId);
                     } else {
@@ -3913,7 +3913,7 @@ export class CommandHandler {
     private changeSegmentLength(connector: Connector, target: NodeModel, targetPortId: string, isDragSource: boolean): void {
         // EJ2-65063 - Added below code to check condition if connector segment length can be changed or not.
         // If inconnect and outconnect removed from node constraints
-        let canChangeSegment: boolean = target ? this.canConnect(connector, target) : true;
+        const canChangeSegment: boolean = target ? this.canConnect(connector, target) : true;
         if (connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null
             && ((!target && connector.sourceID === '') || isDragSource) && canChangeSegment ) {
             const first: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
@@ -4011,11 +4011,11 @@ export class CommandHandler {
 
     // EJ2-65063 - Added below method to check if target has inConnect or outConnect. If it does not have inconnect and outconnect means then return false
     private canConnect(connector: ConnectorModel, target: NodeModel): boolean {
-            if (canInConnect(target) && canOutConnect(target)) {
-                return true;
-            } else {
-                return false;
-            }
+        if (canInConnect(target) && canOutConnect(target)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -4192,32 +4192,32 @@ Remove terinal segment in initial
         void {
         const index: number = (connector.segments.indexOf(seg));
         const segment: BezierSegment = connector.segments[parseInt(index.toString(), 10)] as BezierSegment;
-        let prevSegment: BezierSegment = index > 0 ? connector.segments[index - 1] as BezierSegment : null;
-        let startPoint: PointModel = prevSegment !== null ? prevSegment.point : connector.sourcePoint;
-        let endPoint: PointModel = index === connector.segments.length - 1 ? connector.targetPoint : segment.point;
+        const prevSegment: BezierSegment = index > 0 ? connector.segments[index - 1] as BezierSegment : null;
+        const startPoint: PointModel = prevSegment !== null ? prevSegment.point : connector.sourcePoint;
+        const endPoint: PointModel = index === connector.segments.length - 1 ? connector.targetPoint : segment.point;
 
         if (segment) {
             if (value === 'BezierSourceThumb' && (segment.vector1.angle || segment.vector1.distance)) {
-                let oldDistance: number = segment.vector1.distance;
-                let oldAngle: number = segment.vector1.angle;
+                const oldDistance: number = segment.vector1.distance;
+                const oldAngle: number = segment.vector1.angle;
                 segment.vector1 = {
                     distance: (connector as Connector).distance(startPoint, point),
                     angle: Point.findAngle(startPoint, point)
                 };
 
-                let deltaLength: number = segment.vector1.distance - oldDistance;
-                let deltaAngle: number = segment.vector1.angle - oldAngle;
+                const deltaLength: number = segment.vector1.distance - oldDistance;
+                const deltaAngle: number = segment.vector1.angle - oldAngle;
                 this.translateSubsequentSegment(connector, seg, true, deltaLength, deltaAngle);
             } else if (value === 'BezierTargetThumb' && (segment.vector2.angle || segment.vector2.distance)) {
-                let oldDistance: number = segment.vector2.distance;
-                let oldAngle: number = segment.vector2.angle;
+                const oldDistance: number = segment.vector2.distance;
+                const oldAngle: number = segment.vector2.angle;
                 segment.vector2 = {
                     distance: (connector as Connector).distance(endPoint, point),
                     angle: Point.findAngle(endPoint, point)
                 };
 
-                let deltaLength: number = segment.vector2.distance - oldDistance;
-                let deltaAngle: number = segment.vector2.angle - oldAngle;
+                const deltaLength: number = segment.vector2.distance - oldDistance;
+                const deltaAngle: number = segment.vector2.angle - oldAngle;
                 this.translateSubsequentSegment(connector, seg, false, deltaLength, deltaAngle);
             } else if ((value === 'ConnectorSourceEnd' && !connector.sourceID || value === 'ConnectorTargetEnd' && !connector.targetID)
                 && update && isEmptyVector(segment.vector1) && isEmptyVector(segment.vector2)) {
@@ -4272,7 +4272,7 @@ Remove terinal segment in initial
 
     private updatePreviousBezierSegment(connector: ConnectorModel, index: number, deltaLength: number, deltaAngle: number): void {
         const segment: BezierSegment = connector.segments[index - 1] as BezierSegment;
-        let newDistance: number = segment.vector2.distance + deltaLength;
+        const newDistance: number = segment.vector2.distance + deltaLength;
         let newAngle: number = (segment.vector2.angle + deltaAngle) % 360;
         if (newAngle < 0) {
             newAngle += 360;
@@ -4283,7 +4283,7 @@ Remove terinal segment in initial
 
     private updateNextBezierSegment(connector: ConnectorModel, index: number, deltaLength: number, deltaAngle: number): void {
         const segment: BezierSegment = connector.segments[index + 1] as BezierSegment;
-        let newDistance: number = segment.vector1.distance + deltaLength;
+        const newDistance: number = segment.vector1.distance + deltaLength;
         let newAngle: number = (segment.vector1.angle + deltaAngle) % 360;
         if (newAngle < 0) {
             newAngle += 360;
@@ -4375,8 +4375,8 @@ Remove terinal segment in initial
         if ((connector.type === 'Straight' || connector.type === 'Bezier') && connector.segments.length > 0) {
             if (segmentNumber !== undefined && connector.segments[parseInt(segmentNumber.toString(), 10)]) {
                 if (connector.type === 'Bezier') {
-                    let seg: BezierSegmentModel = connector.segments[parseInt(segmentNumber.toString(), 10)] as BezierSegmentModel;
-                    let isInternalSegment = (seg as BezierSegment).isInternalSegment;
+                    const seg: BezierSegmentModel = connector.segments[parseInt(segmentNumber.toString(), 10)] as BezierSegmentModel;
+                    const isInternalSegment = (seg as BezierSegment).isInternalSegment;
                     if (!isInternalSegment || connector.bezierSettings === null || connector.bezierSettings.segmentEditOrientation === 'FreeForm') {
                         seg.point.x += tx;
                         seg.point.y += ty;
@@ -4418,10 +4418,10 @@ Remove terinal segment in initial
             return;
         }
 
-        let pts: PointModel[] = [];
+        const pts: PointModel[] = [];
         pts.push(connector.sourcePoint);
         for (let i: number = 0; i < connector.segments.length - 1; i++) {
-            let seg: BezierSegmentModel = connector.segments[parseInt(i.toString(), 10)] as BezierSegmentModel;
+            const seg: BezierSegmentModel = connector.segments[parseInt(i.toString(), 10)] as BezierSegmentModel;
             if (seg.orientation === 'Horizontal') {
                 pts.push({ x: seg.point.x, y: pts[pts.length - 1].y });
             }
@@ -4441,41 +4441,41 @@ Remove terinal segment in initial
 
         pts.push(connector.targetPoint);
 
-        let start: PointModel = pts[0];
-        let end: PointModel = pts[pts.length - 1];
+        const start: PointModel = pts[0];
+        const end: PointModel = pts[pts.length - 1];
 
         if (connector.segments.length > 1) {
-            let mid1: PointModel = pts[1];
-            let mid2: PointModel = pts[2];
-            let center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
-            var segment1: BezierSegmentModel = connector.segments[0];
+            const mid1: PointModel = pts[1];
+            const mid2: PointModel = pts[2];
+            const center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
+            const segment1: BezierSegmentModel = connector.segments[0];
             segment1.vector1.angle = findAngle(start, mid1);
             segment1.vector1.distance = Point.findLength(start, mid1) * 0.5;
             segment1.vector2.angle = findAngle(center1, mid1);
             segment1.vector2.distance = Point.findLength(center1, mid1) * 0.5;
             segment1.point = center1;
 
-            var segment2: BezierSegmentModel = connector.segments[1];
+            const segment2: BezierSegmentModel = connector.segments[1];
             segment2.vector1.angle = findAngle(center1, mid2);
             segment2.vector1.distance = Point.findLength(center1, mid2) * 0.5;
             if (connector.segments.length > 2) {
-                let mid3: PointModel = pts[3];
-                let center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
+                const mid3: PointModel = pts[3];
+                const center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
                 segment2.vector2.angle = findAngle(center2, mid2);
                 segment2.vector2.distance = Point.findLength(center2, mid2) * 0.5;
                 segment2.point = center2;
 
-                var segment3: BezierSegmentModel = connector.segments[2];
+                const segment3: BezierSegmentModel = connector.segments[2];
                 segment3.vector1.angle = findAngle(center2, mid3);
                 segment3.vector1.distance = Point.findLength(center2, mid3) * 0.5;
                 if (connector.segments.length > 3) {
-                    let mid4: PointModel = pts[4];
-                    let center3: PointModel = { x: (mid3.x + mid4.x) * 0.5, y: (mid3.y + mid4.y) * 0.5 };
+                    const mid4: PointModel = pts[4];
+                    const center3: PointModel = { x: (mid3.x + mid4.x) * 0.5, y: (mid3.y + mid4.y) * 0.5 };
                     segment3.vector2.angle = findAngle(center3, mid3);
                     segment3.vector2.distance = Point.findLength(center3, mid3) * 0.5;
                     segment3.point = center3;
 
-                    var segment4: BezierSegmentModel = connector.segments[3];
+                    const segment4: BezierSegmentModel = connector.segments[3];
                     segment4.vector1.angle = findAngle(center3, mid4);
                     segment4.vector1.distance = Point.findLength(center3, mid4) * 0.5;
                     segment4.vector2.angle = findAngle(end, mid4);
@@ -4619,7 +4619,7 @@ Remove terinal segment in initial
             this.diagram.connectorPropertyChange(conn as Connector, {} as Connector, newProp);
             if (conn.segments && conn.segments.length > 0) {
                 this.diagram.protectPropertyChange(true);
-                let connector: Connector = conn;
+                const connector: Connector = conn;
                 connector.segments = [];
                 this.diagram.connectorPropertyChange(connector, {} as Connector, { segments: connector.segments } as Connector);
                 this.diagram.protectPropertyChange(false);
@@ -4877,7 +4877,7 @@ Remove terinal segment in initial
         this.diagram.connectorPropertyChange(connector, oldValues, newProp);
         const selector: Selector = this.diagram.selectedItems as Selector;
         if (selectionHasConnector(this.diagram, selector)) {
-            let clonedSelectedItems: object = cloneObject(this.diagram.selectedItems);
+            const clonedSelectedItems: object = cloneObject(this.diagram.selectedItems);
             const nodeModel: NodeModel = {
                 offsetX: (clonedSelectedItems as any).offsetX, offsetY: (clonedSelectedItems as any).offsetY,
                 height: (clonedSelectedItems as any).height, width: (clonedSelectedItems as any).width, rotateAngle: (clonedSelectedItems as any).rotateAngle
@@ -4890,7 +4890,7 @@ Remove terinal segment in initial
             selector.wrapper.actualSize.height = obj.height;
             selector.wrapper.offsetX = obj.offsetX;
             selector.wrapper.offsetY = obj.offsetY;
-            let child: ConnectorModel = this.diagram.selectedItems.connectors[0];
+            const child: ConnectorModel = this.diagram.selectedItems.connectors[0];
             if (child.id !== connector.id) {
                 this.measureSelector(selector);
             }
@@ -4900,7 +4900,7 @@ Remove terinal segment in initial
     private measureSelector(selector: Selector) {
         let desiredBounds: Rect = undefined;
         //Measuring the children
-        let clonedSelectedItems: object = cloneObject(this.diagram.selectedItems);
+        const clonedSelectedItems: object = cloneObject(this.diagram.selectedItems);
         let objects: ConnectorModel[] = [];
         let bounds: Rect;
         objects = (clonedSelectedItems as SelectorModel).connectors;
@@ -4910,8 +4910,8 @@ Remove terinal segment in initial
             rotateMatrix(matrix, -selector.rotateAngle, pivot.x, pivot.y);
             objects[parseInt(i.toString(), 10)].sourcePoint = transformPointByMatrix(matrix, objects[parseInt(i.toString(), 10)].sourcePoint);
             objects[parseInt(i.toString(), 10)].targetPoint = transformPointByMatrix(matrix, objects[parseInt(i.toString(), 10)].targetPoint);
-            let p1: PointModel = { x: objects[parseInt(i.toString(), 10)].sourcePoint.x, y: objects[parseInt(i.toString(), 10)].sourcePoint.y };
-            let p2: PointModel = { x: objects[parseInt(i.toString(), 10)].targetPoint.x, y: objects[parseInt(i.toString(), 10)].targetPoint.y };
+            const p1: PointModel = { x: objects[parseInt(i.toString(), 10)].sourcePoint.x, y: objects[parseInt(i.toString(), 10)].sourcePoint.y };
+            const p2: PointModel = { x: objects[parseInt(i.toString(), 10)].targetPoint.x, y: objects[parseInt(i.toString(), 10)].targetPoint.y };
             bounds = (this.calculateBounds(p1, p2));
             if (desiredBounds === undefined) {
                 desiredBounds = bounds;
@@ -4951,13 +4951,13 @@ Remove terinal segment in initial
     }
 
     private calculateBounds(p1: PointModel, p2: PointModel): Rect {
-        let left: number = Math.min(p1.x, p2.x);
-        let right: number = Math.max(p1.x, p2.x);
-        let top: number = Math.min(p1.y, p2.y);
-        let bottom: number = Math.max(p1.y, p2.y);
-        let width: number = right - left;
-        let height: number = bottom - top;
-        let rect: Rect = new Rect(left, top, width, height);
+        const left: number = Math.min(p1.x, p2.x);
+        const right: number = Math.max(p1.x, p2.x);
+        const top: number = Math.min(p1.y, p2.y);
+        const bottom: number = Math.max(p1.y, p2.y);
+        const width: number = right - left;
+        const height: number = bottom - top;
+        const rect: Rect = new Rect(left, top, width, height);
         return rect;
     }
 
@@ -5047,7 +5047,7 @@ Remove terinal segment in initial
                 currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.actualSize.width)/2 + tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
             }
             break;
-        case "Bottom":
+        case 'Bottom':
             if(label.horizontalAlignment === 'Center'){
                 currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
             }
@@ -5696,7 +5696,7 @@ Remove terinal segment in initial
                         previousConnectorObject.push(cloneObject(connector, undefined, undefined, true));
                     }
                     // EJ2-65876 - Exception occurs on line routing injection module
-                    if(connector.sourceID != connector.targetID && connector.segments.length>1){
+                    if(connector.sourceID != connector.targetID){
                         //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module 
                         let sourceNode:NodeModel= this.diagram.getObject(connector.sourceID);
                         let targetNode:NodeModel = this.diagram.getObject(connector.targetID);
@@ -5797,7 +5797,7 @@ Remove terinal segment in initial
      */
     public renderHighlighter(args: MouseEventArgs, connectHighlighter?: boolean, source?: boolean): void {
         const bounds: Rect = new Rect();
-        if (args.target instanceof Node || (connectHighlighter && args.source instanceof Node)) {
+        if ((args.target instanceof Node) || (connectHighlighter && (args.source instanceof  Node))) {
             const tgt: IElement = connectHighlighter ? args.source : args.target;
             const tgtWrap: DiagramElement = connectHighlighter ? args.sourceWrapper : args.targetWrapper;
             const target: NodeModel | PointPortModel = this.findTarget(tgtWrap, tgt, source, true) as (NodeModel | PointPortModel);
@@ -5813,7 +5813,7 @@ Remove terinal segment in initial
                     }
                 }
             } else {
-                element = target instanceof Node ?
+                element = (target instanceof Node) ?
                     target.wrapper : connectHighlighter ? args.sourceWrapper : args.targetWrapper;
             }
             this.diagram.renderHighlighter(element);
@@ -6116,7 +6116,7 @@ Remove terinal segment in initial
     public scroll(scrollX: number, scrollY: number, focusPoint?: PointModel): void {
         const panx: number = canPanX(this.diagram);
         const pany: number = canPanY(this.diagram);
-        let canPan:boolean = true;
+        const canPan:boolean = true;
         if (isBlazor()) {
             this.diagram.setCursor('grabbing');
             this.diagram.scroller.zoom(
@@ -6199,19 +6199,21 @@ Remove terinal segment in initial
         }
     }
     /**
-    *
+    * @returns { void }     updateLaneChildrenZindex method .\
+    * @param {NodeModel} node - provide the node value.
+    * @param {IElement} target - provide the target value.
     * @private
     */
     public updateLaneChildrenZindex(node: Node, target: IElement): void {
-        let lowerIndexobject: Node = this.findLeastIndexObject(node, target) as Node;
-        let swimlane: Node = this.diagram.nameTable[(target as Node).parentId];
+        const lowerIndexobject: Node = this.findLeastIndexObject(node, target) as Node;
+        const swimlane: Node = this.diagram.nameTable[(target as Node).parentId];
         if (swimlane && swimlane.zIndex > lowerIndexobject.zIndex) {
-            let layerIndex: number = this.diagram.layers.indexOf(this.diagram.getActiveLayer());
+            const layerIndex: number = this.diagram.layers.indexOf(this.diagram.getActiveLayer());
             const layerZIndexTable: {} = (this.diagram.layers[parseInt(layerIndex.toString(), 10)] as Layer).zIndexTable;
             const tempTable: {} = JSON.parse(JSON.stringify(layerZIndexTable));
-            let startIndex: number = lowerIndexobject.zIndex;
-            let endIndex: number = swimlane.zIndex;
-            for (var i = endIndex; i >= startIndex; i--) {
+            const startIndex: number = lowerIndexobject.zIndex;
+            const endIndex: number = swimlane.zIndex;
+            for (let i = endIndex; i >= startIndex; i--) {
                 if (startIndex !== i) {
                     if (!layerZIndexTable[i - 1]) {
                         layerZIndexTable[i - 1] = layerZIndexTable[parseInt(i.toString(), 10)];
@@ -6223,7 +6225,7 @@ Remove terinal segment in initial
                         this.diagram.nameTable[layerZIndexTable[parseInt(i.toString(), 10)]].zIndex = i;
                     }
                 } else {
-                    let tempIndex: number = this.swapZIndexObjects(endIndex, layerZIndexTable, swimlane.id, tempTable);
+                    const tempIndex: number = this.swapZIndexObjects(endIndex, layerZIndexTable, swimlane.id, tempTable);
                 }
             }
             if (this.diagram.mode === 'SVG') {
@@ -6237,7 +6239,7 @@ Remove terinal segment in initial
     }
     private findLeastIndexConnector(edges: string[], target: IElement, index: Node | Connector): Node | Connector {
         for (let i: number = 0; i < edges.length; i++) {
-            let connector: Connector = this.diagram.nameTable[edges[parseInt(i.toString(), 10)]];
+            const connector: Connector = this.diagram.nameTable[edges[parseInt(i.toString(), 10)]];
             if ((index as Node).zIndex > connector.zIndex) {
                 index = connector;
             }

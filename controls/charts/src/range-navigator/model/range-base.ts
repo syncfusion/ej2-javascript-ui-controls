@@ -8,7 +8,6 @@ import { Axis } from '../../chart/axis/axis';
 import { TooltipDisplayMode } from  '../utils/enum';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { RangeNavigator, DataPoint } from '../index';
-import { RangeNavigatorTheme  } from '../utils/theme';
 
 /**
  * Series class for the range navigator
@@ -215,10 +214,10 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
      *
-     * @default 0.85
+     * @default null
      */
 
-    @Property(0.85)
+    @Property(null)
     public opacity: number;
 
     /**
@@ -243,22 +242,23 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
      * Options to customize the ToolTip text.
      */
 
-    @Complex<FontModel>(RangeNavigatorTheme.tooltipLabelFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public textStyle: FontModel;
 
     /**
      * Custom template to format the ToolTip content. Use ${value} as the placeholder text to display the corresponding data point.
      *
      * @default null.
+     * @aspType string
      */
 
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Options to customize tooltip borders.
      */
-    @Complex<BorderModel>({ color: '#cccccc', width: 0.5 }, Border)
+    @Complex<BorderModel>({ color: null, width: null }, Border)
     public border: BorderModel;
 
     /**

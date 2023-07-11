@@ -15,6 +15,7 @@ import { freezeTable } from '../base/enum';
 import { addRemoveEventListener } from '../base/util';
 import * as literals from '../base/string-literals';
 import { Grid } from '../base/grid';
+import { Group } from './group';
 
 /**
  * `NormalEdit` module is used to handle normal('inline, dialog, external') editing actions.
@@ -353,7 +354,26 @@ export class NormalEdit {
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         this.editRowIndex = null;
-        if (this.parent.aggregates.length) {
+        if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            const dragRow: Element = args.row;
+            let rows: Row<Column>[] = this.parent.getRowsObject();
+            const dragRowUid: string = dragRow.getAttribute('data-uid');
+            const dragRowObject: Row<Column> = this.parent.getRowObjectFromUID(dragRowUid);
+            for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
+                rows = rows.filter((data: Row<Column>) =>
+                    data.isDataRow && data.data[this.parent.groupSettings.columns[parseInt(i.toString(), 10)]] ===
+                    args.data[this.parent.groupSettings.columns[parseInt(i.toString(), 10)]] && data !== dragRowObject);
+            }
+            const dropRowObject: Row<Column> = rows[0];
+            if (!isNullOrUndefined(dragRowObject) && !isNullOrUndefined(dropRowObject) &&
+                dragRowObject.parentUid !== dropRowObject.parentUid) {
+                (this.parent['groupModule'] as Group).groupedRowReorder(dragRowObject, dropRowObject);
+            }
+            else if (this.parent.aggregates.length) {
+                this.parent.aggregateModule.refresh(args.data, this.parent.groupSettings.enableLazyLoading ? args.row : undefined);
+            }
+        }
+        else if (this.parent.aggregates.length) {
             this.parent.aggregateModule.refresh(args.data, this.parent.groupSettings.enableLazyLoading ? args.row : undefined);
         }
         this.parent.trigger(events.actionComplete, args);

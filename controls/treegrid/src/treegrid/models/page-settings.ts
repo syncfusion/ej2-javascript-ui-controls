@@ -59,9 +59,10 @@ export class PageSettings extends ChildProperty<PageSettings> {
      * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
     /**
      * Specifies the mode of record count in a page. The options are,
      * * `All`: Count all the records.

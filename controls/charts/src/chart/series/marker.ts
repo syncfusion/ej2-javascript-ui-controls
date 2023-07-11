@@ -14,6 +14,7 @@ import { MarkerExplode } from './marker-explode';
 import { getSaturationColor } from '../../common/utils/helper';
 import { ChartShape } from '../utils/enum';
 
+export const markerShapes: ChartShape[] = ["Circle", "Triangle", "Diamond", "Rectangle", "Pentagon", "InvertedTriangle", "VerticalLine", "Cross", "Plus", "HorizontalLine"];
 /**
  * Marker module used to render the marker for line type series.
  */
@@ -58,6 +59,7 @@ export class Marker extends MarkerExplode {
     ): void {
         const seriesIndex: number | string = series.index === undefined ? series.category : series.index;
         const marker: MarkerSettingsModel = series.marker;
+        series.marker.shape = series.marker.shape ? series.marker.shape : markerShapes[seriesIndex as number % 10];
         const border: BorderModel = {
             color: marker.border.color,
             width: marker.border.width
@@ -173,9 +175,10 @@ export class Marker extends MarkerExplode {
             const markerHeight: number = (marker.height + explodeValue) / 2;
             const markerWidth: number = (marker.width + explodeValue) / 2;
             if (series.chart.chartAreaType === 'Cartesian') {
+                let isZoomed: Boolean = series.xAxis.zoomFactor < 1 || series.xAxis.zoomPosition > 0;
                 options = new RectOption(this.elementId + '_ChartMarkerClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, {
-                    x: -markerWidth, y: -markerHeight,
-                    width: series.clipRect.width + markerWidth * 2,
+                    x: isZoomed ? 0 : -markerWidth, y: -markerHeight,
+                    width: series.clipRect.width + (isZoomed ? 0 : markerWidth * 2),
                     height: series.clipRect.height + markerHeight * 2
                 });
                 markerClipRect = appendClipElement(redraw, options, render as SvgRenderer);

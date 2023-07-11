@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, MouseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { Draggable, formatUnit, createElement, isNullOrUndefined as isNoU, addClass, closest, MouseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { removeClass, classList, remove, EventHandler, extend } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { DragArgs, EJ2Instance, DragEdges, DragEventArgs } from '../base/interface';
@@ -61,7 +61,7 @@ export class DragAndDrop {
             this.parent.touchModule.mobilePopup.hide();
         }
         this.dragObj.element = closest(e.sender.target as Element, '.' + cls.CARD_CLASS) as HTMLElement;
-        if (isNullOrUndefined(this.dragObj.element)) { return null; }
+        if (isNoU(this.dragObj.element)) { return null; }
         this.dragObj.element.style.width = formatUnit(this.dragObj.element.offsetWidth);
         const cloneWrapper: HTMLElement = createElement('div', { innerHTML: this.dragObj.element.outerHTML });
         this.dragObj.cloneElement = cloneWrapper.children.item(0) as HTMLElement;
@@ -89,6 +89,13 @@ export class DragAndDrop {
         } else {
             this.dragObj.cardDetails = [this.parent.getCardDetails(this.dragObj.element)];
         }
+        if (!isNoU(this.dragObj.selectedCards) &&  !isNoU((this.dragObj.selectedCards as HTMLElement[]).length) &&
+            (this.dragObj.selectedCards as HTMLElement[]).length >= 1) {
+            (this.dragObj.selectedCards as HTMLElement[])[0].closest('.e-content-cells').classList.add('e-dragged-column');
+        } else if (!isNoU(this.dragObj.selectedCards) &&
+            !isNoU((this.dragObj.selectedCards as HTMLElement).closest('.e-content-cells'))) {
+            (this.dragObj.selectedCards as HTMLElement).closest('.e-content-cells').classList.add('e-dragged-column');
+        }
         const dragArgs: DragEventArgs = { cancel: false, data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(events.dragStart, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (dragEventArgs.cancel) {
@@ -111,7 +118,11 @@ export class DragAndDrop {
                     });
                     this.dragObj.cloneElement.appendChild(drag);
                     classList(this.dragObj.cloneElement, ['e-multi-card-clone'], [cls.CARD_SELECTION_CLASS]);
-                    this.parent.layoutModule.disableAttributeSelection(this.dragObj.cloneElement);
+                    if (this.parent.enableVirtualization) {
+                        this.parent.virtualLayoutModule.disableAttributeSelection(this.dragObj.cloneElement);
+                    } else {
+                        this.parent.layoutModule.disableAttributeSelection(this.dragObj.cloneElement);
+                    }
                     this.dragObj.cloneElement.style.width = '90px';
                 }
             } else {
@@ -135,8 +146,16 @@ export class DragAndDrop {
         if (!e.target) {
             return;
         }
-        const cardElement: HTMLElement = closest(e.target as HTMLElement,  '.' + cls.ROOT_CLASS + ' .' + cls.CARD_CLASS) as HTMLElement;
-        const target: HTMLElement = cardElement || e.target as HTMLElement;
+        let cardElement: HTMLElement = closest(e.target as HTMLElement,  '.' + cls.ROOT_CLASS + ' .' + cls.CARD_CLASS) as HTMLElement;
+        if (!isNoU(cardElement) && this.parent.enableVirtualization && !isNoU((e.target as HTMLElement).previousElementSibling) &&
+        !isNoU((e.target as HTMLElement).previousElementSibling.querySelector('.e-target-dropped-clone')) ) {
+            cardElement = (e.target as HTMLElement).previousElementSibling.querySelector('.e-target-dropped-clone').nextElementSibling as HTMLElement;
+        }
+        let targetEle: HTMLElement = e.target as HTMLElement;
+        if ((e.target as HTMLElement).nodeName === 'SPAN' && (e.target as HTMLElement).classList.contains('e-empty-card')) {
+            targetEle = (e.target as HTMLElement).parentElement;
+        }
+        const target: HTMLElement = cardElement || targetEle;
         const selector: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + ') .' + cls.CONTENT_CELLS_CLASS
             + '.' + cls.DROPPABLE_CLASS;
         const contentCell: HTMLElement = closest(target, selector) as HTMLElement;
@@ -164,7 +183,7 @@ export class DragAndDrop {
                         (target.previousElementSibling.classList.contains(cls.DRAGGED_CARD_CLASS) ? null : target.previousElementSibling)
                         : target.previousElementSibling;
                     this.insertClone = 'afterend';
-                    if (isNullOrUndefined(element)) {
+                    if (isNoU(element)) {
                         const pageY: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? (this.dragObj.pageY / 2) :
                             this.dragObj.pageY;
                         const height: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? target.offsetHeight :
@@ -174,6 +193,9 @@ export class DragAndDrop {
                         }
                     }
                     if (target.classList.contains(cls.CARD_CLASS)) {
+                        if (this.parent.enableVirtualization ) {
+                            this.insertClone = this.isTargetElementVisible(target) ? this.insertClone : 'beforebegin';
+                        }
                         target.insertAdjacentElement(this.insertClone, this.dragObj.targetClone);
                     }
                 } else if (target.classList.contains(cls.CONTENT_CELLS_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)) {
@@ -189,7 +211,9 @@ export class DragAndDrop {
                 } else if (target.classList.contains(cls.BORDER_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
                     && (target.nextElementSibling && target.nextElementSibling.classList.contains(cls.CARD_WRAPPER_CLASS))
                     && this.dragObj.targetClone && (!dropElement || !dropElement.classList.contains(cls.DROPPED_CLONE_CLASS))) {
-                    target.nextElementSibling.appendChild(this.dragObj.targetClone);
+                    if (!this.parent.enableVirtualization && !this.isTargetElementVisible(target.nextElementSibling as HTMLElement)) {
+                        target.nextElementSibling.appendChild(this.dragObj.targetClone);
+                    }
                 }
             } else if (keys.length > 1 && (contentCell.classList.contains(cls.DROPPING_CLASS)  ||
             contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.DROPPING_CLASS))) {
@@ -209,7 +233,7 @@ export class DragAndDrop {
             }
             borderElem = contentCell.querySelector('.' + cls.BORDER_CLASS) as HTMLElement;
         }
-        if (target && target.tagName === 'TABLE' && !isNullOrUndefined(target.querySelector('.' + cls.CONTENT_ROW_CLASS))) {
+        if (target && target.tagName === 'TABLE' && !isNoU(target.querySelector('.' + cls.CONTENT_ROW_CLASS))) {
             cellDimension = target.querySelector('.' + cls.CONTENT_ROW_CLASS).getBoundingClientRect();
             this.updateDimension(cellDimension, target);
         }
@@ -260,6 +284,19 @@ export class DragAndDrop {
         if (kanbanObj.element.getElementsByClassName(element.className).length > 0) {
             remove(element);
         }
+    }
+
+    private isTargetElementVisible(targetElem: HTMLElement): boolean {
+        const wrapperElem: HTMLElement = closest(targetElem, '.' + cls.CARD_WRAPPER_CLASS) as HTMLElement;
+        if (!isNoU(wrapperElem))  {
+            const wrapperElemBottom: number = wrapperElem.getBoundingClientRect().bottom;
+            const targetElemBottom: number = targetElem.getBoundingClientRect().bottom;
+            if (targetElemBottom > wrapperElemBottom) {
+                return false;
+            }
+            return true;
+        }
+        return true;
     }
 
     private externalDrop(target: HTMLElement): void {
@@ -396,21 +433,29 @@ export class DragAndDrop {
 
     private dragStop(e: MouseEvent): void {
         let contentCell: Element = closest(this.dragObj.targetClone, '.' + cls.CONTENT_CELLS_CLASS);
+        if (this.parent.enableVirtualization && !isNoU(contentCell)) {
+            contentCell.classList.add('e-dropped-column');
+        }
         let columnKey: Element;
         let dropIndex: number;
+        let dataDropIndexKeyfieldValue: string;
+        let isMultipleDrag: boolean;
         EventHandler.remove(document.body, 'keydown', this.keydownHandler);
         [].slice.call(this.borderElm).forEach((element: HTMLElement) => {
             element.classList.remove(cls.DROPPING_CLASS);
         });
         if (this.dragObj.targetClone.parentElement) {
-            const isMultipleDrag: boolean = (this.dragObj.selectedCards && (this.dragObj.selectedCards as  Record<string, any>[]).length > 1
+            isMultipleDrag = (this.dragObj.selectedCards && (this.dragObj.selectedCards as  Record<string, any>[]).length > 1
              && this.parent.sortSettings.sortBy === 'Index');
-            const className: string = !isMultipleDrag ? '.' + cls.CARD_CLASS + ':not(.' + cls.DRAGGED_CARD_CLASS + '),.' + cls.DROPPED_CLONE_CLASS :
-                '.' + cls.CARD_CLASS + ',.' + cls.DROPPED_CLONE_CLASS;
+            const className: string = !isMultipleDrag ? '.' + cls.CARD_CLASS + ':not(.' + cls.DRAGGED_CARD_CLASS + ', .' + cls.CLONED_CARD_CLASS + '),.' + cls.DROPPED_CLONE_CLASS :
+                '.' + cls.CARD_CLASS + ':not(.' + cls.CLONED_CARD_CLASS + '),.' + cls.DROPPED_CLONE_CLASS;
             const element: HTMLElement[] = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className));
-            dropIndex = !isMultipleDrag ? element.indexOf(this.dragObj.targetClone) : element.indexOf(this.dragObj.targetClone) - 1;
+            dropIndex = element.indexOf(this.dragObj.targetClone);
+            if (this.parent.enableVirtualization && !isNoU(this.dragObj.targetClone.nextElementSibling)) {
+                dataDropIndexKeyfieldValue = this.dragObj.targetClone.nextElementSibling.getAttribute('data-id');
+            }
         }
-        if (!isNullOrUndefined(this.kanbanObj) && this.kanbanObj.element.querySelector('.' + cls.TARGET_MULTI_CLONE_CLASS)) {
+        if (!isNoU(this.kanbanObj) && this.kanbanObj.element.querySelector('.' + cls.TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target as HTMLElement, '.' + cls.MULTI_COLUMN_KEY_CLASS + ':not(.' + cls.DISABLED_CLASS + ')');
         }
         if (contentCell || columnKey) {
@@ -444,7 +489,19 @@ export class DragAndDrop {
                     const updateCard: Record<string, any>[] | Record<string, any> = dragEventArgs.data instanceof Array &&
                         dragEventArgs.data.length > 1 ? dragEventArgs.data as Record<string, any>[] :
                         dragEventArgs.data[0] as Record<string, any>;
-                    this.parent.crudModule.updateCard(updateCard, dragEventArgs.dropIndex);
+                    let draggedColumnKey: string;
+                    let droppedColumnKey: string;
+                    if (this.parent.enableVirtualization) {
+                        draggedColumnKey = contentCell.closest('.e-kanban').querySelector('.e-dragged-column').getAttribute('data-key');
+                        droppedColumnKey = contentCell.getAttribute('data-key');
+                    }
+                    this.parent.crudModule.updateCard(
+                        updateCard, dragEventArgs.dropIndex, true,
+                        dataDropIndexKeyfieldValue, draggedColumnKey, droppedColumnKey, isMultipleDrag);
+                    if (this.parent.enableVirtualization) {
+                        this.parent.virtualLayoutModule.refreshColumnData(draggedColumnKey, droppedColumnKey);
+                        this.parent.virtualLayoutModule.ensureColumnNotEmpty(draggedColumnKey);
+                    }
                 }
             }
             this.dragStopPostClear();
@@ -485,6 +542,12 @@ export class DragAndDrop {
         if (this.parent.isAdaptive) {
             this.parent.touchModule.tabHold = false;
         }
+        if (this.parent.element.querySelector('.e-dragged-column')) {
+            this.parent.element.querySelector('.e-dragged-column').classList.remove('e-dragged-column');
+        }
+        if (this.parent.element.querySelector('.e-dropped-column')) {
+            this.parent.element.querySelector('.e-dropped-column').classList.remove('e-dropped-column');
+        }
         this.dragObj.cardDetails = this.dragObj.modifiedData = [];
         this.isDragging = false;
         this.parent.isExternalKanbanDrop = false;
@@ -513,7 +576,8 @@ export class DragAndDrop {
         let prevele: boolean = false;
         let element: Element;
         if (this.kanbanObj.sortSettings.direction === 'Ascending') {
-            element = (draggedCard === this.dragObj.targetClone.previousElementSibling) && (this.dragObj.targetClone.previousElementSibling &&
+            element = (draggedCard === this.dragObj.targetClone.previousElementSibling) &&
+                (this.dragObj.targetClone.previousElementSibling &&
                 this.dragObj.targetClone.previousElementSibling.previousElementSibling) ?
                 this.dragObj.targetClone.previousElementSibling.previousElementSibling : this.dragObj.targetClone.previousElementSibling;
         } else {
@@ -564,7 +628,7 @@ export class DragAndDrop {
     }
 
     private multiCloneRemove(): void {
-        const cloneMulti: HTMLElement[] = !isNullOrUndefined(this.kanbanObj) ? [].slice.call(this.kanbanObj.element.querySelectorAll('.' + cls.TARGET_MULTI_CLONE_CLASS)) : [];
+        const cloneMulti: HTMLElement[] = !isNoU(this.kanbanObj) ? [].slice.call(this.kanbanObj.element.querySelectorAll('.' + cls.TARGET_MULTI_CLONE_CLASS)) : [];
         if (cloneMulti.length > 0) {
             const columnKey: HTMLElement[] = [].slice.call(this.kanbanObj.element.querySelectorAll('.' + cls.MULTI_COLUMN_KEY_CLASS));
             columnKey.forEach((node: Element) => remove(node));
@@ -606,7 +670,7 @@ export class DragAndDrop {
     }
 
     private updateScrollPosition(): void {
-        if (isNullOrUndefined(this.dragObj.navigationInterval)) {
+        if (isNoU(this.dragObj.navigationInterval)) {
             this.dragObj.navigationInterval = window.setInterval(() => { this.autoScroll(); }, 100);
         }
     }
@@ -659,7 +723,9 @@ export class DragAndDrop {
                     parent.scrollTop += this.dragEdges.top ? -(scrollSensitivity + 36) : scrollSensitivity;
                 }
                 if (xIsScrollable && xInBounds && (this.dragEdges.left || this.dragEdges.right)) {
-                    const scroll: boolean = (this.kanbanObj.layoutModule.getWidth() * (this.kanbanObj.columns.length - 1)) >
+                    const width: number = this.parent.enableVirtualization ? this.kanbanObj.virtualLayoutModule.getWidth() :
+                        this.kanbanObj.layoutModule.getWidth();
+                    const scroll: boolean = (width * (this.kanbanObj.columns.length - 1)) >
                         parent.scrollLeft;
                     if (scroll || this.dragEdges.left) {
                         parent.scrollLeft += this.dragEdges.left ? -scrollSensitivity : scrollSensitivity;
@@ -697,10 +763,11 @@ export class DragAndDrop {
     }
 
     public unWireDragEvents(element: HTMLElement): void {
-        const dragInstance: Draggable = (element as EJ2Instance).ej2_instances[0] as Draggable;
-        if (dragInstance && !dragInstance.isDestroyed) {
-            dragInstance.destroy();
+        if (!isNoU(element) && !isNoU((element as EJ2Instance).ej2_instances[0] as Draggable )) {
+            const dragInstance: Draggable = (element as EJ2Instance).ej2_instances[0] as Draggable;
+            if (dragInstance && !dragInstance.isDestroyed) {
+                dragInstance.destroy();
+            }
         }
     }
-
 }

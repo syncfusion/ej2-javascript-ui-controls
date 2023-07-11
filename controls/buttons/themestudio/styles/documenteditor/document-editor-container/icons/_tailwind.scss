@@ -425,6 +425,21 @@
     content: '\e844';
     font-family: 'e-icons';
   }
+
+  .e-de-e-paragraph-style-mark::before{
+    content: '\e844';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-character-style-mark::before{
+    content: '\e8bf';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-linked-style-mark::before{
+    content: '\e8c0';
+    font-family: 'e-icons';
+  }
     
   .e-de-ctnr-columns::before {
     content: '\e89d';

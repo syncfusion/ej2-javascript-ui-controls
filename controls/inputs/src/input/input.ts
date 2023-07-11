@@ -62,14 +62,14 @@ export namespace Input {
         }
         bindInitialEvent(args);
         if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
-            args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
+            args.properties.showClearButton) {
             setClearButton(args.properties.showClearButton, args.element, inputObject, true, makeElement);
             inputObject.clearButton.setAttribute('role', 'button');
             if (inputObject.container.classList.contains(CLASSNAMES.FLOATINPUT)) {
                 addClass([inputObject.container], CLASSNAMES.INPUTGROUP);
             }
         }
-        if (!isNullOrUndefined(args.buttons) && args.element.tagName !== 'TEXTAREA') {
+        if (!isNullOrUndefined(args.buttons)) {
             for (let i: number = 0; i < args.buttons.length; i++) {
                 inputObject.buttons.push(appendSpan(args.buttons[i as number], inputObject.container, makeElement));
             }
@@ -93,9 +93,11 @@ export namespace Input {
              || parent.classList.contains('e-filled')) {
                 parent.classList.add('e-input-focus');
             }
+            if (args.floatLabelType === 'Auto') {
             setTimeout(() => {
                 Input.calculateWidth(args.element, parent);
             }, 80);
+            }
         });
         args.element.addEventListener('blur', function() : void {
             const parent: HTMLElement = getParentNode(this);
@@ -103,9 +105,11 @@ export namespace Input {
              || parent.classList.contains('e-filled')) {
                 parent.classList.remove('e-input-focus');
             }
+            if (args.floatLabelType === 'Auto' && args.element.value === '') {
             setTimeout(() => {
                 Input.calculateWidth(args.element, parent);
             }, 80);
+            }
         });
         args.element.addEventListener('input', () : void => {
             checkInputValue(floatType, args.element as HTMLInputElement);
@@ -159,6 +163,7 @@ export namespace Input {
         }
         if (isNullOrUndefined(inputObject.container)) {
             inputObject.container = createInputContainer(args, CLASSNAMES.FLOATINPUT, CLASSNAMES.FLOATCUSTOMTAG, 'div', makeElement);
+            inputObject.container.classList.add(CLASSNAMES.INPUTGROUP);
             if (args.element.parentNode) {
                 args.element.parentNode.insertBefore(inputObject.container, args.element);
             }
@@ -250,11 +255,15 @@ export namespace Input {
     }
 
     function updateIconState(value: string | number, button: HTMLElement, readonly?: boolean): void {
-        if (value && !readonly) {
-            removeClass([button], CLASSNAMES.CLEARICONHIDE);
-        } else {
-            addClass([button], CLASSNAMES.CLEARICONHIDE);
+        if (!isNullOrUndefined(button)){
+            if(value && !readonly) {
+                removeClass([button], CLASSNAMES.CLEARICONHIDE);
+            }
+            else{
+                addClass([button], CLASSNAMES.CLEARICONHIDE);
+            }
         }
+        
     }
 
     function updateLabelState(value: string | number, label: HTMLElement, element: HTMLElement = null): void {
@@ -298,10 +307,6 @@ export namespace Input {
                 inputObject.container.querySelector('.' + CLASSNAMES.FLOATTEXT) as HTMLElement : element;
             baseElement.insertAdjacentElement('afterend', button);
         }
-        if (!isNullOrUndefined(container) &&
-        container.classList.contains(CLASSNAMES.FLOATINPUT)) {
-            addClass([container], CLASSNAMES.INPUTGROUP);
-        }
         addClass([button], CLASSNAMES.CLEARICONHIDE);
         wireClearBtnEvents(element, button, container);
         button.setAttribute('aria-label', 'close');
@@ -310,8 +315,7 @@ export namespace Input {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export function wireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement, container: HTMLElement): void {
-        if (isBindClearAction === undefined || isBindClearAction)
-        {
+        if (isBindClearAction === undefined || isBindClearAction){
             button.addEventListener('click', (event: MouseEvent) => {
                 if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
                     event.preventDefault();
@@ -334,7 +338,10 @@ export namespace Input {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         element.addEventListener('blur', (event: FocusEvent) => {
             setTimeout (() => {
-                addClass([button], CLASSNAMES.CLEARICONHIDE);
+                if(!isNullOrUndefined(button)){
+                    addClass([button], CLASSNAMES.CLEARICONHIDE);
+                    button = !isNullOrUndefined(element) && element.classList.contains('e-combobox') ? null : button ;
+                }
             }, 200);
         });
     }
@@ -391,7 +398,9 @@ export namespace Input {
     export function setValue(value: string, element: HTMLInputElement | HTMLTextAreaElement,
                              floatLabelType ?: string, clearButton?: boolean): void {
         element.value = value;
-        calculateWidth(element, element.parentElement);
+        if (floatLabelType === 'Auto' && value === '') {
+        	calculateWidth(element, element.parentElement);
+        }
         if ((!isNullOrUndefined(floatLabelType)) && floatLabelType === 'Auto') {
             validateLabel(element, floatLabelType);
         }
@@ -681,9 +690,6 @@ export namespace Input {
                 if (isPrependIcon) {
                     iconEle = container.querySelector('.e-input-group-icon') as HTMLElement;
                 }
-                if (isNullOrUndefined(iconEle)) {
-                    container.classList.remove(CLASSNAMES.INPUTGROUP);
-                }
             } else {
                 const floatLine: HTMLElement = <HTMLElement>container.querySelector('.' + CLASSNAMES.FLOATLINE);
                 const floatText: HTMLElement = <HTMLElement>container.querySelector('.' + CLASSNAMES.FLOATTEXT);
@@ -842,9 +848,6 @@ export namespace Input {
             }
         }
         innerWrapper.parentNode.insertBefore(button, innerWrapper);
-        if (!container.classList.contains(CLASSNAMES.INPUTGROUP)) {
-            container.classList.add(CLASSNAMES.INPUTGROUP);
-        }
         _internalRipple(true, container, button);
         return button;
     }
@@ -862,9 +865,6 @@ export namespace Input {
     export function appendSpan(iconClass: string, container: HTMLElement, internalCreateElement ?: createElementParams): HTMLElement {
         const makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         const button: HTMLElement = createIconEle(iconClass, makeElement);
-        if (!container.classList.contains(CLASSNAMES.INPUTGROUP)) {
-            container.classList.add(CLASSNAMES.INPUTGROUP);
-        }
         const wrap: HTMLElement = (container.classList.contains('e-float-icon-left')) ? container.querySelector('.e-input-in-wrap') :
             container;
         wrap.appendChild(button);

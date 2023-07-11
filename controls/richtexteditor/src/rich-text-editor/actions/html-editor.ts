@@ -144,8 +144,10 @@ export class HtmlEditor {
             range.startContainer.nodeName === '#text' ? range.startContainer.parentElement !== this.parent.inputElement ? range.startContainer.parentElement.classList.add('currentStartMark')
                 : isRootParent = true : (range.startContainer as Element).classList.add('currentStartMark');
             if (range.startContainer.textContent.charCodeAt(0) === 8203) {
-                pointer = range.startOffset === 0 ? range.startOffset : range.startOffset - 1;
+                const previousLength: number = range.startContainer.textContent.length;
+                const previousRange: number = range.startOffset;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
+                pointer = previousRange === 0 ? previousRange : previousRange - (previousLength - range.startContainer.textContent.length);
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                     this.parent.contentModule.getDocument(), range.startContainer as Element, pointer);
             }
@@ -166,7 +168,10 @@ export class HtmlEditor {
                             i--;
                         }
                         if (focusNode.textContent.replace(regEx, '') === currentChildNode[i as number].textContent) {
-                            pointer = focusNode.textContent.length > 1 ? focusNode.textContent.length - 1 : focusNode.textContent.length;
+                            pointer = focusNode.textContent.length > 1 ?
+                                (focusNode.textContent === currentChildNode[i as number].textContent ? pointer :
+                                    pointer - (focusNode.textContent.length - focusNode.textContent.replace(regEx, '').length)) :
+                                focusNode.textContent.length;
                             focusNode = currentChildNode[i as number] as Element;
                         }
                     }
@@ -320,9 +325,15 @@ export class HtmlEditor {
     }
     private backSpaceCleanup(e: NotifyArgs, currentRange: Range): void {
         let isLiElement: boolean = false;
+        let isPreviousNotContentEditable: boolean = true;
+        if (!isNOU(currentRange.startContainer.previousSibling) &&
+        currentRange.startContainer.previousSibling.nodeName === 'SPAN') {
+            isPreviousNotContentEditable = (currentRange.startContainer.previousSibling as HTMLElement).contentEditable === 'false' ? false : true;
+        }
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 && currentRange.startOffset === 0 &&
             currentRange.endOffset === 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.textContent.length > 0 &&
-            currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH') {
+            currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH' &&
+            isPreviousNotContentEditable) {
             const checkNode: Node = currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer;
             if (!this.parent.formatter.editorManager.domNode.isBlockNode(checkNode as Element) &&
                 !isNOU(checkNode.previousSibling) && checkNode.previousSibling.nodeName === 'BR') {
@@ -355,10 +366,15 @@ export class HtmlEditor {
                         ? this.oldRangeElement.lastElementChild.lastElementChild :
                         this.oldRangeElement.lastElementChild;
                 }
+                let lastNode: Node = this.oldRangeElement.lastChild;
+                while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text' &&
+                    lastNode.nodeName !== 'BR') {
+                    lastNode = lastNode.lastChild;
+                }
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
                     // eslint-disable-next-line
-                    this.oldRangeElement, this.oldRangeElement.childNodes.length);
-                if (this.oldRangeElement.querySelector('BR')) {
+                    lastNode as Element, lastNode.textContent.length);
+                if (this.oldRangeElement.querySelectorAll('BR').length === 1) {
                     detach(this.oldRangeElement.querySelector('BR'));
                 }
                 if (!isNullOrUndefined(this.rangeElement) && this.oldRangeElement !== this.rangeElement) {
@@ -533,7 +549,7 @@ export class HtmlEditor {
                 let resultSplitContent: string = '';
                 for (let j: number = 0 ; j < splitTextContent.length; j++) {
                     if (splitTextContent[j as number].match(httpRegex) || splitTextContent[j as number].match(wwwRegex)) {
-                        resultSplitContent += '<a className="e-rte-anchor" href="' + splitTextContent[j as number] +
+                        resultSplitContent += '<a class="e-rte-anchor" href="' + splitTextContent[j as number] +
                         '" title="' + splitTextContent[j as number] + '"target="_blank">' + splitTextContent[j as number] + ' </a>';
                     } else {
                         resultSplitContent += splitTextContent[j as number] + ' ';
@@ -688,6 +704,9 @@ export class HtmlEditor {
                     this.parent.notify(events.renderFileManager, {
                         member: 'fileManager', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
                     });
+                    break;
+                case 'EmojiPicker':
+                    this.parent.notify(events.emojiPicker, { member: 'emojiPicker', args: args });
                     break;
                 default:
                     this.parent.formatter.process(this.parent, args, args.originalEvent, null);

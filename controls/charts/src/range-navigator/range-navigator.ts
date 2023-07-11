@@ -29,12 +29,11 @@ import { ILabelRenderEventsArgs, IRangeTooltipRenderEventArgs } from './model/ra
 import { IRangeLoadedEventArgs, IRangeStyle, IChangedEventArgs, IRangeBeforeResizeEventArgs } from './model/range-navigator-interface';
 import { beforeResize } from '../common/model/constants';
 import { getRangeThemeColor } from './utils/theme';
-import { RangeValueType, LabelAlignment, RangeLabelIntersectAction } from './utils/enum';
+import { RangeValueType, LabelAlignment, RangeLabelIntersectAction, NavigatorPlacement } from './utils/enum';
 import { Font } from '../common/model/base';
 import { FontModel } from '../common/model/base-model';
 import { MajorGridLines, MajorTickLines, VisibleRangeModel } from '../chart/axis/axis';
 import { MajorGridLinesModel, MajorTickLinesModel } from '../chart/axis/axis-model';
-import { RangeNavigatorTheme } from './utils/theme';
 import { SkeletonType, AxisPosition, ChartTheme } from '../chart/utils/enum';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Double } from '../chart/axis/double-axis';
@@ -227,6 +226,17 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
     @Property('Outside')
     public labelPosition: AxisPosition;
+    
+    /**
+     * Specifies the placement of labels to the axis line. They are, 
+     * betweenTicks - Render the label between the ticks. 
+     * onTicks - Render the label on the ticks. 
+     * auto - Render the label between or on the tick based on data.
+     * 
+     * @default 'Auto' 
+     */ 
+    @Property('Auto') 
+    public labelPlacement: NavigatorPlacement; 
 
     /**
      * Duration of the animation.
@@ -301,7 +311,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Label style for the labels.
      */
-    @Complex<FontModel>(RangeNavigatorTheme.axisLabelFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public labelStyle: FontModel;
 
     /**
@@ -329,7 +339,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Options for customizing the color and width of the chart border.
      */
-    @Complex<BorderModel>({ color: '#DDDDDD', width: 1 }, Border)
+    @Complex<BorderModel>({ color: null, width: 1 }, Border)
     public navigatorBorder: BorderModel;
 
     /**
@@ -626,7 +636,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     private calculateBounds(): void {
         const labelPadding: number = this.enableGrouping ? 15 : 8;
         const thumb: ThumbSettingsModel = this.navigatorStyleSettings.thumb;
-        const labelSize: number = measureText('tempString', this.labelStyle).height;
+        const labelSize: number = measureText('tempString', this.labelStyle, this.themeStyle.axisLabelFont).height;
         const margin: MarginModel = this.margin;
         const isLeightWeight: boolean = !this.series.length;
         const tooltipSpace: number = (!this.disableRangeSelector) &&
@@ -678,9 +688,9 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
     public renderChart(resize: boolean = false): void {
         this.chartSeries.renderSeries(this);
+        this.chartSeries.appendSeriesElements(this);
         this.rangeAxis.renderGridLines();
         this.rangeAxis.renderAxisLabels();
-        this.chartSeries.appendSeriesElements(this);
         this.createSecondaryElement();
         this.setSliderValue();
         this.renderPeriodSelector();
@@ -875,6 +885,9 @@ export class RangeNavigator extends Component<HTMLElement> {
      * @private
      */
     public mouseMove(e: PointerEvent): boolean {
+        if (this.stockChart) {
+            return false;
+        }
         if (getElement(!this.stockChart ? this.element.id + '_svg' : this.element.id)) {
             this.mouseX = this.setMouseX(e);
             this.notify(Browser.touchMoveEvent, e);
@@ -889,6 +902,9 @@ export class RangeNavigator extends Component<HTMLElement> {
     public mouseLeave(e: PointerEvent): boolean {
         const rangeSlider: RangeSlider = this.rangeSlider;
         if (rangeSlider.isDrag) {
+            if (this.stockChart) {
+                return false;
+            }
             const enabledTooltip: boolean = rangeSlider.control.tooltip.enable;
             if (rangeSlider.control.allowSnapping) {
                 rangeSlider.isDrag = false;

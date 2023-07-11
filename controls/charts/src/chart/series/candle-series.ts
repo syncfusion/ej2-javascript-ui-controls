@@ -93,12 +93,14 @@ export class CandleSeries extends ColumnBase {
         const previousPoint: Points = series.points[point.index - 1];
         if (series.enableSolidCandles === false) {
             if (!previousPoint) {
-                return <string>series.bearFillColor;
+                return <string>series.bearFillColor || series.chart.themeStyle.bearFillColor;
             } else {
-                return <number>previousPoint.close > <number>point.close ? <string>series.bullFillColor : <string>series.bearFillColor;
+                return <number>previousPoint.close > <number>point.close ? <string>series.bullFillColor || series.chart.themeStyle.bullFillColor 
+                : <string>series.bearFillColor || series.chart.themeStyle.bearFillColor;
             }
         } else {
-            return <number>point.open > <number>point.close ? <string>series.bullFillColor : <string>series.bearFillColor;
+            return <number>point.open > <number>point.close ? <string>series.bullFillColor || series.chart.themeStyle.bullFillColor :
+            <string>series.bearFillColor || series.chart.themeStyle.bearFillColor;
         }
     }
 

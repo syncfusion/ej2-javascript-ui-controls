@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BorderModel, FontModel, ColorMappingModel, LeafItemSettingsModel } from '../model/base-model';
-import { createElement, compile, merge, isNullOrUndefined, remove, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
+import { createElement, compile, merge, isNullOrUndefined, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Alignment, LabelPosition } from '../utils/enum';
 import { TreeMap } from '../treemap';
@@ -471,11 +471,13 @@ export function findHightLightItems(data: any, items: string[], mode: string, tr
  * @returns {Function} - Returns the template function
  * @private
  */
-export function getTemplateFunction(template: string): any {
+export function getTemplateFunction(template: string | Function): any {
     let templateFn: any = null;
     try {
-        if (document.querySelectorAll(template).length) {
+        if (typeof template !== 'function' && document.querySelectorAll(template).length) {
             templateFn = compile(document.querySelector(template).innerHTML.trim());
+        } else {
+            templateFn = compile(template);
         }
     } catch (e) {
         templateFn = compile(template);

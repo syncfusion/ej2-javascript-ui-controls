@@ -327,7 +327,7 @@
 
     &.e-rtl {
 
-      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
         .e-ul {
           padding: $treeview-big-rtl-root-ul-padding;
         }
@@ -537,7 +537,7 @@
 
     .e-list-item {
       list-style: none;
-      @if $skin-name != 'tailwind' {
+      @if $skin-name != 'tailwind' and $skin-name != 'Material3' {
         padding: 2px 0;
       }
 
@@ -546,6 +546,9 @@
         padding: $treeview-child-ul-padding;
         @if $skin-name == 'tailwind' {
           margin: 2px 0 0;
+        }
+        @else if $skin-name == 'Material3' {
+          margin: 0;
         }
       }
 
@@ -584,6 +587,10 @@
       cursor: pointer;
       margin: 0;
       padding: $treeview-text-wrap-padding;
+
+      @if $skin-name == 'Material3' {
+        border: none;
+      }
     }
 
     .e-fullrow {
@@ -847,6 +854,12 @@
 
       .e-text-content {
         float: left;
+
+        @if ($skin-name == 'Material3') {
+          .e-list-img {
+            margin: $treeview-drag-icon-img-margin;
+          }
+        }
 
         .e-list-text {
           @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {

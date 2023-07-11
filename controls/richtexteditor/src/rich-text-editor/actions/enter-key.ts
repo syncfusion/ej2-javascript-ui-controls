@@ -54,7 +54,7 @@ export class EnterKeyAction {
             }
             isTableEnter = blockElement.tagName === 'TD' || blockElement.tagName === 'TBODY' ? false : true;
         }
-        if ((e.args as KeyboardEventArgs).which === 13 && (e.args as KeyboardEventArgs).code === 'Enter') {
+        if ((e.args as KeyboardEventArgs).which === 13 && (!Browser.isDevice ? (e.args as KeyboardEventArgs).code === 'Enter' : (e.args as KeyboardEventArgs).key === 'Enter' )) {
             if (isNOU(this.startNode.closest('LI, UL, OL')) && isNOU(this.endNode.closest('LI, UL, OL')) && isTableEnter &&
             isNOU(this.startNode.closest('PRE')) && isNOU(this.endNode.closest('PRE'))) {
                 const shiftKey: boolean = (e.args as KeyboardEventArgs).shiftKey;
@@ -169,7 +169,7 @@ export class EnterKeyAction {
                                 let isFocusedFirst: boolean = false;
                                 if (this.range.startOffset !== 0 && this.range.endOffset !== 0 &&
                                     this.range.startContainer === this.range.endContainer && !(!isNOU(nearBlockNode.childNodes[0])
-                                    && nearBlockNode.childNodes[0].nodeName === 'IMG' && nearBlockNode.querySelectorAll('img, audio, video').length > 0)) {
+                                    && (nearBlockNode.childNodes[0].nodeName === 'IMG' || nearBlockNode.querySelectorAll('img, audio, video').length > 0))) {
                                     const startNodeText: string = this.range.startContainer.textContent;
                                     const splitFirstText: string = startNodeText.substring(0, this.range.startOffset);
                                     // eslint-disable-next-line max-len

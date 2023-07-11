@@ -86,8 +86,8 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      * @aspDefaultValueIgnore
      * @default All
      */
-     @Property('All')
-     public flipMode: FlipMode;
+    @Property('All')
+    public flipMode: FlipMode;
 
     /**
      * Defines the symbol info of a connector
