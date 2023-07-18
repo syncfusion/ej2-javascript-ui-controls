@@ -101,8 +101,10 @@ export interface SparklineTooltipSettingsModel {
 
     /**
      * To customize the tooltip template.
+     * 
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * To customize the tooltip format.
@@ -322,7 +324,7 @@ export interface SparklineMarkerSettingsModel {
     /**
      * To configure the marker size.
      *
-     * @default 5
+     * @default 8
      */
     size?: number;
 

@@ -49,7 +49,7 @@ export interface RibbonItemModel {
      * @default ''
      * @aspType string
      */
-    itemTemplate?: string | HTMLElement;
+    itemTemplate?: string | HTMLElement | Function;
 
     /**
      * Defines the type of control to be added as the Ribbon Item.

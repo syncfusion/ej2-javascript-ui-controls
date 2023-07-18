@@ -96,7 +96,7 @@
           line-height: $panel-header-line-height;
         }
 
-        @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind') {
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'Material3') {
           border-top-left-radius: $panel-header-border-radius;
           border-top-right-radius: $panel-header-border-radius;
         }

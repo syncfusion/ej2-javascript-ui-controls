@@ -319,6 +319,9 @@
       border-collapse: collapse;
       border-top: $zero-value;
     }
+    @if $input-skin-name == 'Material3' {
+      border-radius: $input-child-icon-border-radius;
+    }
   }
 
   /* stylelint-disable property-no-vendor-prefix */
@@ -490,6 +493,9 @@
   .e-bigger .e-input-group.e-control-wrapper .e-input-group-icon {
     min-height: $input-bigger-child-min-height;
     min-width: $input-bigger-child-min-width;
+    @if $input-skin-name == 'Material3' {
+      border-radius: $input-bigger-icon-border-radius;
+    }
   }
 
   .e-input-group.e-bigger .e-input-group-icon,
@@ -895,6 +901,9 @@
     min-height: $input-small-child-min-height;
     min-width: $input-small-child-min-width;
     padding: $input-small-child-padding;
+    @if $input-skin-name == 'Material3' {
+      border-radius: $input-small-child-border-radius;
+    }
   }
 
   .e-input-group.e-small:not(.e-disabled):not(.e-float-input):not(.e-rtl) .e-input-group-icon:last-child:hover,
@@ -965,6 +974,10 @@
     min-height: $input-bigger-small-child-min-height;
     min-width: $input-bigger-small-child-min-width;
     padding: $input-bigger-small-child-padding;
+    @if $input-skin-name == 'Material3' {
+      border-radius: $input-bigger-small-child-border-radius;
+      margin: $input-bigger-small-child-margin;
+    }
   }
 
   label.e-float-text,
@@ -1443,7 +1456,7 @@
   .e-bigger .e-float-input.e-control-wrapper .e-input-in-wrap input[readonly] ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper .e-input-in-wrap input[disabled] ~ label.e-label-top.e-float-text {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      top: -9px;
+      top: -7px;
     }
   }
 
@@ -1484,7 +1497,7 @@
   .e-float-input.e-control-wrapper.e-small .e-input-in-wrap input[readonly] ~ label.e-label-top.e-float-text,
   .e-float-input.e-control-wrapper.e-small .e-input-in-wrap input[disabled] ~ label.e-label-top.e-float-text {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      top: -8px;
+      top: -7px;
     }
   }
 
@@ -2245,7 +2258,7 @@
   .e-input-group.e-rtl.e-corner .e-input-group-icon:hover,
   .e-input-group.e-control-wrapper .e-input-group-icon:hover,
   .e-input-group.e-control-wrapper.e-rtl.e-corner .e-input-group-icon:hover {
-    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'bootstrap5') {
+    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'bootstrap5' and $input-skin-name != 'Material3') {
       border-radius: $input-group-border-radius;
     }
   }
@@ -2275,7 +2288,9 @@
 
   .e-float-input.e-input-group .e-input-group-icon,
   .e-float-input.e-control-wrapper.e-input-group .e-input-group-icon {
-    margin-top: $float-input-child-margin-top;
+    @if $input-skin-name != 'Material3' {
+      margin-top: $float-input-child-margin-top;
+    }
   }
 
   .e-input-group.e-bigger .e-input-group-icon,
@@ -2284,9 +2299,14 @@
   .e-input-group.e-control-wrapper .e-input-group-icon.e-bigger,
   .e-bigger .e-input-group .e-input-group-icon,
   .e-bigger .e-input-group.e-control-wrapper .e-input-group-icon {
-    margin-bottom: $input-child-bigger-margin-bottom;
-    margin-right: $input-child-bigger-margin-right;
-    margin-top: $input-child-bigger-margin-top;
+    @if ($input-skin-name != 'Material3') {
+      margin-bottom: $input-child-bigger-margin-bottom;
+      margin-right: $input-child-bigger-margin-right;
+      margin-top: $input-child-bigger-margin-top;
+    }
+    @else {
+      margin: $input-child-bigger-margin;
+    }
   }
 
   .e-float-input.e-input-group.e-bigger .e-input-group-icon,
@@ -2295,7 +2315,9 @@
   .e-float-input.e-control-wrapper.e-input-group.e-bigger .e-input-group-icon,
   .e-float-input.e-control-wrapper.e-input-group .e-input-group-icon.e-bigger,
   .e-bigger .e-float-input.e-control-wrapper.e-input-group .e-input-group-icon {
-    margin-top: $float-input-child-bigger-margin-top;
+    @if $input-skin-name != 'Material3' {
+      margin-top: $float-input-child-bigger-margin-top;
+    }
   }
 
   .e-input-group.e-small.e-bigger .e-input-group-icon,
@@ -2317,23 +2339,32 @@
   .e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger .e-input-group-icon,
   .e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon.e-bigger,
   .e-bigger .e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon {
-    margin-top: $float-input-child-small-bigger-margin-top;
+    @if $input-skin-name != 'Material3' {
+      margin-top: $float-input-child-small-bigger-margin-top;
+    }
   }
 
   .e-input-group.e-small .e-input-group-icon,
   .e-input-group.e-control-wrapper.e-small .e-input-group-icon,
   .e-small .e-input-group .e-input-group-icon,
   .e-small .e-input-group.e-control-wrapper .e-input-group-icon {
-    margin-bottom: $input-child-small-margin-bottom;
-    margin-right: $input-child-small-margin-right;
-    margin-top: $input-child-small-margin-top;
+    @if ($input-skin-name != 'Material3') {
+      margin-bottom: $input-child-small-margin-bottom;
+      margin-right: $input-child-small-margin-right;
+      margin-top: $input-child-small-margin-top;
+    }
+    @else {
+      margin: $input-child-small-margin;
+    }
   }
 
   .e-float-input.e-input-group.e-small .e-input-group-icon,
   .e-small .e-float-input.e-input-group .e-input-group-icon,
   .e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon,
   .e-small .e-float-input.e-control-wrapper.e-input-group .e-input-group-icon {
-    margin-top: $float-input-child-small-margin-top;
+    @if $input-skin-name != 'Material3' {
+      margin-top: $float-input-child-small-margin-top;
+    }
   }
 
   .e-input-group .e-input-group-icon:last-child,
@@ -2419,6 +2450,9 @@
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
       border: $input-group-full-border;
       border-width: $input-group-full-border-width;
+    }
+    @if $input-skin-name == 'Material3' {
+      padding-top: 1px;
     }
   }
 
@@ -2776,6 +2810,7 @@
   }
 
   input.e-input.e-bigger#{$css},
+  .e-bigger input.e-input#{$css},
   .e-input-group.e-bigger input,
   .e-input-group.e-bigger input.e-input,
   .e-input-group.e-control-wrapper.e-bigger input,
@@ -3768,16 +3803,25 @@
   .e-input-group.e-control-wrapper .e-clear-icon {
     min-height: $input-clear-icon-min-height;
     min-width: $input-clear-icon-min-width;
-    padding-bottom: $input-clear-icon-padding-bottom;
-    padding-left: $input-clear-icon-padding-left;
-    padding-right: $input-clear-icon-padding-right;
-    padding-top: $input-clear-icon-padding-top;
+    @if $input-skin-name != 'Material3' {
+      padding-bottom: $input-clear-icon-padding-bottom;
+      padding-left: $input-clear-icon-padding-left;
+      padding-right: $input-clear-icon-padding-right;
+      padding-top: $input-clear-icon-padding-top;
+    }
+    @else {
+      padding: $input-clear-icon-padding;
+      margin: $input-clear-icon-margin;
+      border-radius: $input-clear-icon-hover-border-radius;
+    }
   }
 
   .e-float-input.e-input-group .e-clear-icon,
   .e-float-input.e-input-group.e-control-wrapper .e-clear-icon {
-    padding-right: $input-clear-icon-padding-right;
-    padding-top: $float-input-clear-icon-padding-top;
+    @if $input-skin-name != 'Material3' {
+      padding-right: $input-clear-icon-padding-right;
+      padding-top: $float-input-clear-icon-padding-top;
+    }
   }
 
   .e-input-group.e-bigger .e-clear-icon,
@@ -3786,11 +3830,19 @@
   .e-input-group.e-control-wrapper .e-clear-icon.e-bigger,
   .e-bigger .e-input-group .e-clear-icon,
   .e-bigger .e-input-group.e-control-wrapper .e-clear-icon {
-    min-height: $input-bigger-clear-icon-min-height;
     min-width: $input-bigger-clear-icon-min-width;
-    padding-bottom: $input-clear-icon-bigger-padding-bottom;
-    padding-right: $input-clear-icon-bigger-padding-right;
-    padding-top: $input-clear-icon-bigger-padding-top;
+    @if $input-skin-name != 'Material3' {
+      min-height: $input-bigger-clear-icon-min-height;
+      padding-bottom: $input-clear-icon-bigger-padding-bottom;
+      padding-right: $input-clear-icon-bigger-padding-right;
+      padding-top: $input-clear-icon-bigger-padding-top;
+    }
+    @else {
+      min-height: $input-bigger-clear-icon-min-height;
+      padding: $input-clear-icon-padding;
+      margin: $input-clear-icon-margin;
+      border-radius: $input-bigger-clear-icon-border-radius;
+    }
   }
 
   .e-input-group.e-float-input.e-bigger .e-clear-icon,
@@ -3799,8 +3851,32 @@
   .e-input-group.e-control-wrapper.e-float-input.e-bigger .e-clear-icon,
   .e-input-group.e-control-wrapper.e-float-input .e-clear-icon.e-bigger,
   .e-bigger .e-input-group.e-control-wrapper.e-float-input .e-clear-icon {
-    padding-right: $input-clear-icon-bigger-padding-right;
-    padding-top: $float-input-clear-icon-bigger-padding-top;
+    @if $input-skin-name != 'Material3' {
+      padding-right: $input-clear-icon-bigger-padding-right;
+      padding-top: $float-input-clear-icon-bigger-padding-top;
+    }
+  }
+
+  .e-input-group.e-small .e-clear-icon,
+  .e-input-group .e-clear-icon.e-small,
+  .e-small.e-bigger .e-input-group .e-clear-icon,
+  .e-input-group.e-control-wrapper.e-small .e-clear-icon,
+  .e-input-group.e-control-wrapper .e-clear-icon.e-small,
+  .e-small.e-bigger .e-input-group.e-control-wrapper .e-clear-icon {
+    @if $input-skin-name != 'Material3' {
+      min-height: $input-bigger-clear-icon-min-height;
+      min-width: $input-bigger-clear-icon-min-width;
+      padding-bottom: $input-clear-icon-bigger-padding-bottom;
+      padding-right: $input-clear-icon-bigger-padding-right;
+      padding-top: $input-clear-icon-bigger-padding-top;
+    }
+    @else {
+      min-height: $input-bigger-small-clear-icon-min-height;
+      min-width: $input-bigger-small-clear-icon-min-width;
+      padding: $input-clear-icon-padding;
+      margin: $input-clear-icon-margin;
+      border-radius: $input-bigger-clear-icon-border-radius;
+    }
   }
 
   .e-input-group.e-small.e-bigger .e-clear-icon,
@@ -3811,9 +3887,11 @@
   .e-bigger .e-input-group.e-control-wrapper.e-small .e-clear-icon {
     min-height: $input-bigger-small-clear-icon-min-height;
     min-width: $input-bigger-small-clear-icon-min-width;
-    padding-bottom: $input-clear-icon-small-bigger-padding-bottom;
-    padding-right: $input-clear-icon-small-bigger-padding-right;
-    padding-top: $input-clear-icon-small-bigger-padding-top;
+    @if $input-skin-name != 'Material3' {
+      padding-bottom: $input-clear-icon-small-bigger-padding-bottom;
+      padding-right: $input-clear-icon-small-bigger-padding-right;
+      padding-top: $input-clear-icon-small-bigger-padding-top;
+    }
   }
 
   .e-input-group.e-float-input.e-small.e-bigger .e-clear-icon,
@@ -3828,8 +3906,10 @@
   .e-input-group.e-control-wrapper.e-float-input.e-small.e-bigger .e-clear-icon,
   .e-input-group.e-control-wrapper.e-float-input.e-small .e-clear-icon.e-bigger,
   .e-bigger .e-input-group.e-control-wrapper.e-float-input.e-small .e-clear-icon {
-    padding-right: $input-clear-icon-small-bigger-padding-right;
-    padding-top: $float-input-clear-icon-small-bigger-padding-top;
+    @if $input-skin-name != 'Material3' {
+      padding-right: $input-clear-icon-small-bigger-padding-right;
+      padding-top: $float-input-clear-icon-small-bigger-padding-top;
+    }
   }
 
   .e-input-group.e-small .e-clear-icon,
@@ -3840,9 +3920,16 @@
   .e-small .e-input-group.e-control-wrapper .e-clear-icon {
     min-height: $input-small-clear-icon-min-height;
     min-width: $input-small-clear-icon-min-width;
-    padding-bottom: $input-clear-icon-small-padding-bottom;
-    padding-right: $input-clear-icon-small-padding-right;
-    padding-top: $input-clear-icon-small-padding-top;
+    @if $input-skin-name != 'Material3' {
+      padding-bottom: $input-clear-icon-small-padding-bottom;
+      padding-right: $input-clear-icon-small-padding-right;
+      padding-top: $input-clear-icon-small-padding-top;
+    }
+    @else {
+      padding: $input-clear-icon-padding;
+      margin: $input-clear-icon-margin;
+      border-radius: $input-small-clear-icon-border-radius;
+    }
   }
 
   .e-input-group.e-float-input.e-small .e-clear-icon,
@@ -3857,8 +3944,10 @@
   .e-input-group.e-control-wrapper.e-float-input.e-small .e-clear-icon,
   .e-input-group.e-control-wrapper.e-float-input .e-clear-icon.e-small,
   .e-small .e-input-group.e-control-wrapper.e-float-input .e-clear-icon {
-    padding-right: $input-clear-icon-small-padding-right;
-    padding-top: $float-input-clear-icon-small-padding-top;
+    @if $input-skin-name != 'Material3' {
+      padding-right: $input-clear-icon-small-padding-right;
+      padding-top: $float-input-clear-icon-small-padding-top;
+    }
   }
 
   .e-input#{$css}:not(:valid),
@@ -4186,8 +4275,11 @@
   .e-bigger .e-float-input.e-control-wrapper.e-input-group input,
   .e-float-input.e-control-wrapper.e-input-group.e-bigger input,
   .e-bigger .e-float-input.e-control-wrapper.e-input-group input {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       min-height: 27px;
+    }
+    @if $input-skin-name == 'Material3' {
+      min-height: 28px;
     }
   }
 
@@ -4207,8 +4299,11 @@
   .e-small .e-float-input.e-control-wrapper.e-input-group input,
   .e-float-input.e-control-wrapper.e-input-group.e-small input,
   .e-small .e-float-input.e-control-wrapper.e-input-group input {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      min-height: 18px;
+    @if $input-skin-name == 'material' {
+      min-height: 16px;
+    }
+    @if $input-skin-name == 'Material3' {
+      min-height: 14px;
     }
   }
 
@@ -4231,8 +4326,11 @@
   .e-float-input.e-control-wrapper.e-input-group.e-bigger.e-small input,
   .e-bigger .e-float-input.e-control-wrapper.e-input-group.e-small input,
   .e-small .e-float-input.e-control-wrapper.e-input-group.e-bigger input  {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      min-height: 22px;
+    @if $input-skin-name == 'material' {
+      min-height: 28px;
+    }
+    @if $input-skin-name == 'Material3' {
+      min-height: 26px;
     }
   }
 
@@ -5521,9 +5619,15 @@
   .e-outline.e-float-input.e-control-wrapper .e-clear-icon,
   .e-outline.e-input-group .e-clear-icon,
   .e-outline.e-input-group.e-control-wrapper .e-clear-icon {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       font-size: $outline-input-clear-icon-font-size;
       padding: 9px $outline-input-icon-margin-right 9px $zero-value;
+    }
+    @if $input-skin-name == 'Material3' {
+      font-size: $outline-input-clear-icon-font-size;
+      padding: $zero-value;
+      height: 32px;
+      margin: 4px;
     }
   }
 
@@ -5541,6 +5645,14 @@
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
       font-size: $outline-input-icon-font-size;
       margin: 9px $outline-input-icon-margin-right 9px $zero-value;
+    }
+  }
+
+  .e-outline.e-input-group.e-prepend .e-input-group-icon,
+  .e-outline.e-input-group.e-prepend.e-control-wrapper .e-input-group-icon {
+    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+      font-size: $outline-input-icon-font-size;
+      margin: 9px $zero-value 9px $outline-input-icon-margin-right;
     }
   }
 
@@ -5895,15 +6007,28 @@
     }
   }
 
+  .e-outline.e-input-group.e-prepend.e-small .e-input-group-icon,
+  .e-outline.e-input-group.e-prepend.e-control-wrapper.e-small .e-input-group-icon,
+  .e-small .e-outline.e-input-group.e-prepend .e-input-group-icon,
+  .e-small .e-outline.e-input-group.e-prepend.e-control-wrapper .e-input-group-icon {
+    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+      margin-left: $outline-small-input-icon-margin-left;
+      margin-right: $zero-value;
+    }
+  }
+
   .e-outline.e-input-group.e-small .e-clear-icon,
   .e-outline.e-input-group .e-clear-icon.e-small,
   .e-small .e-outline.e-input-group .e-clear-icon,
   .e-outline.e-input-group.e-control-wrapper.e-small .e-clear-icon,
   .e-outline.e-input-group.e-control-wrapper .e-clear-icon.e-small,
   .e-small .e-outline.e-input-group.e-control-wrapper .e-clear-icon {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       font-size: $outline-small-clear-icon-font-size;
       padding: 7px $outline-small-input-icon-margin-left 7px $zero-value;
+    }
+    @if $input-skin-name == 'Material3' {
+      font-size: $outline-small-clear-icon-font-size;
     }
   }
 
@@ -5935,9 +6060,14 @@
   .e-outline.e-input-group.e-control-wrapper .e-clear-icon.e-bigger,
   .e-bigger .e-outline.e-input-group .e-clear-icon,
   .e-bigger .e-outline.e-input-group.e-control-wrapper .e-clear-icon {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       font-size: $outline-bigger-clear-icon-font-size;
       padding: $outline-bigger-input-icon-padding $outline-bigger-input-icon-margin-left $outline-bigger-input-icon-padding $zero-value;
+    }
+    @if $input-skin-name == 'Material3' {
+      font-size: $outline-bigger-clear-icon-font-size;
+      margin: 8px;
+      padding: $zero-value;
     }
   }
 
@@ -5967,6 +6097,17 @@
   .e-bigger .e-outline.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
       margin: $outline-bigger-input-icon-padding $outline-bigger-input-icon-margin-left  $outline-bigger-input-icon-padding $zero-value;
+    }
+  }
+
+  .e-outline.e-input-group.e-prepend.e-bigger .e-input-group-icon,
+  .e-outline.e-input-group.e-prepend .e-input-group-icon.e-bigger,
+  .e-bigger .e-outline.e-input-group.e-prepend .e-input-group-icon,
+  .e-outline.e-input-group.e-prepend.e-control-wrapper.e-bigger .e-input-group-icon,
+  .e-outline.e-input-group.e-prepend.e-control-wrapper .e-input-group-icon.e-bigger,
+  .e-bigger .e-outline.e-input-group.e-prepend.e-control-wrapper .e-input-group-icon {
+    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+      margin: $outline-bigger-input-icon-padding $zero-value $outline-bigger-input-icon-padding $outline-bigger-input-icon-margin-left;
     }
   }
 
@@ -6173,6 +6314,17 @@
   .e-bigger .e-outline.e-input-group.e-control-wrapper.e-small .e-input-group-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
       margin: $outline-bigger-small-group-icon-top $outline-small-bigger-icon-margin-left $outline-bigger-small-group-icon-bottom $zero-value;
+    }
+  }
+
+  .e-outline.e-input-group.e-prepend.e-small.e-bigger .e-input-group-icon,
+  .e-outline.e-input-group.e-prepend.e-small .e-input-group-icon.e-bigger,
+  .e-outline.e-input-group.e-prepend.e-control-wrapper.e-small.e-bigger .e-input-group-icon,
+  .e-outline.e-input-group.e-prepend.e-control-wrapper.e-small .e-input-group-icon.e-bigger,
+  .e-bigger .e-outline.e-input-group.e-prepend.e-small .e-input-group-icon,
+  .e-bigger .e-outline.e-input-group.e-prepend.e-control-wrapper.e-small .e-input-group-icon {
+    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+      margin: $outline-bigger-small-group-icon-top $zero-value $outline-bigger-small-group-icon-bottom $outline-small-bigger-icon-margin-left;
     }
   }
 
@@ -9389,11 +9541,16 @@
   .e-filled.e-input-group.e-control-wrapper .e-input-group-icon.e-bigger,
   .e-bigger .e-filled.e-input-group .e-input-group-icon,
   .e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       font-size: $bigger-filled-input-icon-size;
       min-height: $bigger-filled-input-icon-min-height;
       min-width: $bigger-filled-input-icon-min-height;
       padding: $zero-value $zero-value $zero-value 8px;
+    }
+    @if $input-skin-name == 'Material3' {
+      font-size: $bigger-filled-input-icon-size;
+      height: $bigger-filled-input-icon-min-height;
+      min-width: $bigger-filled-input-icon-min-height;
     }
   }
 
@@ -9475,6 +9632,10 @@
       margin-bottom: $zero-value;
       margin-top: $zero-value;
       padding: 8px;
+      @if $input-skin-name == 'Material3' {
+        padding: 0;
+        margin: 9px 12px 9px 0;
+      }
     }
   }
 
@@ -9548,8 +9709,13 @@
 
   .e-filled.e-float-input.e-input-group .e-clear-icon,
   .e-filled.e-float-input.e-input-group.e-control-wrapper .e-clear-icon {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       padding: $zero-value $zero-value $zero-value 8px;
+    }
+    @if $input-skin-name == 'Material3' {
+      padding: $zero-value;
+      margin: 2px;
+      height: 32px;
     }
   }
 
@@ -9559,11 +9725,16 @@
   .e-filled.e-input-group.e-control-wrapper .e-clear-icon.e-bigger,
   .e-bigger .e-filled.e-input-group .e-clear-icon,
   .e-bigger .e-filled.e-input-group.e-control-wrapper .e-clear-icon {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       font-size: $bigger-filled-input-clear-icon-size;
       min-height: $bigger-filled-input-icon-min-height;
       min-width: $bigger-filled-input-icon-min-height;
       padding: $zero-value $zero-value $zero-value 8px;
+    }
+    @if $input-skin-name == 'Material3' {
+      font-size: $bigger-filled-input-clear-icon-size;
+      height: $bigger-filled-input-icon-min-height;
+      min-width: $bigger-filled-input-icon-min-height;
     }
   }
 
@@ -9573,8 +9744,12 @@
   .e-filled.e-input-group.e-control-wrapper.e-float-input.e-bigger .e-clear-icon,
   .e-filled.e-input-group.e-control-wrapper.e-float-input .e-clear-icon.e-bigger,
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-input .e-clear-icon {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       padding: $zero-value $zero-value $zero-value 8px;
+    }
+    @if $input-skin-name == 'Material3' {
+      padding: $zero-value;
+      margin: 8px;
     }
   }
 
@@ -9615,11 +9790,17 @@
   .e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon,
   .e-filled.e-input-group.e-control-wrapper .e-clear-icon.e-small,
   .e-small .e-filled.e-input-group.e-control-wrapper .e-clear-icon {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       font-size: $small-filled-input-clear-icon-size;
       min-height: $small-filled-input-icon-min-height;
       min-width: $small-filled-input-icon-min-height;
       padding: $zero-value $zero-value $zero-value 4px;
+    }
+    @if $input-skin-name == 'Material3' {
+      font-size: $small-filled-input-clear-icon-size;
+      min-height: $small-filled-input-icon-min-height;
+      min-width: $small-filled-input-icon-min-height;
+      padding: $zero-value;
     }
   }
 
@@ -11006,5 +11187,99 @@
   .e-float-input.e-control-container.valid.modified,
   .e-float-input.e-control-container.invalid {
     outline: none;
+  }
+
+  .e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend.e-append:not(.e-outline) .e-input-in-wrap,
+  .e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend:not(.e-outline) .e-input-in-wrap {
+    @if $input-skin-name == 'material' {
+      border-bottom: 1px solid;
+      border-bottom-color: $input-box-border-color;
+    }
+  }
+
+  .e-error.e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend.e-append .e-input-in-wrap,
+  .e-error.e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend .e-input-in-wrap {
+    @if $input-skin-name == 'material' {
+      border-bottom: 1px solid;
+      border-bottom-color: $error-font-color;
+    }
+  }
+
+  .e-success.e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend.e-append .e-input-in-wrap,
+  .e-success.e-input-group.e-control-container.e-control-wrapper.e-float-input.e-prepend .e-input-in-wrap {
+    @if $input-skin-name == 'material' {
+      border-bottom: 1px solid;
+      border-bottom-color: $success-font-color;
+    }
+  }
+
+  .e-input-group:not(.e-outline).e-prepend:not(.e-float-icon-left),
+  .e-input-group:not(.e-outline).e-prepend.e-success:not(.e-float-icon-left),
+  .e-input-group:not(.e-outline).e-prepend.e-warning:not(.e-float-icon-left),
+  .e-input-group:not(.e-outline).e-prepend.e-error:not(.e-float-icon-left),
+  .e-input-group:not(.e-outline).e-control-wrapper.e-prepend:not(.e-float-icon-left),
+  .e-input-group:not(.e-outline).e-control-wrapper.e-prepend.e-success:not(.e-float-icon-left),
+  .e-input-group:not(.e-outline).e-control-wrapper.e-prepend.e-warning:not(.e-float-icon-left),
+  .e-input-group:not(.e-outline).e-control-wrapper.e-prepend.e-error:not(.e-float-icon-left) {
+    @if $input-skin-name == 'material' {
+      border-bottom: transparent;
+    }
+  }
+
+  .e-input-group:not(.e-outline).e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning):not(.e-error),
+  .e-input-group:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning):not(.e-error),
+  .e-float-input:not(.e-outline).e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning):not(.e-error),
+  .e-float-input:not(.e-outline).e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left).e-success:not(.e-warning):not(.e-error),
+  .e-float-input:not(.e-outline).e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success).e-warning:not(.e-error),
+  .e-float-input:not(.e-outline).e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning).e-error,
+  .e-float-input:not(.e-outline).e-control-wrapper.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning):not(.e-error),
+  .e-float-input:not(.e-outline).e-control-wrapper.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left).e-success:not(.e-warning):not(.e-error),
+  .e-float-input:not(.e-outline).e-control-wrapper.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success).e-warning:not(.e-error),
+  .e-float-input:not(.e-outline).e-control-wrapper.e-input-group.e-prepend.e-input-focus:not(.e-float-icon-left):not(.e-success):not(.e-warning).e-error,
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) input,
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled).e-success:not(.e-warning):not(.e-error) input,
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success).e-warning:not(.e-error) input,
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning).e-error input,
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) textarea,
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled).e-success:not(.e-warning):not(.e-error) textarea,
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success).e-warning:not(.e-error) textarea,
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning).e-error textarea,
+  .e-float-input:not(.e-outline).e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) input,
+  .e-float-input:not(.e-outline).e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled).e-success:not(.e-warning):not(.e-error) input,
+  .e-float-input:not(.e-outline).e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success).e-warning:not(.e-error) input,
+  .e-float-input:not(.e-outline).e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning).e-error input,
+  .e-float-input:not(.e-outline).e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) textarea,
+  .e-float-input:not(.e-outline).e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled).e-success:not(.e-warning):not(.e-error) textarea,
+  .e-float-input:not(.e-outline).e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success).e-warning:not(.e-error) textarea,
+  .e-float-input:not(.e-outline).e-prepend.e-input-focus:not(.e-input-group):not(.e-float-icon-left):not(.e-disabled):not(.e-success):not(.e-warning).e-error textarea,
+  .e-input-group:not(.e-outline).e-prepend.e-input-focus:not(.e-float-icon-left).e-success:not(.e-warning):not(.e-error),
+  .e-input-group:not(.e-outline).e-prepend.e-input-focus:not(.e-float-icon-left).e-warning:not(.e-success):not(.e-error),
+  .e-input-group:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-float-icon-left).e-success:not(.e-warning):not(.e-error),
+  .e-input-group:not(.e-outline).e-control-wrapper.e-prepend.e-input-focus:not(.e-float-icon-left).e-warning:not(.e-success):not(.e-error),
+  .e-input-group:not(.e-outline).e-prepend.e-input-focus:not(.e-float-icon-left).e-error:not(.e-success):not(.e-warning),
+  .e-input-group:not(.e-outline).e-float-icon-left.e-prepend.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input-in-wrap,
+  .e-input-group:not(.e-outline).e-float-icon-left.e-prepend.e-input-focus.e-success:not(.e-warning):not(.e-error) .e-input-in-wrap,
+  .e-input-group:not(.e-outline).e-float-icon-left.e-prepend.e-input-focus.e-warning:not(.e-success):not(.e-error) .e-input-in-wrap,
+  .e-input-group:not(.e-outline).e-float-icon-left.e-prepend.e-input-focus.e-error:not(.e-success):not(.e-warning) .e-input-in-wrap {
+    @if $input-skin-name == 'material' {
+      border-bottom: transparent;
+    }
+  }
+
+  .e-input-group:not(.e-outline).e-prepend:hover:not(.e-disabled):not(.e-float-icon-left),
+  .e-input-group:not(.e-outline).e-control-wrapper.e-prepend:hover:not(.e-disabled):not(.e-float-icon-left),
+  .e-float-input:not(.e-outline).e-prepend:hover:not(.e-disabled):not(.e-float-icon-left),
+  .e-float-input:not(.e-outline).e-prepend:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
+  .e-float-input:not(.e-outline).e-prepend:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]),
+  .e-float-input:not(.e-outline).e-prepend:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
+  .e-float-input:not(.e-outline).e-prepend:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]),
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend:hover:not(.e-disabled):not(.e-float-icon-left),
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]),
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
+  .e-float-input:not(.e-outline).e-control-wrapper.e-prepend:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]) {
+    @if $input-skin-name == 'material' {
+      border-bottom: transparent;
+    }
   }
 }

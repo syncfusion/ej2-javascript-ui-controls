@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 22.1.38 (2023-07-11)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I477278` - The issue, when enabling the sticky mode the Tooltip component does not stick to its target when page is scrolled has been resolved.
+
+## 22.1.36 (2023-06-28)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I466814` - The Tooltip fit alignment issue when hovering over the last element has been resolved
+
+## 21.2.10 (2023-06-13)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I466814` - The Tooltip alignment issue when hovering over the last element has been resolved.
+
 ## 21.2.3 (2023-05-03)
 
 ### Tooltip

@@ -7,6 +7,7 @@ import { CriticalPath } from '../actions/critical-path';
 import { TimelineViewMode } from '../base/enum';
 import { ITimeSpanEventArgs, ITimelineFormatter, IGanttData, ZoomEventArgs, ZoomTimelineSettings } from '../base/interface';
 import { DataUtil } from '@syncfusion/ej2-data';
+import { TaskbarEdit } from '../actions/taskbar-edit';
 /**
  * Configures the `Timeline` of the gantt.
  */
@@ -111,6 +112,9 @@ export class Timeline {
      */
     public processZooming(isZoomIn: boolean): void {
         this.isZoomToFit = false;
+        if(!this.parent['isProjectDateUpdated']){
+            this.parent.dateValidationModule.calculateProjectDates();
+        }
         if (!isNullOrUndefined(this.parent.zoomingProjectStartDate)) {
             this.parent.cloneProjectStartDate = this.parent.cloneProjectStartDate.getTime() < this.parent.zoomingProjectStartDate.getTime()
                 ? this.parent.cloneProjectStartDate : this.parent.zoomingProjectStartDate;
@@ -127,12 +131,14 @@ export class Timeline {
             if (isZoomIn) {
                 if (currentLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false); // disable toolbar items.
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true)
                 } else {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true); // disable toolbar items.
                 }
             } else {
                 if (currentLevel === this.parent.zoomingLevels[0].level) {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], false); // disable toolbar items.
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], true);
                 } else {
                     this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], true); // enable toolbar items.
                 }
@@ -223,10 +229,10 @@ export class Timeline {
             this.parent.zoomingProjectStartDate = this.parent.cloneProjectStartDate;
             this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;
         }
-        this.parent.dataOperation.calculateProjectDates();
         if(this.parent.zoomingProjectStartDate > this.parent.cloneProjectStartDate){
             this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ? this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
         }
+        this.parent.dataOperation.calculateProjectDates();
         const timeDifference: number = (this.parent.cloneProjectEndDate.getTime() - this.parent.cloneProjectStartDate.getTime());
         const totalDays: number = (timeDifference / (1000 * 3600 * 24));
         const chartWidth: number = this.parent.ganttChartModule.chartElement.offsetWidth;
@@ -236,7 +242,7 @@ export class Timeline {
         let secondValue: ZoomTimelineSettings;
         const zoomingCollections: ZoomTimelineSettings[] = [...this.parent.zoomingLevels];
         const sortedCollectons: ZoomTimelineSettings[] = zoomingCollections.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings) =>
-            (a.perDayWidth < b.perDayWidth) ? 1 : -1);
+            (!a.perDayWidth && !b.perDayWidth ? 0 : (a.perDayWidth < b.perDayWidth) ? 1 : -1));
         if (perDayWidth === 0) { // return when the Gantt chart is not in viewable state.
             return;
         }
@@ -279,6 +285,8 @@ export class Timeline {
             this.parent.showSpinner();
         }
         this.changeTimelineSettings(newTimeline);
+        this.isZoomToFit=false;
+        this.parent.isTimelineRoundOff = this.isZoomToFit ? false : isNullOrUndefined(this.parent.projectStartDate) ? true : false;
     }
     
     private bottomTierCellWidthCalc(mode: string, zoomLevel: ZoomTimelineSettings, date: Date) {
@@ -469,9 +477,9 @@ export class Timeline {
         }
         const sortedUnitLevels: ZoomTimelineSettings[] = sameUnitLevels.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings)  =>  {
             if (tier === "bottomTier") {
-                return (a.bottomTier.count < b.bottomTier.count) ? 1 : -1;
+                return (!a.bottomTier.count || !b.bottomTier.count) ? 0 : ((a.bottomTier.count < b.bottomTier.count) ? 1 : -1);
             } else {
-                return (a.topTier.count < b.topTier.count) ? 1 : -1;
+                return (!a.topTier.count || !b.topTier.count) ? 0 : ((a.topTier.count < b.topTier.count) ? 1 : -1);
             }
         });
         for (let i: number = 0; i < sortedUnitLevels.length; i++) {
@@ -1254,7 +1262,6 @@ export class Timeline {
         this.timelineStartDate = startDate;
         this.timelineEndDate = endDate;
         this.timelineRoundOffEndDate = this.getTimelineRoundOffEndDate(this.timelineEndDate);
-
     }
 
     /**
@@ -1397,9 +1404,12 @@ export class Timeline {
                 const validStartLeft: number = this.parent.dataOperation.getTaskLeft(validStartDate, false);
                 const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
                 let isChanged: string;
+                let taskbarModule: TaskbarEdit = this.parent.editModule.taskbarEditModule;
                 if (!isNullOrUndefined(maxStartLeft) && ((minStartDate < this.timelineStartDate) ||
-                   (!isNullOrUndefined(this.parent.editModule.taskbarEditModule)) &&
-                   (!isNullOrUndefined(this.parent.editModule.taskbarEditModule.taskBarEditAction))) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {                    isChanged = 'prevTimeSpan';
+                   (!isNullOrUndefined(taskbarModule)) && (!isNullOrUndefined(taskbarModule.taskBarEditAction)
+                   && taskbarModule.taskBarEditAction !== 'ProgressResizing' &&
+                   taskbarModule.taskBarEditAction !== 'RightResizing')) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
+                    isChanged = 'prevTimeSpan';
                     minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
                 } else {
                     minStartDate = this.timelineStartDate;

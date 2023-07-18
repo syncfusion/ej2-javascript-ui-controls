@@ -228,13 +228,13 @@ describe('Bullet Chart Scale', () => {
             bullet.dataBind();
             svg = document.getElementById('container_svg_range_0');
             expect(svg.getAttribute('fill') == 'skyblue').toBe(true);
-            expect(svg.getAttribute('height') == '331').toBe(true);
+            expect(svg.getAttribute('height') == '332').toBe(true);
             svg = document.getElementById('container_svg_range_1');
             expect(svg.getAttribute('fill') == 'lawngreen').toBe(true);
-            expect(svg.getAttribute('height') == '331').toBe(true);
+            expect(svg.getAttribute('height') == '332').toBe(true);
             svg = document.getElementById('container_svg_range_2');
             expect(svg.getAttribute('fill') == 'red').toBe(true);
-            expect(svg.getAttribute('height') == '331').toBe(true);
+            expect(svg.getAttribute('height') == '332').toBe(true);
             done();
         });
         it('checking with multiple feature bar and comparative bar', (done: Function) => {

@@ -165,11 +165,15 @@ export class KanbanDialog {
         switch (field.type) {
         case 'DropDown':
             if (field.key === this.parent.keyField) {
-                let currentKeys: string[] = this.parent.layoutModule.columnKeys;
+                let currentKeys: string[] = this.parent.enableVirtualization ?
+                    this.parent.virtualLayoutModule.columnKeys : this.parent.layoutModule.columnKeys;
                 if (this.parent.actionModule.hideColumnKeys.length > 0) {
                     currentKeys = [];
                     for (let i: number = 0; i < this.parent.columns.length; i++) {
-                        if (this.parent.layoutModule.isColumnVisible(this.parent.columns[i as number])) {
+                        const isColumnVisible: boolean = this.parent.enableVirtualization ?
+                            this.parent.virtualLayoutModule.isColumnVisible(this.parent.columns[i as number]) :
+                            this.parent.layoutModule.isColumnVisible(this.parent.columns[i as number]);
+                        if (isColumnVisible) {
                             const isNumeric: boolean = typeof this.parent.columns[i as number].keyField === 'number';
                             if (isNumeric) {
                                 currentKeys = currentKeys.concat(this.parent.columns[i as number].keyField.toString());
@@ -182,7 +186,8 @@ export class KanbanDialog {
                 dropDownOptions = { dataSource: currentKeys, value: fieldValue ? fieldValue.toString() : fieldValue };
             } else if (field.key === this.parent.swimlaneSettings.keyField) {
                 dropDownOptions = {
-                    dataSource: [].slice.call(this.parent.layoutModule.kanbanRows),
+                    dataSource: [].slice.call(this.parent.enableVirtualization ? this.parent.virtualLayoutModule.kanbanRows :
+                        this.parent.layoutModule.kanbanRows),
                     fields: { text: 'textField', value: 'keyField' }, value: fieldValue as string
                 };
             }

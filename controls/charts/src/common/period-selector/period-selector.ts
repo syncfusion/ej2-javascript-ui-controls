@@ -84,7 +84,7 @@ export class PeriodSelector {
 
     public renderSelectorElement(control?: RangeNavigator, options?: ISelectorRenderArgs, x? : number): void {
         //render border
-        this.periodSelectorSize = control ? this.periodSelectorSize : new Rect(x, (this.rootControl as StockChart).titleSize.height,
+        this.periodSelectorSize = control ? this.periodSelectorSize : new Rect(x, (this.rootControl as StockChart).titleSize.height ? (this.rootControl as StockChart).titleSize.height : 10,
                                                                                options.width, options.height);
         let thumbSize: number;
         let element: HTMLElement;
@@ -140,25 +140,9 @@ export class PeriodSelector {
             selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
         };
         if (this.rootControl.getModuleName() === 'stockChart') {
-            let resetElement: HTMLElement = createElement('button', {
-                id: controlId + '_reset',
-                styles: buttonStyles, className: 'e-dropdown-btn e-btn'
-            });
-            resetElement.innerText = 'Reset';
-            selector.push({
-                template: resetElement,
-                align: 'Right'
-            });
-            if ((<StockChart>this.rootControl).exportType.indexOf('Print') > -1) {
-                let printElement: HTMLElement = createElement('button', { id: controlId + '_print', styles: buttonStyles,
-                className: 'e-dropdown-btn e-btn' });
-                printElement.innerText = 'Print';
-                selector.push({ template: printElement,
-                align: 'Right'});
-            }
             if ((<StockChart>this.rootControl).exportType.length) {
                 let exportElement: HTMLElement = createElement('button', { id: controlId + '_export', styles: buttonStyles,
-                className: 'e-dropdown-btn e-btn' });
+                className: 'e-dropdown-btn e-btn e-flat' });
                 exportElement.innerText = 'Export';
                 selector.push({ template: exportElement,
                 align: 'Right'});
@@ -217,7 +201,7 @@ export class PeriodSelector {
                         datePickerElement.style.display = 'none';
                         let element: HTMLElement = createElement('div', {
                             id: dateRangeId,
-                            className: 'e-btn e-dropdown-btn',
+                            className: 'e-btn e-dropdown-btn e-flat',
                             styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
                         });
                         element.innerText = selctorArgs.content;
@@ -298,24 +282,32 @@ export class PeriodSelector {
         const selector: ItemModel[] = [];
         const controlId: string = this.rootControl.element.id;
         const buttonStyles: string = 'text-transform: none; text-overflow: unset';
+        const className: string = 'e-dropdown-btn e-btn e-flat';
         if (this.rootControl.getModuleName() === 'stockChart') {
             if ((<StockChart>this.rootControl).seriesType.length) {
-                let seriesElement:HTMLElement = createElement('button', { id: controlId + '_seriesType',
-                styles: buttonStyles });
-                seriesElement.innerText = 'Series';
-                selector.push({ template: seriesElement ,
+                let SeriesElement: HTMLElement = createElement('button', { id: controlId + '_seriesType',
+                styles: buttonStyles,
+                className: className });
+                SeriesElement.innerText = 'Series';
+                selector.push({ template: SeriesElement,
                 align: 'Left'});
             }
             if ((<StockChart>this.rootControl).indicatorType.length) {
-                let indicatorElement: HTMLElement = createElement('button', { id: controlId + '_indicatorType',
-                styles: buttonStyles });
+                let indicatorElement: HTMLElement = createElement('button', {
+                    id: controlId + '_indicatorType',
+                    styles: buttonStyles,
+                    className: className
+                });  
                 indicatorElement.innerText = 'Indicators';
                 selector.push({ template: indicatorElement,
                 align: 'Left'});
             }
             if ((<StockChart>this.rootControl).trendlineType.length) {
-                let trendlineElement: HTMLElement = createElement('button', { id: controlId + '_trendType',
-                styles: buttonStyles });
+                let trendlineElement: HTMLElement = createElement('button', {
+                    id: controlId + '_trendType',
+                    styles: buttonStyles,
+                    className: className
+                });
                 trendlineElement.innerText = 'Trendline';
                 selector.push({ template: trendlineElement,
                 align: 'Left'});
@@ -333,7 +325,6 @@ export class PeriodSelector {
 
     public setSelectedStyle(selectedIndex: number): void {
         for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
-            (this.nodes.childNodes[i as number].childNodes[0] as Element).classList.remove('e-flat');
             (this.nodes.childNodes[i as number].childNodes[0] as Element).classList.remove('e-active');
         }
         if (!isNullOrUndefined(selectedIndex)) {

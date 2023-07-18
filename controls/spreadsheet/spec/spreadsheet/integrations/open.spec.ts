@@ -66,16 +66,16 @@ describe('Open & Save ->', () => {
         it('Save dialog opening using keyboard shortcuts->', (done: Function) => {
             helper.triggerKeyNativeEvent(83,true);
             setTimeout(() => {
-                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
-                helper.setAnimationToNone('.e-dialog');
+                expect(helper.getElementFromSpreadsheet('.e-open-dlg.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-open-dlg.e-dialog');
                 helper.click('.e-dialog .e-flat');
                 done();
             });
         });
         it('Providing no name in save as dialog->', (done: Function) => {
-            helper.triggerKeyNativeEvent(83,true);
+            helper.triggerKeyNativeEvent(113, false, false, null, undefined, true);
             setTimeout(() => {
-                helper.setAnimationToNone('.e-dialog');
+                helper.setAnimationToNone('.e-open-dlg.e-dialog');
                 (helper.getElements('.e-dialog input')[0] as HTMLInputElement).value = '';
                 helper.click('.e-dialog .e-primary');
                 var alertText =  (document.getElementsByClassName('e-file-alert-span')[0] as HTMLElement).textContent;
@@ -87,7 +87,7 @@ describe('Open & Save ->', () => {
         it('Providing invalid characters in name input in save as dialog->', (done: Function) => {
             helper.triggerKeyNativeEvent(83,true);
             setTimeout(() => {
-                helper.setAnimationToNone('.e-dialog');
+                helper.setAnimationToNone('.e-open-dlg.e-dialog');
                 (helper.getElements('.e-dialog input')[0] as HTMLInputElement).value = '/Test/';
                 helper.click('.e-dialog .e-primary');
                 var alertText =  (document.getElementsByClassName('e-file-alert-span')[0] as HTMLElement).textContent;
@@ -99,7 +99,7 @@ describe('Open & Save ->', () => {
         it('Providing name with length > 218->', (done: Function) => {
             helper.triggerKeyNativeEvent(83,true);
             setTimeout(() => {
-                helper.setAnimationToNone('.e-dialog');
+                helper.setAnimationToNone('.e-open-dlg.e-dialog');
                 (helper.getElements('.e-dialog input')[0] as HTMLInputElement).value = 'xcvbnjhgfdwertyuytresdxcvbnbvcxzxcvbnmjuytrewqasxcvbhjuytredscvhjiokjhgfdsxsaqwertyuioooooooooplkjhgfdsazxcvbnmkiuytrewqasdfghjklkmnbvcxzaqwertyujhgfdertyuiuytrewqazxcvbnjkioiuytrewqwertyuiopoiuytrewqasdfghjklkjhgfdszxcvbnm';
                 helper.click('.e-dialog .e-primary');
                 var alertText =  (document.getElementsByClassName('e-file-alert-span')[0] as HTMLElement).textContent;
@@ -120,11 +120,11 @@ describe('Open & Save ->', () => {
         it('Cancelling the save as dialog opening', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
-            args.cancel = true;
+                args.cancel = true;
             };
             helper.triggerKeyNativeEvent(83,true);
             setTimeout(function () {
-                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull();
+                expect(helper.getElementFromSpreadsheet('.e-open-dlg.e-dialog.e-popup-open')).toBeNull();
                 done();
             });
         });
@@ -169,3 +169,85 @@ describe('EJ2-56416 ->', () => {
         done();
     });
 });
+describe('EJ2-832406', () => {
+    const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    beforeAll((done: Function) => {
+        helper.initializeSpreadsheet({
+            created: function () {
+                const json: object = { Workbook: { sheets: [{
+                    columns: [{ width: 100 }, { width: 200 },{ width: 120 },{ width: 120 },{ width: 120 },{ width: 120 },{ width: 120 },],
+                    ranges: [{ dataSource: defaultData }] }], selectedRange: 'A1' }
+                }
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.openFromJson({ file: json});
+            }
+        }, done);
+    });
+    afterAll(() => {
+        helper.invoke('destroy');
+    });
+    it('Default scroller is moved while importing the Excel file when the spreadsheet is not fully rendered in the UI', (done: Function) => {
+        expect(document.activeElement.classList).not.toContain('e-tab-wrap');
+        var tabEle = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+        var coords = tabEle.getBoundingClientRect();
+        helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, tabEle);
+        setTimeout(() => {
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.click('#' + helper.id + '_contextmenu li:nth-child(1)');
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                expect(document.activeElement.id).toBe('spreadsheet');
+                tabEle = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                coords = tabEle.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, tabEle);
+                setTimeout(() => {
+                    helper.click('#' + helper.id + '_contextmenu li:nth-child(2)');
+                    expect(document.activeElement.id).toBe('spreadsheet');
+                    tabEle = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                    coords = tabEle.getBoundingClientRect();
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, tabEle);
+                    setTimeout(() => {
+                        helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                        helper.click('#' + helper.id + '_contextmenu li:nth-child(3)');
+                        expect(document.activeElement.id).toBe('spreadsheet');
+                        setTimeout(() => {
+                            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                            helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+                            const editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+                            editorElem.click();
+                            editorElem.value = 'TestSheet';
+                            helper.triggerKeyNativeEvent(13, false, false, editorElem);
+                            setTimeout(() => {
+                                expect(document.activeElement.classList[0]).toBe('e-tab-wrap');
+                                tabEle = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                                coords = tabEle.getBoundingClientRect();
+                                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, tabEle);
+                                setTimeout(() => {
+                                    helper.click('#' + helper.id + '_contextmenu li:nth-child(8)');
+                                    expect(document.activeElement.id).toBe('spreadsheet');
+                                    tabEle = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                                    coords = tabEle.getBoundingClientRect();
+                                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, tabEle);
+                                    setTimeout(() => {
+                                        helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                                        helper.click('#' + helper.id + '_contextmenu li:nth-child(7)');
+                                        expect(document.activeElement.id).toBe('spreadsheet');
+                                        tabEle = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                                        coords = tabEle.getBoundingClientRect();
+                                        helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, tabEle);
+                                        setTimeout(() => {
+                                            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                                            helper.click('#' + helper.id + '_contextmenu li:nth-child(5)');
+                                            expect(document.activeElement.id).toBe('spreadsheet');
+                                            done();
+                                        })
+                                    })
+                                })
+                            })
+                        })
+                    })
+                })
+            })
+        })
+    })
+})

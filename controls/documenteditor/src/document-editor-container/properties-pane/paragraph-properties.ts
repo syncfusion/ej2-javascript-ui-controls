@@ -462,18 +462,22 @@ export class Paragraph {
     }
     private createStyleDropDownList(selectElement: HTMLElement): void {
         this.style = new ComboBox({
-            dataSource: [{ StyleName: 'Normal', Class: 'e-icons e-edit-font' }],
+            dataSource: [{ StyleName: 'Normal', IconClass: 'e-de-e-paragraph-mark e-icons' }],
             cssClass: 'e-de-prop-dropdown',
             popupHeight: '240px',
             enableRtl: this.isRtl,
-            query: new Query().select(['StyleName', 'Style']),
+            query: new Query().select(['StyleName', 'Style', 'IconClass']),
             fields: { text: 'StyleName', value: 'StyleName' },
             showClearButton: false,
             change: this.selectStyleValue.bind(this)
         });
         if (!this.container.enableCsp) {
             this.style.open = this.updateOptions.bind(this);
-            this.style.itemTemplate = '<span style="${Style}">${StyleName}</span>';
+            if (this.isRtl) {
+                this.style.itemTemplate = '<span style="${Style}">${StyleName}</span><span class="${IconClass}"></span>';
+            } else {
+                this.style.itemTemplate = '<span class="${IconClass}"></span><span style="${Style}">${StyleName}</span>';
+            }
             this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">'
                 + this.localObj.getConstant('Manage Styles') + '...' + '</span>';
             this.style.isStringTemplate = true;
@@ -491,8 +495,12 @@ export class Paragraph {
     }
     public updateStyleNames(): void {
         this.styleName = !isNullOrUndefined((this.style as any).itemData) ? (this.style as any).itemData.StyleName : undefined;
-        this.style.dataSource = this.constructStyleDropItems(this.documentEditor.getStyles('Paragraph'));
-        this.style.dataBind();
+        let paraStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Paragraph");
+        let linkedStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Linked");
+        let charStyles: Object[] = this.documentEditor.getStyles('Character').filter(obj => (obj as any).type == "Character");
+        let styleData: Object[] = paraStyles.concat(linkedStyles, charStyles);
+        this.style.dataSource = this.constructStyleDropItems(styleData);
+        // this.style.dataBind();
         this.onSelectionChange();
     }
     private createStyle(): void {
@@ -503,11 +511,21 @@ export class Paragraph {
     }
     private constructStyleDropItems(styles: unknown[]): any {
         const collection: any = [];
+        const paraIcon: string = 'e-list-icon e-de-listview-icon e-de-e-paragraph-style-mark e-icons';
+        const charIcon: string = 'e-list-icon e-de-listview-icon e-de-e-character-style-mark e-icons';
+        const linkedIcon: string = 'e-list-icon e-de-listview-icon e-de-e-linked-style-mark e-icons';
         for (const styleObj of styles) {
             const obj: any = {};
             const styleName: string = this.localObj.getConstant((styleObj as any).name);
             obj.StyleName = styleName === '' ? (styleObj as any).name : styleName;
             obj.Style = this.parseStyle((styleObj as any).style as string);
+            if (((styleObj as any).type as string) == "Paragraph") {
+                obj.IconClass = paraIcon;
+            } else if (((styleObj as any).type as string) == "Character") {
+                obj.IconClass = charIcon;
+            } else {
+                obj.IconClass = linkedIcon;
+            }
             collection.push(obj);
         }
         return collection;
@@ -869,7 +887,10 @@ export class Paragraph {
         this.isRetrieving = true;
         if (this.documentEditor.editor) {
             //#region paragraph format
-            const style: string = this.documentEditor.selection.paragraphFormat.styleName;
+            let style: string = this.documentEditor.selection.characterFormat.styleName;
+            if (this.documentEditor.selection.characterFormat.styleName === "Default Paragraph Font") {
+                style = this.documentEditor.selection.paragraphFormat.styleName;
+            }
             if (style) {
                 let localeValue: string = this.localObj.getConstant(style);
                 this.style.value = (isNullOrUndefined(localeValue) || localeValue == '') ? style : localeValue;

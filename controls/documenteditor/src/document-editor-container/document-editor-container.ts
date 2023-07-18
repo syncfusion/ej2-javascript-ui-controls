@@ -9,7 +9,7 @@ import { ImageProperties } from './properties-pane/image-properties-pane';
 import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, RevisionActionEventArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
@@ -605,7 +605,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Columns': 'Columns',
         'Column': 'Column',
         'Page Breaks': 'Page Breaks',
-        'Section Breaks': 'Section Breaks'
+        'Section Breaks': 'Section Breaks',
+        'Link to Previous': 'Link to Previous',
+        'Link to PreviousTooltip': 'Link this section with previous section header or footer',
+        'Alternate Text': 'Alternate Text'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
     /**
@@ -881,12 +884,19 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if(!isNullOrUndefined(this.documentEditorSettings.maximumRows)) {
             this.documentEditor.documentEditorSettings.maximumRows = this.documentEditorSettings.maximumRows;
         }
+        if(!isNullOrUndefined(this.documentEditorSettings.maximumColumns)) {
+            this.documentEditor.documentEditorSettings.maximumColumns = this.documentEditorSettings.maximumColumns;
+        }
         if(!isNullOrUndefined(this.documentEditorSettings.showHiddenMarks)) {
             this.documentEditor.documentEditorSettings.showHiddenMarks = this.documentEditorSettings.showHiddenMarks;
         }
         if (!isNullOrUndefined(this.documentEditorSettings.showBookmarks)) {
             this.documentEditor.documentEditorSettings.showBookmarks = this.documentEditorSettings.showBookmarks;
         }
+        if(!isNullOrUndefined(this.documentEditorSettings.highlightEditableRanges)){
+            this.documentEditor.documentEditorSettings.highlightEditableRanges = this.documentEditorSettings.highlightEditableRanges;
+        }
+        
         if (!isNullOrUndefined(this.documentEditorSettings.allowDragAndDrop)) {
             this.documentEditor.documentEditorSettings.allowDragAndDrop = this.documentEditorSettings.allowDragAndDrop;
         }
@@ -988,6 +998,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             width: '100%',
             enableTrackChanges: this.enableTrackChanges,
             showRevisions: true,
+            showComments: true,
             enableLockAndEdit: this.enableLockAndEdit,
             enableAutoFocus: this.enableAutoFocus
         });
@@ -1165,8 +1176,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public onSelectionChange(): void {
         setTimeout(() => {
             this.showPropertiesPaneOnSelection();
-            let eventArgs: ContainerSelectionChangeEventArgs = { source: this };
+            let eventArgs: ContainerSelectionChangeEventArgs = { source: this , isCompleted: this.documentEditor.documentHelper.isSelectionCompleted};
             this.trigger(selectionChangeEvent, eventArgs);
+            this.documentEditor.documentHelper.isSelectionCompleted = true;
         });
     }
     /**
@@ -1320,18 +1332,16 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public destroy(): void {
         super.destroy();
         if (this.element) {
+            if (!this.refreshing) {
+                this.element.classList.remove('e-documenteditorcontainer');
+            }
             this.element.innerHTML = '';
         }
         if (!this.refreshing) {
-            this.element.classList.remove('e-documenteditorcontainer');
             this.element = undefined;
             this.paragraphFormat = undefined;
             this.sectionFormat = undefined;
             this.characterFormat = undefined;
-        }
-        if (this.toolbarModule) {
-            this.toolbarModule.destroy();
-            this.toolbarModule = undefined;
         }
         if (this.toolbarContainer && this.toolbarContainer.parentElement) {
             this.toolbarContainer.innerHTML = '';

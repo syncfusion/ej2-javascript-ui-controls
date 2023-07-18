@@ -190,15 +190,20 @@ export class Image {
         if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 const temp: Element = this.parent.createElement('div');
-                const contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i as number].text);
-                temp.appendChild(contentElem);
+                const contentElem: DocumentFragment = this.parent.formatter.getUndoRedoStack()[i as number].text as DocumentFragment;
+                temp.appendChild(contentElem.cloneNode(true));
                 const img: NodeListOf<HTMLElement> = temp.querySelectorAll('img');
                 if (temp.querySelector('.e-img-resize') && img.length > 0) {
                     for (let j: number = 0; j < img.length; j++) {
                         img[j as number].style.outline = '';
                     }
                     detach(temp.querySelector('.e-img-resize'));
-                    this.parent.formatter.getUndoRedoStack()[i as number].text = temp.innerHTML;
+                    const clonedElement: HTMLElement = temp.cloneNode(true) as HTMLElement;
+                    const fragment: DocumentFragment = document.createDocumentFragment();
+                    while (clonedElement.firstChild) {
+                        fragment.appendChild(clonedElement.firstChild);
+                    }
+                    this.parent.formatter.getUndoRedoStack()[i as number].text = fragment;
                 }
             }
         }
@@ -393,7 +398,7 @@ export class Image {
         if (isNullOrUndefined(img.width)) {
             return;
         }
-        // eslint-disable-next-line
+        // eslint-disable-next-line security/detect-unsafe-regex
         const width: number = img.style.width !== '' ? img.style.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(img.style.width) :
             parseInt(img.style.width, 10) : img.width;
         const height: number = img.style.height !== '' ? parseInt(img.style.height, 10) : img.height;
@@ -416,6 +421,7 @@ export class Image {
                     (this.parent.inputElement.getBoundingClientRect().right - 32) ?
                     ((width / height * expectedY) + width / height) : (this.parent.inputElement.getBoundingClientRect().right - 32);
                 img.style.width = currentWidth.toString() + 'px';
+                img.style.height = expectedY + 'px';
             } else if (img.style.width !== '') {
                 const currentWidth: number = (width / height * expectedY) < (this.parent.inputElement.getBoundingClientRect().right - 32) ?
                     (width / height * expectedY) : (this.parent.inputElement.getBoundingClientRect().right - 32);
@@ -656,7 +662,7 @@ export class Image {
             selectNodeEle = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
             selectParentEle = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             if (!originalEvent.ctrlKey && originalEvent.key && (originalEvent.key.length === 1 || originalEvent.action === 'enter') &&
-                ((selectParentEle[0] as HTMLElement).tagName === 'IMG') && (selectParentEle[0] as HTMLElement).parentElement) {
+                (!isNOU(selectParentEle[0]) && (selectParentEle[0] as HTMLElement).tagName === 'IMG') && (selectParentEle[0] as HTMLElement).parentElement) {
                 const prev: Node = ((selectParentEle[0] as HTMLElement).parentElement as HTMLElement).childNodes[0];
                 if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                     this.removeResizeEle();
@@ -1298,7 +1304,7 @@ export class Image {
             const dialogContent: HTMLElement = this.imgsizeInput(e);
             const selectObj: IImageNotifyArgs = { args: e.args, selfImage: this, selection: e.selection, selectNode: e.selectNode };
             this.dialogObj.setProperties({
-                height: 'inherit', width: '290px', header: imgSizeHeader, content: dialogContent, position: { X: 'center', Y: 'center' },
+                height: (Browser.isDevice) ? '300px' : 'inherit', width: '290px', header: imgSizeHeader, content: dialogContent, position: { X: 'center', Y: 'center' },
                 buttons: [{
                     // eslint-disable-next-line
                     click: (e: MouseEvent) => {

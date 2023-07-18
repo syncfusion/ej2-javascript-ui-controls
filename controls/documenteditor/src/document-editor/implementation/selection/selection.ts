@@ -22,7 +22,7 @@ import { Dictionary } from '../../base/dictionary';
 import {
     LineSpacingType, BaselineAlignment, HighlightColor,
     Strikethrough, Underline, TextAlignment, FormFieldType, FormFieldFillEventArgs, contentControlEvent,
-    beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent, CharacterRangeType
+    beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent, CharacterRangeType, HeaderFooterType
 } from '../../base/index';
 import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-helper';
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
@@ -54,7 +54,10 @@ export class Selection {
     * @private
     */
     public isImageSelected: boolean = false;
-    private documentHelper: DocumentHelper;
+    /**
+    * @private
+    */
+    public documentHelper: DocumentHelper;
     private contextTypeInternal: ContextType = undefined;
     /**
      * @private
@@ -573,7 +576,11 @@ export class Selection {
         }
         return bookmarkCln;
     }
-    private get viewer(): LayoutViewer {
+    /**
+     * 
+     * @private
+     */
+    public get viewer(): LayoutViewer {
         return this.owner.viewer;
     }
 
@@ -2670,7 +2677,7 @@ export class Selection {
                 this.owner.editor.applyFormTextFormat(previousField);
                 if(!isNullOrUndefined(this.previousSelectedFormField)){
                     previousField = this.previousSelectedFormField;
-                }
+                }                
             }
 
             previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(previousField) };
@@ -3165,7 +3172,7 @@ export class Selection {
                 }
             } else {
                 if (inline instanceof ElementBox && inline.nextNode instanceof ElementBox) {
-                    text = text + this.getTextInline(inline.nextNode as ElementBox, endPosition.paragraph, undefined, 0, includeObject);
+                    text = text + this.getTextInline(inline.nextNode as ElementBox, endPosition.paragraph, endInline, endIndex, includeObject);
                 } else {
 
                     let nextParagraphWidget: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(startPosition.paragraph) as ParagraphWidget;
@@ -5810,7 +5817,7 @@ export class Selection {
         const margin: Margin = element.margin;
         let top: number = 0;
         let left: number = 0;
-        if (element instanceof TextElementBox && (element as TextElementBox).text === '\v' && isNullOrUndefined(inline.nextNode)) {
+        if (element instanceof TextElementBox && (element as TextElementBox).text === '\v' && isNullOrUndefined(inline.nextNode) && !this.owner.editor.handledEnter) {
             lineWidget = this.getNextLineWidget(element.line.paragraph, element);
             index = 0;
         } else {
@@ -6716,6 +6723,14 @@ export class Selection {
         let element: ElementBox = undefined;
         let index: number = 0;
         let isImageSelected: boolean = false;
+        if (this.owner.enableHeaderAndFooter) {
+            let headerFooterWidget: HeaderFooterWidget = this.start.paragraph.bodyWidget as HeaderFooterWidget;
+            if (headerFooterWidget.headerFooterType.indexOf('Header') != -1){
+                this.comparePageWidthAndMargins(headerFooterWidget.page.headerWidget, headerFooterWidget.page);
+            } else {
+                this.comparePageWidthAndMargins(headerFooterWidget.page.footerWidget, headerFooterWidget.page);
+            }
+        }
         const isImageSelectedObj: TextPositionInfo = this.updateTextPositionIn(widget, element, index, point, false);
         if (!isNullOrUndefined(isImageSelectedObj)) {
             element = isImageSelectedObj.element;
@@ -9472,10 +9487,13 @@ export class Selection {
         if (inline instanceof ImageElementBox || inline instanceof ShapeElementBox) {
             let width: number = inline.width;
             let height: number = inline.height;
+            let alternateText: string = inline.alternateText;
             inline.width = imageFormat.width;
             inline.height = imageFormat.height;
+            inline.alternateText = imageFormat.alternatetext;
             imageFormat.width = width;
             imageFormat.height = height;
+            imageFormat.alternatetext = alternateText;
             if (paragraph !== null && paragraph.containerWidget !== null && this.owner.editorModule) {
                 let lineIndex: number = paragraph.childWidgets.indexOf(inline.line);
                 let elementIndex: number = inline.line.children.indexOf(inline);
@@ -9968,6 +9986,7 @@ export class Selection {
                     break;
             }
         } else if (shift && !ctrl && !alt) {
+            this.documentHelper.isCompleted = false;
             switch (key) {
                 case 33:
                     event.preventDefault();
@@ -10208,11 +10227,49 @@ export class Selection {
         if (this.viewer instanceof PageLayoutViewer) {
             this.owner.enableHeaderAndFooter = true;
             widget.page = page;
+            this.comparePageWidthAndMargins(widget, page);
             this.updateTextPositionForBlockContainer(widget);
             this.shiftBlockOnHeaderFooterEnableDisable();
             return true;
         }
         return false;
+    }
+    /**
+     * /* Here is the explanation for the code below:
+        1. When there are multiple sections in a document, the first section is the parent section of the other sections.
+        2. If you change the page width or header distance of the parent section, the child section will inherit the page width or header distance of the parent section.
+        3. So when you change the page width or header distance of the parent section, the child section should be relayouted.
+     * @private
+     */
+    private comparePageWidthAndMargins(parentHFWidget: HeaderFooterWidget, page: Page):void { 
+        let headerFooterType: HeaderFooterType = parentHFWidget.headerFooterType;
+        let currentHFWidget: HeaderFooterWidget;
+        let isHeader: boolean = headerFooterType.indexOf('Header') != -1;
+        let isRelayout: boolean = false;
+        if (isHeader) {
+            currentHFWidget = page.headerWidgetIn;
+        } else {
+            currentHFWidget = page.footerWidgetIn;
+        }
+        if(!isNullOrUndefined(currentHFWidget)) {
+            const parentSectionFormat: WSectionFormat = parentHFWidget.sectionFormat;
+            const currentSectionFormat: WSectionFormat = currentHFWidget.sectionFormat;
+            if (!isNullOrUndefined(parentSectionFormat) && !isNullOrUndefined(currentSectionFormat)) {
+                if (isHeader) {
+                    if (parentHFWidget.width != currentHFWidget.width || parentSectionFormat.headerDistance != currentSectionFormat.headerDistance) {
+                        isRelayout = true;
+                    }
+                } else {
+                    if (parentHFWidget.width != currentHFWidget.width || parentSectionFormat.footerDistance != currentSectionFormat.footerDistance) {
+                        isRelayout = true;
+                    }
+                }
+            }
+            if (isRelayout) {
+                (this.owner.viewer as PageLayoutViewer).updateHFClientArea(parentHFWidget.sectionFormat, isHeader);
+                parentHFWidget = this.documentHelper.layout.layoutHeaderFooterItems(this.owner.viewer, parentHFWidget);
+            }
+        }
     }
     /**
      * @private
@@ -10263,6 +10320,9 @@ export class Selection {
             this.editRegionHighlighters.clear();
         }
         this.editRangeCollection = [];
+        if (this.selectedWidgets) {
+            this.selectedWidgets.clear();
+        }
     }
 
     /**

@@ -16,6 +16,7 @@ import { Freeze } from '../../../src/grid/actions/freeze';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
 import { DatePicker } from '@syncfusion/ej2-calendars';
+import { Query } from '@syncfusion/ej2-data';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { data, employeeData, filterData, normalData, foreigndata } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -3472,7 +3473,7 @@ describe('EJ2-70349 - Last row gets removed, after adding a new row when page si
     });
 
     it('Add start when page size set to ALL', (done: Function) => {
-        gridObj.pageSettings.pageSize = gridObj.pageSettings.totalRecordsCount;     
+        (gridObj.pagerModule.pagerObj.pagerdropdownModule).setDropDownValue('value', gridObj.pageSettings.totalRecordsCount); 
         done();
     });
 
@@ -3501,6 +3502,78 @@ describe('EJ2-70349 - Last row gets removed, after adding a new row when page si
 
     it('Check current view data length', function () {
         expect(gridObj.currentViewData.length).toBe(73);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        actionComplete = null;
+    });
+});
+
+
+describe('EJ2-835777 - Custom data source is not  assigned to the dropdown edit cell with Virtualization', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    let country = [
+        { ShipCountry: 'Germany', countryId: '1' },
+        { ShipCountry: 'Brazil', countryId: '3' },
+        { ShipCountry: 'France', countryId: '4' },
+        { ShipCountry: 'Belgium', countryId: '5' },
+        { ShipCountry: 'Switzerland', countryId: '6' },
+        { ShipCountry: 'Mexico', countryId: '8' },
+        { ShipCountry: 'Austria', countryId: '12' },
+        { ShipCountry: 'Spain', countryId: '9' },
+        { ShipCountry: 'USA', countryId: '14' },
+        { ShipCountry: 'Finland', countryId: '16' },
+        { ShipCountry: 'Sweden', countryId: '18' },
+    ];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                enableVirtualization: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    mode: 'Normal',
+                },
+                height: "200",
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 100, isPrimaryKey: true, validationRules: { required: true }},
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 120, validationRules: { required: true, minLength: 3 }},
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 120, editType: 'dropdownedit',
+                      edit: {
+                        params: {
+                          query: new Query(),
+                          dataSource: country,
+                          fields: { value: 'ShipCountry', text: 'countryId' },
+                          actionComplete: () => false,
+                        },
+                      },
+                    },
+                  ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('edit check', (done: Function) => {
+        actionComplete = (args?: any): void => {               
+            if (args.requestType === 'beginEdit') {
+                done();
+            }
+        };
+        gridObj.actionBegin = actionComplete;
+        gridObj.selectRow(0, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        done();
+    });
+
+    it('dropdown input value', (done: Function) => {
+        var elem = document.getElementById(gridObj.element.id + 'ShipCountry_hidden');
+        expect(elem.querySelector('option').innerText).toBe('4');
+        done();
     });
 
     afterAll(() => {

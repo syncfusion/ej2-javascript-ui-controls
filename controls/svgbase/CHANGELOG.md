@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 21.1.38 (2023-04-04)
+## 22.1.39 (2023-07-18)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I476341` - Resolved an issue where the tooltip template was not rendering when using the series name.
+
+## 22.1.34 (2023-06-21)
 
 ### Svg Base
 

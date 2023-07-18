@@ -275,9 +275,9 @@ describe('filter menu module =>', () => {
                     const dd: DropDownList = document.querySelector('.e-dropdownlist')[instances][0];
                     dd.value = 'isnull';
                     const valInput: HTMLElement = document.querySelector('.e-flmenu-valuediv').querySelector('input');
-                    expect(valInput.hasAttribute('disabled')).toBe(false);
+                    expect(valInput[instances][0].enabled).toBe(true);
                     dd.change();
-                    expect(valInput.hasAttribute('disabled')).toBe(true);
+                    expect(valInput[instances][0].enabled).toBe(false);
                     dd.value = 'equal';
                     dd.refresh();
                     gridObj.actionComplete = null;

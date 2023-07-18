@@ -1,6 +1,6 @@
 @include export-module('document-editor-container-material3-icons') {
   .e-de-ctnr-close::before {
-    color: $icon-color;
+    color: rgba($icon-color);
     content: '\e7e7';
     font-size: 16px;
   }
@@ -157,7 +157,7 @@
   }
 
   .e-de-ctnr-borders::before {
-    content: '\e93b';
+    content: '\e893';
   }
 
   .e-de-ctnr-decreaseindent::before {
@@ -166,7 +166,6 @@
 
   .e-de-ctnr-showhide::before {
     content: '\e71a';
-    font-size: 16px;
   }
 
   .e-de-ctnr-print::before {
@@ -422,22 +421,37 @@
   }
 
   .e-de-e-paragraph-mark::before{
-    content: '\e353';
+    content: '\e844';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-paragraph-style-mark::before{
+    content: '\e844';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-character-style-mark::before{
+    content: '\e8bf';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-linked-style-mark::before{
+    content: '\e8c0';
     font-family: 'e-icons';
   }
   
   .e-de-ctnr-columns::before {
-    content: '\e955';
+    content: '\e8b4';
     font-family: 'e-icons';
   }
 
   .e-de-ctnr-page-size::before {
-    content: '\e952';
+    content: '\e89a';
     font-family: 'e-icons';
   }
 
   .e-de-ctnr-page-break-column::before {
-    content: '\e970';
+    content: '\e8b4';
     font-family: 'e-icons';
   }
 
@@ -447,46 +461,46 @@
   }
 
   .e-de-ctnr-section-break-continuous::before {
-    content: '\e971';
+    content: '\e8b5';
     font-family: 'e-icons';
   }
   
   .e-de-ctnr-section-break-even-page::before {
-    content: '\e96e';
+    content: '\e8b2';
     font-family: 'e-icons';
   }
 
   .e-de-ctnr-section-break-odd-page::before {
-    content: '\e96f';
+    content: '\e8b3';
     font-family: 'e-icons';
   }
 
   .e-de-ctnr-columns-one::before {
-    content: '\e976';
+    content: '\e8b9';
     font-family: 'e-icons';
     font-size: $de-column-presets-font-size;
   }
 
   .e-de-ctnr-columns-two::before {
-    content: '\e978';
+    content: '\e8ba';
     font-family: 'e-icons';
     font-size: $de-column-presets-font-size;
   }
 
   .e-de-ctnr-columns-three::before {
-    content: '\e979';
+    content: '\e8bb';
     font-family: 'e-icons';
     font-size: $de-column-presets-font-size;
   }
 
   .e-de-ctnr-columns-right::before {
-    content: '\e973';
+    content: '\e8b7';
     font-family: 'e-icons';
     font-size: $de-column-presets-font-size;
   }
 
   .e-de-ctnr-columns-left::before {
-    content: '\e975';
+    content: '\e8b8';
     font-family: 'e-icons';
     font-size: $de-column-presets-font-size;
   }

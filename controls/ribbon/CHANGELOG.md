@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 22.1.39 (2023-07-18)
+
+### Ribbon
+
+#### Bug Fixes
+
+- Now, the issue with Ribbon tooltip position is resolved.
+
+- Now, the issue with Ribbon tooltip cssClass not added properly is resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### Ribbon

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { createElement, Browser, isBlazor, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor, isNullOrUndefined, closest, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import {
     Toolbar as Tool, ClickEventArgs, MenuItemModel, Menu, MenuModel,
     BeforeOpenCloseMenuEventArgs as Menuopen, MenuEventArgs
@@ -1808,7 +1808,9 @@ export class AnnotationToolbar {
             this.thicknessDropDown.beforeOpen = this.thicknessDropDownBeforeOpen.bind(this);
             this.thicknessSlider.change = this.thicknessChange.bind(this);
             this.thicknessSlider.changed = this.thicknessChange.bind(this);
-            this.thicknessDropDown.open = this.thicknessDropDownOpen.bind(this);
+            if(!this.pdfViewer.enableRtl) {
+                this.thicknessDropDown.open = this.thicknessDropDownOpen.bind(this);
+            }
         }
         if (!isPath) {
             this.opacityDropDownElement = this.pdfViewerBase.getElement('_annotation_opacity');
@@ -1818,7 +1820,9 @@ export class AnnotationToolbar {
             this.opacityDropDown.beforeOpen = this.opacityDropDownBeforeOpen.bind(this);
             this.opacitySlider.change = this.opacityChange.bind(this);
             this.opacitySlider.changed = this.opacityChange.bind(this);
-            this.opacityDropDown.open = this.opacityDropDownOpen.bind(this);
+            if(!this.pdfViewer.enableRtl) {
+                this.opacityDropDown.open = this.opacityDropDownOpen.bind(this);
+            }
         }
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.fontFamilyElement = this.pdfViewerBase.getElement('_annotation_fontname');
@@ -1855,7 +1859,9 @@ export class AnnotationToolbar {
         this.opacityDropDown.beforeOpen = this.opacityDropDownBeforeOpen.bind(this);
         this.opacitySlider.change = this.opacityChange.bind(this);
         this.opacitySlider.changed = this.opacityChange.bind(this);
-        this.opacityDropDown.open = this.opacityDropDownOpen.bind(this);
+        if(!this.pdfViewer.enableRtl) {
+            this.opacityDropDown.open = this.opacityDropDownOpen.bind(this);
+        }
         if (id === this.pdfViewer.element.id + '_annotation_shapes') {
             id = this.pdfViewer.element.id + '_annotation_shapesIcon';
         } else if (id === this.pdfViewer.element.id + '_annotation_calibrate') {
@@ -1915,7 +1921,9 @@ export class AnnotationToolbar {
                 this.thicknessDropDown.beforeOpen = this.thicknessDropDownBeforeOpen.bind(this);
                 this.thicknessSlider.change = this.thicknessChange.bind(this);
                 this.thicknessSlider.changed = this.thicknessChange.bind(this);
-                this.thicknessDropDown.open = this.thicknessDropDownOpen.bind(this);
+                if(!this.pdfViewer.enableRtl) {
+                    this.thicknessDropDown.open = this.thicknessDropDownOpen.bind(this);
+                }
                 this.strokeDropDownElement = this.pdfViewerBase.getElement('_annotation_stroke');
                 this.strokeColorPicker = this.createColorPicker(this.strokeDropDownElement.id);
                 this.strokeColorPicker.change = this.onStrokePickerChange.bind(this);
@@ -2869,7 +2877,9 @@ export class AnnotationToolbar {
                 query: new Query().select(['FontName']),
                 fields: { text: 'FontName', value: 'FontName' },
                 cssClass: 'e-pv-prop-dropdown',
-                itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
+                itemTemplate: initializeCSPTemplate(
+                    function (data: any): string { return `<span style="font-family: ${data.FontName};">${data.FontName}</span>`; }
+                ),
                 allowCustom: true,
                 showClearButton: false,
                 width: '110px',
@@ -2881,7 +2891,9 @@ export class AnnotationToolbar {
                 query: new Query().select(['FontName']),
                 fields: { text: 'FontName', value: 'FontName' },
                 cssClass: 'e-pv-prop-dropdown-rtl',
-                itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
+                itemTemplate: initializeCSPTemplate(
+                    function (data: any): string { return `<span style="font-family: ${data.FontName};">${data.FontName}</span>`; }
+                ),
                 allowCustom: true,
                 showClearButton: false,
                 width: '110px',
@@ -4837,6 +4849,9 @@ export class AnnotationToolbar {
             this.isToolbarHidden = false;
             this.adjustViewer(true);
             this.primaryToolbar.selectItem(this.primaryToolbar.annotationItem);
+            if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
+            }
             this.pdfViewer.isAnnotationToolbarVisible = true;
         } else {
             this.toolbarElement.style.display = 'none';

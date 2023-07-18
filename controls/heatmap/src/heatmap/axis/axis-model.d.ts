@@ -22,7 +22,7 @@ export interface AxisModel {
 
     /**
      * Sets and gets the list of texts to be displayed in an axis as labels.
-     * 
+     *
      * @default null
      */
     labels?: string[];

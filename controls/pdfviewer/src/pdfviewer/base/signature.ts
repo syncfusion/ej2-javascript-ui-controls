@@ -115,8 +115,8 @@ export class Signature {
     private saveSignatureTypeString : string = ''; 
     private saveInitialTypeString : string = '';
     private saveTypeString : string = '';
-    private signatureTypeString: string = '';
-    private initialTypeString: string = '';
+    private signatureTypeString : string ='';
+    private initialTypeString : string = '';
     private saveUploadString : string ='';
     private saveSignatureUploadString : string = '';
     private saveInitialUploadString : string ='';
@@ -126,6 +126,10 @@ export class Signature {
     private textValue : string ='';
     private signatureDrawString: string = '';
     private initialDrawString: string = '';
+    // eslint-disable-next-line
+    private signatureTextContentTop: number = 0.2;
+    // eslint-disable-next-line
+    private signatureTextContentLeft: number = 0.7;
     // eslint-disable-next-line
     private saveSignatureString: string = '';
     // eslint-disable-next-line
@@ -309,13 +313,14 @@ export class Signature {
     };
 
     private drawSavedImageSignature(): string {
-        var output: string = '';
+        let output: string = '';
         if (!this.pdfViewerBase.isToolbarSignClicked && (this.issaveImageSignature || this.issaveImageInitial)) {
             if (!this.pdfViewerBase.isInitialField && this.issaveImageSignature) {
                 output = this.saveSignatureUploadString;
             } else {
                 output = this.saveInitialUploadString;
             }
+
         }
         return output;
     };
@@ -613,9 +618,10 @@ export class Signature {
                     this.signatureTypeString = this.saveTypeString;
                 }
                 else {
-                    this.initialTypeString = this.saveTypeString;
+                    this.initialTypeString= this.saveTypeString;
                 }
                 this.pdfViewer.formFieldsModule.drawSignature('Type', this.textValue, this.pdfViewerBase.currentTarget);
+
                 isSignatureAdded = true;
                 this.hideSignaturePanel();
             }
@@ -816,7 +822,7 @@ export class Signature {
         if (fontElements) {
             for (let j: number = 0; j < fontElements.length; j++) {
                 if (fontElements[parseInt(j.toString(), 10)] && fontElements[parseInt(j.toString(), 10)].style.borderColor === 'red') {
-                    if (this.pdfViewerBase.isToolbarSignClicked) {
+                    if(this.pdfViewerBase.isToolbarSignClicked){
                         if (isType) {
                             this.signtypevalue = fontElements[parseInt(j.toString(), 10)].textContent;
                             this.outputString = fontElements[parseInt(j.toString(), 10)].textContent;
@@ -824,13 +830,14 @@ export class Signature {
                         else {
                             this.outputString = fontElements[parseInt(j.toString(), 10)].textContent;
                         }
-                    } else {
-                        if (isType) {
+                    }else{
+                        if(isType){
                             this.signtypevalue = fontElements[parseInt(j.toString(), 10)].textContent;
                             this.textValue = fontElements[parseInt(j.toString(), 10)].textContent;
-                        } else {
+                        }else{
                             this.textValue = fontElements[parseInt(j.toString(), 10)].textContent
                         }
+                        
                     }
                     try {
                         this.fontName = JSON.parse(fontElements[parseInt(j.toString(), 10)].style.fontFamily);
@@ -997,6 +1004,7 @@ export class Signature {
         fontDiv.style.backgroundColor = 'white';
         fontDiv.style.color = 'black';
         fontDiv.style.marginTop = '8px'
+        fontDiv.style.paddingRight = '0px';
         typeDiv.appendChild(fontDiv);
         input = document.createElement('input');
         input.type = 'checkbox';
@@ -1043,7 +1051,7 @@ export class Signature {
         uploadCanvas.style.boxSizing = 'border-box';
         uploadCanvas.style.borderRadius = '2px';
         uploadCanvas.style.zIndex = '0';
-        let imageUploadString = '';
+        let imageUploadString: string = '';
         if (!this.pdfViewerBase.isInitialField && this.issaveImageSignature && !this.pdfViewerBase.isToolbarSignClicked) {
             imageUploadString = this.drawSavedImageSignature();
         }
@@ -1189,14 +1197,14 @@ export class Signature {
             let imageCheckbox = document.getElementById("checkbox2");
             this.hideSignatureCheckbox(imageCheckbox);
             let signbutton: any = document.getElementById(this.pdfViewer.element.id + '_e-pv-upload-button');
-            if (this.saveSignatureUploadString !== "" && !this.pdfViewerBase.isInitialField && !this.clearUploadString && !this.pdfViewerBase.isToolbarSignClicked) {
+            if (this.saveSignatureUploadString !== "" && !this.pdfViewerBase.isInitialField  && !this.clearUploadString && !this.pdfViewerBase.isToolbarSignClicked) {
                 this.enableCreateButton(false);
-                signbutton.style.visibility = 'hidden';
+                signbutton.style.visibility ='hidden';
                 this.outputString = this.saveSignatureUploadString;
             }
-            if (this.saveInitialUploadString !== "" && this.pdfViewerBase.isInitialField && !this.clearUploadString && !this.pdfViewerBase.isToolbarSignClicked) {
+            if (this.saveInitialUploadString !== "" && this.pdfViewerBase.isInitialField  && !this.clearUploadString && !this.pdfViewerBase.isToolbarSignClicked) {
                 this.enableCreateButton(false);
-                signbutton.style.visibility = 'hidden';
+                signbutton.style.visibility ='hidden';
                 this.outputString = this.saveInitialUploadString;
             }
         } 
@@ -1209,20 +1217,20 @@ export class Signature {
             }
     }
     private enableCreateSignatureButton(): void {
-        if (this.pdfViewerBase.isToolbarSignClicked || this.signaturetype !== 'Type') {
+        if(this.pdfViewerBase.isToolbarSignClicked || this.signaturetype !=='Type'){
             if (this.outputString !== "") {
                 this.enableCreateButton(false);
             }
             else {
                 this.enableCreateButton(true);
             }
-        } else {
+        }else{
             if (this.textValue !== "") {
                 this.enableCreateButton(false);
             }
             else {
                 this.enableCreateButton(true);
-            }
+            } 
         }
     }
     private showHideSignatureTab(displayMode: DisplayMode, appearanceDiv: HTMLElement, typeDiv: HTMLElement, uploadDiv: HTMLElement): any {
@@ -1318,7 +1326,10 @@ export class Signature {
         for (let i: number = 0; i < this.signfontStyle.length; i++) {
             this.fontsign[parseInt(i.toString(), 10)].innerHTML = textBox.value;
             this.fontsign[parseInt(i.toString(), 10)].style.fontFamily = this.signfontStyle[parseInt(i.toString(), 10)].FontName;
-            if (this.signfontStyle[parseInt(i.toString(), 10)].FontName === 'Helvetica') {
+            if(this.fontName!=="" && this.signfontStyle[parseInt(i.toString(), 10)].FontName === this.fontName){
+                this.fontsign[parseInt(i.toString(), 10)].style.borderColor = 'red';
+            }
+            else if (isNullOrUndefined(this.fontName) && this.signfontStyle[parseInt(i.toString(), 10)].FontName === 'Helvetica') {
                 this.fontsign[parseInt(i.toString(), 10)].style.borderColor = 'red';
             }
             fontDiv.appendChild(this.fontsign[parseInt(i.toString(), 10)]);
@@ -1793,7 +1804,7 @@ export class Signature {
                 if (checkbox && checkBoxElement.nextElementSibling) {
                     checkBoxElement.nextElementSibling.classList.remove('e-check');
                     checkbox.checked = false;
-                    this.textValue ='';
+                    this.textValue = '';
                 }
             } else {
                 isClearImageTab = true;
@@ -1880,14 +1891,13 @@ export class Signature {
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[parseInt(i.toString(), 10)];
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
-                         if (this.pdfViewer.isSignatureEditable){
-                            // eslint-disable-next-line max-len
+                        if (this.pdfViewer.isSignatureEditable){
                             const signatureSettings = this.pdfViewer.handWrittenSignatureSettings as AnnotationSettings;
                             const annotationSettings = this.pdfViewer.annotationSettings;
                             const annotationAuthor : string = (signatureSettings.author !== 'Guest') ? signatureSettings.author : annotationSettings.author ? annotationSettings.author : 'Guest';
                             // eslint-disable-next-line max-len
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].author = annotationAuthor;
-                        } 
+                        }
                         // eslint-disable-next-line max-len
                         const strokeColorString: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].strokeColor ? pageAnnotationObject.annotations[parseInt(z.toString(), 10)].strokeColor: "black";
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));
@@ -2110,6 +2120,7 @@ export class Signature {
         let width: number;
         let height: number;
         let pageIndex:number;
+        let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         if(annotations.bounds){
              left = annotations.bounds.left ? annotations.bounds.left : annotations.bounds.x;
              top = annotations.bounds.top ? annotations.bounds.top : annotations.bounds.y;
@@ -2128,6 +2139,10 @@ export class Signature {
         if (annotations.wrapper && annotations.wrapper.bounds) {
             left = annotations.wrapper.bounds.left;
             top = annotations.wrapper.bounds.top;
+        }
+        if (annotations.shapeAnnotationType === 'SignatureText' && annotations.wrapper && annotations.wrapper.children[1]) {
+            left = left + annotations.wrapper.pivot.x + (this.signatureTextContentLeft - (this.signatureTextContentTop * (zoomvalue - (zoomvalue / this.signatureTextContentLeft))));
+            top = top + ((annotations.wrapper.children[1].bounds.y - top) - (annotations.wrapper.children[1].bounds.y - top) / 3) + annotations.wrapper.pivot.y + (this.signatureTextContentTop * zoomvalue);
         }
         annotation = {
             id: annotations.id?annotations.id:null, bounds: { left: left, top: top, width: width, height: height }, shapeAnnotationType: annotations.shapeAnnotationType?annotations.shapeAnnotationType: "ink", opacity: annotations.opacity?annotations.opacity:1, thickness: annotations.thickness?annotations.thickness:1, strokeColor: annotations.strokeColor?annotations.strokeColor:null, pageIndex: pageIndex, data: annotations.data?annotations.data:annotations.Value, fontSize: annotations.fontSize?annotations.fontSize:null, fontFamily: annotations.fontFamily?annotations.fontFamily:null, signatureName: annotations.signatureName? annotations.signatureName:annotations.Name
@@ -2195,12 +2210,22 @@ export class Signature {
         this.pdfViewerBase.updateDocumentEditedProperty(true);
         let currentAnnotObject: ISignAnnotation = null;
         const pageAnnotations: ISignAnnotation[] = this.getAnnotations(pageNumber, null);
+        let zoomvalue:number = this.pdfViewerBase.getZoomFactor();
         if (pageAnnotations != null && annotationBase) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[parseInt(i.toString(), 10)].id) {
                     if (property === 'bounds') {
+                        let top: number;
+                        let left: number;
+                        if (annotationBase.shapeAnnotationType === 'SignatureText' && annotationBase.wrapper && annotationBase.wrapper.children[1]) {
+                            top = annotationBase.wrapper.children[0].bounds.y;
+                            left = annotationBase.wrapper.children[0].bounds.x + annotationBase.wrapper.pivot.x + (this.signatureTextContentLeft - (this.signatureTextContentTop * (zoomvalue -(zoomvalue/this.signatureTextContentLeft))));
+                            top = top + ((annotationBase.wrapper.children[1].bounds.y - top) - (annotationBase.wrapper.children[1].bounds.y - top) / 3) + annotationBase.wrapper.pivot.y + (this.signatureTextContentTop * zoomvalue);
+                            pageAnnotations[parseInt(i.toString(), 10)].bounds = { left: left, top: top, width: annotationBase.bounds.width, height: annotationBase.bounds.height };
+                        } else {
+                            pageAnnotations[parseInt(i.toString(), 10)].bounds = { left: annotationBase.wrapper.bounds.left, top: annotationBase.wrapper.bounds.top, width: annotationBase.bounds.width, height: annotationBase.bounds.height };
+                        }
                         // eslint-disable-next-line max-len
-                        pageAnnotations[parseInt(i.toString(), 10)].bounds = { left: annotationBase.wrapper.bounds.left, top: annotationBase.wrapper.bounds.top, width: annotationBase.bounds.width, height: annotationBase.bounds.height };
                         pageAnnotations[parseInt(i.toString(), 10)].fontSize = annotationBase.fontSize;
                     } else if (property === 'stroke') {
                         pageAnnotations[parseInt(i.toString(), 10)].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;

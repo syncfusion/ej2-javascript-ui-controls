@@ -54,11 +54,11 @@ export class AreaBounds {
             space = (bounds.width + (itemPadding / 2) + smithchart.elementSpacing + (2 * legendBorder));
             leftLegendWidth = position === 'left' ? space : 0;
             rightLegendWidth = position === 'right' ? space : 0;
-            ltheight = legend['title'].visible ? measureText(legend['title'].text, font)['height'] : 0;
+            ltheight = legend['title'].visible ? measureText(legend['title'].text, font, smithchart.themeStyle.legendLabelFont)['height'] : 0;
             topLegendHeight = position === 'top' ? smithchart.elementSpacing + bounds.height + ltheight : 0;
             bottomLegendHeight = position === 'bottom' ? smithchart.elementSpacing + bounds.height + ltheight : 0;
         }
-        subtitleHeight = measureText(title.subtitle.text, font)['height'];
+        subtitleHeight = measureText(title.subtitle.text, font, smithchart.themeStyle.legendLabelFont)['height'];
         modelTitleHeight = (title.text === '' || !title['visible']) ? 0 : (titleHeight);
         modelsubTitleHeight = (title['subtitle'].text === '' || !title['subtitle'].visible) ? 0 : (subtitleHeight);
         return {

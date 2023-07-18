@@ -148,3 +148,11 @@ export interface PathSegment {
     a1?: number;
     ad?: number;
 }
+/** @private */
+export interface IKeyDownType {
+    type?: string;
+}
+/** @private */
+export interface IReactDiagram {
+    isReact?: boolean;
+}

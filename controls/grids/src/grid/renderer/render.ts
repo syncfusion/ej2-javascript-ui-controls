@@ -114,8 +114,12 @@ export class Render {
                 gObj.notify(events.cancelBegin, args);
                 return;
             }
+            if (gObj.allowSelection && (args.action === 'clearFilter' || (args.requestType === 'searching' && args.searchString === '') ||
+                args.action === 'add')) {
+                gObj.selectionModule['rmtHdrChkbxClicked'] = false;
+            }
             if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage &&
-                args.action === 'add' && args.requestType === 'save' as Action) {
+                (args.action === 'add' && args.requestType === 'save' as Action) && gObj.pagerModule.pagerObj.checkAll) {
                 gObj.setProperties({pageSettings: {pageSize : gObj.pageSettings.pageSize + 1 }}, true);
             }
             if (args.requestType === 'delete' as Action && gObj.allowPaging) {
@@ -283,7 +287,7 @@ export class Render {
     private sendBulkRequest(args?: NotifyArgs): void {
         args.requestType = 'batchsave';
         const gObj: IGrid = this.parent;
-        if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage) {
+        if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage && gObj.pagerModule.pagerObj.checkAll) {
             const dataLength: number = args['changes'].addedRecords.length;
             if (dataLength) {
                 gObj.setProperties({pageSettings: {pageSize : gObj.pageSettings.pageSize + dataLength }}, true);
@@ -400,6 +404,10 @@ export class Render {
             } else if (!columns[parseInt(i.toString(), 10)].format && columns[parseInt(i.toString(), 10)].type === 'number') {
                 columns[parseInt(i.toString(), 10)].setParser(
                     fmtr.getParserFunction({ format: 'n2' } as NumberFormatOptions));
+            }
+            if (columns[parseInt(i.toString(), 10)].type === 'dateonly' && !columns[parseInt(i.toString(), 10)].format){
+                columns[parseInt(i.toString(), 10)].format = 'yMd';
+                setFormatter(this.locator, columns[parseInt(i.toString(), 10)]);
             }
         }
     }

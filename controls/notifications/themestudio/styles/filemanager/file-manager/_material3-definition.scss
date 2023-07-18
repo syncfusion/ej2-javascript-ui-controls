@@ -1,0 +1,259 @@
+/*! FileManager's material 3 theme wise override definitions and variables */
+//layout variables
+$fm-skin-name: 'Material3' !default;
+$fe-bc-font-size: $text-sm !default;
+$fe-bc-icon-font-size: 14px !default;
+$fe-dg-td-font-size: $text-sm !default;
+$fe-lg-text-font-size: $text-xs !default;
+$fe-ddl-icon-font-size: $text-sm !default;
+
+$fe-big-bc-font-size: $text-base !default;
+$fe-big-bc-icon-font-size: 16px !default;
+$fe-big-lg-text-font-size: $text-sm !default;
+$fe-big-dg-header-padding: 21px !default;
+$fe-big-dg-td-font-size: 15px !default;
+$fe-big-dg-header-font-size: 21px !default;
+
+$fe-clone-box-shadow: $shadow !default;
+$fe-clone-border: none !default;
+$fe-tb-height: 40px !default;
+$fe-tb-ddb-icon-padding: 0 !default;
+$fe-tb-ddb-height: calc(100% - 10px) !default;
+$fe-tb-ddb-btn-hvr-padding: 0 !default;
+$fe-tb-ddb-btn-padding: 0 !default;
+$fe-tb-ddb-border: 0 !default;
+$fe-tb-ddb-caret-size: 8px !default;
+$fe-upload-overlay-border: 2px !default;
+$fe-search-padding: 2px 16px 2px 0 !default;
+$fe-search-height: 32px !default;
+$fe-search-icon-margin: 0 !default;
+$fe-search-icon-font-size : 20px !default;
+$fe-search-clear-icon-padding: 0 !default;
+$fe-search-input-margin: 0 0 0 42px !default;
+$fe-search-input-height: 32px !default;
+$fe-search-input-padding: 6px 13px 6px 9px !default;
+$fe-bc-margin: 0 !default;
+$fe-bc-padding: 9px 16px 9px 12px !default;
+$fe-rtl-bc-padding: 8px 18px 8px 12px !default;
+$fe-rtl-search-padding: 2px 0 2px 16px !default;
+$fe-rtl-search-input-margin: 0 42px 0 0 !default;
+$fe-bc-text-padding: 3px 8px !default;
+$fe-bc-text-size: 18px !default;
+$fe-bc-icon-margin: 0 !default;
+$fe-bc-search-border-bottom: 1px !default;
+$fe-bc-submenu-height: 26px !default;
+$fe-bc-li-text-decoration: none;
+$fe-grid-icon-size: 20px !default;
+$fe-grid-icon-margin: 0 !default;
+$fe-dg-td-padding: 4px 24px 4px 0 !default;
+$fe-dg-rtl-td-padding: 8px 0 8px 24px !default;
+$fe-grid-header-height: 32px !default;
+$fe-grid-header-font-size: 14px !default;
+$fe-grid-header-cb-padding-left: 12px !default;
+$fe-grid-content-font-size: 12px !default;
+$fe-grid-content-name-font-size: 14px !default;
+$fe-grid-icon-sort-margin: 0 !default;
+$fe-grid-icon-padding: 0 0 0 24px !default;
+$fe-lg-margin: 0 !default;
+$fe-lg-padding: 0 4px !default;
+$fe-lg-item-height: 96px !default;
+$fe-lg-item-width: 96px !default;
+$fe-lg-item-margin: 20px 8px !default;
+$fe-lg-item-padding: 0 !default;
+$fe-lg-item-border: 0 !default;
+$fe-lg-item-inner-height: 78px !default;
+$fe-lg-item-inner-width: 96px !default;
+$fe-lg-icon-height: 24px !default;
+$fe-lg-icon-width: 32px !default;
+$fe-lg-icon-margin: 26px 32px 12px 32px !default;
+$fe-lg-img-height: 62px !default;
+$fe-lg-img-margin: 6px !default;
+$fe-lg-text-padding: 0 0 16px !default;
+$fe-lg-text-line-height: 18px !default;
+$fe-cm-separator-margin: 0 0 !default;
+$fe-cb-line-height: 12px !default;
+$fe-dd-popup-blank-icon-padding-left: 40px !default;
+$fe-tv-fullrow-height: 40px !default;
+$fe-address-height: 36px !default;
+$fe-tv-node-height: 40px !default;
+
+$fe-big-tv-fullrow-height: 48px !default;
+$fe-big-address-height: 52px !default;
+$fe-big-tv-node-height: 48px !default;
+$fe-big-tb-height: 48px !default;
+$fe-big-tb-ddb-btn-hvr-padding: 0 6px !default;
+$fe-big-tb-ddb-btn-padding: 0 6px !default;
+$fe-big-search-padding: 6px 16px 6px 0 !default;
+$fe-big-search-height: 40px !default;
+$fe-big-search-input-margin: 0 0 0 48px !default;
+$fe-big-search-input-height: 40px !default;
+$fe-big-search-input-padding: 10px 18px 10px 10px !default;
+$fe-big-bc-padding: 16px 16px 16px 12px !default;
+$fe-big-bc-text-size: 20px !default;
+$fe-big-bc-text-padding: 6px 12px !default;
+$fe-big-bc-li-item-height: 28px !default;
+$fe-big-bc-submenu-height: 27px !default;
+$fe-big-grid-icon-margin: 0 12px 0 0 !default;
+$fe-big-grid-header-height: 48px !default;
+$fe-big-dg-td-padding: 8px 30px 8px 0 !default;
+$fe-big-lg-padding: 0 6px !default;
+$fe-big-lg-item-height: 120px !default;
+$fe-big-lg-item-width: 120px !default;
+$fe-big-lg-item-margin: 20px 8px !default;
+$fe-big-lg-item-inner-height: 120px !default;
+$fe-big-lg-item-inner-width: 120px !default;
+$fe-big-lg-icon-height: 36px !default;
+$fe-big-lg-icon-width: 48px !default;
+$fe-big-lg-icon-margin: 26px 36px 22px !default;
+$fe-big-lg-img-height: 79px !default;
+$fe-big-lg-text-padding: 0 0 16px !default;
+$fe-big-grid-header-font-size: 14px !default;
+$fe-big-grid-content-font-size: 14px !default;
+$fe-big-grid-content-name-font-size: 16px !default;
+$fe-big-cb-line-height: 14px !default;
+
+$fe-big-rtl-search-input-margin: 0 48px 0 0 !default;
+$fe-big-rtl-search-input-padding: 10px 10px 10px 18px !default;
+
+$fe-rtl-grid-icon-margin: 0 0 0 8px !default;
+
+$fe-mobile-tb-height: 56px !default;
+$fe-mobile-lg-item-height: 96px !default;
+$fe-mobile-lg-item-width: 96px !default;
+$fe-mobile-lg-item-margin: 20px 8px !default;
+$fe-mobile-lg-item-inner-width: 92px !default;
+$fe-mobile-lg-icon-height: 24px !default;
+$fe-mobile-lg-icon-width: 32px !default;
+$fe-mobile-lg-icon-margin: 26px 30px 12px 30px !default;
+$fe-mobile-lg-img-height: 110px !default;
+$fe-mobile-grid-icon-size: 35px !default;
+$fe-mobile-icon-font-size: 20px !default;
+$fe-mobile-tb-icon-padding: 8px !default;
+$fe-mobile-tb-icon-font-size: 24px !default;
+$fe-mobile-newfolder-padding-top: 0 !default;
+$fe-mobile-upload-padding-left: 0 !default;
+$fe-mobile-sort-padding-top: 3px !default;
+$fe-mobile-refresh-padding-top: 3px !default;
+$fe-mobile-select-padding-top: 2px !default;
+$fe-mobile-large-padding: 4px 0 0 2px !default;
+$fe-mobile-grid-padding: 4px 2px 0 2px !default;
+$fe-mobile-details-padding-top: 3px !default;
+$fe-mobile-delete-padding-left: 4px !default;
+$fe-mobile-rename-padding-left: 2px !default;
+$fe-mobile-rename-padding-top: 3px !default;
+$fe-mobile-download-padding-left: 4px !default;
+$fe-mobile-cut-padding-left: 2px !default;
+$fe-mobile-cut-padding-top: 1px !default;
+$fe-mobile-copy-padding-left: 4px !default;
+$fe-mobile-search-height: 40px !default;
+$fe-mobile-lg-item-minwidth: 140px !default;
+$fe-mobile-lg-item-width-two: calc(50% - 17px) !default;
+$fe-mobile-lg-item-width-three: calc(33.33% - 17px) !default;
+
+$fe-big-lg-icon-empty-min-width: 300px !default;
+
+$fe-big-lg-icon-empty-content-font-size: 22px !default;
+$fe-big-lg-icon-empty-content-margin: 0 auto !default;
+$fe-big-lg-icon-empty-content-padding: 12px !default;
+$fe-big-lg-icon-empty-content-text-align: center !default;
+
+$fe-big-lg-icon-empty-icon-height: 92px !default;
+$fe-big-lg-icon-empty-icon-margin: 0 auto !default;
+$fe-big-lg-icon-empty-icon-width: 92px !default;
+
+$fe-big-lg-icon-empty-inner-content-font-size: 14px !default;
+$fe-big-lg-icon-empty-inner-content-margin: 0 auto !default;
+$fe-big-lg-icon-empty-inner-content-opacity: .5 !default;
+$fe-big-lg-icon-empty-inner-content-padding: 4px !default;
+$fe-big-lg-icon-empty-inner-content-text-align: center !default;
+
+$fe-big-grid-empty-min-width: 300px !default;
+
+$fe-big-grid-empty-content-font-size: 22px !default;
+$fe-big-grid-empty-content-margin: 0 auto !default;
+$fe-big-grid-empty-content-padding: 12px !default;
+$fe-big-grid-empty-content-text-align: center !default;
+
+$fe-big-grid-empty-icon-height: 92px !default;
+$fe-big-grid-empty-icon-margin: 0 auto !default;
+$fe-big-grid-empty-icon-width: 92px !default;
+
+$fe-big-grid-empty-inner-content-font-size: 14px !default;
+$fe-big-grid-empty-inner-content-margin: 0 auto !default;
+$fe-big-grid-empty-inner-content-opacity: .5 !default;
+$fe-big-grid-empty-inner-content-padding: 6px !default;
+$fe-big-grid-empty-inner-content-text-align: center !default;
+
+$fe-grid-empty-min-width: 200px !default;
+
+$fe-grid-empty-content-font-size: $text-base !default;
+$fe-grid-empty-content-margin: 0 auto !default;
+$fe-grid-empty-content-padding: 18px 0 8px 0 !default;
+$fe-grid-empty-content-text-align: center !default;
+
+$fe-grid-empty-icon-height: 52px !default;
+$fe-grid-empty-icon-margin: 0 auto !default;
+$fe-grid-empty-icon-width: 52px !default;
+
+$fe-grid-empty-inner-content-color: rgba($content-text-color-alt1) !default;
+$fe-grid-empty-inner-content-font-size: $text-sm !default;
+$fe-grid-empty-inner-content-margin: 0 auto !default;
+$fe-grid-empty-inner-content-opacity: .5 !default;
+$fe-grid-empty-inner-content-padding: 0 !default;
+$fe-grid-empty-inner-content-text-align: center !default;
+
+$fe-lg-icon-empty-min-width: 200px !default;
+
+$fe-lg-icon-empty-content-font-size: $text-base !default;
+$fe-lg-icon-empty-content-margin: 0 auto !default;
+$fe-lg-icon-empty-content-padding: 18px 0 8px 0 !default;
+$fe-lg-icon-empty-content-text-align: center !default;
+
+$fe-lg-icon-empty-icon-height: 52px !default;
+$fe-lg-icon-empty-icon-margin: 0 auto !default;
+$fe-lg-icon-empty-icon-width: 52px !default;
+
+$fe-lg-icon-empty-inner-content-font-size: $text-sm !default;
+$fe-lg-icon-empty-inner-content-margin: 0 auto !default;
+$fe-lg-icon-empty-inner-content-padding: 0 !default;
+$fe-lg-icon-empty-inner-content-text-align: center !default;
+
+$fe-bc-icon-padding: 0 !default;
+
+// color variables
+$fe-border-color: rgba($border-light) !default;
+$fe-background: transparent;
+$fe-icon-color: rgba($icon-color) !default;
+$fe-label-color: rgba($content-text-color) !default;
+$fe-text-color: rgba($content-text-color) !default;
+$fe-active-border-color: rgba($content-bg-color-selected) !default;
+$fe-tb-active-color: rgba($secondary-text-color) !default;
+$fe-active-bg-color: rgba($content-bg-color-selected) !default;
+$fe-active-font-color: rgba($secondary-text-color) !default;
+$fe-hover-border-color: $content-bg-color-hover !default;
+$fe-hover-bg-color: $content-bg-color-hover !default;
+$fe-ah-border-color: rgba($content-bg-color-selected) !default;
+$fe-ah-bg-color: rgba($content-bg-color-selected) !default;
+$fe-focus-border-color: rgba($border-light) !default;
+$fe-bc-color: rgba($content-text-color-alt1) !default;
+$fe-bc-link-color: rgba($content-text-color-alt1) !default;
+$fe-bc-hover-bg-color: $content-bg-color-alt2 !default;
+$fe-bc-hover-font-color: rgba($content-text-color) !default;
+$fe-grid-header-bg-color: $content-bg-color-alt1 !default;
+$fe-ddl-icon-color: rgba($icon-color) !default;
+$fe-error-color: rgba($danger) !default;
+$fe-img-border-color: rgba($border-light) !default;
+$fe-search-bg-color: $content-bg-color-alt1 !default;
+$fe-tb-hover-border-color: $secondary-border-color-hover !default;
+$fe-tb-focus-border-color: $fe-tb-hover-border-color !default;
+$fe-tb-focus-bg: $secondary-bg-color-hover !default;
+$fe-checkbox-color: rgba($primary-text-color) !default;
+$fe-checkbox-bg-color: rgba($primary) !default;
+$fe-drop-border-color: rgba($primary) !default;
+$fe-up-list-border-color: rgba($border-light) !default;
+$fe-clone-bg-color: $content-bg-color-alt3 !default;
+$fe-clone-border-color: none !default;
+$fe-clone-count-border-color: rgba($primary-text-color) !default;
+$fe-clone-count-font-color: rgba($primary-text-color) !default;
+$fe-clone-count-bg-color: rgba($primary) !default;
+$fe-drop-folder-bg-color: rgba($primary) !default;

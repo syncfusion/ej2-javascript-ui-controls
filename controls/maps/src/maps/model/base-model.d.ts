@@ -9,8 +9,9 @@ export interface AnnotationModel {
      * Gets or sets the content for the annotation in maps.
      * 
      * @default ''
+     * @aspType string
      */
-    content?: string;
+    content?: string | Function;
 
     /**
      * Gets or sets the x position of the annotation in pixel or percentage format.
@@ -425,8 +426,9 @@ export interface TooltipSettingsModel {
      * Gets or sets the tooltip template of layers, markers, and bubbles in maps to display custom elements as tooltip.
      *
      * @default ''
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Gets or sets the color of the tooltip in layers, markers, and bubbles of maps.
@@ -1529,8 +1531,9 @@ export interface DataLabelSettingsModel {
      * Gets or sets the template for the data labels to render custom elements.
      *
      * @default ''
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
 }
 
@@ -1727,8 +1730,9 @@ export interface MarkerBaseModel {
      * Gets or sets the template for the marker to render custom elements.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Gets or sets the data source for the marker.

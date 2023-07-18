@@ -300,7 +300,7 @@ export class RangeSlider {
      * @hidden
      * @param {PointerEvent} e mouse event argument
      */
-    private mouseMoveHandler(e: PointerEvent | TouchEvent): void {
+    public mouseMoveHandler(e: PointerEvent | TouchEvent): void {
         const control: RangeNavigator = this.control;
         const axisRange: VisibleRangeModel = control.chartSeries.xAxis.actualRange;
         const bounds: Rect = control.bounds;
@@ -330,6 +330,14 @@ export class RangeSlider {
                 if (currentWidth === Math.floor(this.sliderWidth)) {
                     control.startValue = start;
                     control.endValue = end;
+                }
+                else {
+                    if (end === axisRange.max) {
+                        control.endValue = axisRange.max;
+                    }
+                    if (Math.floor(this.startX) === bounds.x) {
+                        control.startValue = axisRange.min;
+                    }
                 }
                 break;
             }

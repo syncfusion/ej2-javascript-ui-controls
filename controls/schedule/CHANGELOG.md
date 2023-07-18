@@ -2,6 +2,75 @@
 
 ## [Unreleased]
 
+## 22.1.38 (2023-07-11)
+
+### Schedule
+
+- `#F182714` - An issue with Escape key will prevent the cell selection when `allowInline` property enabled has been fixed.
+
+## 22.1.34 (2023-06-21)
+
+### Schedule
+
+#### New Features
+
+- `#I438319` - Provided an option to customize the recurrence end type which allows users to tailor the recurrence editor to their unique needs and preferences.
+
+#### Bug fixes
+
+- `F182696` - An issue with Keyboard scroll behaviour not working has been fixed.
+- `I470178` - An issue with Edit occurrence appointment not rescheduled properly and shows occurrence alert has been fixed.
+- `#I182714` -  Resolved the issue where pressing the `Escape` key while navigating the scheduler with the keyboard would return to the previously selected cell.
+
+## 21.2.10 (2023-06-13)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I464944` - An issue with time indicator rendered in wrong position when `startHour` and `endHour` property applied has been fixed.
+
+## 21.2.9 (2023-06-06)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I461489` - An issue with the dragging appointment is flickering on the topmost region has been fixed.
+- `#I464535` - Fixed an issue where the visible date header name in the Schedule did not match the aria-label name, leading to discrepancies in the accessibility checker.
+- `#I459642` - An issue with Appointment end date is wrong in `popupOpenEventArgs` has been fixed.
+
+## 21.2.6 (2023-05-23)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I182303` - An issue with where the current date was not indicated in the agenda view with resource has been fixed.
+
+### Schedule
+
+#### Bug fixes
+
+- `#I459507` - An issue with the following events option not being displayed while editing the edited occurrence of the recurrence series has been fixed.
+
+## 21.2.5 (2023-05-16)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I459154` - An issue with Schedule performance while rendering large set all-day appointments in vertical views has been fixed.
+
+## 21.2.4 (2023-05-09)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I457705` - An issue with appointment not dropped on target cell when start and end time is same has been fixed.
+- `#I457928` - An issue with the appointment misalignment has been fixed.
+
 ## 21.1.41 (2023-04-18)
 
 ### Schedule

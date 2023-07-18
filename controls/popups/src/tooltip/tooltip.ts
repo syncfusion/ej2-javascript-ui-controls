@@ -10,164 +10,67 @@ import { TooltipModel, AnimationModel } from './tooltip-model';
 
 /**
  * Set of open modes available for Tooltip.
+ * ```props
+ * Auto :- The tooltip opens automatically when the trigger element is hovered over.
+ * Hover :- The tooltip opens when the trigger element is hovered over.
+ * Click :- The tooltip opens when the trigger element is clicked.
+ * Focus :- The tooltip opens when the trigger element is focused.
+ * Custom :- The tooltip opens when the trigger element is triggered by a custom event.
+ * ```
  */
-export type OpenMode = 
-    /**
-     * The tooltip opens automatically when the trigger element is hovered over.
-     */
-    'Auto' | 
-    /**
-     * The tooltip opens when the trigger element is hovered over.
-     */
-    'Hover' | 
-    /**
-     * The tooltip opens when the trigger element is clicked.
-     */
-    'Click' | 
-    /**
-     * The tooltip opens when the trigger element is focused.
-     */
-    'Focus' | 
-    /**
-     * The tooltip opens when the trigger element is triggered by a custom event.
-     */
-    'Custom';
+export type OpenMode = 'Auto' | 'Hover' | 'Click' | 'Focus' | 'Custom';
+
 /**
  * Applicable positions where the Tooltip can be displayed over specific target elements.
+ * ```props
+ * TopLeft :- The tooltip is positioned at the top-left corner of the trigger element.
+ * TopCenter :- The tooltip is positioned at the top-center of the trigger element.
+ * TopRight :- The tooltip is positioned at the top-right corner of the trigger element.
+ * BottomLeft :- The tooltip is positioned at the bottom-left corner of the trigger element.
+ * BottomCenter :- The tooltip is positioned at the bottom-center of the trigger element.
+ * BottomRight :- The tooltip is positioned at the bottom-right corner of the trigger element.
+ * LeftTop :- The tooltip is positioned at the left-top corner of the trigger element.
+ * LeftCenter :- The tooltip is positioned at the left-center of the trigger element.
+ * LeftBottom :- The tooltip is positioned at the left-bottom corner of the trigger element.
+ * RightTop :- The tooltip is positioned at the right-top corner of the trigger element.
+ * RightCenter :- The tooltip is positioned at the right-center of the trigger element.
+ * RightBottom :- The tooltip is positioned at the right-bottom corner of the trigger element.
+ * ```
  */
-export type Position = 
-    /**
-     * The tooltip is positioned at the top-left corner of the trigger element.
-     */
-    'TopLeft' | 
-    /**
-     *  The tooltip is positioned at the top-center of the trigger element.
-     */
-    'TopCenter' | 
-    /**
-     * The tooltip is positioned at the top-right corner of the trigger element.
-     */
-    'TopRight' | 
-    /**
-     * The tooltip is positioned at the bottom-left corner of the trigger element.
-     */
-    'BottomLeft' | 
-    /**
-     * The tooltip is positioned at the bottom-center of the trigger element.
-     */
-    'BottomCenter' | 
-    /**
-     * The tooltip is positioned at the bottom-right corner of the trigger element.
-     */
-    'BottomRight' |
-    /**
-     * The tooltip is positioned at the left-top corner of the trigger element.
-     */
-    'LeftTop' | 
-    /**
-     * The tooltip is positioned at the left-center of the trigger element.
-     */
-    'LeftCenter' | 
-    /**
-     * The tooltip is positioned at the left-bottom corner of the trigger element.
-     */
-    'LeftBottom' | 
-    /**
-     * The tooltip is positioned at the right-top corner of the trigger element.
-     */
-    'RightTop' | 
-    /**
-     * The tooltip is positioned at the right-center of the trigger element.
-     */
-    'RightCenter' | 
-    /**
-     * The tooltip is positioned at the right-bottom corner of the trigger element.
-     */
-    'RightBottom';
+export type Position = 'TopLeft' | 'TopCenter' | 'TopRight' | 'BottomLeft' | 'BottomCenter' | 'BottomRight' | 'LeftTop' | 'LeftCenter' | 'LeftBottom' | 'RightTop' | 'RightCenter' | 'RightBottom';
+ 
 /**
  * Applicable tip positions attached to the Tooltip.
+ * ```props
+ * Auto :- The tip pointer position is automatically calculated based on the available space.
+ * Start :- The tip pointer is positioned at the start of the tooltip.
+ * Middle :- The tip pointer is positioned at the middle of the tooltip.
+ * End :- The tip pointer is positioned at the end of the tooltip.
+ * ```
  */
-export type TipPointerPosition = 
-    /**
-     * The tip pointer position is automatically calculated based on the available space.
-     */
-    'Auto' | 
-    /**
-     * The tip pointer is positioned at the start of the tooltip.
-     */
-    'Start' | 
-    /**
-     * The tip pointer is positioned at the middle of the tooltip.
-     */
-    'Middle' | 
-    /**
-     * The tip pointer is positioned at the end of the tooltip.
-     */
-    'End';
+export type TipPointerPosition = 'Auto' | 'Start' | 'Middle' | 'End';
+
 /**
  * Animation effects that are applicable for Tooltip.
+ * ```props
+ * FadeIn :- A fade-in animation effect where the tooltip gradually increases in opacity from 0 to full.
+ * FadeOut :- A fade-out animation effect where the tooltip gradually decreases in opacity from full to 0.
+ * FadeZoomIn :- A fade-in animation effect combined with a zoom-in effect.
+ * FadeZoomOut :- A fade-out animation effect combined with a zoom-out effect.
+ * FlipXDownIn :- A flip-down animation effect where the tooltip starts upside down and flips down to become fully visible.
+ * FlipXDownOut :- A flip-down animation effect where the tooltip starts fully visible and flips down to become invisible.
+ * FlipXUpIn :- A flip-up animation effect where the tooltip starts upside down and flips up to become fully visible.
+ * FlipXUpOut :- A flip-up animation effect where the tooltip starts fully visible and flips up to become invisible.
+ * FlipYLeftIn :- A flip-left animation effect where the tooltip starts from the right side and flips left to become fully visible.
+ * FlipYLeftOut :- A flip-left animation effect where the tooltip starts from the left side and flips left to become invisible.
+ * FlipYRightIn :- A flip-right animation effect where the tooltip starts from the left side and flips right to become fully visible.
+ * FlipYRightOut :- A flip-right animation effect where the tooltip starts from the right side and flips right to become invisible.
+ * ZoomIn :- zoom-in animation effect where the tooltip starts small and gradually grows in size to become fully visible.
+ * ZoomOut :- A zoom-out animation effect where the tooltip starts full size and gradually decreases in size to become invisible.
+ * None :- No animation effect, the tooltip simply appears or disappears without any animation.
+ * ```
  */
-export type Effect = 
-    /**
-    * A fade-in animation effect where the tooltip gradually increases in opacity from 0 to full.
-    */
-    'FadeIn' | 
-    /**
-    * A fade-out animation effect where the tooltip gradually decreases in opacity from full to 0.
-    */
-    'FadeOut' | 
-    /**
-    * A fade-in animation effect combined with a zoom-in effect.
-    */
-    'FadeZoomIn' | 
-    /**
-    * A fade-out animation effect combined with a zoom-out effect.
-    */
-    'FadeZoomOut' | 
-    /**
-    *  A flip-down animation effect where the tooltip starts upside down and flips down to become fully visible.
-    */
-    'FlipXDownIn' | 
-    /**
-    * A flip-down animation effect where the tooltip starts fully visible and flips down to become invisible.
-    */
-    'FlipXDownOut' |
-    /**
-    * A flip-up animation effect where the tooltip starts upside down and flips up to become fully visible.
-    */
-    'FlipXUpIn' | 
-    /**
-    * A flip-up animation effect where the tooltip starts fully visible and flips up to become invisible.
-    */
-    'FlipXUpOut' | 
-    /**
-    * A flip-left animation effect where the tooltip starts from the right side and flips left to become fully visible.
-    */
-    'FlipYLeftIn' | 
-    /**
-    * A flip-left animation effect where the tooltip starts from the left side and flips left to become invisible.
-    */
-    'FlipYLeftOut' | 
-    /**
-    * A flip-right animation effect where the tooltip starts from the left side and flips right to become fully visible.
-    */
-    'FlipYRightIn' | 
-    /**
-    * A flip-right animation effect where the tooltip starts from the right side and flips right to become invisible.
-    */
-    'FlipYRightOut' | 
-    /**
-    *  zoom-in animation effect where the tooltip starts small and gradually grows in size to become fully visible.
-    */
-    'ZoomIn' | 
-    /**
-    * A zoom-out animation effect where the tooltip starts full size and gradually decreases in size to become invisible.
-    */
-    'ZoomOut' | 
-    /**
-    * No animation effect, the tooltip simply appears or disappears without any animation.
-    */
-    'None';
+export type Effect = 'FadeIn' | 'FadeOut' | 'FadeZoomIn' | 'FadeZoomOut' | 'FlipXDownIn' | 'FlipXDownOut' | 'FlipXUpIn' | 'FlipXUpOut' | 'FlipYLeftIn' | 'FlipYLeftOut' | 'FlipYRightIn' | 'FlipYRightOut' | 'ZoomIn' | 'ZoomOut' | 'None';
 
 const TOUCHEND_HIDE_DELAY: number = 1500;
 const TAPHOLD_THRESHOLD: number = 500;
@@ -329,9 +232,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
      *
+     * @aspType string
      */
     @Property()
-    public content: string | HTMLElement;
+    public content: string | HTMLElement | Function;
     /**
      * It is used to set the container element in which the Tooltip’s pop-up will be appended. It accepts value as both string and HTML Element.
      * It's default value is `body`, in which the Tooltip’s pop-up will be appended.
@@ -1128,29 +1032,34 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             element: this.tooltipEle, collidedPosition: newpos
         };
         this.trigger('beforeCollision', this.tooltipEventArgs);
-        const elePosVertical: string = elePos.vertical;
-        const elePosHorizontal: string = elePos.horizontal;
-        if (elePos.position !== newpos) {
-            const pos: OffsetPosition = calculatePosition(target, elePosHorizontal, elePosVertical, !this.isBodyContainer,
-                                                          this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
-            this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
-            const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
-            offsetPos.top -= this.getOffSetPosition('TopBottom', newpos, this.offsetY);
-            offsetPos.left -= this.getOffSetPosition('RightLeft', newpos, this.offsetX);
-            elePos.position = newpos;
-            const elePosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
-            elePos.left = elePosition[0];
-            elePos.top = elePosition[1];
-        } else {
-            this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
+        if (this.tooltipEventArgs.cancel) {
+            newpos = this.position;
+        }
+        else {
+            let elePosVertical: string = elePos.vertical;
+            let elePosHorizontal: string = elePos.horizontal;
+            if (elePos.position !== newpos) {
+                const pos: OffsetPosition = calculatePosition(target, elePosHorizontal, elePosVertical, !this.isBodyContainer,
+                                                            this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
+                this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
+                const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
+                offsetPos.top -= this.getOffSetPosition('TopBottom', newpos, this.offsetY);
+                offsetPos.left -= this.getOffSetPosition('RightLeft', newpos, this.offsetX);
+                elePos.position = newpos;
+                const elePosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
+                elePos.left = elePosition[0];
+                elePos.top = elePosition[1];
+            } else {
+                this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
+            }
         }
         const eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
-        const left: number = this.isBodyContainer ?
-            fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: false }, eleOffset).left : eleOffset.left;
+        const position: OffsetPosition = this.isBodyContainer ?
+            fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: true }, eleOffset) : eleOffset;
         this.tooltipEle.style.display = 'block';
         if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
             const arrowEle: HTMLElement = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
-            let arrowleft: number = parseInt(arrowEle.style.left, 10) - (left - elePos.left);
+            let arrowleft: number = parseInt(arrowEle.style.left, 10) - (position.left - elePos.left);
             if (arrowleft < 0) {
                 arrowleft = 0;
             } else if ((arrowleft + arrowEle.offsetWidth) > this.tooltipEle.clientWidth) {
@@ -1159,7 +1068,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             arrowEle.style.left = arrowleft.toString() + 'px';
         }
         this.tooltipEle.style.display = '';
-        eleOffset.left = left;
+        eleOffset.left = position.left;
+        eleOffset.top = position.top;
         return eleOffset;
     }
 
@@ -1331,7 +1241,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private scrollHandler(e: Event): void {
-        if (this.tooltipEle) {
+        if (this.tooltipEle && !this.isSticky) {
             if (!(closest(e.target as HTMLElement, `.${TOOLTIP_WRAP}.${POPUP_LIB}.${POPUP_ROOT}`))) { this.close(); }
         }
     }

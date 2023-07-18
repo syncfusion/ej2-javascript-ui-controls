@@ -1,4 +1,4 @@
-import { Property, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, isBlazor, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Tooltip, AnimationModel, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { BlazorTooltip } from '../blazor-tooltip/blazor-Tooltip';
 import { TooltipRelativeMode, TooltipMode } from '../enum/enum';
@@ -6,6 +6,7 @@ import { Diagram } from '../diagram';
 import { NodeModel } from './node-model';
 import { ConnectorModel } from './connector-model';
 import { DiagramTooltipModel } from './tooltip-model';
+import { PointPortModel } from './port-model';
 /**
  * Defines the tooltip that should be shown when the mouse hovers over node.
  * An object that defines the description, appearance and alignments of tooltip
@@ -165,7 +166,7 @@ function beforeCollision(args: TooltipEventArgs): void {
  *
  * @private
  */
-export function updateTooltip(diagram: Diagram, node?: NodeModel | ConnectorModel): Tooltip {
+export function updateTooltip(diagram: Diagram, node?: NodeModel | ConnectorModel | PointPortModel): Tooltip {
     //let tooltip: DiagramTooltipModel;
     const tooltipObject: Tooltip = diagram.tooltipObject as Tooltip;
     const tooltip: DiagramTooltipModel = node ? node.tooltip : diagram.tooltip;
@@ -185,6 +186,13 @@ export function updateTooltip(diagram: Diagram, node?: NodeModel | ConnectorMode
 function updateTooltipContent(tooltip: DiagramTooltipModel, tooltipObject: Tooltip | BlazorTooltip): Tooltip | BlazorTooltip {
     if (tooltip.content) {
         tooltipObject.content = tooltip.content;
+        //Task 834121: Content-Security-Policy support for diagram
+        if(typeof tooltip.content === 'string'){
+            const contentTemp = function() {
+                return tooltip.content;
+            };
+            tooltipObject.content = initializeCSPTemplate(contentTemp);
+        }
         tooltipObject.position = tooltip.position;
         tooltipObject.showTipPointer = tooltip.showTipPointer;
         tooltipObject.width = tooltip.width;

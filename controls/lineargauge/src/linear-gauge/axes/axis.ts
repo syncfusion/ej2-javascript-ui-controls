@@ -11,7 +11,7 @@ import { LinearGradientModel, RadialGradientModel} from '../axes/gradient-model'
 export class Line extends ChildProperty<Line> {
     /**
      * Sets and gets the dash-array of the axis line.
-     * 
+     *
      * @default ''
      */
 
@@ -37,7 +37,7 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * Sets and gets the color for the axis line.
-     * 
+     *
      * @default null
      */
     @Property(null)
@@ -75,7 +75,7 @@ export class Label extends ChildProperty<Label> {
     /**
      * Sets and gets the format for the axis label. This property accepts any global format string like 'C', 'n1', 'P' etc.
      * Also accepts placeholder like '{value}°C' in which value represent the axis label e.g. 20°C.
-     * 
+     *
      * @default ''
      */
 
@@ -149,7 +149,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Sets and gets the color of the axis range.
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -229,7 +229,7 @@ export class Tick extends ChildProperty<Tick> {
     /**
      * Sets and gets the color for the major or minor tick line. This property accepts value in hex code,
      * rgba string as a valid CSS color string.
-     * 
+     *
      * @default null
      */
 
@@ -351,7 +351,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Sets and gets the color of the pointer.
-     * 
+     *
      * @default null
      */
     @Property(null)
@@ -453,7 +453,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Enables or disables the inversed axis.
-     * 
+     *
      * @default false
      */
 
@@ -462,7 +462,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Shows or hides the last label in the axis of the linear gauge.
-     * 
+     *
      * @default false
      */
 
@@ -471,7 +471,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Enables or disables the opposed position of the axis in the linear gauge.
-     * 
+     *
      * @default false
      */
     @Property(false)

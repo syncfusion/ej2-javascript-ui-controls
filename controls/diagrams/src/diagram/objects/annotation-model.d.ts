@@ -39,7 +39,7 @@ export interface HyperlinkModel {
 
     /**
      *Allows the user to open the hyperlink in the new tab, current tab or new window
-     * 
+     *
      * @default 'NewTab'
      */
     hyperlinkOpenState?: LinkTarget;
@@ -63,7 +63,7 @@ export interface AnnotationModel {
      *
      * @default 'undefined'
      */
-    template?: string | HTMLElement;
+    template?: string | HTMLElement | Function;
 
     /**
      *  Defines the type of annotation template

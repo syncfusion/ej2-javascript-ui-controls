@@ -278,11 +278,11 @@ export class Linear {
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(fontBackground));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         const argsData: ITextRenderEventArgs = {
-            cancel: false, text: labelText ? labelText : String(linearValue) + '%', color: progress.labelStyle.color
+            cancel: false, text: labelText ? labelText : String(linearValue) + '%', color: progress.labelStyle.color || this.progress.themeStyle.linearLabelFont.color
         };
         progress.trigger('textRender', argsData);
         if (!argsData.cancel) {
-            textSize = measureText(argsData.text, progress.labelStyle);
+            textSize = measureText(argsData.text, progress.labelStyle, progress.themeStyle.linearLabelFont);
             defaultPos = (progress.enableRtl) ? (progress.progressRect.x + progress.progressRect.width - textSize.width / 2) :
                 (progress.progressRect.x + textSize.width / 2);
             if (progress.labelOnTrack) {
@@ -328,10 +328,10 @@ export class Linear {
                 posY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 4);
             }
             option = new TextOption(
-                progress.element.id + '_linearLabel', progress.labelStyle.size || progress.themeStyle.linearFontSize,
-                progress.labelStyle.fontStyle || progress.themeStyle.linearFontStyle,
-                progress.labelStyle.fontFamily || progress.themeStyle.linearFontFamily,
-                progress.labelStyle.fontWeight, 'middle', argsData.color || ((contrast >= 128) ? 'black' : 'white'),
+                progress.element.id + '_linearLabel', progress.labelStyle.size || progress.themeStyle.linearLabelFont.size,
+                progress.labelStyle.fontStyle || progress.themeStyle.linearLabelFont.fontStyle,
+                progress.labelStyle.fontFamily || progress.themeStyle.linearLabelFont.fontFamily,
+                progress.labelStyle.fontWeight, 'middle', argsData.color,
                 posX, posY
             );
             linearlabel = progress.renderer.createText(option, argsData.text);

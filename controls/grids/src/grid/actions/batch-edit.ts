@@ -136,7 +136,8 @@ export class BatchEdit {
         const rowIndex: number = tr && parseInt(tr.getAttribute(literals.dataRowIndex), 10);
         const colIndex: number = target && parseInt(target.getAttribute(literals.dataColIndex), 10);
         if (!isNullOrUndefined(target) && !isNullOrUndefined(rowIndex) && !isNaN(colIndex)
-            && !target.parentElement.classList.contains(literals.editedRow)) {
+            && !target.parentElement.classList.contains(literals.editedRow) &&
+                (this.parent.getColumns()[parseInt(colIndex.toString(), 10)] as Column).allowEditing) {
             this.editCell(
                 rowIndex, (this.parent.getColumns()[parseInt(colIndex.toString(), 10)] as Column).field, this.isAddRow(rowIndex));
         }
@@ -1071,9 +1072,29 @@ export class BatchEdit {
                 col.getFreezeTableName() === literals.frozenRight ? gObj.getFrozenRightRowsObject()[parseInt(rowIndex.toString(), 10)]
                     : gObj.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
-            this.parent.trigger(events.queryCellInfo, {
-                cell: this.newReactTd || td, column: col, data: rowObj.changes
-            });
+            const isReactChild = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                this.parent.parentDetails.parentInstObj.isReact;
+            if (((this.parent.isReact && this.parent.requireTemplateRef) || (isReactChild &&
+                this.parent.parentDetails.parentInstObj.requireTemplateRef)) && col.template) {
+                const thisRef: BatchEdit = this;
+                const newReactTd: Element = this.newReactTd;
+                thisRef.parent.renderTemplates(function () {
+                    thisRef.parent.trigger(events.queryCellInfo, {
+                        cell: newReactTd || td, column: col, data: rowObj.changes
+                    });
+                });
+            }
+            else if ((this.parent.isReact || isReactChild) && col.template) {
+                this.parent.renderTemplates();
+                this.parent.trigger(events.queryCellInfo, {
+                    cell: this.newReactTd || td, column: col, data: rowObj.changes
+                });
+            }
+            else {
+                this.parent.trigger(events.queryCellInfo, {
+                    cell: this.newReactTd || td, column: col, data: rowObj.changes
+                });
+            }
         }
     }
 
@@ -1412,7 +1433,21 @@ export class BatchEdit {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
             }
             if (isNullOrUndefined(isEscapeCellEdit)) {
-                gObj.trigger(events.cellSaved, cellSaveArgs);
+                const isReactCompiler: boolean = gObj.isReact && column.template && typeof (column.template) !== 'string';
+                const isReactChild: boolean = gObj.parentDetails && gObj.parentDetails.parentInstObj
+                 && gObj.parentDetails.parentInstObj.isReact;
+                if (isReactCompiler || isReactChild) {
+                    if (gObj.requireTemplateRef) {
+                        gObj.renderTemplates(function (): void {
+                            gObj.trigger(events.cellSaved, cellSaveArgs);
+                        });
+                    } else {
+                        gObj.renderTemplates();
+                        gObj.trigger(events.cellSaved, cellSaveArgs);
+                    }
+                } else {
+                    gObj.trigger(events.cellSaved, cellSaveArgs);
+                }
             }
             gObj.notify(events.toolbarRefresh, {});
             this.isColored = false;

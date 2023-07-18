@@ -4571,3 +4571,44 @@ describe('EJ2-72030 - Batch Edited cell value not saved during tab out from last
         gridObj = null;
     });
 });
+
+describe('EJ2-837195 - Inline and Batch Edit mode behave differently when column.allowEditing is false =>', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0,15),
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                allowPaging: true,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                    { field: 'CustomerID', type: 'string', validationRules: { required: true } },
+                    { field: 'ShipCountry', allowEditing: false},
+                ],
+            }, done);
+    });
+
+    it('Add the row', function (done) {
+        let batchAdd = (args?: any): void => {
+            gridObj.batchAdd = null;
+            done();
+        };
+        gridObj.batchAdd = batchAdd;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+
+    it('Editing the row', function () {
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 10247;
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        expect(gridObj.focusModule.currentInfo.element.getAttribute('data-colindex')).toBe('1');
+    })
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

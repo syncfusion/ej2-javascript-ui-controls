@@ -3223,3 +3223,40 @@ describe('Add rows - Add rows as child', () => {
     destroy(gridObj);
   });
 });
+
+describe('ActionBegin action called twice while on Row Editing - 828869', () => {
+  let gridObj: TreeGrid;
+  let actionBegin: () => void;
+  let count: number = 0;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'startDate', headerText: 'Start Date' }
+            ]
+      },
+      done
+    );
+  });
+  it('Ensuring actionBegin event triggering', (done: Function) => {
+    actionBegin = (args?: any): void => {
+      if (args.requestType === 'beginEdit') {
+        count++;
+        done();
+      }
+    };
+    gridObj.actionBegin = actionBegin;
+    gridObj.startEdit(gridObj.getRows()[0]);
+    expect(count).toBe(1);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

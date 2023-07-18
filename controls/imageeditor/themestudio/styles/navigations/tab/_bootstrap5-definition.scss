@@ -312,6 +312,7 @@ $tab-wrap-comb-icon-color: $tab-comb-icon-color !default;
 $tab-comb-text-color: $content-text-color-alt2 !default;
 $tab-close-icon-color: $icon-color !default;
 $tab-mob-close-icon-color: rgba($icon-color, .87) !default;
+$tab-active-close-icon-color: $icon-color !default;
 $tab-close-icon-hover-color: $tab-hover-text-color !default;
 $tab-close-icon-active-color: $primary !default;
 $tab-alt-hover-text-color: $tab-alt-hover-text-color !default;
@@ -485,6 +486,7 @@ $tab-item-wrap-border: $tab-vscroll-nav-border !default;
 $tab-clone-item-wrap-border: $tab-vscroll-nav-border !default;
 $tab-item-wrap-hover-border: 1px solid $tab-hover-border-color !default;
 $tab-item-wrap-hover-border-radius: $tab-top-active-item-border-radius !default;
+$tab-item-active-hover-bg: inherit !default;
 $tab-item-active-wrap-border: 0 !default;
 $tab-active-wrap-position: unset !default;
 $tab-active-wrap-before-border: unset !default;
@@ -654,3 +656,5 @@ $tab-background-focused-active-wrap-icon-color: $tab-alt-active-hover-text-color
 $tab-background-accent-indicator-bg: $tab-border-color !default;
 $tab-background-active-text-font-weight: $tab-light-font-weight !default;
 $tab-background-text-color: $tab-alt-text-color !default;
+
+$tab-fill-background-disable-text-color: $tab-disable-text-color !default;

@@ -49,12 +49,12 @@ export class Hyperlink extends ChildProperty<Hyperlink> {
 
     /**
      *Allows the user to open the hyperlink in the new tab, current tab or new window
-     * 
+     *
      * @default 'NewTab'
      */
-     @Property('NewTab')
-     public hyperlinkOpenState: LinkTarget;
-}    
+    @Property('NewTab')
+    public hyperlinkOpenState: LinkTarget;
+}
 /**
  * Defines the textual description of nodes/connectors
  */
@@ -73,7 +73,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * @default 'undefined'
      */
     @Property(undefined)
-    public template: string | HTMLElement;
+    public template: string | HTMLElement | Function;
 
     /**
      *  Defines the type of annotation template

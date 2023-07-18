@@ -170,8 +170,8 @@ export class SeriesRender {
                                 let textoptions: TextOption = new TextOption(
                                     options['id'], args.x, args.y, 'start', args.text
                                 );
-                                let color: string = font.color ? font.color : smithchart.themeStyle.dataLabel;
-                                let element: Element = renderTextElement(textoptions, font, color, gdEle);
+                                let color: string = font.color ? font.color : smithchart.themeStyle.dataLabelFont.color;
+                                let element: Element = renderTextElement(textoptions, font, color, gdEle, smithchart.themeStyle.dataLabelFont);
                                 gdEle.appendChild(element);
                             }
                         };

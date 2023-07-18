@@ -54,7 +54,12 @@
 
     &.e-badge-light:not(.e-badge-ghost):not([href]),
     &.e-badge-light[href]:not(.e-badge-ghost) {
-      background-color: $badge-light-bg-color;
+      @if $badge-theme == 'Material3' or $badge-theme == 'Material3-dark' {
+        background: $badge-light-bg-color;
+      }
+      @else {
+        background-color: $badge-light-bg-color;
+      }
       color: $badge-light-font-color;
     }
 
@@ -233,7 +238,7 @@
 
       &.e-badge-secondary {
         background-color: transparent;
-        @if ($badge-theme == 'tailwind' or $badge-theme == 'FluentUI' or $badge-theme == 'tailwind-dark' or $badge-theme == 'bootstrap5') {
+        @if ($badge-theme == 'tailwind' or $badge-theme == 'FluentUI' or $badge-theme == 'tailwind-dark' or $badge-theme == 'bootstrap5' or $badge-theme == 'Material3' or $badge-theme == 'Material3-dark') {
           border: 1px solid $badge-secondary-font-color;
           color: $badge-secondary-font-color;
         }
@@ -293,7 +298,7 @@
 
       &.e-badge-light {
         background-color: transparent;
-        @if ($badge-theme == 'tailwind' or$badge-theme == 'FluentUI' or$badge-theme == 'tailwind-dark' or$badge-theme == 'bootstrap5') {
+        @if ($badge-theme == 'tailwind' or$badge-theme == 'FluentUI' or$badge-theme == 'tailwind-dark' or$badge-theme == 'bootstrap5' or $badge-theme == 'Material3' or $badge-theme == 'Material3-dark') {
           border: 1px solid $badge-light-font-color;
           color: $badge-light-font-color;
         }

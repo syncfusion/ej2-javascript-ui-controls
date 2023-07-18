@@ -128,7 +128,11 @@ export class Keyboard {
     private processCardSelection(action: string, selectedCard: Element): void {
         if (selectedCard) {
             removeClass([selectedCard], cls.CARD_SELECTION_CLASS);
-            this.parent.layoutModule.disableAttributeSelection(selectedCard);
+            if (this.parent.enableVirtualization) {
+                this.parent.virtualLayoutModule.disableAttributeSelection(selectedCard);
+            } else {
+                this.parent.layoutModule.disableAttributeSelection(selectedCard);
+            }
             const selection: string[] = this.parent.actionModule.selectionArray;
             selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
         }
@@ -198,7 +202,11 @@ export class Keyboard {
             const cards: HTMLElement[] = this.parent.getSelectedCards();
             if (cards.length > 0) {
                 removeClass(cards, cls.CARD_SELECTION_CLASS);
-                this.parent.layoutModule.disableAttributeSelection(cards);
+                if (this.parent.enableVirtualization) {
+                    this.parent.virtualLayoutModule.disableAttributeSelection(cards);
+                } else {
+                    this.parent.layoutModule.disableAttributeSelection(cards);
+                }
             }
             this.multiSelection = false;
         }

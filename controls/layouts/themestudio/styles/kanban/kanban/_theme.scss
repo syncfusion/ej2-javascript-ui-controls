@@ -145,4 +145,9 @@
       }
     }
   }
+
+  .e-card-virtual-skeleton-wrapper,
+  .e-card-skeleton-wrapper {
+    background: $kanban-column-bg-color;
+  }
 }

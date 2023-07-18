@@ -102,7 +102,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 ele = getIdElement(id + '_sparkline_column_1');
                 trigger.mousemoveEvent(ele, 0, 0, 30, 30);
                 ele = getIdElement(id + '_sparkline_tooltip_div_path');
-                expect(ele.getAttribute('fill')).toBe('#363F4C');
+                expect(ele.getAttribute('fill')).toBe('#000816');
             };
             sparkline.appendTo('#' + id);
         });
@@ -116,7 +116,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
         it('checking the dataLabelColor',() =>{
             sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
                 ele = getIdElement(id + '_sparkline_label_text_0');
-                expect(ele.getAttribute('fill')).toBe('#424242');
+                expect(ele.getAttribute('fill')).toBe('rgba(97, 97, 97, 1)');
             }
             sparkline.appendTo('#' + id);
         })
@@ -227,7 +227,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 ele = getIdElement(id + '_sparkline_column_1');
                 trigger.mousemoveEvent(ele, 0, 0, 30, 30);
                 ele = getIdElement(id + '_sparkline_tooltip_div_path');
-                expect(ele.getAttribute('fill')).toBe('#ffffff');
+                expect(ele.getAttribute('fill')).toBe('#F4F4F4');
             };
             sparkline.appendTo('#' + id);
         });
@@ -241,7 +241,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
         it('checking the dataLabelColor',() =>{
             sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
                 ele = getIdElement(id + '_sparkline_label_text_0');
-                expect(ele.getAttribute('fill')).toBe('#ffffff');
+                expect(ele.getAttribute('fill')).toBe('rgba(255, 255, 255, 0.6)');
             }
             sparkline.appendTo('#' + id);
         })
@@ -352,7 +352,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 ele = getIdElement(id + '_sparkline_column_1');
                 trigger.mousemoveEvent(ele, 0, 0, 30, 30);
                 ele = getIdElement(id + '_sparkline_tooltip_div_path');
-                expect(ele.getAttribute('fill')).toBe('#000000');
+                expect(ele.getAttribute('fill')).toBe('#212529');
             };
             sparkline.appendTo('#' + id);
         });
@@ -366,8 +366,8 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
         it('checking the dataLabelColor',() =>{
             sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
                 ele = getIdElement(id + '_sparkline_label_text_0');
-                expect(ele.getAttribute('fill')).toBe('#212529');
-                expect(ele.getAttribute('font-family')).toBe('HelveticaNeue')
+                expect(ele.getAttribute('fill')).toBe('#495057');
+                expect(ele.getAttribute('font-family')).toBe('Helvetica')
                 
             }
             sparkline.appendTo('#' + id);

@@ -1,0 +1,396 @@
+//layout variables
+$btn-border: 1px solid !default;
+$btn-icon-margin-top: 0 !default;
+$btn-icon-btn-width: 1em !default;
+$btn-icon-top-bottom-padding: 8px !default;
+$btn-icon-small-width: 1em !default;
+$btn-icon-bigger-small-width: 1em !default;
+$btn-top-icon-padding: 12px 12px !default;
+$btn-top-icon-bigger-padding: 16px 16px !default;
+$btn-small-icon-top-bottom-padding: 6px !default;
+$btn-icon-bigger-width: 1em !default;
+$btn-bigger-icon-top-bottom-padding: 8px !default;
+$btn-focus-outline-offset: 0 !default;
+$btn-active-outline-offset: 0 !default;
+$btn-font-weight: 500 !default;
+$btn-font-size: $text-sm !default;
+$btn-small-font-size: 11px !default;
+$btn-bigger-font-size: $text-sm !default;
+$btn-bigger-small-font-size: $text-sm !default;
+$btn-border-radius: 4px !default;
+$btn-text-transform: none !default;
+$btn-icon-font-size: $text-lg !default;
+$btn-small-icon-font-size: $text-base !default;
+$btn-bigger-icon-font-size: $text-lg !default;
+$btn-bigger-small-icon-font-size: $text-lg !default;
+$btn-round-small-height: 24px !default;
+$btn-round-small-width: 24px !default;
+$btn-round-height: 32px !default;
+$btn-round-width: 32px !default;
+$btn-round-bigger-small-height: 36px !default;
+$btn-round-bigger-small-width: 36px !default;
+$btn-round-bigger-height: 40px !default;
+$btn-round-bigger-width: 40px !default;
+$btn-round-font-size: $text-lg !default;
+$btn-small-round-font-size: $text-base !default;
+$btn-bigger-round-font-size: $text-lg !default;
+$btn-bigger-small-round-font-size: $text-lg !default;
+$btn-icon-margin: -.5em !default;
+$btn-small-icon-margin: -.57143em !default;
+$btn-bigger-icon-margin: -.2em !default;
+$btn-bigger-small-icon-margin: -.5em !default;
+$btn-icon-width: 2em !default;
+$btn-small-icon-width: 2em !default;
+$btn-bigger-icon-width: 2em !default;
+$btn-bigger-small-icon-width: 2em !default;
+$btn-round-icon-line-height: 1.5em !default;
+$btn-small-round-icon-line-height: 1 !default;
+$btn-bigger-round-icon-line-height: 1.5em !default;
+$btn-bigger-small-round-icon-line-height: 0 !default;
+$btn-text-line-height: 1 !default;
+$btn-bigger-text-line-height: 1.286 !default;
+$btn-small-text-line-height: 1.092 !default;
+$btn-bigger-small-text-line-height: 1.476 !default;
+$btn-padding: 8px 16px !default;
+$btn-small-padding: 5px 12px !default;
+$btn-bigger-padding: 10px 24px !default;
+$btn-bigger-small-padding: 7px 20px !default;
+$btn-icon-padding: 7px 7px !default;
+$btn-small-icon-padding: 4px 4px !default;
+$btn-bigger-icon-padding: 11px 11px !default;
+$btn-bigger-small-icon-padding: 9px 9px !default;
+
+//normal
+$btn-color: rgba($secondary-text-color) !default;
+$btn-bgcolor: $secondary-bg-color !default;
+$btn-border-color: $secondary-border-color !default;
+$btn-hover-bgcolor: $secondary-bg-color-hover !default;
+$btn-hover-border-color: $secondary-border-color-hover !default;
+$btn-hover-color: rgba($secondary-text-color-hover) !default;
+$btn-focus-bgcolor: $secondary-bg-color-focus !default;
+$btn-focus-border-color: $secondary-border-color-hover !default;
+$btn-focus-color: rgba($secondary-text-color-focus) !default;
+$btn-active-outline: $btn-bgcolor 0 solid !default;
+$btn-focus-outline: $btn-bgcolor 0 solid !default;
+$btn-focus-outline-round: rgba($white) 0 solid !default;
+$btn-active-border-color: $secondary-border-color-pressed !default;
+$btn-active-bgcolor: $secondary-bg-color-pressed !default;
+$btn-active-color: rgba($secondary-text-color-pressed) !default;
+$btn-disabled-color: $secondary-text-color-disabled !default;
+$btn-disabled-bgcolor: $secondary-bg-color-disabled !default;
+$btn-disabled-border-color: $secondary-border-color-disabled !default;
+$btn-active-box-shadow: $shadow-sm !default;
+$btn-ripple-bgcolor: rgba($secondary-text-color, .24) !default;
+$btn-link-bgcolor: transparent !default;
+$btn-link-border-color: transparent !default;
+$btn-link-color: rgba($info-dark) !default;
+$btn-link-hover-color: rgba($info-dark) !default;
+$btn-link-disabled-bgcolor: transparent !default;
+
+//endnormal
+//primary
+$btn-primary-outline: $btn-bgcolor 0 solid !default;
+$btn-primary-color: rgba($primary-text) !default;
+$btn-primary-hover-color: rgba($primary-text-hover) !default;
+$btn-primary-focus-color: rgba($primary-text-focus) !default;
+$btn-primary-active-color: rgba($primary-text-pressed) !default;
+$btn-primary-bgcolor: rgba($primary-bg-color) !default;
+$btn-primary-hover-bgcolor: $primary-bg-color-hover !default;
+$btn-primary-active-bgcolor: $primary-bg-color-pressed !default;
+$btn-primary-border-color:  rgba($primary-border-color) !default;
+$btn-primary-hover-border-color: $primary-border-color-hover !default;
+$btn-primary-focus-border-color: $btn-primary-border-color !default;
+$btn-primary-active-border-color: rgba($primary-bg-color) !default;
+$btn-primary-focus-bgcolor: $primary-bg-color-focus !default;
+$btn-primary-disabled-bgcolor: $primary-bg-color-disabled !default;
+$btn-primary-disabled-color: $primary-text-disabled !default;
+$btn-primary-disabled-border-color: $primary-border-color-disabled !default;
+$btn-ripple-primary-bgcolor: rgba($primary-text, .24) !default;
+
+//endprimary
+//outline
+$btn-outline-color: rgba($secondary-outline) !default;
+$btn-outline-bgcolor: transparent !default;
+$btn-outline-hover-bgcolor: rgba($secondary-outline, .08) !default;
+$btn-outline-hover-color: rgba($secondary-outline) !default;
+$btn-outline-focus-bgcolor: $btn-focus-bgcolor !default;
+$btn-outline-focus-color: $btn-focus-color !default;
+$btn-outline-active-color: $btn-outline-color !default;
+$btn-outline-active-bgcolor: rgba($secondary-outline, .12) !default;
+$btn-outline-border-color: rgba($info-outline-border) !default;
+$btn-outline-hover-border-color: rgba($info-outline-border) !default;
+$btn-outline-focus-border-color: $btn-outline-border-color !default;
+$btn-outline-default-focus-border-color: $btn-outline-border-color !default;
+$btn-outline-active-border-color: $btn-outline-border-color !default;
+$btn-outline-active-box-shadow: none !default;
+$btn-outline-disabled-bgcolor: $secondary-bg-color-disabled !default;
+$btn-outline-disabled-border-color: $success-border-color-disabled !default;
+$btn-outline-disabled-color: $secondary-text-color-disabled !default;
+$btn-outline-primary-color: $primary-outline !default;
+$btn-outline-primary-focus-bgcolor: $btn-primary-bgcolor !default;
+$btn-outline-primary-focus-color: rgba($white) !default;
+$btn-outline-success-color: $success-outline !default;
+$btn-outline-warning-color: $warning-outline !default;
+$btn-outline-danger-color: $danger-outline !default;
+$btn-outline-info-color: $info-outline !default;
+$btn-outline-primary-hover-bgcolor: rgba($btn-outline-primary-color, .08) !default;
+$btn-outline-success-hover-bgcolor: rgba($btn-outline-success-color, .08) !default;
+$btn-outline-warning-hover-bgcolor: rgba($btn-outline-warning-color, .08) !default;
+$btn-outline-danger-hover-bgcolor: rgba($btn-outline-danger-color, .08) !default;
+$btn-outline-info-hover-bgcolor: rgba($btn-outline-info-color, .08) !default;
+$btn-outline-primary-active-bgcolor: rgba($btn-outline-primary-color, .12) !default;
+$btn-outline-success-active-bgcolor: rgba($btn-outline-success-color, .12) !default;
+$btn-outline-warning-active-bgcolor: rgba($btn-outline-warning-color, .12) !default;
+$btn-outline-danger-active-bgcolor: rgba($btn-outline-danger-color, .12) !default;
+$btn-outline-info-active-bgcolor: rgba($btn-outline-info-color, .12) !default;
+
+//endoutline
+//flat
+$btn-flat-color: rgba($secondary-text-color) !default;
+$btn-flat-border: $btn-border !default;
+$btn-flat-border-color: $transparent !default;
+$btn-flat-hover-color: $btn-flat-color !default;
+$btn-flat-focus-color: $btn-focus-color !default;
+$btn-flat-active-color: $btn-active-color !default;
+$btn-flat-box-shadow: none !default;
+$btn-flat-active-bgcolor: $btn-active-bgcolor !default;
+$btn-flat-bgcolor: $transparent !default;
+$btn-flat-hover-bgcolor: rgba($secondary-text-color, .08) !default;
+$btn-flat-focus-bgcolor: $btn-flat-hover-bgcolor !default;
+$btn-flat-hover-border-color: none !default;
+$btn-flat-active-border-color: $btn-active-border-color !default;
+$btn-flat-focus-border-color: $btn-flat-hover-border-color !default;
+$btn-flat-active-box-shadow: none !default;
+$btn-flat-disabled-border-color: $transparent !default;
+$btn-flat-disabled-bgcolor: $transparent !default;
+$btn-flat-disabled-color: $btn-disabled-color !default;
+$btn-ripple-flat-bgcolor: rgba($secondary-text-color, .24) !default;
+$btn-ripple-flat-primary-bgcolor: rgba($primary-text, .24) !default;
+$btn-ripple-flat-success-bgcolor: rgba($success-text, .24) !default;
+$btn-ripple-flat-info-bgcolor: rgba($info-text, .24) !default;
+$btn-ripple-flat-warning-bgcolor: rgba($warning-text, .24) !default;
+$btn-ripple-flat-danger-bgcolor: rgba($danger-text, .24) !default;
+
+//endflat
+//success
+$btn-success-color: rgba($success-text) !default;
+$btn-success-bgcolor: rgba($success-bg-color) !default;
+$btn-success-hover-bgcolor: $success-bg-color-hover !default;
+$btn-success-focus-bgcolor: $success-bg-color-focus !default;
+$btn-success-active-bgcolor: $success-bg-color-pressed !default;
+$btn-success-border-color: rgba($success-border-color) !default;
+$btn-success-hover-border-color: $success-border-color-hover !default;
+$btn-success-focus-border-color: $btn-success-border-color !default;
+$btn-success-active-border-color: rgba($success-bg-color) !default;
+$btn-success-disabled-bgcolor: $success-bg-color-disabled !default;
+$btn-success-disabled-color: $success-text-disabled !default;
+$btn-success-disabled-border-color: $success-border-color-disabled !default;
+$btn-success-hover-color: rgba($success-text-hover) !default;
+$btn-success-focus-color: rgba($success-text-focus) !default;
+$btn-ripple-success-bgcolor: rgba($success-text, .24) !default;
+$btn-success-active-color: $btn-success-color !default;
+
+//endsuccess
+//warning
+$btn-warning-bgcolor: rgba($warning-bg-color) !default;
+$btn-warning-color: rgba($warning-text) !default;
+$btn-warning-hover-color: rgba($warning-text-hover) !default;
+$btn-warning-hover-bgcolor: $warning-bg-color-hover !default;
+$btn-warning-focus-bgcolor: $warning-bg-color-focus !default;
+$btn-warning-active-bgcolor: $warning-bg-color-pressed !default;
+$btn-warning-border-color: rgba($warning-border-color) !default;
+$btn-warning-hover-border-color: $warning-border-color-hover !default;
+$btn-warning-focus-border-color: $btn-warning-border-color !default;
+$btn-warning-focus-color: rgba($warning-text-focus) !default;
+$btn-warning-active-color: rgba($warning-text-pressed) !default;
+$btn-warning-active-border-color: rgba($warning-bg-color) !default;
+$btn-warning-disabled-bgcolor: $warning-bg-color-disabled !default;
+$btn-warning-disabled-color: $warning-text-disabled !default;
+$btn-warning-disabled-border-color: $warning-border-color-disabled !default;
+$btn-ripple-warning-bgcolor: rgba($warning-text, .24) !default;
+
+//endwarning
+//danger
+$btn-danger-color: rgba($danger-text) !default;
+$btn-danger-bgcolor: rgba($danger-bg-color) !default;
+$btn-danger-hover-bgcolor: $danger-bg-color-hover !default;
+$btn-danger-focus-bgcolor: $danger-bg-color-focus !default;
+$btn-danger-active-bgcolor: $danger-bg-color-pressed !default;
+$btn-danger-active-color: rgba($danger-text-pressed) !default;
+$btn-danger-border-color: rgba($danger-border-color) !default;
+$btn-danger-hover-border-color: $danger-border-color-hover !default;
+$btn-danger-focus-border-color: $btn-danger-border-color !default;
+$btn-danger-active-border-color: rgba($danger-bg-color) !default;
+$btn-danger-disabled-bgcolor: $danger-bg-color-disabled !default;
+$btn-danger-disabled-color: $warning-text-disabled !default;
+$btn-danger-disabled-border-color: $danger-border-color-disabled !default;
+$btn-danger-hover-color: rgba($danger-text-hover) !default;
+$btn-ripple-danger-bgcolor: rgba($danger-text, .24) !default;
+
+//enddanger
+//info
+$btn-info-bgcolor: rgba($info-bg-color) !default;
+$btn-info-color: rgba($info-text) !default;
+$btn-info-hover-bgcolor: $info-bg-color-hover !default;
+$btn-info-focus-bgcolor: $info-bg-color-focus !default;
+$btn-info-active-bgcolor: $info-bg-color-pressed !default;
+$btn-info-border-color: rgba($info-border-color) !default;
+$btn-info-hover-border-color: $info-border-color-hover !default;
+$btn-info-focus-border-color: $btn-info-border-color !default;
+$btn-info-active-border-color: rgba($info-bg-color) !default;
+$btn-info-disabled-bgcolor: $info-bg-color-disabled !default;
+$btn-info-disabled-color: $info-text-disabled !default;
+$btn-info-disabled-border-color: $info-border-color-disabled !default;
+$btn-info-active-color: rgba($info-text-pressed) !default;
+$btn-info-hover-color: rgba($info-text-hover) !default;
+$btn-ripple-info-bgcolor: rgba($info-text, .24) !default;
+
+//endinfo
+//round
+$btn-round-focus-color: rgba($secondary-text-color) !default;
+$btn-round-active-color: rgba($secondary-text-color-pressed) !default;
+$btn-round-bgcolor: $btn-bgcolor !default;
+$btn-round-border-color: $btn-border-color !default;
+$btn-round-color: $btn-color !default;
+$btn-round-hover-bgcolor: $btn-hover-bgcolor !default;
+$btn-round-hover-border-color: $btn-hover-border-color !default;
+$btn-round-hover-color: $btn-hover-color !default;
+
+//endround
+//flatprimary
+$btn-flat-primary-hover-bgcolor: rgba($primary-bg-color, .08) !default;
+$btn-flat-primary-border-color: $btn-flat-border-color !default;
+$btn-flat-primary-hover-border-color: none !default;
+$btn-flat-primary-active-border-color: $transparent !default;
+$btn-flat-primary-focus-border-color: $btn-flat-primary-border-color !default;
+$btn-flat-primary-disabled-border-color: $transparent !default;
+$btn-flat-primary-focus-bgcolor: rgba($primary-bg-color, .12) !default;
+$btn-flat-disabled-color: $secondary-text-color-disabled !default;
+$btn-flat-primary-disabled-color: $primary-text-disabled !default;
+$btn-flat-primary-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-primary-color: rgba($primary-bg-color) !default;
+$btn-flat-primary-hover-color: rgba($primary-bg-color) !default;
+$btn-flat-primary-focus-color: rgba($primary-bg-color) !default;
+$btn-flat-primary-active-color: rgba($primary-bg-color) !default;
+$btn-flat-primary-active-bgcolor: rgba($primary-bg-color, .12) !default;
+
+//endflatprimary
+//flatsuccess
+$btn-flat-success-color: rgba($success-bg-color) !default;
+$btn-flat-success-hover-color: rgba($success-bg-color) !default;
+$btn-flat-success-focus-color: rgba($success-bg-color) !default;
+$btn-flat-success-active-color: rgba($success-bg-color) !default;
+$btn-flat-success-active-bgcolor: rgba($success-bg-color, .12) !default;
+$btn-flat-success-disabled-color: $btn-success-disabled-color !default;
+$btn-flat-success-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-success-hover-bgcolor: rgba($success-bg-color, .08) !default;
+$btn-flat-success-border-color: $transparent !default;
+$btn-flat-success-hover-border-color: $transparent !default;
+$btn-flat-success-active-border-color: $transparent !default;
+$btn-flat-success-focus-border-color: $transparent !default;
+$btn-flat-success-disabled-border-color: $transparent !default;
+$btn-flat-success-focus-bgcolor: rgba($success-bg-color, .12) !default;
+
+//endflatsuccess
+//flatinfo
+$btn-flat-info-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-info-hover-bgcolor: rgba($info-bg-color, .08) !default;
+$btn-flat-info-border-color: $btn-flat-border-color !default;
+$btn-flat-info-hover-border-color: $btn-flat-info-border-color !default;
+$btn-flat-info-active-border-color: $btn-flat-info-border-color !default;
+$btn-flat-info-focus-border-color: $btn-flat-info-border-color !default;
+$btn-flat-info-disabled-border-color: $transparent !default;
+$btn-flat-info-focus-bgcolor: rgba($info-bg-color, .12) !default;
+$btn-flat-info-color: rgba($info-bg-color) !default;
+$btn-flat-info-disabled-color: $btn-info-disabled-color !default;
+$btn-flat-info-hover-color: rgba($info-bg-color) !default;
+$btn-flat-info-focus-color: rgba($info-bg-color) !default;
+$btn-flat-info-active-color: rgba($info-bg-color) !default;
+$btn-flat-info-active-bgcolor: rgba($info-bg-color, .12) !default;
+
+//endflatinfo
+//flatwarning
+$btn-flat-warning-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-warning-hover-bgcolor: rgba($warning-bg-color, .08) !default;
+$btn-flat-warning-border-color: $btn-flat-border-color !default;
+$btn-flat-warning-hover-border-color: $btn-flat-warning-border-color !default;
+$btn-flat-warning-active-border-color: $btn-flat-warning-border-color !default;
+$btn-flat-warning-focus-border-color: $btn-flat-warning-border-color !default;
+$btn-flat-warning-disabled-border-color: $transparent !default;
+$btn-flat-warning-focus-bgcolor: rgba($warning-bg-color, .12) !default;
+$btn-flat-warning-color: rgba($warning-bg-color) !default;
+$btn-flat-warning-disabled-color: $btn-warning-disabled-color !default;
+$btn-flat-warning-hover-color: rgba($warning-bg-color) !default;
+$btn-flat-warning-focus-color: rgba($warning-bg-color) !default;
+$btn-flat-warning-active-color: rgba($warning-bg-color) !default;
+$btn-flat-warning-active-bgcolor: rgba($warning-bg-color, .12) !default;
+
+//endflatwarning
+//flatdanger
+$btn-flat-danger-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-danger-hover-bgcolor: rgba($danger-bg-color, .08) !default;
+$btn-flat-danger-border-color: $btn-flat-border-color !default;
+$btn-flat-danger-hover-border-color: $btn-flat-danger-border-color !default;
+$btn-flat-danger-active-border-color: $btn-flat-danger-border-color !default;
+$btn-flat-danger-focus-border-color: $btn-flat-danger-border-color !default;
+$btn-flat-danger-disabled-border-color: $transparent !default;
+$btn-flat-danger-focus-bgcolor: rgba($danger-bg-color, .12) !default;
+$btn-flat-danger-color: rgba($danger-bg-color) !default;
+$btn-flat-danger-hover-color: rgba($danger-bg-color) !default;
+$btn-flat-danger-focus-color: rgba($danger-bg-color) !default;
+$btn-flat-danger-active-color: rgba($danger-bg-color) !default;
+$btn-flat-danger-active-bgcolor: rgba($danger-bg-color, .12) !default;
+$btn-flat-danger-disabled-color: $btn-danger-disabled-color !default;
+
+//endflatdanger
+//outlineprimary
+$btn-outline-primary-disabled-color: $primary-text-disabled !default;
+$btn-outline-primary-disabled-border-color: $success-border-color-disabled !default;
+$btn-outline-primary-hover-border-color: rgba($primary) !default;
+$btn-outline-primary-hover-bgcolor: $btn-primary-bgcolor !default;
+$btn-outline-primary-focus-border-color: rgba($primary) !default;
+$btn-outline-primary-active-border-color: rgba($primary) !default;
+
+//endoutlineprimay
+//outlinesuccess
+$btn-outline-success-disabled-color: $success-text-disabled !default;
+$btn-outline-success-disabled-border-color: $success-border-color-disabled !default;
+$btn-outline-success-hover-bgcolor: $btn-success-bgcolor !default;
+
+//endoutlinesuccess
+//outlineinfo
+$btn-outline-info-disabled-color: $info-text-disabled !default;
+$btn-outline-info-disabled-border-color: $success-border-color-disabled !default;
+
+//endoutlineinfo
+//outlinewarning
+$btn-outline-warning-disabled-color: $warning-text-disabled !default;
+$btn-outline-warning-disabled-border-color: $success-border-color-disabled !default;
+
+//endoutlinewarning
+//outlinedanger
+$btn-outline-danger-disabled-color: $danger-text-disabled !default;
+$btn-outline-danger-disabled-border-color: $success-border-color-disabled !default;
+
+//endoutlinedanger
+//size
+$btn-box-shadow: $shadow-sm !default;
+$btn-hover-focus-box-shadow: $shadow-md !default;
+$btn-flat-primary-disabled-bgcolor: $transparent !default;
+$btn-flat-success-disabled-bgcolor: $transparent !default;
+$btn-flat-info-disabled-bgcolor: $transparent !default;
+$btn-flat-warning-disabled-bgcolor: $transparent !default;
+$btn-flat-danger-disabled-bgcolor: $transparent !default;
+$btn-focus-box-shadow: none !default;
+
+// bootstrap5 theme variables
+$btn-primary-focus-box-shadow: $shadow-md !default;
+$btn-success-focus-box-shadow: $shadow-md !default;
+$btn-danger-focus-box-shadow: $shadow-md !default;
+$btn-info-focus-box-shadow: $shadow-md !default;
+$btn-warning-focus-box-shadow: $shadow-md !default;
+
+//endsize
+
+//Material 3
+$btn-keyboard-focus-box-shadow: $shadow-focus-ring1 !default;

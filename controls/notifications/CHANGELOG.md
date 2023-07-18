@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 21.1.35 (2023-03-23)
-
-### Message
-
-#### Bug Fixes
-
-- The issue with the "React state change value is now reflected in the React `Message` component content template" has been resolved.
-
 ## 20.3.47 (2022-09-29)
 
 ### Message

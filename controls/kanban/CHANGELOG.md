@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 22.1.39 (2023-07-18)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I476520`, `#I477525` - Now, dragging and dropping a card into an empty column works properly.
+
+## 22.1.34 (2023-06-21)
+
+### Kanban
+
+#### New Features
+
+- **Virtual Scrolling**: This feature allows users to load data on demand when scrolling through columns for a smoother experience with large datasets.
+
+## 21.1.39 (2023-04-11)
 
 ### Kanban
 

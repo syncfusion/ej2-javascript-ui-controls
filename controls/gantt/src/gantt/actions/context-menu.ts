@@ -115,15 +115,18 @@ export class ContextMenu {
         }
         switch (this.item) {
             case 'TaskInformation':
-                if (isNaN(Number(this.rowData.ganttProperties.rowUniqueID))) {
-                    this.parent.openEditDialog(this.rowData.ganttProperties.rowUniqueID);
-                } else {
-                    this.parent.openEditDialog(Number(this.rowData.ganttProperties.rowUniqueID));
+                if (!isNullOrUndefined(this.rowData)) {
+                    if (isNaN(Number(this.rowData.ganttProperties.rowUniqueID))) {
+                        this.parent.openEditDialog(this.rowData.ganttProperties.rowUniqueID);
+                    } else {
+                        this.parent.openEditDialog(Number(this.rowData.ganttProperties.rowUniqueID));
+                    }
                 }
                 break;
             case 'Above':
             case 'Below':
             case 'Child':
+                if (!isNullOrUndefined(this.rowData)) {
                 position = this.item;
                 data = extend({}, {}, this.rowData.taskData, true);
                 taskfields = this.parent.taskFields;
@@ -146,15 +149,25 @@ export class ContextMenu {
                     const rowIndex: number = this.parent.updatedRecords.indexOf(this.rowData);
                     this.parent.addRecord(data, position, rowIndex);
                 }
+            }
+            else if(this.parent.flatData.length === 0){
+                this.parent.addRecord()
+            }
                 break;
             case 'Milestone':
             case 'ToMilestone':
+                if (!isNullOrUndefined(this.rowData)) {
                 this.parent.convertToMilestone(this.rowData.ganttProperties.rowUniqueID);
+                } 
+                else if(this.parent.flatData.length === 0){
+                    this.parent.addRecord()
+                }
                 break;
             case 'DeleteTask':
                 this.parent.editModule.deleteRecord(this.rowData);
                 break;
             case 'ToTask':
+                if (!isNullOrUndefined(this.rowData)) {
                 data = extend({}, {}, this.rowData.taskData, true);
                 taskfields = this.parent.taskFields;
                 if (!isNullOrUndefined(taskfields.duration)) {
@@ -172,6 +185,7 @@ export class ContextMenu {
                     }
                 }
                 this.parent.updateRecordByID(data);
+            }
                 break;
             case 'Cancel':
                 this.parent.cancelEdit();
@@ -293,7 +307,7 @@ export class ContextMenu {
 
         const contextMenuClickDate: Date =
             this.parent.dataOperation.getEndDate(
-                startDate, splitTaskDuration, (this.parent.timelineSettings.bottomTier.unit !== "None") ? this.parent.timelineSettings.bottomTier.unit.toLocaleLowerCase() : this.parent.timelineSettings.topTier.unit.toLocaleLowerCase(), this.rowData, false
+                startDate, splitTaskDuration, (this.parent.timelineModule.customTimelineSettings.bottomTier.unit !== "None") ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit.toLocaleLowerCase() : this.parent.timelineModule.customTimelineSettings.topTier.unit.toLocaleLowerCase(), this.rowData, false
             );
         return contextMenuClickDate;
     }
@@ -330,7 +344,7 @@ export class ContextMenu {
             );
         }
         if ((isNullOrUndefined(args.gridRow) && isNullOrUndefined(args.chartRow)) || this.contentMenuItems.length === 0) {
-            if (!isNullOrUndefined(args.parentItem) && !isNullOrUndefined(menuElement)) {
+            if (!isNullOrUndefined(args.parentItem) && !isNullOrUndefined(menuElement) || ! isNullOrUndefined(closest(target, '.e-content')) ) {
                 args.cancel = false;
             } else {
                 args.cancel = true;
@@ -367,7 +381,7 @@ export class ContextMenu {
             args.disableItems = this.disableItems;
             args.hideItems = this.hideItems;
             args.hideChildItems = [];
-            if (args.rowData.level === 0 && this.parent.viewType === 'ResourceView') {
+            if (!isNullOrUndefined(args.rowData) && args.rowData.level === 0 && this.parent.viewType === 'ResourceView') {
                 args.cancel = true;
                 return;
             }
@@ -409,6 +423,9 @@ export class ContextMenu {
                     if (!this.parent.editSettings.allowEditing || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
                     }
+                    if(this.parent.flatData.length === 0){
+                        this.hideItems.push(item.text);
+                    }
                     break;
                 case 'Add':
                     if (!this.parent.editSettings.allowAdding || !this.parent.editModule) {
@@ -420,12 +437,12 @@ export class ContextMenu {
                     this.hideItems.push(item.text);
                     break;
                 case 'Convert':
-                    if (this.rowData.hasChildRecords) {
+                    if (!isNullOrUndefined(this.rowData) && this.rowData.hasChildRecords) {
                         this.hideItems.push(item.text);
                     } else if (!this.parent.editSettings.allowEditing || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
                     } else {
-                        if (!this.rowData.ganttProperties.isMilestone) {
+                        if ( !isNullOrUndefined(this.rowData) && !this.rowData.ganttProperties.isMilestone) {
                             subMenu.push(
                                 this.createItemModel(cons.content, 'ToMilestone', this.getLocale('toMilestone')));
                         } else {
@@ -434,11 +451,14 @@ export class ContextMenu {
                         }
                         item.items = subMenu;
                     }
+                    if(this.parent.flatData.length === 0){
+                        this.hideItems.push(item.text);
+                    }
                     break;
                 case 'DeleteDependency':
                     {
                         const items: ContextMenuItemModel[] = this.getPredecessorsItems();
-                        if (this.rowData.hasChildRecords) {
+                        if (!isNullOrUndefined(this.rowData) && this.rowData.hasChildRecords) {
                             this.hideItems.push(item.text);
                         } else if (!this.parent.editSettings.allowDeleting || items.length === 0 || !this.parent.editModule) {
                             this.updateItemVisibility(item.text);
@@ -450,6 +470,9 @@ export class ContextMenu {
                 case 'DeleteTask':
                     if (!this.parent.editSettings.allowDeleting || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
+                    }
+                    if(this.parent.flatData.length === 0){
+                        this.hideItems.push(item.text);
                     }
                     break;
                 case 'TaskMode':

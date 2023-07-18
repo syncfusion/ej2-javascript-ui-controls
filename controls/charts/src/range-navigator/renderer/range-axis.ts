@@ -51,12 +51,12 @@ export class RangeNavigatorAxis extends DateTime {
         chartAxis.skeletonType = control.skeletonType;
         chartAxis.isChart = false;
         if (control.valueType === 'DateTime') {
-            this.calculateDateTimeNiceInterval(
+            const interval: number = this.calculateDateTimeNiceInterval(
                 chartAxis, rect, chartAxis.doubleRange.start,
                 chartAxis.doubleRange.end, chartAxis.isChart
             );
             this.actualIntervalType = chartAxis.actualIntervalType;
-            this.findAxisLabels(chartAxis);
+            this.findAxisLabels(chartAxis, interval);
         }
         this.firstLevelLabels = chartAxis.visibleLabels;
         this.lowerValues = [];
@@ -106,7 +106,11 @@ export class RangeNavigatorAxis extends DateTime {
         if (control.enableGrouping && control.valueType === 'DateTime' && this.actualIntervalType !== 'Years') {
             secondaryAxis.visibleRange.interval = 1;
             secondaryAxis.visibleLabels = [];
-            this.findAxisLabels(secondaryAxis);
+            const interval: number = this.calculateDateTimeNiceInterval(
+                secondaryAxis, control.bounds, secondaryAxis.doubleRange.start,
+                secondaryAxis.doubleRange.end, secondaryAxis.isChart
+            );
+            this.findAxisLabels(secondaryAxis, interval);
             this.secondLevelLabels = secondaryAxis.visibleLabels;
             pointY = this.findLabelY(control, true);
             const border: string = this.placeAxisLabels(secondaryAxis, pointY, '_SecondaryLabel_', control, secondLevelElement);
@@ -141,12 +145,12 @@ export class RangeNavigatorAxis extends DateTime {
      *
      * @param {Axis} axis range axis
      */
-    private findAxisLabels(axis: Axis): void {
+    private findAxisLabels(axis: Axis, interval: number): void {
         axis.visibleLabels = [];
         let start: Date = new Date(axis.visibleRange.min);
         let nextInterval: number;
         let text: string;
-        const interval: number = this.rangeNavigator.interval ? this.rangeNavigator.interval : 1;
+        interval = this.rangeNavigator.interval ? this.rangeNavigator.interval : interval;
 
         switch (axis.actualIntervalType as RangeIntervalType) {
         case 'Years':
@@ -243,8 +247,8 @@ export class RangeNavigatorAxis extends DateTime {
         let pointY: number;
         const reference: number = control.bounds.y + control.bounds.height;
         const tickHeight: number = control.majorTickLines.height;
-        const textHeight: number = measureText('Quarter1 2011', control.labelStyle).height;
-        let padding: number = 8;
+        const textHeight: number = measureText('Quarter1 2011', control.labelStyle, control.themeStyle.axisLabelFont).height;
+        let padding: number = control.labelPosition === 'Inside' ? 3 : 8;
         if ((control.labelPosition === 'Outside' && control.tickPosition === 'Outside') || control.series.length === 0) {
             pointY = reference + tickHeight + padding + textHeight * 0.75;
         } else if (control.labelPosition === 'Inside' && control.tickPosition === 'Inside') {
@@ -280,13 +284,14 @@ export class RangeNavigatorAxis extends DateTime {
         let label: VisibleLabels;
         let prevLabel: VisibleLabels;
         let pointX: number;
+        const padding: number = 2;
         const rect: Rect = control.bounds;
         let border: string = '';
         let pointXGrid: number;
         const disabledColor: string = (control.disableRangeSelector) ? 'transparent' : null;
         let prevX: number = control.enableRtl ? (rect.x + rect.width) : rect.x;
         const intervalType: RangeIntervalType = axis.actualIntervalType as RangeIntervalType;
-        const intervalInTime: number = control.valueType === 'DateTime' ?
+        const intervalInTime: number = ((control.labelPlacement === 'Auto' && control.valueType === 'DateTime') || control.labelPlacement === 'BetweenTicks') ?
             maxLabels > 1 ? (axis.visibleLabels[1].value - axis.visibleLabels[0].value) :
                 (axis.visibleRange.max - axis.visibleLabels[0].value) / 2 : 0;
         if (control.valueType === 'DateTime' && (intervalType === 'Quarter' || intervalType === 'Weeks')) {
@@ -294,11 +299,17 @@ export class RangeNavigatorAxis extends DateTime {
         }
         for (let i: number = 0, len: number = maxLabels; i < len; i++) {
             label = axis.visibleLabels[i as number];
-            label.size = measureText(<string>label.text, axis.labelStyle);
-            if (control.secondaryLabelAlignment === 'Middle') {
+            label.size = measureText(<string>label.text, axis.labelStyle, control.themeStyle.axisLabelFont);
+            if ((control.secondaryLabelAlignment === 'Middle' || id.indexOf('_AxisLabel_') > -1)  && (control.labelPlacement === 'Auto' || control.labelPlacement === 'BetweenTicks')) {
                 pointX = (valueToCoefficient((label.value + intervalInTime / 2), axis) * rect.width) + rect.x;
             } else if ((id.indexOf('Secondary') > -1)) {
                 pointX = this.findAlignment(axis, i);
+            }
+            if (control.labelPlacement === 'OnTicks' && control.labelPosition === 'Inside') {
+                pointX = (valueToCoefficient(label.value, axis) * rect.width) + rect.x + label.size.width / 2 + padding;
+            }
+            else if (control.labelPlacement === 'OnTicks' && control.labelPosition === 'Outside') {
+                pointX = (valueToCoefficient(label.value, axis) * rect.width) + rect.x;
             }
             pointXGrid = (valueToCoefficient((label.value), axis) * rect.width) + rect.x;
 
@@ -332,7 +343,7 @@ export class RangeNavigatorAxis extends DateTime {
             //labelrender event
             const labelStyle: FontModel = control.labelStyle;
             const style: FontModel = {
-                size: labelStyle.size, color: disabledColor || labelStyle.color || control.themeStyle.labelFontColor,
+                size: labelStyle.size, color: disabledColor || labelStyle.color || control.themeStyle.axisLabelFont.color,
                 fontFamily: labelStyle.fontFamily,
                 fontStyle: labelStyle.fontStyle || control.labelStyle.fontStyle,
                 fontWeight: labelStyle.fontWeight || control.labelStyle.fontWeight,
@@ -357,7 +368,7 @@ export class RangeNavigatorAxis extends DateTime {
                 new TextOption(
                     this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text),
                 argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor,
-                labelElement) as HTMLElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
+                labelElement, null, null, null, null, null, null, null, null, null, null, control.themeStyle.axisLabelFont) as HTMLElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
             prevX = pointX;
             prevLabel = label;
         }
@@ -389,7 +400,7 @@ export class RangeNavigatorAxis extends DateTime {
 
         for (let i: number = 0; i < labelLength; i++) {
             currentX = (valueToCoefficient((labels[i as number].value + interval / 2), axis) * bounds.width) + bounds.x;
-            labels[i as number].size = measureText(<string>labels[i as number].text, axis.labelStyle);
+            labels[i as number].size = measureText(<string>labels[i as number].text, axis.labelStyle, control.themeStyle.axisLabelFont);
             //edgelabelPlacements
             if (i === 0 && currentX < bounds.x) {
                 currentX = bounds.x + labels[i as number].size.width / 2;

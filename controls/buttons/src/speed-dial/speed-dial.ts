@@ -472,9 +472,10 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * {% codeBlock src='speeddial/itemTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
 
     /**
      * Defines the display mode of speed dial action items.
@@ -545,9 +546,10 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * Defines a template content for popup of SpeedDial.
      *
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public popupTemplate: string;
+    public popupTemplate: string | Function;
 
     /**
      * Provides the options to customize the speed dial action buttons when mode of speed dial is radial
@@ -575,6 +577,14 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      */
     @Property(true)
     public visible: boolean;
+
+    /**
+     * Specifies whether the SpeedDial acts as the primary.
+     *
+     * @default true
+     */
+    @Property(true)
+    public isPrimary: boolean;
 
     /**
      * Event callback that is raised before the speed dial popup is closed.
@@ -715,7 +725,8 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
             iconPosition: this.iconPosition,
             position: this.position,
             target: this.target,
-            visible: this.visible
+            visible: this.visible,
+            isPrimary: this.isPrimary
         });
         this.fab.appendTo(this.element);
         if ((this.items.length > 0) || this.popupTemplate) { this.createPopup(); }
@@ -808,11 +819,11 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         const templateFunction: Function = this.getTemplateString(this.popupTemplate);
         append(templateFunction({}, this, 'fabPopupTemplate', (this.element.id + 'popupTemplate'), this.isStringTemplate), templateContainer);
     }
-    private getTemplateString(template: string): Function {
-        let stringContent: string = '';
+    private getTemplateString(template: string | Function): Function {
+        let stringContent: string | Function = '';
         try {
-            const tempEle: HTMLElement = select(template);
-            if (tempEle) {
+            const tempEle: HTMLElement = select(template as string);
+            if (typeof template !== 'function' && tempEle) {
                 //Return innerHTML incase of jsrenderer script else outerHTML
                 stringContent = tempEle.tagName === 'SCRIPT' ? tempEle.innerHTML : tempEle.outerHTML;
             } else {
@@ -1576,7 +1587,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * @private
      */
     public onPropertyChanged(newProp: SpeedDialModel, oldProp?: SpeedDialModel): void {
-        const fabProplist: string[] = ['content', 'cssClass', 'disabled', 'enablePersistence', 'enableRtl', 'iconPosition', 'position', 'target', 'template', 'title', 'visible'];
+        const fabProplist: string[] = ['content', 'cssClass', 'disabled', 'enablePersistence', 'enableRtl', 'iconPosition', 'position', 'target', 'template', 'title', 'visible', 'isPrimary'];
         const fabModel: Object = extend({}, newProp);
         for (const prop of Object.keys(fabModel)) {
             if ((fabProplist).indexOf(prop) < 0) {

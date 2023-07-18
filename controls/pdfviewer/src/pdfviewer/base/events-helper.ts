@@ -1008,6 +1008,12 @@ export interface ExportStartEventArgs extends BaseEventArgs {
      */
     // eslint-disable-next-line
     formFieldData: any;
+    /**
+     * It allows you to control the execution of an exporting event. When set to true, it prevents further processing of the event, effectively stopping the exporting operation.
+     * 
+     * @default false
+     */
+    cancel: boolean;
 
 }
 

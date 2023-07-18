@@ -16,6 +16,7 @@ $spreadsheet-border-color: $border-light !default;
 $spreadsheet-border: $spreadsheet-border-width solid $spreadsheet-border-color !default;
 $select-all-bg-color: $content-bg-color-alt3 !default;
 $header-cell-font-size: $text-xs !default;
+$content-cell-padding: 0 2px !default;
 $open-dlg-file-alert-span-font-size: $text-xs !default;
 $goto-dlg-btn-font-size: $text-xs !default;
 $numformat-ddb-preview-font-size: $text-xs !default;
@@ -27,6 +28,8 @@ $spreadsheet-cpicker-fill-color-font-size: $font-icon-14 !default;
 $aggregate-list-font-size: $font-icon-16 !default;
 $bigger-spreadsheet-tbar-btn-icon-font-size: $font-icon-18 !default;
 $spreadsheet-drop-icon-font-size: $font-icon-12 !default;
+$define-name-input-height: 23px !default;
+$define-name-input-padding: 0 0 0 8px !default;
 
 //enddefault
 //selection
@@ -53,6 +56,7 @@ $sheet-tab-indicator-color: none !default;
 $sheet-tab-btn-icon-color: $flyout-text-color;
 $tab-text-color: $content-text-color;
 $select-icon-color: $icon-color !default;
+$cfmain-header-font-size: $text-sm !default;
 
 //End Tab
 //Formula bar
@@ -77,6 +81,7 @@ $bigger-formula-bar-drop-icon-font-size: $font-icon-18 !default;
 $dlg-list-border: $spreadsheet-border !default;
 $dlg-description-font-weight: $font-weight-medium !default;
 $dlg-content-padding: 18px !default;
+$dlg-content-padding-bottom: 0 !default;
 $dlg-category-margin-bottom: 5px !default;
 $dlg-min-height: 520px !default;
 $function-dlg-header-content-font-size: $text-base !default;
@@ -103,6 +108,7 @@ $bigger-cpicker-btn-width: 36px !default;
 $menu-extension-padding: 12px !default;
 $spreadsheet-ribbon-item-hover-border-color: transparent !default;
 $spreadsheet-ribbon-item-active-border-color: transparent !default;
+$spreadsheet-ribbon-item-active-background-color: $tbar-focus-bg !default;
 $font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 8px !default;
 
@@ -139,6 +145,7 @@ $bigger-find-tool-dlg-height: 50px !default;
 $bigger-find-goto-dlg-height: 256px !default;
 $find-popup-border-top-color: $border-light !default;
 $find-popup-border-color: $border-light !default;
+$find-popup-box-shadow: none !default;
 $bigger-find-tool-margin-bottom: 0 !default;
 $find-dlg-alert-span-font-size: $text-xs !default;
 $bigger-find-dlg-btn-font-size: $text-xs !default;

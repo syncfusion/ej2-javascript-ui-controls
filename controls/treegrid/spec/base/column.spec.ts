@@ -296,19 +296,19 @@ describe('Checkbox Column', () => {
   });
   it('Intremediate state for parent checkbox by child checkbox enabled', () => {
     (<HTMLElement>gridObj.getRows()[1].querySelectorAll('.e-treecheckselect')[0]).click();
-    expect((<ITreeData>gridObj.getCurrentViewRecords()[1]).checkboxState).toBe("check");
-    expect((<ITreeData>gridObj.getCurrentViewRecords()[0]).checkboxState).toBe("indeterminate");
+    expect((<ITreeData>gridObj.grid.currentViewData[1]).checkboxState).toBe("check");
+    expect((<ITreeData>gridObj.grid.currentViewData[0]).checkboxState).toBe("indeterminate");
   });
   it('Header checkbox check state', () => {
     (<HTMLElement>gridObj.getRows()[1].querySelectorAll('.e-treecheckselect')[0]).click();
     (<HTMLElement>gridObj.element.querySelectorAll('.e-treeselectall')[0]).click();
-    expect((<ITreeData>gridObj.getCurrentViewRecords()[0]).checkboxState).toBe("check");
-    expect((<ITreeData>gridObj.getCurrentViewRecords()[6]).checkboxState).toBe("check");
+    expect((<ITreeData>gridObj.grid.currentViewData[0]).checkboxState).toBe("check");
+    expect((<ITreeData>gridObj.grid.currentViewData[6]).checkboxState).toBe("check");
   });
   it('Header checkbox uncheck state', () => {
     (<HTMLElement>gridObj.element.querySelectorAll('.e-treeselectall')[0]).click();
-    expect((<ITreeData>gridObj.getCurrentViewRecords()[0]).checkboxState).toBe("uncheck");
-    expect((<ITreeData>gridObj.getCurrentViewRecords()[6]).checkboxState).toBe("uncheck");
+    expect((<ITreeData>gridObj.grid.currentViewData[0]).checkboxState).toBe("uncheck");
+    expect((<ITreeData>gridObj.grid.currentViewData[6]).checkboxState).toBe("uncheck");
   });
   afterAll(() => {
     destroy(gridObj);
@@ -837,6 +837,64 @@ describe('EJ2-65931- Template column with Stacked Header not working properly', 
     expect(gridObj.getCellFromIndex(3,2).classList.contains("e-templatecell")).toBe(true);
     expect(gridObj.getCellFromIndex(4,2).classList.contains("e-templatecell")).toBe(true);
 
+    });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('832273- Resolved sub stacked Header with resizing script error issue', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: stackedData,
+        allowPaging: true,
+        childMapping: 'subtasks',
+        height: 350,
+        treeColumnIndex: 1,
+        pageSettings: { pageCount: 5 },
+        allowResizing:true,
+        columns: [
+          { field: 'orderID', headerText: 'Order ID', textAlign: 'Right', width: 90 },
+          {
+            headerText: 'To piping process',
+            textAlign: 'Center',
+            columns: [
+              {
+                headerText: '1st',
+                textAlign: 'Center',
+                columns: [
+                  {
+                    field: 'orderName',
+                    headerText: 'Order Name',
+                    textAlign: 'Left',
+                    width: 170,
+                  },
+                  {
+                    field: 'shipMentCategory',
+                    headerText: 'Shipment Category',
+                    textAlign: 'Left',
+                    width: 150,
+                  },
+                  { field: 'units', headerText: 'Units', textAlign: 'Left', width: 80, columns:[
+                      {
+                          field: 'unitPrice', headerText: 'Price per unit',  type: 'number', width: 120, textAlign: 'Right' 
+                      },
+                      { field: 'price', headerText: 'Total Price', width: 115,  type: 'number', textAlign: 'Right' }
+                  ] },
+                ],
+              },
+            ],
+          },
+        ]
+      },
+      done
+    );
+  });
+  it('Stacked header with resizing rendering check', () => {
+      expect(gridObj.getCurrentViewRecords().length == 12).toBe(true);
     });
 
   afterAll(() => {

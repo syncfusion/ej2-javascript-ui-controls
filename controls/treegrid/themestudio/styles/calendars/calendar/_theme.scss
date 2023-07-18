@@ -270,13 +270,14 @@
         #{if(&, '&', '*')} td:focus span.e-day {
           @if $skin-name != 'Material3' {
             background-color: $calendar-focus-bg-color;
+            color: $calendar-text-color;
           }
           @if $skin-name == 'Material3' {
             background: $calendar-focus-bg-color;
+            color: $calendar-text-color-focus;
           }
           border: $calendar-focus-border-color;
           border-radius: $calendar-border-radius;
-          color: $calendar-text-color;
           @if ($skin-name == 'FluentUI') {
             border-radius: $calendar-border-selected-radius;
           }

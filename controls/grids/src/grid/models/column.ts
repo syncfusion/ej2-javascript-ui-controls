@@ -128,15 +128,17 @@ export class Column {
      * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
      *
      * @default null
+     * @aspType string
      */
-    public template: string;
+    public template: string | Function;
 
     /**
      * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
      *
      * @default null
+     * @aspType string
      */
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
 
     /**
      * You can use this property to freeze selected columns in grid
@@ -380,8 +382,10 @@ export class Column {
      * @hidden
      * Defines the commands column template as string or HTML element ID which is used to add
      * customized command buttons in each cells of the column.
+     * 
+     * @aspType string
      */
-    public commandsTemplate: string;
+    public commandsTemplate: string | Function;
 
     /**
      * `commands` provides an option to display command buttons in every cell.
@@ -412,7 +416,7 @@ export class Column {
      * @default null
      * @aspIgnore
      */
-    public editTemplate: string;
+    public editTemplate: string | Function;
 
     /**
      * Defines the filter template/UI that used as filter for a particular column.
@@ -421,7 +425,7 @@ export class Column {
      * @default null
      * @aspIgnore
      */
-    public filterTemplate: string;
+    public filterTemplate: string | Function;
     /** @hidden */
     public toJSON: Function;
 
@@ -631,6 +635,7 @@ export class Column {
             //Refresh the react columnTemplates on state change
             if (this.parent && this.parent.isReact) {
                 if (keys[parseInt(i.toString(), 10)] === 'template') {
+                    this.templateFn = templateCompiler(column[keys[parseInt(i.toString(), 10)]]);
                     this.parent.refreshReactColumnTemplateByUid(this.uid, true);
                 } else if (keys[parseInt(i.toString(), 10)] === 'headerTemplate') {
                     this.headerTemplateFn = templateCompiler(column[keys[parseInt(i.toString(), 10)]]);
@@ -834,15 +839,17 @@ export interface ColumnModel {
      * It accepts either [template string](../../common/template-engine/) or HTML element ID.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Defines the column template as string or HTML element ID which is used to add customized element in the column header.
      *
      * @default null
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * You can use this property to freeze selected columns in grid.
@@ -1173,8 +1180,10 @@ export interface ColumnModel {
      * @hidden
      * Defines the commands column template as string or HTML element ID which is used to add
      * customized command buttons in each cells of the column.
+     * 
+     * @aspType string
      */
-    commandsTemplate?: string;
+    commandsTemplate?: string | Function;
 
     /**
      * `commands` provides an option to display command buttons in every cell.
@@ -1227,7 +1236,7 @@ export interface ColumnModel {
      *
      * @aspIgnore
      */
-    editTemplate?: string;
+    editTemplate?: string | Function;
 
     /**
      * Defines the filter template/UI that used as filter for a particular column.
@@ -1235,7 +1244,7 @@ export interface ColumnModel {
      *
      * @aspIgnore
      */
-    filterTemplate?: string;
+    filterTemplate?: string | Function;
 
     /**
      * Defines the mapping column name of the foreign data source.

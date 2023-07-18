@@ -1,5 +1,5 @@
 import * as CONSTANT from './../base/constant';
-import { append, detach, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { append, detach, createElement, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
 import { selfClosingTags } from '../../common/config';
 import { getLastTextNode } from '../../common/util';
@@ -478,8 +478,12 @@ export class DOMNode {
         let end: Element = this.parent.querySelector('.' + markerClassName.endSelection);
         let startTextNode: Element;
         let endTextNode: Element;
-        if (start.textContent === '' && isNullOrUndefined(end) && action !== 'tab') {
-            if (start.childNodes.length === 1 && start.childNodes[0].nodeName === 'BR') {
+        if (start.textContent === '' && isNOU(end) && action !== 'tab') {
+            if (isNOU(action) && save.range.startContainer.nodeType === 1 &&
+                (save.range.startContainer as HTMLElement).querySelectorAll('audio,video,image').length === 0)  {
+                start.innerHTML = '<br>';
+            }
+            else if (start.childNodes.length === 1 && start.childNodes[0].nodeName === 'BR') {
                 start.innerHTML = '&#65279;&#65279;<br>';
             } else {
                 start.innerHTML = '&#65279;&#65279;';
@@ -564,7 +568,7 @@ export class DOMNode {
                 const markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
                 markerStart.appendChild(start);
             } else {
-                if (start.nodeType !== 3 && start.nodeName !== '#text') {
+                if (start.nodeType !== 3 && start.nodeName !== '#text' && start.nodeName !== 'BR') {
                     const marker: string = this.marker(markerClassName.startSelection, '');
                     append([this.parseHTMLFragment(marker)], start);
                 } else {
@@ -614,7 +618,7 @@ export class DOMNode {
                 if (start.textContent === '') {
                     const tdNode: NodeListOf<HTMLElement> = start.querySelectorAll('td');
                     start = tdNode[tdNode.length - 1];
-                    start = !isNullOrUndefined(start.childNodes[0]) ? start.childNodes[0] as Element : start;
+                    start = !isNOU(start.childNodes[0]) ? start.childNodes[0] as Element : start;
                 } else {
                     let lastNode: Node = start.lastChild;
                     while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text' &&
@@ -765,7 +769,7 @@ export class DOMNode {
                 }
                 parentNode = this.blockParentNode(endNode);
                 if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0 &&
-                (!isNullOrUndefined(parentNode.previousElementSibling) && parentNode.previousElementSibling.tagName !== 'IMG')) {
+                (!isNOU(parentNode.previousElementSibling) && parentNode.previousElementSibling.tagName !== 'IMG')) {
                     collectionNodes.push(parentNode);
                 }
             }

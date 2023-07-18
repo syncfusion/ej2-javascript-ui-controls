@@ -36,7 +36,7 @@ export function getMousePosition(pageX: number, pageY: number, element: Element)
  * 
  * @private
  */
-export function getElementSize(template: string, gauge: CircularGauge, parent: HTMLElement): Size {
+export function getElementSize(template: string | Function, gauge: CircularGauge, parent: HTMLElement): Size {
     let elementSize: Size; let element: HTMLElement;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const templateFn: any = getTemplateFunction(template, gauge);

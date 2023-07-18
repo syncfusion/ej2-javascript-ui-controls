@@ -2186,7 +2186,7 @@ export class DialogEdit {
         }
         for (let i: number = 0; i < childNodes.length; i++) {
             const div: HTMLElement = childNodes[i as number] as HTMLElement;
-            const inputElement: HTMLInputElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]');
+            const inputElement: HTMLInputElement | HTMLTextAreaElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]') || div.querySelector('textarea[id^="' + ganttObj.element.id + '"]');
             if (inputElement) {
                 const fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
                 const controlObj: CObject = <CObject>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
@@ -2204,7 +2204,7 @@ export class DialogEdit {
                         tasksData[fieldName as string] = (column.edit.read as Function)(inputElement, controlObj.value);
                     }
                 } else if (isCustom && column.editType === 'booleanedit') {
-                    if (inputElement.checked === true) {
+                    if (inputElement instanceof HTMLInputElement && inputElement.checked === true) {
                         tasksData[fieldName as string] = true;
                     } else {
                         tasksData[fieldName as string] = false;
@@ -2343,7 +2343,7 @@ export class DialogEdit {
         const ganttObj: Gantt = this.parent;
         const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>notesElement).ej2_instances[0];
         if (this.isEdit) {
-            if (ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode) {
+            if (ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode === false) {
                 this.parent.setRecordValue('notes', rte.getHtml(), this.rowData.ganttProperties, true);
             } else {
                 this.parent.setRecordValue('notes', rte.getText(), this.rowData.ganttProperties, true);

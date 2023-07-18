@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { TextAlignmentType } from '../utils/enum';import { Theme } from '../utils/theme';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { TextAlignmentType } from '../utils/enum';
 
 /**
  * Interface for a class Margin
@@ -80,7 +80,7 @@ export interface FontModel {
     /**
      * Opacity for the text.
      *
-     * @default 1
+     * @default null
      */
     opacity?: number;
 

@@ -422,6 +422,274 @@ describe('Linear gauge control', () => {
             gauge.axes[0].pointers[0].value = 50;
             gauge.theme ='Bootstrap4';
             gauge.refresh();
-        });  
+        });
+
+        it('Major tick Material3 theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#C4C7C5');
+            };
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('Minor Material3 theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MinorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#C4C7C5');
+            };
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('AxisLine Material3 theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                expect(svg.getAttribute('fill')).toBe('#C4C7C5');
+            };
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('pointer Material3 theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                expect(select("path#container_AxisIndex_0_MarkerPointer_0", args.gauge.element).getAttribute('fill')).toBe('#49454E');
+            };
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('Axis label Material3 theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let label: string = document.getElementById('container_Axis_0_Label_0').style.fill;
+                expect(label).toBe('rgb(30, 25, 43)');
+            };
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('Background Material3 theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_LinearGaugeBorder');
+                expect(svg.getAttribute('fill')).toBe('transparent');
+            };
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('Title Material3 theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let title: string = document.getElementById('container_LinearGaugeTitle').style.fill;
+                expect(title).toBe('rgb(28, 27, 31)');
+            };
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('Checking Material3 theme Tooltip', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_path');
+                expect(tooltipElement.getAttribute('fill')).toBe('#313033');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('Checking Material3 theme Tooltip opacity', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_path');
+                expect(tooltipElement.getAttribute('opacity') == '0.9' || tooltipElement.getAttribute('opacity') == '1').toBe(true);
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('Checking Material3 Tooltip', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
+                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#F4EFF4');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('Checking Material3 theme Tooltip text opacity', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
+                expect(tooltipElement.getAttribute('opacity')).toBe('1');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3';
+            gauge.refresh();
+        }); 
+        it('Checking Material3 theme Tooltip font family', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
+                expect(tooltipElement.getAttribute('font-family')).toBe('Roboto');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3';
+            gauge.refresh();
+        });
+        it('Checking Material3 theme Tooltip font size', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
+                expect(tooltipElement.getAttribute('font-size')).toBe('14px');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3';
+            gauge.refresh();
+        }); 
+        
+        it('Major tick Material3Dark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#938F99');
+            };
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('Minor Material3Dark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MinorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#938F99');
+            };
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('AxisLine Material3Dark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                expect(svg.getAttribute('fill')).toBe('#938F99');
+            };
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('pointer Material3Dark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                expect(select("path#container_AxisIndex_0_MarkerPointer_0", args.gauge.element).getAttribute('fill')).toBe('#CAC4D0');
+            };
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('Axis label Material3Dark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let label: string = document.getElementById('container_Axis_0_Label_0').style.fill;
+                expect(label).toBe('rgb(230, 225, 229)');
+            };
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('Background Material3Dark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_LinearGaugeBorder');
+                expect(svg.getAttribute('fill')).toBe('transparent');
+            };
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('Title Material3Dark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let title: string = document.getElementById('container_LinearGaugeTitle').style.fill;
+                expect(title).toBe('rgb(230, 225, 229)');
+            };
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('Checking Material3Dark theme Tooltip', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_path');
+                expect(tooltipElement.getAttribute('fill')).toBe('#E6E1E5');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('Checking Material3Dark theme Tooltip opacity', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_path');
+                expect(tooltipElement.getAttribute('opacity') == '0.9' || tooltipElement.getAttribute('opacity') == '1').toBe(true);
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('Checking Material3Dark Tooltip', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
+                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#313033');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('Checking Material3Dark theme Tooltip text opacity', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
+                expect(tooltipElement.getAttribute('opacity')).toBe('1');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        }); 
+        it('Checking Material3Dark theme Tooltip font family', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
+                expect(tooltipElement.getAttribute('font-family')).toBe('Roboto');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        });
+        it('Checking Material3Dark theme Tooltip font size', () => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
+                tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
+                expect(tooltipElement.getAttribute('font-size')).toBe('14px');
+                trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
+            };
+            gauge.tooltip.enable = true;
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.theme ='Material3Dark';
+            gauge.refresh();
+        }); 
     });
     });

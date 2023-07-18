@@ -295,8 +295,8 @@ export class PolarRadarPanel extends LineBase {
                                      anchor, axis.visibleLabels[i as number].text);
 
             textElement(
-                chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
-                false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas
+                chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabelFont.color, labelElement,
+                false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisLabelFont
             );
         }
         if (!this.chart.enableCanvas) {
@@ -538,13 +538,13 @@ export class PolarRadarPanel extends LineBase {
                 const textLength: number = originalText.length;
                 for (let i: number = textLength - 1; i >= 0; --i) {
                     trimText = originalText.substring(0, i) + '...';
-                    size = measureText(trimText, axis.labelStyle).width;
+                    size = measureText(trimText, axis.labelStyle, this.chart.themeStyle.axisLabelFont).width;
                     if (pointX === chartWidth / 2 ? (pointX - size / 2 >= 0 && pointX + size / 2 <= chartWidth) :
                         ((labelPosition === 'Outside' && ((pointX >= chartWidth / 2 && pointX + size <= chartWidth) ||
                         (pointX <= chartWidth / 2 && pointX - size >= 0))) || (labelPosition === 'Inside' &&
                         (pointX + size <= chartWidth / 2 || pointX - size >= chartWidth / 2)))) {
                         labelText = i === textLength - 1 ? originalText : trimText;
-                        label.size.width = measureText(labelText, axis.labelStyle).width;
+                        label.size.width = measureText(labelText, axis.labelStyle, this.chart.themeStyle.axisLabelFont).width;
                         label.text = labelText;
                         break;
                     }
@@ -555,7 +555,7 @@ export class PolarRadarPanel extends LineBase {
             if (i === 0) {
                 firstLabelX = pointX;
             } else if (i === axis.visibleLabels.length - 1 && axis.valueType !== 'Category') {
-                lastLabelX = measureText(labelText, axis.labelStyle).height;
+                lastLabelX = measureText(labelText, axis.labelStyle, this.chart.themeStyle.axisLabelFont).height;
                 lastLabelX += pointX;
                 labelText = (lastLabelX > firstLabelX) ? '' : labelText;
             }
@@ -578,7 +578,7 @@ export class PolarRadarPanel extends LineBase {
                 if (isIntersect) {
                     const width: number = this.getAvailableSpaceToTrim(legendRect, labelRegions[i as number]);
                     if (width > 0) {
-                        labelText = textTrim(width, axis.visibleLabels[i as number].originalText, axis.labelStyle);
+                        labelText = textTrim(width, axis.visibleLabels[i as number].originalText, axis.labelStyle, this.chart.themeStyle.axisLabelFont);
                         isIntersect = false;
                     }
                 }
@@ -589,8 +589,8 @@ export class PolarRadarPanel extends LineBase {
             }
             this.visibleAxisLabelRect.push(labelRegions[i as number]);
             textElement(
-                chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
-                false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas
+                chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabelFont.color, labelElement,
+                false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisLabelFont
             );
         }
         if (!this.chart.enableCanvas) {

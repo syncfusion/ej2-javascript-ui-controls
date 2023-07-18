@@ -399,6 +399,21 @@
     content: '\e353';
     font-family: 'e-icons';
   }
+
+  .e-de-e-paragraph-style-mark::before{
+    content: '\e353';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-character-style-mark::before{
+    content: '\e980';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-linked-style-mark::before{
+    content: '\e981';
+    font-family: 'e-icons';
+  }
   
   .e-de-ctnr-columns::before {
     content: '\e968';

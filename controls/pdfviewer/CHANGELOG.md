@@ -2,6 +2,129 @@
 
 ## [Unreleased]
 
+## 22.1.39 (2023-07-18)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I476124` - Now, able to cut, copy and paste the comments on the comment panel using keyboard shortcuts.
+- `#I475392` - Now, `Ctrl + Z` does not removes the entire comment text while editing the comment.
+- `#I478671` - Now, annotations have been rendered and no script error occurred while loading the given document by setting the enableMeasureAnnotation to false.
+- `#I464868` - Now, we can automatically select the placeholder text in the comment panel for the FreeText annotation without having to set the defaultText in freeTextSettings.
+- `#I480522` - Now, the deleted imported annotations do not appear when we resize the PDF Viewer.
+- `#F182930` - Now, the script error no longer occurs when updating the values for the signature and initial fields that have the same name, which are found in pages that are not being rendered.
+- `#I477780` - Now, we are able to add the annotations properly using the add annotation API.
+## 22.1.38 (2023-07-11)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I476114` - Now, the text selection is properly preserved in the comment panel for text markup annotation.
+- `#I470260` - Now, the signature content prints properly in the printed outputs.
+- `#I475929` - Now, the annotation's isReadonly behavior is working properly when the allowedInteractions set to Select and the isLock property is set to true.
+
+## 22.1.37 (2023-07-04)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I473387` - Now, the fontStyle object is properly preserved in the annotationSelect event argument if we apply strikeout after underline.
+- `#I472962` - Now, the isStrikeout property is properly preserved in the annotationSelect event argument when applying the underline programmatically.
+- `#I470103` - Now, the ink annotation mode is maintained when resizing the PDF Viewer container.
+- `#I473639` - Now, the ink annotation is preserved in the downloaded document when session storage exceeds in the application.
+- `#I473865` - Now, the content of the typed Handwritten signature position is properly preserved in downloaded document.
+
+## 22.1.36 (2023-06-28)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I832710` - Now, we can restrict the file download of export annotation and form fields.
+
+#### Bug Fixes
+
+- `#I470152` - Now, when making the form fields read-only, the background color is visible.
+- `#I473505` - Now, the PDF pages are rendered properly for the provided PDF file.
+- `#I472797` - Now, the wrap box for free text annotation automatically updates when changing the font size if the autofit property is set to true.
+- `#I473873` - Now, the content of the typed handwritten signature is properly preserved in the saved document.
+
+## 22.1.34 (2023-06-21)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I464829` - Now, we can select text in the comment panel using the mouse cursor.
+- `#I464868` - Now, the default placeholder text is automatically selected when the comment text box for free text annotation is in focus.
+- `#I430769` - Now, when the document is reloaded, exported, or imported into the PDF viewer, the order of the annotations is preserved.
+- `#I472757` - Now, the custom Stamp is not removed when downloading the document after undo and redo.
+
+#### New Features
+
+- `#I426363`, `F180068` – Provided the support for value property in the radio button and checkbox field.
+- `#I448261` – Exposed the API to load the number of pages on the initial loading.
+
+## 21.2.9 (2023-06-06)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I464832` - Now, we can able to edit the first comment of the text markup annotation.
+- `#I464832` - Now, the words within the comments are split for readability.
+- `#I464992` - Now, enabling the form designer toolbar programmatically activates the form designer mode.
+- `#I466770` - Now, able to edit the free text annotation content programmatically and the content does not change while exporting.
+- `#I465319` - Now, adding a free text annotation shows its content once in the comment panel.
+- `#I464819` - Now, web service not listening does not occur when loading the provided PDF file.
+
+## 21.2.8 (2023-05-30)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I464823` - Now, able to edit the annotation comments when cursor is placed in the textbox.
+- `#I464868` - Now, when double-clicking the free text annotation comment, the comment is focused.
+- `#I438900` - Now, double tap zooming is working after signing the signature field.
+- `#I438900` - Now, double tap zooming is working on iOS devices even if annotation module is not injected.
+- `#I467181` - Now, the tab key is working when we add PDF Viewer and input elements in the same page.
+- `#I467222` - Now, the `triggerAnnotationPropChange` event is not triggered multiple times when adding the free text annotation programmatically.
+- `#I464511` - Now, the content of the free text annotation does not changes when we click outside of it.
+- `#I463293` - Now, the form fields are placed properly while zoom in or zoom out in mobile device.
+
+## 21.2.5 (2023-05-16)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I460490` - Now, the signature style is saved when we save the typed signature option.
+- `#I460513` - Now, the exception does not occur when downloading the provided PDF file.
+- `#I459487` - Now, the script error does not occur when importing the values programmatically.
+- `#I461544` - Now, scrolling the multiline textbox field works when we set it to read-only.
+- `#I462652` - Now, the form field validation works properly for non-rendered pages.
+- `#I460704` - Now, the script error does not occur when pressing the delete key.
+
+## 21.2.4 (2023-05-09)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I426363`, `F180068` – Provided support for value property in the radio button and checkbox field.
+
+#### Bug Fixes
+
+- `#I456051` - Now, the stamp annotations are displayed correctly in the provided document.
+- `#I452436` - Now, the radio button and checkbox are added properly.
+- `#I403367` - Now, underlining and text selection are working properly in the provided document.
+- `#I456864` - Now, the download performance has been enhanced when downloading the provided document.
+- `#I458313` - Now, the add annotation API working fine when the annotation object is given as input.
+
 ## 21.2.3 (2023-05-03)
 
 ### PDF Viewer

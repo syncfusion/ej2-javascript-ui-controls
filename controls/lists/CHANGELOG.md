@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 22.1.34 (2023-06-21)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I463091` - Resolved the CSS override issue of `e-content` class name with other components and changed the `e-content` class name into `e-list-container`.
+
+## 21.2.9 (2023-06-06)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I466565` - The console error in the nested ListView component sample has been resolved.
+
+## 21.2.6 (2023-05-23)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I461648` - Issue with "Drag and drop on mobile browsers, it unable to drag an element to the topmost place in list box component" has been resolved.
+
 ## 21.1.41 (2023-04-18)
 
 ### ListBox

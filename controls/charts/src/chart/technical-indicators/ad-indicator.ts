@@ -48,7 +48,7 @@ export class AccumulationDistributionIndicator extends TechnicalAnalysis {
              * ADL = Previous ADL + Current Period's Money Flow Volume
              */
 
-            value = ((close - low) - (high - close)) / (high - low);
+            value = ((close - low) - (high - close)) / ((high - low) ? (high - low) : 1);
             /**
              * Sum is to calculate the Y values of the Accumulation distribution indicator
              */

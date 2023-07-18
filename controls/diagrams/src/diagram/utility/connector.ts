@@ -123,7 +123,7 @@ function terminateConnection(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let intermeditatePoints: PointModel[] = []; let segPoint: PointModel;
     let srcDir: Direction;
-    let tarDir: Direction; let minSpace: number = findMargin(element);
+    let tarDir: Direction; const minSpace: number = findMargin(element);
     const sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
     const targetMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
     const source: End = { corners: srcCorner, point: srcPoint, direction: srcDir, margin: sourceMargin };
@@ -150,7 +150,7 @@ function terminateConnection(
             if (element.segments.length > 0) {
                 let i: number = element.segments.length - 1;
                 while (i >= 0) {
-                    let seg: BezierSegment = element.segments[parseInt(i.toString(), 10)] as BezierSegment;
+                    const seg: BezierSegment = element.segments[parseInt(i.toString(), 10)] as BezierSegment;
                     if (seg.isInternalSegment) {
                         element.segments.pop();
                     }
@@ -421,101 +421,101 @@ function addPoints(element: Connector, source: End, target: End): PointModel[] {
 function findSegmentDirection(element: Connector, source: End, target: End, portDir: Direction): boolean {
     let update: boolean = false;
     switch (target.direction) {
-        case 'Left': if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined && (portDir === 'Right' &&
+    case 'Left': if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined && (portDir === 'Right' &&
             source.point.x > target.point.x && source.point.y >= source.corners.top &&
             source.point.y <= source.corners.bottom)
             || (((portDir === 'Bottom' && source.point.y > target.point.y) ||
                 (portDir === 'Top' && source.point.y < target.point.y)) &&
                 source.point.x >= source.corners.left && source.point.x <= source.corners.right)) {
-            source.direction = (portDir === 'Right') ? ((source.point.y > target.point.y) ? 'Top' : 'Bottom') :
-                (source.point.x < target.point.x ? 'Right' : 'Left');
-            update = true;
-        } else
-            if (source.point.x > target.point.x && (source.point.y > target.point.y || source.point.y < target.point.y)
+        source.direction = (portDir === 'Right') ? ((source.point.y > target.point.y) ? 'Top' : 'Bottom') :
+            (source.point.x < target.point.x ? 'Right' : 'Left');
+        update = true;
+    } else
+    if (source.point.x > target.point.x && (source.point.y > target.point.y || source.point.y < target.point.y)
                 && (!(target.corners.top > source.point.y && target.corners.bottom < source.point.y))) {
-                source.direction = 'Left';
-            } else if ((source.point.x < target.point.x && source.point.y > target.point.y) ||
+        source.direction = 'Left';
+    } else if ((source.point.x < target.point.x && source.point.y > target.point.y) ||
                 (source.point.x > target.point.x && (source.point.y <= target.point.y)
                     && ((target.corners.top < source.point.y && target.corners.center.y >= source.point.y)))) {
-                source.direction = 'Top';
-            } else if ((source.point.x < target.point.x && source.point.y < target.point.y) ||
+        source.direction = 'Top';
+    } else if ((source.point.x < target.point.x && source.point.y < target.point.y) ||
                 (source.point.x > target.point.x && (source.point.y > target.point.y)
                     && ((target.corners.bottom < source.point.y && target.corners.center.y > source.point.y)))) {
-                source.direction = 'Bottom';
-            } else if (source.point.y === target.point.y && source.point.x < target.point.x) {
-                source.direction = 'Right';
-            } break;
-        case 'Right': if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined &&
+        source.direction = 'Bottom';
+    } else if (source.point.y === target.point.y && source.point.x < target.point.x) {
+        source.direction = 'Right';
+    } break;
+    case 'Right': if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined &&
             ((portDir === 'Bottom' && source.point.y > target.point.y) ||
                 (portDir === 'Top' && source.point.y < target.point.y)) && source.point.x > target.point.x &&
             (source.point.x >= source.corners.left && source.point.x <= source.corners.right)) {
-            source.direction = (source.point.x > target.point.x) ? 'Left' : 'Right';
-            update = true;
-        } else if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined &&
+        source.direction = (source.point.x > target.point.x) ? 'Left' : 'Right';
+        update = true;
+    } else if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined &&
             portDir === 'Left' && source.point.x < target.point.x && (source.point.y >= source.corners.top &&
                 source.point.y <= source.corners.bottom)) {
-            source.direction = (source.point.y > target.point.y) ? 'Top' : 'Bottom';
-            update = true;
-        } else if (source.point.x < target.point.x && target.corners.top <= source.point.y
+        source.direction = (source.point.y > target.point.y) ? 'Top' : 'Bottom';
+        update = true;
+    } else if (source.point.x < target.point.x && target.corners.top <= source.point.y
             && target.corners.bottom >= source.point.y && source.point.y === target.point.y) {
-            source.direction = 'Top';
-        } else if (source.point.y > target.point.y && source.point.x > target.point.x) {
-            source.direction = 'Top';
-        } else if (source.point.y < target.point.y && source.point.x > target.point.x) {
-            source.direction = 'Bottom';
-        } else if (source.point.x < target.point.x && (source.point.y > target.point.y ||
+        source.direction = 'Top';
+    } else if (source.point.y > target.point.y && source.point.x > target.point.x) {
+        source.direction = 'Top';
+    } else if (source.point.y < target.point.y && source.point.x > target.point.x) {
+        source.direction = 'Bottom';
+    } else if (source.point.x < target.point.x && (source.point.y > target.point.y ||
             source.point.y < target.point.y)) {
-            source.direction = 'Right';
-        } else if (source.point.y === target.point.y && source.point.x > target.point.x) {
-            source.direction = 'Left';
-        } break;
-        case 'Top': if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined && (portDir === 'Bottom' &&
+        source.direction = 'Right';
+    } else if (source.point.y === target.point.y && source.point.x > target.point.x) {
+        source.direction = 'Left';
+    } break;
+    case 'Top': if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined && (portDir === 'Bottom' &&
             source.point.y > target.point.y && source.point.x >= source.corners.left &&
             source.point.x <= source.corners.right) || (((portDir === 'Right' && source.point.x > target.point.x) ||
                 (portDir === 'Left' && target.point.y > source.point.y && target.point.x > source.point.x)) &&
                 (source.point.y >= source.corners.top && source.point.y <= source.corners.bottom))) {
-            source.direction = (portDir === 'Bottom') ? ((source.point.x > target.point.x) ? 'Left' : 'Right') :
-                (source.point.y < target.point.y) ? 'Bottom' : 'Top';
-            update = true;
-        } else if (source.point.x === target.point.x && source.point.y < target.point.y) {
-            source.direction = 'Bottom';
-        } else if (source.point.y > target.point.y && source.point.x > target.corners.left &&
+        source.direction = (portDir === 'Bottom') ? ((source.point.x > target.point.x) ? 'Left' : 'Right') :
+            (source.point.y < target.point.y) ? 'Bottom' : 'Top';
+        update = true;
+    } else if (source.point.x === target.point.x && source.point.y < target.point.y) {
+        source.direction = 'Bottom';
+    } else if (source.point.y > target.point.y && source.point.x > target.corners.left &&
             source.point.x < target.corners.right) {
-            source.direction = 'Left';
-        } else if (source.point.y >= target.point.y) {
-            source.direction = 'Top';
-        } else if (source.point.y < target.point.y && source.point.x > target.point.x) {
-            source.direction = 'Left';
-        } else if (source.point.y < target.point.y && source.point.x < target.point.x) {
-            source.direction = 'Right';
-        } break;
-        case 'Bottom': if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined && ((((portDir === 'Right') ||
+        source.direction = 'Left';
+    } else if (source.point.y >= target.point.y) {
+        source.direction = 'Top';
+    } else if (source.point.y < target.point.y && source.point.x > target.point.x) {
+        source.direction = 'Left';
+    } else if (source.point.y < target.point.y && source.point.x < target.point.x) {
+        source.direction = 'Right';
+    } break;
+    case 'Bottom': if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined && ((((portDir === 'Right') ||
             (portDir === 'Left' && target.point.x > source.point.x)) && (source.point.y > target.point.y) &&
             source.point.y >= source.corners.top && source.point.y <= source.corners.bottom) ||
             (((portDir === 'Top' && source.point.y < target.point.y)) &&
                 (source.point.x >= source.corners.left && source.point.x <= source.corners.right)))) {
-            if (portDir === 'Right' || portDir === 'Left') {
-                source.direction = (source.point.y > target.point.y) ? 'Top' : 'Bottom';
-            } else {
-                source.direction = (source.point.x > target.point.x) ? 'Left' : 'Right';
-            }
-            update = true;
-        } else if (source.point.y < target.point.y && source.point.x > target.corners.left &&
+        if (portDir === 'Right' || portDir === 'Left') {
+            source.direction = (source.point.y > target.point.y) ? 'Top' : 'Bottom';
+        } else {
+            source.direction = (source.point.x > target.point.x) ? 'Left' : 'Right';
+        }
+        update = true;
+    } else if (source.point.y < target.point.y && source.point.x > target.corners.left &&
             target.corners.right > source.point.x) {
-            if (source.point.y < target.point.y && source.point.x > target.corners.left &&
+        if (source.point.y < target.point.y && source.point.x > target.corners.left &&
                 target.corners.center.x >= source.point.x) {
-                source.direction = 'Left';
-            } else if (source.point.y < target.point.y && source.point.x < target.corners.right &&
-                target.corners.center.x < source.point.x) {
-                source.direction = 'Right';
-            }
-        } else if (source.point.y > target.point.y && source.point.x > target.point.x) {
             source.direction = 'Left';
-        } else if (source.point.y > target.point.y && source.point.x < target.point.x) {
+        } else if (source.point.y < target.point.y && source.point.x < target.corners.right &&
+                target.corners.center.x < source.point.x) {
             source.direction = 'Right';
-        } else if (source.point.y <= target.point.y && (source.point.x > target.point.x || target.point.x > source.point.x)) {
-            source.direction = 'Bottom';
-        } break;
+        }
+    } else if (source.point.y > target.point.y && source.point.x > target.point.x) {
+        source.direction = 'Left';
+    } else if (source.point.y > target.point.y && source.point.x < target.point.x) {
+        source.direction = 'Right';
+    } else if (source.point.y <= target.point.y && (source.point.x > target.point.x || target.point.x > source.point.x)) {
+        source.direction = 'Bottom';
+    } break;
     }
     return update;
 }
@@ -975,16 +975,16 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
     if (srcPort !== undefined) {
         source.point = { x: srcPort.offsetX, y: srcPort.offsetY };
         switch (source.direction) {
-            case 'Bottom':
-            case 'Top':
-                // eslint-disable-next-line
-                source.point.y = source.point.y;
-                break;
-            case 'Left':
-            case 'Right':
-                // eslint-disable-next-line
-                source.point.x = source.point.x;
-                break;
+        case 'Bottom':
+        case 'Top':
+            // eslint-disable-next-line
+            source.point.y = source.point.y;
+            break;
+        case 'Left':
+        case 'Right':
+            // eslint-disable-next-line
+            source.point.x = source.point.x;
+            break;
         }
         if (ele.sourcePadding && !isInterSect) {
             if (tarPort) {
@@ -1011,16 +1011,16 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
             y: tarPort.offsetY
         };
         switch (target.direction) {
-            case 'Bottom':
-            case 'Top':
-                // eslint-disable-next-line
-                target.point.y = target.point.y;
-                break;
-            case 'Left':
-            case 'Right':
-                // eslint-disable-next-line
-                target.point.x = target.point.x;
-                break;
+        case 'Bottom':
+        case 'Top':
+            // eslint-disable-next-line
+            target.point.y = target.point.y;
+            break;
+        case 'Left':
+        case 'Right':
+            // eslint-disable-next-line
+            target.point.x = target.point.x;
+            break;
         }
         if (ele.targetPadding && !isInterSect) {
             target.point = addPaddingToConnector(ele, source, target, true);
@@ -1037,7 +1037,7 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
         let first: StraightSegmentModel | BezierSegmentModel;
         if (ele.type === 'Bezier') {
             //EJ2-67651 - Bezier segment points are static when we move the connector's source or target node.
-            if ((ele.bezierSettings.allowSegmentsReset || (ele.segments.length === 0 || 
+            if ((ele.bezierSettings.allowSegmentsReset || (ele.segments.length === 0 ||
                 (!Point.isEmptyPoint((ele.segments[ele.segments.length - 1] as BezierSegmentModel).point))))){
                 intermeditatePoints = findOrthoSegments(ele, source, target, undefined, lineDistribution);
                 intermeditatePoints = intermeditatePointsForStraight(ele, source, target);
@@ -1366,17 +1366,17 @@ function findIntermeditatePoints(
                     } else {
                         // EJ2-65063 - If point length is greater then 2 means then empty the last segment points and set it as two points instead of four points
                         if (j === point.length - 1 && point.length > 2 && ele.segments.length > 2) {
-                            let point2: PointModel;
                             // EJ2-69304 - Change the point calculation to work for all port combination
-                            point2 = { x: point[parseInt(j.toString(), 10)].x, y: source.point.y };
+                            const point2: PointModel = { x: point[parseInt(j.toString(), 10)].x, y: source.point.y };
                             // EJ2 - 65063 - Empty the segment points
                             seg.points = [];
                             // EJ2-69304 - Calculate the point for segment and manually push the point in segment point calculation
-                            seg.points.push(point[parseInt(j.toString(), 10)]);
                             seg.points.push(point2);
-                            let segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
-                            // EJ2-69304 - Assign the newly calculated point to the previous segment target point
-                            segment.points[1] = seg.points[1];
+                            seg.points.push(point[parseInt(j.toString(), 10)]);
+                            const segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
+                            // Bug 834713: Orthogonal connector routing is not proper, When allowNodeOverlap is Set to true.
+                            segment.points = segment.points.concat(seg.points);
+
                         } else {
                             seg.points.push(point[parseInt(j.toString(), 10)]);
                         }
@@ -1513,7 +1513,7 @@ function findOrthoSegments(ele: Connector, source: End, target: End, extra?: num
         /**
          * EJ2-56920-Option to adjust the distance between source node and target node.
          */
-        let margin : number = findMargin(ele);
+        const margin : number = findMargin(ele);
         source.margin = { left: margin, right: margin, top: margin, bottom: margin };
         target.margin = { left: margin, right: margin, top: margin, bottom: margin };
         seg = getBottomToBottomSegmentCount(ele, source, target);
@@ -1535,10 +1535,10 @@ function findOrthoSegments(ele: Connector, source: End, target: End, extra?: num
 }
 /**
  * Returns the margin of source node and the target node
- * 
+ *
  * @returns { number } - findMargin method .\
  * @param { Connector } element - provide the element value
- * @private 
+ * @private
  */
 
 export function findMargin(element:Connector):number{
@@ -1595,18 +1595,18 @@ export function findAngle(s: PointModel, e: PointModel): number {
 export function findPoint(cor: Corners, direction: string): PointModel {
     let point: PointModel;
     switch (direction) {
-        case 'Left':
-            point = cor.middleLeft;
-            break;
-        case 'Top':
-            point = cor.topCenter;
-            break;
-        case 'Right':
-            point = cor.middleRight;
-            break;
-        case 'Bottom':
-            point = cor.bottomCenter;
-            break;
+    case 'Left':
+        point = cor.middleLeft;
+        break;
+    case 'Top':
+        point = cor.topCenter;
+        break;
+    case 'Right':
+        point = cor.middleRight;
+        break;
+    case 'Bottom':
+        point = cor.bottomCenter;
+        break;
     }
     return point;
 }
@@ -1965,7 +1965,7 @@ function getRightToRightSegmentCount(element: Connector, sourceObj: End, targetO
     let pts: NoOfSegments;
     const diffX: number = sourceObj.point.x - targetObj.point.x;
     const diffY: number = sourceObj.point.y - targetObj.point.y;
-    let margin: number = findMargin(element);
+    const margin: number = findMargin(element);
     targetObj.margin = { left: margin, right: margin, top: margin, bottom: margin };
     sourceObj.margin = { left: margin, right: margin, top: margin, bottom: margin };
     if (sourceObj.corners.right >= targetObj.corners.right) {
@@ -2025,7 +2025,7 @@ function getRightToTopSegmentCount(element: Connector, source: End, target: End,
     let srcPort: DiagramElement = element.sourcePortWrapper;
     let right: PointModel = { x: Math.max(source.point.x, source.corners.right), y: source.point.y };
     let top: PointModel = { x: target.point.x, y: Math.min(target.point.y, target.corners.top) };
-    let margin: number = findMargin(element);
+    const margin: number = findMargin(element);
     let pts: NoOfSegments;
     target.margin = { left: margin, right: margin, top: margin, bottom: margin };
     source.margin = { top: margin, bottom: margin, left: margin, right: margin };
@@ -2078,7 +2078,7 @@ function getRightToTopSegmentCount(element: Connector, source: End, target: End,
  * @private
  */
 function getRightToBottomSegmentCount(element: Connector, source: End, target: End, swap?: boolean): NoOfSegments {
-    let margin: number = findMargin(element);
+    const margin: number = findMargin(element);
     source.margin = { left: margin, right: margin, top: margin, bottom: margin };
     target.margin = { left: margin, right: margin, top: margin, bottom: margin };
     let pts: NoOfSegments;
@@ -2137,7 +2137,7 @@ function getBottomToTopSegmentCount(element: Connector, source: End, target: End
         if (element.type !== 'Bezier') {
             margin = 0;
         } else if (target.corners.top - source.corners.bottom <= margin * 2 && target.corners.top - source.corners.bottom >= 5) {
-            margin = 0
+            margin = 0;
         }
     }
 
@@ -2172,7 +2172,7 @@ function getBottomToLeftSegmentCount(element: Connector, source: End, target: En
     let tarPort: DiagramElement = element.targetPortWrapper;
     //let bottom: PointModel = { x: source.point.x, y: Math.max(source.point.y, source.corners.bottom) };
     //let left: PointModel = { x: Math.min(target.point.x, target.corners.left), y: target.point.y };
-    let margin : number = findMargin(element);
+    const margin : number = findMargin(element);
     target.margin = { left: margin, right: margin, top: margin, bottom: margin };
     source.margin = { top: margin, bottom: margin, left: margin, right: margin };
     let pts: NoOfSegments;
@@ -2264,7 +2264,7 @@ function getBottomToBottomSegmentCount(element: Connector, source: End, target: 
 function getLeftToTopSegmentCount(element: Connector, source: End, target: End, swap?: boolean): NoOfSegments {
     let pts: NoOfSegments;
     let sourcePort: DiagramElement = element.sourcePortWrapper;
-    let margin: number = findMargin(element);
+    const margin: number = findMargin(element);
     target.margin = { left: margin, right: margin, top: margin, bottom: margin };
     source.margin = { top: margin, bottom: margin, left: margin, right: margin };
     let tarPort: DiagramElement = element.targetPortWrapper;
@@ -2319,7 +2319,7 @@ function getLeftToTopSegmentCount(element: Connector, source: End, target: End, 
 function getLeftToLeftSegmentCount(element: Connector, source: End, target: End): NoOfSegments {
     const srcPort: DiagramElement = element.sourcePortWrapper;
     const targetPort: DiagramElement = element.targetPortWrapper;
-    let margin: number = findMargin(element);
+    const margin: number = findMargin(element);
     source.margin = { left: margin, right: margin, top: margin, bottom: margin };
     target.margin = { left: margin, right: margin, top: margin, bottom: margin };
     const diffX: number = Math.round(Math.abs(source.point.x - target.point.x));
@@ -2370,7 +2370,7 @@ function getTopToTopSegmentCount(element: Connector, source: End, target: End): 
     const targetPort: DiagramElement = element.targetPortWrapper;
     const diffX: number = Math.round(Math.abs(source.point.x - target.point.x));
     const diffY: number = Math.round(Math.abs(source.point.y - target.point.y));
-    let margin: number = findMargin(element);
+    const margin: number = findMargin(element);
     target.margin = { left: margin, right: margin, top: margin, bottom: margin };
     source.margin = { top: margin, bottom: margin, left: margin, right: margin };
     let pts: NoOfSegments;
@@ -2427,41 +2427,41 @@ function addOrthoSegments(
     const tarCorner: Corners = tar.corners;
     let value: number;
     let extra: number = 20;
-    let source: End = { corners: sourceEnd.corners, point: sourceEnd.point, direction: sourceEnd.direction, margin: sourceEnd.margin };
-    let target: End = { corners: targetEnd.corners, point: targetEnd.point, direction: targetEnd.direction, margin: targetEnd.margin };
+    const source: End = { corners: sourceEnd.corners, point: sourceEnd.point, direction: sourceEnd.direction, margin: sourceEnd.margin };
+    const target: End = { corners: targetEnd.corners, point: targetEnd.point, direction: targetEnd.direction, margin: targetEnd.margin };
     if (source.direction !== target.direction || seg === NoOfSegments.Five) {
         if (source.direction === getOppositeDirection(target.direction) || seg === NoOfSegments.Three) {
             switch (source.direction) {
-                case 'Left':
-                    if (srcCorner.middleLeft.x > tarCorner.middleRight.x) {
-                        value = (srcCorner.middleLeft.x - tarCorner.middleRight.x) / 2;
-                        extra = !lineDistribution ? Math.min(extra, value) : value;
-                    }
-                    break;
-                case 'Right':
-                    if (srcCorner.middleRight.x < tarCorner.middleLeft.x) {
-                        value = (tarCorner.middleLeft.x - srcCorner.middleRight.x) / 2;
-                        extra = !lineDistribution ? Math.min(extra, value) : value;
-                    }
-                    break;
-                case 'Top':
-                    if (srcCorner.topCenter.y > tarCorner.bottomCenter.y) {
-                        value = (srcCorner.topCenter.y - tarCorner.bottomCenter.y) / 2;
-                        extra = !lineDistribution ? Math.min(extra, value) : value;
-                    }
-                    break;
-                case 'Bottom':
-                    if (srcCorner.bottomCenter.y < tarCorner.topCenter.y) {
-                        value = (tarCorner.topCenter.y - srcCorner.bottomCenter.y) / 2;
-                        extra = !lineDistribution ? Math.min(extra, value) : value;
-                    }
-                    break;
+            case 'Left':
+                if (srcCorner.middleLeft.x > tarCorner.middleRight.x) {
+                    value = (srcCorner.middleLeft.x - tarCorner.middleRight.x) / 2;
+                    extra = !lineDistribution ? Math.min(extra, value) : value;
+                }
+                break;
+            case 'Right':
+                if (srcCorner.middleRight.x < tarCorner.middleLeft.x) {
+                    value = (tarCorner.middleLeft.x - srcCorner.middleRight.x) / 2;
+                    extra = !lineDistribution ? Math.min(extra, value) : value;
+                }
+                break;
+            case 'Top':
+                if (srcCorner.topCenter.y > tarCorner.bottomCenter.y) {
+                    value = (srcCorner.topCenter.y - tarCorner.bottomCenter.y) / 2;
+                    extra = !lineDistribution ? Math.min(extra, value) : value;
+                }
+                break;
+            case 'Bottom':
+                if (srcCorner.bottomCenter.y < tarCorner.topCenter.y) {
+                    value = (tarCorner.topCenter.y - srcCorner.bottomCenter.y) / 2;
+                    extra = !lineDistribution ? Math.min(extra, value) : value;
+                }
+                break;
             }
         }
     }
 
     extra = adjustSegmentLength(srcCorner, source, extra);
-    let isBezier: boolean = element.type === 'Bezier';
+    const isBezier: boolean = element.type === 'Bezier';
     if (segLength) {
         extra = Math.max(extra, segLength);
     }
@@ -2495,26 +2495,26 @@ function addOrthoSegments(
  */
 function adjustSegmentLength(bounds: Rect | Corners, source: End, extra: number): number {
     switch (source.direction) {
-        case 'Left':
-            if (source.point.x > bounds.left) {
-                extra = (source.point.x - bounds.left) > extra ? ((source.point.x - bounds.left) + extra) : extra;
-            }
-            break;
-        case 'Right':
-            if (source.point.x < bounds.right) {
-                extra = (bounds.right - source.point.x) > extra ? ((bounds.right - source.point.x) + extra) : extra;
-            }
-            break;
-        case 'Top':
-            if (source.point.y > bounds.top) {
-                extra = (source.point.y - bounds.top) > extra ? ((source.point.y - bounds.top) + extra) : extra;
-            }
-            break;
-        case 'Bottom':
-            if (source.point.y < bounds.bottom) {
-                extra = (bounds.bottom - source.point.y) > extra ? ((bounds.bottom - source.point.y) + extra) : extra;
-            }
-            break;
+    case 'Left':
+        if (source.point.x > bounds.left) {
+            extra = (source.point.x - bounds.left) > extra ? ((source.point.x - bounds.left) + extra) : extra;
+        }
+        break;
+    case 'Right':
+        if (source.point.x < bounds.right) {
+            extra = (bounds.right - source.point.x) > extra ? ((bounds.right - source.point.x) + extra) : extra;
+        }
+        break;
+    case 'Top':
+        if (source.point.y > bounds.top) {
+            extra = (source.point.y - bounds.top) > extra ? ((source.point.y - bounds.top) + extra) : extra;
+        }
+        break;
+    case 'Bottom':
+        if (source.point.y < bounds.bottom) {
+            extra = (bounds.bottom - source.point.y) > extra ? ((bounds.bottom - source.point.y) + extra) : extra;
+        }
+        break;
     }
     return extra;
 }
@@ -2530,20 +2530,20 @@ function adjustSegmentLength(bounds: Rect | Corners, source: End, extra: number)
 export function orthoConnection2Segment(source: End, target: End): PointModel[] {
     let intermeditatePoints: PointModel[];
     switch (source.direction) {
-        case 'Left':
-        case 'Right':
-            // eslint-disable-next-line
-            let point1: PointModel = { x: target.point.x, y: source.point.y };
-            intermeditatePoints = (Point.equals(source.point, point1) || Point.equals(target.point, point1)) ?
-                [source.point, target.point] : [source.point, point1, target.point];
-            break;
-        case 'Top':
-        case 'Bottom':
-            // eslint-disable-next-line no-case-declarations
-            const point2: PointModel = { x: source.point.x, y: target.point.y };
-            intermeditatePoints = (Point.equals(source.point, point2) || Point.equals(target.point, point2)) ?
-                [source.point, target.point] : [source.point, point2, target.point];
-            break;
+    case 'Left':
+    case 'Right':
+        // eslint-disable-next-line
+        let point1: PointModel = { x: target.point.x, y: source.point.y };
+        intermeditatePoints = (Point.equals(source.point, point1) || Point.equals(target.point, point1)) ?
+            [source.point, target.point] : [source.point, point1, target.point];
+        break;
+    case 'Top':
+    case 'Bottom':
+        // eslint-disable-next-line no-case-declarations
+        const point2: PointModel = { x: source.point.x, y: target.point.y };
+        intermeditatePoints = (Point.equals(source.point, point2) || Point.equals(target.point, point2)) ?
+            [source.point, target.point] : [source.point, point2, target.point];
+        break;
     }
     return intermeditatePoints;
 }
@@ -2557,6 +2557,7 @@ export function orthoConnection2Segment(source: End, target: End): PointModel[] 
  * @param {End} target - provide the target  value.
  * @param {number} extra - provide the target  value.
  * @param {boolean} allow - provide the target  value.
+ * @param {boolean} isBezier - provide the isBezier boolean value.
  * @private
  */
 function orthoConnection3Segment(element: Connector, source: End, target: End, extra?: number, allow?: boolean, isBezier: boolean = false): PointModel[] {
@@ -2672,6 +2673,7 @@ function orthoConnection3Segment(element: Connector, source: End, target: End, e
  * @param {Connector} source - provide the source value.
  * @param {End} target - provide the target  value.
  * @param {End} extra - provide the extra  value.
+ * @param {boolean} isBezier - provide the isBezier  value.
  * @private
  */
 function orthoConnection5Segment(source: End, target: End, extra: number = 20, isBezier: boolean = false): PointModel[] {
@@ -2691,54 +2693,54 @@ function orthoConnection5Segment(source: End, target: End, extra: number = 20, i
     const tTop: number = target.corners.top - target.margin.top;
     let segmentValue: PointModel;
     switch (source.direction) {
-        case 'Left':
-            if ((sTop > tTop && sTop < tBottom || sBottom < tBottom && sBottom > tTop) &&
+    case 'Left':
+        if ((sTop > tTop && sTop < tBottom || sBottom < tBottom && sBottom > tTop) &&
                 sLeft > tLeft && sLeft <= tRight && extra >= 20) {
-                length = source.point.x - target.corners.left + length;
+            length = source.point.x - target.corners.left + length;
+        }
+        if (isBezier && source.direction === target.direction) {
+            if (source.corners.left > target.corners.left && source.corners.left - target.corners.right >= 20) {
+                length = (source.corners.left - target.corners.right) / 2;
             }
-            if (isBezier && source.direction == target.direction) {
-                if (source.corners.left > target.corners.left && source.corners.left - target.corners.right >= 20) {
-                    length = (source.corners.left - target.corners.right) / 2;
-                }
-            }
-            segmentValue = addLineSegment(source.point, length, 180);
-            break;
-        case 'Top':
-            if ((sLeft > tLeft && sLeft < tRight || sRight < tRight && sRight > tLeft) &&
+        }
+        segmentValue = addLineSegment(source.point, length, 180);
+        break;
+    case 'Top':
+        if ((sLeft > tLeft && sLeft < tRight || sRight < tRight && sRight > tLeft) &&
                 sTop > tTop && sTop <= tBottom && extra >= 20) {
-                length = source.point.y - target.corners.top + length;
+            length = source.point.y - target.corners.top + length;
+        }
+        if (isBezier && source.direction === target.direction) {
+            if (source.corners.top > target.corners.top && source.corners.top - target.corners.bottom >= 20) {
+                length = (source.corners.top - target.corners.bottom) / 2;
             }
-            if (isBezier && source.direction == target.direction) {
-                if (source.corners.top > target.corners.top && source.corners.top - target.corners.bottom >= 20) {
-                    length = (source.corners.top - target.corners.bottom) / 2;
-                }
-            }
-            segmentValue = addLineSegment(source.point, length, 270);
-            break;
-        case 'Right':
-            if ((sTop > tTop && sTop < tBottom || sBottom < tBottom && sBottom > tTop) &&
+        }
+        segmentValue = addLineSegment(source.point, length, 270);
+        break;
+    case 'Right':
+        if ((sTop > tTop && sTop < tBottom || sBottom < tBottom && sBottom > tTop) &&
                 sRight < tRight && sRight >= tLeft && extra >= 20) {
-                length = target.corners.right - source.point.x + length;
+            length = target.corners.right - source.point.x + length;
+        }
+        if (isBezier && source.direction === target.direction) {
+            if (source.corners.right < target.corners.right && target.corners.left - source.corners.right >= 20) {
+                length = (target.corners.left - source.corners.right) / 2;
             }
-            if (isBezier && source.direction == target.direction) {
-                if (source.corners.right < target.corners.right && target.corners.left - source.corners.right >= 20) {
-                    length = (target.corners.left - source.corners.right) / 2;
-                }
-            }
-            segmentValue = addLineSegment(source.point, length, 0);
-            break;
-        case 'Bottom':
-            if ((sLeft > tLeft && sLeft < tRight || sRight < tRight && sRight > tLeft) &&
+        }
+        segmentValue = addLineSegment(source.point, length, 0);
+        break;
+    case 'Bottom':
+        if ((sLeft > tLeft && sLeft < tRight || sRight < tRight && sRight > tLeft) &&
                 sBottom < tBottom && sBottom >= tTop && extra >= 20) {
-                length = target.corners.bottom - source.point.y + length;
+            length = target.corners.bottom - source.point.y + length;
+        }
+        if (isBezier && source.direction === target.direction) {
+            if (source.corners.bottom < target.corners.bottom && target.corners.top - source.corners.bottom >= 20) {
+                length = (target.corners.top - source.corners.bottom) / 2;
             }
-            if (isBezier && source.direction == target.direction) {
-                if (source.corners.bottom < target.corners.bottom && target.corners.top - source.corners.bottom >= 20) {
-                    length = (target.corners.top - source.corners.bottom) / 2;
-                }
-            }
-            segmentValue = addLineSegment(source.point, length, 90);
-            break;
+        }
+        segmentValue = addLineSegment(source.point, length, 90);
+        break;
     }
     intermeditatePoints = [
         source.point,
@@ -2771,6 +2773,7 @@ function orthoConnection5Segment(source: End, target: End, extra: number = 20, i
  * @param {string} prevDir - provide the target  value.
  * @param {PointModel[]} interPt - provide the target  value.
  * @param {number} e - provide the target  value.
+ * @param {boolean} isBezier - provide the target  value.
  * @private
  */
 function orthoConnection4Segment(source: End, target: End, prevDir: string, interPt: PointModel[], e: number = 20, isBezier: boolean = false): PointModel[] {
@@ -2809,79 +2812,87 @@ function orthoConnection4Segment(source: End, target: End, prevDir: string, inte
     } else {
         if (source.direction === 'Bottom') {
             if (isBezier) {
-                if (target.corners.top - source.corners.bottom < 20)
+                if (target.corners.top - source.corners.bottom < 20){
                     e = (target.corners.bottom - source.point.y) + 25;
+                }
             }
             else {
-                if (target.corners.top > source.corners.bottom && target.corners.top - source.corners.bottom < 20)
+                if (target.corners.top > source.corners.bottom && target.corners.top - source.corners.bottom < 20){
                     e = (target.corners.top - source.corners.bottom) / 2;
+                }
             }
         } else if (source.direction === 'Top') {
             if (isBezier) {
-                if (source.corners.top - target.corners.bottom < 20)
+                if (source.corners.top - target.corners.bottom < 20){
                     e = (source.point.y - target.corners.top) + 25;
+                }
             }
             else {
-                if (target.corners.bottom < source.corners.top && source.corners.top - target.corners.bottom < 20)
+                if (target.corners.bottom < source.corners.top && source.corners.top - target.corners.bottom < 20){
                     e = (source.corners.top - target.corners.bottom) / 2;
+                }
             }
         } else if (source.direction === 'Right') {
             if (isBezier) {
-                if (target.corners.left - source.corners.right < 20)
+                if (target.corners.left - source.corners.right < 20){
                     e = (target.corners.right - source.point.x) + 25;
+                }
             }
             else {
-                if (target.corners.left > source.corners.right && target.corners.left - source.corners.right < 20)
+                if (target.corners.left > source.corners.right && target.corners.left - source.corners.right < 20){
                     e = (target.corners.left - source.corners.right) / 2;
+                }
             }
         } else if (source.direction === 'Left') {
             if (isBezier) {
-                if (source.corners.left - target.corners.right < 20)
+                if (source.corners.left - target.corners.right < 20){
                     e = (source.point.x - target.corners.left) + 25;
+                }
             }
             else {
-                if (target.corners.right < source.corners.left && source.corners.left - target.corners.right < 20)
+                if (target.corners.right < source.corners.left && source.corners.left - target.corners.right < 20){
                     e = (source.corners.left - target.corners.right) / 2;
+                }
             }
         }
 
-        if (prevDir == target.direction && isBezier) {
-            if ((target.direction == 'Bottom' && source.point.y > target.point.y) ||
-                (target.direction == 'Top' && source.point.y < target.point.y)) {
-                if (source.direction == 'Left') {
+        if (prevDir === target.direction && isBezier) {
+            if ((target.direction === 'Bottom' && source.point.y > target.point.y) ||
+                (target.direction === 'Top' && source.point.y < target.point.y)) {
+                if (source.direction === 'Left') {
                     e = getLeftLength(source, target, prevDir, 20);
                 }
-                else if (source.direction == 'Right') {
+                else if (source.direction === 'Right') {
                     e = getRightLength(source, target, 20, prevDir);
                 }
             }
-            else if ((target.direction == 'Right' && source.point.x > target.point.x) ||
-                (target.direction == 'Left' && source.point.x < target.point.x)) {
-                if (source.direction == 'Top') {
+            else if ((target.direction === 'Right' && source.point.x > target.point.x) ||
+                (target.direction === 'Left' && source.point.x < target.point.x)) {
+                if (source.direction === 'Top') {
                     e = getTopLength(source, target, prevDir, 20);
                 }
-                else if (source.direction == 'Bottom') {
+                else if (source.direction === 'Bottom') {
                     e = getBottomLength(source, target, 20, prevDir);
                 }
             }
         }
     }
     switch (source.direction) {
-        case 'Left':
-            e = isBezier ? e : getLeftLength(source, target, prevDir, e);
-            segmentValue = addLineSegment(source.point, e, 180);
-            break;
-        case 'Right':
-            e = isBezier ? e : getRightLength(source, target, e, prevDir);
-            segmentValue = addLineSegment(source.point, e, 0);
-            break;
-        case 'Top':
-            e = isBezier ? e : getTopLength(source, target, prevDir, e);
-            segmentValue = addLineSegment(source.point, e, 270);
-            break;
-        case 'Bottom':
-            e = isBezier ? e : getBottomLength(source, target, e, prevDir);
-            segmentValue = addLineSegment(source.point, e, 90);
+    case 'Left':
+        e = isBezier ? e : getLeftLength(source, target, prevDir, e);
+        segmentValue = addLineSegment(source.point, e, 180);
+        break;
+    case 'Right':
+        e = isBezier ? e : getRightLength(source, target, e, prevDir);
+        segmentValue = addLineSegment(source.point, e, 0);
+        break;
+    case 'Top':
+        e = isBezier ? e : getTopLength(source, target, prevDir, e);
+        segmentValue = addLineSegment(source.point, e, 270);
+        break;
+    case 'Bottom':
+        e = isBezier ? e : getBottomLength(source, target, e, prevDir);
+        segmentValue = addLineSegment(source.point, e, 90);
     }
     if (interPt !== undefined) {
         interPt.push(segmentValue);
@@ -2908,6 +2919,7 @@ function orthoConnection4Segment(source: End, target: End, prevDir: string, inte
  * @param {End} src - provide the src  value.
  * @param {End} tar - provide the tar  value.
  * @param {PointModel[]} points - provide the points  value.
+ * @param {boolean} isBezier - provide the isBezier  value.
  * @private
  */
 function getOrtho3Seg(sPt: PointModel, orientation: string, src: End, tar: End, points: PointModel[], isBezier: boolean): void {
@@ -2924,96 +2936,96 @@ function getOrtho3Seg(sPt: PointModel, orientation: string, src: End, tar: End, 
     let extra: number = 20;
     if (orientation === 'horizontal') {
         switch (tar.direction) {
-            case 'Left':
-                if (src.corners.right + src.margin.right < tar.corners.left - tar.margin.left &&
-                    (tar.corners.left - src.margin.right - src.corners.right > extra || (src.corners.top - src.margin.top <= tar.point.y &&
-                        src.corners.bottom + src.margin.bottom >= tar.point.y))) {
-                    if (isBezier && (src.direction === 'Top' || src.direction === 'Bottom')) {
-                        const gap: number = Math.abs(tar.corners.left - src.corners.right) / 2;
-                        extra = src.corners.right - sPt.x + gap;
-                    } else {
-                        const gap: number = Math.min(Math.abs(tar.corners.left - src.corners.right) / 2, 20);
-                        extra = src.corners.right - sPt.x + gap;
-                    }
+        case 'Left':
+            if (src.corners.right + src.margin.right < tar.corners.left - tar.margin.left &&
+                (tar.corners.left - src.margin.right - src.corners.right > extra || (src.corners.top - src.margin.top <= tar.point.y &&
+                    src.corners.bottom + src.margin.bottom >= tar.point.y))) {
+                if (isBezier && (src.direction === 'Top' || src.direction === 'Bottom')) {
+                    const gap: number = Math.abs(tar.corners.left - src.corners.right) / 2;
+                    extra = src.corners.right - sPt.x + gap;
                 } else {
-                    if ((src.direction === 'Top' && sPt.y > tar.point.y) || (src.direction === 'Bottom' && sPt.y < tar.point.y)) {
-                        extra = Math.min(tar.corners.left, sPt.x) - sPt.x - 20;
-                    } else if (sPt.x >= src.corners.left - src.margin.left && sPt.x <= src.corners.right + src.margin.right) {
-                        extra = Math.min(tar.corners.left, src.corners.left) - sPt.x - 20;
-                    } else {
-                        extra = tar.corners.left - sPt.x - 20;
-                    }
+                    const gap: number = Math.min(Math.abs(tar.corners.left - src.corners.right) / 2, 20);
+                    extra = src.corners.right - sPt.x + gap;
                 }
-                break;
-            case 'Right':
-                if (src.corners.left - src.margin.left > tar.corners.right + tar.margin.right &&
-                    (src.corners.left - src.margin.right - tar.corners.right > extra || (src.corners.top - src.margin.top <= tar.point.y &&
-                        src.corners.bottom + src.margin.bottom >= tar.point.y))) {
-                    if (isBezier && (src.direction === 'Top' || src.direction === 'Bottom')) {
-                        const gap: number = Math.abs(src.corners.left - tar.corners.right) / 2;
-                        extra = src.corners.left - sPt.x - gap;
-                    } else {
-                        const gap: number = Math.min(Math.abs(src.corners.left - tar.corners.right) / 2, 20);
-                        extra = src.corners.left - sPt.x - gap;
-                    }
+            } else {
+                if ((src.direction === 'Top' && sPt.y > tar.point.y) || (src.direction === 'Bottom' && sPt.y < tar.point.y)) {
+                    extra = Math.min(tar.corners.left, sPt.x) - sPt.x - 20;
+                } else if (sPt.x >= src.corners.left - src.margin.left && sPt.x <= src.corners.right + src.margin.right) {
+                    extra = Math.min(tar.corners.left, src.corners.left) - sPt.x - 20;
                 } else {
-                    if ((src.direction === 'Top' && sPt.y > tar.point.y) || (src.direction === 'Bottom' && sPt.y < tar.point.y)) {
-                        extra = Math.max(tar.corners.right, sPt.x) - sPt.x + 20;
-                    } else if (sPt.x >= src.corners.left - src.margin.left && sPt.x <= src.corners.right + src.margin.right) {
-                        extra = Math.max(tar.corners.right, src.corners.right) - sPt.x + 20;
-                    } else {
-                        extra = tar.corners.right - sPt.x + 20;
-                    }
+                    extra = tar.corners.left - sPt.x - 20;
                 }
-                break;
+            }
+            break;
+        case 'Right':
+            if (src.corners.left - src.margin.left > tar.corners.right + tar.margin.right &&
+                (src.corners.left - src.margin.right - tar.corners.right > extra || (src.corners.top - src.margin.top <= tar.point.y &&
+                    src.corners.bottom + src.margin.bottom >= tar.point.y))) {
+                if (isBezier && (src.direction === 'Top' || src.direction === 'Bottom')) {
+                    const gap: number = Math.abs(src.corners.left - tar.corners.right) / 2;
+                    extra = src.corners.left - sPt.x - gap;
+                } else {
+                    const gap: number = Math.min(Math.abs(src.corners.left - tar.corners.right) / 2, 20);
+                    extra = src.corners.left - sPt.x - gap;
+                }
+            } else {
+                if ((src.direction === 'Top' && sPt.y > tar.point.y) || (src.direction === 'Bottom' && sPt.y < tar.point.y)) {
+                    extra = Math.max(tar.corners.right, sPt.x) - sPt.x + 20;
+                } else if (sPt.x >= src.corners.left - src.margin.left && sPt.x <= src.corners.right + src.margin.right) {
+                    extra = Math.max(tar.corners.right, src.corners.right) - sPt.x + 20;
+                } else {
+                    extra = tar.corners.right - sPt.x + 20;
+                }
+            }
+            break;
         }
         point1 = addLineSegment(sPt, extra, 0);
         point2 = addLineSegment(point1, tar.point.y - sPt.y, 90);
         point3 = tar.point;
     } else if (orientation === 'vertical') {
         switch (tar.direction) {
-            case 'Top':
-                if (src.corners.bottom + src.margin.bottom < tar.corners.top - tar.margin.top &&
-                    (tar.corners.top - src.margin.top - src.corners.bottom > extra || (src.corners.left - src.margin.left <= tar.point.x &&
-                        src.corners.right + src.margin.right >= tar.point.x))) {
-                    if (isBezier && (src.direction === 'Right' || src.direction === 'Left')) {
-                        const gap: number = Math.abs(tar.corners.top - src.corners.bottom) / 2;
-                        extra = src.corners.bottom - sPt.y + gap;
-                    } else {
-                        const gap: number = Math.min(Math.abs(tar.corners.top - src.corners.bottom) / 2, 20);
-                        extra = src.corners.bottom - sPt.y + gap;
-                    }
+        case 'Top':
+            if (src.corners.bottom + src.margin.bottom < tar.corners.top - tar.margin.top &&
+                (tar.corners.top - src.margin.top - src.corners.bottom > extra || (src.corners.left - src.margin.left <= tar.point.x &&
+                    src.corners.right + src.margin.right >= tar.point.x))) {
+                if (isBezier && (src.direction === 'Right' || src.direction === 'Left')) {
+                    const gap: number = Math.abs(tar.corners.top - src.corners.bottom) / 2;
+                    extra = src.corners.bottom - sPt.y + gap;
                 } else {
-                    if ((src.direction === 'Left' && sPt.x > tar.point.x) || (src.direction === 'Right' && sPt.x < tar.point.x)) {
-                        extra = Math.min(tar.corners.top, sPt.y) - sPt.y - 20;
-                    } else if (sPt.y >= src.corners.top - src.margin.top && sPt.y <= src.corners.bottom + src.margin.bottom) {
-                        extra = Math.min(tar.corners.top, src.corners.top) - sPt.y - 20;
-                    } else {
-                        extra = tar.corners.top - sPt.y - 20;
-                    }
+                    const gap: number = Math.min(Math.abs(tar.corners.top - src.corners.bottom) / 2, 20);
+                    extra = src.corners.bottom - sPt.y + gap;
                 }
-                break;
-            case 'Bottom':
-                if (src.corners.top - src.margin.top > tar.corners.bottom + tar.margin.bottom &&
-                    (src.corners.top - src.margin.top - tar.corners.bottom > extra || (src.corners.left - src.margin.left <= tar.point.x &&
-                        src.corners.right + src.margin.right >= tar.point.x))) {
-                    if (isBezier && (src.direction === 'Right' || src.direction === 'Left')) {
-                        const gap: number = Math.abs(src.corners.top - tar.corners.bottom) / 2;
-                        extra = src.corners.top - sPt.y - gap;
-                    } else {
-                        const gap: number = Math.min(Math.abs(src.corners.top - tar.corners.bottom) / 2, 20);
-                        extra = src.corners.top - sPt.y - gap;
-                    }
+            } else {
+                if ((src.direction === 'Left' && sPt.x > tar.point.x) || (src.direction === 'Right' && sPt.x < tar.point.x)) {
+                    extra = Math.min(tar.corners.top, sPt.y) - sPt.y - 20;
+                } else if (sPt.y >= src.corners.top - src.margin.top && sPt.y <= src.corners.bottom + src.margin.bottom) {
+                    extra = Math.min(tar.corners.top, src.corners.top) - sPt.y - 20;
                 } else {
-                    if ((src.direction === 'Left' && sPt.x > tar.point.x) || (src.direction === 'Right' && sPt.x < tar.point.x)) {
-                        extra = Math.max(tar.corners.bottom, sPt.y) - sPt.y + 20;
-                    } else if (sPt.y >= src.corners.top - src.margin.top && sPt.y <= src.corners.bottom + src.margin.bottom) {
-                        extra = Math.max(tar.corners.bottom, src.corners.bottom) - sPt.y + 20;
-                    } else {
-                        extra = tar.corners.bottom - sPt.y + 20;
-                    }
+                    extra = tar.corners.top - sPt.y - 20;
                 }
-                break;
+            }
+            break;
+        case 'Bottom':
+            if (src.corners.top - src.margin.top > tar.corners.bottom + tar.margin.bottom &&
+                (src.corners.top - src.margin.top - tar.corners.bottom > extra || (src.corners.left - src.margin.left <= tar.point.x &&
+                    src.corners.right + src.margin.right >= tar.point.x))) {
+                if (isBezier && (src.direction === 'Right' || src.direction === 'Left')) {
+                    const gap: number = Math.abs(src.corners.top - tar.corners.bottom) / 2;
+                    extra = src.corners.top - sPt.y - gap;
+                } else {
+                    const gap: number = Math.min(Math.abs(src.corners.top - tar.corners.bottom) / 2, 20);
+                    extra = src.corners.top - sPt.y - gap;
+                }
+            } else {
+                if ((src.direction === 'Left' && sPt.x > tar.point.x) || (src.direction === 'Right' && sPt.x < tar.point.x)) {
+                    extra = Math.max(tar.corners.bottom, sPt.y) - sPt.y + 20;
+                } else if (sPt.y >= src.corners.top - src.margin.top && sPt.y <= src.corners.bottom + src.margin.bottom) {
+                    extra = Math.max(tar.corners.bottom, src.corners.bottom) - sPt.y + 20;
+                } else {
+                    extra = tar.corners.bottom - sPt.y + 20;
+                }
+            }
+            break;
         }
         point1 = addLineSegment(sPt, extra, 90);
         point2 = addLineSegment(point1, tar.point.x - sPt.x, 0);
@@ -3155,105 +3167,105 @@ function getBottomLength(source: End, target: End, segLength: number, prevDir: s
 function convertPointToBezierSegment(element: Connector, segCount: NoOfSegments, pts: PointModel[]): void {
     if (element.type === 'Bezier') {
         if(element.segments.length === 0){
-            let start: PointModel = pts[0];
-            let end: PointModel = pts[pts.length - 1];
+            const start: PointModel = pts[0];
+            const end: PointModel = pts[pts.length - 1];
             if (segCount === NoOfSegments.One) {
-                let distance: number = Math.min(20, Point.findLength(start, end) * 0.5);
-                let vector1: VectorModel = { angle: findAngle(start, end), distance: distance };
-                let vector2: VectorModel = { angle: findAngle(end, start), distance: distance };
-                let dir = Point.direction(start, end) as Direction;
-                let ori = dir == 'Left' || dir == 'Right' ? 'Horizontal' : 'Vertical';
+                const distance: number = Math.min(20, Point.findLength(start, end) * 0.5);
+                const vector1: VectorModel = { angle: findAngle(start, end), distance: distance };
+                const vector2: VectorModel = { angle: findAngle(end, start), distance: distance };
+                const dir = Point.direction(start, end) as Direction;
+                const ori = dir === 'Left' || dir === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, orientation: ori }, true);
                 (element.segments).push(segment);
             }
             else if (segCount === NoOfSegments.Two) {
-                let mid: PointModel = pts[1];
-                let vector1: VectorModel = { angle: findAngle(start, mid), distance: Point.findLength(start, mid) * 0.5 };
-                let vector2: VectorModel = { angle: findAngle(end, mid), distance: Point.findLength(end, mid) * 0.5 };
-                let dir = Point.direction(start, mid) as Direction;
-                let ori = dir == 'Left' || dir == 'Right' ? 'Horizontal' : 'Vertical';
+                const mid: PointModel = pts[1];
+                const vector1: VectorModel = { angle: findAngle(start, mid), distance: Point.findLength(start, mid) * 0.5 };
+                const vector2: VectorModel = { angle: findAngle(end, mid), distance: Point.findLength(end, mid) * 0.5 };
+                const dir = Point.direction(start, mid) as Direction;
+                const ori = dir === 'Left' || dir === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, orientation: ori }, true);
                 (element.segments).push(segment);
             }
             else if (segCount === NoOfSegments.Three) {
-                let mid1: PointModel = pts[1];
-                let mid2: PointModel = pts[pts.length - 2];
-                let mid: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
-                let vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
-                let vector2: VectorModel = { angle: findAngle(mid, mid1), distance: Point.findLength(mid, mid1) * 0.5 };
-                let dir1 = Point.direction(start, mid1) as Direction;
-                let ori1 = dir1 == 'Left' || dir1 == 'Right' ? 'Horizontal' : 'Vertical';
+                const mid1: PointModel = pts[1];
+                const mid2: PointModel = pts[pts.length - 2];
+                const mid: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
+                const vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
+                const vector2: VectorModel = { angle: findAngle(mid, mid1), distance: Point.findLength(mid, mid1) * 0.5 };
+                const dir1 = Point.direction(start, mid1) as Direction;
+                const ori1 = dir1 === 'Left' || dir1 === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment1: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, point: mid, orientation: ori1 }, true);
                 (element.segments).push(segment1);
 
-                let vector3: VectorModel = { angle: findAngle(mid, mid2), distance: Point.findLength(mid, mid2) * 0.5 };
-                let vector4: VectorModel = { angle: findAngle(end, mid2), distance: Point.findLength(end, mid2) * 0.5 };
-                let dir2 = Point.direction(mid, mid2) as Direction;
-                let ori2 = dir2 == 'Left' || dir2 == 'Right' ? 'Horizontal' : 'Vertical';
+                const vector3: VectorModel = { angle: findAngle(mid, mid2), distance: Point.findLength(mid, mid2) * 0.5 };
+                const vector4: VectorModel = { angle: findAngle(end, mid2), distance: Point.findLength(end, mid2) * 0.5 };
+                const dir2 = Point.direction(mid, mid2) as Direction;
+                const ori2 = dir2 === 'Left' || dir2 === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment2: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector3, vector2: vector4, orientation: ori2 }, true);
                 (element.segments).push(segment2);
             }
             else if (segCount === NoOfSegments.Four) {
-                let mid1: PointModel = pts[1];
-                let mid2: PointModel = pts[2];
-                let mid3: PointModel = pts[3];
-                let center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
-                let center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
-                let vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
-                let vector2: VectorModel = { angle: findAngle(center1, mid1), distance: Point.findLength(center1, mid1) * 0.5 };
-                let dir1 = Point.direction(start, mid1) as Direction;
-                let ori1 = dir1 == 'Left' || dir1 == 'Right' ? 'Horizontal' : 'Vertical';
+                const mid1: PointModel = pts[1];
+                const mid2: PointModel = pts[2];
+                const mid3: PointModel = pts[3];
+                const center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
+                const center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
+                const vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
+                const vector2: VectorModel = { angle: findAngle(center1, mid1), distance: Point.findLength(center1, mid1) * 0.5 };
+                const dir1 = Point.direction(start, mid1) as Direction;
+                const ori1 = dir1 === 'Left' || dir1 === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment1: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, point: center1, orientation: ori1 }, true);
                 (element.segments).push(segment1);
 
-                let vector3: VectorModel = { angle: findAngle(center1, mid2), distance: Point.findLength(center1, mid2) * 0.5 };
-                let vector4: VectorModel = { angle: findAngle(center2, mid2), distance: Point.findLength(center2, mid2) * 0.5 };
-                let dir2 = Point.direction(center1, mid2) as Direction;
-                let ori2 = dir2 == 'Left' || dir2 == 'Right' ? 'Horizontal' : 'Vertical';
+                const vector3: VectorModel = { angle: findAngle(center1, mid2), distance: Point.findLength(center1, mid2) * 0.5 };
+                const vector4: VectorModel = { angle: findAngle(center2, mid2), distance: Point.findLength(center2, mid2) * 0.5 };
+                const dir2 = Point.direction(center1, mid2) as Direction;
+                const ori2 = dir2 === 'Left' || dir2 === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment2: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector3, vector2: vector4, point: center2, orientation: ori2 }, true);
                 (element.segments).push(segment2);
 
-                let vector5: VectorModel = { angle: findAngle(center2, mid3), distance: Point.findLength(center2, mid3) * 0.5 };
-                let vector6: VectorModel = { angle: findAngle(end, mid3), distance: Point.findLength(end, mid3) * 0.5 };
-                let dir3 = Point.direction(center2, mid3) as Direction;
-                let ori3 = dir3 == 'Left' || dir3 == 'Right' ? 'Horizontal' : 'Vertical';
+                const vector5: VectorModel = { angle: findAngle(center2, mid3), distance: Point.findLength(center2, mid3) * 0.5 };
+                const vector6: VectorModel = { angle: findAngle(end, mid3), distance: Point.findLength(end, mid3) * 0.5 };
+                const dir3 = Point.direction(center2, mid3) as Direction;
+                const ori3 = dir3 === 'Left' || dir3 === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment3: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector5, vector2: vector6, orientation: ori3 }, true);
                 (element.segments).push(segment3);
             }
             else if (segCount === NoOfSegments.Five) {
-                let mid1: PointModel = pts[1];
-                let mid2: PointModel = pts[2];
-                let mid3: PointModel = pts[3];
-                let mid4: PointModel = pts[4];
-                let center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
-                let center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
-                let center3: PointModel = { x: (mid3.x + mid4.x) * 0.5, y: (mid3.y + mid4.y) * 0.5 };
+                const mid1: PointModel = pts[1];
+                const mid2: PointModel = pts[2];
+                const mid3: PointModel = pts[3];
+                const mid4: PointModel = pts[4];
+                const center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
+                const center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
+                const center3: PointModel = { x: (mid3.x + mid4.x) * 0.5, y: (mid3.y + mid4.y) * 0.5 };
 
-                let vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
-                let vector2: VectorModel = { angle: findAngle(center1, mid1), distance: Point.findLength(center1, mid1) * 0.5 };
-                let dir1 = Point.direction(start, mid1) as Direction;
-                let ori1 = dir1 == 'Left' || dir1 == 'Right' ? 'Horizontal' : 'Vertical';
+                const vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
+                const vector2: VectorModel = { angle: findAngle(center1, mid1), distance: Point.findLength(center1, mid1) * 0.5 };
+                const dir1 = Point.direction(start, mid1) as Direction;
+                const ori1 = dir1 === 'Left' || dir1 === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment1: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, point: center1, orientation: ori1 }, true);
                 (element.segments).push(segment1);
 
-                let vector3: VectorModel = { angle: findAngle(center1, mid2), distance: Point.findLength(center1, mid2) * 0.5 };
-                let vector4: VectorModel = { angle: findAngle(center2, mid2), distance: Point.findLength(center2, mid2) * 0.5 };
-                let dir2 = Point.direction(center1, mid2) as Direction;
-                let ori2 = dir2 == 'Left' || dir2 == 'Right' ? 'Horizontal' : 'Vertical';
+                const vector3: VectorModel = { angle: findAngle(center1, mid2), distance: Point.findLength(center1, mid2) * 0.5 };
+                const vector4: VectorModel = { angle: findAngle(center2, mid2), distance: Point.findLength(center2, mid2) * 0.5 };
+                const dir2 = Point.direction(center1, mid2) as Direction;
+                const ori2 = dir2 === 'Left' || dir2 === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment2: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector3, vector2: vector4, point: center2, orientation: ori2 }, true);
                 (element.segments).push(segment2);
 
-                let vector5: VectorModel = { angle: findAngle(center2, mid3), distance: Point.findLength(center2, mid3) * 0.5 };
-                let vector6: VectorModel = { angle: findAngle(center3, mid3), distance: Point.findLength(center3, mid3) * 0.5 };
-                let dir3 = Point.direction(center2, mid3) as Direction;
-                let ori3 = dir3 == 'Left' || dir3 == 'Right' ? 'Horizontal' : 'Vertical';
+                const vector5: VectorModel = { angle: findAngle(center2, mid3), distance: Point.findLength(center2, mid3) * 0.5 };
+                const vector6: VectorModel = { angle: findAngle(center3, mid3), distance: Point.findLength(center3, mid3) * 0.5 };
+                const dir3 = Point.direction(center2, mid3) as Direction;
+                const ori3 = dir3 === 'Left' || dir3 === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment3: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector5, vector2: vector6, point: center3, orientation: ori3 }, true);
                 (element.segments).push(segment3);
 
-                let vector7: VectorModel = { angle: findAngle(center3, mid4), distance: Point.findLength(center3, mid4) * 0.5 };
-                let vector8: VectorModel = { angle: findAngle(end, mid4), distance: Point.findLength(end, mid4) * 0.5 };
-                let dir4 = Point.direction(center3, mid4) as Direction;
-                let ori4 = dir4 == 'Left' || dir4 == 'Right' ? 'Horizontal' : 'Vertical';
+                const vector7: VectorModel = { angle: findAngle(center3, mid4), distance: Point.findLength(center3, mid4) * 0.5 };
+                const vector8: VectorModel = { angle: findAngle(end, mid4), distance: Point.findLength(end, mid4) * 0.5 };
+                const dir4 = Point.direction(center3, mid4) as Direction;
+                const ori4 = dir4 === 'Left' || dir4 === 'Right' ? 'Horizontal' : 'Vertical';
                 const segment4: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector7, vector2: vector8, orientation: ori4 }, true);
                 (element.segments).push(segment4);
             }
@@ -3266,7 +3278,7 @@ function convertPointToBezierSegment(element: Connector, segCount: NoOfSegments,
             for(let i:number = 0; i<element.segments.length;i++)
             {
                 if(element.bezierSettings.allowSegmentsReset){
-                (element.segments[parseInt(i.toString(), 10)] as BezierSegment).isInternalSegment = true;
+                    (element.segments[parseInt(i.toString(), 10)] as BezierSegment).isInternalSegment = true;
                 }
             }
         }
@@ -3283,30 +3295,30 @@ function convertPointToBezierSegment(element: Connector, segCount: NoOfSegments,
 function getSwapping(srcDir: string, tarDir: string): boolean {
     let swap: boolean = false;
     switch (srcDir) {
-        case 'Left':
-            switch (tarDir) {
-                case 'Right':
-                case 'Bottom':
-                    swap = true;
-                    break;
-            }
-            break;
-        case 'Top':
-            switch (tarDir) {
-                case 'Left':
-                case 'Right':
-                case 'Bottom':
-                    swap = true;
-                    break;
-            }
-            break;
+    case 'Left':
+        switch (tarDir) {
+        case 'Right':
         case 'Bottom':
-            switch (tarDir) {
-                case 'Right':
-                    swap = true;
-                    break;
-            }
+            swap = true;
             break;
+        }
+        break;
+    case 'Top':
+        switch (tarDir) {
+        case 'Left':
+        case 'Right':
+        case 'Bottom':
+            swap = true;
+            break;
+        }
+        break;
+    case 'Bottom':
+        switch (tarDir) {
+        case 'Right':
+            swap = true;
+            break;
+        }
+        break;
     }
     return swap;
 }
@@ -3475,14 +3487,14 @@ export function getOuterBounds(obj: Connector): Rect {
  */
 export function getOppositeDirection(direction: string): string {
     switch (direction) {
-        case 'Top':
-            return 'Bottom';
-        case 'Bottom':
-            return 'Top';
-        case 'Left':
-            return 'Right';
-        case 'Right':
-            return 'Left';
+    case 'Top':
+        return 'Bottom';
+    case 'Bottom':
+        return 'Top';
+    case 'Left':
+        return 'Right';
+    case 'Right':
+        return 'Left';
     }
     return 'auto';
 }

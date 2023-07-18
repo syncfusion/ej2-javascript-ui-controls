@@ -7,8 +7,13 @@
     &.e-light {
       background: $appbar-bg-color-alt1;
       color: $appbar-color-alt1;
-      border-color: $appbar-border-color-alt1;
       border: $appbar-border;
+      @if ($skin-name == 'Material3') {
+        border-image: $appbar-border-color-alt1;
+      }
+      @else {
+        border-color: $appbar-border-color-alt1;
+      }
 
       .e-appbar-separator {
         border-left: 1px solid $appbar-color-alt1;
@@ -33,8 +38,13 @@
         &.e-inherit {
           background: $appbar-bg-color-alt1;
           color: $appbar-color-alt1;
-          border-color: $appbar-border-color-alt1;
           box-shadow: none;
+          @if ($skin-name == 'Material3') {
+            border-image: $appbar-border-color-alt1;
+          }
+          @else {
+            border-color: $appbar-border-color-alt1;
+          }
 
           & .e-menu .e-menu-item.e-selected,
           & .e-menu .e-menu-item.e-focused {

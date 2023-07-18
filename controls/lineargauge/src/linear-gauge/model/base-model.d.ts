@@ -112,8 +112,9 @@ export interface AnnotationModel {
     /**
      * Sets and gets the content for the annotation.
      * @default ''
+     * @aspType string
      */
-    content?: string;
+    content?: string | Function;
 
     /**
      * Sets and gets the x position for the annotation in linear gauge.
@@ -260,9 +261,10 @@ export interface RangeTooltipModel {
      * Sets and gets the custom template to format the tooltip content.
      *
      * @default null
+     * @aspType string
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * Enables or disables the animation for the range tooltip when moved from one place to another.
@@ -349,9 +351,10 @@ export interface TooltipSettingsModel {
      * Sets and gets the custom template to format the tooltip content.
      *
      * @default null
+     * @aspType string
      */
 
-    template?: string;
+    template?: string | Function;
 
     /**
      * Enables or disables the animation for the tooltip while moving from one place to another.

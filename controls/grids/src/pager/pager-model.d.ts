@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, L10n, EmitType, Browser, addClass, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';import { createElement, compile as templateCompiler, EventHandler, extend } from '@syncfusion/ej2-base';import { isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, Event, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';import { PagerDropDown } from './pager-dropdown';import { NumericContainer } from './numeric-container';import { PagerMessage } from './pager-message';import { ExternalMessage } from './external-message';import { appendChildren } from '../grid/base/util';import * as events from '../grid/base/constant';
+import { Component, ModuleDeclaration, L10n, EmitType, Browser, addClass, removeClass, KeyboardEventArgs, classList } from '@syncfusion/ej2-base';import { createElement, compile as templateCompiler, EventHandler, extend } from '@syncfusion/ej2-base';import { isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, Event, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';import { PagerDropDown } from './pager-dropdown';import { NumericContainer } from './numeric-container';import { PagerMessage } from './pager-message';import { ExternalMessage } from './external-message';import { appendChildren, parentsUntil } from '../grid/base/util';import * as events from '../grid/base/constant';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -75,8 +75,9 @@ export interface PagerModel extends ComponentModel{
      *  Defines the template as string or HTML element ID which renders customized elements in pager instead of default elements.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Defines the customized text to append with numeric items.

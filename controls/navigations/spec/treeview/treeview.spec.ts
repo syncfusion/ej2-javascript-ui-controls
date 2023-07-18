@@ -2741,7 +2741,7 @@ describe('TreeView control', () => {
                 expect(li[1].classList.contains('e-node-focus')).toBe(false);
                 keyboardEventArgs.action = 'tab';
                 treeObj.focusIn();
-                expect(li[0].classList.contains('e-hover')).toBe(false);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
                 expect(li[1].classList.contains('e-node-focus')).toBe(false);
             });
             it('down arrow key pressed', () => {

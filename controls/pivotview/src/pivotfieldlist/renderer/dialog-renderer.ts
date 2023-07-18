@@ -6,10 +6,9 @@ import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
 import * as events from '../../common/base/constant';
-import { IDataOptions, IFieldListOptions } from '../../base/engine';
+import { IDataOptions } from '../../base/engine';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
-import { PivotView } from '../../pivotview';
 
 /**
  * Module to render Pivot Field List Dialog
@@ -28,6 +27,7 @@ export class DialogRenderer {
     public adaptiveElement: Tab;
     private deferUpdateApplyButton: Button;
     private deferUpdateCancelButton: Button;
+    private lastTabIndex: number;
 
     /** Constructor for render module
      *
@@ -135,7 +135,8 @@ export class DialogRenderer {
                 (' ' + cls.BUTTON_FLAT_CLASS) : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
                 this.parent.localeObj.getConstant('close'),
-            enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+            enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate,
+            locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
         this.deferUpdateCancelButton.isStringTemplate = true;
         this.deferUpdateCancelButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton2');
@@ -213,7 +214,7 @@ export class DialogRenderer {
         parent.clonedFieldList = PivotUtil.getClonedFieldList(parent.pivotFieldList);
     }
     private onCloseFieldList(args?: MouseEventArgs, isDeferLayoutEnabled?: boolean): void {
-        if ((this.parent.allowDeferLayoutUpdate || isDeferLayoutEnabled) && (!this.parent.isPopupView || 
+        if ((this.parent.allowDeferLayoutUpdate || isDeferLayoutEnabled) && (!this.parent.isPopupView ||
             (this.parent.pivotGridModule && this.parent.pivotGridModule.actionObj.actionName !== '') || this.parent.actionObj.actionName !== '')) {
             this.parent.
                 setProperties({
@@ -221,18 +222,23 @@ export class DialogRenderer {
                 }, true);
             if (this.parent.dataType === 'olap') {
                 this.parent.olapEngineModule.fieldList = PivotUtil.getClonedFieldList(this.parent.clonedFieldList);
+                this.parent.olapEngineModule.fieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.clonedFieldListData);
                 if (!this.parent.isPopupView) {
                     for (const name of Object.keys(this.parent.clonedFieldList)) {
                         const item: IOlapField = this.parent.clonedFieldList[name as string];
                         this.parent.olapEngineModule.updateFieldlistData(item.id, item.isSelected);
                     }
-                } else if (this.parent.isPopupView && this.parent.clonedFieldListData && Object.keys(this.parent.clonedFieldListData).length > 0) {
+                } else if (this.parent.isPopupView && this.parent.clonedFieldListData &&
+                    Object.keys(this.parent.clonedFieldListData).length > 0) {
                     this.parent.olapEngineModule.fieldListData = this.parent.clonedFieldListData as IOlapField[];
                 }
             } else {
                 this.parent.engineModule.fieldList = PivotUtil.getClonedFieldList(this.parent.clonedFieldList);
             }
             this.parent.updateDataSource(false, true);
+        }
+        if (!this.parent.allowDeferLayoutUpdate && isDeferLayoutEnabled) {
+            (this.parent as PivotFieldList).pivotChange = false;
         }
         if (this.parent.allowDeferLayoutUpdate && this.parent.isPopupView && this.parent.pivotGridModule && !this.parent.isAdaptive) {
             this.parent.pivotGridModule.actionObj.actionName = '';
@@ -252,7 +258,7 @@ export class DialogRenderer {
         if (this.parent.actionObj.actionName) {
             this.parent.actionCompleteMethod();
         }
-    };
+    }
     private renderFieldListDialog(fieldListWrappper: HTMLElement): void {
         const toggleFieldList: HTMLElement = createElement('div', {
             className: cls.TOGGLE_FIELD_LIST_CLASS + ' ' + cls.ICON + ' ' + cls.TOGGLE_SELECT_CLASS,
@@ -353,7 +359,13 @@ export class DialogRenderer {
     }
 
     private dialogOpen(): void {
-        this.adaptiveElement.refresh();
+        if (this.lastTabIndex === 4) {
+            this.adaptiveElement.items[this.lastTabIndex].content = '';
+            this.adaptiveElement.dataBind();
+            this.parent.notify(events.initCalculatedField, {});
+        } else {
+            this.adaptiveElement.refresh();
+        }
     }
 
     /**
@@ -437,6 +449,7 @@ export class DialogRenderer {
     }
     private tabSelect(e: SelectEventArgs): void {
         const fieldWrapper: HTMLElement = closest(this.parentElement, '.' + cls.WRAPPER_CLASS) as HTMLElement;
+        this.lastTabIndex = e.selectedIndex;
         if (fieldWrapper && fieldWrapper.querySelector('.' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)) {
             if (e.selectedIndex !== 4) {
                 addClass(
@@ -527,7 +540,8 @@ export class DialogRenderer {
         return axisWrapper;
     }
 
-    private showCalculatedField(event: Event): void {   /* eslint-disable-line */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private showCalculatedField(event: Event): void {
         try {
             if (!this.parent.isAdaptive) {
                 this.parent.actionObj.actionName = events.openCalculatedField;
@@ -545,7 +559,8 @@ export class DialogRenderer {
         }
     }
 
-    private showFieldListDialog(event: Event): void {   /* eslint-disable-line */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private showFieldListDialog(event: Event): void {
         const activeindex: number = this.adaptiveElement.selectedItem;
         this.parent.treeViewModule.render(activeindex);
     }

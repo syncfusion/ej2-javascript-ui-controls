@@ -46,9 +46,13 @@ export class RangeSelector {
             theme: this.stockChart.theme,
             series: this.findSeriesCollection(stockChart.series),
             height: this.calculateChartSize().height.toString(),
+            tickPosition: 'Inside',
+            majorTickLines: { width: 0 },
             value: [new Date(stockChart.startValue), new Date(stockChart.endValue)],
             margin : this.findMargin(),
-            tooltip: { enable: stockChart.tooltip.enable, displayMode: 'Always' },
+            tooltip: { enable: stockChart.tooltip.enable, displayMode: 'OnDemand' },
+            labelPlacement:'OnTicks',
+            labelPosition:'Inside',
             dataSource: stockChart.dataSource,
             changed: (args: IChangedEventArgs) => {
                 const arg: IRangeChangeEventArgs = {
@@ -98,7 +102,7 @@ export class RangeSelector {
     private calculateChartSize(): Size {
         const stockChart: StockChart = this.stockChart;
         return (
-            new Size(stockChart.availableSize.width, (stockChart.enableSelector) ? 80 : 0)
+            new Size(stockChart.availableSize.width, (stockChart.enableSelector) ? 51 : 0)
         );
     }
 

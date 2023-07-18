@@ -83,7 +83,7 @@ export class Annotations {
                     }
                 } else {
                     const annotationElement: HTMLElement = createElement('div', {
-                        innerHTML: argsData.content,
+                        innerHTML: !isNullOrUndefined(argsData.content) ? argsData.content.toString() : null,
                         id: 'StringTemplate'
                     }) as HTMLElement;
                     annotationElement.style.cssText = getFontStyle(argsData.textStyle);

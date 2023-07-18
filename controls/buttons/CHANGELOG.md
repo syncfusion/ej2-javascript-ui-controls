@@ -2,6 +2,50 @@
 
 ## [Unreleased]
 
+## 22.1.39 (2023-07-18)
+
+### Speed Dial
+
+#### Bug Fixes
+
+- `#I478092` - Enhanced the component's functionality, by introducing the `isPrimary` property to specify whether it is a primary button or not.
+
+## 22.1.38 (2023-07-11)
+
+### Switch
+
+#### Bug Fixes
+
+- `#I478637` - The issue with "Change event trigger twice for key down action of switch component" has been resolved.
+
+### Checkbox
+
+- Resolved checkbox wrapper width issue.
+
+## 21.2.10 (2023-06-13)
+
+### RadioButton
+
+#### Bug Fixes
+
+- `#F182133` - The issue with "Correcting Ripple element is not destroyed properly while clicking on radio button component" has been resolved.
+
+## 21.2.6 (2023-05-23)
+
+### RadioButton
+
+#### Bug Fixes
+
+- `#I463728` - The issue with "Provide the boolean value support for radio button while using the v-model property in VUE platform" has been resolved.
+
+## 21.2.5 (2023-05-16)
+
+### RadioButton
+
+#### Bug Fixes
+
+- `#F182133` - The issue with "Ripple element is not destroyed properly while clicking on radio button component" has been resolved.
+
 ## 21.2.3 (2023-05-03)
 
 ### Switch

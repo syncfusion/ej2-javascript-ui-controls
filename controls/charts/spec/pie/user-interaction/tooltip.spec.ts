@@ -134,10 +134,9 @@ describe('Tooltip checking for the pie series', () => {
             let path: HTMLElement = group.childNodes[0] as HTMLElement;
             let text1: HTMLElement = group.childNodes[1] as HTMLElement;
             let text2: HTMLElement = group.childNodes[2] as HTMLElement;
-
             expect(path.localName == 'path').toBe(true);
             expect(path.getAttribute('d') != '' || ' ').toBe(true);
-            expect(group.childNodes.length == 5).toBe(true);
+            expect(group.childNodes.length == 4).toBe(true);
             expect(text1.childNodes.length == 5).toBe(true);
             expect(text1.textContent.replace('\u200E', '') == 'AnimalsBald Eagle : 18').toBe(true);
             // expect(text1.childNodes[1].textContent == 'Bald Eagle ').toBe(true);
@@ -190,7 +189,7 @@ describe('Tooltip checking for the pie series', () => {
 
             expect(path.localName == 'path').toBe(true);
             expect(path.getAttribute('d') != '' || ' ').toBe(true);
-            expect(group.childNodes.length == 5).toBe(true);
+            expect(group.childNodes.length == 4).toBe(true);
             expect(text1.childNodes.length == 6).toBe(true);
             expect(text1.textContent.replace(/\u200E/g, '') == 'AnimalsAnimals : Elk : 44').toBe(true);
             //expect(text1.childNodes[1].textContent == 'Animals : Elk : 44').toBe(true);          
@@ -200,7 +199,6 @@ describe('Tooltip checking for the pie series', () => {
         accumulation.series[0].type = 'Pyramid';
         accumulation.tooltip.format = '${series.name} : ${point.x} : ${point.y}';
         accumulation.tooltipRender = null;
-        accumulation.refresh();
     });
     it('Funnel tooltip', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
@@ -213,10 +211,9 @@ describe('Tooltip checking for the pie series', () => {
             let path: HTMLElement = group.childNodes[0] as HTMLElement;
             let text1: HTMLElement = group.childNodes[1] as HTMLElement;
             let text2: HTMLElement = group.childNodes[2] as HTMLElement;
-
             expect(path.localName == 'path').toBe(true);
             expect(path.getAttribute('d') != '' || ' ').toBe(true);
-            expect(group.childNodes.length == 4).toBe(true);
+            expect(group.childNodes.length == 3).toBe(true);
             expect(text1.childNodes.length == 5).toBe(true);
             expect(text1.textContent.replace(/\u200E/g, '') == 'Animals : Brown Bear : 30').toBe(true);
             expect((<HTMLElement>group.childNodes[2]).getAttribute('d') != '' || ' ').toBe(true);

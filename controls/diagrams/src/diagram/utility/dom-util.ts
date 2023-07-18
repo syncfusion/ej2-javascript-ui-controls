@@ -12,12 +12,13 @@ import { compile, createElement, Browser, isBlazor } from '@syncfusion/ej2-base'
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { Node } from '../objects/node';
 import { DiagramNativeElement } from '../core/elements/native-element';
-import { BaseAttributes, TextAttributes, SubTextElement, TextBounds } from '../rendering/canvas-interface';
+import { BaseAttributes, TextAttributes, SubTextElement, TextBounds, IReactDiagram } from '../rendering/canvas-interface';
 import { getElement, cloneBlazorObject } from './diagram-util';
 import { Annotation, PathAnnotation } from '../objects/annotation';
 import { templateCompiler } from '../utility/base-util';
 import { SelectorModel } from '../objects/node-model';
 import { UserHandleModel } from '../interaction/selector-model';
+import { Diagram } from '../diagram';
 
 
 /**
@@ -995,8 +996,8 @@ export function getContent(
     const instance: string = 'ej2_instances';
     const diagram: Object = diagramElement[instance][0];
 
-    if (typeof element.content === 'string' && (!(element as DiagramHtmlElement).isTemplate || isBlazor())) {
-        const template: HTMLElement = document.getElementById(element.content);
+    if ((typeof element.content === 'string' || typeof element.content === 'function') && (!(element as DiagramHtmlElement).isTemplate || isBlazor())) {
+        const template: HTMLElement = document.getElementById(element.content as string);
         if (template) {
             div.appendChild(template);
         } else {
@@ -1021,7 +1022,7 @@ export function getContent(
                 cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
         } else if ((diagram as any).isVue || (diagram as any).isVue3) {
             // EJ2-57563 - Added the below code to provide slot template support for Vue and Vue 3
-            let templateFn: Function = (element as DiagramHtmlElement).getNodeTemplate();
+            const templateFn: Function = (element as DiagramHtmlElement).getNodeTemplate();
             if (templateFn) {
                 // If other than slot template, this if block gets execute and template get returned.
                 compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
@@ -1030,10 +1031,10 @@ export function getContent(
                     cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
             } else {
                 // If we provide slot template means then it enters in this block and returns a template
-                if (propertyName === "nodeTemplate") {
-                    compiledString = compile((diagram as any).nodeTemplate)
+                if (propertyName === 'nodeTemplate') {
+                    compiledString = compile((diagram as any).nodeTemplate);
                 } else {
-                    compiledString = compile((diagram as any).annotationTemplate)
+                    compiledString = compile((diagram as any).annotationTemplate);
                 }
                 compiledString = compiledString(
                     /* eslint-enable */
@@ -1195,8 +1196,10 @@ export function setChildPosition(temp: SubTextElement, childNodes: SubTextElemen
  */
 export function getTemplateContent(
     // eslint-disable-next-line @typescript-eslint/ban-types
-    annotationcontent: DiagramHtmlElement, annotation: Annotation, annotationTemplate?: string | Function): DiagramHtmlElement {
-    if (annotationTemplate && !annotation.template) {
+    annotationcontent: DiagramHtmlElement, annotation: Annotation, annotationTemplate?: string | Function,
+    diagram?: Object): DiagramHtmlElement {
+    if ((annotationTemplate && !annotation.template) || 
+        (annotation.template && typeof annotation.template === 'function'  && (diagram as IReactDiagram).isReact)) {
         annotationcontent.isTemplate = true;
         annotationcontent.template = annotationcontent.content = getContent(annotationcontent, true, annotation) as HTMLElement;
     } else {
@@ -1207,7 +1210,7 @@ export function getTemplateContent(
 
 /* eslint-disable */
 /** @private */
-export function createUserHandleTemplates(userHandleTemplate: string, template: HTMLCollection, selectedItems: SelectorModel, diagramID: string): void {
+export function createUserHandleTemplates(userHandleTemplate: string | Function, template: HTMLCollection, selectedItems: SelectorModel, diagramID: string): void {
     let userHandleFn: Function;
     let handle: UserHandleModel;
     let compiledString: Function;

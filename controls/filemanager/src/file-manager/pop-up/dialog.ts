@@ -821,7 +821,8 @@ function onReSubmit(parent: IFileManager): void {
         parent.dialogObj.hide();
         return;
     }
-    const newPath: string = (parent.activeModule === 'navigationpane') ? getValue('filterPath', parent.itemData[0]).replace(/\\/g, '/') : parent.path;    parent.renamedId = getValue('id', parent.itemData[0]);    parent.renamedId = getValue('id', parent.itemData[0]);
+    const newPath: string = (parent.activeModule === 'navigationpane') ? getValue('filterPath', parent.itemData[0]).replace(/\\/g, '/') : parent.path;
+    parent.renamedId = getValue('id', parent.itemData[0]);
     if (parent.isFile) {
         const oldExtension: string = (oIndex === -1) ? '' : parent.currentItemText.substr(oIndex);
         const nIndex: number = text.lastIndexOf('.');

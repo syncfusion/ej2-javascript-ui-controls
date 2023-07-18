@@ -1,4 +1,4 @@
-import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet, ISort, IDrillOptions, FieldItemInfo, IConditionalFormatSettings, IValueSortSettings } from '../../base/engine';
+import { IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet, ISort, IDrillOptions, FieldItemInfo, IConditionalFormatSettings, IValueSortSettings } from '../../base/engine';
 import { IDrilledItem, IStringIndex, ICalculatedFields, ICalculatedFieldSettings, IFormatSettings } from '../../base/engine';
 import { IFilter } from '../../base/engine';
 import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes, ExportView } from '../base/enum';
@@ -27,7 +27,7 @@ export interface LoadEventArgs {
     dataSourceSettings?: IDataOptions;
     /** Defines the pivot table instance object*/
     pivotview?: PivotView;
-    /** Defines the type of specifiec fields */
+    /** Defines the type of specific fields */
     fieldsType?: IStringIndex;
     /** Defines the default field list order */
     defaultFieldListOrder?: Sorting;
@@ -442,7 +442,7 @@ export interface PivotCellSelectedEventArgs extends CellSelectingEventArgs {
     cancel?: boolean;
     /** Defines the cell element that is selected. */
     target?: Element;
-    /** Defines the wheather the current cell is clicked of not. */
+    /** Defines the whether the current cell is clicked of not. */
     isCellClick?: boolean;
     /** Defines the current cell item. */
     data?: IAxisSet;
@@ -517,7 +517,7 @@ export interface ChartSeriesCreatedEventArgs {
      * Defines the collection of chart series information that used to render the pivot chart.
      */
     series: SeriesModel[];
-    /** Defines an option to restrict the pivot chart rendring. */
+    /** Defines an option to restrict the pivot chart rendering. */
     cancel: boolean;
 }
 
@@ -829,9 +829,9 @@ export interface AggregateEventArgs {
     value?: number;
     /** Defines the actual data source collection that used to aggregate the value of the current cell. */
     cellSets?: IDataSet[];
-    /** Defines wheather the row header cell type is header or sub-total or grand-total. */
+    /** Defines whether the row header cell type is header or sub-total or grand-total. */
     rowCellType?: string;
-    /** Defines wheather the column header cell type is header or sub-total or grand-total. */
+    /** Defines whether the column header cell type is header or sub-total or grand-total. */
     columnCellType?: string;
     /** Defines the current aggregate type of the value cell. */
     aggregateType?: SummaryTypes;
@@ -899,7 +899,7 @@ export interface OffsetModel {
 }
 
 /**
- * The member editor open event arguments provide the necessary information about the selected field and its fitler settingster on before filter popup opens.
+ * The member editor open event arguments provide the necessary information about the selected field and its filter settings on before filter popup opens.
  */
 export interface MemberEditorOpenEventArgs {
     /** Defines the selected field name to perform filtering */
@@ -920,7 +920,7 @@ export interface MemberEditorOpenEventArgs {
 export interface FieldRemoveEventArgs {
     /** Defines the current pivot report. */
     dataSourceSettings?: IDataOptions;
-    /** Defines the selected field name to remove from the current pivot reprot. */
+    /** Defines the selected field name to remove from the current pivot report. */
     fieldName?: string;
     /** Defines the selected field information. */
     fieldItem?: IFieldOptions;
@@ -931,14 +931,14 @@ export interface FieldRemoveEventArgs {
 }
 
 /**
- * The calcualted field create event arguments provide the necessary information about the calculated field settings before it creates to update the pviot table.
+ * The calculated field create event arguments provide the necessary information about the calculated field settings before it creates to update the pivot table.
  */
 export interface CalculatedFieldCreateEventArgs {
     /** Defines current pivot report */
     dataSourceSettings?: IDataOptions;
     /** Defines the field name to create/update the calculated field settings. */
     fieldName?: string;
-    /** Defines current calcualted field's infromation that used to modify and update. */
+    /** Defines current calculated field's information that used to modify and update. */
     calculatedField?: ICalculatedFields;
     /**
      * Defines current calculated fields collection in the current pivot report.
@@ -949,14 +949,14 @@ export interface CalculatedFieldCreateEventArgs {
 }
 
 /**
- * The number formatting event arguments provide the necessary information about the format settings of the selected field before it creates to update the pviot table.
+ * The number formatting event arguments provide the necessary information about the format settings of the selected field before it creates to update the pivot table.
  */
 export interface NumberFormattingEventArgs {
     /**
      * Defines the current format settings collection
      */
     formatSettings?: IFormatSettings[];
-    /** Defines the seledted field name that used to apply the number formatting. */
+    /** Defines the selected field name that used to apply the number formatting. */
     formatName?: string;
     /** Defines an option to restrict the format field create operation */
     cancel?: boolean;
@@ -972,7 +972,7 @@ export interface AggregateMenuOpenEventArgs {
     aggregateTypes?: AggregateTypes[];
     /** Defines the selected field name to open the aggregate menu. */
     fieldName?: string;
-    /** Defines an option to restrict the conext menu from open. */
+    /** Defines an option to restrict the context menu from open. */
     cancel?: boolean;
     /** Defines the menu count to be displayed initially. */
     displayMenuCount?: number;
@@ -1021,7 +1021,8 @@ export interface BeforeServiceInvokeEventArgs {
     /** Defines the action which is being performed. */
     action?: string;
     /** Defines the custom properties which needs to pass to server side. */
-    customProperties?: any; /* eslint-disable-line */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    customProperties?: any;
     /** Defines the drill item. */
     drillItem?: IDrilledItem;
     /** Defines the sort item. */
@@ -1042,6 +1043,27 @@ export interface BeforeServiceInvokeEventArgs {
     hash?: string;
     /** Defines the internal properties. */
     internalProperties?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    /** Defines the options for customizing the excel document during export. */
+    excelExportProperties?: ExcelExportProperties;
+    /** Allows you to export the pivot table data of all pages. */
+    exportAllPages?: boolean;
+    /** Defines whether the pivot table's group settings are modified or not. */
+    isGroupingUpdated: boolean;
+}
+
+/**
+ * Represents the arguments that provide necessary information about the service after it has been invoked.
+ */
+export interface AfterServiceInvokeEventArgs {
+    /**
+     * Defines the response received from the service.
+     */
+    response?: string;
+
+    /**
+     * Defines the current action performed during the service invocation.
+     */
+    action?: string;
 }
 
 /**
@@ -1259,7 +1281,7 @@ export interface PivotActionFailureEventArgs {
 }
 
 /**
- * Defines the unique information of the current UI action performed such as sorting, filtering, dril, editing, report manipulation, summarization, etc.
+ * Defines the unique information of the current UI action performed such as sorting, filtering, drill, editing, report manipulation, summarization, etc.
  */
 export interface PivotActionInfo {
     /** Defines the selected field’s sort settings to order their members either in ascending or descending that used to be displayed in the pivot table. */
@@ -1341,7 +1363,7 @@ export interface PivotToolbarInfo {
 }
 
 /**
- * Defines the cusrrent sorting information such as field name, sort order and members which is to be sorted.
+ * Defines the current sorting information such as field name, sort order and members which is to be sorted.
  */
 export interface HeadersSortEventArgs {
     /** Defines the name of the field to be sorted. */

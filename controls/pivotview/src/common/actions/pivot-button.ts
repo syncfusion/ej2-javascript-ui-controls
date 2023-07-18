@@ -8,7 +8,7 @@ import * as events from '../../common/base/constant';
 import { IAction, PivotButtonArgs, MemberFilteringEventArgs, PivotActionInfo } from '../../common/base/interface';
 import { FieldRemoveEventArgs, FieldDragStartEventArgs } from '../../common/base/interface';
 import { IFieldOptions, IFilter, IField, IDataOptions, PivotEngine, IMembers, FieldItemInfo } from '../../base/engine';
-import { IPivotValues, IPivotRows, IAxisSet, INumberIndex } from '../../base/engine';
+import { IPivotRows, IAxisSet, INumberIndex } from '../../base/engine';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DragAndDropEventArgs, NodeCheckEventArgs, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { ButtonPropsModel, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -216,7 +216,8 @@ export class PivotButton implements IAction {
                             }
                             element.appendChild(buttonWrapper);
                             const pivotButton: Button = new Button({
-                                enableRtl: this.parent.enableRtl, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer, cssClass: this.parent.cssClass
+                                enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+                                enableHtmlSanitizer: this.parent.enableHtmlSanitizer, cssClass: this.parent.cssClass
                             });
                             pivotButton.isStringTemplate = true;
                             pivotButton.appendTo(buttonElement);
@@ -379,8 +380,8 @@ export class PivotButton implements IAction {
             attrs: {
                 title: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i as number].name].type === 'CalculatedField') ?
                     text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
-                        text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ?
-                            text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))),
+                    text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ?
+                        text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
@@ -390,11 +391,10 @@ export class PivotButton implements IAction {
         });
         buttonText.innerText = axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i as number].name].type === 'CalculatedField') ?
             text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
-                text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ?
-                    text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text));
+            text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ?
+                text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text));
         return buttonText;
     }
-    /* eslint-enable */
     private getTypeStatus(field: IFieldOptions[], i: number, buttonElement: HTMLElement): void {
         let engineModule: PivotEngine | OlapEngine;
         if (this.parent.dataType === 'olap') {
@@ -583,10 +583,13 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
+        const filterField: IFieldOptions =
+            PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.filterSettings) as IFieldOptions;
         if (!this.parent.allowDeferLayoutUpdate) {
             engineModule.fieldList[fieldName as string].filter = engineModule.fieldList[fieldName as string].filter === null ?
                 [] : engineModule.fieldList[fieldName as string].filter;
-            filterCLass = engineModule.fieldList[fieldName as string].filter.length === 0 ?
+            filterCLass = ((this.parent.dataSourceSettings.mode === 'Server' && !filterField) ||
+            (this.parent.dataSourceSettings.mode === 'Local' && engineModule.fieldList[fieldName as string].filter.length === 0)) ?
                 !engineModule.fieldList[fieldName as string].isExcelFilter ? cls.FILTER_CLASS : cls.FILTERED_CLASS : cls.FILTERED_CLASS;
         } else {
             filterCLass = cls.FILTER_CLASS;

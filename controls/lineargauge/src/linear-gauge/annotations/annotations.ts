@@ -13,7 +13,7 @@ import { FontModel } from '../model/base-model';
 
 /**
  * Represent the Annotation rendering for gauge
- * 
+ *
  * @hidden
  */
 
@@ -25,7 +25,7 @@ export class Annotations {
      * To render annotation elements.
      *
      * @param {LinearGauge} gauge - Specifies the instance of Linear Gauge.
-     * 
+     *
      * @private
      */
     public renderAnnotationElements(gauge: LinearGauge): void {
@@ -51,7 +51,7 @@ export class Annotations {
      * @param {HTMLElement} element - Specifies the content of the annotation to be updated in it.
      * @param {number} annotationIndex - Specifies the index number of the annotation in which the content is to be changed.
      * @param {LinearGauge} gauge - Specifies the instance of Linear Gauge.
-     * 
+     *
      * @private
      */
     public createAnnotationTemplate(element: HTMLElement, annotationIndex: number, gauge: LinearGauge): void {
@@ -89,7 +89,7 @@ export class Annotations {
                     }
                 } else {
                     const annotationElement: HTMLElement = createElement('div', {
-                        innerHTML: argsData.content
+                        innerHTML: !isNullOrUndefined(argsData.content) ? argsData.content.toString() : null
                     });
                     annotationElement.style.cssText = getFontStyle(argsData.textStyle);
                     childElement.appendChild(annotationElement);

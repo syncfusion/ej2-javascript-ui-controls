@@ -4,6 +4,7 @@ import { Chart } from '../../chart/chart';
 import { RectOption, CircleOption } from '../utils/helper';
 import { PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { IScrollbarThemeStyle } from '../../chart/index';
+import { ScrollbarSettingsModel } from '../../chart/index';
 
 // eslint-disable-next-line jsdoc/require-param
 /**
@@ -37,7 +38,7 @@ export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): vo
         width: scrollbar.isVertical ? scrollbar.height : scrollbar.width,
         height: scrollbar.isVertical ? scrollbar.width : scrollbar.height,
         style: 'position: absolute;top: ' + ((scrollbar.axis.isAxisOpposedPosition && isHorizontalAxis ? -16 :
-            (enablePadding ? markerHeight : 0)) + rect.y + Math.max(1, scrollbar.axis.lineStyle.width / 2)) + 'px;left: ' +
+            (enablePadding ? markerHeight : 0)) + rect.y + Math.max(0.5, scrollbar.axis.lineStyle.width / 2)) + 'px;left: ' +
             (((scrollbar.axis.isAxisOpposedPosition && !isHorizontalAxis ? 16 : 0) + rect.x) -
              (scrollbar.isVertical ? scrollbar.height : 0))
             + 'px;cursor:auto;'
@@ -87,6 +88,7 @@ export class ScrollElements {
 
     public renderElements(scroll: ScrollBar, renderer: SvgRenderer): Element {
         const isInverse: boolean = scroll.axis.isAxisInverse;
+        const scrollBar: ScrollbarSettingsModel = scroll.axis.scrollbarSettings;
         const scrollGroup: Element = renderer.createGroup({
             id: this.chartId + 'scrollBar_' + scroll.axis.name,
             transform: 'translate(' + ((scroll.isVertical && isInverse) ? scroll.height : isInverse ?
@@ -101,11 +103,11 @@ export class ScrollElements {
             id: this.chartId + 'scrollBar_thumb_' + scroll.axis.name,
             transform: 'translate(0,0)'
         });
-        this.backRect(scroll, renderer, backRectGroup);
-        this.thumb(scroll, renderer, thumbGroup);
-        this.renderCircle(scroll, renderer, thumbGroup);
-        this.arrows(scroll, renderer, thumbGroup);
-        this.thumbGrip(scroll, renderer, thumbGroup);
+        this.backRect(scroll, renderer, backRectGroup, scrollBar);
+        this.thumb(scroll, renderer, thumbGroup, scrollBar);
+        this.renderCircle(scroll, renderer, thumbGroup, scrollBar);
+        this.arrows(scroll, renderer, thumbGroup, scrollBar);
+        this.thumbGrip(scroll, renderer, thumbGroup, scrollBar);
         scrollGroup.appendChild(backRectGroup);
         scrollGroup.appendChild(thumbGroup);
         return scrollGroup;
@@ -120,13 +122,13 @@ export class ScrollElements {
      * @param parent
      */
 
-    private backRect(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
+    private backRect(scroll: ScrollBar, renderer: SvgRenderer, parent: Element, scrollBar: ScrollbarSettingsModel): void {
         const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         const backRectEle: Element = renderer.drawRectangle(new RectOption(
-            this.chartId + 'scrollBarBackRect_' + scroll.axis.name, style.backRect, { width: 1, color: style.backRect }, 1, new Rect(
+            this.chartId + 'scrollBarBackRect_' + scroll.axis.name, scrollBar.trackColor || style.backRect, { width: 1, color: scrollBar.trackColor || style.backRect }, 1, new Rect(
                 0, 0, scroll.width, scroll.height
             ),
-            0, 0)
+            scrollBar.trackRadius, scrollBar.trackRadius)
         ) as HTMLElement;
         parent.appendChild(backRectEle);
     }
@@ -140,7 +142,7 @@ export class ScrollElements {
      * @param parent
      */
 
-    private arrows(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
+    private arrows(scroll: ScrollBar, renderer: SvgRenderer, parent: Element, scrollBar: ScrollbarSettingsModel): void {
         const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         const option: PathOption = new PathOption(
             this.chartId + 'scrollBar_leftArrow_' + scroll.axis.name, style.arrow, 1, style.arrow, 1, '', ''
@@ -149,8 +151,10 @@ export class ScrollElements {
         option.id = this.chartId + 'scrollBar_rightArrow_' + scroll.axis.name;
         this.rightArrowEle = renderer.drawPath(option);
         this.setArrowDirection(this.thumbRectX, this.thumbRectWidth, scroll.height);
-        parent.appendChild(this.leftArrowEle);
-        parent.appendChild(this.rightArrowEle);
+        if (scrollBar.enableZoom) {
+            parent.appendChild(this.leftArrowEle);
+            parent.appendChild(this.rightArrowEle);
+        }
     }
     /**
      * Methods to set the arrow width.
@@ -161,12 +165,12 @@ export class ScrollElements {
      */
 
     public setArrowDirection(thumbRectX: number, thumbRectWidth: number, height: number): void {
-        const circleRadius: number = 8;
-        const leftDirection: string = 'M ' + ((thumbRectX - circleRadius / 2) + 1) + ' ' + (height / 2) + ' ' + 'L ' +
-            (thumbRectX - circleRadius / 2 + 6) + ' ' + 11 + ' ' + 'L ' + (thumbRectX - circleRadius / 2 + 6) + ' ' + 5 + ' Z';
-        const rightDirection: string = 'M ' + ((thumbRectX + thumbRectWidth + circleRadius / 2) - 0.5) + ' ' + (height / 2)
-            + ' ' + 'L ' + (thumbRectX + thumbRectWidth + circleRadius / 2 - 6) + ' ' + 11.5 + ' ' + 'L ' + (thumbRectX +
-                thumbRectWidth + circleRadius / 2 - 6) + ' ' + 4.5 + ' Z';
+        const circleRadius: number = height / 2;
+        const leftDirection: string = 'M ' + ((thumbRectX - circleRadius / 2)) + ' ' + (height / 2) + ' ' + 'L ' +
+            (thumbRectX - circleRadius / 2 + (height / 2 - circleRadius / 4)) + ' ' + (height - circleRadius / 2) + ' ' + 'L ' + (thumbRectX - circleRadius / 2 + (height / 2 - circleRadius / 4)) + ' ' + (circleRadius / 2) + ' Z';
+        const rightDirection: string = 'M ' + ((thumbRectX + thumbRectWidth + circleRadius / 2)) + ' ' + (height / 2)
+            + ' ' + 'L ' + (thumbRectX + thumbRectWidth + circleRadius / 2 - (height / 2 - circleRadius / 4)) + ' ' + (height - circleRadius / 2) + ' ' + 'L ' + (thumbRectX +
+                thumbRectWidth + circleRadius / 2 - (height / 2 - circleRadius / 4)) + ' ' + (circleRadius / 2) + ' Z';
         this.leftArrowEle.setAttribute('d', leftDirection);
         this.rightArrowEle.setAttribute('d', rightDirection);
     }
@@ -178,14 +182,14 @@ export class ScrollElements {
      * @param parent
      */
 
-    public thumb(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
+    public thumb(scroll: ScrollBar, renderer: SvgRenderer, parent: Element, scrollBar: ScrollbarSettingsModel): void {
         scroll.startX = this.thumbRectX;
         const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         this.slider = renderer.drawRectangle(new RectOption(
             this.chartId + 'scrollBarThumb_' + scroll.axis.name,
-            style.thumb, { width: 1, color: '' }, 1, new Rect(
-                this.thumbRectX, 0, this.thumbRectWidth, scroll.height
-            )
+            scrollBar.scrollbarColor || style.thumb, { width: 1, color: scrollBar.scrollbarColor || style.thumb }, 1, new Rect(
+                scrollBar.enableZoom ? this.thumbRectX : this.thumbRectX - scroll.height / 2, 0, scrollBar.enableZoom ? this.thumbRectWidth : this.thumbRectWidth + scroll.height / 2, scroll.height
+            ), scrollBar.scrollbarRadius, scrollBar.scrollbarRadius
         ));
         parent.appendChild(this.slider);
     }
@@ -197,11 +201,11 @@ export class ScrollElements {
      * @param parent
      */
 
-    private renderCircle(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
+    private renderCircle(scroll: ScrollBar, renderer: SvgRenderer, parent: Element, scrollBar: ScrollbarSettingsModel): void {
         const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         const option: CircleOption = new CircleOption(
             this.chartId + 'scrollBar_leftCircle_' + scroll.axis.name, style.circle, { width: 1, color: style.circle },
-            1, this.thumbRectX, scroll.height / 2, 8
+            1, this.thumbRectX, scroll.height / 2,  scroll.height / 2
         );
         const scrollShadowEle: string = '<filter x="-25.0%" y="-20.0%" width="150.0%" height="150.0%" filterUnits="objectBoundingBox"' +
             'id="scrollbar_shadow"><feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>' +
@@ -223,8 +227,10 @@ export class ScrollElements {
         option.cx = this.thumbRectX + this.thumbRectWidth;
         this.rightCircleEle = renderer.drawCircle(option);
         parent.appendChild(defElement);
-        parent.appendChild(this.leftCircleEle);
-        parent.appendChild(this.rightCircleEle);
+        if (scrollBar.enableZoom) {
+            parent.appendChild(this.leftCircleEle);
+            parent.appendChild(this.rightCircleEle);
+        }
         parent.appendChild(shadowGroup);
     }
     /**
@@ -235,7 +241,7 @@ export class ScrollElements {
      * @param parent
      */
 
-    private thumbGrip(scroll: ScrollBar, renderer: SvgRenderer, parent: Element): void {
+    private thumbGrip(scroll: ScrollBar, renderer: SvgRenderer, parent: Element, scrollBar: ScrollbarSettingsModel): void {
         let sidePadding: number = 0;
         let topPadding: number = 0;
         const gripWidth: number = 14;
@@ -243,13 +249,13 @@ export class ScrollElements {
         const padding: number = gripWidth / 2 - gripCircleDiameter;
         const style: IScrollbarThemeStyle = scroll.scrollbarThemeStyle;
         const option: CircleOption = new CircleOption(
-            this.chartId + 'scrollBar_gripCircle0' + '_' + scroll.axis.name, style.grip,
-            { width: 1, color: style.grip }, 1, 0, 0, 1
+            this.chartId + 'scrollBar_gripCircle0' + '_' + scroll.axis.name, scrollBar.gripColor || style.grip,
+            { width: 1, color: scrollBar.gripColor || style.grip }, 1, 0, 0, 1
         );
         this.gripCircle = renderer.createGroup({
             id: this.chartId + 'scrollBar_gripCircle_' + scroll.axis.name,
-            transform: 'translate(' + ((this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 1 : -1) * padding)) +
-                ',' + (scroll.isVertical ? '10' : '5') + ') rotate(' + (scroll.isVertical ? '180' : '0') + ')'
+            transform: 'translate(' + (!scrollBar.enableZoom ? ((this.thumbRectX + this.thumbRectWidth / 2) - scrollBar.height / 2) : (this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 1 : -1) * padding)) +
+                ',' + (scroll.isVertical ? (scroll.height / 2 + padding / 2) - 0.5 : (scroll.height / 2 - padding / 2) -0.5) + ') rotate(' + (scroll.isVertical ? '180' : '0') + ')'
         });
         for (let i: number = 1; i <= 6; i++) {
             option.id = this.chartId + 'scrollBar_gripCircle' + i + '_' + scroll.axis.name;
@@ -261,6 +267,6 @@ export class ScrollElements {
             sidePadding = i === 3 ? 0 : (sidePadding + 5);
             topPadding = i >= 3 ? 5 : 0;
         }
-        parent.appendChild(this.gripCircle);
+        if (scrollBar.height >= 12) { parent.appendChild(this.gripCircle); }
     }
 }

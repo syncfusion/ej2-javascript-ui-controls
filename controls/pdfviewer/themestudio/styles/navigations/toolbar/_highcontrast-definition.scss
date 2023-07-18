@@ -96,7 +96,7 @@ $tbar-pop-btn-txt-nrml-pad: 0 10px !default;
 $tbar-pop-btn-txt-bgr-pad: 0 12.5px !default;
 
 $tbar-nav-press-border: 0 !default;
-$tbar-nav-hover-border: 0 !default;
+$tbar-nav-hover-border: 1px solid $hover-border !default;
 $tbar-nav-focus-border: 0 !default;
 $tbar-nav-pressed-box-shadow: none !default;
 $tbar-btn-border-radius: 0 !default;

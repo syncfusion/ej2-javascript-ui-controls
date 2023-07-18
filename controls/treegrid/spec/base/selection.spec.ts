@@ -932,7 +932,6 @@ describe('Selection module', () => {
       (gridObj.element.querySelectorAll('.e-row')[0].getElementsByClassName('e-frame e-icons')[0] as any).click();
       expect((gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-treecheckselect')[0] as any).hasAttribute('aria-checked')).toBe(true);
       expect((gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-treecheckselect')[0] as any).hasAttribute('aria-label')).toBe(true);
-      expect((gridObj.element.querySelectorAll('.e-row')[0].getElementsByClassName('e-frame e-icons')[0] as any).hasAttribute('title')).toBe(true);
     });
     afterAll(() => {
       destroy(gridObj);
@@ -1006,7 +1005,7 @@ describe('Selection module', () => {
     });
   });
   
-  describe('EJ2-70486 - Checkbox selection check on expand/collapse action when checkboxOnly mode enabled ', () => {
+    describe('EJ2-70486 - Checkbox selection check on expand/collapse action when checkboxOnly mode enabled ', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
       gridObj = createGrid(
@@ -1120,8 +1119,8 @@ describe('Selection module', () => {
       destroy(gridObj);
     });
   });
-  
-      describe('EJ2-71468 - getSelectedRowCellIndexes method returned the cellIndex while on row collapse', () => {
+
+    describe('EJ2-71468 - getSelectedRowCellIndexes method returned the cellIndex while on row collapse', () => {
     let gridObj: TreeGrid;
     let collapsed: () => void;
     beforeAll((done: Function) => {
@@ -1165,7 +1164,6 @@ describe('Selection module', () => {
     });
   });
   
-  
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)
@@ -1174,5 +1172,34 @@ describe('Selection module', () => {
     let memory: any = inMB(getMemoryProfile())
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+  });
+
+  describe('Bug 837157: Unwanted display of tooltip in checkbox column feature', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          height: '410',
+          autoCheckHierarchy: true,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left', showCheckbox: true },
+            { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+            { field: 'endDate', headerText: 'End Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+            { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+            { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' },
+          ]
+        },
+        done
+      );
+    });
+    it('Select the checkbox', (done: Function) => {
+      gridObj.selectCheckboxes([1]);
+      expect(gridObj.getRows()[1].querySelector('.e-frame').getAttribute('title') === null).toBe(true);
+      done();
+    });
   });
 });

@@ -22,34 +22,63 @@
       }
     }
 
-    .e-carousel-indicators .e-indicator-bar {
-      .e-indicator {
-        background-color: transparent;
-        border-color: transparent;
-        box-shadow: none;
-
-        div {
-          background-color: $carousel-indicator-bar-bg;
-          border-color: $carousel-indicator-bar-bg;
-        }
-
-        &:active,
-        &:focus,
-        &:hover {
+    .e-carousel-indicators {
+      &.e-default .e-indicator-bar {
+        .e-indicator {
           background-color: transparent;
           border-color: transparent;
           box-shadow: none;
-          outline: none;
+
+          div {
+            background: $carousel-indicator-bar-bg;
+            @if ($skin-name == 'Material3') {
+              border-image: $carousel-indicator-bar-border-bg;
+            }
+            @else {
+              border-color: $carousel-indicator-bar-bg;
+            }
+          }
+
+          &:active,
+          &:focus,
+          &:hover {
+            background: transparent;
+            border-color: transparent;
+            box-shadow: none;
+            outline: none;
+          }
+
+          &:focus-visible {
+            border-color: $carousel-indicator-border-color-focus;
+          }
         }
 
-        &:focus-visible {
-          border-color: $carousel-indicator-border-color-focus;
+        &.e-active .e-indicator div {
+          background-color: $carousel-indicator-bar-bg-active;
+          border-color: $carousel-indicator-bar-bg-active;
         }
       }
 
-      &.e-active .e-indicator div {
-        background-color: $carousel-indicator-bar-bg-active;
-        border-color: $carousel-indicator-bar-bg-active;
+      &.e-dynamic .e-indicator-bars {
+        .e-indicator-bar {
+          background-color: $carousel-navigator-icon-color;
+
+          &.e-active {
+            background-color: $carousel-indicator-bar-bg-active;
+          }
+        }
+      }
+
+      &.e-fraction .e-indicator-bars {
+        color: $carousel-navigator-icon-color;
+      }
+
+      &.e-progress .e-indicator-bars {
+        background-color: $carousel-indicator-progress-bg;
+
+        .e-indicator-bar {
+          background-color: $carousel-indicator-bar-bg-active;
+        }
       }
     }
   }

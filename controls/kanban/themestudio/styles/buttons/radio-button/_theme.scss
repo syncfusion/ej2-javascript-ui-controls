@@ -50,6 +50,14 @@
 
     &:hover {
       +label {
+        & .e-ripple-container {
+          @if $skin-name == 'Material3' {
+            background: $radio-btn-ripple-bgcolor;
+          }
+        }
+      }
+
+      +label {
         &::before {
           border-color: $radio-btn-hover-border-color;
         }
@@ -102,6 +110,11 @@
 
       +label {
         &:hover {
+          & .e-ripple-container {
+            @if $skin-name == 'Material3' {
+              background: $radio-btn-checked-ripple-bgcolor;
+            }
+          }
           &::before {
             border-color: $radio-btn-hover-check-border-color;
           }

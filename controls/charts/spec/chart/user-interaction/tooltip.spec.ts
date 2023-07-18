@@ -111,7 +111,7 @@ describe('Chart Control', () => {  beforeAll(() => {
 
                 expect(path.localName == 'path').toBe(true);
                 expect(path.getAttribute('d') != '' || ' ').toBe(true);
-                expect(group.childNodes.length == 5).toBe(true);
+                expect(group.childNodes.length == 4).toBe(true);
                 expect(text1.childNodes.length == 5).toBe(true);
                 expect(text1.textContent.replace(/\u200E/g, '') == 'ChartSeriesNameGold$2000.00 : 40').toBe(true);
                 // expect(text1.childNodes[1].textContent.replace(/\u200E/g, '') == '$2000.00 : ').toBe(true);

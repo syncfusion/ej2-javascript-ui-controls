@@ -65,6 +65,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     /** @hidden */
     public isTop: boolean = false;
     private rndrCount: number = 0;
+    private diff: number = 0;
+    private heightChange: boolean = false;
     /** @hidden */
     public activeKey: string;
     /** @hidden */
@@ -249,7 +251,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (isBlockAdded) {
             infoType.blockIndexes = [infoType.blockIndexes[0] - 1, infoType.blockIndexes[0], infoType.blockIndexes[0] + 1];
         }
-        if (this.activeKey === 'downArrow') {
+        if (this.activeKey === 'downArrow' && !isNaN(this.rowIndex)) {
             const firstBlock: number = Math.ceil(this.rowIndex / this.getBlockSize());
             if (firstBlock !== 1 && (infoType.blockIndexes[1] !== firstBlock || infoType.blockIndexes.length < 3)) {
                 infoType.blockIndexes = [firstBlock - 1, firstBlock, firstBlock + 1];
@@ -440,6 +442,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const lastPage: number = Math.ceil(this.getTotalBlocks() / 2);
         if (this.isBottom) {
             this.isBottom = false;
+            this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 1];
+        }
+        if ((this.parent.pageSettings.currentPage + 1 === lastPage || this.parent.pageSettings.currentPage === lastPage) &&
+            blocks.length === 2 && e.requestType === 'delete') {
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 1];
         }
         if ((this.parent.pageSettings.currentPage === lastPage) && blocks.length === 1) {
@@ -635,9 +641,27 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             // To overcome the white space issue in last page (instead of position absolute)
             this.virtualEle.setVirtualHeight(virtualHeightTemp, width);
         } else {
-            const virtualHeight: number = (this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() :
+            let virtualHeight: number = (this.offsets[isGroupAdaptive(this.parent) && this.count !== 0 ? this.getGroupedTotalBlocks() :
                 this.getTotalBlocks()]);
+            const lastPage: number = Math.ceil(this.getTotalBlocks() / 2);
+            let placeHolderBottom: number = Math.round(this.virtualEle.placeholder.getBoundingClientRect().bottom);
+            let wrapperBottom: number = Math.round(this.virtualEle.wrapper.getBoundingClientRect().bottom);
+            if ((this.currentInfo.page === lastPage || this.currentInfo.page + 1 === lastPage) && this.currentInfo.direction === 'down' &&
+                placeHolderBottom > wrapperBottom && !this.diff) {
+                this.diff = placeHolderBottom - wrapperBottom;
+            }
+            if (this.diff && (this.currentInfo.page === lastPage) && placeHolderBottom > wrapperBottom) {
+                virtualHeight -= this.diff;
+                this.heightChange = true;
+            }
+            else if (this.diff && this.heightChange && this.requestType === 'virtualscroll') {
+                virtualHeight -= this.diff;
+                this.heightChange = false;
+            }
             this.virtualEle.setVirtualHeight(virtualHeight, width);
+            if (this.virtualEle && this.virtualEle.wrapper) {
+                this.virtualEle.wrapper.style.minHeight = !isNullOrUndefined(virtualHeight) ? formatUnit(<number>this.parent.height) : '0px';
+            }
         }
         if (this.parent.enableColumnVirtualization) {
             this.header.virtualEle.setVirtualHeight(1, width);

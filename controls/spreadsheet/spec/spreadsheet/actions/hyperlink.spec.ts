@@ -197,7 +197,7 @@ describe('Hyperlink ->', () => {
 
         it('Checking Insert Button in Hyperlink Dialog Box ->', (done: Function) => {
             helper.switchRibbonTab(2);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+            helper.triggerKeyNativeEvent(75, true);
             setTimeout(() => {
                 setTimeout(() => {
                     helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
@@ -872,6 +872,7 @@ describe('Hyperlink ->', () => {
                 });
             });
         });
+
         describe('EJ2-72081 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);

@@ -506,25 +506,25 @@ export class TextMarkupAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderTextMarkupAnnotationsInPage(textMarkupAnnotations: any, pageNumber: number, isImportTextMarkup?: boolean): void {
+    public renderTextMarkupAnnotationsInPage(textMarkupAnnotations: any, pageNumber: number, isImportTextMarkup?: boolean, isAnnotOrderAction?: boolean): void {
         const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
         if (isImportTextMarkup) {
             this.renderTextMarkupAnnotations(null, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
             this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor(), true);
         } else {
-            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
+            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor(), null, isAnnotOrderAction);
         }
     }
 
     // eslint-disable-next-line
-    private renderTextMarkupAnnotations(textMarkupAnnotations: any, pageNumber: number, canvas: HTMLElement, factor: number, isImportAction?: boolean): void {
+    private renderTextMarkupAnnotations(textMarkupAnnotations: any, pageNumber: number, canvas: HTMLElement, factor: number, isImportAction?: boolean, isAnnotOrderAction?: boolean): void {
         if (canvas) {
             const context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
             context.setTransform(1, 0, 0, 1, 0, 0);
             context.setLineDash([]);
             // eslint-disable-next-line
             let annotations: any[];
-            if (!isImportAction) {
+            if (!isImportAction && !isAnnotOrderAction) {
                 annotations = this.getAnnotations(pageNumber, textMarkupAnnotations);
             } else {
                 annotations = textMarkupAnnotations;

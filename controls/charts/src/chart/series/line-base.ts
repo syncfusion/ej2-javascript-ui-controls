@@ -39,7 +39,7 @@ export class LineBase {
         const areaBounds: Rect = series.clipRect;
         const xTolerance: number = Math.abs(xVisibleRange.delta / areaBounds.width);
         const yTolerance: number = Math.abs(yVisibleRange.delta / areaBounds.height);
-        let prevXValue: number = (seriesPoints[0] && seriesPoints[0].x > xTolerance) ? 0 : xTolerance;
+        let prevXValue: number = (seriesPoints[0] && seriesPoints[0].xValue > xTolerance) ? 0 : xTolerance;
         let prevYValue: number = (seriesPoints[0] && seriesPoints[0].y > yTolerance) ? 0 : yTolerance;
         let xVal: number = 0;
         let yVal: number = 0;

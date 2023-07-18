@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption } from '../index';
+import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption, focus } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort } from '../index';
 import { filterRangeAlert, getFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler } from '../../workbook/common/event';
@@ -155,6 +155,8 @@ export class Filter {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
+                } else {
+                    focus(this.parent.element);
                 }
             }
         });
@@ -303,6 +305,7 @@ export class Filter {
         }
         if (!isInternal) {
             this.parent.notify(completeAction, actionArgs);
+            focus(this.parent.element);
         }
     }
 
@@ -1263,6 +1266,7 @@ export class Filter {
             if (!isInternal) {
                 delete eventArgs.cancel;
                 this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
+                focus(this.parent.element);
             }
             return Promise.resolve(args);
         }).catch((error: string) => {
@@ -1320,6 +1324,8 @@ export class Filter {
                             date++;
                         } else if (isNumber(cell.value)) {
                             num++;
+                        } else if(isNullOrUndefined(cell.value) || cell.value === ""){
+                            continue;
                         } else {
                             str++;
                         }
@@ -1331,7 +1337,7 @@ export class Filter {
                     } else { num++; }
                 }
             } else {
-                str++;
+                continue;
             }
         }
         return { type: (num > str && num > date && num > time) ? 'number' : (str >= num && str >= date && str >= time) ? 'string'
@@ -1422,6 +1428,7 @@ export class Filter {
                 if (isAction) {
                     delete eventArgs.cancel;
                     this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
+                    focus(this.parent.element);
                 }
             }
         }

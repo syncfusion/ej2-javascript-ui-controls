@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-pdfviewer/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-pdfviewer)
-
 # JavaScript PDF Viewer Control
 
 The Syncfusion [JavaScript PDF Viewer](https://www.syncfusion.com/javascript-ui-controls/js-pdf-viewer?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pdf-viewer-npm) control enables you to view, annotate, prepare and fill forms, and print PDF files from your web applications.
@@ -66,7 +64,7 @@ Product support is available through the following mediums.
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-pdfviewer/blob/master/CHANGELOG.md?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pdf-viewer-npm). Get minor improvements and bug fixes every week to stay up to date with frequent updates.
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/pdfviewer/CHANGELOG.md?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pdf-viewer-npm). Get minor improvements and bug fixes every week to stay up to date with frequent updates.
 
 ## License and copyright
 

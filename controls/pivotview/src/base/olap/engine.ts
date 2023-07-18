@@ -944,12 +944,12 @@ export class OlapEngine {
         let captionColection: string = tuple.captionCollection;
         if (tuple.measure) {
             const measureName: string = tuple.measure.querySelector('Caption').textContent;
-            const measurePosition: number = tuple.uNameCollection.split(/[~~,::]+/g).indexOf(tuple.measureName);
-            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
+            const measurePosition: number = tuple.uNameCollection.split(/[~~::]+/g).indexOf(tuple.measureName);
+            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~::]+/g);
             captionCollectionArray.splice(measurePosition, 0, measureName);
             captionColection = captionCollectionArray.join('.');
         } else {
-            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
+            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~::]+/g);
             captionColection = captionCollectionArray.join('.');
         }
         return captionColection;
@@ -1475,7 +1475,7 @@ export class OlapEngine {
                             levelName = colMembers[j as any];
                         }
                         else {
-                            levelName = levelName + '.' + colMembers[j as any];
+                            levelName = levelName + this.valueSortSettings.headerDelimiter + colMembers[j as any];
                         }
                     }   /* eslint-enable @typescript-eslint/no-explicit-any */
                     const isNamedSet: boolean = this.namedSetsPosition['column'][memPos as number] ? true : false;
@@ -1845,7 +1845,8 @@ export class OlapEngine {
                                             const length: number = Object.keys(arrange[key[keyPos as number]]).length;
                                             for (let cellPos: number = 0; cellPos < length; cellPos++) {
                                                 value = (temporary[index as number] as Object[]).length === 0 ? 1 : 0;
-                                                (temporary[index as number] as Object[])[(temporary[index as number] as Object[]).length + value] = arrange[key[keyPos as number]][Number(Object.keys(arrange[key[keyPos as number]])[cellPos as number])];   /* eslint-disable-line */
+                                                // eslint-disable-next-line max-len
+                                                (temporary[index as number] as Object[])[(temporary[index as number] as Object[]).length + value] = arrange[key[keyPos as number]][Number(Object.keys(arrange[key[keyPos as number]])[cellPos as number])];
                                             }
                                         }
                                         arrange = {};
@@ -1928,7 +1929,7 @@ export class OlapEngine {
                     }
                     for (let m: number = 1; m < (temporary[index as number] as Object[]).length; m++) {
                         this.pivotValues[index as number][m as number] = (temporary[index as number] as Object[])[m as number];
-                    }   /* eslint-enable @typescript-eslint/ban-types */
+                    }
                     for (let n: number = j; n < this.pivotValues.length; n++) {
                         const pElement: IPivotRows = extend({}, this.pivotValues[n + 1], null, true) as IAxisSet[][];
                         const cElement: IPivotRows = extend({}, this.pivotValues[n as number], null, true) as IAxisSet[][];
@@ -1936,7 +1937,8 @@ export class OlapEngine {
                             for (let o: number = 1; o < this.pivotValues[j as number].length; o++) {
                                 if (Object.keys(pElement).length > 0 && (cElement[o as number] as IAxisSet).colIndex
                                     !== (pElement[o as number] as IAxisSet).colIndex) {
-                                    this.pivotValues[n + 1][o as number] = pElement[(cElement[o as number] as IAxisSet).colIndex] as IAxisSet;
+                                    this.pivotValues[n + 1][o as number] =
+                                        pElement[(cElement[o as number] as IAxisSet).colIndex] as IAxisSet;
                                 }
                             }
                             break;
@@ -2288,7 +2290,9 @@ export class OlapEngine {
         }
         const valCollection: { [key: string]: Element } = {};
         for (let colPos: number = 0; colPos < tuples.length; colPos++) {
-            valCollection[Number(tuples[colPos as number].getAttribute('CellOrdinal'))] = tuples[colPos as number];
+            if (!isNullOrUndefined(tuples[colPos as number])) {
+                valCollection[Number(tuples[colPos as number].getAttribute('CellOrdinal'))] = tuples[colPos as number];
+            }
         }
         for (let rowPos: number = rowStartPos; rowPos < rowEndPos; rowPos++) {
             const columns: IAxisSet[] = this.pivotValues[rowPos as number] as IAxisSet[];
@@ -2534,10 +2538,13 @@ export class OlapEngine {
                             let j: number = 0;
                             while (j < valueIndex.length) {
                                 const index: number = (j * cLen) + i;
-                                const ordinalValue: string = vOrdinalIndex[index as number].toString();
-                                const tuple: Element = vTuples[Number(valueIndex[j as number][orderedIndex[i as number]])];
-                                tuple.setAttribute('CellOrdinal', ordinalValue.toString());
-                                orderedVTuples[index as number] = tuple;
+                                if (!isNullOrUndefined(vOrdinalIndex[index as number]) && !isNullOrUndefined(valueIndex[j as number])
+                                    && !isNullOrUndefined(orderedIndex[i as number])) {
+                                    const ordinalValue: string = vOrdinalIndex[index as number].toString();
+                                    const tuple: Element = vTuples[Number(valueIndex[j as number][orderedIndex[i as number]])];
+                                    tuple.setAttribute('CellOrdinal', ordinalValue.toString());
+                                    orderedVTuples[index as number] = tuple;
+                                }
                                 j++;
                             }
                         }
@@ -2769,8 +2776,8 @@ export class OlapEngine {
                         isAvail = true;
                     }
                 }
-                if (!isAvail || (fieldName.toLowerCase() === '[calculated members].[_0]' &&
-                    this.calculatedFieldSettings.length === 0)) {
+                if ((!isAvail && fieldName.toLowerCase() !== '[calculated members].[_0]') ||
+                    (fieldName.toLowerCase() === '[calculated members].[_0]' && this.calculatedFieldSettings.length === 0)) {
                     this.savedFieldListData.splice(i, 1);
                     i--;
                     if (this.savedFieldList[fieldName as string]) {

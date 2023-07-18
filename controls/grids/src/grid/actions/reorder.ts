@@ -91,14 +91,16 @@ export class Reorder implements IAction {
             return this.parent.getColumns();
         } else {
             for (let i: number = 0, len: number = cols.length; i < len; i++) {
-                if (cols[parseInt(i.toString(), 10)].visible) {
-                    columnModel.push(cols[parseInt(i.toString(), 10)]);
-                }
-                else if (isNotStackedHeader) {
-                    columnModel.push(cols[parseInt(i.toString(), 10)]);
-                }
-                if (cols[parseInt(i.toString(), 10)].columns) {
-                    subCols = subCols.concat(cols[parseInt(i.toString(), 10)].columns as Column[]);
+                if (!isNullOrUndefined(cols[parseInt(i.toString(), 10)])) {
+                    if (cols[parseInt(i.toString(), 10)].visible) {
+                        columnModel.push(cols[parseInt(i.toString(), 10)]);
+                    }
+                    else if (isNotStackedHeader) {
+                        columnModel.push(cols[parseInt(i.toString(), 10)]);
+                    }
+                    if (cols[parseInt(i.toString(), 10)].columns) {
+                        subCols = subCols.concat(cols[parseInt(i.toString(), 10)].columns as Column[]);
+                    }
                 }
             }
             if (subCols.length) {

@@ -174,8 +174,10 @@ export class BaseToolbar {
                             this.parent.formatter.saveData();
                         }
                         callback.call(this);
-                        if ((this.parent.formatter.getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1].text.trim()
-                        === this.parent.inputElement.innerHTML.trim())) {
+                        const currentContentElem: HTMLElement = this.parent.createElement('div');
+                        currentContentElem.appendChild(
+                            this.parent.formatter.getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1].text);
+                        if (currentContentElem.innerHTML.trim() === this.parent.inputElement.innerHTML.trim()) {
                             return;
                         }
                         if (proxy.undo) {

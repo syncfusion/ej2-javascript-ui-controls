@@ -44,6 +44,12 @@ export class MsWordPaste {
         'object', 'ol', 'pre', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul',
         'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
     private borderStyle: string[] = ['border-top', 'border-right', 'border-bottom', 'border-left'];
+    private upperRomanNumber: string[] = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX',
+        'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
+    private lowerRomanNumber: string[] = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix',
+        'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx'];
+    private lowerGreekNumber: string[] = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ',
+        'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'];
     private removableElements: string[] = ['o:p', 'style'];
     private listContents: string[] = [];
     private addEventListener(): void {
@@ -73,10 +79,13 @@ export class MsWordPaste {
             listNodes[0].parentElement.tagName !== 'OL') {
                 this.listConverter(listNodes);
             }
+            this.cleanList(elm, 'UL');
+            this.cleanList(elm, 'OL');
             this.styleCorrection(elm, wordPasteStyleConfig);
             this.removingComments(elm);
             this.removeUnwantedElements(elm);
             this.removeEmptyElements(elm);
+            this.removeEmptyAnchorTag(elm);
             this.breakLineAddition(elm);
             this.removeClassName(elm);
             if (pattern4.test(tempHTMLContent)) {
@@ -96,11 +105,41 @@ export class MsWordPaste {
             e.callBack(elm.innerHTML);
         }
     }
+
+    private cleanList(elm: HTMLElement, listTag: string): void {
+        let replacableElem: NodeListOf<Element> = elm.querySelectorAll(listTag + ' div');
+        for (let j: number = replacableElem.length - 1; j >= 0; j--) {
+            const parentElem: Node = replacableElem[j as number].parentNode;
+            while (replacableElem[j as number].firstChild) {
+                parentElem.insertBefore(replacableElem[j as number].firstChild, replacableElem[j as number]);
+            }
+            let closestListElem: Element = this.findClosestListElem(replacableElem[j as number]);
+            if (closestListElem) {
+                this.insertAfter(replacableElem[j as number], closestListElem);
+            }
+        }
+    }
+
+    private insertAfter(newNode: Element, referenceNode: Element): void {
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    }
+
+    private findClosestListElem(listElem: Element): Element {
+        let closestListElem: Element;
+        while(!isNOU(listElem)) {
+            listElem = !isNOU(listElem.closest('ul')) && listElem.tagName !== 'UL' ?
+                listElem.closest('ul') : (listElem.tagName !== 'OL' ? listElem.closest('ol'): null);
+            closestListElem = !isNOU(listElem) ? listElem : closestListElem;
+        }
+        return closestListElem;
+    }
     private addListClass(elm: HTMLElement): void {
         const allNodes: NodeListOf<Element> = elm.querySelectorAll('*');
         for (let index: number = 0; index < allNodes.length; index++) {
             if (!isNOU(allNodes[index as number].getAttribute('style')) && allNodes[index as number].getAttribute('style').replace(/ /g, '').replace('\n', '').indexOf('mso-list:l') >= 0 &&
-            (allNodes[index as number] as Element).className.toLowerCase().indexOf('msolistparagraph') === -1 && allNodes[index as number].tagName.charAt(0) !== 'H') {
+            (allNodes[index as number] as Element).className.toLowerCase().indexOf('msolistparagraph') === -1 &&
+            allNodes[index as number].tagName.charAt(0) !== 'H' && allNodes[index as number].tagName !== 'LI' &&
+            allNodes[index as number].tagName !== 'OL' && allNodes[index as number].tagName !== 'UL') {
                 allNodes[index as number].classList.add('msolistparagraph');
             }
         }
@@ -131,7 +170,9 @@ export class MsWordPaste {
                 imgElem[i as number].getAttribute('v:shapes').indexOf('Picture') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('圖片') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('Grafik') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('Image') < 0) {
+                imgElem[i as number].getAttribute('v:shapes').toLowerCase().indexOf('image') < 0 &&
+                imgElem[i as number].getAttribute('v:shapes').indexOf('Graphic') < 0 &&
+                imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_s') < 0) {
                 detach(imgElem[i as number]);
             }
         }
@@ -228,7 +269,7 @@ export class MsWordPaste {
     private hexConversion(rtfData: string): { [key: string]: string }[] {
         // eslint-disable-next-line
         const picHead: RegExp = /\{\\pict[\s\S]+?\\bliptag\-?\d+(\\blipupi\-?\d+)?(\{\\\*\\blipuid\s?[\da-fA-F]+)?[\s\}]*?/;
-        // eslint-disable-next-line
+        // eslint-disable-next-line security/detect-non-literal-regexp
         const pic: RegExp = new RegExp( '(?:(' + picHead.source + '))([\\da-fA-F\\s]+)\\}', 'g' );
         const fullImg: RegExpMatchArray = rtfData.match(pic);
         let imgType: string;
@@ -292,9 +333,9 @@ export class MsWordPaste {
     private removeUnwantedElements(elm: HTMLElement): void {
         let innerElement: string = elm.innerHTML;
         for (let i: number = 0; i < this.removableElements.length; i++) {
-            // eslint-disable-next-line
+            // eslint-disable-next-line security/detect-non-literal-regexp
             const regExpStartElem: RegExp = new RegExp('<' + this.removableElements[i as number] + '>', 'g');
-            // eslint-disable-next-line
+            // eslint-disable-next-line security/detect-non-literal-regexp
             const regExpEndElem: RegExp = new RegExp('</' + this.removableElements[i as number] + '>', 'g');
             innerElement = innerElement.replace(regExpStartElem, '');
             innerElement = innerElement.replace(regExpEndElem, '');
@@ -309,6 +350,7 @@ export class MsWordPaste {
         if (!isNOU(element.parentElement)) {
             if (element.parentElement.textContent.trim() === '' &&
             element.parentElement.getAttribute('id') !== 'MSWord-Content' &&
+            !(this.hasParentWithClass(element as HTMLElement, 'MsoListParagraph')) &&
             isNOU(element.parentElement.querySelector('img'))) {
                 removableElement = this.findDetachEmptyElem(element.parentElement);
             } else {
@@ -319,6 +361,16 @@ export class MsWordPaste {
         }
         return removableElement;
     }
+    private hasParentWithClass(element: HTMLElement, className: string): boolean {
+        let currentParentElem: HTMLElement = element.parentElement;
+        while (!isNOU(currentParentElem)) {
+            if (currentParentElem.classList.contains(className)) {
+                return true;
+            }
+            currentParentElem = currentParentElem.parentElement;
+        }
+        return false;
+    }
     private removeEmptyElements(element: HTMLElement): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         for (let i: number = 0; i < emptyElements.length; i++) {
@@ -326,9 +378,14 @@ export class MsWordPaste {
             !isNOU(emptyElements[i as number].closest('td').querySelector('.MsoNormal'))) {
                 emptyElements[i as number].innerHTML = '-';
             }
+            let lineWithDiv: boolean = true;
+            if (emptyElements[i as number].tagName === 'DIV') {
+                lineWithDiv =  (emptyElements[i as number] as HTMLElement).style.borderBottom === 'none' ||
+                (emptyElements[i as number] as HTMLElement).style.borderBottom === '' ? true : false;
+            }
             if (emptyElements[i as number].tagName !== 'IMG' && emptyElements[i as number].tagName !== 'BR' &&
             emptyElements[i as number].tagName !== 'IFRAME' && emptyElements[i as number].tagName !== 'TD' &&
-            emptyElements[i as number].tagName !== 'HR') {
+            emptyElements[i as number].tagName !== 'HR' && lineWithDiv) {
                 const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i as number]);
                 if (!isNOU(detachableElement)) {
                     detach(detachableElement);
@@ -459,8 +516,6 @@ export class MsWordPaste {
     }
 
     private cleanUp(node: HTMLElement, listNodes: Element[]): Element[] {
-        // eslint-disable-next-line
-        const temp: string = '';
         const tempCleaner: Element[] = [];
         let prevflagState: boolean;
         const allNodes: NodeListOf<Element> = node.querySelectorAll('*');
@@ -471,7 +526,7 @@ export class MsWordPaste {
                 continue;
             } else if ((allNodes[index as number] as Element).className &&
                 (allNodes[index as number] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1 &&
-                (allNodes[index as number] as Element).childElementCount !== 1 && !isNOU(allNodes[index as number].getAttribute('style')) &&
+                !isNOU(allNodes[index as number].getAttribute('style')) &&
                 allNodes[index as number].getAttribute('style').indexOf('mso-list:') >= 0) {
                 if (allNodes[index as number].className.indexOf('MsoListParagraphCxSpFirst') >= 0 && listNodes.length > 0 &&
                 listNodes[listNodes.length - 1] !== null) {
@@ -547,6 +602,12 @@ export class MsWordPaste {
                             startAttr = (startString.split('.')[0].charCodeAt(0) - 64);
                         } else if (listStyleType === 'lower-alpha') {
                             startAttr = (startString.split('.')[0].charCodeAt(0) - 96);
+                        } else if (listStyleType === 'upper-roman') {
+                            startAttr = this.upperRomanNumber.indexOf(this.listContents[0].split('.')[0]) + 1;
+                        } else if (listStyleType === 'lower-roman') {
+                            startAttr = this.lowerRomanNumber.indexOf(this.listContents[0].split('.')[0]) + 1;
+                        } else if (listStyleType === 'lower-greek') {
+                            startAttr = this.lowerGreekNumber.indexOf(this.listContents[0].split('.')[0]) + 1;
                         }
                     }
                     if ((listNodes[i as number] as HTMLElement).style.marginLeft !== '') {
@@ -595,22 +656,16 @@ export class MsWordPaste {
     }
     private getlistStyleType(listContent: string, type: string): string {
         let currentListClass: string;
-        const upperRomanNumber: string[] = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX',
-            'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
-        const lowerRomanNumber: string[] = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix',
-            'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx'];
-        const lowerGreekNumber: string[] = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ',
-            'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'];
         if (type === 'ol') {
             const charCode: number = listContent.split('.')[0].charCodeAt(0);
             switch (true) {
-            case upperRomanNumber.indexOf(listContent.split('.')[0]) > -1:
+            case this.upperRomanNumber.indexOf(listContent.split('.')[0]) > -1:
                 currentListClass = 'upper-roman';
                 break;
-            case lowerRomanNumber.indexOf(listContent.split('.')[0]) > -1:
+            case this.lowerRomanNumber.indexOf(listContent.split('.')[0]) > -1:
                 currentListClass = 'lower-roman';
                 break;
-            case lowerGreekNumber.indexOf(listContent.split('.')[0]) > -1:
+            case this.lowerGreekNumber.indexOf(listContent.split('.')[0]) > -1:
                 currentListClass = 'lower-greek';
                 break;
             case (charCode > 64 && charCode < 91):
@@ -649,6 +704,19 @@ export class MsWordPaste {
         let listCount: number = 0;
         let elem: HTMLElement;
         for (let index: number = 0; index < collection.length; index++) {
+            const listClass: string[] = ['MsoListParagraphCxSpFirst', 'MsoListParagraphCxSpMiddle', 'MsoListParagraphCxSpLast'];
+            let isNormalList: boolean = false;
+            for (let i: number = 0; i < listClass.length; i++) {
+                if (listClass[i as number].indexOf(collection[index as number].class) >= 0) {
+                    isNormalList = true;
+                    break;
+                }
+            }
+            if (!isNOU(prevList) && index !== 0 &&
+                collection[index as number - 1].listType !== collection[index as number].listType &&
+                !isNormalList) {
+                prevList = null;
+            }
             const pElement: Element = createElement('p');
             pElement.innerHTML = collection[index as number].content.join(' ');
             if ((collection[index as number].nestedLevel === 1) && listCount === 0 && collection[index as number].content) {
@@ -688,12 +756,30 @@ export class MsWordPaste {
                     temp.setAttribute('level', collection[index as number].nestedLevel.toString());
                     temp.style.listStyleType = collection[index as number].listStyleTypeName;
                 } else {
-                    root.appendChild(temp = createElement(collection[index as number].listType));
-                    prevList = createElement('li');
-                    prevList.appendChild(pElement);
-                    temp.appendChild(prevList);
-                    temp.setAttribute('level', collection[index as number].nestedLevel.toString());
-                    temp.style.listStyleType = collection[index as number].listStyleTypeName;
+                    if (collection[index as number].nestedLevel > pLevel && isNormalList) {
+                        let initialNode: HTMLElement;
+                        initialNode = createElement(collection[index as number].listType);
+                        prevList = createElement('li');
+                        initialNode.appendChild(prevList);
+                        initialNode.style.listStyleType = 'none';
+                        for (let j: number = 0; j < collection[index as number].nestedLevel - 1; j++) {
+                            prevList.appendChild(temp = createElement(collection[index as number].listType));
+                            prevList = createElement('li');
+                            temp.appendChild(prevList);
+                            temp.style.listStyleType = 'none';
+                        }
+                        prevList.appendChild(pElement);
+                        root.appendChild(initialNode);
+                        temp.setAttribute('level', collection[index as number].nestedLevel.toString());
+                        temp.style.listStyleType = collection[index as number].listStyleTypeName;
+                    } else {
+                        root.appendChild(temp = createElement(collection[index as number].listType));
+                        prevList = createElement('li');
+                        prevList.appendChild(pElement);
+                        temp.appendChild(prevList);
+                        temp.setAttribute('level', collection[index as number].nestedLevel.toString());
+                        temp.style.listStyleType = collection[index as number].listStyleTypeName;
+                    }
                 }
             } else if (collection[index as number].nestedLevel === 1) {
                 if ((root.lastChild as HTMLElement).tagName.toLowerCase() === collection[index as number].listType) {
@@ -752,24 +838,27 @@ export class MsWordPaste {
             this.listContents.push('');
             this.listContents.push(pushContent);
         } else {
-            const styleNodes: string[] = ['b', 'em'];
-            if (firstChild.childNodes.length > 0 && (firstChild.querySelectorAll('b').length > 0
-                || firstChild.querySelectorAll('em').length > 0)) {
-                for (let i: number = 0; i < firstChild.childNodes.length; i++) {
-                    const nodeName: string = firstChild.childNodes[i as number].nodeName.toLowerCase();
-                    if (firstChild.childNodes[i as number].textContent.trim().length > 1 && styleNodes.indexOf(nodeName) !== -1) {
-                        pushContent = '<' + nodeName + '>' + firstChild.childNodes[i as number].textContent + '</' + nodeName + '>';
-                        this.listContents.push(pushContent);
-                    } else if (firstChild.childNodes[i as number].textContent.trim().length === 1) {
-                        this.listContents.push(firstChild.childNodes[i as number].textContent.trim());
-                    }
+            //Add to support separate list which looks like same list and also to add all tags as it is inside list
+            if (firstChild.childNodes.length > 0) {
+                const listOrder: Element = firstChild.querySelector('span[style="mso-list:Ignore"]');
+                if (!isNOU(listOrder)) {
+                    this.listContents.push(listOrder.textContent.trim());
+                    detach(listOrder);
+                    this.removingComments(elem as HTMLElement);
+                    this.removeUnwantedElements(elem as HTMLElement);
                 }
-            } else {
-                pushContent = firstChild.textContent.trim();
-                this.listContents.push(pushContent);
             }
         }
-        detach(firstChild);
         this.listContents.push(elem.innerHTML);
+    }
+    private removeEmptyAnchorTag(element: HTMLElement): void {
+        const removableElement: NodeListOf<Element> = element.querySelectorAll('a:not([href])');
+        for (let j: number = removableElement.length - 1; j >= 0; j--) {
+            const parentElem: Node = removableElement[j as number].parentNode;
+            while (removableElement[j as number].firstChild) {
+                parentElem.insertBefore(removableElement[j as number].firstChild, removableElement[j as number]);
+            }
+            parentElem.removeChild(removableElement[j as number]);
+        }
     }
 }

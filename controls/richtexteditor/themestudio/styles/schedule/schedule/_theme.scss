@@ -13,7 +13,12 @@
     }
 
     .e-header-calendar {
-      background-color: $schedule-calendar-background;
+      @if ($skin-name == 'Material3') {
+        background: $schedule-calendar-background;
+      }
+      @else {
+        background-color: $schedule-calendar-background;
+      }
       box-shadow: $schedule-calendar-shadow;
     }
 
@@ -154,7 +159,7 @@
       }
 
       .e-previous-timeline {
-        border-top: 1px dotted $schedule-active-border-color;
+        border-top: 1px $schedule-alternate-cell-border $schedule-active-border-color;
       }
 
       &.e-by-date {

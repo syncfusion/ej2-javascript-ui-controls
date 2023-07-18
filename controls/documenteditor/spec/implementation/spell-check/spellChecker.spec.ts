@@ -8,7 +8,6 @@ import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { ParagraphWidget, LineInfo, TextElementBox, TextPosition, ContextElementInfo, LineWidget, ElementInfo, ErrorInfo, SpaceCharacterInfo, SpecialCharacterInfo, ElementBox, WordSpellInfo } from '../../../src';
 import { Search, TextSearchResults } from '../../../src/document-editor/implementation/search/index';
 import { SpellCheckDialog } from '../../../src/document-editor/implementation/dialogs/spellCheck-dialog';
-import { HelperMethods } from '../../../src';
 
 let data: any = {
     "sections": [
@@ -463,13 +462,13 @@ console.log('Spell check remove errors from collection');
     it('Spell check ManageSpecial character API testing', () => {
 console.log('Spell check ManageSpecial character API testing');
         editor.openBlank();
-        let text: string = HelperMethods.manageSpecialCharacters(',&helo*#', undefined, true);
+        let text: string = editor.spellChecker.manageSpecialCharacters(',&helo*#', undefined, true);
         expect(text).toBe('helo');
     });
     it('Spell check ManageSpecial character API testing 1', () => {
 console.log('Spell check ManageSpecial character API testing 1');
         editor.openBlank();
-        let text: string = HelperMethods.manageSpecialCharacters(',&helo*#', 'helo', false);
+        let text: string = editor.spellChecker.manageSpecialCharacters(',&helo*#', 'helo', false);
         expect(text).toBe(',&helo');
     });
     it('Spell check CheckTextElementError API testing', () => {

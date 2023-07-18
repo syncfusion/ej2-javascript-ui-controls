@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined,addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import * as cls from '../base/css-constants';
 import { Splitter as SplitterLayout, ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
@@ -26,6 +26,7 @@ export class Splitter {
         this.parent.splitterElement = createElement('div', { className: cls.splitter });
         this.parent.treeGridPane = createElement('div', { className: cls.treeGridPane });
         this.parent.chartPane = createElement('div', { className: cls.ganttChartPane });
+        addClass([this.parent.chartPane], 'e-droppable');
         if (this.parent.enableRtl) {
             this.parent.splitterElement.appendChild(this.parent.chartPane);
             this.parent.splitterElement.appendChild(this.parent.treeGridPane);
@@ -70,6 +71,9 @@ export class Splitter {
                 this.parent.trigger('splitterResizing', args);
             },
             resizeStop: (args: ISplitterResizedEventArgs) => {
+                const leftPane: HTMLElement = args.pane[0];
+                this.splitterPreviousPositionGrid = leftPane.scrollWidth + 1 + 'px';
+                this.splitterObject.paneSettings[0].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionGrid);
                 const callBackPromise: Deferred = new Deferred();
                 this.parent.trigger('splitterResized', args, (splitterResizedArgs: ISplitterResizedEventArgs) => {
                     if (splitterResizedArgs.cancel === true) {

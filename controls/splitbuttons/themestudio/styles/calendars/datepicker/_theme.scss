@@ -45,7 +45,6 @@
         }
         @if $skin-name == 'Material3' {
           border: $datepicker-icon-active-border;
-          border-radius: $datepicker-icon-active-border-radius;
           background: $datepicker-icon-active-bg-color;
         }
       }

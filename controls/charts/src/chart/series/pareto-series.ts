@@ -5,6 +5,8 @@ import { Chart } from '../chart';
 import { Series } from '../series/chart-series';
 import { ColumnBase } from './column-base';
 import { Axis } from '../axis/axis';
+import { markerShapes } from './marker';
+import { getSeriesColor } from '../../common/model/theme';
 
 /**
  * `Pareto series` module used to render the Pareto series.
@@ -18,12 +20,22 @@ export class ParetoSeries extends ColumnBase {
 
     public initSeries(targetSeries: Series, chart: Chart): void {
         const series: Series = new Series(chart, 'series', (targetSeries as Series & { properties: Object }).properties, true);
+        const colors: string[] = chart.palettes.length ? chart.palettes : getSeriesColor(chart.theme);
+        const count: number = colors.length;
         series.name = 'Pareto';
         series.yAxisName = targetSeries.yAxisName + '_CumulativeAxis';
         series.category = 'Pareto';
         targetSeries.category = 'Pareto';
+        series.index = targetSeries.index + chart.series.length;
         series.type = 'Line';
-        series.interior = chart.themeStyle.errorBar;
+        series.interior = series.paretoOptions.fill ? series.paretoOptions.fill : colors[series.index % count];
+        series.width = series.paretoOptions.width;
+        series.dashArray = series.paretoOptions.dashArray;
+        series.marker = series.paretoOptions.marker;
+        if (series.marker && series.marker.visible) {
+            series.marker.shape = series.marker.shape ? series.marker.shape : markerShapes[chart.markerIndex as number % 10];
+            chart.markerIndex++;
+        }
         chart.visibleSeries.push(series);
         this.initAxis(targetSeries, series, chart);
     }
@@ -48,6 +60,7 @@ export class ParetoSeries extends ColumnBase {
                 lineStyle: secondaryAxis.lineStyle,
                 minimum: 0,
                 maximum: 100,
+                interval: 20,
                 rowIndex: secondaryAxis.rowIndex,
                 opposedPosition: true,
                 labelFormat: '{value}%'

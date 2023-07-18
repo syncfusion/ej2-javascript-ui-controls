@@ -290,7 +290,7 @@ export type DateOperators =
     'NotBetween';
 
 /**
- * Defines the conditioanal formatting operators. They are
+ * Defines the conditional formatting operators. They are
  * ```props
  * Equals :- Display the pivot table that matches with the given value.
  * DoesNotEquals :- Display the pivot table that does not match with the given value.

@@ -76,7 +76,7 @@ export class Virtualization {
         this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(
             // eslint-disable-next-line
             this.listViewInstance.createElement, firstDs as any, this.listViewInstance.listBaseOption, null, this.listViewInstance);
-        this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
+        this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.container });
         this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
         this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
         this.listItemHeight = this.listViewInstance.ulElement.firstElementChild.getBoundingClientRect().height;

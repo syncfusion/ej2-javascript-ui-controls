@@ -76,6 +76,8 @@ export interface IRangeStyle {
     tooltipFontColor: string;
     thumbWidth: number;
     thumbHeight: number;
+    axisLabelFont: FontModel;
+    tooltipLabelFont: FontModel;
 }
 /**
  * Interface for range events

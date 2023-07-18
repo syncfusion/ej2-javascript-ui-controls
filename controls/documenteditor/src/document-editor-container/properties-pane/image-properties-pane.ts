@@ -1,8 +1,11 @@
 import { createElement, KeyboardEventArgs, L10n, classList } from '@syncfusion/ej2-base';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
+import { TextBox } from '@syncfusion/ej2-inputs';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { DocumentEditor } from '../../document-editor/document-editor';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Image Property pane
  *
@@ -21,6 +24,8 @@ export class ImageProperties {
     private isWidthApply: boolean = false;
     private isHeightApply: boolean = false;
     private isRtl: boolean;
+    private textArea: HTMLElement;
+    private textareaObj: TextBox;
 
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
@@ -50,12 +55,13 @@ export class ImageProperties {
         this.element.style.display = 'none';
         this.container.propertiesPaneContainer.appendChild(this.element);
         this.initImageProp();
+        this.initImageAltProp();
         this.wireEvents();
     }
 
     private initImageProp(): void {
         const localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-        const imageDiv: HTMLElement = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-cntr-pane-padding', styles: 'border:0px' });
+        const imageDiv: HTMLElement = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-cntr-pane-padding e-de-prop-separator-line'});
         this.element.appendChild(imageDiv);
         const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
         label.textContent = localObj.getConstant('Image');
@@ -75,6 +81,20 @@ export class ImageProperties {
         aspectRatioDiv.appendChild(aspectRatio);
         this.aspectRatioBtn = new CheckBox({ label: localObj.getConstant('Aspect ratio'), enableRtl: this.isRtl }, aspectRatio);
     }
+    private initImageAltProp(): void {
+        const localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
+        const AltDiv: HTMLElement = createElement('div', { id: this.elementId + '_altDiv', className: 'e-de-cntr-pane-padding e-de-prop-separator-line' });
+        this.element.appendChild(AltDiv);
+        const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        label.textContent = localObj.getConstant('Alternate Text');
+        AltDiv.appendChild(label);
+        this.textArea = createElement('textarea', { id: this.elementId + '_textarea',className: 'e-de-ctnr-prop-label '}); 
+        AltDiv.appendChild(this.textArea);
+        let textareaObj = new TextBox({
+            floatLabelType: 'Never'   
+        });
+        textareaObj.appendTo(this.textArea);
+    };
     /* eslint-disable-next-line max-len */
     private createImagePropertiesDiv(id: string, outerDiv: HTMLElement, inputId: string, spanContent: string, tooltip: string): HTMLElement {
         const divElement: HTMLElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;', className: 'e-de-ctnr-segment' });
@@ -103,6 +123,18 @@ export class ImageProperties {
         this.heightNumericBox.element.addEventListener('blur', (): void => {
             this.applyImageHeight(); this.isHeightApply = false;
         });
+        this.textArea.addEventListener('blur', (): void => {
+            if (this.documentEditor.selection.imageFormat.alternateText != (this.textArea as HTMLInputElement).value) {
+            this.applyImageAlternativeText();
+            }
+        });
+    }
+    private applyImageAlternativeText(): void{
+        let altText: string = SanitizeHtmlHelper.sanitize((this.textArea as HTMLInputElement).value);
+        if(!isNullOrUndefined(altText))
+        {
+            this.documentEditor.selection.imageFormat.applyImageAlternativeText(altText);
+        }    
     }
     private onImageWidth(e: KeyboardEventArgs): void {
         if (e.keyCode === 13) {
@@ -181,6 +213,14 @@ export class ImageProperties {
     public updateImageProperties(): void {
         this.widthNumericBox.value = this.documentEditor.selection.imageFormat.width;
         this.heightNumericBox.value = this.documentEditor.selection.imageFormat.height;
+        if(isNullOrUndefined(this.documentEditor.selection.imageFormat.alternateText))
+        {
+            (this.textArea as HTMLInputElement).value = "";  
+        }
+        else
+        {
+            (this.textArea as HTMLInputElement).value = this.documentEditor.selection.imageFormat.alternateText;  
+        }  
     }
     public destroy(): void {
         this.container = undefined;
@@ -192,7 +232,7 @@ export class ImageProperties {
             this.heightNumericBox.destroy();
         }
         this.heightNumericBox = undefined;
-        if (this.aspectRatioBtn) {
+        if (this.aspectRatioBtn) {            
             this.aspectRatioBtn.destroy();
         }
         this.aspectRatioBtn = undefined;

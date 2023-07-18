@@ -91,6 +91,7 @@ export class Gantt extends Component<HTMLElement>
      /** @hidden */
     private headerMaskTable: Element;
     /** @hidden */
+    private isProjectDateUpdated: boolean;
     public columnLoop: any;
     public showIndicator: boolean = true;
     public singleTier: number = 0;
@@ -543,25 +544,28 @@ export class Gantt extends Component<HTMLElement>
      * The task bar template that renders customized child task bars from the given template.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public taskbarTemplate: string;
+    public taskbarTemplate: string | Function;
 
     /**
      * The parent task bar template that renders customized parent task bars from the given template.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public parentTaskbarTemplate: string;
+    public parentTaskbarTemplate: string | Function;
 
     /**
      * The milestone template that renders customized milestone task from the given template.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public milestoneTemplate: string;
+    public milestoneTemplate: string | Function;
 
     /**
      * Defines the baseline bar color.
@@ -1824,6 +1828,9 @@ export class Gantt extends Component<HTMLElement>
         const ganttHeader: Element = this.chartPane.childNodes[0].childNodes[0] as Element;
         this.scrollLeftValue = this.chartPane.childNodes[0].childNodes[0]['scrollLeft']
         const ganttContent: Element = this.chartPane.childNodes[0].childNodes[1] as Element;
+        if (this.treeGrid.element) {
+            this.ganttChartModule['setVirtualHeight']();
+        }
         if (!this.contentMaskTable) {
             if (ganttContent) {
                 let content: Element = ganttContent;
@@ -2184,19 +2191,17 @@ export class Gantt extends Component<HTMLElement>
             this.notify('initPredessorDialog', {});
         }
         this.splitterModule.updateSplitterPosition();
-        if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
-            this.renderChartVerticalLines();
-        }
+        // if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
+        //     this.renderChartVerticalLines();
+        // }
     }
     public removeCriticalPathStyles(): void {
         const ganttChartElement: HTMLElement = this.ganttChartModule.chartElement;
         removeClass(ganttChartElement.querySelectorAll('.e-gantt-child-taskbar-inner-div'), cls.criticalChildTaskBarInnerDiv);
         removeClass(ganttChartElement.querySelectorAll('.e-gantt-child-progressbar-inner-div'), cls.criticalChildProgressBarInnerDiv);
-        removeClass(ganttChartElement.querySelectorAll('.e-milestone-top'), cls.criticalMilestoneTop);
-        removeClass(ganttChartElement.querySelectorAll('.e-milestone-bottom'), cls.criticalMilestoneBottom);
-        removeClass(this.element.querySelectorAll('.e-line'), cls.criticalConnectorLine);
-        removeClass(this.element.querySelectorAll('.e-connector-line-right-arrow'), cls.criticalConnectorLineRightArrow);
-        removeClass(this.element.querySelectorAll('.e-connector-line-left-arrow'), cls.criticalConnectorLineLeftArrow);
+        removeClass(ganttChartElement.querySelectorAll('.e-critical-milestone'), cls.criticalMilestone);
+        removeClass(this.element.querySelectorAll('.e-connector-line'), cls.criticalConnectorLineSVG);
+        removeClass(this.element.querySelectorAll('.e-connector-line-arrow'), cls.criticalConnectorArrowSVG);
     }
     private wireEvents(): void {
         if (this.allowKeyboard) {
@@ -2210,6 +2215,16 @@ export class Gantt extends Component<HTMLElement>
         }
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         EventHandler.add(window as any, 'resize', this.windowResize, this);
+        EventHandler.add(document.body, 'keydown', this.keyDownHandler, this);
+    }
+    
+    private keyDownHandler(e: KeyboardEventArgs): void {
+        if (e.altKey) {
+            if (e.keyCode === 74) {//alt j
+                this.ganttChartModule.manageFocus(this.treeGrid.element.childNodes[1] as HTMLElement, 'remove', false);
+                this.ganttChartModule.manageFocus(this.element, 'add', false);
+            }
+        }
     }
     /**
      * Method trigger while user perform window resize.
@@ -2226,8 +2241,8 @@ export class Gantt extends Component<HTMLElement>
                 this.updateRowHeightInConnectorLine(this.updatedConnectorLineCollection);
                 this.connectorLineModule.renderConnectorLines(this.updatedConnectorLineCollection);
             }
-            if (this.enableCriticalPath) {
-                let criticalModule: CriticalPath = this.criticalPathModule;
+            let criticalModule: CriticalPath = this.criticalPathModule;
+            if (this.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
                 this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true,criticalModule.predecessorCollectionTaskIds);
             }
         }
@@ -2652,8 +2667,8 @@ export class Gantt extends Component<HTMLElement>
                 (<HTMLElement>document.getElementsByClassName('e-timeline-header-table-container')[i as number].children[0].children[0].children[j as number].children[0]).setAttribute('tabindex', '-1');
             }
         }
-        if (this.enableCriticalPath && this.criticalPathModule) {
-            let criticalModule: CriticalPath = this.criticalPathModule;
+        let criticalModule: CriticalPath = this.criticalPathModule;
+        if (this.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
             this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true, criticalModule.predecessorCollectionTaskIds);
         }
         this.initialChartRowElements = this.ganttChartModule.getChartRows();
@@ -2755,7 +2770,9 @@ export class Gantt extends Component<HTMLElement>
                 if (this.enableCriticalPath && this.criticalPathModule) {
                     this.criticalPathModule.showCriticalPath(this.enableCriticalPath);
                     let criticalModule: CriticalPath = this.criticalPathModule;
-                    this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
+                    if (criticalModule.criticalPathCollection) {
+                       this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
+                    }
                  }
                  else {
                      this.removeCriticalPathStyles();
@@ -3078,7 +3095,7 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
-        if (this.toolbar) {
+        if (this.toolbar && this.toolbar.length > 0) {
             modules.push({
                 member: 'toolbar',
                 args: [this]
@@ -3302,9 +3319,9 @@ export class Gantt extends Component<HTMLElement>
         if (!this.element.contains(this.chartVerticalLineContainer)) {
             this.chartVerticalLineContainer = createElement('div', {
                 id: this.element.id + 'line-container',
-                styles: 'position:absolute;height:100%;z-index:1'
+                styles: 'position:absolute;height:100%;'
             });
-            this.ganttChartModule.chartBodyContent.appendChild(this.chartVerticalLineContainer);
+            this.ganttChartModule.chartBodyContent.insertBefore(this.chartVerticalLineContainer, this.ganttChartModule.chartBodyContent.lastChild);
         }
         this.chartVerticalLineContainer.innerHTML = '';
         let headerTable: Element = this.element.getElementsByClassName('e-timeline-header-table-container')[1];
@@ -3706,9 +3723,7 @@ export class Gantt extends Component<HTMLElement>
         this.timelineModule.updateChartByNewTimeline();
         this.ganttChartModule.chartBodyContent.style.width = formatUnit(this.timelineModule.totalTimelineWidth);
         this.ganttChartModule.updateLastRowBottomWidth();
-        if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
-            this.renderChartVerticalLines();
-        }
+       
         if (this.taskFields.dependency) {
             this.ganttChartModule.reRenderConnectorLines();
         }

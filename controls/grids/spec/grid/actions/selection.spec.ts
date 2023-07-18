@@ -21,6 +21,7 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Column } from '../../../src/grid/models/column';
 import { Row } from '../../../src/grid/models/row';
+import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 
 Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze, VirtualScroll, Filter);
 
@@ -5496,6 +5497,136 @@ describe('EJ2-65110 - Enter and shiftEnter key functionality with template colum
     });
     afterAll(() => {
         destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-828323 - ResetOnRowClick resets the checked row only in the current page while using remote data binding', () => {
+    let gridObj: Grid;
+    const hostUrl = 'https://services.syncfusion.com/js/production/';
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: new DataManager({
+                    url: hostUrl + 'api/Orders',
+                    adaptor: new WebApiAdaptor(),
+                    crossDomain: true,
+                }),
+                allowPaging: true,
+                allowSelection: true,
+                selectionSettings: { persistSelection: true, type: 'Multiple', checkboxMode: 'ResetOnRowClick' },
+                editSettings: { allowDeleting: true },
+                toolbar: ['Delete'],
+                enableHover: false,
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right' },
+                    { field: 'CustomerName', headerText: 'CustomerName', width: 130 },
+                    { field: 'Freight', format: 'C2', textAlign: 'Right', editType: 'numericedit', width: 120 },
+                    { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 }
+                ],
+            }, done);
+    });
+    it('clicking the selectAll checkbox and moving to next page', () => {
+        gridObj.dataBind();
+        (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        gridObj.goToPage(2);
+    });
+    it('Selecting a record in second page and moving to first page', () => {
+        let rowSelecting = (e: any) => {
+        };
+        gridObj.rowSelecting = rowSelecting;
+        (gridObj.element.querySelectorAll('.e-rowcell')[16] as any).click();
+        gridObj.goToPage(1);
+    });
+    it('Ensuring the number of selected records', () => {
+         expect(gridObj.selectionModule.getSelectedRecords().length).toBe(1);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('BUG 836872 - The selectedRowIndex property is experiencing some issues and is not functioning correctly', () => {
+    let gridObj: Grid;
+    let rowSelected: (e?: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                allowSelection: true,
+                selectionSettings: { persistSelection: true },
+                editSettings: {allowDeleting: true},
+                toolbar: ['Delete'],
+                enableHover: false,
+                pageSettings: { pageCount: 2 },
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 180 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 195, textAlign: 'Right' },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 120 },
+                    { field: 'ShipCity', headerText: 'ShipCity', width: 130 }
+                ],                
+                rowSelected: rowSelected,
+            }, done);
+    });
+    it('Checking selectedRowIndex', function () {
+        gridObj.selectRow(2, true);
+        gridObj.selectRow(3, true);
+        expect(gridObj.selectedRowIndex).toBe(3);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('BUG 837180 - Selection moved to first row when newRowPosition given as Bottom', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                allowPaging: true,
+                pageSettings: { pageCount: 5 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', newRowPosition: 'Bottom' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 140},
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140},
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 140, format: 'C2', validationRules: { required: true }},
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },},
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } }}],
+            }, done);
+    });
+    
+    it('1st Add complete', function (done) {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.selectedRowIndex).toBe(0);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.editModule.editModule.addRecord({ OrderID: 10247, CustomerID: 'updated', Freight: 12 });
+    });
+    it('2st Add complete', function (done) {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.selectedRowIndex).toBe(1);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.editModule.editModule.addRecord({ OrderID: 10244, CustomerID: 'updated', Freight: 13 });
+    });
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj.actionComplete = null;
         gridObj = null;
     });
 });

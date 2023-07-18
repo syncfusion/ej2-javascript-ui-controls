@@ -2,6 +2,147 @@
 
 ## [Unreleased]
 
+## 22.1.39 (2023-07-18)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I45187` - Border is changed to outline in CSS issue has been fixed.
+
+## 22.1.38 (2023-07-11)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I474676` - Fit to project display wrong timeline issue has been fixed.
+- `#I472975` - Manual task predecessor not properly fetching updated offset issue has been fixed.
+- `#I471838` - White space occur when we change page size in `dataBound` event issue has been fixed.
+- `#I475099` - Context menu is not opening when the dataSource is empty.
+- `#I477253` - Inserting a task prevents scrolling to top of list.
+- `#I461924` - Issue with collapse all Toolbar Option issue has been fixed.
+- `#I475987` -Edit template is not working when the virtualization is enabled.
+
+## 22.1.37 (2023-07-04)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I471925` - Cannot see a Dragged Task after Zoom In issue has been fixed.
+- `#I473517` - Incorrect taskbar render when unit is given in hour issue has been fixed.
+- `#I473451` - Segment taskbar is not rendered correctly  issue has been fixed.
+- `#I471730` - Taskbar not rendered properly based on duration issue has been fixed.
+
+## 22.1.36 (2023-06-28)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I473901` - Baseline converted to milestone when task gets converted into milestone issue has been fixed.
+- `#I471926` - Console error occurs in critical path when data source is empty issue has been fixed.
+- `#I469289` - Fit to project is not working properly issue has been fixed.
+- `#I473341` - Tooltip template not working properly issue has been fixed.
+- `#I467372` - no drop icon is displayed while dropping in Gantt chart.
+- `#F182867` - Edit template for start date column not works issue has been fixed.
+- `#I470521` - Toolbar template is not working properly in react issue has been fixed.
+- `#I44322` - Row Selection behaviour occurs differently in grid and Gantt.
+
+## 22.1.34 (2023-06-21)
+
+### Gantt Chart
+
+#### Features
+
+-`#I43435` - Improved the user interface of taskbar resizing and moving actions in the Gantt Chart. Now, when users perform taskbar resizing or moving, a virtual element is displayed instead of updating the original taskbar element. This virtual element remains visible until the action is completed, providing users with a clear representation of the changes they are making. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/bootstrap5/gantt/editing.html).
+
+#### Breaking changes
+
+- Connector lines have been changed from elements to SVG elements for UI improvement. This change has been made to enhance the user interface and provide a more visually appealing and flexible way of displaying connector lines.
+
+## 21.2.10 (2023-06-13)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I459187` - Newly added record missed at the bottom in virtual scroll issue has been fixed.
+- `#I469401` - Resource names gets duplicated in right label issue has been fixed.
+- `#I464184` - Progress width not updated properly in split tasks issue has been fixed.
+- `#F182318` - Progress width not updated properly in manual tasks after zooming action issue has been fixed.
+
+## 21.2.9 (2023-06-06)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I467744` - Provided support for virtual scroll in resource view multitask bar.
+- `#I464831` - Incorrect render of segments when we give end date while declaring segment in data source issue has been fixed.
+- `#I461924` - Bug Script Error throws while using Virtualization with Collapse All action.
+- `#I469496` - Start date not updated properly for predecessor connected record issue has been fixed.
+- `#I465752` - Timeline start date gets changed when we perform right resizing or progress resizing issue has been fixed.
+- `#I463593` - True type font style is not updated in the footer.
+- `#I463666` - Bug Milestones not rendering correctly in hierarchy issue has been fixed.
+- `#I463231` - Selection is not maintained when we scroll issue has been fixed.
+- `#I462836` - Taskbar not rendered properly when the dependency is connected to the bottom task issue has been fixed.
+- `#I464999` - Expand or Collapse All causes improper view in virtual scrolling issue has been fixed.
+- `#I462469` - Virtual scrolling breaks in deleting the last record issue has been fixed.
+- `#I464528` - Outdent action does not work properly issue has been fixed.
+- `#I464592` - Progress values are incorrect in parent task after performing drag drop issue has been fixed.
+
+## 21.2.8 (2023-05-30)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I461738` - Updating custom column change the end date issue has been fixed
+- `#I461564` - Editing cell followed by context menu does not work issue has been fixed
+- `#I461800` - Console error while exporting pdf error has been fixed.
+- `#I464045` - Parent dependency renders though we set `allowParentDependency` as false issue has been fixed.
+- `#I462271` - Taskbar not rendered when we use taskbar template issue has been fixed.
+- `#I460869`- Issue in Resource view wont display resource name has been fixed
+- `#I461105` - Baseline dates rendered incorrectly in without `dayWorkingTime` issue has been fixed.
+-`#I460869`- Issue in Resource view wont display resource name has been fixed.
+
+## 21.2.6 (2023-05-23)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I461435` - Adding and deleting record rapidly while displaying tooltip cause error has been fixed.
+- `#I461087` - Offset value getting modified incorrectly issue has been fixed.
+- `#I461778` - Misalignment in rows on Tree Grid and Gantt in virtual scroll issue has been fixed
+
+## 21.2.5 (2023-05-16)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I461778` - Misalignment in rows on Tree Grid and Gantt in virtual scroll issue has been fixed
+- `#I181309` - splitter position not updating after resize issue has been fixed.
+- `#I449506` - Moving child row referencing another parent row will not move all of the descendants of that another parent row issue has been fixed.
+- `#I457803` - Offset value is not correctly updated while connecting predecessor issue has been fixed.
+- `#I449944` - Zoom out button in toolbar not enabled once after zoom in operation issue has been fixed.
+- `#I434098` - Issue while rendering resource view without child mapping has been fixed.
+
+## 21.2.4 (2023-05-09)
+
+### Gantt Chart
+
+#### Bug Fixes
+
+- `#I457032` - Task label not rendered properly when we render as template issue has been fixed.
+- `#I457212` - Timeline renders different in `Firefox` and `Chrome` issue has been fixed.
+- `#I456146` - Console error occur while changing task field after removing toolbar issue has been fixed.
+- `#F181579` - Style not reflected on the notes column when we perform dialog edit issue has been fixed.
+- `#I456453` - `CSS class` is not updated while changing it through `updateRecordbyId` method issue has been fixed.
+
 ## 21.2.3 (2023-05-03)
 
 ### Gantt Chart
@@ -9,7 +150,7 @@
 #### Bug Fixes
 
 - `#I441205` - Two spinner appears while performing action issue has been fixed.
--`#I451257`- No proper template for manual milestone parent.
+- `#I451257` - No proper template for manual milestone parent.
 - `#I443041` - Gantt react performance rendering issue during initial load has been fixed.
 
 ## 21.1.41 (2023-04-18)

@@ -774,7 +774,17 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             // Call custom placement function if customPlacement is not null
             this.customPlacement.call(this, this.inputElement, errorElement);
         } else {
-            this.inputElement.parentNode.insertBefore(errorElement, this.inputElement.nextSibling);
+            const inputParent = this.inputElement.parentElement;
+            const grandParent = inputParent.parentElement;
+            if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper')) {
+               grandParent.insertBefore(errorElement, inputParent.nextSibling); 
+            }
+            else if(grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper')) {
+                grandParent.parentElement.insertBefore(errorElement, grandParent.nextSibling);
+            }
+            else {
+                inputParent.insertBefore(errorElement, this.inputElement.nextSibling);
+            }
         }
         errorElement.style.display = 'block';
         this.getErrorElement(name);
@@ -869,7 +879,15 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             return !isNaN(Number(option.value)) && Number(option.value) >= param[0] && Number(option.value) <= param[1];
         },
         date: (option: ValidArgs): boolean => {
-            return !isNaN(new Date(option.value).getTime());
+            if (!isNullOrUndefined(option.param) && (typeof (option.param) === 'string' && option.param !== '')) {
+                var globalize = new Internationalization;
+                var dateOptions = { format: option.param.toString(), type: 'dateTime', skeleton: 'yMd' };
+                var dateValue = globalize.parseDate(option.value, dateOptions);
+                return (!isNullOrUndefined(dateValue) && dateValue instanceof Date && !isNaN(+dateValue));
+            }
+            else {
+                return !isNaN(new Date(option.value).getTime());
+            }
         },
         max: (option: ValidArgs): boolean => {
             if (!isNaN(Number(option.value))) {

@@ -101,6 +101,11 @@ export class CommentReviewPane {
                 this.owner.notify('reviewPane', { comment: this.isCommentTabVisible, changes: this.owner.trackChangesPane.isChangesTabVisible });
                 this.reviewTab.hideTab(1, true);
             }
+            if (!this.owner.showComments) {
+                this.isCommentTabVisible = false;
+                this.owner.notify('reviewPane', { comment: this.isCommentTabVisible, changes: this.owner.trackChangesPane.isChangesTabVisible });
+                this.reviewTab.hideTab(0, true);
+            }
         }
         if (show) {
             this.enableDisableItems();
@@ -169,7 +174,7 @@ export class CommentReviewPane {
 
     public initReviewPane(localValue: L10n): void {
         const reviewContainer: HTMLElement = this.owner.documentHelper.optionsPaneContainer;
-        reviewContainer.style.display = 'inline-flex';
+        reviewContainer.style.display = 'flex';
         this.initPaneHeader(localValue);
         reviewContainer.appendChild(this.addReviewTab(localValue));
         this.initCommentPane();
@@ -737,7 +742,7 @@ export class CommentPane {
             this.parentPane.isCommentTabVisible = false;
             this.owner.notify('reviewPane', { comment: false, changes: this.owner.trackChangesPane.isChangesTabVisible});
             this.parentPane.reviewTab.hideTab(0);
-        } else {
+        } else if (this.owner.showComments) {
             this.parentPane.isCommentTabVisible = true;
             this.noCommentIndicator.style.display = 'none';
             this.owner.notify('reviewPane', { comment: true, changes: this.owner.trackChangesPane.isChangesTabVisible});

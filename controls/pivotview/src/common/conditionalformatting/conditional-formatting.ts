@@ -108,7 +108,7 @@ export class ConditionalFormatting {
             this.dialog = new Dialog({
                 allowDragging: true, position: { X: 'center', Y: this.parent.element.offsetTop }, buttons: buttonModel,
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
-                cssClass: this.parent.cssClass, isModal: false, closeOnEscape: true,
+                cssClass: this.parent.cssClass, isModal: true, closeOnEscape: true,
                 enableRtl: this.parent.enableRtl, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
@@ -151,7 +151,7 @@ export class ConditionalFormatting {
                 conditionalFormattingInfo: this.parent.dataSourceSettings.conditionalFormatSettings as IConditionalFormatSettings[]
             };
             this.parent.actionObj.actionInfo = actionInfo;
-            if(this.parent.dataSourceSettings.values.length > 0) {
+            if (this.parent.dataSourceSettings.values.length > 0) {
                 this.parent.renderPivotGrid();
             }
             this.dialog.close();

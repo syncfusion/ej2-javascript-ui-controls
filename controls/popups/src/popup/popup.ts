@@ -558,9 +558,10 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
                 this.element.parentElement.style.display = parentDisplay;
             }
         } else if (relateToElement) {
+            const height: number = this.element.clientHeight;
             const display: string = this.element.style.display;
             this.element.style.display = 'block';
-            pos = this.getAnchorPosition(relateToElement, this.element, this.position, this.offsetX, this.offsetY);
+            pos = this.getAnchorPosition(relateToElement, this.element, this.position, this.offsetX, this.offsetY, height);
             this.element.style.display = display;
         } else {
             pos = { left: 0, top: 0 };
@@ -586,7 +587,8 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         ele: HTMLElement,
         position: PositionDataModel,
         offsetX: number,
-        offsetY: number): OffsetPosition {
+        offsetY: number,
+        height: number = 0): OffsetPosition {
         const eleRect: ClientRect = this.checkGetBoundingClientRect(ele);
         const anchorRect: ClientRect = this.checkGetBoundingClientRect(anchorEle);
         if ( isNullOrUndefined(eleRect)  || isNullOrUndefined(anchorRect) ) {
@@ -641,8 +643,10 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         case 'bottom':
             if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
                 anchorPos.top += (window.innerHeight - eleRect.height);
-            } else if (this.targetType === 'container') {
+            } else if (this.targetType === 'container' && !ele.classList.contains('e-dialog')) {
                 anchorPos.top += (anchorRect.height - eleRect.height);
+            } else if (this.targetType === 'container' && ele.classList.contains('e-dialog')) {
+                anchorPos.top += (anchorRect.height - height);
             } else {
                 anchorPos.top += (anchorRect.height);
             }

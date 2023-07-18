@@ -21,7 +21,7 @@ export function getPortShape(shape: PortShapes): string {
  * @returns { string }     ShapeDictionary defines the shape of the default nodes and ports.\
  * @param {DecoratorShapes} shape - provide the element value.
  * @param {DecoratorModel} decorator - provide the element value.
- 
+
  *
  * @private
  */
@@ -33,13 +33,13 @@ export function getDecoratorShape(shape: DecoratorShapes, decorator: DecoratorMo
 }
 
 export function getSegmentThumbShapeHorizontal(shapes : SegmentThumbShapes)
-    {
+{
     return segmentThumbShapeHorizontal[`${shapes}`];
-    }
-export function getSegmentThumbShapeVertical(shapes :SegmentThumbShapes)
-    {
+}
+export function getSegmentThumbShapeVertical(shapes: SegmentThumbShapes)
+{
     return segmentThumbShapeVertical[`${shapes}`];
-    }
+}
 
 /**
  *sets the path data for different icon shapes \
@@ -95,7 +95,7 @@ let decoratorShapes: {} = {
     'Diamond': 'M12,23l-7-7l7-7l6.9,7L12,23z',
     'Circle': 'M0,50 A50,50,0 1 1 100,50 A50,50,0 1 1 0,50 Z'
 };
-let segmentThumbShapeHorizontal:{}={
+const segmentThumbShapeHorizontal: {} = {
 
     'Square': 'M0,0 L10,0 L10,10 L0,10 z',
     'Rhombus' : 'M10,5 L5,10 L0,5 L5,0 L10,5 Z ',
@@ -109,9 +109,9 @@ let segmentThumbShapeHorizontal:{}={
     'Arrow': 'M15,10 L15,22 L5,16Z',
     'Diamond':  'M10,5 L5,10 L0,5 L5,0 L10,5 Z  ',
     'Circle': 'M10,5 C10,7.76,7.76,10,5,10 C2.24,10,0,7.76,0,5 C0,2.24,2.24,0,5,0 C7.76,0,10,2.24,10,5 Z ',
-    'Ellipse':'M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z  '
+    'Ellipse': 'M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z  '
 };
-let segmentThumbShapeVertical:{}={
+const segmentThumbShapeVertical: {} = {
     'Square': 'M0,0 L10,0 L10,10 L0,10 z',
     'Rhombus': 'M10,5 L5,10 L0,5 L5,0 L10,5 Z ',
     'Rectangle': 'M0,0 L15,0 L15,10 L0,10 z',
@@ -124,5 +124,5 @@ let segmentThumbShapeVertical:{}={
     'Arrow': 'M10,15 L22,15 L16,5Z',
     'Diamond': 'M10,5 L5,10 L0,5 L5,0 L10,5 Z ' ,
     'Circle': 'M10,5 C10,7.76,7.76,10,5,10 C2.24,10,0,7.76,0,5 C0,2.24,2.24,0,5,0 C7.76,0,10,2.24,10,5 Z ',
-    'Ellipse':'M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z   '
+    'Ellipse': 'M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z   '
 };

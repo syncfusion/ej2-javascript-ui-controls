@@ -708,6 +708,21 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 if (ul) {
                     ul.focus();
                 }
+                if(this.enableRtl && ul.parentElement.style.left !== '0px')
+                {
+                    let wrapperWidth: number;
+                    if (this.element.parentElement && this.element.parentElement.classList.contains('e-split-btn-wrapper')) {
+                        wrapperWidth = this.element.parentElement.offsetWidth;
+                    } else {
+                        wrapperWidth = this.element.offsetWidth;
+                    }
+                    const popupRect: number = ul.parentElement.offsetWidth - wrapperWidth;
+                    let popupLeft: number = parseFloat(ul.parentElement.style.left) - popupRect;
+                    if (popupLeft < 0) {
+                        popupLeft = 0;
+                    }
+                    ul.parentElement.style.left = popupLeft + "px";
+                }
                 const openArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };    
                 this.trigger('open', openArgs);
             }

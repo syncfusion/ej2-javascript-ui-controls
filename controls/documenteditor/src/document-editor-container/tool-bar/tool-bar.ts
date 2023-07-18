@@ -850,7 +850,7 @@ export class Toolbar {
         const image: HTMLImageElement = document.createElement('img');
         const container: DocumentEditorContainer = this.container;
         image.addEventListener('load', function (): void {
-            container.documentEditor.editor.insertImageInternal(data, true, this.width, this.height);
+            container.documentEditor.editor.insertImageInternal(data, true, this.width, this.height,this.alt);
         });
         image.src = data;
     }
@@ -947,6 +947,9 @@ export class Toolbar {
             }
             if (this.containsItem(id + FOOTNOTE_ID)) {
                 this.toolbar.enableItems(document.getElementById(id + FOOTNOTE_ID).parentElement, false);
+            }
+            if (this.containsItem(id+BREAK_ID)) {
+                this.toolbar.enableItems(document.getElementById(id +BREAK_ID).parentElement, false);
             }
         }
         if (!isProtectedContent || this.container.showPropertiesPane) {

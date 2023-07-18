@@ -480,7 +480,7 @@ export class BordersAndShadingDialog {
 
         // handling dropdown change
         this.borderWidth = new NumericTextBox({
-            value: 0, min: 0, max: 6, decimals: 2,
+            value: 0.5, min: 0.25, max: 6, decimals: 2, step: 0.25,
             floatLabelType: 'Always', placeholder: localeValue.getConstant('Width'),
             enablePersistence: false
         });
@@ -617,7 +617,7 @@ export class BordersAndShadingDialog {
             if (this.ulelementShading.value === 'Cell') {
                 editorModule.onCellFormat(this.cellFormat);
             } else if (this.ulelementShading.value === 'Table') {
-                editorModule.onTableFormat(this.tableFormat, this.isShadingChanged);
+                editorModule.onTableFormat(this.tableFormat, true);
             }
             if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
                 this.documentHelper.owner.editorHistory.updateComplexHistory();

@@ -161,8 +161,9 @@ export interface UploaderModel extends ComponentModel{
      * > For more information, refer to the [template](../../uploader/template/) section from the documentation.
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Specifies a Boolean value that indicates whether the multiple files can be browsed or

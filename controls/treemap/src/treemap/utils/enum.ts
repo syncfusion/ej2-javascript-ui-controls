@@ -207,7 +207,11 @@ export type TreeMapTheme =
     /** Render a treemap with Fluent theme. */
     'Fluent' |
     /**  Render a treemap with Fluent dark theme. */
-    'FluentDark';
+    'FluentDark' |
+    /** Render a treemap with Material3 theme. */
+    'Material3' |
+    /** Render a treemap with Material3Dark theme. */
+    'Material3Dark';
 /**
  * Defines the rendering directions to render the treemap items in the treemap.
  */

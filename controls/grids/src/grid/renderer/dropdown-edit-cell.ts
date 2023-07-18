@@ -62,7 +62,11 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
             },
             params));
         if (this.parent.enableVirtualization) {
-            this.obj.dataSource = args.column.isForeignColumn() ? [args.foreignKeyData[0]] as string[] : [args.rowData] as string[];
+            if (params.dataSource) {
+                this.obj.dataSource = params.dataSource;
+            } else {
+                this.obj.dataSource = args.column.isForeignColumn() ? [args.foreignKeyData[0]] as string[] : [args.rowData] as string[];
+            }
         }
         this.addEventListener();
         this.obj.query.params = this.parent.query.params;
@@ -104,10 +108,14 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
 
     private dropdownBeforeOpen(): void {
         if (this.parent.enableVirtualization) {
-            (this.obj as DropDownList).dataSource = !this.column.isForeignColumn() ? (this.parent.dataSource instanceof DataManager ?
-                this.parent.dataSource : new DataManager(this.parent.dataSource))
-                : (this.column.dataSource as Object | DataManager) instanceof DataManager ?
-                    this.column.dataSource as DataManager : new DataManager(this.column.dataSource as Object);
+            if (this.column.edit.params && (this.column.edit.params as DropDownListModel).dataSource) {
+                (this.obj as DropDownList).dataSource = (this.column.edit.params as DropDownListModel).dataSource;
+            } else {
+                (this.obj as DropDownList).dataSource = !this.column.isForeignColumn() ? (this.parent.dataSource instanceof DataManager ?
+                    this.parent.dataSource : new DataManager(this.parent.dataSource))
+                    : (this.column.dataSource as Object | DataManager) instanceof DataManager ?
+                        this.column.dataSource as DataManager : new DataManager(this.column.dataSource as Object);
+            }
         }
     }
 

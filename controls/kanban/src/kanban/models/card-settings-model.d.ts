@@ -51,8 +51,9 @@ export interface CardSettingsModel {
      * Defines the card template
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * It defines the card selection type, which accepts either of the following values.

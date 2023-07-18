@@ -208,6 +208,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public allowMultiSelection: boolean;
 
     /**
+     * Gets or sets a boolean value that determines whether to display checkboxes in the file manager. If enabled, checkboxes are shown for files or folders on hover.
+     *
+     * @default true
+     */
+    @Property(true)
+    public showItemCheckBoxes: boolean;
+
+    /**
      * Specifies the context menu settings of the file manager.
      *
      * @default {

@@ -94,8 +94,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton region as series', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '221px' || (element as HTMLElement).style.left == '219.8px').toBe(true);
-                expect((element as HTMLElement).style.top == '54px' || (element as HTMLElement).style.top == '51.3px').toBe(true);
+                expect((element as HTMLElement).style.left == '221px' || (element as HTMLElement).style.left == '220.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '54px' || (element as HTMLElement).style.top == '52.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].region = 'Series';
@@ -105,8 +105,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton region as series with near and top', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '206px' || (element as HTMLElement).style.left == '204.8px').toBe(true);
-                expect((element as HTMLElement).style.top == '34.3px' || (element as HTMLElement).style.top == '37px').toBe(true);
+                expect((element as HTMLElement).style.left == '206px' || (element as HTMLElement).style.left == '205.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '34.3px' || (element as HTMLElement).style.top == '35.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].horizontalAlignment = 'Near';
@@ -117,8 +117,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton region as series with near and middle', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '206px' || (element as HTMLElement).style.left == '204.8px').toBe(true);
-                expect((element as HTMLElement).style.top == '51.3px' || (element as HTMLElement).style.top == '54px').toBe(true);
+                expect((element as HTMLElement).style.left == '206px' || (element as HTMLElement).style.left == '205.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '51.3px' || (element as HTMLElement).style.top == '52.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].horizontalAlignment = 'Near';
@@ -129,8 +129,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton region as series with near and bottom', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '206px' || (element as HTMLElement).style.left == '204.8px').toBe(true);
-                expect((element as HTMLElement).style.top == '71px' || (element as HTMLElement).style.top == '68.3px').toBe(true);
+                expect((element as HTMLElement).style.left == '206px' || (element as HTMLElement).style.left == '205.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '71px' || (element as HTMLElement).style.top == '69.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].horizontalAlignment = 'Near';
@@ -141,8 +141,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton region as series with far and top', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '234.8px' || (element as HTMLElement).style.left == '236px').toBe(true);
-                expect((element as HTMLElement).style.top == '34.3px' || (element as HTMLElement).style.top == '37px').toBe(true);
+                expect((element as HTMLElement).style.left == '234.8px' || (element as HTMLElement).style.left == '235.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '34.3px' || (element as HTMLElement).style.top == '35.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].horizontalAlignment = 'Far';
@@ -153,8 +153,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton region as series with far and middle', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '234.8px' || (element as HTMLElement).style.left == '236px').toBe(true);
-                expect((element as HTMLElement).style.top == '51.3px' || (element as HTMLElement).style.top == '54px').toBe(true);
+                expect((element as HTMLElement).style.left == '234.8px' || (element as HTMLElement).style.left == '235.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '51.3px' || (element as HTMLElement).style.top == '52.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].horizontalAlignment = 'Far';
@@ -165,8 +165,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton region as series with far and bottom', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '234.8px' || (element as HTMLElement).style.left == '236px').toBe(true);
-                expect((element as HTMLElement).style.top == '71px' || (element as HTMLElement).style.top == '68.3px').toBe(true);
+                expect((element as HTMLElement).style.left == '234.8px' || (element as HTMLElement).style.left == '235.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '71px' || (element as HTMLElement).style.top == '69.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].horizontalAlignment = 'Far';
@@ -177,8 +177,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton region as series with center and top', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '219.8px' || (element as HTMLElement).style.left == '221px').toBe(true);
-                expect((element as HTMLElement).style.top == '34.3px' || (element as HTMLElement).style.top == '37px').toBe(true);
+                expect((element as HTMLElement).style.left == '219.8px' || (element as HTMLElement).style.left == '220.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '34.3px' || (element as HTMLElement).style.top == '35.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].horizontalAlignment = 'Center';
@@ -189,8 +189,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton region as series with center and bottom', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '219.8px' || (element as HTMLElement).style.left == '221px').toBe(true);
-                expect((element as HTMLElement).style.top == '71px' || (element as HTMLElement).style.top == '68.3px').toBe(true);
+                expect((element as HTMLElement).style.left == '219.8px' || (element as HTMLElement).style.left == '220.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '71px' || (element as HTMLElement).style.top == '69.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].horizontalAlignment = 'Center';
@@ -218,7 +218,7 @@ describe('Accumumation Control', () => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
                 expect((element as HTMLElement).style.left).toBe('385px');
-                expect((element as HTMLElement).style.top == '218px' || (element as HTMLElement).style.top == '216.5px').toBe(true);
+                expect((element as HTMLElement).style.top == '218px' || (element as HTMLElement).style.top == '217px').toBe(true);
                 done();
             };
             chartObj.annotations[0].region = 'Series';
@@ -229,8 +229,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton unit as pixel, region as series with number', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '606px' || (element as HTMLElement).style.left == '604.8px').toBe(true);
-                expect((element as HTMLElement).style.top == '262px' || (element as HTMLElement).style.top == '259.3px').toBe(true);
+                expect((element as HTMLElement).style.left == '606px' || (element as HTMLElement).style.left == '605.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '262px' || (element as HTMLElement).style.top == '260.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].x = 385;
@@ -255,8 +255,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton unit as pixel, region as series with date', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '221px' || (element as HTMLElement).style.left == '219.8px').toBe(true);
-                expect((element as HTMLElement).style.top == '262px' || (element as HTMLElement).style.top == '259.3px').toBe(true);
+                expect((element as HTMLElement).style.left == '221px' || (element as HTMLElement).style.left == '220.2px').toBe(true);
+                expect((element as HTMLElement).style.top == '262px' || (element as HTMLElement).style.top == '260.2px').toBe(true);
                 done();
             };
             chartObj.annotations[0].region = 'Series';
@@ -280,8 +280,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton unit as point with exact data', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '251.218px' || (element as HTMLElement).style.left == '251.47px').toBe(true);
-                expect((element as HTMLElement).style.top == '248.034px' || (element as HTMLElement).style.top == '246.754px').toBe(true);
+                expect((element as HTMLElement).style.left == '251.218px' || (element as HTMLElement).style.left == '250.719px').toBe(true);
+                expect((element as HTMLElement).style.top == '248.034px' || (element as HTMLElement).style.top == '247.18px').toBe(true);
                 let legendEle: Element = getElement('container_chart_legend_text_0');
                 chartObj.loaded = null;
                 trigger.clickEvent(legendEle);
@@ -310,8 +310,8 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton unit as point with date time value type', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '400.103px' || (element as HTMLElement).style.left == '400.213px').toBe(true);
-                expect((element as HTMLElement).style.top == '112.475px' || (element as HTMLElement).style.top == '110.203px').toBe(true);
+                expect((element as HTMLElement).style.left == '400.103px' || (element as HTMLElement).style.left == '400.176px').toBe(true);
+                expect((element as HTMLElement).style.top == '112.475px' || (element as HTMLElement).style.top == '110.96px').toBe(true);
                 done();
             };
             chartObj.series[0].dataLabel.visible = true;
@@ -416,11 +416,11 @@ describe('Accumumation Control', () => {
                 element = getElement('container_Secondary_Element');
                 expect(element.children[0].childElementCount).toBe(2);
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '715px' || (element as HTMLElement).style.left == '340px').toBe(true);
-                expect((element as HTMLElement).style.top == '218px' || (element as HTMLElement).style.top == '216.5px').toBe(true);
+                expect((element as HTMLElement).style.left == '715px' || (element as HTMLElement).style.left == '339px').toBe(true);
+                expect((element as HTMLElement).style.top == '218px' || (element as HTMLElement).style.top == '217px').toBe(true);
                 element = getElement('container_Annotation_1');
-                expect((element as HTMLElement).style.left == '690.888px' || (element as HTMLElement).style.left == '315.891px').toBe(true);
-                expect((element as HTMLElement).style.top == '226px' || (element as HTMLElement).style.top == '224.5px').toBe(true);
+                expect((element as HTMLElement).style.left == '690.888px' || (element as HTMLElement).style.left == '314.891px').toBe(true);
+                expect((element as HTMLElement).style.top == '226px' || (element as HTMLElement).style.top == '225px').toBe(true);
                 done();
             };
             chartObj.annotations[0].region = 'Series';
@@ -432,11 +432,11 @@ describe('Accumumation Control', () => {
             template1.innerHTML = '<div>${chart.title}</div>';
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '722.281px' || (element as HTMLElement).style.left == '347.335px').toBe(true);
-                expect((element as HTMLElement).style.top == '136.324px' || (element as HTMLElement).style.top == '134.226px').toBe(true);
+                expect((element as HTMLElement).style.left == '722.281px' || (element as HTMLElement).style.left == '346.317px').toBe(true);
+                expect((element as HTMLElement).style.top == '136.324px' || (element as HTMLElement).style.top == '134.925px').toBe(true);
                 element = getElement('container_Annotation_1');
-                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '323.225px').toBe(true);
-                expect((element as HTMLElement).style.top == '144.324px' || (element as HTMLElement).style.top == '142.226px').toBe(true);
+                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '322.207px').toBe(true);
+                expect((element as HTMLElement).style.top == '144.324px' || (element as HTMLElement).style.top == '142.925px').toBe(true);
                 done();
             };
             chartObj.annotations[0].coordinateUnits = 'Point';
@@ -455,8 +455,8 @@ describe('Accumumation Control', () => {
                 element = getElement('container_Annotation_0');
                 expect(element).toBe(null);
                 element = getElement('container_Annotation_1');
-                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '323.225px').toBe(true);
-                expect((element as HTMLElement).style.top == '144.324px' || (element as HTMLElement).style.top == '142.226px').toBe(true);
+                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '322.207px').toBe(true);
+                expect((element as HTMLElement).style.top == '144.324px' || (element as HTMLElement).style.top == '142.925px').toBe(true);
                 done();
             };
             chartObj.annotations[0].x = 'Annotation';

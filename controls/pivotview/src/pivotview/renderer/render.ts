@@ -1,4 +1,4 @@
-import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, IGroupSettings, IDataSet } from '../../base/engine';
+import { IAxisSet, IGridValues, IValueSortSettings, IGroupSettings } from '../../base/engine';
 import { PivotEngine, IFieldOptions, IFormatSettings, IMatrix2D } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
 import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs } from '@syncfusion/ej2-grids';
@@ -65,9 +65,10 @@ export class Render {
     private maxMeasurePos: number = 0;
     private hierarchyCount: number = 0;
     private actualText: string = '';
-    /* eslint-disable-next-line */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private timeOutObj: any;
     /** Constructor for render module
+     *
      * @param {PivotView} parent - Instance of pivot table.
      */
     constructor(parent: PivotView) {
@@ -376,11 +377,18 @@ export class Render {
                         cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, cell.targetCell);
                     if (element && element !== '' && element.length > 0) {
                         if (this.parent.enableHtmlSanitizer) {
-                            ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) ? append(SanitizeHtmlHelper.sanitize(element) as any, cell.targetCell) :
+                            if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                append(SanitizeHtmlHelper.sanitize(element) as any, cell.targetCell);
+                            } else {
                                 this.parent.appendHtml(cell.targetCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                            }
                         } else {
-                            ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) ? append(element, cell.targetCell) :
+                            if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
+                                append(element, cell.targetCell);
+                            } else {
                                 this.parent.appendHtml(cell.targetCell, element[0].outerHTML);
+                            }
                         }
                     }
                 }
@@ -439,7 +447,8 @@ export class Render {
             addClass([args.element.parentElement], this.parent.cssClass);
         }
         for (const item of args.items) {
-            const cellTarget: Element = this.parent.lastCellClicked;
+            const cellTarget: Element = this.parent.lastCellClicked ? this.parent.lastCellClicked :
+                (this.parent.isAdaptive ? (args.event.target as Element) : this.parent.lastCellClicked);
             const elem: Element = this.getCellElement(cellTarget);
             let bool: boolean;
             let isGroupElement: boolean;
@@ -1225,11 +1234,18 @@ export class Render {
                     { targetCell: tCell, cellInfo: cell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
                 if (element && element !== '' && element.length > 0) {
                     if (this.parent.enableHtmlSanitizer) {
-                        ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) ? append(SanitizeHtmlHelper.sanitize(element) as any, tCell) :
+                        if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            append(SanitizeHtmlHelper.sanitize(element) as any, tCell);
+                        } else {
                             this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                        }
                     } else {
-                        ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) ? append(element, tCell) :
+                        if ((<{ isVue?: boolean }>this.parent).isVue || (<{ isVue3?: boolean }>this.parent).isVue3) {
+                            append(element, tCell);
+                        } else {
                             this.parent.appendHtml(tCell, element[0].outerHTML);
+                        }
                     }
                 }
             }
@@ -1424,7 +1440,7 @@ export class Render {
                     } else if (cell.type) {
                         tCell.classList.add('e-colstot');
                     }
-                    let localizedText: string = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) || this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('grandTotal') : 
+                    let localizedText: string = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) || this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('grandTotal') :
                         cell.formattedText) : cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
                     localizedText = isColumnFieldsAvail && this.parent.engineModule.fieldList ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[cell.actualText].aggregateType)
                         + ' ' + this.parent.localeObj.getConstant('of') + ' ' + cell.formattedText : localizedText;
@@ -1524,8 +1540,8 @@ export class Render {
             (prevCell.colSpan > 1)) {
             tCell.style.display = 'none';
         } else {
-            tCell.setAttribute('colspan', cell.colSpan.toString());
-            tCell.setAttribute('aria-colspan', cell.colSpan.toString());
+            // tCell.setAttribute('colspan', cell.colSpan.toString());
+            // tCell.setAttribute('aria-colspan', cell.colSpan.toString());
         }
         if (cell.rowIndex === (this.engine.headerContent.length - 1) && cell.memberType === 2) {
             tCell.style.display = this.isSpannedCell(this.engine.headerContent.length, cell) ? 'none' : tCell.style.display;
@@ -1562,7 +1578,6 @@ export class Render {
                 args.currentCell = getElement(args.currentCell) as Element;
                 const url: string = args.currentCell.getAttribute('data-url') ? (args.currentCell).getAttribute('data-url') :
                     (args.currentCell.querySelector('a') as HTMLElement).getAttribute('data-url');
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 window.open(url);
             }
         });
@@ -1582,8 +1597,8 @@ export class Render {
 
     private frameDataSource(type: string): IGridValues {
         let dataContent: IGridValues = [];
-        if (((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0) || (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== ''))
-        && this.parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData) {
+        if (((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0) || (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ||
+        (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url !== '' && this.engine.pivotValues.length > 0)) && this.parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData) {
             if ((this.parent.enableValueSorting) || !this.engine.isEngineUpdated) {
                 let rowCnt: number = 0;
                 const pivotValues: IAxisSet[][] = this.parent.pivotValues;
@@ -1731,8 +1746,12 @@ export class Render {
         return gridHeight as number < this.parent.gridSettings.rowHeight ? this.parent.gridSettings.rowHeight : gridHeight;
     }
 
-    /** @hidden */
-    
+    /**
+     * It used to frame stacked headers.
+     *
+     * @returns {ColumnModel[]} - Returns grid columns.
+     * @hidden
+     */
     public frameStackedHeaders(): ColumnModel[] {
         const pivotColumns: PivotColumn[] = this.parent.pivotColumns;
         const gridColumns: ColumnModel[] = this.parent.grid['columnModel'];
@@ -1745,7 +1764,8 @@ export class Render {
             !this.parent.dataSourceSettings.alwaysShowValueHeader ?
             this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
         this.pivotColumns = [];
-        if (((this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ? true : (this.parent.dataSourceSettings.values.length > 0 && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0)) && !this.engine.isEmptyData) {
+        if ((((this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ? true : (this.parent.dataSourceSettings.values.length > 0 && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0)) ||
+            (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url !== '' && this.engine.pivotValues.length > 0)) && !this.engine.isEmptyData) {
             let headerCnt: number = this.engine.headerContent.length;
             const headerSplit: Object[] = [];
             const splitPos: Object[] = [];
@@ -1761,7 +1781,7 @@ export class Render {
                         let colSpan: number = (colField[cCnt as number] && colField[cCnt as number].colSpan) ?
                             ((colField[cCnt as number].memberType !== 3 || headerCnt === 0) ?
                                 colField[cCnt as number].colSpan : headerSplit[cCnt as number] as number) : 1;
-                        colSpan = this.parent.dataType === 'olap' ? 1 : colSpan;
+                        colSpan = this.parent.dataType === 'olap' && isNullOrUndefined(colSpan) ? 1 : colSpan;
                         let formattedText: string = colField[cCnt as number] ? (colField[cCnt as number].type === 'grand sum' ?
                             (isNullOrUndefined(colField[cCnt as number].valueSort.axis) ? this.parent.localeObj.getConstant('grandTotal') :
                                 colField[cCnt as number].formattedText) : (colField[cCnt as number].type === 'sum' ?
@@ -1777,8 +1797,8 @@ export class Render {
                                 headerText: formattedText,
                                 customAttributes: { 'cell': colField[cCnt as number] },
                                 width: autoFitApplied ? (gridColumns[actualCnt as number] as ColumnModel).width : colField[cCnt as number]
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    ? this.setSavedWidth((colField[cCnt as number].valueSort as any).levelName, colWidth)
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any, max-len
+                                    ? colField[cCnt as number].valueSort ? this.setSavedWidth((colField[cCnt as number].valueSort as any).levelName, colWidth) : this.resColWidth
                                     : this.resColWidth,
                                 minWidth: autoFitApplied && actualCnt === colCount
                                     ? (gridColumns[gridColumns.length - 1] as ColumnModel).minWidth : 30,
@@ -1790,8 +1810,8 @@ export class Render {
                                 headerTextAlign: this.parent.enableRtl ? 'Right' : 'Left'
                             };
                         } else if (headerSplit[cCnt as number]) {
-                            colSpan = (colField[cCnt as number] && colField[cCnt as number].type === 'grand sum' &&
-                                colField[cCnt as number].memberType === 2) ? 1 : colSpan;
+                            // colSpan = (colField[cCnt as number] && colField[cCnt as number].type === 'grand sum' &&
+                            //     colField[cCnt as number].memberType === 2) ? 1 : colSpan;
                             let tmpSpan: number = colSpan;
                             let innerModel: ColumnModel[] = [];
                             let innerPos: number = cCnt;

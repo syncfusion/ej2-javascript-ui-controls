@@ -22,20 +22,20 @@ export function getRandomId(): string {
  * Interface for Template Engine.
  */
 export interface ITemplateEngine {
-    compile: (templateString: string, helper?: Object, ignorePrefix?: boolean) => (data: Object | JSON) => string;
+    compile: (templateString: string | Function, helper?: Object, ignorePrefix?: boolean) => (data: Object | JSON) => string;
 }
 
 /**
  * Compile the template string into template function.
  *
- * @param {string} templateString - The template string which is going to convert.
+ * @param {string | Function} templateString - The template string which is going to convert.
  * @param {Object} helper - Helper functions as an object.
  * @param {boolean} ignorePrefix ?
  * @returns {NodeList} ?
  * @private
  */
 // eslint-disable-next-line
-export function compile(templateString: string, helper?: Object, ignorePrefix?:boolean): (data: Object | JSON, component?: any, propName?: any) => NodeList {
+export function compile(templateString: string | Function, helper?: Object, ignorePrefix?:boolean): (data: Object | JSON, component?: any, propName?: any) => NodeList {
     const compiler: Function = engineObj.compile(templateString, helper, ignorePrefix);
     // eslint-disable-next-line
     return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number, element?: any, root?: any): NodeList => {
@@ -157,6 +157,26 @@ export function setTemplateEngine(classObj: ITemplateEngine): void {
  */
 export function getTemplateEngine(): (template: string, helper?: Object) => (data: Object | JSON) => string {
     return engineObj.compile;
+}
+
+/**
+ * Set the current template function to support Content Security Policy.
+ *
+ * @param {Function} template - The template function that is going to render.
+ * @param {any} helper - The data utilized by the template from the helper.
+ * @returns {Function} ?
+ * @private
+ */
+export function initializeCSPTemplate (template : Function, helper?: any): Function {
+    let boundFunc : Function;
+    template.prototype.CSPTemplate =  true;
+    if (!isNullOrUndefined(helper)) {
+        boundFunc = template.bind(helper);
+        boundFunc.prototype = Object.create(template.prototype);
+    } else {
+        boundFunc = template;
+    }
+    return boundFunc;
 }
 
 //Default Engine Class

@@ -1,5 +1,5 @@
 import { getRangeIndexes, ChartModel, inRange, checkRange, getSwapRange, getRangeAddress } from '../common/index';
-import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell } from '../base/index';
+import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId } from '../base/index';
 import { setChart, initiateChart, refreshChart, updateChart, deleteChartColl, refreshChartSize, focusChartBorder } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
 import { Chart } from '@syncfusion/ej2-charts';
@@ -40,7 +40,7 @@ export class WorkbookChart {
 
     private setChartHandler(args: {
         chart: ChartModel[], isInitCell?: boolean, isUndoRedo?: boolean, isCut?: boolean,
-        isPaste?: boolean, dataSheetIdx?: number, range?: string
+        isPaste?: boolean, dataSheetIdx?: number, range?: string, sheetId?: number
     }): void {
         let i: number = 0;
         args.isInitCell = isNullOrUndefined(args.isInitCell) ? false : args.isInitCell;
@@ -53,7 +53,8 @@ export class WorkbookChart {
                     if (document.getElementById(args.chart[i as number].id)) {
                         chart[i as number] = {
                             range: chart[i as number].range, id: getUniqueID('e_spreadsheet_chart'), theme: chart[i as number].theme,
-                            isSeriesInRows: chart[i as number].isSeriesInRows, type: chart[i as number].type
+                            isSeriesInRows: chart[i as number].isSeriesInRows, type: chart[i as number].type,
+                            markerSettings: chart[i as number].markerSettings
                         };
                     }
                 }
@@ -76,6 +77,14 @@ export class WorkbookChart {
                 if (isNullOrUndefined(chartModel.id)) {
                     chartModel.id = getUniqueID('e_spreadsheet_chart');
                 }
+                if (chartModel.markerSettings && chartModel.markerSettings.visible) {
+                    if (chartModel.markerSettings.isFilled === undefined) {
+                        chartModel.markerSettings.isFilled = true;
+                    }
+                    if (chartModel.markerSettings.shape === undefined) {
+                        chartModel.markerSettings.shape = 'Circle';
+                    }
+                }
                 chartModel.height = chartModel.height || 290;
                 chartModel.width = chartModel.width || 480;
                 this.parent.notify(initiateChart, {
@@ -84,8 +93,9 @@ export class WorkbookChart {
                 });
                 this.parent.chartColl.push(chartModel);
                 if (!args.isInitCell || args.isPaste) {
-                    const sheetIdx: number = (chartModel.range && chartModel.range.indexOf('!') > 0) ?
-                        getSheetIndex(this.parent, chartModel.range.split('!')[0]) : this.parent.activeSheetIndex;
+                    const sheetIdx: number = args.sheetId === undefined ? ((chartModel.range && chartModel.range.indexOf('!') > 0) ?
+                        getSheetIndex(this.parent, chartModel.range.split('!')[0]) : this.parent.activeSheetIndex) :
+                        getSheetIndexFromId(this.parent, args.sheetId);
                     const indexes: number[] = args.isPaste ? getRangeIndexes(args.range) : getRangeIndexes(chartModel.range);
                     const sheet: SheetModel = isUndefined(sheetIdx) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIdx as number];
                     const cell: CellModel = getCell(indexes[0], indexes[1], sheet);

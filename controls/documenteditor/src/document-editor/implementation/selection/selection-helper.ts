@@ -2328,6 +2328,10 @@ export class ImageInfo {
      */
     public height: number = 0;
     /**
+     * @private
+     */
+    public alternatetext: string;
+    /**
      * Constructor for image format class
      *
      * @param imageContainer - Specifies for image width and height values.
@@ -2335,6 +2339,7 @@ export class ImageInfo {
     constructor(imageContainer: ImageElementBox) {
         this.width = imageContainer.width;
         this.height = imageContainer.height;
+        this.alternatetext = imageContainer.alternateText;
     }
     /**
      * Dispose the internal objects which are maintained.
@@ -2344,5 +2349,6 @@ export class ImageInfo {
     public destroy(): void {
         this.width = undefined;
         this.height = undefined;
+        this.alternatetext = undefined;
     }
 }

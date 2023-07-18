@@ -204,8 +204,9 @@ export interface SpeedDialModel extends ComponentModel{
      * {% codeBlock src='speeddial/itemTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
+     * @aspType string
      */
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
 
     /**
      * Defines the display mode of speed dial action items.
@@ -271,8 +272,9 @@ export interface SpeedDialModel extends ComponentModel{
      * Defines a template content for popup of SpeedDial.
      *
      * @default ''
+     * @aspType string
      */
-    popupTemplate?: string;
+    popupTemplate?: string | Function;
 
     /**
      * Provides the options to customize the speed dial action buttons when mode of speed dial is radial
@@ -297,6 +299,13 @@ export interface SpeedDialModel extends ComponentModel{
      * @default true.
      */
     visible?: boolean;
+
+    /**
+     * Specifies whether the SpeedDial acts as the primary.
+     *
+     * @default true
+     */
+    isPrimary?: boolean;
 
     /**
      * Event callback that is raised before the speed dial popup is closed.

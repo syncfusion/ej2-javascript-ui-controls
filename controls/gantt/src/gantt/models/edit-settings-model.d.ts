@@ -33,6 +33,7 @@ export interface EditSettingsModel {
      *
      * @default Auto
      * @isEnumeration true
+     * @asptype EditMode
      */
     mode?: EditMode;
 

@@ -206,6 +206,8 @@ export class Merge {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
                     args.td.rowSpan = mergeCount;
                     args.td.style.display = '';
+                } else if (mergeCount === 1) {
+                    args.td.style.display = '';
                 }
             }
         } else {
@@ -231,6 +233,8 @@ export class Merge {
                 if (mergeCount > 1) {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
                     args.td.colSpan = mergeCount;
+                    args.td.style.display = '';
+                } else if (mergeCount === 1) {
                     args.td.style.display = '';
                 }
             }

@@ -1,7 +1,7 @@
 /**
  * Maps Component file
  */
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax } from '@syncfusion/ej2-base';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Fetch } from '@syncfusion/ej2-base';
 import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement, setValue, extend } from '@syncfusion/ej2-base';
 import { Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
@@ -629,6 +629,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @private
+     */
+    public isExportInitialTileMap: boolean;
+
+    /**
+     * @private
      * @hidden
      */
     public mapLayerPanel: LayerPanel;
@@ -1001,11 +1006,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private processAjaxRequest(layer: LayerSettings, localAjax: MapAjax | any, type: string): void {
         this.serverProcess['request']++;
-        const ajaxModule: Ajax = new Ajax(localAjax.dataOptions, localAjax.type, localAjax.async, localAjax.contentType);
-        ajaxModule.onSuccess = (args: string) => {
-            this.processResponseJsonData('Ajax', args, layer, type);
+        const fetchApiModule: Fetch = new Fetch(localAjax.dataOptions, localAjax.type, localAjax.contentType);
+        fetchApiModule.onSuccess = (args: any) => {
+            this.processResponseJsonData('Fetch', args, layer, type);
         };
-        ajaxModule.send(localAjax.sendData);
+        fetchApiModule.send(localAjax.sendData);
     }
     /**
      * This method is used to process the JSON data to render the maps.
@@ -1021,9 +1026,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.serverProcess['response']++;
         if (processType) {
             if (dataType === 'ShapeData') {
-                layer.shapeData = (processType === 'DataManager') ? processResult((data as any)) : JSON.parse(data as string);
+                layer.shapeData = (processType === 'DataManager') ? processResult((data as any)) : data;
             } else {
-                layer.dataSource = (processType === 'DataManager') ? processResult((data as any)) : JSON.parse('[' + data + ']')[0];
+                layer.dataSource = (processType === 'DataManager') ? processResult((data as any)) : data;
             }
         }
         if (!isNullOrUndefined(processType) && this.serverProcess['request'] === this.serverProcess['response']) {
@@ -1268,9 +1273,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private setSecondaryElementPosition(): void {
         let element: HTMLDivElement = getElementByID(this.element.id + '_Secondary_Element') as HTMLDivElement;
         let rect: ClientRect = this.element.getBoundingClientRect();
-        let svgRect: ClientRect = getElementByID(this.element.id + '_svg').getBoundingClientRect();
-        element.style.marginLeft = Math.max(svgRect.left - rect.left, 0) + 'px';
-        element.style.marginTop = Math.max(svgRect.top - rect.top, 0) + 'px';
+        let svgElement: Element = getElementByID(this.element.id + '_svg');
+        if (!isNullOrUndefined(svgElement)) {
+            let svgRect: ClientRect = svgElement.getBoundingClientRect();
+            element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
+            element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
+        }
     }
 
     private zoomingChange(): void {
@@ -1498,8 +1506,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let height: number;
         const width: number = Math.abs((this.margin.left + this.margin.right) - this.availableSize.width);
         style.fontFamily = !isNullOrUndefined(style.fontFamily) ? style.fontFamily : this.themeStyle.fontFamily;
-        style.fontWeight = style.fontWeight || this.themeStyle.titleFontWeight;
-        style.size = type === 'title' ? (style.size || this.themeStyle.titleFontSize) : (style.size || Theme.mapsSubTitleFont.size);
+        style.fontWeight = type === 'title' ? style.fontWeight || this.themeStyle.titleFontWeight : style.fontWeight || this.themeStyle.titleFontWeight;
+        style.size = type === 'title' ? (style.size || this.themeStyle.titleFontSize) : (style.size || this.themeStyle.subTitleFontSize || Theme.mapsSubTitleFont.size);
         if (title.text) {
             if (isNullOrUndefined(groupEle)) {
                 groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
@@ -2252,7 +2260,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param e - Specifies the arguments of window resize event.
      */
     public mapsOnResize(e: Event): boolean {
-        if (!this.isDestroyed) {
+        if (!this.isDestroyed && !this.isExportInitialTileMap) {
             this.isResize = this.isReset = true;
             const args: IResizeEventArgs = {
                 cancel: false,
@@ -3006,17 +3014,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let promise: Promise<string>;
         if (!this.isDestroyed) {
             promise = new Promise((resolve: any, reject: any) => {
-                const ajax: Ajax = new Ajax({
+                const fetchApi : Fetch = new Fetch({
                     url: url
                 });
-                ajax.onSuccess = (json: string) => {
+                fetchApi.onSuccess = (json: any) => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const jsonObject: any = JSON.parse(json);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const resource: any = jsonObject['resourceSets'][0]['resources'][0];
+                    const resource: any = json['resourceSets'][0]['resources'][0];
                     resolve(<string>resource['imageUrl']);
                 };
-                ajax.send();
+                fetchApi.send();
             });
         }
         return promise;

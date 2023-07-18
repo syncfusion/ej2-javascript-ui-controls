@@ -666,7 +666,7 @@ describe('Chart Control', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 140);
                 let yValue: number = chartObj.visibleSeries[0].points[3].yValue;
-                expect(yValue == 79.67 || yValue == 79.09).toBe(true);
+                expect(yValue == 79.67 || yValue == 79.32).toBe(true);
                 chartObj.loaded = null;
                 done();
             };

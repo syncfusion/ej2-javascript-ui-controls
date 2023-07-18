@@ -19,7 +19,7 @@ import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';
 import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset } from '../common/utils/helper';
 import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement, getTextAnchor } from '../common/utils/helper';
 import { appendClipElement, ChartLocation } from '../common/utils/helper';
-import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel, RangeColorSettingModel } from './chart-model';
+import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel, RangeColorSettingModel, titleSettingsModel } from './chart-model';
 import { MarginModel, BorderModel, ChartAreaModel, FontModel, TooltipSettingsModel } from '../common/model/base-model';
 import { getSeriesColor, Theme, getThemeColor } from '../common/model/theme';
 import { IndexesModel } from '../common/model/base-model';
@@ -69,7 +69,7 @@ import { SplineRangeAreaSeries } from './series/spline-range-area-series';
 import { Tooltip } from './user-interaction/tooltip';
 import { Crosshair } from './user-interaction/crosshair';
 import { DataEditing } from './user-interaction/data-editing';
-import { Marker } from './series/marker';
+import { Marker, markerShapes } from './series/marker';
 import { LegendSettings } from '../common/legend/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
 import { Legend } from './legend/legend';
@@ -109,7 +109,7 @@ import { ChartAnnotationSettingsModel } from './model/chart-base-model';
 import { ChartAnnotationSettings } from './model/chart-base';
 import { ChartAnnotation } from './annotation/annotation';
 import { getElement, getTitle } from '../common/utils/helper';
-import { Alignment, ExportType, SelectionPattern } from '../common/utils/enum';
+import { Alignment, ExportType, SelectionPattern, TextOverflow, TitlePosition } from '../common/utils/enum';
 import { MultiColoredLineSeries } from './series/multi-colored-line-series';
 import { MultiColoredAreaSeries } from './series/multi-colored-area-series';
 import { ScrollBar } from '../common/scrollbar/scrollbar';
@@ -332,6 +332,110 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
 }
 
+export class titleSettings extends ChildProperty<titleSettings> {
+
+    /**
+     * FontStyle for the text.
+     *
+     * @default 'Normal'
+     */
+
+    @Property('Normal')
+    public fontStyle: string;
+
+    /**
+     * Font size for the text.
+     *
+     * @default '15px'
+     */
+
+    @Property('15px')
+    public size: string;
+
+    /**
+     * FontWeight for the text.
+     *
+     * @default '500'
+     */
+
+    @Property('500')
+    public fontWeight: string;
+
+    /**
+     * Color for the text.
+     *
+     * @default ''
+     */
+
+    @Property('')
+    public color: string;
+
+    /**
+     * text alignment.
+     *
+     * @default 'Center'
+     */
+
+    @Property('Center')
+    public textAlignment: Alignment;
+
+    /**
+     * FontFamily for the text.
+     */
+    @Property('Segoe UI')
+    public fontFamily: string;
+
+    /**
+     * Opacity for the text.
+     *
+     * @default 1
+     */
+
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * Specifies the chart title text overflow.
+     *
+     * @default 'Wrap'
+     */
+
+    @Property('Wrap')
+    public textOverflow: TextOverflow;
+
+    /**
+     * Defines the position for the chart title.
+     * * Top: Displays the title at the top of the chart.
+     * * Left: Displays the title at the left of the chart.
+     * * Bottom: Displays the title at the bottom of the chart.
+     * * Right: Displays the title at the right of the chart.
+     * * Custom: Displays the title based on the given x and y values.
+     *
+     * @default 'Top'
+     */
+
+   @Property('Top') 
+   public position: TitlePosition; 
+
+   /**
+    * Defines the X coordinate for the chart title.
+    *
+    * @default 0
+    */
+
+   @Property(0)
+   public x: number;
+
+   /**
+    * Defines the Y coordinate for the chart title.
+    *
+    * @default 0
+    */
+
+   @Property(0)
+   public y: number;
+
+}
 /**
  * Represents the Chart control.
  * ```html
@@ -659,8 +763,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Options for customizing the title of the Chart.
      */
 
-    @Complex<FontModel>(Theme.chartTitleFont, Font)
-    public titleStyle: FontModel;
+    @Complex<titleSettingsModel>({fontFamily: null, size: "16px", fontStyle: 'Normal', fontWeight: '600', color: null}, titleSettings)
+    public titleStyle: titleSettingsModel;
 
     /**
      * SubTitle of the chart.
@@ -675,7 +779,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Options for customizing the Subtitle of the Chart.
      */
 
-    @Complex<FontModel>(Theme.chartSubTitleFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public subTitleStyle: FontModel;
     /**
      *  Options to customize left, right, top and bottom margins of the chart.
@@ -1555,6 +1659,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @private
      */
     public markerRender: Marker;
+    public markerIndex: number;
     private titleCollection: string[];
     private subTitleCollection: string[];
     /** @private */
@@ -1589,7 +1694,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private currentPointIndex: number = 0;
     private currentSeriesIndex: number = 0;
     private currentLegendIndex: number = 0;
-
+    private previousPageX: number = null;
+    private previousPageY: number = null;
+    private allowPan: boolean = false;
     /**
      * Constructor for creating the widget
      *
@@ -1658,6 +1765,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         const blazor: string = 'Blazor';
         this.isBlazor = window[blazor as string];
         this.allowServerDataBinding = false;
+        this.markerIndex = 0;
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -1670,9 +1778,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             if (this.stockChart.tooltip.format === null) {
                 this.tooltip.format = 'High : <b>${point.high}</b><br/>Low :' +
                     ' <b>${point.low}</b><br/>Open : <b>${point.open}</b><br/>Close : <b>${point.close}</b>';
-                if (this.stockChart.series[0].volume !== '') {
-                    this.tooltip.format += '<br/>Volume : <b>${point.volume}</b>';
-                }
             }
             this.animateSeries = false;
         }
@@ -1694,8 +1799,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         this.element.setAttribute('role', 'region');
         this.element.setAttribute('tabindex', '0');
-        this.element.setAttribute('aria-label', this.description || this.title);
-        this.element.setAttribute('class', this.element.getAttribute('class') + ' e-chart-focused');
+        this.element.setAttribute('aria-label', this.description || this.title + '. Syncfusion interactive chart.');
+        if (!(this.element.classList.contains("e-chart-focused"))) {
+            this.element.setAttribute('class', this.element.getAttribute('class') + ' e-chart-focused');
+        }
         if (this.element.id === '') {
             const collection: number = document.getElementsByClassName('e-chart').length;
             this.element.id = 'chart_' + this.chartid + '_' + collection;
@@ -1755,6 +1862,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.processData();
 
         this.renderComplete();
+
+        this.mouseMoveEvent();
 
         this.allowServerDataBinding = true;
     }
@@ -1882,7 +1991,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         this.renderAnnotation();
     }
-
     /**
      * To render the legend
      *
@@ -2140,7 +2248,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.chartAreaType === 'PolarRadar') {
             return;
         }
-        if (!this.redraw && this.zoomModule && (!this.zoomSettings.enablePan || this.zoomModule.performedUI)) {
+        if (!this.redraw && this.zoomModule && (!this.zoomSettings.enablePan || this.zoomModule.performedUI || this.zoomSettings.showToolbar)) {
             this.zoomModule.applyZoomToolkit(this, this.axisCollections);
         }
     }
@@ -2228,27 +2336,44 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let titleHeight: number = 0;
         let subTitleHeight: number = 0;
         let titleWidth: number = 0;
-        const padding: number = 15;
-        let left: number = margin.left;
-        const width: number = this.availableSize.width - left - margin.right - this.border.width;
+        const padding: number = this.titleStyle.position === 'Top' || (this.titleStyle.position === 'Bottom' && !this.legendSettings.visible) ? 15 : 5;
+        let left: number = margin.left + this.border.width;
+        let width: number = this.availableSize.width - left - margin.right - this.border.width;
+        let elementSpacing: number = 0;
         this.titleCollection = [];
         this.subTitleCollection = [];
         if (this.title) {
-            this.titleCollection = getTitle(this.title, this.titleStyle, width);
-            titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollection.length) + padding;
+            this.titleCollection = getTitle(this.title, this.titleStyle, width, this.themeStyle.chartTitleFont);
+            titleHeight = (measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
                 let maxWidth: number = 0;
                 for (const titleText of this.titleCollection) {
-                    titleWidth = measureText(titleText, this.titleStyle).width;
+                    titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
                     maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
                 }
-                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth);
-                subTitleHeight = (measureText(this.subTitle, this.subTitleStyle).height * this.subTitleCollection.length) +
+                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.themeStyle.chartSubTitleFont);
+                subTitleHeight = (measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length) +
                     padding;
             }
+        } else if (this.legendSettings.position !== 'Top' && this.border.width) { elementSpacing = 10; }
+        let top: number = margin.top + elementSpacing + this.border.width + this.chartArea.border.width * 0.5;
+        let height: number = this.availableSize.height - top - this.border.width - margin.bottom;
+        switch (this.titleStyle.position) {
+            case 'Top':
+                top += subTitleHeight + titleHeight;
+                height -= (titleHeight + subTitleHeight);
+                break;
+            case 'Bottom':
+                height -= (titleHeight + subTitleHeight);
+                break;
+            case 'Left':
+                left += titleHeight + subTitleHeight;
+                width -= (titleHeight + subTitleHeight);
+                break;
+            case 'Right':
+                width -= (titleHeight + subTitleHeight);
+                break;
         }
-        let top: number = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width * 0.5;
-        const height: number = this.availableSize.height - top - this.border.width - margin.bottom;
         if (this.stockChart && this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
             if (this.stockChart.legendSettings.position === 'Top') {
                 top += this.stockChart.stockLegendModule.legendBounds.height;
@@ -2270,12 +2395,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public print(id?: string[] | string | Element): void {
         const exportChart: ExportUtils = new ExportUtils(this);
         let width: string = this.width;
-        if (this.getModuleName() == 'chart' && parseInt(this.width) > 80 && this.width.indexOf('%') > -1) {
+        if (this.getModuleName() == 'chart' && parseInt(this.width) >= 80 && this.width.indexOf('%') > -1) {
             this.width = '80%';
             this.dataBind();
         }
         exportChart.print(id);
-        if (this.getModuleName() == 'chart' && parseInt(this.width) > 80 && this.width.indexOf('%') > -1) {
+        if (this.getModuleName() == 'chart' && parseInt(this.width) >= 80 && this.width.indexOf('%') > -1) {
             this.width = width;
             this.dataBind();
         } 
@@ -2346,6 +2471,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             axis.labels = []; axis.indexLabels = {};
             for (const series of this.visibleSeries) {
                 this.initAxis(series, axis, true);
+                if (series.category == 'Pareto' && series.type == 'Line' && series.yAxis) {
+                    series.yAxis.internalVisibility = series.paretoOptions.showAxis;
+                }
             }
             for (const indicator of this.indicators) {
                 this.initAxis(indicator as SeriesBase, axis, false);
@@ -2423,6 +2551,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             series.category = seriesCollection[0].type === 'Pareto' ? 'Pareto' : 'Series';
             series.index = i;
             series.interior = series.fill || colors[i % count];
+            if (!series.marker.shape && (series.marker.visible || series.type === 'Scatter' || series.drawType === 'Scatter')) {
+                series.marker.shape = markerShapes[this.markerIndex as number % 10];
+                this.markerIndex++;
+            }
             if (this.isSecondaryAxis(series.xAxis)) {
                 series.xAxis.internalVisibility = series.xAxis.series.some((value) => (value.visible));
             }
@@ -2470,21 +2602,48 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let rect: Rect;
         const margin: MarginModel = this.margin;
         if (this.title) {
-            const getAnchor: string = getTextAnchor(this.titleStyle.textAlignment, this.enableRtl);
-            const elementSize: Size = measureText(this.title, this.titleStyle);
+            let getAnchor: string = getTextAnchor(this.titleStyle.textAlignment, this.enableRtl);
+            const elementSize: Size = measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont);
             rect = new Rect(
                 margin.left, 0, this.availableSize.width - margin.left - margin.right, 0
             );
+            let positionY: number = this.margin.top + ((elementSize.height) * 3 / 4);
+            let positionX: number = titlePositionX(rect, this.titleStyle || this.themeStyle.chartTitleFont);
+            let rotation: string;
+            let alignment: Alignment = this.titleStyle.textAlignment;
+            switch (this.titleStyle.position) {
+                case 'Bottom':
+                    positionY = this.availableSize.height - this.margin.bottom - (elementSize.height);
+                    break;
+                case 'Left':
+                    positionX = this.margin.left + ((elementSize.height) * 3 / 4);
+                    positionY = alignment == 'Near' ? margin.bottom : alignment == 'Far' ? this.availableSize.height - margin.bottom : this.availableSize.height / 2;
+                    getAnchor = alignment == 'Near' ? 'end' : alignment == 'Far' ? 'start' : 'middle';
+                    getAnchor = this.enableRtl ? (getAnchor === 'end' ? 'start' : getAnchor === 'start' ? 'end' : getAnchor) : getAnchor;
+                    rotation = 'rotate(' + -90 + ',' + positionX + ',' + positionY + ')';
+                    break;
+                case 'Right':
+                    positionX = this.availableSize.width - this.margin.right - ((elementSize.height) * 3 / 4);
+                    positionY = alignment == 'Near' ? margin.bottom : alignment == 'Far' ? this.availableSize.height - margin.bottom : this.availableSize.height / 2;
+                    getAnchor = alignment == 'Near' ? 'start' : alignment == 'Far' ? 'end' : 'middle';
+                    getAnchor = this.enableRtl ? (getAnchor === 'end' ? 'start' : getAnchor === 'start' ? 'end' : getAnchor) : getAnchor;
+                    rotation = 'rotate(' + 90 + ',' + positionX + ',' + positionY + ')';
+                    break;
+                case 'Custom':
+                    positionX = this.titleStyle.x;
+                    positionY = this.titleStyle.y;
+                    getAnchor = 'middle';
+                    break;
+            }
             const options: TextOption = new TextOption(
                 this.element.id + '_ChartTitle',
-                titlePositionX(rect, this.titleStyle),
-                this.margin.top + ((elementSize.height) * 3 / 4),
-                getAnchor, this.titleCollection, '', 'auto'
+                positionX, positionY,
+                getAnchor, this.titleCollection, rotation, 'auto'
             );
             const element: Element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
                 textElement(
-                    this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject,
-                    null, null, null, null, null, null, null, null, this.enableCanvas
+                    this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitleFont.color, this.svgObject,
+                    null, null, null, null, null, null, null, null, this.enableCanvas, null, this.themeStyle.chartTitleFont
                 );
             if (element) {
                 element.setAttribute('tabindex', '0');
@@ -2501,26 +2660,29 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         const padding: number = 10;
         const alignment: Alignment = this.titleStyle.textAlignment;
         for (const titleText of this.titleCollection) {
-            titleWidth = measureText(titleText, this.titleStyle).width;
+            titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
             maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
         }
-        const subTitleElementSize: Size = measureText(this.subTitle, this.subTitleStyle);
+        const subTitleElementSize: Size = measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont);
         const rect: Rect = new Rect(
             alignment === 'Center' ? (options.x - maxWidth * 0.5) : alignment === 'Far' ? options.x - maxWidth : options.x,
             0, maxWidth, 0
         );
+        if (this.titleStyle.position === 'Left') {
+            rect.x = alignment === 'Center' ? (options.x - maxWidth * 0.5) : alignment == 'Far' ? this.margin.left + ((subTitleElementSize.height) * 3 / 4) : (options.x - maxWidth);
+        }
         const subTitleOptions: TextOption = new TextOption(
             this.element.id + '_ChartSubTitle',
             titlePositionX(
                 rect, this.subTitleStyle
             ),
             options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding,
-            getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl), this.subTitleCollection, '', 'auto'
+            getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl), this.subTitleCollection, options.transform, 'auto'
         );
         const element: Element = redrawElement(this.redraw, this.element.id + '_ChartSubTitle', subTitleOptions, this.renderer) ||
             textElement(
-                this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject,
-                null, null, null, null, null, null, null, null, this.enableCanvas
+                this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartSubTitleFont.color, this.svgObject,
+                null, null, null, null, null, null, null, null, this.enableCanvas, null, this.themeStyle.chartSubTitleFont
             );
     }
     private renderBorder(): void {
@@ -2711,6 +2873,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.yAxisElements = null;
         let element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_chart_focus');
         if (element) { element.remove(); }
+        let highlightElement: HTMLElement = document.getElementById(this.element.id + '_ej2_chart_highlight');
+        if (highlightElement) { highlightElement.remove(); }
         /**
          * To fix react timeout destroy issue.
          */
@@ -2885,6 +3049,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             const rect: ClientRect = this.element.getBoundingClientRect();
             this.mouseY = ((pageY - rect.top) - Math.max(svgRect.top - rect.top, 0) / this.scaleX);
             this.mouseX = ((pageX - rect.left) - Math.max(svgRect.left - rect.left, 0) / this.scaleY);
+            if (this.stockChart) {
+                this.mouseX += this.stockChart.legendSettings.position === 'Left' ? this.stockChart.stockLegendModule.legendBounds.width : 0;
+                this.mouseY += this.stockChart.legendSettings.position === 'Top' ? this.stockChart.stockLegendModule.legendBounds.height : 0;
+            }
         }
     }
 
@@ -2951,6 +3119,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let pageX: number;
         let pageY: number;
         let touchArg: TouchEvent;
+        if (this.allowPan) {
+            return false;
+        }
         if (e.type === 'touchmove') {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
@@ -2961,6 +3132,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             pageX = e.clientX;
             pageY = e.clientY;
         }
+        this.previousPageX = pageX;
+        this.previousPageY = pageY;
         if (getElement(this.svgId)) {
             this.setMouseXY(pageX, pageY);
             this.chartOnMouseMove(e);
@@ -2977,6 +3150,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let pageX: number;
         let pageY: number;
         let touchArg: TouchEvent;
+        if (this.stockChart && this.stockChart.onPanning) {
+            return false;
+        }
         if (e.type === 'touchleave') {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
@@ -2988,6 +3164,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             pageY = e.clientY;
 
         }
+        this.previousPageX = null;
+        this.previousPageY = null;
         this.setMouseXY(pageX, pageY);
         this.chartOnMouseLeave(e);
         return false;
@@ -3519,6 +3697,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         const offset: number = Browser.isDevice ? 20 : 30;
         const rect: ClientRect = this.element.getBoundingClientRect();
         const element: Element = <Element>e.target;
+        if (this.stockChart && this.stockChart.zoomSettings.enablePan) {
+            this.allowPan = true;
+        }
         this.trigger(chartMouseDown, { target: element.id, x: this.mouseX, y: this.mouseY });
         if (e.type === 'touchstart') {
             this.isTouch = true;
@@ -3585,6 +3766,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         const element: Element = <Element>e.target;
         this.trigger(chartMouseUp, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
+        this.allowPan = false;
         if (this.isTouch) {
             this.titleTooltip(e, this.mouseX, this.mouseY, this.isTouch);
             this.axisTooltip(e, this.mouseX, this.mouseY, this.isTouch);
@@ -3655,13 +3837,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private setTheme(): void {
         /*! Set theme */
         this.themeStyle = getThemeColor(this.theme, this.enableCanvas);
-
-        const style: HTMLStyleElement = document.createElement('style');
-        style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_chart_focus');
-        style.innerText = '.e-chart-focused:focus, path[class*=_ej2_chart_selection_series]:focus,' +
-        'path[id*=_Point_]:focus, text[id*=_ChartTitle]:focus {outline: none } .e-chart-focused:focus-visible, path[class*=_ej2_chart_selection_series]:focus-visible,' +
-            'path[id*=_Point_]:focus-visible, text[id*=_ChartTitle]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';
-        document.body.appendChild(style);
+        if (!(document.getElementById(this.element.id + 'Keyboard_chart_focus'))) {
+            const style: HTMLStyleElement = document.createElement('style');
+            style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_chart_focus');
+            style.innerText = '.e-chart-focused:focus, path[class*=_ej2_chart_selection_series]:focus,' +
+                'path[id*=_Point_]:focus, text[id*=_ChartTitle]:focus {outline: none } .e-chart-focused:focus-visible, path[class*=_ej2_chart_selection_series]:focus-visible,' +
+                'path[id*=_Point_]:focus-visible, text[id*=_ChartTitle]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';
+            document.body.appendChild(style);
+        }
     }
 
     /**
@@ -3689,7 +3872,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.isLegend = (this.legendSettings.visible && ((value.name !== '') || !!this.isLegend));
             moduleName = value.type.indexOf('100') !== -1 ? value.type.replace('100', '') + 'Series' : value.type + 'Series';
             errorBarVisible = value.errorBar.visible || errorBarVisible;
-            dataLabelEnable = value.marker.dataLabel.visible || dataLabelEnable;
+            dataLabelEnable = value.marker.dataLabel.visible || dataLabelEnable || (value.type == 'Pareto' && value.paretoOptions.marker.dataLabel.visible);
             isPointDrag = value.dragSettings.enable || isPointDrag;
             if (!modules.some((currentModule: ModuleDeclaration) => {
                 return currentModule.member === moduleName;
@@ -3741,7 +3924,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             });
         }
         if (this.chartAreaType !== 'PolarRadar' && !this.scrollSettingEnabled && (zooming.enableSelectionZooming
-            || zooming.enableMouseWheelZooming || zooming.enablePinchZooming || zooming.enablePan || zooming.enableScrollbar)) {
+            || zooming.enableMouseWheelZooming || zooming.enablePinchZooming || zooming.enablePan || zooming.enableScrollbar || zooming.showToolbar)) {
             modules.push({
                 member: 'Zoom',
                 args: [this, this.zoomSettings]
@@ -4078,6 +4261,18 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         removeElement(this.element.id + '_ej2_chart_selection');
         removeElement(this.element.id + '_ej2_chart_highlight');
     }
+
+    /**
+     * To trigger the manual mouse move event for live chart tooltip
+     */
+    private mouseMoveEvent(): void {
+        if (this.tooltip.enable && this.previousPageX !== null && this.previousPageY !== null) {
+            const mousemove: MouseEvent = document.createEvent('MouseEvent');
+            mousemove.initMouseEvent('mousemove', true, false, window, 1, 100, 100, this.previousPageX, this.previousPageY, false, false, false, false, 0, null);
+            this.element.dispatchEvent(mousemove);
+        }
+    }
+
     /**
      * Called internally if any of the property value changed.
      * @private

@@ -41,7 +41,7 @@ export class DiagramHtmlElement extends DiagramElement {
     // eslint-disable-next-line @typescript-eslint/ban-types
     private templateFn: Function;
 
-    private data: string | HTMLElement = '';
+    private data: string | Function | HTMLElement = '';
     /**
      * Gets the node id for the element
      */
@@ -81,7 +81,7 @@ export class DiagramHtmlElement extends DiagramElement {
      *
      * @private
      */
-    public get content(): string | HTMLElement {
+    public get content(): string | HTMLElement | Function {
         return this.data;
     }
 
@@ -93,7 +93,7 @@ export class DiagramHtmlElement extends DiagramElement {
      *
      * @private
      */
-    public set content(value: string | HTMLElement) {
+    public set content(value: string | HTMLElement | Function) {
         this.data = value;
         if (!this.canReset) {
             this.canReset = true;

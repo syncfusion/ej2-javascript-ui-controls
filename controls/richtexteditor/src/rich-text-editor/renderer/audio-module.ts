@@ -15,7 +15,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
-import { dispatchEvent, parseHtml, hasClass, convertToBlob } from '../base/util';
+import { dispatchEvent, hasClass, convertToBlob } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
 
@@ -123,8 +123,8 @@ export class Audio {
         if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 const temp: Element = this.parent.createElement('div');
-                const contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i as number].text);
-                temp.appendChild(contentElem);
+                const contentElem: DocumentFragment = this.parent.formatter.getUndoRedoStack()[i as number].text as DocumentFragment;
+                temp.appendChild(contentElem.cloneNode(true));
             }
         }
     }

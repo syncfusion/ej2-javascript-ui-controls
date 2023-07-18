@@ -3,7 +3,12 @@
   /*! Pager theme */
   #{&}.e-pager {
     background-color: $pager-bg-color;
-    border-color: $pager-border-color;
+    @if $pager-skin == 'material3' {
+      border-color: rgba($border-light);
+    }
+    @else {
+      border-color: $pager-border-color;
+    }
     color: $pager-color;
     opacity: $pager-content-opacity;
 
@@ -19,6 +24,9 @@
       background: $pager-hover-bg-color;
       color: $pager-hover-color;
       opacity: $pager-content-opacity;
+      @if $pager-skin == 'material3' {
+        border-radius: 4px;
+      }
     }
 
     .e-parentmsgbar {
@@ -37,10 +45,6 @@
     .e-numericitem:hover {
       color: $pager-hover-color;
       opacity: $pager-content-opacity;
-    }
-
-    .e-numericitem:hover:not(.e-np):not(.e-pp):not(.e-active) {
-      border-left: $pager-item-hover-borders-width solid $pager-item-hover-border-color;
     }
 
     .e-numericitem:not(.e-active):not(.e-np):not(.e-pp):hover {
@@ -91,6 +95,9 @@
     .e-currentitem:hover {
       @if $pager-skin == 'bootstrap5' {
         border-right-color: $primary-light;
+      }
+      @if $pager-skin == 'material3' {
+        border-radius: 4px;
       }
       background: $pager-active-bg-color;
       color: $pager-active-color;

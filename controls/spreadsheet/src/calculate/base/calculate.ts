@@ -945,32 +945,35 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         }
                         args = customArgs;
                     } else {
-                        // Use to split the arguments when days/day formula parameters contain comma inside the double quotes like "October 22, 2016"
-                        if ((libFormula === 'DAYS' || libFormula === 'DAY') && sFormula.includes('"')) {
-                            args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket)).match(/(".*?"|[^",\s]+)/g);
-                        } else {
-                            args = sFormula.substring(sFormula.indexOf(
-                                this.leftBracket) + 1, sFormula.indexOf(this.rightBracket)).split(this.getParseArgumentSeparator());
-                            if (libFormula === 'IFERROR' && (args[0] === "" || args[1] === "")) {
-                                args[1] = '0';
+                        const argStr: string = sFormula.substring(
+                            sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket));
+                        args = [];
+                        let separator: string = this.getParseArgumentSeparator();
+                        let parameter: string = ''; let isInString: boolean;
+                        for (let idx: number = 0, len: number = argStr.length - 1; idx <= len; idx++) {
+                            if (argStr[idx as number] === '"') {
+                                isInString = !isInString;
                             }
-                        }
-                        if (sFormula.includes(this.getParseArgumentSeparator() + this.tic)) {
-                            let joinIdx: number = null;
-                            for (let k: number = 0; k < args.length; k++) {
-                                if (args[k as number] && args[k as number][0] === this.tic &&
-                                    args[k as number][args[k as number].length - 1] !== this.tic) {
-                                    joinIdx = k;
+                            if (argStr[idx as number] === separator && !isInString) {
+                                args.push(parameter);
+                                parameter = '';
+                                if (idx === len) {
+                                    args.push(parameter);
                                 }
-                                if (joinIdx !== null && joinIdx === k - 1 && args[k as number][0] !==
-                                    this.tic && args[k as number][args[k as number].length - 1] === this.tic) {
-                                    args[joinIdx as number] = args[joinIdx as number] + this.getParseArgumentSeparator() +
-                                        args[k as number];
-                                    args.splice(k, 1); joinIdx = null;
+                            } else {
+                                parameter += argStr[idx as number];
+                                if (idx === len) {
+                                    args.push(parameter);
                                 }
                             }
                         }
-                        if (nestedFormula && libFormula && libFormula === 'IF') { args.push('nestedFormulaTrue'); }
+                        if (!args.length) {
+                            args = [''];
+                        }
+                        if (libFormula === 'IFERROR' && (args[0] === "" || args[1] === "")) {
+                            args[1] = '0';
+                        }
+                        if (nestedFormula && libFormula && (libFormula === 'IF' || libFormula === 'INDEX')) { args.push('nestedFormulaTrue'); }
                         if (isFromComputeExpression && libFormula === 'UNIQUE') { args.push('isComputeExp'); }
                     }
                     formulatResult = isNullOrUndefined(this.getFunction(libFormula)) ? this.getErrorStrings()[CommonErrors.name] :
@@ -2463,7 +2466,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 return false;
             }
         }
-        if (isAlpha && isNum && args.indexOf(this.tic) === -1) {
+        if (isAlpha && isNum && args.indexOf(this.tic) === -1 && this.isValidCell(args)) {
             return true;
         }
         return false;
@@ -2518,7 +2521,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             while (j < val.length && this.isChar(val[j as number])) {
                 j++;
             }
-            if (j === val.length) {
+            if (j === val.length || !this.isValidCell(val)) {
                 val = val.toLowerCase();
                 return val === '' ? this.getErrorStrings()[CommonErrors.value] : this.getErrorStrings()[CommonErrors.name];
             } else {
@@ -2563,6 +2566,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         //     cValue = (Number(d) / 100).toString();
         // }
         return cValue;
+    }
+
+    private isValidCell(args: string): boolean {
+        const digitStartIdx: number = args.search(/\d/);
+        if (digitStartIdx === 0) {
+            const alphabetStartIdx: number = args.search(/[a-zA-Z]/);
+            args = args.substring(alphabetStartIdx, args.length) + args.substring(0, alphabetStartIdx);
+        }
+        const row: number = this.rowIndex(args);
+        const col: number = this.colIndex(args);
+        return (row > 0 && row <= 1048576 && col > 0 && col <= 16384);
     }
 
     /**
@@ -2625,7 +2639,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      */
     public valueChanged(
         grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[], refresh?: boolean,
-        sheetName?: string): void {
+        sheetName?: string, isRandomFormula?: boolean, randomFormulaRefreshing?: boolean): void {
         const pgrid: string = grid; this.spreadSheetUsedRange = usedRangeCol;
         this.grid = grid;
         let isComputedValueChanged: boolean = true;
@@ -2715,7 +2729,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     this.setValueRowCol(this.getSheetID(pgrid) + 1, formula.getFormulaValue(), changeArgs.getRowIndex(), changeArgs.getColIndex());
                 } else {
                     (this.parentObject as any).setValueRowCol(
-                        this.getSheetId(pgrid), formula.getFormulaValue(), changeArgs.getRowIndex(), changeArgs.getColIndex(), formula.getFormulaText());
+                        this.getSheetId(pgrid), formula.getFormulaValue(), changeArgs.getRowIndex(), changeArgs.getColIndex(), formula.getFormulaText(), isRandomFormula);
                 }
                 /* eslint-enable */
             }
@@ -2727,7 +2741,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         if (isCompute && isComputedValueChanged && this.getDependentCells().has(cellTxt) &&
             this.getDependentCells().get(cellTxt).toString() !== cellTxt) {
-            this.refresh(cellTxt);
+            this.refresh(cellTxt, undefined, undefined, randomFormulaRefreshing);
         }
     }
 
@@ -2995,17 +3009,16 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         let colIdx: number;
         let value: string | number;
         let tokenRef: string = '';
-        let stringCollection: string = this.randCollection.toString();
         let family: CalcSheetFamilyItem;
         if (this.randomValues.has(cellRef)) {
             this.randomValues.delete(cellRef);
-            stringCollection = stringCollection.split(cellRef + this.parseArgumentSeparator).join('').split(
-                this.parseArgumentSeparator + cellRef).join('').split(cellRef).join('');
-            if (this.randomValues.size === 0 && stringCollection === '') {
+            const randIdx: number = this.randCollection.indexOf(cellRef);
+            if (randIdx > -1) {
+                this.randCollection.splice(randIdx, 1);
+            }
+            if (this.randomValues.size === 0 && !this.randCollection.length) {
                 this.randomValues.clear();
                 this.randCollection = [];
-            } else {
-                this.randCollection = stringCollection.split(this.parseArgumentSeparator);
             }
         }
         for (let i: number = 0; i < this.randomValues.size; i++) {
@@ -3025,7 +3038,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    public refresh(cellRef: string, uniqueCell?: string, dependentCell?: string[]): void {
+    public refresh(cellRef: string, uniqueCell?: string, dependentCell?: string[], isRandomFormula?: boolean): void {
         let refreshCells: boolean;
         if (!dependentCell) {
             refreshCells = true;
@@ -3130,7 +3143,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             sheets[sheetIdx as number].rows[rowIdx as number].cells[colIdx as number];
                         if (cellObj) {
                             (<{ notify: Function }>this.parentObject).notify(
-                                'calculateFormula', { cell: cellObj, rowIdx: rowIdx, colIdx: colIdx, sheetIndex: sheetIdx, isDependentRefresh : true});
+                                'calculateFormula', { cell: cellObj, rowIdx: rowIdx, colIdx: colIdx, sheetIndex: sheetIdx, isDependentRefresh : true, isRandomFormula: isRandomFormula });
                         }
                     });
                 }

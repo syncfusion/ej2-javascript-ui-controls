@@ -1,0 +1,49 @@
+/*! component's theme wise override definitions and variables */
+$vscroll-skin: 'material3' !default;
+$vscroll-nav-nrml-height: 48px !default;
+$vscroll-hover-font: $content-bg-color-hover !default;
+$vscroll-active-font-color: rgba($content-bg-color-selected) !default;
+$vscroll-border-size: 1px !default;
+$vscroll-border-type: solid !default;
+
+$vscroll-default-bg: linear-gradient(0deg, rgba(103, 80, 164, .08), rgba(103, 80, 164, .08)), $content-bg-color-alt1 !default;
+$vscroll-nav-nrml-minheight: 48px !default;
+$vscroll-nav-bgr-minheight: 56px !default;
+$vscroll-nav-nrml-width: 40px !default;
+$vscroll-nav-bgr-width: 46px !default;
+$vscroll-nrml-padding: 0 $vscroll-nav-nrml-width !default;
+$vscroll-bgr-padding: $vscroll-nav-bgr-width 0 !default;
+$vscroll-box-shadow: none !default;
+$vscroll-overlay-opacity: .5 !default;
+$vscroll-overlay-bg: rgba($content-bg-color) !default;
+$vscroll-overlay-start: ($vscroll-overlay-bg, 0) !default;
+$vscroll-overlay-end: ($vscroll-overlay-bg, 1) !default;
+$vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%) !default;
+$vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%) !default;
+
+$vscroll-device-arrow-box-shadow: rgba($shadow) !default;
+$vscroll-device-arrow-rtl-box-shadow: rgba($shadow) !default;
+$vscroll-device-arrow-bg: linear-gradient(0deg, rgba(103, 80, 164, .08), rgba(103, 80, 164, .08)), $content-bg-color-alt1 !default;
+$vscroll-device-arrow-border-size: 1px !default;
+$vscroll-device-arrow-border-color: rgba($icon-color) !default;
+$vscroll-device-arrow-color: rgba($icon-color) !default;
+$vscroll-device-arrow-size: 14px !default;
+$vscroll-device-arrow-width: 48px !default;
+
+$vscroll-default-icon-color: rgba($icon-color) !default;
+$vscroll-hover-bg: $content-bg-color-hover !default;
+$vscroll-press-bg: $content-bg-color-pressed !default;
+$vscroll-default-border: rgba($border-light) !default;
+$vscroll-focus-border: 0 !default;
+$vscroll-active-border: 0 !default;
+$vscroll-hover-border: 0 !default;
+$vscroll-hover-border-color: transparent !default;
+$vscroll-active-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125) !default;
+
+@mixin vscroll-btn-animation {
+  content: '';
+}
+
+@mixin vscroll-btn-animation-after {
+  content: '';
+}

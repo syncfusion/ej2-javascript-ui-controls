@@ -179,7 +179,7 @@ export class ProgressTooltip {
         if (isFirst) {
             this.svgTooltip = new SVGTooltip(
                 {
-                    opacity: 0.75,
+                    opacity: this.control.tooltip.textStyle.opacity ? this.control.tooltip.textStyle.opacity : ((this.control.theme === 'Material3' || this.control.theme === 'Material3Dark') ? 1 : 0.75),
                     header: '',
                     content: this.text,
                     fill: this.control.tooltip.fill,

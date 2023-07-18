@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 22.1.39 (2023-07-18)
+
+### TreeMap
+
+#### Bug fixes
+
+- Print will now work properly in themes such as Material 3, Fluent, and others.
+
 ## 18.2.44 (2020-07-07)
 
 ### TreeMap

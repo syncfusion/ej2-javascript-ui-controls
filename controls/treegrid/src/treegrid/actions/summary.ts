@@ -184,7 +184,8 @@ export class Aggregate {
             summaryKey = types[parseInt(i.toString(), 10)];
             const key: string = summaryColumn.field + ' - ' + types[parseInt(i.toString(), 10)].toLowerCase();
             const val: Object = types[parseInt(i.toString(), 10)] !== 'Custom' ? getObject('aggregates', sumData) :
-                calculateAggregate(types[parseInt(i.toString(), 10)], sumData, summaryColumn, this.parent);
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                calculateAggregate(types[parseInt(i.toString(), 10)], sumData, summaryColumn as any, this.parent);
             const disp: string = summaryColumn.columnName;
             const value: Object = types[parseInt(i.toString(), 10)] !== 'Custom' ? val[`${key}`] : val;
             single[`${disp}`] = single[`${disp}`] || {}; single[`${disp}`][`${key}`] = value;

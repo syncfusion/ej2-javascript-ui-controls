@@ -1548,6 +1548,95 @@ describe('DateRangePicker', () => {
             });
         });
 
+        describe("Full-Screen mode Preset testing", () => {
+            let daterangepicker: any;
+            beforeEach(() => {
+                let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+                daterangepicker = new DateRangePicker({
+                    fullScreenMode: true,
+                    presets:
+                        [{ label: 'Today', start: new Date(), end: new Date() },
+                        { label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date() },
+                        { label: 'Today', start: new Date(), end: new Date() }, { label: 'Test', start: new Date('03/03/2017 2:00'), end: new Date('04/03/2017 2:00') }]
+                });
+                daterangepicker.appendTo('#date');
+                daterangepicker.isMobile = true;
+                daterangepicker.refreshControl();
+                if (!daterangepicker.isPopupOpen()) {
+                    <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+                }
+            });
+
+            afterEach(() => {
+                if (daterangepicker) {
+                    daterangepicker.destroy();
+                }
+                document.body.innerHTML = '';
+
+
+            });
+            it('selection with datetime support in lower resolution', () => {
+                expect(document.querySelector('.e-presets li.e-active').textContent).toBe("Custom Range");
+                expect(daterangepicker.popupObj.element.querySelector('.e-date-range-container') === null && daterangepicker.popupObj.element.querySelectorAll('.e-calendar').length == 0).toBe(true);
+                daterangepicker.hide();                
+            });
+        });
+
+        describe('PopUp full-screen Element Structure(Device)', () => {
+            let daterangepicker: any;
+            beforeEach(() => {
+                let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+                daterangepicker = new DateRangePicker({
+                    fullScreenMode: true,
+                });
+                daterangepicker.appendTo('#date');
+                daterangepicker.isMobile = true;
+                daterangepicker.refreshControl();
+                if (!daterangepicker.isPopupOpen()) {
+                    <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+                }
+            });
+            afterEach(() => {
+                if (daterangepicker) {
+                    daterangepicker.destroy();
+                }
+                document.body.innerHTML = '';
+            });
+            it('e-popup-expand class added', () => {
+                expect(daterangepicker.popupWrapper.classList.contains('.e-popup-expand') !== null).toBe(true);
+            });
+        });
+
+        describe('Model full screen layout input element', function () {
+            let daterangepicker: any;
+            beforeEach(() => {
+                let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                    'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+                Browser.userAgent = androidPhoneUa;
+    
+                let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+                daterangepicker = new DateRangePicker({
+                    fullScreenMode: true,
+                });
+                daterangepicker.appendTo('#date');
+                daterangepicker.isMobile = true;
+            });
+            afterEach(() => {
+                if (daterangepicker) {
+                    daterangepicker.destroy();
+                }
+                document.body.innerHTML = '';
+                let androidPhoneUa: string = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
+                Browser.userAgent = androidPhoneUa;
+            });
+            it('e-popup-expand class added to the input wrapper element', () => {
+                expect(daterangepicker.inputWrapper.container.classList.contains('e-popup-expand')).toBe(true);
+            });
+        });        
+
         describe('Header Element (Device)', () => {
             let daterangepicker: any;
             let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

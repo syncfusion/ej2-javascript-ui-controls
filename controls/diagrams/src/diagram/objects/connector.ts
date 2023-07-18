@@ -7,7 +7,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='./node-base-model.d.ts'/>
-import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor } from '@syncfusion/ej2-base';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor, compile as baseTemplateCompiler } from '@syncfusion/ej2-base';
 import { ShapeStyle, StrokeStyle } from '../core/appearance';
 import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
@@ -33,7 +33,7 @@ import { Container } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity, DiagramAction } from '../enum/enum';
 import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';
-import { SegmentInfo, Alignment } from '../rendering/canvas-interface';
+import { SegmentInfo, Alignment, IReactDiagram } from '../rendering/canvas-interface';
 import { PathAnnotationModel } from './annotation-model';
 import { NodeBase } from './node-base';
 import { DiagramTooltipModel } from './tooltip-model';
@@ -229,7 +229,7 @@ export class BezierSettings extends ChildProperty<BezierSettings> {
     public smoothness: BezierSmoothness;
 
     /**
-    * Specifies whether to reset the current segment collections in response to a change in the connector's source and target ends. 
+    * Specifies whether to reset the current segment collections in response to a change in the connector's source and target ends.
     *
     * @default 'true'
     */
@@ -489,18 +489,18 @@ export class BezierSegment extends StraightSegment {
     public getClassName(): string {
         return 'BezierSegment';
     }
-	/**
+    /**
     * @private
     * Returns the total points of the bezier curve
     */
-      public getPoints(segments:BezierSegment,start:PointModel):PointModel[]{
-        let points:PointModel[] = [];
-        if (points.length > 0 || start!= null)
-            {
-                let st:PointModel = points.length > 0 ? points[points.length - 1] : start;
-                let bezier:PointModel[]=this.bezireToPoly(st, segments);
-                points.push.apply(points,bezier);
-            }
+    public getPoints(segments: BezierSegment, start: PointModel): PointModel[]{
+        const points: PointModel[] = [];
+        if (points.length > 0 || start != null)
+        {
+            const st: PointModel = points.length > 0 ? points[points.length - 1] : start;
+            const bezier: PointModel[] = this.bezireToPoly(st, segments);
+            points.push.apply(points, bezier);
+        }
         return points;
     }
 
@@ -508,17 +508,17 @@ export class BezierSegment extends StraightSegment {
     * @private
     * Returns the total points of the bezier curve
     */
-     public bezireToPoly(start:PointModel ,segment:BezierSegment):PointModel[]{
-        let points:PointModel[] = [];
+    public bezireToPoly(start: PointModel, segment: BezierSegment): PointModel[]{
+        const points: PointModel[] = [];
         if (segment as BezierSegment)
-            {
-                let bezSeg:BezierSegment = segment as BezierSegment;
-                let pt0:PointModel = start;
-                let pt1:PointModel= bezSeg.bezierPoint1;
-                let pt2:PointModel= bezSeg.bezierPoint2;
-                let pt3:PointModel = {x:bezSeg.points[1].x,y:bezSeg.points[1].y} as PointModel;
-                this.flattenCubicBezier(points, pt0 as Point, pt1 as Point, pt2 as Point, pt3 as Point, 10);
-            }
+        {
+            const bezSeg: BezierSegment = segment as BezierSegment;
+            const pt0: PointModel = start;
+            const pt1: PointModel = bezSeg.bezierPoint1;
+            const pt2: PointModel = bezSeg.bezierPoint2;
+            const pt3: PointModel = {x: bezSeg.points[1].x, y: bezSeg.points[1].y} as PointModel;
+            this.flattenCubicBezier(points, pt0 as Point, pt1 as Point, pt2 as Point, pt3 as Point, 10);
+        }
         return points;
     }
 
@@ -526,22 +526,22 @@ export class BezierSegment extends StraightSegment {
     * @private
     * Returns the total points of the bezier curve
     */
-    public flattenCubicBezier(points:PointModel[],ptStart:Point, ptCtrl1:Point,ptCtrl2:Point,ptEnd:Point,tolerance:number){
+    public flattenCubicBezier(points: PointModel[], ptStart: Point, ptCtrl1: Point, ptCtrl2: Point, ptEnd: Point, tolerance: number){
 
-        let max:number =((Point.findLength(ptStart,ptCtrl1) + Point.findLength(ptCtrl1,ptCtrl2) + Point.findLength(ptCtrl2,ptEnd)) / tolerance);
-        let i:number;
+        const max: number = ((Point.findLength(ptStart, ptCtrl1) + Point.findLength(ptCtrl1, ptCtrl2) + Point.findLength(ptCtrl2, ptEnd)) / tolerance);
+        let i: number;
         for (i = 0; i <= max; i++)
         {
-            let t:number = i / max;
-            let x:number = (1 - t) * (1 - t) * (1 - t) * ptStart.x +
+            const t: number = i / max;
+            const x: number = (1 - t) * (1 - t) * (1 - t) * ptStart.x +
                        3 * t * (1 - t) * (1 - t) * ptCtrl1.x +
                        3 * t * t * (1 - t) * ptCtrl2.x +
                        t * t * t * ptEnd.x;
-            let y:number = (1 - t) * (1 - t) * (1 - t) * ptStart.y +
+            const y: number = (1 - t) * (1 - t) * (1 - t) * ptStart.y +
                        3 * t * (1 - t) * (1 - t) * ptCtrl1.y +
                        3 * t * t * (1 - t) * ptCtrl2.y +
                        t * t * t * ptEnd.y;
-            points.push({x ,y} as PointModel);
+            points.push({x, y} as PointModel);
         }
 
     }
@@ -1341,8 +1341,8 @@ export class Connector extends NodeBase implements IElement {
      *
      * @default null
      */
-     @Property(null)
-     public maxSegmentThumb: number;
+    @Property(null)
+    public maxSegmentThumb: number;
 
     /**
      * Specifies a value indicating whether to overlap the connector over with the source and target node.
@@ -1382,7 +1382,6 @@ export class Connector extends NodeBase implements IElement {
     public sourcePortWrapper: DiagramElement;
     /** @private */
     public targetPortWrapper: DiagramElement;
-
     /** @private */
     public intermediatePoints: PointModel[];
     /** @private */
@@ -1587,7 +1586,8 @@ export class Connector extends NodeBase implements IElement {
             shape.multiplicity.source.optional = false;
             targetText = text1 ? text1 : '*'; sourceText = '1';
         }
-        if (shape.multiplicity.type === 'ManyToOne') {
+        ///831806 -Added ManyToMany relationship for UML class connector annotation label
+        if (shape.multiplicity.type === 'ManyToMany') {
             sourceText = text ? text : '*'; targetText = text1 ? text1 : '*';
         }
         if (shape.multiplicity.type === 'OneToOne') {
@@ -1736,8 +1736,16 @@ export class Connector extends NodeBase implements IElement {
         }
         if (diagramId && (annotation.template || annotation.annotationType === 'Template'
             || (annotationTemplate && annotation.content === ''))) {
+            // Task 834121: Content-Security-Policy support for diagram
+            const diagramElement: Object = document.getElementById(diagramId);
+            const instance: string = 'ej2_instances';
+            const diagram: Object = diagramElement[`${instance}`][0];
             textele = new DiagramHtmlElement(this.id, diagramId, annotation.id, annotationTemplate as string);
-            textele = getTemplateContent(textele, annotation, annotationTemplate);
+            if (annotation.template && typeof annotation.template === 'function' && (diagram as IReactDiagram).isReact){
+                (textele as any).templateFn = baseTemplateCompiler(annotation.template);
+                textele.isTemplate = true;
+            }
+            textele = getTemplateContent(textele, annotation, annotationTemplate, diagram);
         } else {
             textele = new TextElement();
             textele.content = annotation.content;
@@ -1908,7 +1916,7 @@ export class Connector extends NodeBase implements IElement {
     }
     /** @private */
     public getSegmentElement(
-        connector: Connector, segmentElement: PathElement, layoutOrientation?: LayoutOrientation, diagramActions?: DiagramAction,isFlip: boolean = true
+        connector: Connector, segmentElement: PathElement, layoutOrientation?: LayoutOrientation, diagramActions?: DiagramAction, isFlip: boolean = true
     ): PathElement {
         //let bounds: Rect; let segmentPath: string;
         let points: PointModel[] = [];
@@ -2035,7 +2043,7 @@ export class Connector extends NodeBase implements IElement {
                 let isrezise: boolean;
                 let isDrawing: boolean;
                 if ((this as any).parentObj.element) {
-                    let action: string = (this as any).parentObj.element.ej2_instances[0]['eventHandler'].action;
+                    const action: string = (this as any).parentObj.element.ej2_instances[0]['eventHandler'].action;
                     isrezise = ((this as any).parentObj.element.ej2_instances[0]['eventHandler']).tool instanceof ResizeTool;
                     isDrawing = action.includes('PortDraw') || action.includes('Drag');
                 }

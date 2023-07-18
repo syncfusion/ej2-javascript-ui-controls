@@ -179,7 +179,7 @@ export class MarkerExplode extends ChartData {
     private drawTrackBall(series: Series, point: Points, location: ChartLocation, index: number): void {
         const marker: MarkerSettingsModel = point.marker;
         const seriesMarker: MarkerSettingsModel = series.marker;
-        const shape: ChartShape = marker.shape || seriesMarker.shape;
+        const shape: ChartShape = marker.shape || seriesMarker.shape || 'Circle';
         if (shape === 'None' || shape === 'Image') {
             return null;
         }
@@ -195,8 +195,8 @@ export class MarkerExplode extends ChartData {
         const symbolId: string = this.elementId + '_Series_' + series.index + '_Point_' + point.index + '_Trackball' +
             (index ? index : '');
         const size: Size = new Size(
-            (marker.width || seriesMarker.width) + 5,
-            (marker.height || seriesMarker.height) + 5
+            (marker.width || seriesMarker.width) + 3,
+            (marker.height || seriesMarker.height) + 3
         );
         const border: Border = <Border>(marker.border || series.border);
         const explodeSeries: boolean = (series.type === 'BoxAndWhisker' || series.type === 'Bubble' || series.type === 'Scatter');

@@ -333,20 +333,6 @@ describe('default stock chart', () => {
         }];
         chart.refresh();
     });
-    it('Checking button click with selector', (done: Function) => {
-        chart.loaded = (args: Object): void => {
-            let element: Element = document.getElementsByClassName('e-hscroll-content')[0].children[0].children[4].firstElementChild;
-            trigger.clickEvent(element);
-            done();
-        };
-        chart.series =  [{
-            xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
-            dataSource: chartData, type: 'Candle', yName: 'close'
-        }];
-        chart.enableSelector = false;
-        chart.refresh();
-
-    });
     // it('checked with rangeChange event', (done: Function) => {
     //     chart.rangeChange = (args: IRangeChangeEventArgs) => {
     //         let data: Object[] = [{

@@ -233,10 +233,19 @@
   //normal style
   #{&}.e-calendar,
   .e-bigger.e-small #{&}.e-calendar {
-    border-spacing: 0;
-    max-width: $calendar-normal-max-width;
-    min-width: $calendar-normal-min-width;
-    padding: $calendar-popup-padding;
+    @if $skin-name != 'Material3' {
+      border-spacing: 0;
+      max-width: $calendar-normal-max-width;
+      min-width: $calendar-normal-min-width;
+      padding: $calendar-popup-padding;
+    }
+    @else {
+      border-spacing: 0;
+      max-width: $calendar-normal-max-width;
+      min-width: $calendar-normal-min-width;
+      padding: $calendar-popup-padding;
+      min-height: $calendar-normal-min-height;
+    }
 
     #{if(&, '&', '*')}.e-calendar-day-header-lg {
       max-width: $calendar-lg-day-header-format-max-width;
@@ -313,15 +322,30 @@
     }
     #{if(&, '&', '*')} .e-content.e-year td,
     #{if(&, '&', '*')} .e-content.e-decade td {
-      height: $calendar-normal-year-decade-height;
-      padding: $calendar-normal-year-decade-padding;
+      @if $skin-name != 'Material3' {
+        height: $calendar-normal-year-decade-height;
+        padding: $calendar-normal-year-decade-padding;
+      }
+      @else {
+        height: $calendar-normal-year-decade-height;
+        padding: $calendar-normal-year-decade-padding;
+        width: $calendar-normal-year-decade-width;
+      }
     }
     #{if(&, '&', '*')} .e-content.e-year td > span.e-day,
     #{if(&, '&', '*')} .e-content.e-decade td > span.e-day {
-      font-weight: $calendar-yeardecade-font-weight;
-      height: $calendar-normal-year-decade-height;
-      line-height: $calendar-normal-year-decade-height;
-      width: $calendar-normal-year-decade-width;
+      @if $skin-name != 'Material3' {
+        font-weight: $calendar-yeardecade-font-weight;
+        height: $calendar-normal-year-decade-height;
+        line-height: $calendar-normal-year-decade-height;
+        width: $calendar-normal-year-decade-width;
+      }
+      @else {
+        font-weight: $calendar-yeardecade-font-weight;
+        height: $calendar-normal-year-decade-height-inside;
+        line-height: $calendar-normal-year-decade-height-inside;
+        width: $calendar-normal-year-decade-width;
+      }
     }
     #{if(&, '&', '*')} .e-content.e-year td.e-selected:not(.e-focused-date) > span.e-day,
     #{if(&, '&', '*')} .e-content.e-decade td.e-selected:not(.e-focused-date) > span.e-day,
@@ -545,14 +569,28 @@
     }
     #{if(&, '&', '*')} .e-content.e-year td,
     #{if(&, '&', '*')} .e-content.e-decade td {
-      height: $calendar-bigger-year-decade-height;
-      padding: $calendar-bigger-year-decade-padding;
+      @if $skin-name != 'Material3' {
+        height: $calendar-bigger-year-decade-height;
+        padding: $calendar-bigger-year-decade-padding;
+      }
+      @else {
+        height: $calendar-bigger-year-decade-height;
+        padding: $calendar-bigger-year-decade-padding;
+        width: $calendar-bigger-year-decade-width;
+      }
     }
     #{if(&, '&', '*')} .e-content.e-year td > span.e-day,
     #{if(&, '&', '*')} .e-content.e-decade td > span.e-day {
-      height: $calendar-bigger-year-decade-height;
-      line-height: $calendar-bigger-year-decade-height;
-      width: $calendar-bigger-year-decade-width;
+      @if $skin-name != 'Material3' {
+        height: $calendar-bigger-year-decade-height;
+        line-height: $calendar-bigger-year-decade-height;
+        width: $calendar-bigger-year-decade-width;
+      }
+      @else {
+        height: $calendar-bigger-year-decade-height-inside;
+        line-height: $calendar-bigger-year-decade-height-inside;
+        width: $calendar-bigger-year-decade-width;
+      }
     }
     #{if(&, '&', '*')} .e-header .e-icon-container {
       #{if(&, '&', '*')} .e-prev,
@@ -587,10 +625,17 @@
   // Mouse small style
   .e-small#{&}.e-calendar,
   .e-small #{&}.e-calendar {
-    max-width: $calendar-small-max-width;
-    min-width: $calendar-small-min-width;
-    padding: $calendar-small-popup-padding;
-
+    @if $skin-name != 'Material3' or $skin-name != 'Material3-dark' {
+      max-width: $calendar-small-max-width;
+      min-width: $calendar-small-min-width;
+      padding: $calendar-small-popup-padding;
+      min-height: 220px;
+    }
+    @else {
+      max-width: $calendar-small-max-width;
+      min-width: $calendar-small-min-width;
+      padding: $calendar-small-popup-padding;
+    }
     #{if(&, '&', '*')} .e-footer-container {
       @if $skin-name == 'tailwind' {
         padding: $calendar-small-footer-container-padding;

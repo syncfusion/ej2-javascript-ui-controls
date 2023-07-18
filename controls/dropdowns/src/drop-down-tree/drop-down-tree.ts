@@ -60,19 +60,15 @@ const SHOW_TEXT: string = 'e-show-text';
 const TOTAL_COUNT_WRAPPER: string = 'e-total-count';
 const REMAIN_COUNT: string = 'e-wrap-count';
 
-export type TreeFilterType =
-    /**
-    * Checks whether a value begins with the specified value.
-    */
-    'StartsWith' | 
-    /**
-    * Checks whether a value ends with the specified value.
-    */
-    'EndsWith' | 
-    /**
-    * Checks whether a value contains with specified value.
-    */
-    'Contains';
+/**
+ * Specifies the different ways to filter values
+ * ```props
+ * StartsWith :- Checks whether a value begins with the specified value.
+ * EndsWith :- Checks whether a value ends with the specified value.
+ * Contains :- Checks whether a value contains with specified value.
+ * ```
+ */
+export type TreeFilterType = 'StartsWith' | 'EndsWith' | 'Contains';
 
 export class Fields extends ChildProperty<Fields> {
 
@@ -322,55 +318,37 @@ export interface DdtKeyPressEventArgs {
     event: KeyboardEventArgs;
 }
 
-export type Mode =
-    /**
-    * On blur component will act in the delimiter mode.
-    */
-    'Default' | 
-    /**
-    * Selected items will be visualized in the text content.
-    */
-    'Delimiter' | 
-    /**
-    * Selected items will be visualized in chip.
-    */
-    'Box' | 
-    /**
-    * Selected items will be visualized with the given custom template value
-    */
-    'Custom';
+/**
+ * Configures visibility mode for component interaction when allowMultiSelection or checkbox is enabled.
+ * ```props
+ * Default :- On blur component will act in the delimiter mode.
+ * Delimiter :- Selected items will be visualized in the text content.
+ * Box :- Selected items will be visualized in chip.
+ * Custom :- Selected items will be visualized with the given custom template value.
+ * ```
+ */
+export type Mode = 'Default' | 'Delimiter' | 'Box' | 'Custom';
 
-export type SortOrder =
-    /**
-    * Indicates that the nodes are not sorted.
-    */
-    'None' |
-    /**
-    * Indicates that the nodes are sorted in the ascending order.
-    */
-    'Ascending' |
-    /**
-    *  Indicates that the nodes are sorted in the descending order
-    */
-    'Descending';
+/**
+ * Specifies a value that indicates whether the items are sorted in the ascending or descending order, or not sorted at all.
+ * ```props
+ * None :- Indicates that the nodes are not sorted.
+ * Ascending :- Indicates that the nodes are sorted in the ascending order.
+ * Descending :- Indicates that the nodes are sorted in the descending order.
+ * ```
+ */
+export type SortOrder = 'None' | 'Ascending' | 'Descending';
 
-export type ExpandOn =
-    /**
-    * Determines automatically whether to trigger the single click or double-click event.
-    */
-    'Auto' |
-    /**
-    * Triggers the single click event when an item is double-clicekd.
-    */
-    'Click' |
-    /**
-    * Triggers the double-click event when an item is double-clicekd.
-    */
-    'DblClick' |
-    /**
-    * Does not trigger any event when the user double-clicks on an item.
-    */
-    'None';
+/**
+ * Specifies the expansion of tree nodes within the Dropdown Tree.
+ * ```props
+ * Auto :- In desktop, the expand or collapse operation happens when you double-click the node, and in mobile devices it happens on single-tap.
+ * Click :- The expand or collapse operation happens when you perform single-click/tap on the pop-up item in both desktop and mobile devices.
+ * DblClick :- The expand or collapse operation happens when you perform a double-click/tap on the pop-up item in both desktop and mobile devices.
+ * None :- The expand or collapse operation will not happen when you perform single-click/tap or double-click/tap on the pop-up items in both desktop and mobile devices.
+ * ```
+ */
+export type ExpandOn = 'Auto' | 'Click' | 'DblClick' | 'None';
 
 /**
  * The Dropdown Tree control allows you to select single or multiple values from hierarchical data in a tree-like structure.
@@ -403,7 +381,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private isClearButtonClick: boolean;
     private isDocumentClick: boolean;
     private isFirstRender: boolean;
-    private hasTemplate: string;
+    private hasTemplate: string | Function;
     private isInitialized: boolean;
     private treeDataType: number;
     private oldValue: string[];
@@ -461,9 +439,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * Dropdown Tree component when the data fetch request from the remote server fails.
      *
      * @default 'The Request Failed'
+     * @aspType string
      */
     @Property('The Request Failed')
-    public actionFailureTemplate: string;
+    public actionFailureTemplate: string | Function;
 
     /**
      * When allowFiltering is set to true, it shows the filter bar (search text box) of the component.
@@ -508,9 +487,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled.
      *
      * @default "${value.length} item(s) selected"
+     * @aspType string
      */
     @Property("${value.length} item(s) selected")
-    public customTemplate: string;
+    public customTemplate: string | Function;
 
     /**
      * Defines the value separator character in the input element when multi-selection or checkbox is enabled in the Dropdown Tree.
@@ -600,9 +580,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * By default, the footerTemplate will be null and there will be no footer container for the pop-up list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property(null)
-    public footerTemplate: string;
+    public footerTemplate: string | Function;
 
     /**
      * When **ignoreAccent** is set to true, then it ignores the diacritic characters or accents when filtering.
@@ -623,9 +607,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * By default, the headerTemplate will be null and there will be no header container for the pop-up list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property(null)
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
 
     /**
      * Allows additional HTML attributes such as title, name, etc., and accepts n number of attributes in a key-value pair format.
@@ -642,9 +630,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * or HTML element ID holding the content.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property(null)
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
 
     /**
      * Configures visibility mode for component interaction when allowMultiSelection or checkbox is enabled.
@@ -663,9 +655,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * to be displayed within the pop-up.
      *
      * @default 'No Records Found'
+     * @aspType string
      */
     @Property('No Records Found')
-    public noRecordsTemplate: string;
+    public noRecordsTemplate: string | Function;
 
     /**
      * Specifies a short hint that describes the expected value of the Dropdown Tree component.
@@ -1187,6 +1180,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 if (flag) { return; }
                 this.treeObj.fields = this.getTreeFields(fields);
                 this.treeObj.dataBind();
+                if (this.hasTemplate && (this as any).portals  ) {
+                    (this as any).portals = [].concat((this.treeObj as any).portals) ;
+                    if ((this as any).isReact) {
+                        this.renderReactTemplates();
+                    }
+                }
             }
         });
     }
@@ -3054,7 +3053,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             removeClass([this.chipWrapper], HIDEICON);
         }
         const chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
-        const template: string = this.customTemplate;
+        const template: string | Function = this.customTemplate;
         const templateId: string = this.customTemplateId;
         const templatestring: string = 'customTemplate';
         const compiledString: Function = this.templateComplier(template);
@@ -3096,12 +3095,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     // eslint-disable-next-line
-    private templateComplier(template: string): Function {
+    private templateComplier(template: string | Function): Function {
         if (template) {
             // eslint-disable-next-line
             let e: Object;
             try {
-                if (document.querySelectorAll(template).length) {
+                if (typeof template !== 'function' && document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
                 } else {
                     return compile(template);
@@ -3313,7 +3312,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.noRecord = this.createElement('div');
         }
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
-            const template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
+            const template: string | Function = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             const templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             const templatestring: string = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
             // eslint-disable-next-line
