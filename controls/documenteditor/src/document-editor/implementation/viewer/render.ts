@@ -9,7 +9,7 @@ import {
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
     CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox, TextFrame, BookmarkElementBox, EditRangeEndElementBox
 } from './page';
-import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle, Dictionary } from '../../index';
+import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo, BorderRenderInfo } from '../editor/editor-helper';
@@ -21,11 +21,16 @@ import { WColumnFormat, WSectionFormat } from '../format';
 import { FontScriptType, TextWrappingStyle } from '../../index';
 import { TextSizeInfo } from './text-helper';
 import { DocumentCanvasElement, DocumentCanvasRenderingContext2D } from './document-canvas';
+import { Dictionary } from '../../base/dictionary';
 
 /**
  * @private
  */
 export class Renderer {
+    /**
+     * @private
+     */
+    public commentMarkDictionary:Dictionary<HTMLElement,CommentCharacterElementBox[]>=new Dictionary<HTMLElement,CommentCharacterElementBox[]>();
     public isPrinting: boolean = false;
     public isExporting: boolean =  false;
     private pageLeft: number = 0;
@@ -152,6 +157,9 @@ export class Renderer {
         this.pageContext.fillStyle = '#000000';
     }
     private renderHFWidgets(page: Page, widget: HeaderFooterWidget, width: number, isHeader: boolean): void {
+        if (this.isFieldCode) {
+            this.isFieldCode = false;
+        }
         if (!this.isPrinting) {
             this.pageContext.globalAlpha = this.documentHelper.owner.enableHeaderAndFooter ? 1 : 0.65;
         }
@@ -199,7 +207,7 @@ export class Renderer {
             this.pageContext.restore();
         }
         if (!this.isPrinting) {
-            this.pageContext.globalAlpha = this.documentHelper.owner.enableHeaderAndFooter ? 0.65 : 1;
+            this.pageContext.globalAlpha = this.documentHelper.owner.enableHeaderAndFooter ? 0.50 : 1;
         }
     }
     private renderHeaderSeparator(page: Page, left: number, top: number, widget: HeaderFooterWidget): void {
@@ -209,17 +217,36 @@ export class Renderer {
         const pageWidth: number = this.getScaledValue(page.boundingRectangle.width);
         const ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
         ctx.save();
-        ctx.globalAlpha = 0.65;
+        ctx.globalAlpha = 0.85;
         const headerFooterHeight: number = (this.getScaledValue(page.boundingRectangle.height) / 100) * 40;
         //Maximum header height limit
         y = Math.min(y, headerFooterHeight);
         //Dash line Separator
         this.renderDashLine(ctx, left, top + y, pageWidth, '#000000', false);
         let type: string = this.getHeaderFooterType(page, true);
+        let index: number = (this.viewer as PageLayoutViewer).getHeaderFooter(widget.headerFooterType);
+        let sectionIndex: number = page.sectionIndex;
+        let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        l10n.setLocale(this.documentHelper.owner.locale);
+        if (this.documentHelper.headersFooters.length > 1) {
+            let sectionMarkIndex: number = sectionIndex + 1;
+            type = type + " -" + l10n.getConstant('Section')+ " " +sectionMarkIndex+ "-";
+        }
         ctx.font = '9pt Arial';
         let width: number = ctx.measureText(type).width;
         this.renderHeaderFooterMark(ctx, left + 5, top + y, width + 10, 20);
         this.renderHeaderFooterMarkText(ctx, type, left + 10, y + top + 15);
+        let headerFooterWidget: HeaderFooterWidget;
+        if (this.documentHelper.headersFooters[parseInt(sectionIndex.toString(),10)]) {
+            headerFooterWidget = this.documentHelper.headersFooters[parseInt(sectionIndex.toString(),10)][parseInt(index.toString(),10)] as HeaderFooterWidget;
+        }
+        if (sectionIndex != 0 && !headerFooterWidget) {
+            let content: string = l10n.getConstant('Same as Previous');
+            let width: number = ctx.measureText(content).width;
+            let right: number = this.viewer.containerWidth - width - 75 + left;
+            this.renderHeaderFooterMark(ctx, right, top + y, width + 10, 20);
+            this.renderHeaderFooterMarkText(ctx, content, right + 5, y + top + 15);
+        }
         if (page.footerWidget) {
             //Footer Widget
             const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
@@ -230,10 +257,27 @@ export class Renderer {
             //Maximum footer height limit
             footerHeight = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
             this.renderDashLine(ctx, left, top + footerHeight, pageWidth, '#000000', false);
-            type = this.getHeaderFooterType(page, false);
+            let type: string = this.getHeaderFooterType(page, false);
+            let sectionIndex: number = page.sectionIndex;
+            if (this.documentHelper.headersFooters.length > 1) {
+                let sectionMarkIndex: number = sectionIndex + 1;
+                type = type + " -" + l10n.getConstant('Section')+ " " +sectionMarkIndex+ "-";
+            }
             width = ctx.measureText(type).width;
             this.renderHeaderFooterMark(ctx, left + 5, top + footerHeight - 20, width + 10, 20);
             this.renderHeaderFooterMarkText(ctx, type, left + 10, top + footerHeight - 5);
+            let index: number = (this.viewer as PageLayoutViewer).getHeaderFooter(page.footerWidget.headerFooterType);
+            let headerFooterWidget: HeaderFooterWidget;
+            if (this.documentHelper.headersFooters[parseInt(sectionIndex.toString(),10)]) {
+                headerFooterWidget = this.documentHelper.headersFooters[parseInt(sectionIndex.toString(),10)][parseInt(index.toString(),10)] as HeaderFooterWidget;
+            }
+            if (sectionIndex != 0 && !headerFooterWidget) {
+                let content: string = l10n.getConstant('Same as Previous');
+                let width: number = ctx.measureText(content).width;
+                let right: number = this.viewer.containerWidth - width - 75 + left;
+                this.renderHeaderFooterMark(ctx, right, top + footerHeight - 20, width + 10, 20);
+                this.renderHeaderFooterMarkText(ctx, content, right + 5, top + footerHeight - 5);
+            }
             ctx.restore();
         }
     }
@@ -415,7 +459,7 @@ export class Renderer {
                     (wrappingType !== "Behind" && shape.textWrappingStyle === "Behind")) {
                     continue;
                 }
-                if (!this.isOverLappedShapeWidget(shape)) {
+                if (!this.isOverLappedShapeWidget(shape) || (!isNullOrUndefined(floatingElements[i + 1]) && shape.paragraph !== (floatingElements[i + 1] as ShapeBase).paragraph)) {
                     if (shape instanceof ImageElementBox) {
                         this.renderImageElementBox(shape, shape.x, shape.y, 0);
                     } else if (shape instanceof ShapeElementBox) {
@@ -463,15 +507,21 @@ export class Renderer {
         let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
         
         this.pageContext.beginPath();
-        if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill) {
+        if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill && shapeType !== 'StraightConnector') {
             this.pageContext.fillStyle = shape.fillFormat.color;
             this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
         }
         if (!isNullOrUndefined(shapeType)) {
-            if ((shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None')) {
+            if (shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') {
                 this.pageContext.lineWidth = shape.lineFormat.weight;
                 this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
-                this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                if (shapeType !== 'StraightConnector') {
+                    this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                } else {
+                    this.pageContext.moveTo(shapeLeft, shapeTop);
+                    this.pageContext.lineTo(shapeLeft + this.getScaledValue(shape.width), shapeTop + this.getScaledValue(shape.height));
+                    this.pageContext.stroke();
+                }
             }
         }
         this.pageContext.closePath();
@@ -588,7 +638,9 @@ export class Renderer {
             this.clipRect(paraWidget.x + paddingLeft, this.getScaledValue(page.boundingRectangle.y), this.getScaledValue(page.boundingRectangle.width), this.getScaledValue(page.boundingRectangle.height));
             isClipped = true;
         }
-        this.renderParagraphBorder(page, paraWidget);
+        if (!(paraWidget.containerWidget instanceof HeaderFooterWidget && paraWidget.containerWidget.isEmpty && !isNullOrUndefined(this.documentHelper.selection) && !isNullOrUndefined(this.documentHelper.selection.start.paragraph) && !this.documentHelper.selection.start.paragraph.isInHeaderFooter)) {
+            this.renderParagraphBorder(page, paraWidget);
+        }
         if (isClipped) {
             this.pageContext.restore();
         }
@@ -612,7 +664,7 @@ export class Renderer {
         let firstLine: LineWidget = paragraphWidet.firstChild as LineWidget;
         let lastLine: LineWidget = paragraphWidet.lastChild as LineWidget;
         let canRenderParagraphBorders: BorderRenderInfo = this.documentHelper.canRenderBorder(paragraphWidet);
-        if (leftBorder.lineStyle !== 'None') {
+        if (!isNullOrUndefined(leftBorder) && leftBorder.lineStyle !== 'None') {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) - HelperMethods.convertPointToPixel(leftBorder.space);
             endX = startX;
             endY = startY + paragraphWidet.height;
@@ -630,7 +682,7 @@ export class Renderer {
             lineWidth = HelperMethods.convertPointToPixel(leftBorder.lineWidth);
             this.renderSingleBorder(leftBorder.color, startX, startY, endX, endY, lineWidth, leftBorder.lineStyle);
         }
-        if (topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
+        if (!isNullOrUndefined(topBorder) && topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet);
             endX = startX + this.getContainerWidth(paragraphWidet, page);
             startY = paragraphWidet.y + this.getTopMargin(paragraphWidet) - (HelperMethods.convertPointToPixel(topBorder.lineWidth + topBorder.space));
@@ -644,7 +696,7 @@ export class Renderer {
             lineWidth = HelperMethods.convertPointToPixel(topBorder.lineWidth);
             this.renderSingleBorder(topBorder.color, startX, startY, endX, endY, lineWidth, topBorder.lineStyle);
         }
-        if (rightBorder.lineStyle !== 'None') {
+        if (!isNullOrUndefined(rightBorder) && rightBorder.lineStyle !== 'None') {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) + this.getContainerWidth(paragraphWidet, page) + HelperMethods.convertPointToPixel(rightBorder.space);
             startY = endY;
             endX = startX;
@@ -663,7 +715,7 @@ export class Renderer {
             lineWidth = HelperMethods.convertPointToPixel(rightBorder.lineWidth);
             this.renderSingleBorder(rightBorder.color, startX, startY, endX, endY, lineWidth, rightBorder.lineStyle);
         }
-        if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
+        if (!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet);
             endX = startX + this.getContainerWidth(paragraphWidet, page);
             startY = (paragraphWidet.y + paragraphWidet.height + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - (this.getBottomMargin(paragraphWidet));
@@ -758,7 +810,9 @@ export class Renderer {
                 }
                 if (j === 0 && !isNullOrUndefined(footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox && !this.documentHelper.owner.editor.isFootNoteInsert) {
                     //if (j < 1 || (j > 0 && widget.footNoteReference !== (bodyWidget.childWidgets[j - 1] as BlockWidget).footNoteReference)) {
-                    ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text = ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text.replace(((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text, footNoteReference.text);
+                    let footNoteElement: TextElementBox = (widget.childWidgets[0] as LineWidget).children[0] as TextElementBox;
+                    footNoteElement.text = footNoteElement.text.replace(footNoteElement.text, footNoteReference.text);
+                    footNoteElement.width = footNoteReference.width;
                     //}
                 }
                 this.renderWidget(page, widget);
@@ -829,6 +883,30 @@ export class Renderer {
             }
             this.renderWidget(page, widget);
             this.pageContext.restore();
+        }       
+        if (cellWidget.isRenderEditRangeStart) {
+            let firstPara: ParagraphWidget = this.documentHelper.selection.getFirstParagraph(cellWidget) as ParagraphWidget;
+            let firstLine: LineWidget = firstPara.firstChild as LineWidget;                
+            let xLeft = firstLine.paragraph.x;
+            let ytop = firstLine.paragraph.y;
+            if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges){
+                let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(firstLine) : [];
+                let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
+                this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(ytop, 2),this.getScaledValue(firstLine.height - firstLine.margin.bottom),0,color);
+            }
+        }
+        if (cellWidget.isRenderEditRangeEnd) {
+            let lastPara: ParagraphWidget = this.documentHelper.selection.getLastParagraph(cellWidget) as ParagraphWidget;
+            let lastLine: LineWidget = lastPara.lastChild as LineWidget;
+            let position: Point = this.documentHelper.selection.getEndPosition(lastPara);
+            let xLeft = this.documentHelper.textHelper.getWidth(String.fromCharCode(164), lastLine.paragraph.characterFormat) + position.x;
+            if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges){
+                let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lastLine) : [];
+                let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
+                this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(position.y, 2),this.getScaledValue(lastLine.height - lastLine.margin.bottom),0,color);           
+            }    
         }
     }
     private checkHeaderFooterLineWidget(widget: IWidget, keys: IWidget[]): IWidget {
@@ -930,7 +1008,7 @@ export class Renderer {
             }
         }
     }
-    private renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
+    private  renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
         this.renderSelectionHighlight(page, lineWidget, top);
         let paraFormat: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
         let x: number = left;
@@ -976,8 +1054,8 @@ export class Renderer {
         this.renderSearchHighlight(page, lineWidget, top);
         // EditRegion highlight 
         this.renderEditRegionHighlight(page, lineWidget, top);
-        let isCommentMark: boolean = false;
-        
+        let commentIDList: string[]=[];
+
         let children: ElementBox[] = lineWidget.renderedElements;
         let underlineY: number = this.getUnderlineYPosition(lineWidget);
         let bookmarks: any = [];
@@ -1000,7 +1078,16 @@ export class Renderer {
                 let style: string = 'display:block;position:absolute;';
                 let topPosition: string = this.getScaledValue((top) + (page.boundingRectangle.y -
                     (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
-                if (elementBox instanceof EditRangeStartElementBox) {
+                if (elementBox instanceof EditRangeStartElementBox && (this.documentHelper.owner.currentUser === elementBox.user || (elementBox.group === "Everyone" && elementBox.user === ""))) {
+                    if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges && elementBox.columnFirst==-1 ){
+                        var height = elementBox.line.height - elementBox.line.margin.bottom;
+                        let xLeft = left;
+                        let yTop = top;
+                        let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                        let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lineWidget) : [];
+                        let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
+                        this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(yTop, 2),this.getScaledValue(lineWidget.height - lineWidget.margin.bottom),0,color);
+                    }
                     if (this.documentHelper.owner.enableLockAndEdit) {
                         let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
                         l10n.setLocale(this.documentHelper.owner.locale);
@@ -1023,9 +1110,7 @@ export class Renderer {
                     }
                 } else if (elementBox instanceof CommentCharacterElementBox &&
                     elementBox.commentType === 0 && this.documentHelper.owner.selectionModule) {
-                    if (this.documentHelper.owner.enableComment && !isCommentMark) {
-                        isCommentMark = true;
-                        elementBox.renderCommentMark();
+                    if (this.documentHelper.owner.enableComment ) {
                         let rightMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.rightMargin);
                         let pageWidth: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageWidth);
 
@@ -1035,7 +1120,11 @@ export class Renderer {
                             leftPosition = (page.boundingRectangle.width - (this.viewer.padding.right * 2) - (this.viewer.padding.left * 2)) + 'px;';
                         }
                         style = style + 'left:' + leftPosition + 'top:' + topPosition;
-                        elementBox.commentMark.setAttribute('style', style);
+                        if (commentIDList.indexOf(elementBox.commentId) === -1 && !isNullOrUndefined(elementBox.comment) && !elementBox.comment.isReply) {
+                            commentIDList.push(elementBox.commentId);
+                            elementBox.renderCommentMark(topPosition, leftPosition);
+                            elementBox.commentMark.setAttribute('style', style);
+                        }
                     } else {
                         if (elementBox.commentMark) {
                             elementBox.commentMark.setAttribute('style', 'display:none');
@@ -1043,6 +1132,17 @@ export class Renderer {
                     }
                 }
 
+            }
+            if (elementBox instanceof EditRangeEndElementBox && (this.documentHelper.owner.currentUser === elementBox.editRangeStart.user || (elementBox.editRangeStart.group === "Everyone" && elementBox.editRangeStart.user === ""))) {
+                if (elementBox.editRangeStart.columnFirst==-1 && this.documentHelper.owner.documentEditorSettings.highlightEditableRanges) {
+                    var height = elementBox.line.height - elementBox.line.margin.bottom;
+                    let xLeft = left;
+                    let yTop = top;
+                    let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                    let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lineWidget) : [];
+                    let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
+                    this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(yTop, 2),this.getScaledValue(lineWidget.height - lineWidget.margin.bottom),1,color);
+                }
             }
             if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks) {
                 var height = elementBox.line.height - elementBox.line.margin.bottom;
@@ -1284,7 +1384,12 @@ export class Renderer {
                     x -= this.documentHelper.textHelper.getWidth(text, currentCharFormat, FontScriptType.English);
                 }
                 this.pageContext.font = characterFont;
-                this.pageContext.fillText(text, this.getScaledValue(x, 1), this.getScaledValue(y, 2));
+                let scaleFactor: number = currentCharFormat.scaling < 100 ? 1 : currentCharFormat.scaling / 100;
+                (this.pageContext as any).letterSpacing = currentCharFormat.characterSpacing * this.documentHelper.zoomFactor + 'pt';
+                this.pageContext.save();
+                this.pageContext.scale(scaleFactor, 1);
+                this.pageContext.fillText(text, this.getScaledValue(x, 1)/(scaleFactor), this.getScaledValue(y, 2));
+                this.pageContext.restore();
             }
         }  
     }
@@ -1321,7 +1426,22 @@ export class Renderer {
         }
         return false;
     }
-    private renderBookmark(x: number, y: number, height: number, type: number): void {
+    private combineHexColors(color1: string, color2: string):string{
+        const hex1 = color1.replace("#", "");
+        const hex2 = color2.replace("#", "");
+        const r1 = parseInt(hex1.substring(0, 2), 16);
+        const g1 = parseInt(hex1.substring(2, 4), 16);
+        const b1 = parseInt(hex1.substring(4, 6), 16);
+        const r2 = parseInt(hex2.substring(0, 2), 16);
+        const g2 = parseInt(hex2.substring(2, 4), 16);
+        const b2 = parseInt(hex2.substring(4, 6), 16);
+        const r = Math.round((r1 * 0.35) + (r2 * 0.65));
+        const g = Math.round((g1 * 0.35) + (g2 * 0.65));
+        const b = Math.round((b1 * 0.35) + (b2 * 0.65));
+        const mixedColor = `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`;
+        return mixedColor;      
+    }
+    private renderBookmark(x: number, y: number, height: number, type: number,restrictColor?:string): void {
         if(this.isPrinting) {
             return;    
         }
@@ -1342,7 +1462,12 @@ export class Renderer {
         }
         this.pageContext.strokeStyle = "#7F7F7F";
         this.pageContext.stroke();
-        this.pageContext.closePath();
+        this.pageContext.closePath();        
+        if(!isNullOrUndefined(restrictColor)){
+            const combinedColor = this.combineHexColors(restrictColor,"#7F7F7F")
+            this.pageContext.fillStyle = combinedColor;
+            this.pageContext.fillRect(x, y, 1.5, height);
+        }
     }
     private retriveCharacterformat(character: WCharacterFormat, fontSizeFactor?: number): string {
         if(isNullOrUndefined(fontSizeFactor)){
@@ -1422,7 +1547,7 @@ export class Renderer {
                 this.pageContext.fillStyle = HelperMethods.getColor(highlightColor);
             }
 
-            this.pageContext.fillRect(Math.floor(this.getScaledValue(left + leftMargin, 1) - 1), Math.floor(this.getScaledValue(top + topMargin, 2) - 1), Math.ceil(this.getScaledValue(elementBox.width) + 1), Math.ceil(this.getScaledValue(elementBox.height) + 1));
+            this.pageContext.fillRect(Math.floor(this.getScaledValue(left + leftMargin, 1)), Math.floor(this.getScaledValue(top + topMargin, 2) - 1), Math.ceil(this.getScaledValue(elementBox.width) + 1), Math.ceil(this.getScaledValue(elementBox.height) + 1));
         }
         this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + fontFamily + '"';
         if (baselineAlignment === 'Subscript') {
@@ -1443,13 +1568,22 @@ export class Renderer {
         } else {
             this.pageContext.fillStyle = HelperMethods.getColor(color);
         }
+        let scaleFactor: number = format.scaling < 100 ? 1 : format.scaling / 100;
         if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
             if (elementBox instanceof ListTextElementBox && elementBox.text === "\t") {
                 this.tabMark(elementBox, format, left, top, leftMargin, topMargin);
             }
-            this.pageContext.fillText(this.replaceSpace(text), this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+            (this.pageContext as any).letterSpacing = format.characterSpacing * this.documentHelper.zoomFactor + 'pt';
+            this.pageContext.save();
+            this.pageContext.scale(scaleFactor, 1);
+            this.pageContext.fillText(this.replaceSpace(text), this.getScaledValue(left + leftMargin, 1)/scaleFactor, this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+            this.pageContext.restore();
         } else {
-            this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+            (this.pageContext as any).letterSpacing = format.characterSpacing * this.documentHelper.zoomFactor + 'pt';
+            this.pageContext.save();
+            this.pageContext.scale(scaleFactor, 1);
+            this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1)/scaleFactor, this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+            this.pageContext.restore();
         }
         if (isParaBidi) {
             this.pageContext.direction = 'ltr';
@@ -1491,7 +1625,7 @@ export class Renderer {
                 this.pageContext.fillStyle = HelperMethods.getColor(format.highlightColor);
             }
 
-            this.pageContext.fillRect(Math.floor(this.getScaledValue(left + leftMargin, 1) - 1), Math.floor(this.getScaledValue(top + topMargin, 2) - 1), Math.ceil(this.getScaledValue(elementBox.width) + 1), Math.ceil(this.getScaledValue(elementBox.height) + 1));
+            this.pageContext.fillRect(Math.floor(this.getScaledValue(left + leftMargin, 1)), Math.floor(this.getScaledValue(top + topMargin, 2) - 1), Math.ceil(this.getScaledValue(elementBox.width) + 1), Math.ceil(this.getScaledValue(elementBox.height) + 1));
         }
         let revisionInfo: RevisionInfo[] = this.checkRevisionType(elementBox);
 
@@ -1543,13 +1677,22 @@ export class Renderer {
                 ((characterRange & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft))) && format.bidi) {
             text = this.inverseCharacter(text);
         }
+        let scaleFactor: number = format.scaling < 100 ? 1 : format.scaling / 100;
         if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
             if ((elementBox instanceof TabElementBox || elementBox instanceof TextElementBox) && elementBox.text === "\t") {
                 this.tabMark(elementBox, format, left, top, leftMargin, topMargin);
             }
-            this.pageContext.fillText(this.replaceSpace(text), this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);            
+            (this.pageContext as any).letterSpacing = format.characterSpacing * this.documentHelper.zoomFactor + 'pt';
+            this.pageContext.save();
+            this.pageContext.scale(scaleFactor, 1);
+            this.pageContext.fillText(this.replaceSpace(text), this.getScaledValue(left + leftMargin, 1)/(scaleFactor), this.getScaledValue(top + topMargin, 2), scaledWidth);            
+            this.pageContext.restore();
         } else {
-            this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
+            (this.pageContext as any).letterSpacing = format.characterSpacing * this.documentHelper.zoomFactor + 'pt';
+            this.pageContext.save();
+            this.pageContext.scale(scaleFactor, 1);
+            this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1)/(scaleFactor), this.getScaledValue(top + topMargin, 2), scaledWidth);
+            this.pageContext.restore();
         }
         if (this.documentHelper.owner.isSpellCheck) {
             if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
@@ -1563,7 +1706,7 @@ export class Renderer {
                     let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
                     for (let i: number = 0; i < errorDetails.elements.length; i++) {
                         let currentElement: ErrorTextElementBox = errorDetails.elements[i];
-                        if (elementBox.ignoreOnceItems.indexOf(HelperMethods.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
+                        if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
                             this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                         }
                     }
@@ -1596,11 +1739,16 @@ export class Renderer {
         let availableSpaceWidth = elementBox.width / 2;
         let tabWidth = tabMarkWidth / 2;
         this.pageContext.font = this.retriveCharacterformat(elementBox.characterFormat);
+        (this.pageContext as any).letterSpacing = format.characterSpacing * this.documentHelper.zoomFactor + 'pt';
+        this.pageContext.save();
+        let scaleFactor: number = format.scaling < 100 ? 1 : format.scaling / 100;
+        this.pageContext.scale(scaleFactor, 1);
         if (availableSpaceWidth > tabMarkWidth) {
-            this.pageContext.fillText(tabMarkString, this.getScaledValue(((left + leftMargin + availableSpaceWidth) - (tabWidth)), 1), this.getScaledValue(top + topMargin, 2));
+            this.pageContext.fillText(tabMarkString, this.getScaledValue(((left + leftMargin + availableSpaceWidth) - (tabWidth)), 1)/scaleFactor, this.getScaledValue(top + topMargin, 2));
         } else {
-            this.pageContext.fillText(tabMarkString, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+            this.pageContext.fillText(tabMarkString, this.getScaledValue(left + leftMargin, 1)/scaleFactor, this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
         }
+        this.pageContext.restore();
     }
     private replaceSpace(text: string) {
         text = text.replace(new RegExp(String.fromCharCode(32), 'g'), String.fromCharCode(183));
@@ -1691,7 +1839,7 @@ export class Renderer {
             if (splittedText.length > 1) {
                 for (let i: number = 0; i < splittedText.length; i++) {
                     let currentText: string = splittedText[i];
-                    let retrievedText: string = HelperMethods.manageSpecialCharacters(currentText, undefined, true);
+                    let retrievedText: string = this.spellChecker.manageSpecialCharacters(currentText, undefined, true);
 
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
                         this.handleUnorderedElements(retrievedText, elementBox, underlineY, i, markindex, i === splittedText.length - 1, beforeIndex);
@@ -1699,7 +1847,7 @@ export class Renderer {
                     }
                 }
             } else {
-                let retrievedText: string = HelperMethods.manageSpecialCharacters(checkText, undefined, true);
+                let retrievedText: string = this.spellChecker.manageSpecialCharacters(checkText, undefined, true);
                 if (checkText.length > 0) {
 
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
@@ -1994,7 +2142,7 @@ export class Renderer {
             } catch (e) {
 
                 elementBox.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
-
+                
                 this.documentHelper.addBase64StringInCollection(elementBox);
                 elementBox.element.src = this.documentHelper.getImageString(elementBox);
                 this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));

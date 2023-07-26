@@ -4,7 +4,7 @@ import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WLevelOverride } from '../list/level-override';
-import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles, WColumnFormat } from '../format/index';
+import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles, WStyle, WColumnFormat } from '../format/index';
 import { Layout } from './layout';
 import { Renderer } from './render';
 import { createElement, Browser } from '@syncfusion/ej2-base';
@@ -47,6 +47,14 @@ import { beforeAutoResize, internalAutoResize } from '../../base/constants';
  * @private
  */
 export class DocumentHelper {
+    /**
+     * @private
+     */
+    public isCompleted: boolean = true;
+    /**
+     * @private
+     */
+    public isSelectionCompleted: boolean = true;
     /**
      * @private
      */
@@ -859,6 +867,8 @@ export class DocumentHelper {
         this.preDefinedStyles.add('TOC 7', '{"type":"Paragraph","name":"TOC 7","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :66.0,"afterSpacing":5.0}}');
         this.preDefinedStyles.add('TOC 8', '{"type":"Paragraph","name":"TOC 8","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :77.0,"afterSpacing":5.0}}');
         this.preDefinedStyles.add('TOC 9', '{"type":"Paragraph","name":"TOC 9","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :88.0,"afterSpacing":5.0}}');
+        this.preDefinedStyles.add('Header', '{"type":"Paragraph","name":"Header","basedOn":"Normal","next":"Header","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple"}}');
+        this.preDefinedStyles.add('Footer', '{"type":"Paragraph","name":"Footer","basedOn":"Normal","next":"Footer","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple"}}');
     }
     /**
      * @private
@@ -867,6 +877,9 @@ export class DocumentHelper {
     public clearDocumentItems(): void {
         if (this.owner.editor) {
             this.owner.editor.clear();
+        }
+        if(this.owner.search) {
+            this.owner.search.clearSearchHighlight();
         }
         if (this.owner.selection) {
             this.owner.selection.clear();
@@ -1683,6 +1696,7 @@ export class DocumentHelper {
         this.owner.isDocumentLoaded = false;
         this.viewer.columnLayoutArea.clear();
         this.layout.isDocumentContainsRtl = false;
+        this.layout.isMultiColumnDoc = false;
         this.updateAuthorIdentity();
         for (let i: number = 0; i < this.pages.length; i++) {
             for (let j: number = 0; j < this.pages[i].bodyWidgets.length; j++) {
@@ -1996,6 +2010,7 @@ export class DocumentHelper {
                             const touchPoint: Point = new Point(xPosition, touchY);
                             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
                                 || this.owner.imageResizerModule.isShapeResize) {
+                                this.isCompleted = false;
                                 this.owner.selection.moveTextPosition(touchPoint, textPosition);
                             }
                             this.isSelectionChangedOnMouseMoved = true;
@@ -2200,8 +2215,8 @@ export class DocumentHelper {
                                 }
                             }
                         }
-                        startPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                        endPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        startPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        endPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
                         this.selection.selectRange(startPosition, endPosition);
                     }
                 } else {
@@ -2323,6 +2338,9 @@ export class DocumentHelper {
                         this.selection.selectInternal(formField.line, formField, 0, point);
                     }
                 }
+                if(this.isSelectionChangedOnMouseMoved){
+                    this.selection.fireSelectionChanged(true);
+                }
             }
             if (!this.owner.isReadOnlyMode && this.isSelectionInListText(touchPoint)) {
                 this.selection.selectListText();
@@ -2338,6 +2356,9 @@ export class DocumentHelper {
             if (this.isDragStarted) {
                 this.moveSelectedContent();
             }
+            if(this.isMouseDown) {
+                this.updateFocus();
+            }
             this.isMouseDownInSelection = false;
             this.isMouseDown = false;
             this.isFootnoteWidget = false;
@@ -2345,7 +2366,6 @@ export class DocumentHelper {
             this.isTouchInput = false;
             this.useTouchSelectionMark = true;
             this.isControlPressed = false;
-            this.updateFocus();
             if (this.isListTextSelected) {
                 this.selection.hideCaret();
             }
@@ -2635,6 +2655,7 @@ export class DocumentHelper {
                 cursorPoint = this.getTouchOffsetValue(event);
                 let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
                 if (this.touchDownOnSelectionMark > 0 /*|| !this.useTouchSelectionMark*/) {
+                    this.isCompleted = false;
                     event.preventDefault();
                     let touchY: number = touchPoint.y;
                     let textPosition: TextPosition = this.owner.selection.end;
@@ -2705,6 +2726,9 @@ export class DocumentHelper {
                                 this.owner.enableImageResizerMode && !this.owner.imageResizerModule.isImageResizing))) {
                         this.selection.navigateHyperLinkOnEvent(touchPoint, true);
                     }
+                }
+                if(this.isSelectionChangedOnMouseMoved){
+                    this.selection.fireSelectionChanged(true);
                 }
                 this.isMouseDown = false;
                 this.touchDownOnSelectionMark = 0;
@@ -3103,6 +3127,9 @@ export class DocumentHelper {
             this.viewerContainer.scrollLeft = x - (this.pageContainer.offsetWidth / 100) * 20;
         } else if (scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
             this.viewerContainer.scrollLeft = scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+            while (x < this.owner.viewer.containerWidth && this.viewerContainer.scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
+                this.viewerContainer.scrollLeft = this.viewerContainer.scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+            }
         }
     }
     public getLineWidget(cursorPoint: Point): LineWidget {
@@ -4268,6 +4295,10 @@ export abstract class LayoutViewer {
     /**
      * @private
      */
+    public containerWidth: number = 0;
+    /**
+     * @private
+     */
     public containerLeft: number = 0;
     /**
      * Gets or sets page fit type.
@@ -5044,6 +5075,7 @@ export abstract class LayoutViewer {
     }
     public updateScrollBarPosition(containerWidth: number, containerHeight: number, viewerWidth: number, viewerHeight: number, width: number, height: number): void {
         this.owner.viewer.containerTop = this.documentHelper.viewerContainer.scrollTop;
+        this.owner.viewer.containerWidth = containerWidth;
         this.documentHelper.containerCanvas.style.position = 'absolute';
         this.documentHelper.containerCanvas.style.top = this.owner.viewer.containerTop.toString() + 'px';
         this.documentHelper.selectionCanvas.style.position = 'absolute';
@@ -5183,7 +5215,7 @@ export class PageLayoutViewer extends LayoutViewer {
         let type: HeaderFooterType;
         type = isHeader ? 'OddHeader' : 'OddFooter';
         let page: Page = section.page;
-        if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
+        if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || (isNullOrUndefined(page.previousPage) && page.sectionIndex !== page.previousPage.sectionIndex && page.previousPage.bodyWidgets[page.previousPage.bodyWidgets.length - 1].sectionIndex !== page.bodyWidgets[0].sectionIndex))) {
             type = isHeader ? 'FirstPageHeader' : 'FirstPageFooter';
         } else if (section.sectionFormat.differentOddAndEvenPages && this.documentHelper.pages.length % 2 === 0) {
             type = isHeader ? 'EvenHeader' : 'EvenFooter';
@@ -5204,7 +5236,9 @@ export class PageLayoutViewer extends LayoutViewer {
                     headerFooter = this.createHeaderFooterWidget(type);
                     headerFooter.isEmpty = true;
                 }
-                this.documentHelper.headersFooters[sectionIndex][index] = headerFooter;
+                if (sectionIndex == 0) {
+                    this.documentHelper.headersFooters[sectionIndex][index] = headerFooter;
+                }
             }
             return headerFooter;
         } else if (sectionIndex > 0) {
@@ -5213,9 +5247,20 @@ export class PageLayoutViewer extends LayoutViewer {
         return undefined;
     }
     private createHeaderFooterWidget(type: HeaderFooterType): HeaderFooterWidget {
-        let headerFooter: HeaderFooterWidget = new HeaderFooterWidget(type);
-        let paragraph: ParagraphWidget = new ParagraphWidget();
+        const headerFooter: HeaderFooterWidget = new HeaderFooterWidget(type);
+        const paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.childWidgets.push(new LineWidget(paragraph));
+        let style;
+        if(type.indexOf('Header') !== -1) {
+            style = this.documentHelper.styles.findByName('Header') as WStyle;
+        }
+        else {
+            style = this.documentHelper.styles.findByName('Footer') as WStyle;
+        }
+        paragraph.paragraphFormat.baseStyle = style;
+        paragraph.paragraphFormat.listFormat.baseStyle = style;
+        headerFooter.childWidgets.push(paragraph);
+        paragraph.containerWidget = headerFooter;
         return headerFooter;
     }
     public getHeaderFooter(type: HeaderFooterType): number {

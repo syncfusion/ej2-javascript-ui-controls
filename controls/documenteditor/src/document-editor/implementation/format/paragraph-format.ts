@@ -91,9 +91,9 @@ export class WParagraphFormat {
                     inTabs.push(tabStops.get(key));
                 }
             }
-            inTabs = inTabs.concat(this.tabs.filter((a: WTabStop) => (a.position !== 0 && a.deletePosition === 0)));
-            inTabs = inTabs.sort((a: WTabStop, b: WTabStop) => a.position - b.position);
         }
+        inTabs = inTabs.concat(this.tabs.filter((a: WTabStop) => (a.position !== 0 && a.deletePosition === 0)));
+        inTabs = inTabs.sort((a: WTabStop, b: WTabStop) => a.position - b.position);
         return inTabs;
     }
     private getTabStopsFromListFormat(): WTabStop[] {

@@ -6,7 +6,7 @@ import { Selection, ContextElementInfo } from './index';
 import { TextPosition } from './selection/selection-helper';
 import { FieldElementBox, ElementBox, TextFormField, CheckBoxFormField, DropDownFormField } from './viewer/page';
 import { SpellChecker } from './spell-check/spell-checker';
-import { HelperMethods, Point } from './editor/editor-helper';
+import { Point } from './editor/editor-helper';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DialogUtility } from '@syncfusion/ej2-popups';
 import { createElement } from '@syncfusion/ej2-base';
@@ -644,7 +644,7 @@ export class ContextMenu {
             let splittedSuggestion: string[];
             /* eslint-disable @typescript-eslint/no-explicit-any */
             let allSuggestions: any;
-            let exactData: string = HelperMethods.manageSpecialCharacters(this.currentContextInfo.text, undefined, true);
+            let exactData: string = this.spellChecker.manageSpecialCharacters(this.currentContextInfo.text, undefined, true);
             if (!isNullOrUndefined(exactData) && this.spellChecker.errorWordCollection.containsKey(exactData)) {
                 this.spellChecker.currentContextInfo = this.currentContextInfo;
                 if (this.spellChecker.errorSuggestions.containsKey(exactData)) {

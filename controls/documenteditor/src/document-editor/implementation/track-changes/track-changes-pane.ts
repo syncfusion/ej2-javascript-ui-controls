@@ -141,7 +141,7 @@ export class TrackChangesPane {
             enableRtl: this.owner.enableRtl,
             items: [
                 {
-                    template: this.locale.getConstant('User') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
+                    text: this.locale.getConstant('User') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
                 },
                 {
                     template: createElement('div', { id: 'e-de-user-list' })
@@ -150,7 +150,7 @@ export class TrackChangesPane {
                     type: 'Separator'
                 },
                 {
-                    template: this.locale.getConstant('View') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
+                    text: this.locale.getConstant('View') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
                 },
                 {
                     template: createElement('div', { id: 'e-de-revision-list' })
@@ -374,11 +374,41 @@ export class TrackChangesPane {
         }
         return isUpdate;
     }
+    public updateCurrentTrackChanges(revision: Revision): void {
+        let currentChangeView: ChangesSingleView;
+        if (!isNullOrUndefined(revision)) {
+            currentChangeView = this.owner.trackChangesPane.changes.get(revision);
+        }
+        if (!isNullOrUndefined(currentChangeView) && revision.range.length > 0) {
+            let changesDiv = currentChangeView.singleInnerDiv.querySelector("#textDiv") as HTMLDivElement;
+            while (changesDiv.firstChild) {
+                changesDiv.removeChild(changesDiv.firstChild);
+            }
+            currentChangeView.layoutElementText(revision.range, changesDiv);
+        }
+    }
     public updateTrackChanges(show?: boolean): void {
         if (show || isNullOrUndefined(show)) {
-            this.tableRevisions.clear();
-            this.renderedChanges.clear();
-            this.removeAllChanges();
+            if (this.owner.documentHelper.layout.isInitialLoad) {
+                this.tableRevisions.clear();
+                this.renderedChanges.clear();
+                this.removeAllChanges();
+            } else {
+                for (let i: number = 0; i < this.tableRevisions.keys.length; i++) {
+                    let revision: Revision = this.tableRevisions.keys[i];
+                    let index: number = this.revisions.indexOf(revision);
+                    let removeChild: boolean = (this.tableRevisions.get(revision))[(this.tableRevisions.get(revision)).length -1] === revision;
+                    if (!isNullOrUndefined(this.changesInfoDiv.childNodes[index + 1]) && removeChild) {
+                        this.changesInfoDiv.removeChild(this.changesInfoDiv.childNodes[index + 1]);
+                    }
+                    if (this.renderedChanges.containsKey(revision)) {
+                        this.renderedChanges.remove(revision);
+                    }
+                    this.changes.remove(revision);
+                    this.revisions.splice(index, 1);
+                }
+                this.tableRevisions.clear();
+            }
             if (!this.enableButtons && !this.menuoptionEle.classList.contains('e-de-overlay')) {
                 this.menuoptionEle.classList.add('e-de-overlay');
             } else if (this.menuoptionEle.classList.contains('e-de-overlay') && !this.owner.documentHelper.isDocumentProtected && !this.owner.isReadOnly) {
@@ -386,39 +416,85 @@ export class TrackChangesPane {
             }
             this.isChangesTabVisible = true;
             this.owner.notify('reviewPane', { comment: this.commentReviewPane.isCommentTabVisible, changes: this.isChangesTabVisible});
-            for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
-                let revision: Revision = this.owner.revisions.changes[i];
-                let ranges: object = this.owner.revisions.changes[i].range[0];
-                if(this.changes.containsKey(revision)) {
-                    continue;
-                }
-                if (ranges instanceof WRowFormat) {
-                    let groupedRevision: Revision[] = this.groupTableRevisions(this.owner.revisions.changes, i);
-                    if (groupedRevision.length > 1) {
-                        let changeView: ChangesSingleView;
-                        for (let j: number = 0; j < groupedRevision.length; j++) {
-                            let nextRevision: Revision = groupedRevision[j];
-                            if (j === 0) {
-                                this.addChanges(nextRevision);
-                                changeView = this.changes.get(revision);
-                            } else {
-                                let nextRowFormat: WRowFormat = nextRevision.range[0] as WRowFormat;
-                                changeView.appendRowToTable(nextRowFormat, j);
-                                this.revisions.push(nextRevision);
-                                this.changes.add(nextRevision, changeView);
+            if (this.owner.documentHelper.layout.isInitialLoad) {
+                for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
+                    let revision: Revision = this.owner.revisions.changes[i];
+                    let ranges: object = this.owner.revisions.changes[i].range[0];
+                    if (this.changes.containsKey(revision)) {
+                        continue;
+                    }
+                    if (ranges instanceof WRowFormat) {
+                        let groupedRevision: Revision[] = this.groupTableRevisions(this.owner.revisions.changes, i);
+                        if (groupedRevision.length > 1) {
+                            let changeView: ChangesSingleView;
+                            for (let j: number = 0; j < groupedRevision.length; j++) {
+                                let nextRevision: Revision = groupedRevision[j];
+                                if (j === 0) {
+                                    this.addChanges(nextRevision);
+                                    changeView = this.changes.get(revision);
+                                } else {
+                                    let nextRowFormat: WRowFormat = nextRevision.range[0] as WRowFormat;
+                                    changeView.appendRowToTable(nextRowFormat, j);
+                                    this.revisions.push(nextRevision);
+                                    this.changes.add(nextRevision, changeView);
+                                }
+                                this.tableRevisions.add(nextRevision, groupedRevision);
                             }
-                            this.tableRevisions.add(nextRevision, groupedRevision);
+                        } else {
+                            this.addChanges(revision);
                         }
                     } else {
                         this.addChanges(revision);
                     }
-                } else {
-                    this.addChanges(revision);
+                }
+                for (let i = 0; i < this.renderedChanges.keys.length; i++) {
+                    let changeView: ChangesSingleView = this.renderedChanges.get(this.renderedChanges.keys[i]);
+                    changeView.updateRevisionIndexAndCount(i + 1, this.renderedChanges.keys.length);
                 }
             }
-            for (let i = 0; i < this.renderedChanges.keys.length; i++) {
-                let changeView: ChangesSingleView = this.renderedChanges.get(this.renderedChanges.keys[i]);
-                changeView.updateRevisionIndexAndCount(i + 1, this.renderedChanges.keys.length);
+            else {
+                for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
+                    let revision: Revision = this.owner.revisions.changes[i];
+                    let ranges: object = this.owner.revisions.changes[i].range[0];
+                    if (this.changes.containsKey(revision)) {
+                        continue;
+                    }
+                    if (ranges instanceof WRowFormat) {
+                        let groupedRevision: Revision[] = this.groupTableRevisions(this.owner.revisions.changes, i);
+                        if (groupedRevision.length > 1) {
+                            let changeView: ChangesSingleView;
+                            for (let j: number = 0; j < groupedRevision.length; j++) {
+                                let nextRevision: Revision = groupedRevision[j];
+                                if (j === 0) {
+                                    let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this);
+                                    this.changesInfoDiv.insertBefore(currentChangeView.createSingleChangesDiv(nextRevision), this.changesInfoDiv.children[i + 1]);
+                                    this.revisions.splice(i, 0, nextRevision);
+                                    this.changes.add(nextRevision, currentChangeView);
+                                    this.renderedChanges.add(nextRevision, currentChangeView);
+                                    changeView = this.changes.get(revision);
+                                } else {
+                                    let nextRowFormat: WRowFormat = nextRevision.range[0] as WRowFormat;
+                                    changeView.appendRowToTable(nextRowFormat, j);
+                                    this.revisions.splice(i, 0, nextRevision);
+                                    this.changes.add(nextRevision, changeView);
+                                }
+                                this.tableRevisions.add(nextRevision, groupedRevision);
+                            }
+                        } else {
+                            let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this);
+                            this.changesInfoDiv.insertBefore(currentChangeView.createSingleChangesDiv(revision), this.changesInfoDiv.children[i + 1]);
+                            this.revisions.splice(i, 0, revision);
+                            this.changes.add(revision, currentChangeView);
+                            this.renderedChanges.add(revision, currentChangeView);
+                        }
+                    }
+                }
+                let totalCount = document.getElementsByClassName('e-de-track-chngs-count').length;
+                for (let i: number = 0; i < totalCount; i++) {
+                    let div = document.getElementsByClassName('e-de-track-chngs-count')[i];
+                    div.innerHTML = this.locale.getConstant('Changes') + ' ' + (i + 1).toString() +
+                        ' ' + this.locale.getConstant('of') + ' ' + totalCount.toString();
+                }
             }
             this.sortCollectionToDisplay();
             this.updateUsers();
@@ -742,7 +818,7 @@ export class ChangesSingleView {
         });
         this.singleInnerDiv.appendChild(dateView);
 
-        let changesTextDiv: HTMLElement = createElement('div', {
+        let changesTextDiv: HTMLElement = createElement('div', { id:'textDiv',
             className: 'e-de-track-chngs-text'
         });
         this.layoutElementText(revision.range, changesTextDiv);
@@ -812,7 +888,7 @@ export class ChangesSingleView {
         }
     }
 
-    private layoutElementText(range: object[], changesText: HTMLElement): void {
+    public layoutElementText(range: object[], changesText: HTMLElement): void {
         changesText.style.width = '100%';
         let text: string = '';
         let toSkip: boolean = false;
@@ -912,8 +988,12 @@ export class ChangesSingleView {
     }
 
     private removeFromParentCollec(): void {
-        this.trackChangesPane.changes.remove(this.revision);
-        this.trackChangesPane.revisions.splice(this.trackChangesPane.revisions.indexOf(this.revision), 1);
+        if (this.trackChangesPane.changes.containsKey(this.revision)) {
+            this.trackChangesPane.changes.remove(this.revision);
+        }
+        if (this.trackChangesPane.revisions.indexOf(this.revision) !== -1) {
+            this.trackChangesPane.revisions.splice(this.trackChangesPane.revisions.indexOf(this.revision), 1);
+        }
         if (this.trackChangesPane.changes.length === 0) {
             this.trackChangesPane.setNoChangesVisibility = true;
         }

@@ -4,7 +4,7 @@ import { CellVerticalAlignment, LineStyle } from '../../base/types';
 import { WCharacterFormat } from '../format/character-format';
 import { WParagraphFormat } from '../format/paragraph-format';
 import { HelperMethods } from '../editor/editor-helper';
-import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty} from '../../index';
+import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, imagesProperty, Dictionary, isMetaFileProperty} from '../../index';
 
 /**
  * @private
@@ -16,6 +16,7 @@ export class HtmlExport {
     private prevListLevel: any = undefined;
     private isOrdered: boolean = undefined;
     private keywordIndex: number = undefined;
+    private images: Dictionary<number, string[]>;
 
     /**
      * @private
@@ -27,10 +28,25 @@ export class HtmlExport {
         this.keywordIndex = isOptimizeSfdt ? 1 : 0;
         this.document = document;
         let html: string = '';
+        if (document.hasOwnProperty(imagesProperty[this.keywordIndex])) {
+            this.serializeImages(document[imagesProperty[this.keywordIndex]]);
+        }
         for (let i: number = 0; i < document[sectionsProperty[this.keywordIndex]].length; i++) {
             html += this.serializeSection(document[sectionsProperty[this.keywordIndex]][i]);
         }
         return html;
+    }
+    private serializeImages(data: any): void {
+        this.images = new Dictionary<number, string[]>();
+        for (let img in data) {
+            if (Array.isArray(data[`${img}`])) {
+                this.images.add(parseInt(img), data[`${img}`]);
+            } else {
+                let images: string[] = [];
+                images.push(data[`${img}`]);
+                this.images.add(parseInt(img), images);
+            }
+        }
     }
     private serializeSection(section: any): string {
         let string: string = '';
@@ -345,7 +361,8 @@ export class HtmlExport {
         this.serializeInlineStyle(image[characterFormatProperty[this.keywordIndex]]);
         let imageSource: string = '';
         if (!isNullOrUndefined(image[imageStringProperty[this.keywordIndex]])) {
-            imageSource = image[imageStringProperty[this.keywordIndex]];
+            let base64ImageString: string[] = this.images.get(parseInt(image[imageStringProperty[this.keywordIndex]]));
+            imageSource = base64ImageString[HelperMethods.parseBoolValue(image[isMetaFileProperty[this.keywordIndex]]) ? 1 : 0];
         }
         const width: number = HelperMethods.convertPointToPixel(image[widthProperty[this.keywordIndex]]);
         const height: number = HelperMethods.convertPointToPixel(image[heightProperty[this.keywordIndex]]);
@@ -358,7 +375,7 @@ export class HtmlExport {
     }
 
     // Serialize Table Cell
-    public serializeCell(cell: any): string {
+    public serializeCell(cell: any, row: any): string {
         let blockStyle: string = '';
         let tagAttributes: string[] = [];
         let cellHtml: string = '';
@@ -395,7 +412,7 @@ export class HtmlExport {
                 cellHtml += ('padding-bottom:' + cell[cellFormatProperty[this.keywordIndex]][bottomMarginProperty[this.keywordIndex]].toString() + 'pt;');
             }
             if (!isNullOrUndefined(cell[cellFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]])) {
-                cellHtml += this.serializeCellBordersStyle(cell[cellFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]]);
+                cellHtml += this.serializeCellBordersStyle(cell[cellFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]], row);
             }
         }
         if (cellHtml.length !== 0) {
@@ -443,7 +460,7 @@ export class HtmlExport {
         let html: string = '';
         html += this.createRowStartTag(row);
         for (let k: number = 0; k < row[cellsProperty[this.keywordIndex]].length; k++) {
-            html += this.serializeCell(row[cellsProperty[this.keywordIndex]][k]);
+            html += this.serializeCell(row[cellsProperty[this.keywordIndex]][k], row);
         }
         return html;
     }
@@ -451,9 +468,11 @@ export class HtmlExport {
     // Serialize Styles
     private serializeParagraphStyle(paragraph: any, className: string, isList: boolean): string {
         let paragraphClass: string = '';
-        if (paragraph[inlinesProperty[this.keywordIndex]].length > 0) {
-            paragraphClass += this.serializeCharacterFormat(paragraph[characterFormatProperty[this.keywordIndex]]);
+        let isEmptyLine: boolean = false;
+        if (paragraph[inlinesProperty[this.keywordIndex]].length == 0) {
+            isEmptyLine = true;
         }
+        paragraphClass += this.serializeCharacterFormat(paragraph[characterFormatProperty[this.keywordIndex]], isEmptyLine);
         paragraphClass += this.serializeParagraphFormat(paragraph[paragraphFormatProperty[this.keywordIndex]], isList);
         return paragraphClass;
     }
@@ -502,7 +521,7 @@ export class HtmlExport {
         }
         return borderStyle;
     }
-    private serializeCellBordersStyle(borders: any): string {
+    private serializeCellBordersStyle(borders: any, row: any): string {
         let borderStyle: string = '';
 
         //borderStyle = 'border:solid 1px;';
@@ -538,6 +557,13 @@ export class HtmlExport {
             borderStyle += this.serializeBorderStyle(border, 'left');
         } else if (!isNullOrUndefined(border) && HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]])) {
             borderStyle += ('border-left-style:none;');
+        } else if (!isNullOrUndefined(row[rowFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]][leftProperty[this.keywordIndex]])) {
+            border = row[rowFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]][leftProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(border) && border[lineStyleProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 1 : 'None') && border[lineStyleProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 26 : 'Cleared')) {
+                border[colorProperty[this.keywordIndex]] = isNullOrUndefined(border[colorProperty[this.keywordIndex]]) ? "#000000" : border[colorProperty[this.keywordIndex]];
+                border[lineWidthProperty[this.keywordIndex]] = isNullOrUndefined(border[lineWidthProperty[this.keywordIndex]]) ? 0.5 : border[lineWidthProperty[this.keywordIndex]];
+                borderStyle += this.serializeBorderStyle(border, 'left');
+            }
         }
         //TopBorder
         border = borders[topProperty[this.keywordIndex]];
@@ -547,6 +573,13 @@ export class HtmlExport {
             borderStyle += this.serializeBorderStyle(border, 'top');
         } else if (!isNullOrUndefined(border) && HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]])) {
             borderStyle += ('border-top-style:none;');
+        } else if (!isNullOrUndefined(row[rowFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]][topProperty[this.keywordIndex]])) {
+            border = row[rowFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]][topProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(border) && border[lineStyleProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 1 : 'None') && border[lineStyleProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 26 : 'Cleared')) {
+                border[colorProperty[this.keywordIndex]] = isNullOrUndefined(border[colorProperty[this.keywordIndex]]) ? "#000000" : border[colorProperty[this.keywordIndex]];
+                border[lineWidthProperty[this.keywordIndex]] = isNullOrUndefined(border[lineWidthProperty[this.keywordIndex]]) ? 0.5 : border[lineWidthProperty[this.keywordIndex]];
+                borderStyle += this.serializeBorderStyle(border, 'top');
+            }
         }
         //RightBorder
         border = borders[rightProperty[this.keywordIndex]];
@@ -556,6 +589,13 @@ export class HtmlExport {
             borderStyle += this.serializeBorderStyle(border, 'right');
         } else if (!isNullOrUndefined(border) && HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]])) {
             borderStyle += ('border-right-style:none;');
+        } else if (!isNullOrUndefined(row[rowFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]][rightProperty[this.keywordIndex]])) {
+            border = row[rowFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]][rightProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(border) && border[lineStyleProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 1 : 'None') && border[lineStyleProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 26 : 'Cleared')) {
+                border[colorProperty[this.keywordIndex]] = isNullOrUndefined(border[colorProperty[this.keywordIndex]]) ? "#000000" : border[colorProperty[this.keywordIndex]];
+                border[lineWidthProperty[this.keywordIndex]] = isNullOrUndefined(border[lineWidthProperty[this.keywordIndex]]) ? 0.5 : border[lineWidthProperty[this.keywordIndex]];
+                borderStyle += this.serializeBorderStyle(border, 'right');
+            }
         }
         //BottomBorder
         border = borders[bottomProperty[this.keywordIndex]];
@@ -565,6 +605,13 @@ export class HtmlExport {
             borderStyle += this.serializeBorderStyle(border, 'bottom');
         } else if (!isNullOrUndefined(border) && HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]])) {
             borderStyle += ('border-bottom-style:none;');
+        } else if (!isNullOrUndefined(row[rowFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]][bottomProperty[this.keywordIndex]])) {
+            border = row[rowFormatProperty[this.keywordIndex]][bordersProperty[this.keywordIndex]][bottomProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(border) && border[lineStyleProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 1 : 'None') && border[lineStyleProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 26 : 'Cleared')) {
+                border[colorProperty[this.keywordIndex]] = isNullOrUndefined(border[colorProperty[this.keywordIndex]]) ? "#000000" : border[colorProperty[this.keywordIndex]];
+                border[lineWidthProperty[this.keywordIndex]] = isNullOrUndefined(border[lineWidthProperty[this.keywordIndex]]) ? 0.5 : border[lineWidthProperty[this.keywordIndex]];
+                borderStyle += this.serializeBorderStyle(border, 'bottom');
+            }
         }
         return borderStyle;
     }
@@ -651,9 +698,9 @@ export class HtmlExport {
     }
 
     // Serialize Format
-    private serializeCharacterFormat(characterFormat: any): string {
+    private serializeCharacterFormat(characterFormat: any, isEmptyLine?: boolean): string {
         if (!isNullOrUndefined(characterFormat[inlineFormatProperty[this.keywordIndex]])) {
-            return this.serializeCharacterFormat(characterFormat[inlineFormatProperty[this.keywordIndex]]);
+            return this.serializeCharacterFormat(characterFormat[inlineFormatProperty[this.keywordIndex]], isEmptyLine);
         }
         let propertyValue: any;
         let charStyle: string = '';
@@ -679,7 +726,7 @@ export class HtmlExport {
 
         }
         //Text Foreground and Background Color
-        if (!isNullOrUndefined(characterFormat[highlightColorProperty[this.keywordIndex]]) && characterFormat[highlightColorProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'NoColor')) {
+        if (!isNullOrUndefined(characterFormat[highlightColorProperty[this.keywordIndex]]) && characterFormat[highlightColorProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'NoColor') && !isEmptyLine) {
             charStyle += 'background-color';
             charStyle += ':';
             charStyle += this.keywordIndex == 1 ? this.getHighlightColorCode(characterFormat[highlightColorProperty[this.keywordIndex]]) : HelperMethods.getHighlightColorCode(characterFormat.highlightColor.toString());
@@ -713,6 +760,21 @@ export class HtmlExport {
             charStyle += 'font-family';
             charStyle += ':';
             charStyle += propertyValue.toString();
+            charStyle += ';';
+        }
+        propertyValue = characterFormat[characterSpacingProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(propertyValue)) {
+            charStyle += 'letter-spacing';
+            charStyle += ':';
+            charStyle += propertyValue.toString();
+            charStyle += 'pt';
+            charStyle += ';';
+        }
+        propertyValue = characterFormat[scalingProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(propertyValue)) {
+            charStyle += 'transform:scaleX(';
+            charStyle += (propertyValue/100).toString();
+            charStyle += ')';
             charStyle += ';';
         }
         return charStyle.toString();

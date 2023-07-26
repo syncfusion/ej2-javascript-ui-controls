@@ -2,7 +2,7 @@ import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Eve
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
-import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, RevisionActionEventArgs } from './index';
+import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, RevisionActionEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
@@ -117,6 +117,15 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     public maximumRows: number;
 
     /**
+     * Gets or sets the maximum number of columns allowed while inserting a table in Document editor component.
+     * > The maximum value is 63, as per Microsoft Word application and you can set any value less than 63 to this property. If you set any value greater than 63, then Syncfusion Document editor will automatically reset as 63.
+     * @default 63
+     * @returns {number}
+     */
+    @Property(63)
+    public maximumColumns: number;
+
+    /**
      * Gets or sets a value indicating whether to show the hidden characters like spaces, tab, paragraph marks, and breaks.
      *
      * @default false
@@ -136,6 +145,16 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     @Property(false)
     public showBookmarks: boolean;
 
+    /**
+     * Gets or sets a value indicating whether to highlight the editable ranges in the document where the current user can edit. 
+     *
+     * @default true
+     * @aspType bool
+     * @returns {boolean} Returns `true` if editable ranges in the document is highlighted. Otherwise `false`.
+     */
+     @Property(true)
+    public highlightEditableRanges: boolean;
+    
     /**
      * Describes whether to reduce the resultant SFDT file size by minifying the file content
      *
@@ -1357,8 +1376,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 if (!isNullOrUndefined(model.documentEditorSettings.showHiddenMarks) && (model.documentEditorSettings.showHiddenMarks !== oldProp.documentEditorSettings.showHiddenMarks)) {
                     this.viewer.updateScrollBars();
                 }
-                if (!isNullOrUndefined(model.documentEditorSettings.showBookmarks) && (model.documentEditorSettings.showBookmarks !== oldProp.documentEditorSettings.showBookmarks)) {
-                    this.viewer.updateScrollBars();
+                if(!isNullOrUndefined(model.documentEditorSettings.highlightEditableRanges)){
+                    if (this.documentHelper && this.documentHelper.restrictEditingPane) {
+                        this.documentHelper.restrictEditingPane.highlightCheckBox.checked = model.documentEditorSettings.highlightEditableRanges;
+                    }
                 }
                 break;
             case 'height':
@@ -1534,9 +1555,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!this.documentHelper.isCompositionStart && Browser.isDevice && this.editorModule) {
             this.editorModule.predictText();
         }
-        const eventArgs: SelectionChangeEventArgs = { source: this };
+        const eventArgs: SelectionChangeEventArgs = { source: this , isCompleted:this.documentHelper.isCompleted};
         // if (this.createdTriggered) {
         this.trigger(selectionChangeEvent, eventArgs);
+        this.documentHelper.isSelectionCompleted = this.documentHelper.isCompleted;
+        this.documentHelper.isCompleted = true;
         // }
     }
     /**
@@ -2027,6 +2050,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Even Page Footer': 'Even Page Footer',
         'Odd Page Header': 'Odd Page Header',
         'Odd Page Footer': 'Odd Page Footer',
+        'Same as Previous': 'Same as Previous',
+        'Section': 'Section',
         'Margin': 'Margins',
         'Paper': 'Paper',
         'Layout': 'Layout',
@@ -2379,8 +2404,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Emboss3D':'Emboss3D',
         'ThinThickLargeGap':'ThinThickLargeGap',
         'ThinThickMediumGap':'ThinThickMediumGap',
-        'Number of rows must be between 1 and 32767.': 'Number of rows must be between 1 and 32767.',
-        'Number of columns must be between 1 and 63.':'Number of columns must be between 1 and 63.',
+        'Number of rows must be between': 'Number of rows must be between',
+        'Number of columns must be between':'Number of columns must be between',
+        'and' : 'and',
         'Unlimited' : 'Unlimited',
         'Regular text': 'Regular text',
         'Date': 'Date',
@@ -2416,9 +2442,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Paste Content CheckBox' : 'Don’t show again',
         'BookMarkList':'List of bookmarks in the document',
         'Discard':'Discard',
-        "The top/bottom margins are too large for the page height in some sections.":"The top/bottom margins are too large for the page height in some sections.",
-        "Column width cannot be less than 36 pt.": "Column width cannot be less than 36 pt.",
-        "Left and right margins.": "Settings you chose for the left and right margins, column spacing, or pargraph indents are too large for the page width in same secitions."
+        'The top/bottom margins are too large for the page height in some sections.':'The top/bottom margins are too large for the page height in some sections.',
+        'Column width cannot be less than 36 pt.': 'Column width cannot be less than 36 pt.',
+        'Left and right margins.': 'Settings you chose for the left and right margins, column spacing, or pargraph indents are too large for the page width in same secitions.'
     };
     /* eslint-enable */
     // Public Implementation Starts
@@ -2430,7 +2456,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public open(sfdtText: string): void {
         if (!isNullOrUndefined(this.viewer)) {
-            this.showComments = false;
             this.clearPreservedCollectionsInViewer();
             this.documentHelper.userCollection.push('Everyone');
             this.documentHelper.lists = [];
@@ -2880,7 +2905,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.clearSpellCheck();
             this.documentHelper.setDefaultDocumentFormat();
             this.documentHelper.headersFooters.push(hfs);
-            this.documentHelper.onDocumentChanged(sections);
             if (this.editorModule) {
                 this.editorModule.intializeDefaultStyles();
                 const style: WStyle = this.documentHelper.styles.findByName('Normal') as WStyle;
@@ -2890,6 +2914,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     paragraph.paragraphFormat.listFormat.baseStyle = style;
                 }
             }
+            this.documentHelper.onDocumentChanged(sections);
         }
     }
     /**
