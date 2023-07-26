@@ -234,8 +234,7 @@ export class RestrictEditing {
         let highlightRegionInput: HTMLInputElement = <HTMLInputElement>createElement('input', { attrs: { type: 'checkbox' }, className: 'e-btn e-de-rp-nav-btn' });
         highlightRegion.appendChild(highlightRegionInput);
         this.stopReadOnlyOptions.appendChild(highlightRegion);
-
-        this.highlightCheckBox = new CheckBox({ label: localObj.getConstant('Highlight the regions I can edit') ,enableRtl:this.documentHelper.owner.enableRtl }, highlightRegionInput);
+        this.highlightCheckBox = new CheckBox({ label: localObj.getConstant('Highlight the regions I can edit') ,change: this.changeHighlightOptions.bind(this),enableRtl:this.documentHelper.owner.enableRtl }, highlightRegionInput,);
         let lastButtonDiv: HTMLElement = createElement('div', { className: 'e-de-rp-enforce' });
         this.stopProtection = createElement('button', {
             innerHTML: localObj.getConstant('Stop Protection'),
@@ -281,6 +280,12 @@ export class RestrictEditing {
         this.allowFormat.addEventListener('change', this.enableFormatting.bind(this));
         this.protectionTypeDrop.addEventListener('change', this.protectionTypeDropChanges.bind(this));
         this.highlightCheckBox.addEventListener('change', this.highlightClicked.bind(this));
+    }
+    private changeHighlightOptions (): void {
+        this.documentHelper.owner.documentEditorSettings.highlightEditableRanges = this.highlightCheckBox.checked;
+        setTimeout((): void => {
+            this.documentHelper.owner.focusIn();
+        }, 10);
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private enableFormatting(args: any): void {
@@ -407,7 +412,7 @@ export class RestrictEditing {
                 this.protectionTypeDrop.value = 'Tracked changes';
                 break;
         }
-        this.highlightCheckBox.checked = true;
+        this.highlightCheckBox.checked = this.documentHelper.owner.documentEditorSettings.highlightEditableRanges;
         this.addedUser.enablePersistence = true;
         this.addedUser.dataSource = this.usersCollection.slice();
         this.addedUser.dataBind();

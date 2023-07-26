@@ -109,7 +109,7 @@ export class TableProperties {
     private addTablePropertyTab(): void {
         const tableHeader: HTMLElement = createElement('div', { innerHTML: this.localObj.getConstant('Table') });
         const textHeader: HTMLElement = createElement('div', { innerHTML: this.localObj.getConstant('Text') });
-        this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane' });
+        this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane e-de-scrollbar-hide' });
         this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
         /* eslint-disable-next-line max-len */
         const items: TabItemModel[] = [{ header: { text: textHeader }, content: this.tableTextProperties.element }, { header: { text: tableHeader }, content: this.tableProperties }] as TabItemModel[];

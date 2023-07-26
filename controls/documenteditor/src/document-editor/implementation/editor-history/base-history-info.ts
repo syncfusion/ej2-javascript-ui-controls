@@ -334,7 +334,7 @@ export class BaseHistoryInfo {
             isRemoveContent = this.lastElementRevision ? false : isRemoveContent;
             this.revertModifiedNodes(deletedNodes, isRedoAction, isForwardSelection ? start : end, start === end);
             if (isRemoveContent) {
-                this.removeContent(insertTextPosition, endTextPosition);
+                this.removeContent(insertTextPosition, endTextPosition, true);
             }
             //this.owner.editorModule.reLayout(this.documentHelper.selection);
         }
@@ -386,7 +386,7 @@ export class BaseHistoryInfo {
             }
         }
     }
-    private removeContent(insertTextPosition: TextPosition, endTextPosition: TextPosition): void {
+    private removeContent(insertTextPosition: TextPosition, endTextPosition: TextPosition, skipDeletecell?: boolean): void {
         //If the base parent of the insert text position and end text position is null 
         //then the paragraphs already removed.
         //Example scenario: In table editing that is delete cells operation 
@@ -415,7 +415,7 @@ export class BaseHistoryInfo {
             if (this.action === 'BackSpace' || this.action === 'Uppercase' || this.action === 'RemoveRowTrack') {
                 isDelete = true;
             }
-            this.owner.editorModule.deleteSelectedContents(this.owner.selection, isDelete);
+            this.owner.editorModule.deleteSelectedContents(this.owner.selection, isDelete, skipDeletecell);
         }
     }
     public updateEndRevisionInfo(): void {
@@ -690,7 +690,7 @@ export class BaseHistoryInfo {
                     this.owner.documentHelper.headersFooters.splice(node.sectionIndex, 0, node.removedHeaderFooters[0]);
                     node.removedHeaderFooters = undefined;
                 }
-                this.owner.editorModule.insertSection(this.owner.selection, false, true, undefined, node.sectionFormat);
+                this.owner.editorModule.insertSection(this.owner.selection, false, true, undefined, undefined, node.sectionFormat);
             } else if (typeof (node) === 'string' && this.action === 'AcceptTOC') {
                 let insertIndex: string = this.selectionStart;
                 let widget: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;
@@ -710,6 +710,7 @@ export class BaseHistoryInfo {
                             item.revisions.splice(revisionIndex, 1);
                             let rangeIndex: number = currentRevision.range.indexOf(item);
                             currentRevision.range.splice(rangeIndex, 1);
+                            this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
                         }
                         if (currentRevision.range.length === 0) {
                             this.owner.revisions.remove(currentRevision);
@@ -751,6 +752,7 @@ export class BaseHistoryInfo {
                     item.revisions.splice(revisionIndex, 1);
                     let rangeIndex: number = currentRevision.range.indexOf(item);
                     currentRevision.range.splice(rangeIndex, 1);
+                    this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
                 }
                 if (currentRevision.range.length === 0) {
                     this.owner.revisions.remove(currentRevision);
@@ -1034,6 +1036,9 @@ export class BaseHistoryInfo {
             }
             this.owner.editor.setPreviousBlockToLayout();
             this.owner.editorModule.updateSelectionParagraphFormatting(property, undefined, false);
+        } else if (this.action === 'LinkToPrevious' && this.modifiedProperties[0] instanceof WSectionFormat) {
+            let sectionIndex: number = parseInt(this.selectionStart.split(';')[0]);
+            this.owner.editorModule.updateHeaderFooters(property, undefined, sectionIndex, (this.modifiedProperties[0] as WSectionFormat).removedHeaderFooters[0]);
         } else if (this.modifiedProperties[0] instanceof WSectionFormat) {
             this.owner.editorModule.updateSectionFormat(property, undefined);
         } else if (this.action === 'RestartNumbering') {
@@ -1209,6 +1214,8 @@ export class BaseHistoryInfo {
                 return 'bidi';
             case 'ContextualSpacing':
                 return 'contextualSpacing';
+            case 'LinkToPrevious':
+                return 'linkToPrevious';
             case 'LeftBorder':
             case 'TopBorder':
             case 'RightBorder':

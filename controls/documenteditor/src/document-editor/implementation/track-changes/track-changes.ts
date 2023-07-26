@@ -9,6 +9,8 @@ import { Selection, TextPosition } from '../selection';
 import { ParagraphInfo } from '../editor/editor-helper';
 import { BaseHistoryInfo, EditorHistory } from '../editor-history';
 import { RevisionActionEventArgs, revisionActionEvent } from '../../base/index';
+import { ChangesSingleView } from '../track-changes/track-changes-pane';
+
 /**
  * The revision class which holds the information related to changes made in the document
  */
@@ -54,6 +56,9 @@ export class Revision {
     private skipUnLinkElement: boolean = false;
     public constructor(documentHelper: DocumentEditor, author: string, date: string) {
         this.author = author;
+        if(isNullOrUndefined(this.author)) {
+            this.author = "Unknown";
+        }
         this.date = date;
         this.owner = documentHelper;
     }
@@ -268,6 +273,7 @@ export class Revision {
                 this.owner.editor.deleteSelectedContents(this.owner.selection, true);
                 let rangeIndex: number = revision.range.indexOf(item);
                 revision.range.splice(rangeIndex, 1);
+                this.owner.trackChangesPane.updateCurrentTrackChanges(revision);
                 while (this.range.length > 0) {
                     this.removeRangeRevisionForItem(this.range[0]);
                 }
@@ -322,6 +328,7 @@ export class Revision {
                 if (this.revisionID !== currentRevision.revisionID) {
                     let rangeIndex: number = currentRevision.range.indexOf(item);
                     item.revisions[revisionIndex].range.splice(rangeIndex, 1);
+                    this.owner.trackChangesPane.updateCurrentTrackChanges(item.revisions[revisionIndex]);
                 }
                 if (currentRevision.range.length === 0) {
                     this.owner.revisions.remove(currentRevision);
@@ -343,6 +350,7 @@ export class Revision {
             item.revisions.splice(revisionIndex, 1);
             let rangeIndex: number = this.range.indexOf(item);
             this.range.splice(rangeIndex, 1);
+            this.owner.trackChangesPane.updateCurrentTrackChanges(this);
         }
     }
     /**
@@ -476,6 +484,21 @@ export class RevisionCollection {
             return;
         }
         this.changes.splice(this.changes.indexOf(revision), 1);
+        if (this.owner.trackChangesPane.revisions.indexOf(revision) !== -1) {
+            let index: number = this.owner.trackChangesPane.revisions.indexOf(revision);
+            let removeChild: boolean = !(this.owner.trackChangesPane.tableRevisions.containsKey(revision) && (this.owner.trackChangesPane.tableRevisions.get(revision))[(this.owner.trackChangesPane.tableRevisions.get(revision)).length -1] !== revision);
+            if (!isNullOrUndefined(this.owner.trackChangesPane.changesInfoDiv.childNodes[index + 1]) && removeChild) {
+                this.owner.trackChangesPane.changesInfoDiv.removeChild(this.owner.trackChangesPane.changesInfoDiv.childNodes[index + 1]);
+            }
+            this.owner.trackChangesPane.revisions.splice(index, 1);
+            this.owner.trackChangesPane.changes.remove(revision);
+            if (this.owner.trackChangesPane.renderedChanges.containsKey(revision)) {
+                this.owner.trackChangesPane.renderedChanges.remove(revision);
+            }
+            if (this.owner.trackChangesPane.tableRevisions.containsKey(revision)) {
+                this.owner.trackChangesPane.tableRevisions.remove(revision);
+            }
+        }
     }
 
     /**
@@ -543,8 +566,7 @@ export class RevisionCollection {
             this.owner.editorHistory.updateComplexHistory();
             if(isNullOrUndefined(selection.editPosition)) {
                 this.owner.editorHistory.undoStack.pop();
-            } 
-            
+            }
         }
         this.owner.editor.reLayout(this.owner.selection, false);
         this.skipGroupAcceptReject = false;
