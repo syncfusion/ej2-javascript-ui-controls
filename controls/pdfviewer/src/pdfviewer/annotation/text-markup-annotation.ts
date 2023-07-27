@@ -506,25 +506,25 @@ export class TextMarkupAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderTextMarkupAnnotationsInPage(textMarkupAnnotations: any, pageNumber: number, isImportTextMarkup?: boolean): void {
+    public renderTextMarkupAnnotationsInPage(textMarkupAnnotations: any, pageNumber: number, isImportTextMarkup?: boolean, isAnnotOrderAction?: boolean): void {
         const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
         if (isImportTextMarkup) {
             this.renderTextMarkupAnnotations(null, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
             this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor(), true);
         } else {
-            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
+            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor(), null, isAnnotOrderAction);
         }
     }
 
     // eslint-disable-next-line
-    private renderTextMarkupAnnotations(textMarkupAnnotations: any, pageNumber: number, canvas: HTMLElement, factor: number, isImportAction?: boolean): void {
+    private renderTextMarkupAnnotations(textMarkupAnnotations: any, pageNumber: number, canvas: HTMLElement, factor: number, isImportAction?: boolean, isAnnotOrderAction?: boolean): void {
         if (canvas) {
             const context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
             context.setTransform(1, 0, 0, 1, 0, 0);
             context.setLineDash([]);
             // eslint-disable-next-line
             let annotations: any[];
-            if (!isImportAction) {
+            if (!isImportAction && !isAnnotOrderAction) {
                 annotations = this.getAnnotations(pageNumber, textMarkupAnnotations);
             } else {
                 annotations = textMarkupAnnotations;
@@ -552,20 +552,10 @@ export class TextMarkupAnnotation {
                         }
                         // eslint-disable-next-line max-len
                         annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
-                        if (!annotation.Author) {
-                            // eslint-disable-next-line max-len
-                            annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.TextMarkupAnnotationType);
-                        }
-                        if (!annotation.Subject) {
-                            annotation.Subject = annotation.TextMarkupAnnotationType;
-                        }
-                        if (annotation.AnnotationSettings && annotation.AnnotationSettings.isLock) {
-                            annotation.AnnotationSettings = { isLock: annotation.AnnotationSettings.isLock };
-                        } else {
-                            annotation.AnnotationSettings = this.getAnnotationSettings(annotation.TextMarkupAnnotationType);
-                        }
                         // eslint-disable-next-line max-len
                         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        // eslint-disable-next-line max-len
+                        annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
                         // eslint-disable-next-line max-len
                         annotationObject = {
                             textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, allowedInteractions: annotation.allowedInteractions, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
@@ -2721,7 +2711,7 @@ export class TextMarkupAnnotation {
             document.getElementById(commentsDivid).id = annotationName;
         }
         // eslint-disable-next-line
-        let annotationSettings: object =  this.getAnnotationSettings(type);
+        let annotationSettings: object =   this.pdfViewer.annotationSettings ? this.pdfViewer.annotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(this.pdfViewer.annotation);
         let isPrint: boolean = this.getIsPrintValue(type);
         const annotation: ITextMarkupAnnotation = {
             // eslint-disable-next-line max-len
@@ -2756,19 +2746,6 @@ export class TextMarkupAnnotation {
             selector = this.pdfViewer.strikethroughSettings.annotationSelectorSettings;
         }
         return selector;
-    }
-    private getAnnotationSettings(type: string): object {
-        let annotationSettings: object = { isLock: false };
-        if (type === 'Highlight' && this.pdfViewer.highlightSettings.isLock) {
-            annotationSettings = { isLock : true };
-        } else if (type === 'Underline' && this.pdfViewer.underlineSettings.isLock) {
-            annotationSettings = { isLock : true };
-        } else if (type === 'Strikethrough' && this.pdfViewer.strikethroughSettings.isLock) {
-            annotationSettings = { isLock : true };
-        } else if (this.pdfViewer.annotationSettings.isLock) {
-            annotationSettings = { isLock : true };
-        }
-        return annotationSettings;
     }
     private getIsPrintValue(type: string): boolean {
         let isPrint: boolean = true;
@@ -2845,13 +2822,9 @@ export class TextMarkupAnnotation {
     public saveImportedTextMarkupAnnotations(annotation: any, pageNumber: number): any {
         let annotationObject: ITextMarkupAnnotation = null;
         annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.Subject);
-        if (annotation.AnnotationSettings && annotation.AnnotationSettings.isLock) {
-            annotation.AnnotationSettings = { isLock: annotation.AnnotationSettings.isLock };
-        } else {
-            annotation.AnnotationSettings = this.getAnnotationSettings(annotation.TextMarkupAnnotationType);
-        }
         // eslint-disable-next-line max-len
         annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
         // eslint-disable-next-line max-len
         annotationObject = {
             // eslint-disable-next-line max-len
@@ -2971,6 +2944,7 @@ export class TextMarkupAnnotation {
             //Creating annotation settings
             annotSelectorSettings = this.pdfViewer.highlightSettings.annotationSelectorSettings ? this.pdfViewer.highlightSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.highlightSettings);
+            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
             annotallowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ? this.pdfViewer.highlightSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             textMarkupAnnotationType = 'Highlight';
             color = annotationObject.color?annotationObject.color:'#ffff00';
@@ -2980,6 +2954,7 @@ export class TextMarkupAnnotation {
             //Creating annotation settings
             annotSelectorSettings = this.pdfViewer.underlineSettings.annotationSelectorSettings ? this.pdfViewer.underlineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.underlineSettings);
+            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
             annotallowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ? this.pdfViewer.underlineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             textMarkupAnnotationType = 'Underline';
             color = annotationObject.color?annotationObject.color:'#00ff00';
@@ -2989,11 +2964,12 @@ export class TextMarkupAnnotation {
             //Creating annotation settings
             annotSelectorSettings = this.pdfViewer.strikethroughSettings.annotationSelectorSettings ? this.pdfViewer.strikethroughSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.strikethroughSettings);
+            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
             annotallowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ? this.pdfViewer.strikethroughSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             textMarkupAnnotationType = 'Strikethrough';
             color = annotationObject.color?annotationObject.color:'#ff0000';
         }
-        annotSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
+        annotSettings.isLock = annotationObject.isLock ? annotationObject.isLock : annotSettings.isLock;
 
         //Creating the offset points
         if(annotationObject.bounds)

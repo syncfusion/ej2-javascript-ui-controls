@@ -1,4 +1,4 @@
-import { closest, getComponent, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, closest, getComponent, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
 import { BeforeOpenCloseMenuEventArgs, DropDownButton, ItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { getItem, Ribbon, itemProps, getItemElement, RibbonItemSize, createTooltip } from '../base/index';
@@ -21,6 +21,8 @@ export class RibbonDropDown {
     protected destroy(): void {
         this.parent = null;
     }
+    private itemIndex: number;
+    private enableRtl: boolean;
     /**
      * Creates DropDown.
      *
@@ -73,6 +75,7 @@ export class RibbonDropDown {
      */
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
         const dropdownElement: HTMLElement = itemEle.querySelector('#' + item.id);
+        dropdownElement.setAttribute('data-control', item.type.toString());
         const dropdown: DropDownButton = getComponent(dropdownElement, DropDownButton);
         dropdown.cssClass = dropdown.cssClass + SPACE + RIBBON_POPUP_CONTROL;
         dropdown.dataBind();
@@ -110,6 +113,7 @@ export class RibbonDropDown {
             if (item.dropDownSettings.beforeClose) { item.dropDownSettings.beforeClose.call(this, e); }
         };
     }
+
     /**
      * Creates Overflow DropDown.
      *
@@ -121,11 +125,14 @@ export class RibbonDropDown {
      * @returns {void}
      * @hidden
      */
+
     public createOverFlowDropDown(id: string, name: string, iconCss: string,
-                                  groupEle: HTMLElement, overflowEle: HTMLElement): DropDownButton {
+                                  groupEle: HTMLElement, overflowEle: HTMLElement, enableRtl?: boolean): DropDownButton {
+        this.enableRtl = enableRtl;
         const buttonEle: HTMLButtonElement = this.parent.createElement('button', {
             id: id + OVERFLOW_ID + DROPDOWN_ID
         });
+        groupEle.setAttribute('tabindex', '0');
         overflowEle.appendChild(buttonEle);
         const dropdown: DropDownButton = new DropDownButton({
             iconCss: iconCss,
@@ -141,8 +148,115 @@ export class RibbonDropDown {
             }
         }, buttonEle);
         createTooltip(groupEle, this.parent);
+        buttonEle.onclick = buttonEle.onkeydown = () => { this.itemIndex = 0; };
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        groupEle.onkeydown = (e: KeyboardEventArgs) => { this.keyActionHandler(e, groupEle), this; };
         return dropdown;
     }
+
+    private keyActionHandler(e: KeyboardEventArgs, target: HTMLElement): void {
+        const items: NodeListOf<Element> = target.querySelectorAll('.e-control');
+        const comboBoxElements: NodeListOf<Element> = target.querySelectorAll('.e-combobox');
+        let comboBoxEle: HTMLElement;
+        if (comboBoxElements) {
+            for (let i: number = 0; i < comboBoxElements.length; i++) {
+                if (comboBoxElements[parseInt(i.toString(), 10)].closest('.e-input-focus')) {
+                    comboBoxEle = comboBoxElements[parseInt(i.toString(), 10)] as HTMLElement;
+                }
+            }
+        }
+        if (comboBoxEle) {
+            for (let i: number = 0; i < items.length; i++) {
+                if (items[parseInt(i.toString(), 10)].classList.contains('e-combobox')) {
+                    if (items[parseInt(i.toString(), 10)].closest('.e-input-focus')) {
+                        this.itemIndex = i;
+                    }
+                }
+            }
+        }
+        if ((e.target as HTMLElement).classList.contains('e-control') || (e.target as HTMLElement).classList.contains('e-ribbon-launcher-icon') ||
+                (e.target as HTMLElement).classList.contains('e-ribbon-last-item') || (e.target as HTMLElement).classList.contains('e-ribbon-first-item')) {
+            if (e.key === 'ArrowRight' || (!e.shiftKey && e.key === 'Tab')) {
+                this.handleNavigation(e, !this.enableRtl, items);
+            }
+            if (e.key === 'ArrowLeft' || (e.shiftKey && e.key === 'Tab')) {
+                this.handleNavigation(e, this.enableRtl, items);
+            }
+        }
+    }
+
+    private handleNavigation(e: KeyboardEventArgs, enableRtl: boolean, items: NodeListOf<Element>): void {
+        if (!(items[0].classList.contains('e-ribbon-first-item'))) { items[0].classList.add('e-ribbon-first-item'); }
+        if (!(items[items.length - 1].classList.contains('e-ribbon-last-item'))) { items[items.length - 1].classList.add('e-ribbon-last-item'); }
+        if (enableRtl) {
+            if (this.itemIndex === 0 && (items[parseInt(this.itemIndex.toString(), 10)] as HTMLElement).classList.contains('e-ribbon-first-item')) { this.updateItemIndex(e, items, true); }
+            if (!(e.target as HTMLElement).classList.contains('e-combobox') && !(e.target as HTMLElement).classList.contains('e-ribbon-last-item') &&
+                !(e.target as HTMLElement).classList.contains('e-ribbon-group-container') && ((e.target as HTMLElement).classList.contains('e-ribbon-first-item')
+                    || this.itemIndex !== 0) && (e.target as HTMLElement).classList.contains('e-control')) {
+                this.itemIndex++;
+                this.updateItemIndex(e, items, true);
+            }
+            if ((e.target as HTMLElement).classList.contains('e-ribbon-last-item')) {
+                let launcherIcon: boolean = false;
+                launcherIcon = this.focusLauncherIcon(e, items);
+                if (!launcherIcon) { this.itemIndex = 0; this.updateItemIndex(e, items, true); }
+            }
+            if ((e.target as HTMLElement).classList.contains('e-ribbon-launcher-icon')) { this.itemIndex = 0; this.updateItemIndex(e, items, true); }
+        }
+        else {
+            if (!(e.target as HTMLElement).classList.contains('e-combobox') && this.itemIndex !== 0) { this.itemIndex--; this.updateItemIndex(e, items, false); }
+            if ((e.target as HTMLElement).classList.contains('e-ribbon-first-item')) {
+                let launcherIcon: boolean = false;
+                launcherIcon = this.focusLauncherIcon(e, items);
+                if (!launcherIcon) { this.itemIndex = items.length - 1; this.updateItemIndex(e, items, false); }
+            }
+            if ((e.target as HTMLElement).classList.contains('e-ribbon-launcher-icon')) { this.itemIndex = items.length - 1; this.updateItemIndex(e, items, false); }
+        }
+        if ((e.target as HTMLElement).classList.contains('e-combobox') && (e.key === 'Tab')) {
+            if (enableRtl) { if (this.itemIndex < items.length - 1) { this.itemIndex++; } }
+            else { if (this.itemIndex > 0) { this.itemIndex--; } }
+        }
+    }
+
+    private focusLauncherIcon(e: KeyboardEventArgs, items: NodeListOf<Element>): boolean {
+        const groupContainer: HTMLElement = items[parseInt(this.itemIndex.toString(), 10)].closest('.e-ribbon-group-container') as HTMLElement;
+        let launcherIconEle: HTMLElement;
+        if (groupContainer) { launcherIconEle = groupContainer.querySelector('.e-ribbon-launcher-icon') as HTMLElement; }
+        if (launcherIconEle) {
+            if (e.key === 'Tab') { e.preventDefault(); }
+            (groupContainer.querySelector('.e-ribbon-launcher-icon')as HTMLElement).focus();
+            return true;
+        }
+        else { return false; }
+    }
+
+    private updateItemIndex(e: KeyboardEventArgs, items: NodeListOf<Element>, enableRtl: boolean): void {
+        let ribbonItem: HTMLElement = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
+        while (ribbonItem && ribbonItem.classList.contains('e-disabled')) {
+            if (enableRtl) {
+                if (this.itemIndex < items.length - 1) { this.itemIndex++; }
+                else {
+                    let launcherIcon: boolean = false;
+                    launcherIcon = this.focusLauncherIcon(e, items);
+                    if (launcherIcon) { break; }
+                    this.itemIndex = 0;
+                }
+            }
+            else {
+                if (this.itemIndex > 0) { this.itemIndex--; }
+                else {
+                    let launcherIcon: boolean = false;
+                    launcherIcon = this.focusLauncherIcon(e, items);
+                    if (launcherIcon) { break; }
+                    this.itemIndex = items.length - 1;
+                }
+            }
+            ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
+        }
+        if (e.key === 'Tab') { e.preventDefault(); }
+        (items[parseInt(this.itemIndex.toString(), 10)] as HTMLElement).focus();
+    }
+
     /**
      * Removes Overflow DropDown.
      *

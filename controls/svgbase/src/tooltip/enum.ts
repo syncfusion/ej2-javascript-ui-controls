@@ -20,8 +20,10 @@ export type TooltipShape =
     'Triangle' |
     /** Render a Diamond. */
     'Diamond' |
-    /** Render a Cross. */
+    /** Specifies the shape of the marker as a cross symbol. */
     'Cross' |
+    /** Specifies the shape of the marker as a plus symbol.  */
+    'Plus'|
     /** Render a HorizontalLine. */
     'HorizontalLine' |
     /** Render a VerticalLine. */
@@ -70,7 +72,11 @@ export type TooltipTheme =
     /**  Render a chart with Fluent theme. */
     'Fluent' |
     /**  Render a chart with FluentDark theme. */
-    'FluentDark';
+    'FluentDark' |
+    /**  Render a chart with material 3 theme */
+    'Material3' |
+    /**  Render a chart with material 3 dark theme */
+    'Material3Dark';
 
 /**
  * Defines the tooltip position.

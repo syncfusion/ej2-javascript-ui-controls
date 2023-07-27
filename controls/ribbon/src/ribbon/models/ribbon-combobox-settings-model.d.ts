@@ -82,22 +82,25 @@ export interface RibbonComboBoxSettingsModel {
      * Specifies the template content for the footer container of the popup list.
      *
      * @default null
+     * @aspType string
      */
-    footerTemplate?: string;
+    footerTemplate?: string | Function;
 
     /**
      * Specifies the template content for the group headers present in the popup list.
      *
      * @default null
+     * @aspType string
      */
-    groupTemplate?: string;
+    groupTemplate?: string | Function;
 
     /**
      * Specifies the template content for the header container of the popup list.
      *
      * @default null
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * Specifies the index of the selected item in the combobox.
@@ -110,15 +113,17 @@ export interface RibbonComboBoxSettingsModel {
      * Specifies the template content for each list item present in the popup.
      *
      * @default null
+     * @aspType string
      */
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
 
     /**
      * Specifies the template content for the popup list of combobox when no data is available.
      *
      * @default 'No records found'
+     * @aspType string
      */
-    noRecordsTemplate?: string;
+    noRecordsTemplate?: string | Function;
 
     /**
      * Specifies a short hint that describes the expected value of the combobox.

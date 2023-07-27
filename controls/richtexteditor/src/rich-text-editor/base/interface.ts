@@ -10,7 +10,7 @@ import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import { NodeSelection } from '../../selection/selection';
 import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
-import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel } from '../models/models';
+import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
 import { Count } from '../actions/count';
 import { ColorPicker, ColorPickerEventArgs, ColorPickerModel, FileInfo } from '@syncfusion/ej2-inputs';
@@ -34,9 +34,9 @@ import { PasteCleanup } from '../actions/paste-clean-up';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
-import { NodeCutter, DOMNode } from '../../editor-manager';
+import { NodeCutter, DOMNode, IFormatPainterEditor } from '../../editor-manager';
 import { EnterKeyAction } from '../actions/enter-key';
-import { FormatPainter } from '../actions/format-painter';
+import { EmojiPicker } from '../actions/emoji-picker';
 /**
  * Specifies Rich Text Editor interfaces.
  *
@@ -93,12 +93,13 @@ export interface IRichTextEditor extends Component<HTMLElement> {
      *
      * @default
      * {
-     * allowedContext: ['Text', 'List', 'Table'],
      * allowedFormats: 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; table; thead; tbody; tr; td; th; ol; ul; li; pre;',
      * deniedFormats: null
      * }
      */
     formatPainterSettings: FormatPainterSettingsModel
+
+    emojiPickerSettings : EmojiSettingsModel
 
     floatingToolbarOffset?: number
 
@@ -163,7 +164,8 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     markdownEditorModule: MarkdownEditor
     htmlEditorModule: HtmlEditor
     countModule?: Count
-    formatPainterModule?: FormatPainter
+    formatPainterModule?: IFormatPainter
+    emojiPickerModule?: EmojiPicker
     serviceLocator?: ServiceLocator
     setEnable?(): void
     setReadOnly?(isInit?: boolean): void
@@ -211,6 +213,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     getSelection(): string
     currentTarget: HTMLElement
     focusIn(): void
+    showEmojiPicker?(x?: number, y?: number): void
 }
 /**
  * @deprecated
@@ -272,6 +275,7 @@ export interface NotifyArgs {
     touchData?: ITouchData
     allowedStylePropertiesArray?: string[]
     formatPainterSettings?: FormatPainterSettingsModel
+    emojiPickerSettings?: EmojiSettingsModel
 }
 
 /**
@@ -312,6 +316,16 @@ export interface ITouchData {
     prevClientY?: number
     clientX?: number
     clientY?: number
+}
+
+/**
+ * @hidden
+ * @deprecated
+ */
+export interface IFormatPainter {
+    /** Stores the previous action. */
+    previousAction: string
+    destroy: Function
 }
 
 /**
@@ -518,6 +532,23 @@ export interface IFormatPainterArgs {
     formatPainterAction: string
 }
 
+export interface IEmojiIcons {
+    /** Defines the description of emoji icon. */
+    desc: string
+    /** Defines the Unicode of emoji icon. */
+    code: string
+}
+
+export interface EmojiIconsSet{
+    /** Defines the name for category the Unicode. */
+    name: string
+    /** Defines the icon Unicode which is showing in emoji picker toolbar item. */
+    code: string
+    /** Defines the css class for emoji icon. */
+    iconCss?: string
+    /** Defines the icons collection. */
+    icons: IEmojiIcons[]
+}
 /**
  * @deprecated
  */
@@ -559,6 +590,7 @@ export interface IEditorModel {
     mdSelectionFormats?: MDSelectionFormats
     domNode?: DOMNode
     nodeCutter?: NodeCutter
+    formatPainterEditor?: IFormatPainterEditor
 }
 
 /**
@@ -728,6 +760,17 @@ export interface ActionBeginEventArgs {
      * @deprecated
      */
     itemCollection?: IItemCollectionArgs
+    /**
+     * Defines the emoji picker details.
+     *
+     * @deprecated
+     */
+    emojiPickerArgs?: IEmojiPickerArgs
+}
+
+export interface IEmojiPickerArgs{
+    emojiSettings: EmojiSettingsModel
+
 }
 
 /**
@@ -809,9 +852,13 @@ export interface BeforeQuickToolbarOpenArgs {
      */
     popup?: Popup
     /** Determine whether the quick toolbar is open */
-    cancel: boolean
+    cancel?: boolean
     /** Defines the target element of the quick toolbar */
-    targetElement: Element
+    targetElement?: Element
+    /** Defines the X position of the quick toolbar */
+    positionX?: number
+    /** Defines the Y position of the quick toolbar */
+    positionY?: number
 }
 
 /**
@@ -1219,6 +1266,10 @@ export interface PasteCleanupArgs {
      * Returns the content in the ClipboardEvent arguments.
      */
     value: string;
+    /**
+     * Returns the list of image files data that is pasted.
+     */
+    filesData: FileInfo[]
 }
 
 /**
@@ -1535,7 +1586,7 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
 'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
 'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' | 'insertAudio' | 'insertVideo' |
 'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink' | 'applyFormatPainter'
-| 'copyFormatPainter' | 'escapeFormatPainter';
+| 'copyFormatPainter' | 'escapeFormatPainter' | 'emojiPicker';
 
 /**
  * @hidden

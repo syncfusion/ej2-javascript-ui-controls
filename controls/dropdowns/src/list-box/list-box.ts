@@ -152,6 +152,7 @@ export class ListBox extends DropDownBase {
     private toolbarAction: string;
     private isDataSourceUpdate: boolean = false;
     private dragValue: string;
+    private customDraggedItem: Object[];
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
@@ -756,10 +757,10 @@ export class ListBox extends DropDownBase {
                 scrollParent = wrapper;
             }
             boundRect = scrollParent.getBoundingClientRect() as DOMRect;
-            if ((boundRect.y + scrollParent.offsetHeight) - (event.pageY + scrollMoved) < 1) {
+            if ((boundRect.y + scrollParent.offsetHeight) - (event.clientY + scrollMoved) < 1) {
                 scrollParent.scrollTop = scrollParent.scrollTop + scrollHeight;
             }
-            else if ((event.pageY - scrollMoved) - boundRect.y < 1) {
+            else if ((event.clientY - scrollMoved) - boundRect.y < 1) {
                 scrollParent.scrollTop = scrollParent.scrollTop - scrollHeight;
             }
         }
@@ -770,13 +771,18 @@ export class ListBox extends DropDownBase {
     }
 
     private beforeDragEnd(args: DropEventArgs): void {
+        let items: object[] = [];
         this.dragValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value')) as string;
         if ((this.value as string[]).indexOf(this.dragValue) > -1) {
             args.items = this.getDataByValues(this.value);
         } else {
             args.items = this.getDataByValues([this.dragValue]);
         }
+        extend(items, args.items);
         this.trigger('beforeDrop', args);
+        if (args.items !== items) {
+            this.customDraggedItem = args.items;
+        }
     }
 
     private dragEnd(args: DropEventArgs): void {
@@ -817,6 +823,12 @@ export class ListBox extends DropDownBase {
             liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0] as HTMLElement);
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
+                if (!isNullOrUndefined(this.customDraggedItem)) {
+                    selectedOptions = [];
+                    this.customDraggedItem.forEach((item: object) => {
+                        selectedOptions.push(getValue(this.fields.value, item));
+                    })
+                }
                 selectedOptions.forEach((value: string) => {
                     if (value !== dropValue) {
                         const idx: number = listData.indexOf(this.getDataByValue(value));
@@ -842,6 +854,12 @@ export class ListBox extends DropDownBase {
             jsonData = [].slice.call(listObj.jsonData); sortedData = [].slice.call(listObj.sortedData);
             selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
                 ? this.value : [dropValue];
+            if (!isNullOrUndefined(this.customDraggedItem)) {
+                selectedOptions = [];
+                this.customDraggedItem.forEach((item: object) => {
+                    selectedOptions.push(getValue(this.fields.value, item));
+                })
+            }
             const fListData: dataType[] = [].slice.call(this.listData); const fSortData: dataType[] = [].slice.call(this.sortedData);
             selectedOptions.forEach((value: string, index: number) => {
                 droppedData = this.getDataByValue(value);
@@ -898,6 +916,9 @@ export class ListBox extends DropDownBase {
         } else {
             const dragArgs1: Object = extend(destArgs, {currentData: listData});
             dragArgs = extend(dragArgs, { destination: dragArgs1 });
+        }
+        if (!isNullOrUndefined(this.customDraggedItem)) {
+            (dragArgs as DragEventArgs).items = this.customDraggedItem;
         }
         this.trigger('drop', dragArgs);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1019,6 +1040,16 @@ export class ListBox extends DropDownBase {
         }
         this.setSelection(items, state, !isValue);
         this.updateSelectedOptions();
+        let selElems: Element[] = [];
+	    for (let i: number = 0; i < items.length; i++) {
+	    const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
+	    for (let j: number = 0; j < liColl.length; j++) {
+	        if (items[i as number] === this.getFormattedValue(liColl[j as number].getAttribute('data-value')) as string) {
+	            selElems.push(liColl[j as number])
+		}
+	    }
+	}
+	this.triggerChange(selElems, null);
     }
 
     /**
@@ -1150,6 +1181,26 @@ export class ListBox extends DropDownBase {
     public moveDown(value?: string[] | number[] | boolean[]): void {
         const elem: Element[] = (value) ? this.getElemByValue(value) : this.getSelectedItems();
         this.moveUpDown(false, false, elem);
+    }
+    /**
+     * Moves the given value(s) / selected value(s) in Top of the list.
+     *
+     * @param  { string[] | number[] | boolean[] } value - Specifies the value(s).
+     * @returns {void}
+     */
+      public moveTop(value?: string[] | number[] | boolean[]): void {
+        const elem: Element[] = (value) ? this.getElemByValue(value) : this.getSelectedItems();
+        this.moveUpDown(null, false, elem, true);
+    }
+    /**
+     * Moves the given value(s) / selected value(s) in bottom of the list.
+     *
+     * @param  { string[] | number[] | boolean[] } value - Specifies the value(s).
+     * @returns {void}
+     */
+     public moveBottom(value?: string[] | number[] | boolean[]): void {
+        const elem: Element[] = (value) ? this.getElemByValue(value) : this.getSelectedItems();
+        this.moveUpDown(true, false, elem, false, true);
     }
     /**
      * Moves the given value(s) / selected value(s) to the given / default scoped ListBox.
@@ -1594,7 +1645,7 @@ export class ListBox extends DropDownBase {
         }
     }
 
-    private moveUpDown(isUp?: boolean, isKey?: boolean, value?: Element[]): void {
+    private moveUpDown(isUp?: boolean, isKey?: boolean, value?: Element[], isTop?: boolean, isBottom?: boolean): void {
         let elems: Element[] = this.getSelectedItems();
         if (value) {
             elems = value;
@@ -1612,8 +1663,18 @@ export class ListBox extends DropDownBase {
         (isUp ? elems : elems.reverse()).forEach((ele: Element) => {
             const jsonToIdx: number = Array.prototype.indexOf.call(this.ulElement.querySelectorAll('.e-list-item'), ele);
             const idx: number = Array.prototype.indexOf.call(this.ulElement.children, ele);
-            moveTo(this.ulElement, this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
-            this.changeData(idx, isUp ? idx - 1 : idx + 1, isUp ? jsonToIdx - 1 : jsonToIdx + 1, ele);
+            if (isTop) {
+                moveTo(this.ulElement, this.ulElement, [idx], 0);
+                this.changeData(idx, 0 , jsonToIdx, ele);
+            }
+            else if(isBottom) {
+                moveTo(this.ulElement, this.ulElement, [idx], this.ulElement.querySelectorAll('.e-list-item').length);
+                this.changeData(idx, this.ulElement.querySelectorAll('.e-list-item').length, jsonToIdx, ele);
+            }
+            else {
+                moveTo(this.ulElement, this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
+                this.changeData(idx, isUp ? idx - 1 : idx + 1, isUp ? jsonToIdx - 1 : jsonToIdx + 1, ele);
+            }
         });
         this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         (elems[0] as HTMLElement).focus();
@@ -1653,7 +1714,7 @@ export class ListBox extends DropDownBase {
         if (value) {
             elems = value;
         }
-        const isRefresh: boolean | string = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
+        const isRefresh: boolean | string | Function = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
             fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
         fListBox.value = [];
         if (elems.length) {
@@ -1783,7 +1844,7 @@ export class ListBox extends DropDownBase {
         type sortedType = dataType | { isHeader: boolean };
         let listData: dataType[] = [].slice.call(tListBox.listData);
         const jsonData: {[key: string]: object}[] = [].slice.call(tListBox.jsonData);
-        const isRefresh: boolean | string = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
+        const isRefresh: boolean | string | Function = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
             fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
         this.removeSelected(fListBox, fListBox.getSelectedItems());
         const tempItems: Object[] = [].slice.call(fListBox.listData);
@@ -2210,8 +2271,10 @@ export class ListBox extends DropDownBase {
                 }
                 if (typeof(text) === 'string') {
                     text = text.split('\\').join('\\\\');
+                    li = this.list.querySelector('[data-value="' + text.replace(/"/g, '\\"') + '"]');
+                } else {
+                    li = this.list.querySelector('[data-value="' + text + '"]');
                 }
-                li = this.list.querySelector('[data-value="' + text + '"]');
                 if (li) {
                     if (this.selectionSettings.showCheckbox) {
                         liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');
@@ -2221,10 +2284,12 @@ export class ListBox extends DropDownBase {
                     if (!isSelect && liselect || isSelect && !liselect && li) {
                         if (this.selectionSettings.showCheckbox) {
                             this.notify('updatelist', { li: li, module: 'listbox' });
+                            (li as HTMLElement).focus();
                         } else {
                             if (isSelect) {
                                 li.classList.add(cssClass.selected);
                                 li.setAttribute('aria-selected', 'true');
+                                (li as HTMLElement).focus();
                             } else {
                                 li.classList.remove(cssClass.selected);
                                 li.removeAttribute('aria-selected');
@@ -2242,9 +2307,12 @@ export class ListBox extends DropDownBase {
         ele.innerHTML = '';
         if (this.value) {
             for (let i: number = 0, len: number = this.value.length; i < len; i++) {
-                innerHTML += '<option selected value="' + this.value[i as number] + '"></option>';
+                innerHTML += '<option selected>' + this.value[i as number] + '</option>';
             }
             ele.innerHTML += innerHTML;
+            for (let i: number = 0, len: number = ele.childNodes.length; i < len; i++) {
+                (ele.childNodes[i as number] as HTMLElement).setAttribute('value', this.value[i as number].toString());
+            }
         }
         this.checkSelectAll();
     }

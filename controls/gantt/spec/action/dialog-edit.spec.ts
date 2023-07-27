@@ -7,6 +7,7 @@
  import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
  import { DropDownList } from '@syncfusion/ej2-dropdowns';
  import { DataManager } from '@syncfusion/ej2-data';
+ import { TextBox } from '@syncfusion/ej2-inputs';
  import { actionComplete } from '@syncfusion/ej2-treegrid';
  interface EJ2Instance extends HTMLElement {
      ej2_instances: Object[];
@@ -2610,5 +2611,175 @@
                  triggerMouseEvent(saveRecord, 'click');
              }
          });
-     });	
+     });
+     describe('Edit custom column values in edit dialog', function () {
+         let ganttObj: Gantt;
+         let elem: HTMLTextAreaElement;
+         let textBox: TextBox | undefined;
+         let editingData = [
+             {
+                 TaskID: 1,
+                 TaskName: 'Project initiation',
+                 StartDate: new Date('04/02/2019'),
+                 EndDate: new Date('04/21/2019'),
+                 subtasks: [
+                     {
+                         TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 0,
+                         Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+                     },
+                     {
+                         TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
+                         resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                             'From an engineer or company specializing in soil testing'
+                     },
+                     { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3', Progress: 30 },
+                 ]
+             }
+         ];
+         beforeAll(function (done) {
+             ganttObj = createGantt({
+                 dataSource: editingData,
+                 taskFields: {
+                     id: 'TaskID',
+                     name: 'TaskName',
+                     startDate: 'StartDate',
+                     endDate: 'EndDate',
+                     duration: 'Duration',
+                     progress: 'Progress',
+                     notes: 'Notes',
+                     baselineStartDate: 'BaselineStartDate',
+                     baselineEndDate: 'BaselineEndDate',
+                     resourceInfo: 'Resource',
+                     dependency: 'Predecessor',
+                     child: 'subtasks'
+                 },
+                 editSettings: {
+                     allowAdding: true,
+                     allowEditing: true,
+                     allowDeleting: true,
+                     allowTaskbarEditing: true,
+                     showDeleteConfirmDialog: true,
+                 },
+                 editDialogFields: [
+                     { type: 'General' },
+                     { type: 'Dependency' },
+                     { type: 'Resources' },
+                     { type: 'Notes' },
+                     { type: 'Custom' }
+                 ],
+                 addDialogFields: [
+                     { type: 'General' },
+                     { type: 'Resources' },
+                     { type: 'Dependency' }
+                 ],
+                 toolbar: ['Add',
+                     'Edit',
+                     'Update',
+                     'Delete',
+                     'Cancel',
+                     'ExpandAll',
+                     'CollapseAll',
+                     'Indent',
+                     'Outdent',],
+                 allowSelection: true,
+                 gridLines: 'Both',
+                 height: '450px',
+                 treeColumnIndex: 1,
+                 resourceFields: {
+                     id: 'resourceId',
+                     name: 'resourceName',
+                 },
+                 highlightWeekends: true,
+                 timelineSettings: {
+                     topTier: {
+                         unit: 'Week',
+                         format: 'MMM dd, y',
+                     },
+                     bottomTier: {
+                         unit: 'Day',
+                     },
+                 },
+                 columns: [
+                     { field: 'TaskID', width: 60 },
+                     { field: 'TaskName', width: 100 },
+                     { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                     { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                     { field: 'Duration', width: 100 },
+                     { field: 'Predecessor', width: 100 },
+                     { field: 'Progress', width: 100 },
+                     // { field: 'BaselineStartDate', editType: 'datetimepickeredit', width: 100 },
+                     // { field: 'BaselineEndDate', editType: 'datetimepickeredit', width: 100 },
+                     { field: 'Resource', width: 100 },
+                     { field: 'Notes', width: 100 },
+                     {
+                         field: 'CustomColumn',
+                         headerText: 'CustomColumn',
+                         edit: {
+                             create: (args: Object) => {
+                                 elem = document.createElement('textarea');
+                                 return elem;
+                             },
+                             read: () => {
+                                 return textBox.value;
+                             },
+                             destroy: () => {
+                                 textBox.destroy();
+                             },
+                             write: (args: any) => {
+                                 const description = args.rowData ? args.rowData.description : '';
+                                 textBox = new TextBox({
+                                     type: 'string',
+                                     value: description,
+                                     floatLabelType: 'Always',
+                                     placeholder: "Description",
+                                     multiline: true,
+                                     readonly: false,
+                                 });
+                                 textBox.appendTo(elem);
+                             },
+                         },
+                     },
+                 ],
+                 eventMarkers: [
+                     { day: '4/17/2019', label: 'Project approval and kick-off' },
+                     { day: '5/3/2019', label: 'Foundation inspection' },
+                     { day: '6/7/2019', label: 'Site manager inspection' },
+                     { day: '7/16/2019', label: 'Property handover and sign-off' },
+                 ],
+                 labelSettings: {
+                     leftLabel: 'TaskName',
+                     rightLabel: 'resources',
+                 },
+                 splitterSettings: {
+                     columnIndex: 2,
+                 },
+                 projectStartDate: new Date('03/25/2019'),
+                 projectEndDate: new Date('07/28/2019'),
+
+             }, done);
+         });
+         afterAll(function () {
+             if (ganttObj) {
+                 destroyGantt(ganttObj);
+             }
+         });
+         beforeEach((done) => {
+             setTimeout(done, 1000);
+             ganttObj.openEditDialog(1);
+             let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+             tab.selectedItem = 4;
+         });
+         it('Custom Editor for custom column', () => {
+             let customColumn: any = document.querySelector('#' + ganttObj.element.id + 'CustomColumn') as HTMLTextAreaElement;
+             if (customColumn) {
+                 triggerMouseEvent(customColumn, 'click');
+                 let customValue: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'CustomColumn')).ej2_instances[0];
+                 customValue.value = 'description';
+                 customValue.dataBind();
+                 let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                 triggerMouseEvent(saveRecord, 'click');
+                 expect(getValue('CustomColumn', ganttObj.flatData[0])).toBe('description');
+             }
+         });
+     });
  });

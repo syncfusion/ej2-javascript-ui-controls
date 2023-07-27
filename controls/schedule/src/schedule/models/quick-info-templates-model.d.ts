@@ -19,22 +19,34 @@ export interface QuickInfoTemplatesModel {
     /**
      * Template option to customize the header section of quick popup.
      *
-     *  @default null
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    header?: string;
+    header?: string | Function;
 
     /**
      * Template option to customize the content area of the quick popup.
      *
-     *  @default null
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    content?: string;
+    content?: string | Function;
 
     /**
      * Template option to customize the footer section of quick popup.
      *
-     *  @default null
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    footer?: string;
+    footer?: string | Function;
 
 }

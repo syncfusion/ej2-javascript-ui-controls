@@ -129,7 +129,7 @@ export class StampAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderStampAnnotations(stampAnnotations: any, pageNumber: number, canvass?: any, isImport?: boolean): void {
+    public renderStampAnnotations(stampAnnotations: any, pageNumber: number, canvass?: any, isImport?: boolean,  isAnnotOrderAction?: boolean): void {
         let isStampAdded: boolean = false;
         for (let p: number = 0; p < this.stampPageNumber.length; p++) {
             if (this.stampPageNumber[p] === pageNumber) {
@@ -140,7 +140,7 @@ export class StampAnnotation {
         if (isImport) {
             isStampAdded = false;
         }
-        if (stampAnnotations && !isStampAdded) {
+        if (stampAnnotations && (!isStampAdded || isAnnotOrderAction)) {
             this.stampPageNumber.push(pageNumber);
             for (let s: number = 0; s < stampAnnotations.length; s++) {
                 // eslint-disable-next-line
@@ -615,7 +615,7 @@ export class StampAnnotation {
                 stampAnnotationType: 'image', author: annotation.author, modifiedDate: annotation.modifiedDate, subject: '',
                 note: '', strokeColor: '', fillColor: '', opacity: opacity,
                 // eslint-disable-next-line max-len
-                rotateAngle: '0', creationDate: annotation.currentDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: annotation.data, randomId: 'stamp' + this.pdfViewerBase.customStampCount,
+                rotateAngle: '0', creationDate: annotation.currentDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: annotation.data, randomId: annotation.id,
                 // eslint-disable-next-line max-len
                 bounds: { left: annotation.bounds.x, top: annotation.bounds.y, width: annotation.bounds.width, height: annotation.bounds.height }, stampFillcolor: '', isDynamicStamp: false, annotName: annotation.annotName, comments: [], review: { state: '', stateModel: '', author: annotation.author, modifiedDate: annotation.modifiedDate }, shapeAnnotationType: 'stamp',
                 // eslint-disable-next-line max-len
@@ -1541,12 +1541,13 @@ export class StampAnnotation {
        let author: string = annotationObject.author ? annotationObject.author : 'Guest';
        let annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ? this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
        let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
+       author = this.pdfViewer.annotationModule.updateAnnotationAuthor('stamp', annotationSettings.annotationSubType);
        let allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ? this.pdfViewer.stampSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
-       annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
-       annotationSettings.minHeight = annotationObject.minHeight?annotationObject.minHeight:0;
-       annotationSettings.minWidth = annotationObject.minWidth?annotationObject.minWidth:0;
-       annotationSettings.maxWidth = annotationObject.maxWidth?annotationObject.maxWidth:0;
-       annotationSettings.maxHeight = annotationObject.maxHeight?annotationObject.maxHeight:0;
+       annotationSettings.isLock = annotationObject.isLock ? annotationObject.isLock: annotationSettings.isLock;
+       annotationSettings.minHeight = annotationObject.minHeight ? annotationObject.minHeight: annotationSettings.minHeight;
+       annotationSettings.minWidth = annotationObject.minWidth ? annotationObject.minWidth: annotationSettings.minWidth;
+       annotationSettings.maxWidth = annotationObject.maxWidth ? annotationObject.maxWidth: annotationSettings.maxWidth;
+       annotationSettings.maxHeight = annotationObject.maxHeight ? annotationObject.maxHeight: annotationSettings.maxHeight;
 
        //checking the stamp is custom and Updating the string and datetime values for dynamic stamp
        if(annotationObject.customStamps && annotationObject.customStamps[0].customStampName)

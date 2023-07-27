@@ -55,9 +55,13 @@ export class Group extends ChildProperty<Group> {
      *  can be accessed within this template code.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public headerTooltipTemplate: string;
+    public headerTooltipTemplate: string | Function;
 
     /**
      * Decides whether to show/hide the non-working days. It is set to `false` by default and when set to `true`, it hides the non-working days.

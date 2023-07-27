@@ -3,7 +3,7 @@
  * action spec
  */
 import { Kanban, KanbanModel, EJ2Instance, CardClickEventArgs, ActionEventArgs, ColumnsModel } from '../../src/kanban/index';
-import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { detach, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { kanbanData } from './common/kanban-data.spec';
 import { profile, inMB, getMemoryProfile } from './common/common.spec';
 import * as util from './common/util.spec';
@@ -21,6 +21,11 @@ describe('Action module', () => {
         }
     });
 
+    afterAll((done: DoneFn) => {
+        document.body.querySelector('#Kanban').remove();
+        document.body.querySelector('.e-popup').remove();
+        done();
+    });
     describe('Card click and double click actions testing', () => {
         let kanbanObj: Kanban;
         let isCardClick: boolean = false;
@@ -862,6 +867,8 @@ describe('Action module', () => {
 
         afterAll(() => {
             util.destroy(kanbanObj);
+            detach(deleteBtn);
+            detach(addBtn);
         });
 
         it('Delete and Add columns in the kanban ', () => {

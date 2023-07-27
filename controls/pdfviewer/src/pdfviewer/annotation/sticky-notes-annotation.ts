@@ -435,6 +435,7 @@ export class StickyNotesAnnotation {
                             proxy.pdfViewerBase.documentAnnotationCollections = annotationCollections;
                             for (let i: number = data.startPageIndex; i < data.endPageIndex; i++) {
                                 var newData = data.annotationDetails[i];
+                                proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "annotationOrder");
                                 proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "freeTextAnnotation");
                                 proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "measureShapeAnnotation");
                                 proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "shapeAnnotation");
@@ -561,72 +562,50 @@ export class StickyNotesAnnotation {
     private renderAnnotationCollections(pageAnnotations: any, pageNumber: any, isInitialRender: boolean): void {
         // eslint-disable-next-line
         let pageCollections: any = [];
-        if (pageAnnotations.textMarkupAnnotation && pageAnnotations.textMarkupAnnotation.length !== 0) {
-            for (let i: number = 0; i < pageAnnotations.textMarkupAnnotation.length; i++) {
-                if (this.pdfViewer.dateTimeFormat) {
-                    // eslint-disable-next-line max-len
-                    pageAnnotations.textMarkupAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.textMarkupAnnotation[i].ModifiedDate);
-                }
-                pageCollections.push(pageAnnotations.textMarkupAnnotation[i]);
-                // eslint-disable-next-line max-len
-                this.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(pageAnnotations.textMarkupAnnotation[i], pageNumber));
+        let collection: any = pageAnnotations.annotationOrder;
+        for (let l = 0; l < collection.length; l++) {
+            let annotation: any = collection[parseInt(l.toString(), 10)];
+            let type = annotation.AnnotType ? annotation.AnnotType : annotation.AnnotationType;
+            if (this.pdfViewer.dateTimeFormat) {
+                annotation.ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(annotation.ModifiedDate);
             }
-        }
-        if (pageAnnotations.shapeAnnotation && pageAnnotations.shapeAnnotation.length !== 0) {
-            if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.shapeAnnotationModule) {
-                for (let i: number = 0; i < pageAnnotations.shapeAnnotation.length; i++) {
-                    if (this.pdfViewer.dateTimeFormat) {
-                        // eslint-disable-next-line max-len
-                        pageAnnotations.shapeAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.shapeAnnotation[i].ModifiedDate);
+            pageCollections.push(annotation);
+            switch (type) {
+                case "textMarkup":
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule))) {
+                        this.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(annotation, pageNumber));
                     }
-                    pageCollections.push(pageAnnotations.shapeAnnotation[i]);
-                    // eslint-disable-next-line max-len
-                    this.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(pageAnnotations.shapeAnnotation[i], pageNumber));
-                }
-            }
-        }
-        if (pageAnnotations.measureShapeAnnotation && pageAnnotations.measureShapeAnnotation.length !== 0) {
-            for (let i: number = 0; i < pageAnnotations.measureShapeAnnotation.length; i++) {
-                if (this.pdfViewer.dateTimeFormat) {
-                    // eslint-disable-next-line max-len
-                    pageAnnotations.measureShapeAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.measureShapeAnnotation[i].ModifiedDate);
-                }
-                pageCollections.push(pageAnnotations.measureShapeAnnotation[i]);
-                // eslint-disable-next-line max-len
-                this.updateCollections(this.pdfViewer.annotationModule.measureAnnotationModule.updateMeasureAnnotationCollections(pageAnnotations.measureShapeAnnotation[i], pageNumber));
-            }
-        }
-        if (pageAnnotations.stampAnnotations && pageAnnotations.stampAnnotations.length !== 0) {
-            for (let i: number = 0; i < pageAnnotations.stampAnnotations.length; i++) {
-                if (this.pdfViewer.dateTimeFormat) {
-                    // eslint-disable-next-line max-len
-                    pageAnnotations.stampAnnotations[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.stampAnnotations[i].ModifiedDate);
-                }
-                pageCollections.push(pageAnnotations.stampAnnotations[i]);
-                // eslint-disable-next-line max-len
-                this.updateCollections(this.pdfViewer.annotationModule.stampAnnotationModule.updateStampAnnotationCollections(pageAnnotations.stampAnnotations[i], pageNumber));
-            }
-        }
-        if (pageAnnotations.stickyNotesAnnotation && pageAnnotations.stickyNotesAnnotation.length !== 0) {
-            for (let i: number = 0; i < pageAnnotations.stickyNotesAnnotation.length; i++) {
-                if (this.pdfViewer.dateTimeFormat) {
-                    // eslint-disable-next-line max-len
-                    pageAnnotations.stickyNotesAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.stickyNotesAnnotation[i].ModifiedDate);
-                }
-                pageCollections.push(pageAnnotations.stickyNotesAnnotation[i]);
-                // eslint-disable-next-line max-len
-                this.updateCollections(this.updateStickyNotesAnnotationCollections(pageAnnotations.stickyNotesAnnotation[i], pageNumber));
-            }
-        }
-        if (pageAnnotations.freeTextAnnotation && pageAnnotations.freeTextAnnotation.length !== 0) {
-            for (let i: number = 0; i < pageAnnotations.freeTextAnnotation.length; i++) {
-                if (this.pdfViewer.dateTimeFormat) {
-                    // eslint-disable-next-line max-len
-                    pageAnnotations.freeTextAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.freeTextAnnotation[i].ModifiedDate);
-                }
-                pageCollections.push(pageAnnotations.freeTextAnnotation[i]);
-                // eslint-disable-next-line max-len
-                this.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(pageAnnotations.freeTextAnnotation[i], pageNumber));
+                    break;
+                case "shape_measure":
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule )&&(!isNullOrUndefined(this.pdfViewer.annotationModule.measureAnnotationModule))) {
+                        this.updateCollections(this.pdfViewer.annotationModule.measureAnnotationModule.updateMeasureAnnotationCollections(annotation, pageNumber));
+                    } 
+                    break;
+                case "shape":
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.shapeAnnotationModule))) {
+                        this.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(annotation, pageNumber));
+                    }
+                    break;
+                case "sticky":
+                    this.updateCollections(this.updateStickyNotesAnnotationCollections(annotation, pageNumber));
+                    break;
+                case "stamp":
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.stampAnnotationModule))) {
+                        this.updateCollections(this.pdfViewer.annotationModule.stampAnnotationModule.updateStampAnnotationCollections(annotation, pageNumber));
+                    }
+                    break;
+                case "Ink":
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.inkAnnotationModule))) {
+                        this.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(annotation, pageNumber));
+                    }
+                    break;
+                case "Text Box":
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.freeTextAnnotationModule))) {
+                        this.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(annotation, pageNumber));
+                    }
+                    break;
+                default:
+                    break;
             }
         }
         if (pageAnnotations.signatureAnnotation && pageAnnotations.signatureAnnotation.length !== 0) {
@@ -639,23 +618,14 @@ export class StickyNotesAnnotation {
                 this.updateCollections(this.pdfViewerBase.signatureModule.updateSignatureCollections(pageAnnotations.signatureAnnotation[i], pageNumber), true);
             }
         }
-        if (pageAnnotations.signatureInkAnnotation && pageAnnotations.signatureInkAnnotation.length !== 0) {
-            for (let i: number = 0; i < pageAnnotations.signatureInkAnnotation.length; i++) {
-                if (this.pdfViewer.dateTimeFormat) {
-                    // eslint-disable-next-line max-len
-                    pageAnnotations.signatureInkAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.signatureInkAnnotation[i].ModifiedDate);
-                }
-                pageCollections.push(pageAnnotations.signatureInkAnnotation[i]);
-                // eslint-disable-next-line max-len
-                this.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(pageAnnotations.signatureInkAnnotation[i], pageNumber));
-            }
-        }
         if (this.pdfViewer.toolbarModule) {
             this.renderAnnotationComments(pageCollections, pageNumber);
         }
         if (isInitialRender) {
             for (let i: number = 0; i < this.pdfViewerBase.renderedPagesList.length; i++) {
-                this.pdfViewerBase.renderAnnotations(this.pdfViewerBase.renderedPagesList[i],false);
+                if (this.pdfViewerBase.renderedPagesList[i] === pageNumber) {
+                    this.pdfViewerBase.renderAnnotations(pageNumber, pageAnnotations, false);
+                }
             }
         }
     }
@@ -961,7 +931,7 @@ export class StickyNotesAnnotation {
             for (let j: number = 0; j < textBox.length; j++) {
                 textBox[j].style.display = 'none';
             }
-            if (!data) {
+            if (!data && type !== 'freeText') {
                 editObj.enableEditMode = true;
             }
             this.getButtonState(editObj, commentTextBox);
@@ -1010,9 +980,16 @@ export class StickyNotesAnnotation {
     }
     // eslint-disable-next-line
     private commentDivFocus(args: any): void {
+        if (isNullOrUndefined(this.pdfViewer.freeTextSettings.defaultText)) {
+            this.pdfViewer.freeTextSettings.defaultText = "Type here";
+        }
+        // eslint-disable-next-line
+        if (!isNullOrUndefined(args.target) && !isNullOrUndefined(this.pdfViewer.freeTextSettings.defaultText) && this.pdfViewer.selectedItems && this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText' && args.target.value === this.pdfViewer.freeTextSettings.defaultText) {
+            args.target.select();
+        }
         // eslint-disable-next-line
         if (!this.isNewcommentAdded) {
-            if (args.relatedTarget !== null) {
+            if (args.relatedTarget !== null && args.relatedTarget.id === this.pdfViewer.element.id + '_viewerContainer') {
                 args.preventDefault();
                 args.target.blur();
             }
@@ -1839,13 +1816,6 @@ export class StickyNotesAnnotation {
             event.currentTarget.nextSibling.ej2_instances[0].enableEditMode = false;
         } else if (event.currentTarget.parentElement.parentElement) {
             let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.parentElement.id);
-            if (isLocked) {
-                // eslint-disable-next-line
-                let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.parentElement.id);
-                if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
-                    isLocked = false;
-                }
-            }
             if (!isLocked) {
                 event.currentTarget.nextSibling.ej2_instances[0].enableEditMode = true;
             }
@@ -1899,15 +1869,8 @@ export class StickyNotesAnnotation {
             event.currentTarget.ej2_instances[0].enableEditMode = false;
         } else if (event.currentTarget.parentElement.parentElement) {
             let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.parentElement.id);
-            if (isLocked) {
-                // eslint-disable-next-line
-                let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.parentElement.id);
-                if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
-                    isLocked = false;
-                }
-            }
             if (!isLocked) {
-                if (this.pdfViewer.selectedItems.annotations[0].isReadonly) {
+                if (!isNullOrUndefined(this.pdfViewer.selectedItems) && this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].isReadonly) {
                     event.currentTarget.ej2_instances[0].enableEditMode = false;
                 } else {
                     event.currentTarget.ej2_instances[0].enableEditMode = true;
@@ -1923,11 +1886,6 @@ export class StickyNotesAnnotation {
         // eslint-disable-next-line
         let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.id);
         let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.id);
-        if (isLocked) {
-            if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
-                isLocked = false;
-            }
-        }
         if (!isLocked) {
             let isCommentsSelect: boolean = false;
             if (event.clientX === 0 && event.clientY === 0) {
@@ -2169,13 +2127,7 @@ export class StickyNotesAnnotation {
     private commentsAnnotationSelect(event: any): void {
         const element: HTMLElement = event.currentTarget;
         let isLocked: boolean = this.checkAnnotationSettings(element.id);
-        if (isLocked) {
-            // eslint-disable-next-line
-            let annotation: any = this.findAnnotationObject(element.id);
-            if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
-                isLocked = false;
-            }
-        }
+        // When the isLock is set to true, it comes and checks whether the allowedInteractions is select and set the isLock to false, In that case if enters the condition and makes the comment panel to editable mode. So, have removed the condition in openEditorElement, commentsDivClickEvent, openTextEditor,commentAnnotationSelect methods. (Task id: 835410)
         if (!isLocked) {
             if (element.classList.contains('e-pv-comments-border')) {
                 // eslint-disable-next-line
@@ -2270,6 +2222,21 @@ export class StickyNotesAnnotation {
                 if (!this.isCommentsSelected) {
                     this.selectAnnotationObj = { id: element.id, annotType: annotType, pageNumber: pageNumber };
                 }
+            }
+        }
+        else{
+            let pageNumber: any = parseInt(element.accessKey.split('_')[0]);
+            if (this.pdfViewer.navigation) {
+                this.pdfViewer.navigationModule.goToPage(pageNumber);
+            }
+            let annotType: string = element.getAttribute('name');
+            if (annotType === 'null' || annotType === 'Ink') {
+                annotType = 'ink';
+            }
+            this.isCommentsSelected = false;
+            this.setAnnotationType(element.id, annotType, pageNumber);
+            if (!this.isCommentsSelected) {
+                this.selectAnnotationObj = { id: element.id, annotType: annotType, pageNumber: pageNumber };
             }
         }
         this.isSetAnnotationType = false;
@@ -3615,8 +3582,9 @@ export class StickyNotesAnnotation {
         //Creating annotation settings
         let annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ? this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
         let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stickyNotesSettings);
+        annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('sticky', annotationSettings.annotationSubType);
         let allowedInteractions: any = this.pdfViewer.stickyNotesSettings.allowedInteractions ? this.pdfViewer.stickyNotesSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
-        annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
+        annotationSettings.isLock = annotationObject.isLock ? annotationObject.isLock: annotationSettings.isLock;
 
         //Creating Annotation objects with it's proper properties
         let stickyNotesAnnotation: any = [];

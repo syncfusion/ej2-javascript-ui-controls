@@ -41,6 +41,16 @@
 
     .e-groupdroparea .e-icons {
       color: $grid-header-icon-color;
+      @if $grid-skin == 'material3' {
+        border-radius: 4px;
+      }
+    }
+
+    @if $grid-skin == 'material3' {
+      .e-groupdroparea .e-icons:hover,
+      .e-groupdroparea .e-icons.e-focused {
+        background-color: rgba($on-surface-variant, $opacity8);
+      }
     }
 
     .e-tableborder {
@@ -72,6 +82,8 @@
 
     .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder,
     .e-gridcontent .e-rowcell.e-dragborder,
+    .e-gridcontent .e-groupcaption.e-dragborder,
+    .e-gridcontent .e-summarycell.e-dragborder,
     .e-gridcontent .e-rowdragdrop.e-dragborder,
     & .e-gridheader thead tr th.e-firstrowdragborder,
     &.e-rtl .e-gridcontent tr.e-row:first-child .e-rowcell.e-dragborder,
@@ -132,7 +144,12 @@
     }
 
     .e-gridfooter {
-      background-color: $grid-summary-row-bg-color;
+      @if $grid-skin == 'material3' {
+        background: $grid-summary-row-bg-color;
+      }
+      @else {
+        background-color: $grid-summary-row-bg-color;
+      }
     }
 
     .e-headercontent {
@@ -170,7 +187,12 @@
     }
 
     .e-summarycell {
-      background-color: $group-row-bg-color;
+      @if $grid-skin == 'material3' {
+        background: $group-row-bg-color;
+      }
+      @else {
+        background-color: $group-row-bg-color;
+      }
       border-color: $grid-header-border-color;
       color: $grid-header-color;
     }
@@ -178,8 +200,14 @@
     .e-summaryrow .e-summarycell,
     .e-summaryrow .e-templatecell,
     .e-summarycontent .e-indentcell,
-    .e-indentcell.e-detailindentcelltop {
-      background-color: $grid-summary-row-bg-color;
+    .e-indentcell.e-detailindentcelltop,
+    .e-groupfooterrow.e-summaryrow .e-indentcell.e-indentcelltop {
+      @if $grid-skin == 'material3' {
+        background: $grid-summary-row-bg-color;
+      }
+      @else {
+        background-color: $grid-summary-row-bg-color;
+      }
       border-color: $grid-header-border-color;
       color: $grid-header-color;
     }
@@ -263,12 +291,46 @@
       }
     }
 
+    &.e-gridhover .e-dragclone .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
+    &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
+    &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse,
+    &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
+    &.e-rtl .e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
+    &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
+      &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+        @if $grid-skin == 'material3' {
+          background: $content-bg-color-alt3;
+        }
+      }
+    }
+
+    .e-bigger &,
+    &.e-bigger {
+      &.e-gridhover .e-dragclone .e-row tr:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
+      &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
+      &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse,
+      &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
+      &.e-rtl .e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
+      &.e-gridhover .e-dragclone .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
+        &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+          @if $grid-skin == 'material3' {
+            background: $content-bg-color-alt3;
+          }
+        }
+      }
+    }
+
     & .e-row:hover .e-rowdragdrop {
       cursor: move;
     }
 
     .e-sortnumber {
-      background-color: $grid-sortnumber-bg-color;
+      @if $grid-skin == 'material3' {
+        background: $grid-sortnumber-bg-color;
+      }
+      @else {
+        background-color: $grid-sortnumber-bg-color;
+      }
       color: $grid-sortnumber-color;
     }
 
@@ -339,8 +401,14 @@
     }
 
     .e-cloneproperties {
-      background-color: $grid-drag-clone-bg-color;
-      border-color: $grid-drag-clone-border-color;
+      @if $grid-skin == 'material3' {
+        background: $grid-drag-clone-bg-color;
+        border: none;
+      }
+      @else {
+        background-color: $grid-drag-clone-bg-color;
+        border-color: $grid-drag-clone-border-color;
+      }
       color: $grid-drag-clone-color;
     }
 
@@ -404,7 +472,9 @@
 
     .e-cloneproperties.e-draganddrop {
       box-shadow: $grid-clone-prop-box-shadow;
-      opacity: .95;
+      @if $grid-skin != 'material3' {
+        opacity: .95;
+      }
       overflow: visible;
     }
 
@@ -414,13 +484,23 @@
     }
 
     .e-griddragarea {
-      background-color: $grid-drag-clone-bg-color;
-      border-color: $grid-drag-clone-bg-color;
+      @if $grid-skin == 'material3' {
+        background: rgba($primary, .18);
+      }
+      @else {
+        background-color: $grid-drag-clone-bg-color;
+        border-color: $grid-drag-clone-bg-color;
+      }
       color: $grid-row-selection-color;
     }
 
     .e-groupdroparea {
-      background-color: $group-droparea-bg-color;
+      @if $grid-skin == 'material3' {
+        background: $group-droparea-bg-color;
+      }
+      @else {
+        background-color: $group-droparea-bg-color;
+      }
       border-top-color: $grid-header-border-color;
       color: $group-droparea-color;
     }
@@ -433,11 +513,22 @@
     }
 
     .e-groupdroparea.e-grouped {
-      background-color: $grouped-droparea-bg-color;
+      @if $grid-skin == 'material3' {
+        background: $grouped-droparea-bg-color;
+      }
+      @else {
+        background-color: $grouped-droparea-bg-color;
+      }
     }
 
     .e-groupheadercell {
-      background-color: $group-header-bg-color;
+      @if $grid-skin == 'material3' {
+        background: $group-header-bg-color;
+        border-style: solid;
+      }
+      @else {
+        background-color: $group-header-bg-color;
+      }
       border-color: $grid-group-broder-color;
       border-radius: $group-header-border-radius;
       color: $group-header-color;
@@ -446,6 +537,9 @@
     .e-groupheadercell:hover {
       background-color: $group-header-hover-bg-color;
       border-color: $grid-group-hover-broder-color;
+      @if $grid-skin == 'material3' {
+        border-style: solid;
+      }
     }
 
     .e-ungroupbutton:hover {
@@ -461,7 +555,12 @@
     .e-indentcell,
     .e-recordplusexpand,
     .e-recordpluscollapse {
-      background-color: $group-row-bg-color;
+      @if $grid-skin == 'material3' {
+        background: $group-row-bg-color;
+      }
+      @else {
+        background-color: $group-row-bg-color;
+      }
       color: $group-caption-font-color;
     }
 
@@ -509,12 +608,22 @@
 
     .e-cloneproperties.e-draganddrop .e-rowcell {
       color: $grid-content-font-color;
+      @if $grid-skin == 'material3' {
+        padding-top: 6px;
+        padding-bottom: 6px;
+      }
     }
 
     .e-cloneproperties.e-draganddrop table,
     .e-cloneproperties.e-draganddrop table .e-selectionbackground {
-      background-color: $grid-clone-dragdrop-bg-color;
-      height: 30px;
+      @if $grid-skin == 'material3' {
+        background: $grid-clone-dragdrop-bg-color;
+        height: 32px;
+      }
+      @else {
+        background-color: $grid-clone-dragdrop-bg-color;
+        height: 30px;
+      }
     }
 
     &.e-rtl {

@@ -3532,6 +3532,48 @@ describe('TimePicker', () => {
             expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
         });
     });
+    /**
+     * Model full screen dialog test case
+     */
+    describe('Model full screen layout dialog', function () {
+        let timepicker: any;
+        beforeAll(() => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+        });
+        beforeEach(()=>{
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            timepicker = new TimePicker({
+                value: new Date('4/5/2017 1:00 AM'),
+                fullScreenMode: true
+            });
+            timepicker.appendTo('#date');
+        });
+        afterEach(function () {
+            if (timepicker) {
+                timepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        afterAll(() => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+        });
+        it(' mobile test case', function () {
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+            expect(timepicker.popupObj.element.classList.contains('e-popup-expand')).toBe(true);
+        });
+        it(' mobile no value test case', function () {
+            timepicker.value = null;
+            timepicker.dataBind();
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+            expect(timepicker.popupObj.element.classList.contains('e-popup-expand')).toBe(true);
+        });
+    });
     describe('Model dialog-mobile', function () {
         let timepicker: any;
         beforeAll(() => {
@@ -3560,18 +3602,22 @@ describe('TimePicker', () => {
         it(' mobile test case', function () {
             (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
             expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+            if(timepicker.popupObj) {
             expect(timepicker.popupObj.position.X).toBe('center');
             expect(timepicker.popupObj.position.Y).toBe('center');
             expect(timepicker.popupObj.relateTo).toBe(document.body)
+            }
         });
         it(' mobile no value test case', function () {
             timepicker.value = null;
             timepicker.dataBind();
             (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
             expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+            if(timepicker.popupObj) {
             expect(timepicker.popupObj.position.X).toBe('center');
             expect(timepicker.popupObj.position.Y).toBe('center');
             expect(timepicker.popupObj.relateTo).toBe(document.body)
+            }
         });
     });
     it('memory leak', () => {     

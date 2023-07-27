@@ -23,7 +23,11 @@ export interface HeaderRowsModel {
      *  can be accessed via this template is `date`.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
 }

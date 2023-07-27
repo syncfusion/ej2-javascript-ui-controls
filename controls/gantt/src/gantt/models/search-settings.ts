@@ -71,6 +71,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      *
      * @default Parent
      * @isEnumeration true
+     * @asptype SearchHierarchyMode
      */
     @Property('Parent')
     public hierarchyMode: SearchHierarchyMode;

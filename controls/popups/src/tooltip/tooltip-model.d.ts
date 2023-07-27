@@ -49,8 +49,9 @@ export interface TooltipModel extends ComponentModel{
      *
      * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
      *
+     * @aspType string
      */
-    content?: string | HTMLElement;
+    content?: string | HTMLElement | Function;
 
     /**
      * It is used to set the container element in which the Tooltip’s pop-up will be appended. It accepts value as both string and HTML Element.

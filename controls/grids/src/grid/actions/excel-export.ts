@@ -168,6 +168,13 @@ export class ExcelExport {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private processRecords(gObj: IGrid, exportProperties: ExcelExportProperties, isMultipleExport: boolean, workbook: any): Promise<any> {
+        if (gObj.allowGrouping && gObj.groupSettings.enableLazyLoading && gObj.groupSettings.columns.length) {
+            if (isNullOrUndefined(exportProperties)) {
+                exportProperties = { hierarchyExportMode: 'All' };
+            } else {
+                exportProperties.hierarchyExportMode = exportProperties.hierarchyExportMode || 'All';
+            }
+        }
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource)) {
             exportProperties.dataSource = exportProperties.dataSource instanceof DataManager ?
                 exportProperties.dataSource : new DataManager (exportProperties.dataSource);
@@ -808,7 +815,8 @@ export class ExcelExport {
                         const args: AggregateQueryCellInfoEventArgs = {
                             row: row,
                             type: footerTemplate ? 'Footer' : groupFooterTemplate ? 'GroupFooter' : 'GroupCaption',
-                            style: eCell
+                            style: eCell,
+                            cell: cell
                         };
                         this.parent.trigger(events.excelAggregateQueryCellInfo, args);
                         cells.push(eCell);
@@ -826,9 +834,9 @@ export class ExcelExport {
                 excelRows.push({ index: customIndex, cells: cells });
             } else {
                 let row: Object = {};
-                if (this.groupedColLength < 8 && this.groupedColLength > 0) {
-                    const dummyOutlineLevel: string = 'outlineLevel';
-                    const dummyGrouping: string = 'grouping';
+                const dummyOutlineLevel: string = 'outlineLevel';
+                const dummyGrouping: string = 'grouping';
+                if (this.groupedColLength < 8 && this.groupedColLength > 0 && !(gObj.groupSettings.enableLazyLoading && isNullOrUndefined(excelRows[excelRows.length - 1][`${dummyGrouping}`]))) {
                     const level: number = excelRows[excelRows.length - 1][`${dummyGrouping}`][`${dummyOutlineLevel}`];
                     const grouping: Object = { outlineLevel: level, isCollapsed: true };
                     row = {index: this.rowLength++, cells: cells, grouping};
@@ -858,30 +866,15 @@ export class ExcelExport {
         }
     }
 
-    private getAggreateValue(gObj: IGrid, cellType: CellType, template: string,
+    private getAggreateValue(gObj: IGrid, cellType: CellType, template: string | Function,
                              cell: Cell<AggregateColumnModel>, row: Row<AggregateColumnModel>): NodeList | string {
         const templateFn: { [x: string]: Function } = {};
         templateFn[getEnumValue(CellType, cell.cellType)] = compile(template);
         let txt: NodeList | string;
         const data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
-        if (this.parent.isReact || this.parent.isVue || this.parent.isAngular) {
-            if (isNullOrUndefined(cell.column.customAggregate)) {
-                if (!isNullOrUndefined(cell.column.footerTemplate)) {
-                    txt = this.getAggregateTemplate(this.footerTemplates, gObj.getFooterContentTable(), data, cell);
-                }
-                else {
-                    if (cell.column.groupFooterTemplate) {
-                        txt = this.getAggregateTemplate(this.grpFooterTemplates, gObj.getContentTable(), data, cell);
-                    }
-                    else {
-                        this.capTemplate = isNullOrUndefined(this.capTemplate) ?
-                            (gObj.getContentTable().querySelector('.e-groupcaptionrow')
-                                .querySelector('.e-summarycell.e-templatecell')as HTMLTableCellElement).innerText.split(data[(cell.column.type) as string])[0]
-                            : this.capTemplate;
-                        txt = this.capTemplate + data[(cell.column.type) as string];
-                    }
-                }
-            }
+        if ((this.parent.isReact || this.parent.isVue || this.parent.isVue3 || this.parent.isAngular) &&
+        !(typeof cell.column.footerTemplate === 'string' || typeof cell.column.groupFooterTemplate === 'string' || typeof cell.column.groupCaptionTemplate === 'string')) {
+            txt = data[(cell.column.type) as string];
             return !isNullOrUndefined(txt) ? (txt) : '';
         }
         else {
@@ -889,38 +882,6 @@ export class ExcelExport {
         }
         return !isNullOrUndefined(txt[0]) ? (<Text>txt[0]).textContent : '';
     }
-
-    private getAggregateTemplate(template: string[], contentRows: Element, data: object,
-                                 cell: Cell<AggregateColumnModel>): string {
-        const aggClassName: string = cell.column.groupFooterTemplate ? 'e-groupfooterrow' : 'e-summaryrow';
-        if (!template.length) {
-            this.totalAggregates = 0;
-            this.aggIndex = 0;
-            for (let i: number = 0; i < contentRows.querySelectorAll('tr').length; i++) {
-                if (contentRows.querySelectorAll('tr')[parseInt(i.toString(), 10)].classList.contains(aggClassName)) {
-                    this.totalAggregates++;
-                    if (contentRows.querySelectorAll('tr')[parseInt(i.toString(), 10) + 1] &&
-                     contentRows.querySelectorAll('tr')[parseInt(i.toString(), 10) + 1].classList.contains('e-groupcaptionrow')) {
-                        break;
-                    }
-                }
-            }
-        }
-        if (template.length < this.totalAggregates) {
-            template.push((contentRows.querySelectorAll('.' + aggClassName)[template.length]
-                .querySelector('.e-summarycell.e-templatecell')as HTMLTableCellElement).innerText.split(data[(cell.column.type) as string])[0]);
-        }
-        if (this.parent.groupSettings.enableLazyLoading && cell.column.groupFooterTemplate && this.totalAggregates === 0) {
-            this.totalAggregates = template.length;
-        }
-        this.aggIndex++;
-        const aggTemplate: string = template[this.aggIndex - 1] + data[(cell.column.type) as string];
-        if (this.aggIndex === this.totalAggregates) {
-            this.aggIndex = 0;
-        }
-        return aggTemplate;
-    }
-
 
     private mergeOptions(JSON1: Object, JSON2: Object): Object {
         const result: Object = {};
@@ -1192,7 +1153,7 @@ export class ExcelExport {
             (<{name?: string}>style).name = gObj.element.id + 'column' + index;
             this.styles.push(style);
         }
-        if (!isNullOrUndefined(col.width) && col.width !== 'auto') {
+        if (!isNullOrUndefined(col.width) && col.width !== 'auto' && !(<{childGridLevel?: number}>gObj).childGridLevel) {
             this.columns.push({ index: index + (<{childGridLevel?: number}>gObj).childGridLevel, width: typeof col.width === 'number' ?
                 col.width : this.helper.getConvertedWidth(col.width) });
         }

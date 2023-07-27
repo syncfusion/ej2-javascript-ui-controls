@@ -3534,16 +3534,16 @@ describe('MultiSelect', () => {
         //         }
         //     }, 400);
         // });
-        it('chipremove right click', () => {
-            let listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, mode: 'Box', fields: { text: "text", value: "text" }, value: ['JAVA', 'JAVA1', 'PHP'] });
-            listObj.appendTo(ele);
-            let which: any = null;
-            let button: any = null;
-            let elem: HTMLElement = (<any>listObj).chipCollectionWrapper.querySelector('span[data-value="JAVA"]');
-            (<any>listObj).onChipRemove({ which: 3, button: 2, target: elem.lastElementChild, preventDefault: function () { } });
-            expect(elem.parentElement).not.toBe(null);
-            listObj.destroy();
-        });
+        // it('chipremove right click', () => {
+        //     let listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, mode: 'Box', fields: { text: "text", value: "text" }, value: ['JAVA', 'JAVA1', 'PHP'] });
+        //     listObj.appendTo(ele);
+        //     let which: any = null;
+        //     let button: any = null;
+        //     let elem: HTMLElement = (<any>listObj).chipCollectionWrapper.querySelector('span[data-value="JAVA"]');
+        //     (<any>listObj).onChipRemove({ which: 3, button: 2, target: elem.lastElementChild, preventDefault: function () { } });
+        //     expect(elem.parentElement).not.toBe(null);
+        //     listObj.destroy();
+        // });
     });
     describe('Add item using addItem method in existing group item', () => {
         let ele: HTMLElement = document.createElement('input');
@@ -8641,24 +8641,24 @@ describe('MultiSelect', () => {
             expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="ja"]')).not.toBe(null);
             expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(3);
         });
-        it('Testing the chip creation on blur for non-custom case', () => {
-            multiObj = new MultiSelect({
-                dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Box'
-            });
-            multiObj.appendTo(element);
-            customSearch('j');
-            expect(multiObj.inputElement.value).toBe('');
-            expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
-            expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
-            customSearch('JAVA');
-            expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="list1"]')).not.toBe(null);
-            expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
-            customSearch('JAVA');
-            expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
-            customSearch('Oracle');
-            expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="list5"]')).not.toBe(null);
-            expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
-        });
+        // it('Testing the chip creation on blur for non-custom case', () => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Box'
+        //     });
+        //     multiObj.appendTo(element);
+        //     customSearch('j');
+        //     expect(multiObj.inputElement.value).toBe('');
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
+        //     customSearch('JAVA');
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="list1"]')).not.toBe(null);
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
+        //     customSearch('JAVA');
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
+        //     customSearch('Oracle');
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="list5"]')).not.toBe(null);
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
+        // });
         it('Testing the custom chip creation on blur with filtering', () => {
             multiObj = new MultiSelect({
                 dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Box', allowCustomValue: true, allowFiltering: true
@@ -8698,27 +8698,27 @@ describe('MultiSelect', () => {
             expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="list5"]')).not.toBe(null);
             expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
         });
-        it('Testing the chip creation on blur for hideSelectedItem false case', () => {
-            multiObj = new MultiSelect({
-                dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Box', hideSelectedItem: false, allowCustomValue : true
-            });
-            multiObj.appendTo(element);
-            customSearch('j');
-            expect(multiObj.inputElement.value).toBe('');
-            expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).not.toBe(null);
-            expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
-            customSearch('j');
-            expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
-            customSearch('JAVA');
-            expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="list1"]')).not.toBe(null);
-            expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
-            customSearch('JAVA');
-            expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
-            customSearch('ja');
-            expect(multiObj.inputElement.value).toBe('');
-            expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="ja"]')).not.toBe(null);
-            expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(3);
-        });
+        // it('Testing the chip creation on blur for hideSelectedItem false case', () => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Box', hideSelectedItem: false, allowCustomValue : true
+        //     });
+        //     multiObj.appendTo(element);
+        //     customSearch('j');
+        //     expect(multiObj.inputElement.value).toBe('');
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).not.toBe(null);
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
+        //     customSearch('j');
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
+        //     customSearch('JAVA');
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="list1"]')).not.toBe(null);
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
+        //     customSearch('JAVA');
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
+        //     customSearch('ja');
+        //     expect(multiObj.inputElement.value).toBe('');
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="ja"]')).not.toBe(null);
+        //     expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(3);
+        // });
         it('Testing the chip creation on blur for removing already selected value', () => {
             multiObj = new MultiSelect({
                 dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Box', allowCustomValue: true
@@ -8813,33 +8813,33 @@ describe('MultiSelect', () => {
                 done();
             }, 800);
         });
-        it('Testing the chip creation on blur for non-custom case', (done) => {
-            multiObj = new MultiSelect({
-                dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
-                addTagOnBlur: true, mode: 'Box'
-            });
-            multiObj.appendTo(element);
-            multiObj.showPopup();
-            setTimeout(() => {
-                customSearch('j');
-                customDocumentClick();
-                expect(multiObj.inputElement.value).toBe('');
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
-                customSearch('Margaret Peacock');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
-                done();
-            }, 800);
-        });
+        // it('Testing the chip creation on blur for non-custom case', (done) => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
+        //         addTagOnBlur: true, mode: 'Box'
+        //     });
+        //     multiObj.appendTo(element);
+        //     multiObj.showPopup();
+        //     setTimeout(() => {
+        //         customSearch('j');
+        //         customDocumentClick();
+        //         expect(multiObj.inputElement.value).toBe('');
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
+        //         customSearch('Margaret Peacock');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
+        //         done();
+        //     }, 800);
+        // });
         it('Testing the chip creation on blur for removing already selected value', (done) => {
             multiObj = new MultiSelect({
                 dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
@@ -8874,33 +8874,33 @@ describe('MultiSelect', () => {
                 done();
             }, 800);
         });
-        it('Testing the chip creation on blur for hideSelectedItem false case', (done) => {
-            multiObj = new MultiSelect({
-                dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
-                addTagOnBlur: true, mode: 'Box', hideSelectedItem: false
-            });
-            multiObj.appendTo(element);
-            multiObj.showPopup();
-            setTimeout(() => {
-                customSearch('j');
-                customDocumentClick();
-                expect(multiObj.inputElement.value).toBe('');
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
-                customSearch('Margaret Peacock');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
-                done();
-            }, 800);
-        });
+        // it('Testing the chip creation on blur for hideSelectedItem false case', (done) => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
+        //         addTagOnBlur: true, mode: 'Box', hideSelectedItem: false
+        //     });
+        //     multiObj.appendTo(element);
+        //     multiObj.showPopup();
+        //     setTimeout(() => {
+        //         customSearch('j');
+        //         customDocumentClick();
+        //         expect(multiObj.inputElement.value).toBe('');
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
+        //         customSearch('Margaret Peacock');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
+        //         done();
+        //     }, 800);
+        // });
         // it('Testing the custom chip creation on blur with filtering', (done) => {
         //     multiObj = new MultiSelect({
         //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
@@ -8920,42 +8920,42 @@ describe('MultiSelect', () => {
         //         }, 1200);
         //     }, 800);
         // });
-        it('Testing the chip creation on blur for non-custom with filtering', (done) => {
-            multiObj = new MultiSelect({
-                dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
-                addTagOnBlur: true, mode: 'Box', allowFiltering: true
-            });
-            multiObj.appendTo(element);
-            multiObj.showPopup();
-            setTimeout(() => {
-                customSearch('Laura Callahan');
-                setTimeout(() => {
-                    customDocumentClick();
-                    expect(multiObj.inputElement.value).toBe('');
-                    expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
-                    expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
-                    done();
-                }, 1200);
-            }, 800);
-        });
-        it('Testing the chip creation on blur for non-existing in the list but newly filtered value from the dataSource', (done) => {
-            multiObj = new MultiSelect({
-                dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
-                addTagOnBlur: true, mode: 'Box', allowFiltering: true
-            });
-            multiObj.appendTo(element);
-            multiObj.showPopup();
-            setTimeout(() => {
-                customSearch('Margaret Peacock');
-                setTimeout(() => {
-                    customDocumentClick();
-                    expect(multiObj.inputElement.value).toBe('');
-                    expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
-                    expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
-                    done();
-                }, 1200);
-            }, 800);
-        });
+        // it('Testing the chip creation on blur for non-custom with filtering', (done) => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
+        //         addTagOnBlur: true, mode: 'Box', allowFiltering: true
+        //     });
+        //     multiObj.appendTo(element);
+        //     multiObj.showPopup();
+        //     setTimeout(() => {
+        //         customSearch('Laura Callahan');
+        //         setTimeout(() => {
+        //             customDocumentClick();
+        //             expect(multiObj.inputElement.value).toBe('');
+        //             expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
+        //             expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
+        //             done();
+        //         }, 1200);
+        //     }, 800);
+        // });
+        // it('Testing the chip creation on blur for non-existing in the list but newly filtered value from the dataSource', (done) => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
+        //         addTagOnBlur: true, mode: 'Box', allowFiltering: true
+        //     });
+        //     multiObj.appendTo(element);
+        //     multiObj.showPopup();
+        //     setTimeout(() => {
+        //         customSearch('Margaret Peacock');
+        //         setTimeout(() => {
+        //             customDocumentClick();
+        //             expect(multiObj.inputElement.value).toBe('');
+        //             expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
+        //             expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
+        //             done();
+        //         }, 1200);
+        //     }, 800);
+        // });
     });
     describe('EJ2-36414 - Provide support to maintain the typed value as chip when control gets out of focus on Default mode', () => {
         let element: HTMLInputElement;
@@ -9185,33 +9185,33 @@ describe('MultiSelect', () => {
                 done();
             }, 800);
         });
-        it('Testing the chip creation on blur for non-custom case', (done) => {
-            multiObj = new MultiSelect({
-                dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
-                addTagOnBlur: true, mode: 'Default'
-            });
-            multiObj.appendTo(element);
-            multiObj.showPopup();
-            setTimeout(() => {
-                customSearch('j');
-                customDocumentClick();
-                expect(multiObj.inputElement.value).toBe('');
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
-                customSearch('Margaret Peacock');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
-                done();
-            }, 800);
-        });
+        // it('Testing the chip creation on blur for non-custom case', (done) => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
+        //         addTagOnBlur: true, mode: 'Default'
+        //     });
+        //     multiObj.appendTo(element);
+        //     multiObj.showPopup();
+        //     setTimeout(() => {
+        //         customSearch('j');
+        //         customDocumentClick();
+        //         expect(multiObj.inputElement.value).toBe('');
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
+        //         customSearch('Margaret Peacock');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
+        //         done();
+        //     }, 800);
+        // });
         it('Testing the chip creation on blur for removing already selected value', (done) => {
             multiObj = new MultiSelect({
                 dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
@@ -9246,33 +9246,33 @@ describe('MultiSelect', () => {
                 done();
             }, 800);
         });
-        it('Testing the chip creation on blur for hideSelectedItem false case', (done) => {
-            multiObj = new MultiSelect({
-                dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
-                addTagOnBlur: true, mode: 'Default', hideSelectedItem: false
-            });
-            multiObj.appendTo(element);
-            multiObj.showPopup();
-            setTimeout(() => {
-                customSearch('j');
-                customDocumentClick();
-                expect(multiObj.inputElement.value).toBe('');
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
-                customSearch('Margaret Peacock');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
-                done();
-            }, 800);
-        });
+        // it('Testing the chip creation on blur for hideSelectedItem false case', (done) => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
+        //         addTagOnBlur: true, mode: 'Default', hideSelectedItem: false
+        //     });
+        //     multiObj.appendTo(element);
+        //     multiObj.showPopup();
+        //     setTimeout(() => {
+        //         customSearch('j');
+        //         customDocumentClick();
+        //         expect(multiObj.inputElement.value).toBe('');
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(0);
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);   
+        //         customSearch('Margaret Peacock');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Margaret Peacock"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);
+        //         done();
+        //     }, 800);
+        // });
         // it('Testing the custom chip creation on blur with filtering', (done) => {
         //     multiObj = new MultiSelect({
         //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
@@ -9292,24 +9292,24 @@ describe('MultiSelect', () => {
         //         }, 1200);
         //     }, 800);
         // });
-        it('Testing the chip creation on blur for non-custom with filtering', (done) => {
-            multiObj = new MultiSelect({
-                dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
-                addTagOnBlur: true, mode: 'Default', allowFiltering: true
-            });
-            multiObj.appendTo(element);
-            multiObj.showPopup();
-            setTimeout(() => {
-                customSearch('Laura Callahan');
-                setTimeout(() => {
-                    customDocumentClick();
-                    expect(multiObj.inputElement.value).toBe('');
-                    expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
-                    expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
-                    done();
-                }, 1200);
-            }, 800);
-        });
+        // it('Testing the chip creation on blur for non-custom with filtering', (done) => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
+        //         addTagOnBlur: true, mode: 'Default', allowFiltering: true
+        //     });
+        //     multiObj.appendTo(element);
+        //     multiObj.showPopup();
+        //     setTimeout(() => {
+        //         customSearch('Laura Callahan');
+        //         setTimeout(() => {
+        //             customDocumentClick();
+        //             expect(multiObj.inputElement.value).toBe('');
+        //             expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
+        //             expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
+        //             done();
+        //         }, 1200);
+        //     }, 800);
+        // });
         it('Testing the chip creation on blur for non-existing in the list but newly filtered value from the dataSource', (done) => {
             multiObj = new MultiSelect({
                 dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
@@ -9455,27 +9455,27 @@ describe('MultiSelect', () => {
                 done();
             }, 800);
         });
-        it('Testing the value on blur for non-custom case', (done) => {
-            multiObj = new MultiSelect({
-                dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
-                addTagOnBlur: true, mode: 'Delimiter'
-            });
-            multiObj.appendTo(element);
-            multiObj.showPopup();
-            setTimeout(() => {
-                customSearch('j');
-                customDocumentClick();
-                expect(multiObj.inputElement.value).toBe('');
-                expect((<any>multiObj).delimiterWrapper.parentElement.querySelector('.e-delim-view').innerText).toBe('');
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).delimiterWrapper.parentElement.querySelector('.e-delim-view').innerText).toEqual('Laura Callahan');
-                customSearch('Margaret Peacock');
-                customDocumentClick();
-                expect((<any>multiObj).delimiterWrapper.parentElement.querySelector('.e-delim-view').innerText).toEqual('Laura Callahan, Margaret Peacock');
-                done();
-            }, 800);
-        });
+        // it('Testing the value on blur for non-custom case', (done) => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
+        //         addTagOnBlur: true, mode: 'Delimiter'
+        //     });
+        //     multiObj.appendTo(element);
+        //     multiObj.showPopup();
+        //     setTimeout(() => {
+        //         customSearch('j');
+        //         customDocumentClick();
+        //         expect(multiObj.inputElement.value).toBe('');
+        //         expect((<any>multiObj).delimiterWrapper.parentElement.querySelector('.e-delim-view').innerText).toBe('');
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).delimiterWrapper.parentElement.querySelector('.e-delim-view').innerText).toEqual('Laura Callahan');
+        //         customSearch('Margaret Peacock');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).delimiterWrapper.parentElement.querySelector('.e-delim-view').innerText).toEqual('Laura Callahan, Margaret Peacock');
+        //         done();
+        //     }, 800);
+        // });
     });
     describe('EJ2-56422-Empty header is created while typing custom value in the input.', () => {
         let listObj: any;

@@ -54,6 +54,7 @@ export class PagerMessage implements IRender {
                 pagerObj.pageSize * pagerObj.currentPage > pagerObj.totalRecordsCount ? pagerObj.totalRecordsCount :
                     pagerObj.pageSize * pagerObj.currentPage]);
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
+        this.pageNoMsgElem.parentElement.classList.remove('e-hide');
     }
 
     /**

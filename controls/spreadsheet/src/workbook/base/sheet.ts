@@ -66,10 +66,11 @@ export class Range extends ChildProperty<Sheet> {
     /**
      * Template helps to compiles the given HTML String (or HTML Element ID) into HtML Element and append to the Cell.
      *
-     *  @default ''
+     * @default ''
+     * @aspType string
      */
     @Property('')
-    public template: string;
+    public template: string | Function;
 
     /**
      * Specifies the address for updating the dataSource or template.
@@ -631,7 +632,7 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
     if (!args.eventArgs.cancel) {
         const originalSheet: SheetModel = getSheet(context, sheetIndex);
         const sheet: SheetModel = extend({}, (originalSheet as { properties: Object }).properties ?
-            (originalSheet as { properties: Object }).properties : originalSheet, true);
+            (originalSheet as { properties: Object }).properties : originalSheet, {}, true);
         sheet.id = getMaxSheetId(context.sheets);
         let name: string = sheet.name;
         if (/^\(\d+\)$/.test('(' + name.split(' (')[1])) {

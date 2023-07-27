@@ -5,6 +5,7 @@ import { commonProperties, DisplayMode, EJ2Control, itemProps, RibbonLayout, rib
 import { Ribbon } from './ribbon';
 import * as constants from './constant';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
+import { Item } from '@syncfusion/ej2-navigations';
 
 
 /**
@@ -25,11 +26,11 @@ export function getIndex<T>(arr: Array<T>, condition: (value: T, index: number) 
 /**
  * Gets template content based on the template property value.
  *
- * @param {string | HTMLElement} template - Template property value.
+ * @param {string | HTMLElement| Function} template - Template property value.
  * @returns {Function} - Return template function.
  * @hidden
  */
-export function getTemplateFunction(template: string | HTMLElement): Function {
+export function getTemplateFunction(template: string | HTMLElement | Function): Function {
     if (typeof template === 'string') {
         let content: string = '';
         try {
@@ -186,15 +187,18 @@ export function getItemElement(parent: Ribbon, id: string, itemProp?: itemProps)
     let contentEle: HTMLElement = parent.tabObj.items[itemProp.tabIndex].content as HTMLElement;
     if (contentEle.innerHTML === '') { return null; }
     if (parent.activeLayout === RibbonLayout.Classic) {
-        contentEle = (itemProp.group.isCollapsed) ? parent.ribbonDropDownModule.getOverflowDropDownPopup(itemProp, contentEle)
-            : contentEle;
-        return contentEle.querySelector('#' + id);
+        if (itemProp.item.displayOptions & DisplayMode.Classic) {
+            contentEle = (itemProp.group.isCollapsed) ? parent.ribbonDropDownModule.getOverflowDropDownPopup(itemProp, contentEle)
+                : contentEle;
+            return contentEle.querySelector('#' + id);
+        }
+        else { return null; }
     } else {
-        //Checks for Simplified and Auto options (Auto = simplified + popup)
+        //Checks for Simplified and Auto options (Auto = classic + simplified + popup)
         let ele: HTMLElement = (itemProp.item.displayOptions & DisplayMode.Simplified) ?
             contentEle.querySelector('#' + itemProp.item.id) : null;
         // element will be null for "Popup" and if the item is moved to overflow in "Auto" mode
-        if (!ele && (DisplayMode.Simplified !== DisplayMode.None)){
+        if (!ele){
             const dropdown: DropDownButton = itemProp.group.enableGroupOverflow ?
                 getComponent(contentEle.querySelector('#' + itemProp.group.id + constants.GROUPOF_BUTTON_ID) as HTMLElement, DropDownButton)
                 : parent.overflowDDB;
@@ -202,8 +206,6 @@ export function getItemElement(parent: Ribbon, id: string, itemProp?: itemProps)
         }
         return ele;
     }
-
-
 }
 
 /**
@@ -245,7 +247,7 @@ export function setToolTipContent(args: TooltipEventArgs, tooltip: Tooltip, tool
     content.appendChild(textContainer);
     if (data.iconCss) {
         const customCss: HTMLElement = tooltip.createElement('div', {
-            className: data.cssClass ? data.cssClass + ' ' + data.iconCss + ' ' + constants.RIBBON_TOOLTIP_ICON : data.iconCss + ' ' + constants.RIBBON_TOOLTIP_ICON
+            className: data.iconCss + ' ' + constants.RIBBON_TOOLTIP_ICON
         });
         textContainer.appendChild(customCss);
     }
@@ -257,7 +259,8 @@ export function setToolTipContent(args: TooltipEventArgs, tooltip: Tooltip, tool
         textContainer.appendChild(tooltipContent);
     }
     tooltip.setProperties({
-        content: content
+        content: content,
+        cssClass: data.cssClass ? data.cssClass + ' ' + constants.RIBBON_TOOLTIP : constants.RIBBON_TOOLTIP
     });
 }
 /**
@@ -270,9 +273,9 @@ export function setToolTipContent(args: TooltipEventArgs, tooltip: Tooltip, tool
  */
 export function createTooltip(element: HTMLElement, ribbon: Ribbon): void {
     const ribbonTooltip: Tooltip = new Tooltip({
-        cssClass: (constants.RIBBON_TOOLTIP + ' ' + ribbon.cssClass).trim(),
         target: '.' + constants.RIBBON_TOOLTIP_TARGET,
-        beforeRender: beforeTooltipRender.bind(this)
+        beforeRender: beforeTooltipRender.bind(this),
+        windowCollision: true
     });
     ribbonTooltip.appendTo(element);
     /**

@@ -89,7 +89,7 @@ export interface ExpandCollapseEventArgs {
  */
 @NotifyPropertyChanges
 export class Ribbon extends Component<HTMLDivElement> implements INotifyPropertyChanged {
-    private toolbarObj: Toolbar;
+    public toolbarObj: Toolbar;
     public tabObj: Tab;
 
     /**
@@ -313,6 +313,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     private renderRibbon(): void {
         const tabElement: HTMLElement = this.createElement('div');
         const tBarElement: HTMLElement = this.createElement('div');
+        let isShortcut: boolean;
         this.toolbarObj = new Toolbar({
             items: this.items[this.selectedTab].content,
             clicked: (args: ClickEventArgs) => this.trigger('clicked', args)
@@ -324,8 +325,15 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             animation: { next: { duration: 0 }, previous: { duration: 0 } },
             items: this.getTabItems(),
             selecting: (args: SelectingEventArgs): void => {
+                isShortcut = args.event && (args.event as unknown as { isShortcut: boolean }).isShortcut;
                 if (this.menuItems.length && args.selectingIndex === 0) {
                     args.cancel = true;
+                    if ((!args.event || isShortcut || args.event.type === 'keydown') && args.selectingItem) {
+                        const fileMenu: HTMLElement = args.selectingItem.querySelector('.e-file-menu .e-menu-item');
+                        if (fileMenu) {
+                            fileMenu.click();
+                        }
+                    }
                 } else {
                     if (args.selectingIndex === this.getIndex(this.selectedTab)) { return; }
                     this.updateToolbar(this.getIndex(args.selectingIndex, true));
@@ -344,6 +352,9 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 }
             },
             selected: (args: TabSelectEventArgs): void => {
+                if (!args.isInteracted && !isShortcut) {
+                    args.preventFocus = true;
+                }
                 if (args.selectedIndex === this.getIndex(this.selectedTab)) { return; }
                 this.setProperties({ 'selectedTab': this.getIndex(args.selectedIndex, true) }, true);
                 if (this.element.classList.contains('e-collapsed')) {

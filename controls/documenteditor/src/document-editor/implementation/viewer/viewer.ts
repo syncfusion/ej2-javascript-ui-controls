@@ -4,7 +4,7 @@ import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WLevelOverride } from '../list/level-override';
-import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles, WStyle, WColumnFormat } from '../format/index';
+import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles, WStyle, WColumnFormat, WBorder } from '../format/index';
 import { Layout } from './layout';
 import { Renderer } from './render';
 import { createElement, Browser } from '@syncfusion/ej2-base';
@@ -4069,20 +4069,20 @@ export class DocumentHelper {
             nextBlockX = this.getParagraphLeftPosition(nextBlock);
         }
         if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget && paragraphX === previousBlockX) {
-            isSameTopBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(previousBlock.paragraphFormat.borders.top);
-            isSameBottomBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(previousBlock.paragraphFormat.borders.bottom);
-            isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(previousBlock.paragraphFormat.borders.left);
-            isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(previousBlock.paragraphFormat.borders.right);
+            isSameTopBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.top, previousBlock.paragraphFormat.borders.top);
+            isSameBottomBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.bottom, previousBlock.paragraphFormat.borders.bottom);
+            isSameLeftBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.left, previousBlock.paragraphFormat.borders.left);
+            isSameRightBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.right, previousBlock.paragraphFormat.borders.right);
             if (isSameTopBorder && isSameBottomBorder && isSameLeftBorder && isSameRightBorder
-                && previousBlock.paragraphFormat.borders.horizontal.lineStyle === 'None') {
+                && !isNullOrUndefined(previousBlock.paragraphFormat.borders.horizontal) && previousBlock.paragraphFormat.borders.horizontal.lineStyle === 'None') {
                 skipTopBorder = true;
             }
         }
         if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget && (paragraphX === nextBlockX || (this.owner.documentHelper.layout.isInitialLoad && this.skipBottomBorder(paragraph, nextBlock)))) {
-            isSameTopBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(nextBlock.paragraphFormat.borders.top);
-            isSameBottomBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(nextBlock.paragraphFormat.borders.bottom);
-            isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(nextBlock.paragraphFormat.borders.left);
-            isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(nextBlock.paragraphFormat.borders.right);
+            isSameTopBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.top, nextBlock.paragraphFormat.borders.top);
+            isSameBottomBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.bottom, nextBlock.paragraphFormat.borders.bottom);
+            isSameLeftBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.left, nextBlock.paragraphFormat.borders.left);
+            isSameRightBorder = this.checkEqualBorder(paragraph.paragraphFormat.borders.right, nextBlock.paragraphFormat.borders.right);
             if (isSameBottomBorder && isSameTopBorder && isSameLeftBorder && isSameRightBorder) {
                 skipBottomBorder = true;
             }
@@ -4091,6 +4091,17 @@ export class DocumentHelper {
             'skipTopBorder': skipTopBorder,
             'skipBottomBorder': skipBottomBorder
         };
+    }
+    private checkEqualBorder(source: WBorder, dest: WBorder): boolean {
+        if (!isNullOrUndefined(source) && !isNullOrUndefined(dest)) {
+            return source.isEqualFormat(dest);
+        } else {
+            if (isNullOrUndefined(source) && isNullOrUndefined(dest)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
     /**
     * @private

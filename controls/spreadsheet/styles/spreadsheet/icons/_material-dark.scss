@@ -453,15 +453,33 @@
         }
       }
 
+      & .e-line-marker {
+        &::before {
+          content: '\e981';
+        }
+      }
+
       & .e-stackedline {
         &::before {
           content: '\e841';
         }
       }
 
+      & .e-stackedline-marker {
+        &::before {
+          content: '\e97f';
+        }
+      }
+
       & .e-stackedline100 {
         &::before {
           content: '\e871';
+        }
+      }
+
+      & .e-stackedline100-marker {
+        &::before {
+          content: '\e980';
         }
       }
     }

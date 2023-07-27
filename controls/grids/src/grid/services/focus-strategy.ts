@@ -477,8 +477,8 @@ export class FocusStrategy {
         const cellColIndex: number = parseInt(cell.getAttribute('data-colindex'), 10);
         const cellCol: Column = this.parent.getColumns()[parseInt(cellColIndex.toString(), 10)];
         if (this.active.matrix.matrix[cellIndex[0]][cellIndex[1]] === 1
-            && (tr.classList.contains('e-insertedrow') || !tr.classList.contains('e-row')
-            || (!cellCol.isPrimaryKey && cellCol.allowEditing))) {
+            && ((tr.classList.contains('e-insertedrow') || !cellCol.isPrimaryKey) && cellCol.allowEditing)
+            || !tr.classList.contains('e-row')) {
             return true;
         }
         return false;
@@ -846,7 +846,7 @@ export class FocusStrategy {
     }
 
     protected addFocus(info: FocusInfo, e?: KeyboardEventArgs | FocusEvent): void {
-        this.currentInfo = info; this.currentInfo.outline = info.outline && !isNullOrUndefined(e);
+        this.currentInfo = info; this.currentInfo.outline = info.outline && (!isNullOrUndefined(e) || this.isVirtualScroll);
         if (this.isInfiniteScroll) { this.currentInfo.outline = true; }
         if (!info.element) { return; }
         const isFocused: boolean = info.elementToFocus.classList.contains('e-focus');
@@ -976,6 +976,7 @@ export class FocusStrategy {
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         EventHandler.add(this.parent.element, 'mousedown', this.focusCheck, this);
+        EventHandler.add(this.parent.element, 'touchstart', this.focusCheck, this);
         EventHandler.add(this.parent.element, 'focus', this.onFocus, this);
         this.parent.element.addEventListener('focus', this.passiveHandler = (e: FocusEvent) => this.passiveFocus(e), true);
         EventHandler.add(this.parent.element, 'focusout', this.onBlur, this);
@@ -1011,6 +1012,7 @@ export class FocusStrategy {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         EventHandler.remove(this.parent.element, 'mousedown', this.focusCheck);
+        EventHandler.remove(this.parent.element, 'touchstart', this.focusCheck);
         EventHandler.remove(this.parent.element, 'focus', this.onFocus);
         EventHandler.remove(this.parent.element, 'focusout', this.onBlur);
         this.parent.element.removeEventListener('focus', this.passiveHandler, true);

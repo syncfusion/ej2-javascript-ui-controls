@@ -103,6 +103,13 @@ export class Toolbar {
         }
     }
 
+    private addReactToolbarPortals(args: Object[]): void {
+        if ((this.parent as any).isReact && args) {
+            (<{ portals?: Object[] }>this.parent).portals = (<{ portals?: Object[] }>this.parent).portals.concat(args);
+            this.parent.renderTemplates();
+        }
+    }
+    
     private createToolbar(): void {
         const items: ItemModel[] = this.getItems();
         this.toolbar = new NavToolbar({
@@ -112,6 +119,8 @@ export class Toolbar {
             height: this.parent.isAdaptive ? 48 : 'auto'
         });
         this.toolbar.isStringTemplate = true;
+        (<{ isReact?: boolean }>this.toolbar).isReact = (this.parent as any).isReact;
+        this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
         this.toolbar.appendTo(this.element);
         const cancelItem: Element = this.element.querySelector('#' + this.parent.element.id + '_cancel');
         const updateItem: Element = this.element.querySelector('#' + this.parent.element.id + '_update');
@@ -521,6 +530,7 @@ export class Toolbar {
      */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
+        this.toolbar.off('render-react-toolbar-template', this.addReactToolbarPortals);
         this.toolbar.destroy();
         if (this.parent.filterModule) {
             this.unWireEvent();

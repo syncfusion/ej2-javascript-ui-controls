@@ -47,6 +47,7 @@ export class MaskedDateTime {
     private previousDate : Date;
     private isNavigate : boolean = false;
     private navigated : boolean = false;
+    private isBlur : boolean = false;
     private formatRegex : RegExp = /EEEEE|EEEE|EEE|EE|E|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yy|y|HH|H|hh|h|mm|m|fff|ff|f|aa|a|ss|s|zzzz|zzz|zz|z|'[^']*'|'[^']*'/g;
     private isDeletion: boolean = false;
     private isShortYear: boolean = false;
@@ -98,7 +99,7 @@ export class MaskedDateTime {
         this.parent.off('clearHandler', this.clearHandler);
     }
 
-    private createMask(navigated: boolean = false): void {
+    private createMask(mask: events): void {
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = false;
         this.dateformat = this.getCulturedFormat();
 
@@ -138,7 +139,8 @@ export class MaskedDateTime {
         this.mask = this.previousValue = inputValue;
         this.parent.maskedDateValue = this.mask;
         if (this.parent.value) {
-            this.navigated = navigated;
+            this.navigated = true;
+            this.isBlur = mask.isBlur;
             this.setDynamicValue();
         }
     }
@@ -153,7 +155,13 @@ export class MaskedDateTime {
     }
 
     private validCharacterCheck(): void {
-        const start: number = this.parent.inputElement.selectionStart;
+        let start: number = this.parent.inputElement.selectionStart;
+
+        if (this.parent.moduleName !== 'timepicker') {
+            if (start === this.hiddenMask.length && this.mask === this.parent.inputElement.value) {
+                start = 0;
+            }
+        }
 
         for (let i: number = start, j: number = start - 1; i < this.hiddenMask.length || j >= 0; i++, j --) {
             if (i < this.hiddenMask.length && this.validCharacters.indexOf(this.hiddenMask[i as number]) !== -1) {
@@ -170,7 +178,10 @@ export class MaskedDateTime {
         this.maskDateValue = new Date(+this.parent.value);
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = true;
         this.updateValue();
-        this.validCharacterCheck();
+        if (!this.isBlur)
+        {
+            this.validCharacterCheck();
+        }
     }
     private setSelection(validChar : string): void {
         let start: number = -1;
@@ -707,7 +718,7 @@ export class MaskedDateTime {
     private navigateSelection(isbackward : boolean): void {
         const start: number = this.parent.inputElement.selectionStart;
         const end: number = this.parent.inputElement.selectionEnd;
-        let formatIndex: number = isbackward ? start - 1 : end + 1;
+        let formatIndex: number = isbackward ? start - 1 : end;
         this.navigated = true;
         while (formatIndex < this.hiddenMask.length && formatIndex >= 0) {
             if (this.validCharacters.indexOf(this.hiddenMask[formatIndex as number]) >= 0) {
@@ -898,5 +909,6 @@ export class MaskedDateTime {
 export interface events {
     module: string;
     e: KeyboardEventArgs;
+    isBlur: boolean;
 }
 

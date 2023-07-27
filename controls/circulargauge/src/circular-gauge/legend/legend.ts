@@ -526,6 +526,7 @@ export class Legend {
         textOptions.id = this.legendID + '_Axis_' + axisIndex + '_text_' + rangeIndex;
         const fontcolor: string = legendOption.visible ? legend.textStyle.color || this.gauge.themeStyle.labelColor : hiddenColor;
         legend.textStyle.fontFamily = legend.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily;
+        legend.textStyle.fontWeight = legend.textStyle.fontWeight || this.gauge.themeStyle.fontWeight;
         textOptions.text = legendOption.text;
         textOptions.x = this.gauge.enableRtl ? (legendOption.location.x - (measureText(legendOption.text, legend.textStyle).width +
             legend.shapeWidth / 2 + legend.shapePadding)) : (legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding);

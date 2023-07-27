@@ -260,21 +260,17 @@ describe('Spreadsheet context menu module ->', () => {
             helper.invoke('destroy');
         });
         it('Apply rename sheet using context menu', (done: Function) => {
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
             var coords = td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
-            setTimeout(() => {
-                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.click('#' + helper.id + '_contextmenu li:nth-child(4)');
-                setTimeout(() => {
-                    let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
-                    editorElem.click();
-                    editorElem.value = 'Price Details 1';
-                    helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
-                    expect(helper.getInstance().sheets[0].name).toBe('Price Details 1');
-                    done();
-                });
-            });
+            helper.click('#' + helper.id + '_contextmenu li:nth-child(4)');
+            let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+            editorElem.click();
+            editorElem.value = 'Price Details 1';
+            helper.triggerKeyNativeEvent(13, false, false, editorElem);
+            expect(helper.getInstance().sheets[0].name).toBe('Price Details 1');
+            done();
         });
         it('Apply descending sort using context menu', (done: Function) => {
             helper.invoke('selectRange', ['A1']);
@@ -327,17 +323,15 @@ describe('Spreadsheet context menu module ->', () => {
             helper.invoke('selectRange', ['A1']);
             helper.invoke('addHyperlink', ['www.google.com', 'A1']);
             const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.protectSheet('Sheet1', { selectCells: true });
+            spreadsheet.protectSheet('Sheet1', { selectCells: true, insertLink: true });
             setTimeout(() => {
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
                 const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
                 const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
-                setTimeout(() => {
-                    expect(spreadsheet.getActiveSheet().isProtected).toBeFalsy();
-                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-menu-item');
-                    done();
-                });
+                expect(spreadsheet.getActiveSheet().isProtected).toBeFalsy();
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-menu-item');
+                done();
             });
         });
         it('Apply protect sheet and open hyperlink with hyperlink already applied in cell', (done: Function) => {

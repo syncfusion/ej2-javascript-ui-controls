@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';
@@ -419,7 +419,7 @@ export interface NodeData {
  * Interface for Failure event arguments
  */
 export interface FailureEventArgs {
-    /** Defines the error information. */
+    /** Represents the Error object that contains information about the error that occurred. This property allows you to access details such as the error message, stack trace, error code, or any additional information associated with the error. */
     error?: Error;
 }
 
@@ -543,41 +543,24 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
 
 /**
  * Defines the expand type of the TreeView node.
+ * ```props
+ * Auto :- The expand/collapse operation happens when you double-click on the node in desktop.
+ * Click :- The expand/collapse operation happens when you single-click on the node in desktop.
+ * DblClick :- The expand/collapse operation happens when you double-click on the node in desktop.
+ * None :- The expand/collapse operation will not happen.
+ * ```
  */
- export type ExpandOnSettings =
- /**
- * The expand/collapse operation happens when you double-click on the node in desktop.
- */
- 'Auto' |
- /**
- * The expand/collapse operation happens when you single-click on the node in desktop.
- */
- 'Click' |
- /**
- * The expand/collapse operation happens when you double-click on the node in desktop.
- */
- 'DblClick' |
- /**
- * The expand/collapse operation will not happen.
- */
- 'None';
+ export type ExpandOnSettings = 'Auto' | 'Click' | 'DblClick' | 'None';
 
 /**
  * Defines the sorting order type for TreeView.
+ * ```props
+ * None :- Indicates that the nodes are not sorted.
+ * Ascending :- Indicates that the nodes are sorted in the ascending order.
+ * Descending :- Indicates that the nodes are sorted in the descending order
+ * ```
  */
- export type SortOrder =
- /**
- * Indicates that the nodes are sorted in the ascending order.
- */
-  'Ascending' |
-  /**
-  *  Indicates that the nodes are sorted in the descending order
-  */
-   'Descending' |
-  /**
-  * Indicates that the nodes are not sorted.
-  */
-   'None';
+ export type SortOrder = 'None' | 'Ascending' | 'Descending';
 
 /**
  * Configures animation settings for the TreeView component.
@@ -642,7 +625,6 @@ export class NodeAnimationSettings extends ChildProperty<NodeAnimationSettings> 
 export class TreeView extends Component<HTMLElement> implements INotifyPropertyChanged {
 
     /* Internal variables */
-    private cloneElement: HTMLElement;
     private initialRender: boolean;
     // eslint-disable-next-line
     private treeData: { [key: string]: Object }[];
@@ -685,7 +667,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private touchExpandObj: Touch;
     private inputObj: InputObject;
     private isAnimate: boolean;
-    private spinnerElement: HTMLElement;
     private touchClass: string;
     // eslint-disable-next-line
     private editData: { [key: string]: Object };
@@ -693,7 +674,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private editFields: FieldsSettingsModel;
     // eslint-disable-next-line
     private refreshData: { [key: string]: Object };
-    private refreshFields: FieldsSettingsModel;
     private isRefreshed: boolean = false;
     private keyConfigs: { [key: string]: string };
     private isInitalExpand: boolean;
@@ -978,9 +958,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * [Template](../../treeview/template/).
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public nodeTemplate: string;
+    public nodeTemplate: string | Function;
 
     /**
      * Represents the selected nodes in the TreeView component. We can set the nodes that need to be
@@ -1390,14 +1374,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     // eslint-disable-next-line
-    private templateComplier(template: string): Function {
+    private templateComplier(template: string | Function): Function {
         if (template) {
             this.hasTemplate = true;
             // eslint-disable-next-line
             let e: Object;
             this.element.classList.add(INTERACTION);
             try {
-                if (document.querySelectorAll(template).length) {
+                if (typeof template !== 'function' && document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
                 } else {
                     return compile(template);
@@ -3849,7 +3833,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.renderNodeTemplate(newData, txtEle, dataId);
                 this.renderReactTemplates();
             } else {
-                this.enableHtmlSanitizer ? txtEle.innerText = newText : txtEle.innerHTML = newText;
+                this.enableHtmlSanitizer ? txtEle.innerText = SanitizeHtmlHelper.sanitize(newText) : txtEle.innerHTML = newText;
             }
             if (isInput) {
                 removeClass([liEle], EDITING);
@@ -3946,6 +3930,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             enableTailMode: true, enableAutoScroll: true,
             dragArea: this.dragArea,
             dragTarget: '.' + TEXTWRAP,
+            enableTapHold: true,
+            tapHoldThreshold: 100,
             helper: (e: { sender: MouseEvent & TouchEvent, element: HTMLElement }) => {
                 this.dragTarget = <Element>e.sender.target;
                 let dragRoot: Element = closest(this.dragTarget, '.' + ROOT);
@@ -4355,7 +4341,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             (dropUl as HTMLElement).style.display = 'none';
         }
         if (isNOU(dropUl)) {
-            this.trigger('nodeExpanding', this.getExpandEvent(dropLi, null));
+            let args: any = this.expandArgs as any;
+            if (isNOU(args) || args.name != 'nodeExpanding') {
+                this.trigger('nodeExpanding', this.getExpandEvent(dropLi, null));
+            }
             if (isNOU(dropIcon)) {
             ListBase.generateIcon(this.createElement, dropLi as HTMLElement, COLLAPSIBLE, this.listBaseOption);
             }
@@ -4717,6 +4706,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         refNode = dropUl.childNodes[index];
         if(!this.isFirstRender || this.dataType === 1){
+            let args: any = this.expandArgs as any;
             if(refNode || this.sortOrder === 'None'){
                 for (let i: number = 0; i < li.length; i++) {
                     dropUl.insertBefore(li[i], refNode);
@@ -4724,7 +4714,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
                     this.preventExpand = false;
                     let dropIcon: Element = select('div.' + ICON, dropLi);
-                    if (dropIcon && dropIcon.classList.contains(EXPANDABLE)) {
+                    if (dropIcon && dropIcon.classList.contains(EXPANDABLE) && (isNOU(args) || args.name != 'nodeExpanding')) {
                         this.expandAction(dropLi, dropIcon, null);
                     }
                 }
@@ -4738,7 +4728,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
                         this.preventExpand = false;
                         let dropIcon: Element = select('div.' + ICON, dropLi);
-                        if (dropIcon && dropIcon.classList.contains(EXPANDABLE)) {
+                        if (dropIcon && dropIcon.classList.contains(EXPANDABLE) && (isNOU(args) || args.name != 'nodeExpanding')) {
                             this.expandAction(dropLi, dropIcon, null);
                         }
                     } 
@@ -5660,6 +5650,20 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.ulElement && this.ulElement.parentElement) {
             this.ulElement.parentElement.removeChild(this.ulElement);
         }
+        this.ulElement = null;
+        this.liList = null;
+        this.startNode = null;
+        this.firstTap = null;
+        this.expandArgs = null;
+        this.dragLi = null;
+        this.dragTarget = null;
+        this.dragParent = null;
+        this.dragObj = null;
+        this.dropObj = null;
+        this.inputObj = null;
+        this.touchEditObj = null;
+        this.touchExpandObj = null;
+        this.touchClickObj = null;
         super.destroy();
     }
 

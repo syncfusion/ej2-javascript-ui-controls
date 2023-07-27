@@ -218,6 +218,10 @@ export class Selection {
     public selectRow(index: number, isToggle?: boolean, isPreventFocus?: boolean): void {
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         // eslint-disable-next-line
+        if (this.parent.enableVirtualization && this.parent.treeGridModule.addedRecord) {
+            index = this.parent.flatData.indexOf(this.parent.currentViewData[index as number]);
+            this.parent.treeGridModule.addedRecord = false
+        }
         const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 0) === index)[0];
         let condition: boolean;
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
@@ -467,6 +471,7 @@ export class Selection {
      */
     private mouseUpHandler(e: PointerEvent): void {
         let isTaskbarEdited: boolean = false;
+        var elements = document.querySelectorAll('.e-drag-item');
         let targetElement: Element = null;
         if ((e.target as Element).closest('.e-rowcell')) {
             targetElement = e.target as HTMLElement;
@@ -483,7 +488,7 @@ export class Selection {
                 isTaskbarEdited = true;
             }
         }
-        if (!isTaskbarEdited && this.parent.element.contains(e.target as Node)) {
+        if (!isTaskbarEdited && this.parent.element.contains(e.target as Node) && !(elements.length === 1)) {
             const parent: Element = parentsUntil(e.target as Element, 'e-chart-row');
             const isSelected: boolean = (e.target as HTMLElement).classList.contains('e-rowcell') ||
                 (e.target as HTMLElement).classList.contains('e-row') ||

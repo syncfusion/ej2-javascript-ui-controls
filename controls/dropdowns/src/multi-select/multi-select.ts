@@ -13,7 +13,7 @@ import { MultiSelectModel } from '../multi-select';
 import { Search } from '../common/incremental-search';
 import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';
 import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';
-import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
+import { DataManager, Query, Predicate, JsonAdaptor } from '@syncfusion/ej2-data';
 import { SortOrder } from '@syncfusion/ej2-lists';
 import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
 
@@ -96,6 +96,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private clearIconWidth: number = 0;
     private previousFilterText:string = '';
     private selectedElementID: string;
+    private focusFirstListItem: boolean;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -133,25 +134,28 @@ export class MultiSelect extends DropDownBase implements IInput {
      * Accepts the template design and assigns it to the group headers present in the MultiSelect popup list.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public groupTemplate: string;
+    public groupTemplate: string | Function;
     /**
      * Accepts the template design and assigns it to popup list of MultiSelect component
      * when no data is available on the component.
      *
      * @default 'No records found'
+     * @aspType string
      */
     @Property('No records found')
-    public noRecordsTemplate: string;
+    public noRecordsTemplate: string | Function;
     /**
      * Accepts the template and assigns it to the popup list content of the MultiSelect component
      * when the data fetch request from the remote server fails.
      *
      * @default 'Request failed'
+     * @aspType string
      */
     @Property('Request failed')
-    public actionFailureTemplate: string;
+    public actionFailureTemplate: string | Function;
     /**
      * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
      * * `None` - The data source is not sorting.
@@ -332,25 +336,28 @@ export class MultiSelect extends DropDownBase implements IInput {
      * For EX: We have expression evolution as like ES6 expression string literals.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public valueTemplate: string;
+    public valueTemplate: string | Function;
     /**
      * Accepts the template design and assigns it to the header container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
     /**
      * Accepts the template design and assigns it to the footer container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public footerTemplate: string;
+    public footerTemplate: string | Function;
     /**
      * Accepts the template design and assigns it to each list item present in the popup.
      * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
@@ -360,9 +367,10 @@ export class MultiSelect extends DropDownBase implements IInput {
      * For EX: We have expression evolution as like ES6 expression string literals.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
     /**
      * To enable the filtering option in this component.
      * Filter action performs when type in search box and collect the matched item through `filtering` event.
@@ -838,6 +846,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.isFirstClick) {
                     this.loadTemplate();
                 }
+                if(this.enableRtl){
+                    this.popupWrapper.style.visibility = 'hidden';
+                }
             }
         });
     }
@@ -976,7 +987,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 predicate = predicate.or(field, 'equal', (valuecheck[i as number] as string));
             }
         }
-        return this.getQuery(this.query).where(predicate);
+        if (this.dataSource instanceof DataManager && (this.dataSource as DataManager).adaptor instanceof JsonAdaptor) { 
+            return new Query().where(predicate);
+        }
+        else {
+            return this.getQuery(this.query).clone().where(predicate);
+        }
     }
     /* eslint-disable @typescript-eslint/no-unused-vars */
     protected onActionComplete(
@@ -1002,7 +1018,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
         let valuecheck: string[] = [];
-        if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
+        if (!isNullOrUndefined(this.value)) {
             valuecheck = this.presentItemValue(this.ulElement);
         }
         if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
@@ -1496,7 +1512,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 parseInt(getComputedStyle(this.dropIcon).marginRight)
                 elementWidth = this.overAllWrapper.clientWidth - (downIconWidth + 2 * (parseInt(getComputedStyle(this.inputElement).paddingRight)));
             }
-            Input.calculateWidth(elementWidth, this.overAllWrapper, this.getModuleName()); 
+            if (this.floatLabelType === 'Auto') {
+                Input.calculateWidth(elementWidth, this.overAllWrapper, this.getModuleName()); 
+            }
         }
     }
     private checkPlaceholderSize(): void {
@@ -1843,6 +1861,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
         }
         const focuseElem: Element = <HTMLElement>this.list.querySelector('li.' + dropDownBaseClasses.focus);
+        this.focusFirstListItem = !isNullOrUndefined(this.liCollections[0]) ? this.liCollections[0].classList.contains('e-item-focus') : false;
         const index: number = Array.prototype.slice.call(list).indexOf(focuseElem);
         if (index <= 0 && (this.mode === 'CheckBox' && this.allowFiltering)) {
             this.keyAction = false;
@@ -1958,6 +1977,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let limit: number = this.value && this.value.length ? this.value.length : 0;
         let target : HTMLElement;
         if (li !== null) {
+            e.preventDefault();
             if (li.classList.contains('e-active')) {
                 limit = limit - 1;
             }
@@ -1998,6 +2018,34 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.refreshSelection();
             if (this.closePopupOnSelect) {
                 this.hidePopup(e);
+            }
+        }
+        const selectAllParent = document.getElementsByClassName('e-selectall-parent')[0];
+        if(selectAllParent && !selectAllParent.classList.contains('e-item-focus')){
+            e.preventDefault();
+        }
+        if (selectAllParent && selectAllParent.classList.contains('e-item-focus')) {
+            const selectAllCheckBox = selectAllParent.childNodes[0] as HTMLElement;
+            if (!selectAllCheckBox.classList.contains('e-check')) {
+                selectAllCheckBox.classList.add('e-check');
+                const args = {
+                    module: 'CheckBoxSelection',
+                    enable: this.mode === 'CheckBox',
+                    value: 'check',
+                    name: 'checkSelectAll'
+                };
+                this.notify('checkSelectAll', args);
+                this.selectAllItem(true, e, li);
+            } else {
+                selectAllCheckBox.classList.remove('e-check');
+                const args = {
+                    module: 'CheckBoxSelection',
+                    enable: this.mode === 'CheckBox',
+                    value: 'check',
+                    name: 'checkSelectAll'
+                };
+                this.notify('checkSelectAll', args);
+                this.selectAllItem(false, e, li);
             }
         }
         this.refreshPlaceHolder();
@@ -2059,7 +2107,17 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             const selectedElem: Element = <HTMLElement>this.list.querySelector('li.' + dropDownBaseClasses.focus);
             let temp: number = -1;
-            if (elements.length) {
+            const selectAllParent = document.getElementsByClassName('e-selectall-parent')[0];
+            if(this.mode === 'CheckBox' && this.showSelectAll && position == 1 && !isNullOrUndefined(selectAllParent) && !selectAllParent.classList.contains('e-item-focus') && this.list.getElementsByClassName('e-item-focus').length == 0 && this.liCollections.length > 1){
+                selectAllParent.classList.add('e-item-focus');
+            }
+            else if (elements.length) {
+                if(this.mode === 'CheckBox' && this.showSelectAll && !isNullOrUndefined(selectAllParent)){
+                    selectAllParent.classList.remove('e-item-focus');
+                    if (this.showSelectAll && position == -1 && !isNullOrUndefined(selectAllParent) && this.liCollections.length > 1 && (this.focusFirstListItem || this.list.getElementsByClassName('e-item-focus').length == 0)){
+                        selectAllParent.classList.add('e-item-focus');
+                    }
+                }
                 for (let index: number = 0; index < elements.length; index++) {
                     if (elements[index as number] === selectedElem) {
                         temp = index;
@@ -2457,11 +2515,11 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private removeChipFocus(): void {
         const elements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
-            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP);
-        const closeElements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
-            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP_CLOSE.split(' ')[0]);
+            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP + '.' + CHIP_SELECTED);
         removeClass(elements, CHIP_SELECTED);
         if (Browser.isDevice) {
+            const closeElements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
+            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP_CLOSE.split(' ')[0]);
             for (let index: number = 0; index < closeElements.length; index++) {
                 (<HTMLElement>closeElements[index as number]).style.display = 'none';
             }
@@ -2481,9 +2539,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             e.preventDefault();
         }
     }
-    private multiCompiler(multiselectTemplate: string): boolean {
+    private multiCompiler(multiselectTemplate: string | Function): boolean {
         let checkTemplate: boolean = false;
-        if (multiselectTemplate) {
+        if (typeof multiselectTemplate !== 'function' && multiselectTemplate) {
             try {
                 checkTemplate = (selectAll(multiselectTemplate, document).length) ? true : false;
             } catch (exception) {
@@ -2508,7 +2566,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
             const valuecheck: boolean = this.multiCompiler(this.valueTemplate);
-            if (valuecheck) {
+            if (typeof this.valueTemplate !== 'function' && valuecheck) {
                 compiledString = compile(select(this.valueTemplate, document).innerHTML.trim());
             } else {
                 compiledString = compile(this.valueTemplate);
@@ -2516,9 +2574,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             // eslint-disable-next-line
             let valueCompTemp: any = compiledString(itemData, this, 'valueTemplate', this.valueTemplateId, this.isStringTemplate, null, chipContent);
             if (valueCompTemp && valueCompTemp.length > 0) {
-                for (let i: number = 0; i < valueCompTemp.length; i++) {
-                    chipContent.appendChild(valueCompTemp[i as number]);
-                }
+                append(valueCompTemp, chipContent);
             }
             this.renderReactTemplates();
         } else if (this.enableHtmlSanitizer) {
@@ -2665,6 +2721,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                     },
                     open: () => {
                         this.popupObj.resolveCollision();
+                        if(this.enableRtl){
+                            const popupLeft: number =  parseFloat(this.popupWrapper.style.left) - (this.popupWrapper.offsetWidth - this.overAllWrapper.offsetWidth);
+                            this.popupWrapper.style.left = popupLeft > 0 ? popupLeft + "px" : this.popupWrapper.style.left;
+                            this.popupWrapper.style.visibility = 'hidden';
+                        }
                         if (!this.isFirstClick) {
                             const ulElement: HTMLElement = this.list.querySelector('ul');
                             if (ulElement) {
@@ -2710,7 +2771,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.header = this.createElement('div');
         addClass([this.header], HEADER);
         const headercheck: boolean = this.multiCompiler(this.headerTemplate);
-        if (headercheck) {
+        if (typeof this.headerTemplate !== 'function' && headercheck) {
             compiledString = compile(select(this.headerTemplate, document).innerHTML.trim());
         } else {
             compiledString = compile(this.headerTemplate);
@@ -2718,9 +2779,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         // eslint-disable-next-line
         let elements: any = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, null, this.header);
         if (elements && elements.length > 0) {
-            for (let temp: number = 0; temp < elements.length; temp++) {
-                this.header.appendChild(elements[temp as number]);
-            }
+            append(elements, this.header);
         }
         if (this.mode === 'CheckBox' && this.showSelectAll) {
             prepend([this.header], this.popupWrapper);
@@ -2737,7 +2796,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.footer = this.createElement('div');
         addClass([this.footer], FOOTER);
         const footercheck: boolean = this.multiCompiler(this.footerTemplate);
-        if (footercheck) {
+        if (typeof this.footerTemplate !== 'function' && footercheck) {
             compiledString = compile(select(this.footerTemplate, document).innerHTML.trim());
         } else {
             compiledString = compile(this.footerTemplate);
@@ -2745,9 +2804,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         // eslint-disable-next-line
         let elements: any = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, null, this.footer);
         if (elements && elements.length > 0 ) {
-            for (let temp: number = 0; temp < elements.length; temp++) {
-                this.footer.appendChild(elements[temp as number]);
-            }
+            append(elements, this.footer);
         }
         append([this.footer], this.popupWrapper);
         EventHandler.add(this.footer, 'mousedown', this.onListMouseDown, this);
@@ -2963,34 +3020,39 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.hiddenElement.innerHTML = '';
         }
         if (!isNullOrUndefined(this.value)) {
-            for (let index: number = 0; !isNullOrUndefined(this.value[index as number]); index++) {
+            let valueLength: number = this.value.length;
+            let hiddenElementContent: string = '';
+            for (let index: number = 0; index < valueLength; index++) {
+                const valueItem: any = this.value[index as number];
                 const listValue: Element = this.findListElement(
-                    ((!isNullOrUndefined(this.mainList)) ? this.mainList : this.ulElement),
+                    (!isNullOrUndefined(this.mainList) ? this.mainList : this.ulElement),
                     'li',
                     'data-value',
-                    this.value[index as number]);
+                    valueItem
+                );
                 if (isNullOrUndefined(listValue) && !this.allowCustomValue) {
                     this.value.splice(index, 1);
                     index -= 1;
+                    valueLength -= 1;
                 } else {
                     if (this.listData) {
-                        temp = this.getTextByValue(this.value[index as number]);
+                        temp = this.getTextByValue(valueItem);
                     } else {
-                        temp = <string>this.value[index as number];
+                        temp = <string>valueItem;
                     }
                     data += temp + delimiterChar + ' ';
                     text.push(temp);
                 }
-                if (!isNullOrUndefined(this.hiddenElement)) {
-                    this.hiddenElement.innerHTML += '<option selected value ="' + this.value[index as number] + '">' + index + '</option>';
-                }
+                hiddenElementContent += `<option selected value="${valueItem}">${index}</option>`;
+            }
+            if (!isNullOrUndefined(this.hiddenElement)) {
+                this.hiddenElement.innerHTML = hiddenElementContent;
             }
         }
         this.setProperties({ text: text.toString() }, true);
         if (delim) {
             this.updateWrapperText(this.delimiterWrapper, data);
             this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
-            this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
             this.inputElement.setAttribute('aria-labelledby', this.delimiterWrapper.id);
         }
         const targetEle: HTMLElement = e && e.target as HTMLElement;
@@ -3946,7 +4008,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.hiddenElement.innerHTML = hiddenValue;
             this.updateWrapperText(this.delimiterWrapper, wrapperText);
             this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
-            this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
             this.inputElement.setAttribute('aria-labelledby', this.delimiterWrapper.id);
             this.setProperties({ text: text.toString() }, true);
             this.refreshInputHight();
@@ -4444,7 +4505,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }) as HTMLInputElement;
         if (this.mode === 'Default' || this.mode === 'Box') {
-            this.inputElement.setAttribute('aria-describedby', this.chipCollectionWrapper.id);
+            this.inputElement.setAttribute('aria-labelledby', this.chipCollectionWrapper.id);
         }
         if (this.element.tagName !== this.getNgDirective()) {
             this.element.style.display = 'none';

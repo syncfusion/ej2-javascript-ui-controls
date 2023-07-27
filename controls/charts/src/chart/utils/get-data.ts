@@ -253,14 +253,15 @@ export class ChartData {
     public getClosestX(chart: Chart, series: Series, xvalues?: number[]): PointData {
         let value: number;
         const rect: Rect = series.clipRect;
-        if (!chart.requireInvertedAxis) {
-            value = getValueXByPoint( chart.mouseX - rect.x, rect.width, series.xAxis);
-        } else {
-            value = getValueYByPoint(chart.mouseY - rect.y, rect.height, series.xAxis);
+        if (chart.mouseX <= rect.x + rect.width && chart.mouseX >= rect.x) {
+            if (!chart.requireInvertedAxis) {
+                value = getValueXByPoint(chart.mouseX - rect.x, rect.width, series.xAxis);
+            } else {
+                value = getValueYByPoint(chart.mouseY - rect.y, rect.height, series.xAxis);
+            }
         }
-
         const closest: number = this.getClosest(series, value, xvalues);
-        const point: Points = (closest || closest === 0) ? this.binarySearch(closest, sort(series.points, ['xValue']) as Points[]) : null;
+        const point: Points = ((closest || closest === 0) && series.points.length > 0) ? this.binarySearch(closest, sort(series.points, ['xValue']) as Points[]) : null;
         if (point && point.visible) {
             return new PointData(point, series);
         }

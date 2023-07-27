@@ -2,21 +2,59 @@
 
 ## [Unreleased]
 
-## 21.2.3 (2023-05-03)
+## 22.2.5 (2023-07-27)
 
 ### Image Editor
 
 #### Bug Fixes
 
-- Issue with "Zoom factor value set to null in ASPCORE" has been resolved.
+- Issue with "Path size not proper after saving" has been resolved.
+
+## 22.1.39 (2023-07-18)
 
 ### Image Editor
 
 #### Bug Fixes
 
-- Issue with "Flaggable Enum not working properly in ASPCORE" has been resolved.
+- Issue with "Circle cropped image is not saved properly" has been resolved.
 
-## 21.1.41 (2023-04-18)
+## 22.1.38 (2023-07-11)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Image not drawn properly after opening image as ImageData" has been resolved.
+
+## 22.1.37 (2023-07-04)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Touch events are not un-wired properly while destroying control" has been resolved.
+
+## 22.1.36 (2023-06-28)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Refreshing the Image Editor dimension while resizing" has been resolved.
+
+## 22.1.34 (2023-06-21)
+
+### Image Editor
+
+#### Features
+
+- Provided support for path annotations allowing users to annotate specific paths or routes within a document or graphical representation.
+- Provided support for arrow annotations allowing users to easily indicate direction or flow within their content.
+- Provided quick access toolbar support which improve accessibility when working with shapes. It automatically appears when shapes are selected, providing convenient access to commonly used tools and options.
+
+#### Breaking Changes
+
+- Previously, the "ShapeChanging" event was triggered for both shape modifications and selection customizations. However, a new event called "SelectionChanging" has been introduced specifically for selection customizations.
 
 ### Image Editor
 

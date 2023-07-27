@@ -1,6 +1,5 @@
 import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { TextAlignmentType } from '../utils/enum';
-import { Theme } from '../utils/theme';
 import { BorderModel, FontModel } from './progress-base-model';
 
 /**
@@ -90,9 +89,9 @@ export class Font extends ChildProperty<Font> {
     /**
      * Opacity for the text.
      *
-     * @default 1
+     * @default null
      */
-    @Property(1)
+    @Property(null)
     public opacity: number;
 
     /**
@@ -236,7 +235,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
       *
       */
  
-     @Complex<FontModel>(Theme.tooltipLabelFont, Font)
+     @Complex<FontModel>({fontFamily: null, size: '12px', fontWeight: '400', fontStyle: 'Normal', color: null}, Font)
      public textStyle: FontModel;
 
     /**

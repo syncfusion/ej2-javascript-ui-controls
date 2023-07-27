@@ -29,7 +29,8 @@ describe('Gantt Edit support', () => {
                         resourceInfo: 'Resource',
                         dependency: 'Predecessor',
                         indicators: 'Indicators',
-                        child: 'subtasks'
+                        child: 'subtasks',
+                        cssClass: 'cssClass',
                     },
                     resourceIDMapping: 'resourceId',
                     resourceNameMapping: 'resourceName',
@@ -81,6 +82,12 @@ describe('Gantt Edit support', () => {
             ganttObj.editModule.updateRecordByID(data[0]);
             expect(getValue('TaskName', ganttObj.flatData[3])).toBe('Update Record1');
         });
+
+        it('Update Record By ID with cssClass', () => {
+            let data: object[] = [{cssClass: 'ganttClosed',TaskID: 3,TaskName: 'Changed task',StartDate: new Date('04/02/2019'),Duration: 4,Progress: 50}]
+            ganttObj.editModule.updateRecordByID(data[0]);
+            expect(getValue('cssClass',ganttObj.flatData[2])).toBe('ganttClosed')
+        })
 
         it('Update Record By Id Without Enddate', () => {
             let data: object[] = [{ TaskID: 4, TaskName: 'Update Record2', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "2FF", Notes: 'Notes 3',
@@ -2307,4 +2314,130 @@ describe('Gantt parent without update of Unscheduled task', () => {
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.startDate, 'M/d/yyyy')).toBe('11/2/2021');
 
     });
+});
+describe('check auto validation of parent taskbar', () => {
+    let ganttObj: Gantt;
+    let taskModeData: Object[] = [
+        {
+            'TaskID': "a1",
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': "b2", 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                { 'TaskID': "c3", 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': "d4", 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+        {
+            'TaskID': "e5",
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('03/09/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': "f6", 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40' },
+                { 'TaskID': "g7", 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40','Predecessor': 'h8 FS'},
+                { 'TaskID': "h8", 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017',),
+                    'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true,'Predecessor': 'i9 FF' },
+                { 'TaskID': "i9", 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                    'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true }
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+        dataSource: taskModeData,
+        allowSorting: true,
+        enableContextMenu: true,
+        height: '450px',
+        allowSelection: true,
+        highlightWeekends: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            endDate: 'EndDate',
+            dependency: 'Predecessor',
+            child: 'Children',
+            manual: 'isManual',
+        },
+        taskMode: 'Custom',
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search'],
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName' },
+            { field: 'isManual' }
+        ],
+        validateManualTasksOnLinking: true,
+        treeColumnIndex: 1,
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        labelSettings: {
+            leftLabel: 'TaskName'
+        },
+        splitterSettings: {
+            position: '35%'
+        },
+        projectStartDate: new Date('02/20/2017'),
+        projectEndDate: new Date('03/30/2017'),
+    
+        }, done);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+    it('check auto start date & end date in manual taskmode', () => {
+        ganttObj.openEditDialog("a1");
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        triggerMouseEvent(saveButton, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.autoStartDate, 'M/dd/yyyy')).toBe('2/26/2017');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.autoEndDate, 'M/dd/yyyy')).toBe('3/03/2017');
+       
+    });
+    it('Left resizing & then check auto start date & end date in manual taskmode ', () => {
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -70, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        ganttObj.openEditDialog("a1");
+        let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        triggerMouseEvent(saveButton, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.autoStartDate, 'M/dd/yyyy')).toBe('2/24/2017');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.autoEndDate, 'M/dd/yyyy')).toBe('3/03/2017');
+        
+    });
+    it('check start date & end date in auto taskmode', () => {
+        ganttObj.openEditDialog("a1");
+        let taskMode: any = document.querySelector('#' + ganttObj.element.id + 'isManual') as HTMLInputElement;
+        if (taskMode) {
+            let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'isManual')).ej2_instances[0];
+            inputObj.value = false;
+            inputObj.dataBind();
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveButton, 'click');
+        }
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].taskData['StartDate'], 'M/dd/yyyy')).toBe('2/23/2017');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].taskData['EndDate'], 'M/dd/yyyy')).toBe('3/03/2017');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0]['StartDate'], 'M/dd/yyyy')).toBe('2/23/2017');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0]['EndDate'], 'M/dd/yyyy')).toBe('3/03/2017');
+       
+        
+	       
+    });
+
 });

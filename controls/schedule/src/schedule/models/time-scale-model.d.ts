@@ -33,9 +33,13 @@ export interface TimeScaleModel {
      *  template accepts either the string or HTMLElement as template design and then the parsed design is displayed
      *  onto the time cells. The time details can be accessed within this template.
      *
-     *  @default null
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    minorSlotTemplate?: string;
+    minorSlotTemplate?: string | Function;
 
     /**
      * The template option to be applied for major time slot. Here, the
@@ -43,7 +47,11 @@ export interface TimeScaleModel {
      *  onto the time cells. The time details can be accessed within this template.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    majorSlotTemplate?: string;
+    majorSlotTemplate?: string | Function;
 
 }

@@ -28,7 +28,8 @@ export class Segment {
             ((progress.cornerRadius === 'Round') ? progress.segmentCount * (lineCapRadius * thickness) : 0)) / progress.segmentCount;
         const gap: number = (progress.cornerRadius === 'Round') ? (gapWidth + (lineCapRadius * thickness)) : gapWidth;
         const segmentGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + id });
-        const count: number = Math.ceil(width / avlWidth);
+        let count: number = Math.ceil(width / avlWidth);
+        count = (count > progress.segmentCount) ? progress.segmentCount : count;
         let segWidth: number;
         let color: string;
         let j: number = 0;

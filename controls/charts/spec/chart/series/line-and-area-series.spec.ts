@@ -99,13 +99,20 @@ describe('Chart Control Series', () => {
 
         it('Showing default marker', (done: Function) => {
             loaded = (args: Object): void => {
-                let series1: number = document.getElementById('containerSymbolGroup1').childNodes.length;
-                expect(series1 == 8).toBe(true);
-                let marker: HTMLElement = document.getElementById('container_Series_3_Point_0_Symbol');
-                expect(marker.getAttribute('stroke') == '#C4C24A').toBe(true);
+                let marker: HTMLElement = document.getElementById('container_Series_0_Point_2_Symbol');
+                expect(marker.getAttribute('stroke') == '#E94649').toBe(true);
                 expect(marker.getAttribute('fill') == '#ffffff').toBe(true);
                 expect(marker.getAttribute('rx') == '2.5').toBe(true);
                 expect(marker.getAttribute('ry') == '2.5').toBe(true);
+                let series1: HTMLElement = document.getElementById('container_Series_3_Point_1_Symbol');
+                let direction: string = series1.getAttribute('d');
+                expect(direction.indexOf('z') > 0).toBe(true);
+                series1 = document.getElementById('container_Series_2_Point_1_Symbol');
+                direction = series1.getAttribute('d');
+                expect(direction.indexOf('z') > 0).toBe(true);
+                series1 = document.getElementById('container_Series_1_Point_1_Symbol');
+                direction = series1.getAttribute('d');
+                expect(direction.indexOf('z') > 0).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -131,6 +138,7 @@ describe('Chart Control Series', () => {
             };
             chartObj.loaded = loaded;
             chartObj.series[1].marker.visible = true;
+            chartObj.series[1].marker.shape = 'Circle'
             chartObj.series[1].marker.width = 10;
             chartObj.series[1].marker.height = 10;
             chartObj.series[1].marker.offset = { x : -15 };
@@ -146,6 +154,7 @@ describe('Chart Control Series', () => {
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series[1].marker.shape = 'Circle'
             chartObj.series[1].marker.width = 0;
             chartObj.series[1].marker.offset = { x : 0, y : 0 };
             chartObj.series[1].marker.height = 0;
@@ -202,7 +211,7 @@ describe('Chart Control Series', () => {
             chartObj.series[2].marker.width = 10;
             chartObj.series[3].marker.height = 10;
             chartObj.series[3].marker.width = 10;
-            chartObj.series[0].marker.shape = 'Cross';
+            chartObj.series[0].marker.shape = 'Plus';
             chartObj.series[1].marker.shape = 'Diamond';
             chartObj.series[2].marker.shape = 'HorizontalLine';
             chartObj.series[3].marker.shape = 'InvertedTriangle';
@@ -238,6 +247,21 @@ describe('Chart Control Series', () => {
             chartObj.pointRender = null;
             chartObj.refresh();
         });
+
+        it('Changing Cross marker shape ', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series1: HTMLElement = document.getElementById('container_Series_0_Point_1_Symbol');
+                let direction: string = series1.getAttribute('d');
+                expect(direction.indexOf('z') == -1).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker.height = 10;
+            chartObj.series[0].marker.width = 10;
+            chartObj.series[0].marker.shape = 'Cross';
+            chartObj.refresh();
+        });
+
         it('with image', (done: Function) => {
             loaded = (args: Object): void => {
                 let series1 = document.getElementById('container_Series_1_Point_0_Symbol');
@@ -603,11 +627,12 @@ describe('Chart Control Series', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 108);
                 let yValue: number = chartObj.visibleSeries[1].points[0].yValue;
-                expect(yValue == 60.24 || yValue == 59.65).toBe(true);
+                expect(yValue == 60.24 || yValue == 59.82).toBe(true);
                 chartObj.loaded = null;
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series[1].marker.shape = 'Circle';
             chartObj.refresh();
         });
         it('line series drag and drop with minY value', (done: Function) => {
@@ -765,7 +790,7 @@ describe('Chart Control Series', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 142);
                 let yValue: number = chartObj.visibleSeries[0].points[3].yValue;
-                expect(yValue == 80.27 || yValue == 79.68).toBe(true);
+                expect(yValue == 80.27 || yValue == 79.91).toBe(true);
                 chartObj.loaded = null;
                 done();
             };
@@ -1298,7 +1323,7 @@ describe('Chart Control Series', () => {
                 let element: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
                 let locationY: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
                 let height: number = document.getElementById('container_Series_1_Point_2_Text_0').getBoundingClientRect().height;
-                expect(locationY == (element - (height / 4))).toBe(true);
+                expect(locationY == 208.828125).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

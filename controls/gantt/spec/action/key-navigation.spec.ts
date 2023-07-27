@@ -592,6 +592,75 @@ describe('Gantt Selection support', () => {
             });
         });
      });
-   
+    
+    describe('CR-EJ2-828122-Error when doubleclick insertkey while edit mode', function () {
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: [],
+                height: '450px',
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                allowSelection: true,
+                allowKeyboard: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Predecessor' },
+                    { field: 'Progress' },
+                ],
+                enableContextMenu: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                toolbar: ['Search', 'Add', 'Delete'],
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                },
+                splitterSettings: {
+                    columnIndex: 2,
+                },
+                projectStartDate: new Date('03/24/2019'),
+                projectEndDate: new Date('07/06/2019'),
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        
+        it('Insert key Testing without Add button', () => {
+            // Stimulate triggering the "Insert key" action to add a new row
+            let args: any = { action: 'addRow', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            // Expect the current view data to contain a single row
+            expect(ganttObj.currentViewData.length).toBe(1);
+            // Expect the current view data index value to contain a 'New Task 1'
+            expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('New Task 1');
+          });
+          
+    });
 
 

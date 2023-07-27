@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseEventArgs, Draggable } from '@syncfusion/ej2-base';
-import { Predicate, Query } from '@syncfusion/ej2-data';
+import { Predicate, Query, Deferred } from '@syncfusion/ej2-data';
 import { CurrentAction } from './type';
 
 /**
@@ -25,6 +25,38 @@ export interface ActionEventArgs extends BaseEventArgs {
     changedRecords?: Record<string, any>[];
     /** Returns the appropriate deleted data based on the action. */
     deletedRecords?: Record<string, any>[];
+}
+
+/**
+ * Provides information about virtual scroll information.
+ *
+ * @interface VirtualScrollInfo
+ * @hidden
+ */
+export interface VirtualScrollInfo {
+    column?: string | number,
+    columnOverAllHeight?: number,
+    columnHeight?: number,
+    previousScrollTop?: number,
+    currentScrollTop?: number,
+    scrollDirection?: string,
+    oldBlockIndex?: number [],
+    currentBlockIndex?: number[],
+    newBlockIndex?: number [],
+    offsets?: { [x: number]: number },
+    tempOffsets?: { [x: number]: number },
+    page?: number,
+    totalColumnData?: number,
+    block?: number,
+    singleIndexCardCount?: number
+    maxBlock?: number
+    previousTimeStamps?: number
+}
+
+/** @hidden */
+export interface FilterStateObj {
+    state: DataStateChangeEventArgs;
+    deffered: Deferred;
 }
 
 /**
@@ -182,13 +214,24 @@ export interface ScrollOffset {
     top?: number;
 }
 
+/** @private */
+export interface VirtualScrollDataReturnType {
+    result: Record<string, any>[];
+}
+
 /**
- * Custom Sort Compare Function to sort Swimlane rows W
+ * Custom Sort Compare Function to sort Swimlane rows.
  *
  * @interface SortCompareFunction
  */
 export interface SortComparerFunction {
-    /** Defines the Swimlane Header Arguments */
+    /**
+     * Defines the Swimlane Header Arguments.
+     * ```props
+     *      (param: HeaderArgs[]):- HeaderArgs[];
+     * ```
+     *
+     */
     (param: HeaderArgs[]): HeaderArgs[];
 }
 
@@ -202,6 +245,8 @@ export interface DataStateChangeEventArgs {
     table?: string;
     /** Defines the selected field names */
     select?: string[];
+    /** Defines the filter dataSource */
+    updateData?: Function;
 }
 export interface PendingState {
     /**

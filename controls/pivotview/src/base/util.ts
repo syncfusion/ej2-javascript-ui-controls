@@ -1,4 +1,4 @@
-import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IField, IMembers } from './engine';
+import { IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IMembers } from './engine';
 import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups, FieldItemInfo } from './engine';
 import { ICalculatedFieldSettings, IAuthenticationInfo, IGridValues, IAxisSet } from './engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -147,8 +147,8 @@ export class PivotUtil {
     public static getClonedFieldList(fieldListObj: IFieldListOptions | IOlapFieldListOptions): IFieldListOptions | IOlapFieldListOptions {
         const keys: string[] = Object.keys(fieldListObj);
         const clonedfieldlistObj: IOlapFieldListOptions = {};
-        for (let i: number = 0, keysLength = keys.length; i < keysLength; i++) {
-            let fieldlistObj: IOlapField = fieldListObj[keys[i]];
+        for (let i: number = 0, keysLength: number = keys.length; i < keysLength; i++) {
+            const fieldlistObj: IOlapField = fieldListObj[keys[i as number]];
             if (fieldListObj[keys[i as number]]) {
                 clonedfieldlistObj[keys[i as number]] = {
                     type: fieldlistObj.type,
@@ -181,7 +181,8 @@ export class PivotUtil {
                     format: fieldlistObj.format,
                     formula: fieldlistObj.formula,
                     isExcelFilter: fieldlistObj.isExcelFilter,
-                    membersOrder: (fieldlistObj.membersOrder ? [...fieldlistObj.membersOrder] : fieldlistObj.membersOrder) as string[] | number[],
+                    membersOrder: (fieldlistObj.membersOrder ? [...fieldlistObj.membersOrder] :
+                        fieldlistObj.membersOrder) as string[] | number[],
                     isAlphanumeric: fieldlistObj.isAlphanumeric,
                     tag: fieldlistObj.tag,
                     expanded: fieldlistObj.expanded,
@@ -216,7 +217,7 @@ export class PivotUtil {
             for (const set of collection) {
                 clonedCollection.push({
                     formattedText: set.formattedText,
-                    actualText: set.actualText,
+                    actualText: set.actualText
                 });
             }
             return clonedCollection;
@@ -229,13 +230,13 @@ export class PivotUtil {
         if (collection) {
             const keys: string[] = Object.keys(collection);
             const clonedFormatMembers: any = {}; /* eslint-disable-line @typescript-eslint/no-explicit-any */
-            for (let i: number = 0, keysLength = keys.length; i < keysLength; i++) {
-                let cloneFormatMembersObj: IMembers = collection[keys[i]] as IMembers;
+            for (let i: number = 0, keysLength: number = keys.length; i < keysLength; i++) {
+                const cloneFormatMembersObj: IMembers = collection[keys[i as number]] as IMembers;
                 clonedFormatMembers[keys[i as number]] = {
                     index: cloneFormatMembersObj.index ? [...(cloneFormatMembersObj.index as number[])] : cloneFormatMembersObj.index,
                     isDrilled: cloneFormatMembersObj.isDrilled,
                     ordinal: cloneFormatMembersObj.ordinal
-                }
+                };
             }
             return clonedFormatMembers;
         } else {
@@ -584,7 +585,8 @@ export class PivotUtil {
         return undefined;
     }
 
-    public static getFieldByName(fieldName: string, fields: IFieldOptions[] | ISort[] | IFormatSettings[] | IDrillOptions[] | IGroupSettings[] | ICalculatedFieldSettings[]): IFieldOptions | ISort | IFormatSettings | IDrillOptions | IGroupSettings | ICalculatedFieldSettings { /* eslint-disable-line */
+    // eslint-disable-next-line max-len
+    public static getFieldByName(fieldName: string, fields: IFieldOptions[] | ISort[] | IFormatSettings[] | IDrillOptions[] | IGroupSettings[] | ICalculatedFieldSettings[]): IFieldOptions | ISort | IFormatSettings | IDrillOptions | IGroupSettings | ICalculatedFieldSettings {
         return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
     }
 
@@ -626,7 +628,8 @@ export class PivotUtil {
         return { fieldName: fieldName, fieldItem: fieldItem, axis: 'fieldlist', position: -1 };
     }
 
-    public static isButtonIconRefesh(prop: string, oldProp: PivotViewModel | PivotFieldListModel, newProp: PivotViewModel | PivotFieldListModel): boolean { /* eslint-disable-line */
+    // eslint-disable-next-line max-len
+    public static isButtonIconRefesh(prop: string, oldProp: PivotViewModel | PivotFieldListModel, newProp: PivotViewModel | PivotFieldListModel): boolean {
         let isButtonRefresh: boolean = false;
         try {
             if (prop === 'dataSourceSettings' && oldProp.dataSourceSettings && newProp.dataSourceSettings) {
@@ -775,7 +778,7 @@ export class PivotUtil {
 
     public static frameContent(
         pivotValues: IAxisSet[][], type: string, rowPosition: number, control: PivotView | PivotFieldList
-        ): IGridValues {
+    ): IGridValues {
         const dataContent: IGridValues = [];
         const pivot: PivotView | PivotFieldList = control;
         if (pivot.dataSourceSettings.values.length > 0 && !pivot.engineModule.isEmptyData) {
@@ -863,7 +866,7 @@ export class PivotUtil {
                 isCalculatedField: report.Columns[i as number].IsCalculatedField,
                 showValueTypeIcon: report.Columns[i as number].ShowValueTypeIcon,
                 type: report.Columns[i as number].Type,
-                expandAll: report.columns[i as number].expandAll
+                expandAll: report.Columns[i as number].expandAll
             });
         }
         for (let i: number = 0; i < report.FormatSettings.length; i++) {
@@ -913,7 +916,7 @@ export class PivotUtil {
     public static applyCustomSort(
         sortDetails: HeadersSortEventArgs, sortMembersOrder: IAxisSet[], type: string | boolean,
         hasMembersOrder?: boolean, isOlap?: boolean
-        ): IAxisSet[] {
+    ): IAxisSet[] {
         let grandTotal: IAxisSet;
         let order: string[] | number[] = [];
         if (sortDetails.IsOrderChanged) {

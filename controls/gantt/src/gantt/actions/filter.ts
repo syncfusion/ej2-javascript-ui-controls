@@ -368,7 +368,7 @@ export class Filter {
         this.parent.off('columnMenuOpen', this.columnMenuOpen);
     }
     /**
-     * To destroy module
+     * This method is used to destroy the filter module. When called, it performs any necessary cleanup operations related to the filter module.
      *
      * @returns {void} .
      */

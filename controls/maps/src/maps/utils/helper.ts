@@ -54,7 +54,7 @@ export function stringToNumber(value: string, containerSize: number): number {
  * @returns {void}
  * @private
  */
-export function calculateSize(maps: Maps): Size {
+export function calculateSize(maps: Maps): Size {    
     maps.element.style.height = !isNullOrUndefined(maps.height) ? maps.height : 'auto';
     maps.element.style.width = !isNullOrUndefined(maps.width) ? maps.width : 'auto';
     maps.element.style.setProperty("display", "block");
@@ -915,7 +915,7 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
         markerEle = maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
     } else if (shape === 'Image') {
         x = location.x - (size.width / 2);
-        y = location.y - (size.height / 2);
+        y = location.y - (markerID.indexOf('cluster') > -1 ? (size.height / 2) : size.height);
         merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
         markerEle = maps.renderer.drawImage(pathOptions) as SVGImageElement;
     } else {
@@ -1139,9 +1139,9 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                         );
                         ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
                         if (eventArg.shape === 'Balloon') {
-                            (ele.children[0] as HTMLElement).innerText = indexCollection.toString();
+                            (ele.children[0] as HTMLElement).textContent = indexCollection.toString();
                         } else {
-                            (ele as HTMLElement).innerText = indexCollection.toString();
+                            (ele as HTMLElement).textContent = indexCollection.toString();
                         }
                         options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
                         textElement = renderTextElement(options, style, style.color, markerCollection);
@@ -1239,7 +1239,7 @@ export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: 
     let markerEle: Element;
     const markerDataLength: number = sameMarkerData[0].data.length;
     for (let i: number = 0; i < markerDataLength; i++) {
-        markerEle = marker.shape === 'Balloon' ? getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index'] + '_Group') : getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index']);
+        markerEle = marker.shape === 'Balloon' && isNullOrUndefined(marker.template) ? getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index'] + '_Group') : getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index']);
         markerEle['style']['visibility'] = 'hidden';
     }
     removeElement(maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_markerClusterConnectorLine');
@@ -1269,7 +1269,7 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
     const clusterEleLabel: Element = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'hidden');
     clusterEleLabel.setAttribute('visibility', 'hidden');
-    let markerEle: Element = marker.shape === 'Balloon' ? getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex + '_Group') : getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex);
+    let markerEle: Element = marker.shape === 'Balloon' && isNullOrUndefined(marker.template) ? getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex + '_Group') : getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex);
     const height: number = markerEle.parentElement.id.indexOf('Template_Group') > -1 ? markerEle.getBoundingClientRect().height : marker.height;
     const width: number = markerEle.parentElement.id.indexOf('Template_Group') > -1 ? markerEle.getBoundingClientRect().width : marker.width;
     const centerX: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[0];
@@ -1306,7 +1306,7 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
         const x1: number = centerX + radius * Math.sin((Math.PI * 2 * newAngle) / 360);
         const y1: number = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
         path += start + 'L ' + (x1) + ' ' + y1 + ' ';
-        markerEle = marker.shape === 'Balloon' ? getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index'] + '_Group') : getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index']);
+        markerEle = marker.shape === 'Balloon' && isNullOrUndefined(marker.template) ? getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index'] + '_Group') : getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index']);
         if (markerEle.parentElement.id.indexOf('Template_Group') > -1) {
             markerEle['style']['transform'] = '';
             markerEle['style']['left'] = maps.isTileMap ? x1 - (width / 2) + 'px' : (x1 - (width / 2) - 10) + 'px';
@@ -2462,14 +2462,16 @@ export function Internalize(maps: Maps, value: number): string {
  * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getTemplateFunction(template: string, maps: Maps): any {
+export function getTemplateFunction(template: string | Function, maps: Maps): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
     try {
-        if (document.querySelectorAll(template).length) {
+        if (typeof template !== 'function' && document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } else if ((maps as any).isVue || (maps as any).isVue3) {
+            templateFn = templateComplier(template);
+        } else if (typeof template === 'function') {
             templateFn = templateComplier(template);
         }
     } catch (e) {

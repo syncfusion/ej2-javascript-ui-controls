@@ -26,6 +26,7 @@ export class GanttTreeGrid {
      * @private
      */
     public currentEditRow: {};
+    public addedRecord:boolean;
     private previousScroll: { top: number, left: number } = { top: 0, left: 0 };
     /** @hidden */
     public prevCurrentView: Object;
@@ -79,6 +80,9 @@ export class GanttTreeGrid {
         const root: string = 'root';
         this.parent.treeGrid[root as string] = this.parent[root as string] ? this.parent[root as string] : this.parent;
         this.parent.treeGrid.appendTo(this.treeGridElement);
+	if (this.parent.treeGrid.grid && this.parent.toolbarModule && (this.parent as any).isReact) {
+           (this.parent.treeGrid.grid as any).portals = (this.parent as any).portals;
+        }
         this.wireEvents();
     }
 
@@ -209,25 +213,60 @@ export class GanttTreeGrid {
     private collapsing(args: object): void | Deferred {
         // Collapsing event
         const callBackPromise: Deferred = new Deferred();
+        let collapsingArgs: object;
+        const record: IGanttData | [] = getValue('data', args);
+        const recordLength = (record as IGanttData[]).length;
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            const collapsingArgs: object = this.createExpandCollapseArgs(args);
-            this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
-            setValue('cancel', getValue('cancel', collapsingArgs), args);
+            if (!isNullOrUndefined(recordLength)) {
+                for (let i = 0; i < recordLength; i++) {
+                    collapsingArgs = this.createExpandCollapseArgs(args, record[i as number]);
+                    this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
+                }
+                setValue('cancel', getValue('cancel', collapsingArgs), args);
+            }
+            else {
+                collapsingArgs = this.createExpandCollapseArgs(args, null);
+                this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
+                setValue('cancel', getValue('cancel', collapsingArgs), args);
+            }
         }
     }
     private expanding(args: object): void | Deferred {
         // Expanding event
         const callBackPromise: Deferred = new Deferred();
+        let expandingArgs: object;
+        const record: IGanttData | [] = getValue('data', args);
+        const recordLength = (record as IGanttData[]).length;
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            const expandingArgs: object = this.createExpandCollapseArgs(args);
-            this.parent.ganttChartModule.expandGanttRow(expandingArgs);
-            setValue('cancel', getValue('cancel', expandingArgs), args);
+            if (!isNullOrUndefined(recordLength)) {
+                for (let i = 0; i < recordLength; i++) {
+                    expandingArgs = this.createExpandCollapseArgs(args, record[i as number]);
+                    this.parent.ganttChartModule.expandGanttRow(expandingArgs);
+                }
+                setValue('cancel', getValue('cancel', expandingArgs), args);
+            }
+            else {
+                expandingArgs = this.createExpandCollapseArgs(args, null);
+                this.parent.ganttChartModule.expandGanttRow(expandingArgs);
+                setValue('cancel', getValue('cancel', expandingArgs), args);
+            }
         }
     }
     private collapsed(args: object): void {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart  && !this.parent.isExpandCollapseLevelMethod) {
-            const collapsedArgs: object = this.createExpandCollapseArgs(args);
-            this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
+            let collapsedArgs: object;
+            const record: IGanttData | [] = getValue('data', args);
+            const recordLength = (record as IGanttData[]).length;
+            if (!isNullOrUndefined(recordLength)) {
+                for (let i =0; i < recordLength; i++ ) {
+                     collapsedArgs = this.createExpandCollapseArgs(args, record[i as number]);
+                    this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
+                }
+            }
+            else {
+                collapsedArgs = this.createExpandCollapseArgs(args, null);
+                this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
+            }
             if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && collapsedArgs['gridRow']) {
                collapsedArgs['gridRow'].style.height = collapsedArgs['chartRow'].style.height;
 	       this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
@@ -240,18 +279,28 @@ export class GanttTreeGrid {
         } else {
             this.parent.hideSpinner();
         }
+        this.parent.trigger('collapsed', args);
     }
     private expanded(args: object): void {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart && !this.parent.isExpandCollapseLevelMethod) {
-            if(!args['data'].length) {
-                const expandedArgs: object = this.createExpandCollapseArgs(args);
-                this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
-                if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && args['row']) {
-                    args['row'].style.height = this.parent.rowHeight + 'px';
-                    this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
-                                                this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
-                    document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
+            let expandedArgs: object;
+            const record: IGanttData | [] = getValue('data', args);
+            const recordLength = (record as IGanttData[]).length;
+            if (!isNullOrUndefined(recordLength)) {
+                for (let i =0; i < recordLength; i++ ) {
+                    expandedArgs = this.createExpandCollapseArgs(args, record[i as number]);
+                    this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
                 }
+            }
+            else {
+                expandedArgs = this.createExpandCollapseArgs(args, null);
+                this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
+            }
+            if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && args['row']) {
+                args['row'].style.height = this.parent.rowHeight + 'px';
+                this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
+                                            this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
+                document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
             }
         }
         if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
@@ -259,6 +308,7 @@ export class GanttTreeGrid {
         } else {
             this.parent.hideSpinner();
         }
+        this.parent.trigger('expanded', args);
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
         this.parent.notify('actionBegin', args);
@@ -306,13 +356,23 @@ export class GanttTreeGrid {
     private columnMenuClick = (args: ColumnMenuClickEventArgs) => {
         this.parent.trigger('columnMenuClick', args);
     }
-    private createExpandCollapseArgs(args: object): object {
-        const record: IGanttData = getValue('data', args);
-        const gridRow: Node = getValue('row', args);
+    private createExpandCollapseArgs(args: object, currentRecord: IGanttData ): object {
         let chartRow: Node;
-        chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record)];
-        const eventArgs: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
-        return eventArgs;
+        const record: IGanttData | [] = getValue('data', args);
+        const recordLength = (record as IGanttData[]).length;
+        if (!isNullOrUndefined(recordLength)) {
+            const gridRow: Node = getValue('row', args);
+            chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(currentRecord)];
+            const eventArgs: object = { data: currentRecord, gridRow: gridRow, chartRow: chartRow, cancel: false };
+            return eventArgs;
+        }
+        else {
+            const record_1: IGanttData = getValue('data', args);
+            const gridRow: Node = getValue('row', args);
+            chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record_1)];
+            const eventArgs: object = { data: record_1, gridRow: gridRow, chartRow: chartRow, cancel: false };
+            return eventArgs;
+        }
     }
     // eslint-disable-next-line valid-jsdoc
     private objectEqualityChecker = (old: Object, current: Object) => {
@@ -356,6 +416,7 @@ export class GanttTreeGrid {
                     }
                 }
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
+                this.parent.editModule.cellEditModule.isCellEdit = false;
                 this.currentEditRow = {};
             }
         }
@@ -380,7 +441,14 @@ export class GanttTreeGrid {
                     this.parent.selectedRowIndex = -1
                 }
             } else {
-                this.parent.selectRow(0);
+                var indexvalue = 0;
+                this.parent.currentViewData.map((data, index) => {
+                    if (!isNullOrUndefined(this.parent.currentSelection) && ((data.ganttProperties.taskId === this.parent.currentSelection[this.parent.taskFields.id])) ||(! isNullOrUndefined(this.parent.currentSelection))&&(data.ganttProperties.taskId === this.parent.currentSelection.taskId))  {
+                        indexvalue = index;
+                    }
+                })
+                this.addedRecord = true
+                this.parent.selectRow((isNullOrUndefined(indexvalue)? 0 :indexvalue));
             }
             this.parent.addDeleteRecord = false;
         }
@@ -468,7 +536,7 @@ export class GanttTreeGrid {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
             if (typeof ganttObj.columns[i as number] === 'string') {
@@ -558,7 +626,9 @@ export class GanttTreeGrid {
                 this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.width = column.width ? column.width : 150;
-            column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            if (!column.edit  || (column.edit && !column.edit.create)) {
+                column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            }
         } else if (taskSettings.endDate === column.field) {
             if (this.parent.isLocaleChanged && previousColumn) {
                 column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('endDate');
@@ -570,7 +640,9 @@ export class GanttTreeGrid {
             column.editType = column.editType ? column.editType :
                 this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.width = column.width ? column.width : 150;
-            column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            if (!column.edit  || (column.edit && !column.edit.create)) {
+                column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            }
         } else if (taskSettings.duration === column.field) {
             column.width = column.width ? column.width : 150;
             if (this.parent.isLocaleChanged && previousColumn) {

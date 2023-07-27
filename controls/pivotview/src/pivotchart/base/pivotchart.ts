@@ -1,4 +1,4 @@
-import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSettings, IFieldListOptions, IDataSet } from '../../base/engine';
+import { PivotEngine, IAxisSet, IDataOptions, IField, IFormatSettings, IFieldListOptions, IDataSet } from '../../base/engine';
 import { IPivotRows, INumberIndex, IFieldOptions, IDrilledItem } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -82,10 +82,13 @@ export class PivotChart {
         this.dataSourceSettings = this.parent.dataSourceSettings as IDataOptions;
         this.chartSettings = chartSettings;
         const isDataAvail: boolean = parent.dataType === 'olap' ?
-            (parent.dataSourceSettings.url !== '' && !parent.olapEngineModule.isEmptyData && parent.olapEngineModule.tupColumnInfo.length > 0 && parent.olapEngineModule.tupRowInfo.length > 0 &&
+            (parent.dataSourceSettings.url !== '' && !parent.olapEngineModule.isEmptyData &&
+                parent.olapEngineModule.tupColumnInfo.length > 0 && parent.olapEngineModule.tupRowInfo.length > 0 &&
                 (!isNullOrUndefined(parent.olapEngineModule.colMeasurePos) || !isNullOrUndefined(parent.olapEngineModule.rowMeasurePos)))
-            : (parent.dataSourceSettings.values.length > 0 && parent.dataSourceSettings.dataSource &&
-                (parent.dataSourceSettings.dataSource as IDataSet[]).length > 0 &&  !parent.engineModule.isEmptyData);
+            : this.parent.dataSourceSettings.mode === 'Server' ? (!isNullOrUndefined(parent.dataSourceSettings.url) &&
+                parent.dataSourceSettings.url !== '' && parent.dataSourceSettings.values.length > 0 && !parent.engineModule.isEmptyData) :
+                (parent.dataSourceSettings.values.length > 0 && parent.dataSourceSettings.dataSource &&
+                    (parent.dataSourceSettings.dataSource as IDataSet[]).length > 0 && !parent.engineModule.isEmptyData);
         if (isDataAvail) {
             if (!this.parent.chart && (this.parent.element.querySelector('.e-chart') || this.parent.element.querySelector('.e-accumulationchart'))) {
                 remove(select('#' + this.parent.element.id + '_chart', this.parent.element));
@@ -408,7 +411,7 @@ export class PivotChart {
         let prevColorIndex: number = 0;
         const chartSeriesInfo: { [key: string]: { name?: string, color?: string } } = {};
         const columnKeys: string[] = Object.keys(this.columnGroupObject);
-        this.persistSettings = JSON.parse(this.parent.getPersistData()).chartSettings;
+        this.persistSettings = JSON.parse(this.parent.getPersistData(true)).chartSettings;
         const seriesColors: string[] = this.persistSettings.palettes && this.persistSettings.palettes.length > 0
             ? this.persistSettings.palettes : getSeriesColor(this.chartSettings.theme);
         const delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
@@ -433,8 +436,8 @@ export class PivotChart {
             currentSeries.dataSource = this.columnGroupObject[this.currentColumn];
             currentSeries.xName = 'x';
             currentSeries.yName = 'y';
-            if (this.persistSettings.chartSeries && this.persistSettings.chartSeries.dataLabel) {
-                currentSeries.dataLabel = this.persistSettings.chartSeries.dataLabel;
+            if (this.persistSettings.chartSeries && this.persistSettings.chartSeries.dataLabel) { // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                currentSeries.dataLabel = this.persistSettings.chartSeries.dataLabel as any;
                 currentSeries.dataLabel.name = 'x';
             } else {
                 currentSeries.dataLabel = { visible: true, position: 'Outside', name: 'x' };
@@ -458,12 +461,12 @@ export class PivotChart {
                 let currentSeries: SeriesModel = {};
                 currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) as SeriesModel
                     : currentSeries;
-                /* eslint-disable */
+                /* eslint-disable @typescript-eslint/no-explicit-any */
                 if (!isNullOrUndefined((currentSeries as any).palettes) && (currentSeries as any).palettes.length > 0
-                    && (isNullOrUndefined(this.persistSettings.palettes) || this.persistSettings.palettes.length == 0)) {
+                    && (isNullOrUndefined(this.persistSettings.palettes) || this.persistSettings.palettes.length === 0)) {
                     this.chartSettings.palettes = (currentSeries as any).palettes;
                 }
-                /* eslint-enable */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
                 for (let i: number = 0; i < this.columnGroupObject[key as string].length; i++) {
                     const values: IFieldListOptions = this.engineModule.fieldList[this.currentMeasure] as IFieldListOptions;
                     this.columnGroupObject[key as string][i as number].x = (this.parent.dataSourceSettings.rows.length === 0 && !this.chartSettings.showMultiLevelLabels) ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(values.aggregateType as string) + ' ' +
@@ -527,12 +530,12 @@ export class PivotChart {
         });
 
     }
-    /* eslint-disable */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private frameObjectWithKeys(series: any): SeriesModel | AxisModel {
         const keys: string[] = Object.keys(series);
         let keyPos: number = 0;
         const framedSeries: any = {};
-        /* eslint-enable */
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         while (keyPos < keys.length) {
             framedSeries[keys[keyPos as number]] = series[keys[keyPos as number]];
             keyPos++;
@@ -540,12 +543,12 @@ export class PivotChart {
         return framedSeries;
     }
 
-    /* eslint-disable */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private frameChartSeries(series: any): SeriesModel | AccumulationSeriesModel {
         const keys: string[] = Object.keys(series);
         let keyPos: number = 0;
         const framedSeries: any = {};
-        /* eslint-enable */
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         while (keyPos < keys.length) {
             if ((this.accumulationType.indexOf(this.parent.chartSettings.chartSeries.type) > -1 && ['fill', 'dashArray', 'width', 'segmentAxis',
                 'drawType', 'isClosed', 'segments', 'stackingGroup', 'marker', 'errorBar', 'trendlines', 'minRadius',
@@ -861,7 +864,6 @@ export class PivotChart {
                 (this.parent.element.querySelector('.e-chart-grouping-bar') ?
                     this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 0) +
                 (window.scrollY || document.documentElement.scrollTop) + pos.top;
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             this.accumulationMenu.open(y + args.y, args.x + pos.left + (window.scrollX || document.documentElement.scrollLeft));
         } else if ((this.parent.allowDrillThrough || this.parent.editSettings.allowEditing) && this.parent.drillThroughModule) {
             const rIndex: number = dataSource[args.pointIndex].rIndex;
@@ -1162,13 +1164,15 @@ export class PivotChart {
     }
 
     private configTooltipSettings(): TooltipSettingsModel {
-        const tooltip: TooltipSettingsModel = this.persistSettings.tooltip ? this.persistSettings.tooltip : this.chartSettings.tooltip;
+        const tooltip: TooltipSettingsModel = this.persistSettings.tooltip ? this.persistSettings.tooltip : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.chartSettings.tooltip as any;
         tooltip.enable = tooltip.enable === undefined ? true : tooltip.enable;
         if (tooltip.enable && tooltip.template) {
-            this.templateFn = this.parent.templateParser(tooltip.template);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.templateFn = this.parent.templateParser(tooltip.template as any);
         }
-        if (this.parent.tooltipTemplate) {
-            tooltip.template = tooltip.template ? tooltip.template : this.parent.tooltipTemplate;
+        if (this.parent.tooltipTemplate) { // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            tooltip.template = tooltip.template ? tooltip.template : this.parent.tooltipTemplate as any;
         }
         tooltip.header = tooltip.header ? tooltip.header : '';
         tooltip.enableMarker = tooltip.enableMarker === undefined ? true : tooltip.enableMarker;
@@ -1256,7 +1260,7 @@ export class PivotChart {
         const text: string | number | Date = (this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet).columnHeaders;
         const columnText : string = !isNullOrUndefined(text) ? this.parent.dataType === 'olap' ? this.chartSeriesInfo[text.toString().split(/~~|::/).join(' - ')].uniqueName :
             this.chartSeriesInfo[text.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ')].uniqueName : undefined;
-        /* eslint-disable */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         const rowText: any = args.point.x;
         if (this.parent.tooltipTemplate && this.parent.getTooltipTemplate() !== undefined || this.chartSettings.tooltip.template) {
             const rowFields: string = dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'row') : '';
@@ -1270,7 +1274,7 @@ export class PivotChart {
                 rowFields: rowFields,
                 columnFields: columnFields
             };
-            /* eslint-enable */
+            /* eslint-enable @typescript-eslint/no-explicit-any */
             let template: string;
             if (this.parent.chartSettings && this.parent.chartSettings.tooltip &&
                 this.parent.chartSettings.tooltip.enable && this.parent.chartSettings.tooltip.template) {
@@ -1519,7 +1523,7 @@ export class PivotChart {
 
     /**
      * @returns {string} - string.
-     * @hidden 
+     * @hidden
      */
     public getChartHeight(): string {
         let height: string;
@@ -1561,7 +1565,8 @@ export class PivotChart {
     }
 
     private getChartAutoHeight(): number {
-        let height: number = this.parent.element.offsetHeight < this.parent.minHeight ? this.parent.minHeight : this.parent.element.offsetHeight;
+        let height: number = this.parent.element.offsetHeight < this.parent.minHeight ? this.parent.minHeight :
+            this.parent.element.offsetHeight;
         if (this.parent.showToolbar && this.parent.showGroupingBar) {
             height = height - (this.parent.element.querySelector('.e-pivot-toolbar') ?
                 this.parent.element.querySelector('.e-pivot-toolbar').clientHeight : 42) -
@@ -1597,7 +1602,7 @@ export class PivotChart {
     }
 
     private multiLevelLabelClick(args: IMultiLevelLabelClickEventArgs): void {
-        /* eslint-disable */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         const eventArgs: MultiLevelLabelClickEventArgs = {
             axis: args.axis,
             text: args.text,
@@ -1605,8 +1610,9 @@ export class PivotChart {
             cancel: false
         };
         this.parent.trigger(events.multiLevelLabelClick, eventArgs);
-        if (!eventArgs.cancel && args.customAttributes && (args.customAttributes as any).hasChild && !(args.customAttributes as any).cell.isNamedSet) {
-            /* eslint-enable */
+        if (!eventArgs.cancel && args.customAttributes && (args.customAttributes as any).hasChild &&
+            !(args.customAttributes as any).cell.isNamedSet) {
+            /* eslint-enable @typescript-eslint/no-explicit-any */
             if (this.parent.dataType === 'olap') {
                 this.parent.onDrill(undefined, args.customAttributes as ChartLabelInfo);
             } else {
@@ -1615,12 +1621,17 @@ export class PivotChart {
         }
     }
 
-    /** @hidden */
-
-    /* eslint-disable */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    /**
+     * It helped to drills the row or columns.
+     *
+     * @param {IMultiLevelLabelClickEventArgs | any} args - It contains the drillInfo.
+     * @returns {void}
+     * @hidden
+     */
     public onDrill(args: IMultiLevelLabelClickEventArgs | any): void {
         const labelInfo: any = args.customAttributes;
-        /* eslint-enable */
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         let delimiter: string = (this.dataSourceSettings.drilledMembers[0] && this.dataSourceSettings.drilledMembers[0].delimiter) ?
             this.dataSourceSettings.drilledMembers[0].delimiter : '**';
         const fieldName: string = labelInfo.fieldName;
@@ -1676,7 +1687,7 @@ export class PivotChart {
         };
         this.parent.trigger(events.enginePopulating, enginePopulatingEventArgs);
         this.parent.setProperties({ dataSourceSettings: enginePopulatingEventArgs.dataSourceSettings }, true);
-        if (pivot.parent.enableVirtualization) {
+        if (pivot.parent.enableVirtualization || pivot.parent.enablePaging) {
             if (pivot.parent.dataSourceSettings.mode === 'Server') {
                 pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
             } else {

@@ -10,7 +10,7 @@ import { BorderModel, MarginModel, FontModel } from '../../common/model/base-mod
 import { DataLabelSettingsModel, MarkerSettingsModel } from '../series/chart-series-model';
 import { LabelPosition, ErrorBarDirection } from '../utils/enum';
 import { Series, Points } from './chart-series';
-import { ITextRenderEventArgs } from '../../chart/model/chart-interface';
+import { ITextRenderEventArgs } from '../../chart/model/chart-interface';   
 import { textRender } from '../../common/model/constants';
 import {
     createTemplate, getFontStyle, getElement, measureElementRect, templateAnimate, withIn, withInBounds
@@ -189,7 +189,7 @@ export class DataLabel {
                         cancel: false, name: textRender, series: series,
                         point: point, text: labelText[i as number], border: border,
                         color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation,
-                        textSize: measureText(labelText[i as number], dataLabel.font)
+                        textSize: measureText(labelText[i as number], dataLabel.font, this.chart.themeStyle.datalabelFont)
                     };
                     chart.trigger(textRender, argsData);
                     if (!argsData.cancel) {
@@ -199,7 +199,7 @@ export class DataLabel {
                         if (argsData.template !== null) {
                             this.createDataLabelTemplate(element, series, dataLabel, point, argsData, i, redraw);
                         } else {
-                            textSize = measureText(argsData.text, dataLabel.font);
+                            textSize = measureText(argsData.text, dataLabel.font, this.chart.themeStyle.datalabelFont);
                             rect = this.calculateTextPosition(point, series, textSize, dataLabel, i);
                             // To check whether the polar radar chart datalabel intersects the axis label or not
                             if (chart.chartAreaType === 'PolarRadar') {
@@ -255,12 +255,7 @@ export class DataLabel {
                                 const backgroundColor: string = this.fontBackground === 'transparent' ? ((this.chart.theme.indexOf('Dark') > -1 || this.chart.theme === 'HighContrast') ? 'black' : 'white') : this.fontBackground;
                                 rgbValue = convertHexToColor(colorNameToHex(backgroundColor));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-                                if (dataLabel.position == 'Outer') {
-                                    xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
-                                }
-                                else {
-                                    xPos = ((dataLabel.angle === 90 && (dataLabel.enableRotation)) ? (rect.x + this.margin.left + textSize.width) + labelLocation.x : (dataLabel.angle === -90 && (dataLabel.enableRotation)) ? (rect.x + this.margin.left) + labelLocation.x : (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x);
-                                }
+                                xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
                                 yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
                                 labelLocation = { x: 0, y: 0 };
                                 if (angle !== 0 && dataLabel.enableRotation) {
@@ -274,8 +269,11 @@ export class DataLabel {
                                     degree = 0;
                                     xValue = rect.x;
                                     yValue = rect.y;
+                                    xPos -= chart.chartAreaType == 'Cartesian' && xPos + (textSize.width / 2) > clip.width ? (xPos + textSize.width / 2) - clip.width : 0;
+                                    yPos -= yPos + textSize.height > clip.y + clip.height ? (yPos + textSize.height) - (clip.y + clip.height) : 0;
                                 }
-                                const textAnchor: string = dataLabel.labelIntersectAction === 'Rotate90' ? 'end' : (angle == -90 && dataLabel.position == 'Outer') ? 'start' : 'middle';
+                                const textAnchor: string = dataLabel.labelIntersectAction === 'Rotate90' ? (dataLabel.position == 'Top' ? 'start' : (dataLabel.position == 'Middle' ? 'middle' : 'end')) :
+                                    ((angle == -90 && dataLabel.enableRotation) ? (dataLabel.position == 'Top' ? 'end' : (dataLabel.position == 'Middle' ? 'middle' : 'start')) : 'middle');
                                 textElement(
                                     chart.renderer,
                                     new TextOption(
@@ -286,7 +284,7 @@ export class DataLabel {
                                     argsData.font, argsData.font.color ||
                                 ((contrast >= 128 || series.type === 'Hilo' || series.type === 'HiloOpenClose') ? 'black' : 'white'),
                                     series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect, null, null,
-                                    chart.enableCanvas
+                                    chart.enableCanvas, null, this.chart.themeStyle.datalabelFont
                                 );
                             }
                         }

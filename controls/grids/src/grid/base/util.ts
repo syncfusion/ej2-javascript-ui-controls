@@ -237,15 +237,18 @@ export function iterateExtend(array: Object[]): Object[] {
 }
 
 /**
- * @param {string} template - Defines the template
+ * @param {string | Function} template - Defines the template
  * @returns {Function} Returns the function
  * @hidden
  */
-export function templateCompiler(template: string): Function {
+export function templateCompiler(template: string | Function): Function {
     if (template) {
         try {
             const validSelector: boolean = template[0] !== '<';
-            if (validSelector && document.querySelectorAll(template).length) {
+            if (typeof template === 'function') {
+                return baseTemplateComplier(template);
+            }
+            else if (validSelector && document.querySelectorAll(template).length) {
                 return baseTemplateComplier(document.querySelector(template).innerHTML.trim());
             } else {
                 return baseTemplateComplier(template);
@@ -675,6 +678,15 @@ export function getComplexFieldID(field: string = ''): string {
 
 /**
  * @param {string} field - Defines the field
+ * @returns {string} - Returns the parsed column field id
+ * @hidden
+ */
+export function getParsedFieldID(field: string = ''): string {
+    return field.replace(/[^a-zA-Z0-9_.]/g, '\\$&');
+}
+
+/**
+ * @param {string} field - Defines the field
  * @returns {string} - Returns the set complex field ID
  * @hidden
  */
@@ -748,14 +760,20 @@ export function setFormatter(serviceLocator?: ServiceLocator, column?: Column): 
     const fmtr: IValueFormatter = serviceLocator.getService<IValueFormatter>('valueFormatter');
     const format: string = 'format';
     let args: object;
-    if (column.type === 'date' || column.type === 'datetime') {
-        args = { type: column.type, skeleton: column.format };
+    if (column.type === 'date' || column.type === 'datetime' || column.type === 'dateonly') {
+        args = { type: column.type === 'dateonly' ? 'date' : column.type, skeleton: column.format };
         if ((typeof (column.format) === 'string') && column.format !== 'yMd') {
             args[`${format}`] = column.format;
         }
     }
     switch (column.type) {
     case 'date':
+        column.setFormatter(
+            fmtr.getFormatFunction(args as DateFormatOptions));
+        column.setParser(
+            fmtr.getParserFunction(args as DateFormatOptions));
+        break;
+    case 'dateonly':
         column.setFormatter(
             fmtr.getFormatFunction(args as DateFormatOptions));
         column.setParser(
@@ -966,12 +984,25 @@ export function getColumnByForeignKeyValue(foreignKeyValue: string, columns: Col
 }
 
 /**
+ * @param {number} value - Defines the date or month value
+ * @returns {string} Returns string
+ * @hidden
+ */
+export function padZero(value: number): string {
+    if (value < 10) {
+        return '0' + value;
+    }
+    return String(value);
+}
+
+/**
  * @param {PredicateModel} filterObject - Defines the filterObject
  * @param {string} type - Defines the type
+ * @param {boolean} isExecuteLocal - Defines whether the data actions performed in client and used for dateonly type field
  * @returns {Predicate} Returns the Predicate
  * @hidden
  */
-export function getDatePredicate(filterObject: PredicateModel, type?: string): Predicate {
+export function getDatePredicate(filterObject: PredicateModel, type?: string, isExecuteLocal?: boolean): Predicate {
     let datePredicate: Predicate;
     let prevDate: Date;
     let nextDate: Date;
@@ -982,36 +1013,45 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string): P
         return datePredicate;
     }
     const value: Date = new Date(filterObject.value as string);
-    if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
-        if (type === 'datetime') {
-            prevDate = new Date(value.setSeconds(value.getSeconds() - 1));
-            nextDate = new Date(value.setSeconds(value.getSeconds() + 2));
-            filterObject.value = new Date(value.setSeconds(nextDate.getSeconds() - 1));
-        } else {
-            prevDate = new Date(value.setHours(0) - 1);
-            nextDate = new Date(value.setHours(24));
-        }
-        prevObj.value = prevDate;
-        nextObj.value = nextDate;
-        if (filterObject.operator === 'equal') {
-            prevObj.operator = 'greaterthan';
-            nextObj.operator = 'lessthan';
-        } else if (filterObject.operator === 'notequal') {
-            prevObj.operator = 'lessthanorequal';
-            nextObj.operator = 'greaterthanorequal';
-        }
-        const predicateSt: Predicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
-        const predicateEnd: Predicate = new Predicate(nextObj.field, nextObj.operator, nextObj.value, false);
-        datePredicate = filterObject.operator === 'equal' ? predicateSt.and(predicateEnd) : predicateSt.or(predicateEnd);
-    } else {
-        if (type === 'date' && (filterObject.operator === 'lessthanorequal' || filterObject.operator === 'greaterthan')) {
-            prevObj.value = new Date(value.setHours(24) - 1);
-        }
+    if (type === 'dateonly' && !isExecuteLocal) {
         if (typeof (prevObj.value) === 'string') {
             prevObj.value = new Date(prevObj.value);
         }
-        const predicates: Predicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        const dateOnlyString: string = (prevObj.value as Date).getFullYear() + '-' + padZero((prevObj.value as Date).getMonth() + 1) + '-' + padZero((prevObj.value as Date).getDate());
+        const predicates: Predicate = new Predicate(prevObj.field, prevObj.operator, dateOnlyString, false);
         datePredicate = predicates;
+    } else {
+        if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
+            if (type === 'datetime') {
+                prevDate = new Date(value.setSeconds(value.getSeconds() - 1));
+                nextDate = new Date(value.setSeconds(value.getSeconds() + 2));
+                filterObject.value = new Date(value.setSeconds(nextDate.getSeconds() - 1));
+            } else {
+                prevDate = new Date(value.setHours(0) - 1);
+                nextDate = new Date(value.setHours(24));
+            }
+            prevObj.value = prevDate;
+            nextObj.value = nextDate;
+            if (filterObject.operator === 'equal') {
+                prevObj.operator = 'greaterthan';
+                nextObj.operator = 'lessthan';
+            } else if (filterObject.operator === 'notequal') {
+                prevObj.operator = 'lessthanorequal';
+                nextObj.operator = 'greaterthanorequal';
+            }
+            const predicateSt: Predicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+            const predicateEnd: Predicate = new Predicate(nextObj.field, nextObj.operator, nextObj.value, false);
+            datePredicate = filterObject.operator === 'equal' ? predicateSt.and(predicateEnd) : predicateSt.or(predicateEnd);
+        } else {
+            if (type === 'date' && (filterObject.operator === 'lessthanorequal' || filterObject.operator === 'greaterthan')) {
+                prevObj.value = new Date(value.setHours(24) - 1);
+            }
+            if (typeof (prevObj.value) === 'string') {
+                prevObj.value = new Date(prevObj.value);
+            }
+            const predicates: Predicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+            datePredicate = predicates;
+        }
     }
     if ((<{ setProperties: Function }>filterObject).setProperties) {
         (<{ setProperties: Function }>filterObject).setProperties({ ejpredicate: datePredicate }, true);
@@ -1064,6 +1104,11 @@ export function getObject(field: string = '', object?: Object): any {
         const splits: string[] = field.split('.');
         for (let i: number = 0; i < splits.length && !isNullOrUndefined(value); i++) {
             value = value[splits[parseInt(i.toString(), 10)]];
+            if (isUndefined(value)) {
+                const newCase: string = splits[parseInt(i.toString(), 10)].charAt(0).toUpperCase()
+                    + splits[parseInt(i.toString(), 10)].slice(1);
+                value = object[`${newCase}`] || object[`${newCase}`.charAt(0).toLowerCase() + `${newCase}`.slice(1)];
+            }
         }
         return value as string;
     }
@@ -1349,8 +1394,17 @@ export function getEditedDataIndex(gObj: IGrid, data: Object): number {
     const keyField: string = gObj.getPrimaryKeyFieldNames()[0];
     let dataIndex: number;
     gObj.getCurrentViewRecords().filter((e: Object, index: number) => {
-        if (e[`${keyField}`] === data[`${keyField}`]) {
-            dataIndex = index;
+        if (keyField.includes('.')) {
+            const currentValue: number = getObject(keyField, e);
+            const originalValue: number =  getObject(keyField, data);
+            if (currentValue === originalValue) {
+                dataIndex = index;
+            }
+        }
+        else {
+            if (e[`${keyField}`] === data[`${keyField}`]) {
+                dataIndex = index;
+            }
         }
     });
     return dataIndex;
@@ -1417,7 +1471,7 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
                               startRowIndex?: number): void {
     let startIndex: number = index ? index : 0;
     for (let i: number = startRowIndex ? startRowIndex : 0; i < rows.length; i++) {
-        if (rows[parseInt(i.toString(), 10)].isDataRow) {
+        if (rows[parseInt(i.toString(), 10)] && rows[parseInt(i.toString(), 10)].isDataRow) {
             rows[parseInt(i.toString(), 10)].index = startIndex;
             rows[parseInt(i.toString(), 10)].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
             rowElms[parseInt(i.toString(), 10)].setAttribute(literals.dataRowIndex, startIndex.toString());
@@ -1721,6 +1775,7 @@ export function setRowsInTbody(
  * @param {string} numberFormat - Format
  * @param {string} type - Value type
  * @param {boolean} isExcel - Boolean property
+ * @param {string} currencyCode - Specifies the currency code to be used for formatting.
  * @returns {string} returns formated value
  * @hidden
  */
@@ -1819,7 +1874,7 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
             } else {
                 rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible = displayVal === '' ? true : false;
                 if (rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible === false) {
-                   tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.add('e-hide');
+                    tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.add('e-hide');
                 }
             }
         }

@@ -55,48 +55,52 @@ export function expression(value?: RegExp): RegExp {
 /**
  * Compile the template string into template function.
  *
- * @param {string} template - The template string which is going to convert.
+ * @param {string | Function} template - The template string which is going to convert.
  * @param {Object} helper - Helper functions as an object.
  * @param {boolean} ignorePrefix ?
  * @returns {string} ?
  * @private
  */
-export function compile(template: string, helper?: Object, ignorePrefix?: boolean): () => string {
-    const argName: string = 'data';
-    const evalExpResult: string = evalExp(template, argName, helper, ignorePrefix);
-    // eslint-disable-next-line
-    const condtion = `var valueRegEx = (/value=\\'([A-Za-z0-9 _]*)((.)([\\w)(!-;?-■\\s]+)['])/g);
-    var hrefRegex = (/(?:href)([\\s='"./]+)([\\w-./?=&\\\\#"]+)((.)([\\w)(!-;/?-■\\s]+)['])/g);
-    if(str.match(valueRegEx)){
-        var check = str.match(valueRegEx);
-        var str1 = str;
-        for (var i=0; i < check.length; i++) {
-            var check1 = str.match(valueRegEx)[i].split('value=')[1];
-            var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
-            change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
-            str1 = str1.replace(check1, change);
-        }
-        str = str.replace(str, str1);
-    }
-    else if (str.match(/(?:href='')/) === null) {
-        if(str.match(hrefRegex)) {
-            var check = str.match(hrefRegex);
+export function compile(template: string | Function, helper?: Object, ignorePrefix?: boolean): () => string {
+    if (typeof template === 'function') {
+        return template as () => string;
+    } else {
+        const argName: string = 'data';
+        const evalExpResult: string = evalExp(template, argName, helper, ignorePrefix);
+        // eslint-disable-next-line
+        const condtion = `var valueRegEx = (/value=\\'([A-Za-z0-9 _]*)((.)([\\w)(!-;?-■\\s]+)['])/g);
+        var hrefRegex = (/(?:href)([\\s='"./]+)([\\w-./?=&\\\\#"]+)((.)([\\w)(!-;/?-■\\s]+)['])/g);
+        if(str.match(valueRegEx)){
+            var check = str.match(valueRegEx);
             var str1 = str;
             for (var i=0; i < check.length; i++) {
-                var check1 = str.match(hrefRegex)[i].split('href=')[1];
-                if (check1) {
-                    var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
-                    change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
-                    str1 = str1.replace(check1, change);
-                }
+                var check1 = str.match(valueRegEx)[i].split('value=')[1];
+                var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
+                change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
+                str1 = str1.replace(check1, change);
             }
             str = str.replace(str, str1);
         }
+        else if (str.match(/(?:href='')/) === null) {
+            if(str.match(hrefRegex)) {
+                var check = str.match(hrefRegex);
+                var str1 = str;
+                for (var i=0; i < check.length; i++) {
+                    var check1 = str.match(hrefRegex)[i].split('href=')[1];
+                    if (check1) {
+                        var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
+                        change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
+                        str1 = str1.replace(check1, change);
+                    }
+                }
+                str = str.replace(str, str1);
+            }
+        }
+        `;
+        const fnCode: string = 'var str=\"' + evalExpResult + '\";' + condtion + ' return str;';
+        const fn: Function = new Function(argName, fnCode);
+        return fn.bind(helper);
     }
-    `;
-    const fnCode: string = 'var str=\"' + evalExpResult + '\";' + condtion + ' return str;';
-    const fn: Function = new Function(argName, fnCode);
-    return fn.bind(helper);
 }
 
 /** function used to evaluate the function expression
@@ -236,7 +240,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
  * @returns {string} ?
  */
 function addNameSpace(str: string, addNS: boolean, nameSpace: string, ignoreList: string[], ignorePrefix: boolean): string {
-    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1 && !ignorePrefix) ? nameSpace + '.' + str : str);
+    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1 && !ignorePrefix && str !== "true" && str !== "false") ? nameSpace + '.' + str : str);
 }
 
 /**

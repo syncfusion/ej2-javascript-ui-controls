@@ -9,7 +9,7 @@ Spreadsheet.Inject(BasicModule);
  *  Keyboard shortcuts spec
  */
 
-describe('Spreadsheet formula bar module ->', () => {
+describe('Keyboard shortcuts module ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     let model: SpreadsheetModel;
     let eventArg: Object;
@@ -328,7 +328,9 @@ describe('Spreadsheet formula bar module ->', () => {
             });
         });
         it('Apply Tab Key in Chart Element in Chart Design Tab->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
             helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
+            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 18, altKey: true, preventDefault: (): void => { } });
             helper.triggerKeyNativeEvent(9);
             setTimeout(() => {
                 expect(document.activeElement.textContent).toBe('Add Chart Element');
@@ -336,7 +338,9 @@ describe('Spreadsheet formula bar module ->', () => {
             });
         });
         it('Apply Tab Key in Chart Type in Chart Design Tab->', (done: Function) => {
-            helper.triggerKeyNativeEvent(9);helper.triggerKeyNativeEvent(9);helper.triggerKeyNativeEvent(9);
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 18, altKey: true, preventDefault: (): void => { } });
+            helper.triggerKeyNativeEvent(9); helper.triggerKeyNativeEvent(9); helper.triggerKeyNativeEvent(9);
             setTimeout(() => {
                 expect(document.activeElement.textContent).toBe('Chart Type');
                 done();
@@ -440,21 +444,28 @@ describe('Spreadsheet formula bar module ->', () => {
                 done();
             });
         });
-        it('Apply Border using shortcut->', (done: Function) => {
-            helper.invoke('selectRange', ['E4']);
-            helper.triggerKeyNativeEvent(55, true);
+        it('UnHide Row using shortcut->', (done: Function) => {
+            helper.invoke('selectRange', ['C3']);
+            helper.triggerKeyNativeEvent(57, true, true);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[3].cells[4].style.borderTop).toBe('1px solid #000000');
-                expect(helper.getInstance().sheets[0].rows[3].cells[4].style.borderBottom).toBe('1px solid #000000');
+                expect(helper.getInstance().sheets[0].rows[2].hidden).toBeFalsy();
                 done();
             });
         });
-        it('Remove Border using shortcut->', (done: Function) => {
+        it('UnHide Column using shortcut->', (done: Function) => {
+            helper.invoke('selectRange', ['C4']);
+            helper.triggerKeyNativeEvent(48, true, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].columns[2].hidden).toBeFalsy();
+                done();
+            });
+        });
+        it('Apply Border using shortcut->', (done: Function) => {
             helper.invoke('selectRange', ['E4']);
             helper.triggerKeyNativeEvent(55, true, true);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[3].cells[4].style.borderTop).toBe('');
-                expect(helper.getInstance().sheets[0].rows[3].cells[4].style.borderBottom).toBe('');
+                expect(helper.getInstance().sheets[0].rows[3].cells[4].style.borderTop).toBe('1px solid #000000');
+                expect(helper.getInstance().sheets[0].rows[3].cells[4].style.borderBottom).toBe('1px solid #000000');
                 done();
             });
         });
@@ -525,12 +536,12 @@ describe('Spreadsheet formula bar module ->', () => {
                 done();
             });
         });
-        it('Apply "#,###.00" Number Format using shortcut->', (done: Function) => {
+        it('Apply "0.00" Number Format using shortcut->', (done: Function) => {
             helper.invoke('selectRange', ['B6']);
             helper.triggerKeyNativeEvent(49, true, true);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[5].cells[1].format).toBe('#,###.00');
-                expect(helper.invoke('getCell', [5, 1]).textContent).toBe('41,813.00');
+                expect(helper.getInstance().sheets[0].rows[5].cells[1].format).toBe('0.00');
+                expect(helper.invoke('getCell', [5, 1]).textContent).toBe('41813.00');
                 done();
             });
         });
@@ -559,8 +570,22 @@ describe('Spreadsheet formula bar module ->', () => {
             setTimeout(() => {
                 let popUpElem: HTMLElement = helper.getElement('.e-dropdown-popup.e-sheets-list')
                 expect(popUpElem.firstElementChild.childElementCount).toBe(2);
+                helper.click('.e-sheets-list.e-dropdown-btn');
                 done();
             });
+        });
+        it('Formula bar toggle checking', (done: Function) => {
+            helper.triggerKeyNativeEvent(85, true, true);
+            const formulaBar: HTMLElement = helper.getElementFromSpreadsheet('.e-formula-bar-panel');
+            expect(formulaBar.classList.contains('e-expanded')).toBeTruthy();
+            const dropIcon: HTMLElement = helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-drop-icon');
+            expect(dropIcon.title).toBe('Collapse Formula Bar');
+            expect(dropIcon.getAttribute('aria-label')).toBe('Expand Formula Bar');
+            helper.triggerKeyNativeEvent(85, true, true);
+            expect(dropIcon.title).toBe('Expand Formula Bar');
+            expect(dropIcon.getAttribute('aria-label')).toBe('Collapse Formula Bar');
+            expect(formulaBar.classList.contains('e-expanded')).toBeFalsy();
+            done();
         });
     });
 

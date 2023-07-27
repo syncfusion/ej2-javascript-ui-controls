@@ -33,6 +33,9 @@ export class PdfExport {
                   orientation?: PdfPageOrientation): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
+            if (maps.isTileMap) {
+                maps.isExportInitialTileMap = true;
+            }
             const canvasElement: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
@@ -46,9 +49,10 @@ export class PdfExport {
             const exportElement: HTMLElement = maps.svgObject.cloneNode(true) as HTMLElement;
             const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
             const backgroundColor: string = backgroundElement.getAttribute('fill');
-            if ((maps.theme === 'Tailwind' || maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5' || maps.theme === 'Bootstrap5Dark'
-                || maps.theme === 'Fluent' || maps.theme === 'FluentDark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+            if ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                 (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
+            } else if ((maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(0, 0, 0, 1)');
             }
             const url: string = window.URL.createObjectURL(
                 new Blob(
@@ -90,7 +94,9 @@ export class PdfExport {
                     const tile: HTMLElement = document.getElementById(maps.element.id + '_tile_' + (i - 1));
                     const tileImg: HTMLImageElement = new Image();
                     tileImg.crossOrigin = 'Anonymous';
-                    ctx.fillStyle = maps.background ? maps.background : '#FFFFFF';
+                    let background: string = maps.background ? maps.background : ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) ? '#ffffff' :
+                        (maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent') ? '#000000' : '#ffffff';
+                    ctx.fillStyle = background;
                     ctx.fillRect(0, 0, maps.availableSize.width, maps.availableSize.height);
                     ctx.font = maps.titleSettings.textStyle.size + ' Arial';
                     const titleElement: HTMLElement = document.getElementById(maps.element.id + '_Map_title');
@@ -122,6 +128,7 @@ export class PdfExport {
                                 pdfDocument.pages.add().graphics.drawImage(
                                     new PdfBitmap(x), 0, 0, (maps.availableSize.width - 60), maps.availableSize.height
                                 );
+                                maps.isExportInitialTileMap = false;
                                 if (allowDownload) {
                                     pdfDocument.save(fileName + '.pdf');
                                     pdfDocument.destroy();

@@ -72,6 +72,14 @@ export class Crosshair {
         const chart: Chart = this.chart;
         chart.mouseX = chart.mouseX / chart.scaleX;
         chart.mouseY = chart.mouseY / chart.scaleY;
+        if (chart.stockChart && chart.stockChart.onPanning) {
+            if (chart.mouseY < chart.chartAxisLayoutPanel.seriesClipRect.y) {
+                chart.mouseY = chart.chartAxisLayoutPanel.seriesClipRect.y;
+            }
+            else if (chart.mouseY > chart.chartAxisLayoutPanel.seriesClipRect.y + chart.chartAxisLayoutPanel.seriesClipRect.height) {
+                chart.mouseY = chart.chartAxisLayoutPanel.seriesClipRect.y + chart.chartAxisLayoutPanel.seriesClipRect.height;
+            }
+        }
         if (event.type === 'touchmove' && (Browser.isIos || Browser.isIos7) && chart.startMove && event.preventDefault) {
             event.preventDefault();
         }
@@ -126,10 +134,6 @@ export class Crosshair {
         }
         this.stopAnimation();
         if (chart.tooltip.enable && !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect)) {
-            return null;
-        }
-        if (chart.stockChart && chart.stockChart.onPanning) {
-            this.removeCrosshair(1000);
             return null;
         }
 
@@ -281,8 +285,8 @@ export class Crosshair {
                         const render: SvgRenderer | CanvasRenderer = chart.enableCanvas ? this.svgRenderer : chart.renderer;
                         textElem = textElement(
                             render, options, axis.crosshairTooltip.textStyle,
-                            axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup, null, null, null,
-                            null, null, null, null, null, chart.enableCanvas
+                            axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabelFont.color, axisGroup, null, null, null,
+                            null, null, null, null, null, chart.enableCanvas, null, this.chart.themeStyle.crosshairLabelFont
                         );
                     }
                     direction = findCrosshairDirection(
@@ -309,21 +313,14 @@ export class Crosshair {
                             textElem.children[i as number].setAttribute('style', 'text-anchor: middle');
                         }
                     }
-                    if (this.chart.theme === 'Fluent' || this.chart.theme === 'FluentDark') {
-
-                        const shadowId: string = this.chart.element.id + '_shadow';
-                        pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
-                        let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
-                        shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
-                        shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
-
+                    if (this.chart.theme === 'Fluent' || this.chart.theme === 'FluentDark' || this.chart.theme === 'Fabric' || this.chart.theme === 'FabricDark') {
                         const defElement: Element = this.chart.renderer.createDefs();
+                        const bordercolor: string = this.chart.theme === 'Fluent' || this.chart.theme === 'Fabric' ? '#D2D0CE' : null;
+                        const borderwidth: number = this.chart.theme === 'Fluent' || this.chart.theme === 'Fabric' ? 1 : null;
                         defElement.setAttribute('id', this.chart.element.id + 'SVG_tooltip_definition');
                         axisGroup.appendChild(defElement);
-
-                        (<HTMLElement>defElement).innerText = shadow;
-                        pathElement.setAttribute('stroke', '#cccccc');
-                        pathElement.setAttribute('stroke-width', '0.5');
+                        pathElement.setAttribute('stroke', bordercolor);
+                        pathElement.setAttribute('stroke-width',' '+ borderwidth);
                     }
                 } else {
                     removeElement(this.elementID + '_axis_tooltip_' + k);
@@ -371,11 +368,11 @@ export class Crosshair {
         const islabelInside: boolean = axis.labelPosition === 'Inside';
         let scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
             ? axis.scrollBarHeight : 0;
-        this.elementSize = measureText(text as string, axis.crosshairTooltip.textStyle);
+        this.elementSize = measureText(text as string, axis.crosshairTooltip.textStyle, this.chart.themeStyle.crosshairLabelFont);
         if (typeof text !== 'string' && text.length > 1) {
             this.elementSize.width = 0; this.elementSize.height = 0;
             for (let i: number = 0; i < text.length; i++) {
-                const size: Size = measureText(text[i as number], axis.crosshairTooltip.textStyle);
+                const size: Size = measureText(text[i as number], axis.crosshairTooltip.textStyle, this.chart.themeStyle.crosshairLabelFont);
                 this.elementSize.height += size.height;
                 if (this.elementSize.width < size.width) {
                     this.elementSize.width = size.width;

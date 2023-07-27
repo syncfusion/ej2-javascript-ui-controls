@@ -255,9 +255,11 @@ export class ContextMenu {
         this.menuType = 'folder';
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.folder.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
+        if (isTree) {
         const selectedTreeNode: Element = select('[data-uid="'+this.parent.navigationpaneModule.treeObj.selectedNodes[0]+'"]', this.parent.navigationpaneModule.treeObj.element);
         if (this.parent.pathNames[this.parent.pathNames.length-1] === selectedTreeNode.querySelector('.e-list-text').innerHTML && this.parent.activeModule === 'navigationpane') {
             this.disabledItems.push('Open');
+        }
         } else if (this.parent.selectedItems.length !== 1 && this.parent.activeModule !=='navigationpane') {
             this.disabledItems.push('Rename', 'Paste');
         }
@@ -509,6 +511,7 @@ export class ContextMenu {
         if (this.parent.isDestroyed) { return; }
         this.removeEventListener();
         this.contextMenu.destroy();
+        this.targetElement = null;
     }
     /* istanbul ignore next */
     private getItemData(data: string[]): MenuItemModel[] {

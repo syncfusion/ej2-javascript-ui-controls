@@ -51,7 +51,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
             editorElem.click();
             editorElem.value = 'TestSheet';
-            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            helper.triggerKeyNativeEvent(13, false, false, editorElem);
             expect(sheet.name).toBe('TestSheet');
             expect(sheet.rows[1].cells[1].formula).toBe('=TestSheet!B1');
             done();
@@ -59,7 +59,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
 
         it('Sheet rename cancel testing', (done: Function) => {
             helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
-            helper.triggerKeyEvent('keydown', 27, null, false, false, helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename'));
+            helper.triggerKeyNativeEvent(27, false, false, helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename'));
             expect(helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename')).toBeNull();
             done();
         });
@@ -68,12 +68,12 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
             let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
             editorElem.value = 'Sheet1';
-            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            helper.triggerKeyNativeEvent(13, false, false, editorElem);
             setTimeout(() => {
                 expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
                 helper.setAnimationToNone('.e-dialog');
                 helper.click('.e-dlg-closeicon-btn');
-                helper.triggerKeyEvent('keydown', 27, null, false, false, editorElem);
+                helper.triggerKeyNativeEvent(27, false, false, editorElem);
                 done();
             }, 10);
         });
@@ -178,7 +178,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
             editorElem.click();
             editorElem.value = '///';
-            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            helper.triggerKeyNativeEvent(13, false, false, editorElem);
             setTimeout(() => {
                 expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
                 helper.setAnimationToNone('.e-dialog');
@@ -190,7 +190,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
             editorElem.click();
             editorElem.value = '  ';
-            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            helper.triggerKeyNativeEvent(13, false, false, editorElem);
             expect(helper.getInstance().sheets[0].name).toBe('  ');
             done();
         });
@@ -199,7 +199,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
             editorElem.click();
             editorElem.value = '';
-            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            helper.triggerKeyNativeEvent(13, false, false, editorElem);
             setTimeout(() => {
                 expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
                 helper.setAnimationToNone('.e-dialog');
@@ -211,7 +211,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
             editorElem.click();
             editorElem.value = 'Price Details';
-            helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+            helper.triggerKeyNativeEvent(13, false, false, editorElem);
             expect(helper.getInstance().sheets[0].name).toBe('Price Details');
             done();
         });
@@ -313,7 +313,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             });
         });
         it('Delete the single sheet in workbook to check the error', (done: Function) => {
-            helper.getInstance().sheetTabsModule.removeSheetTab(0);
+            helper.getInstance().sheetTabsModule.removeSheetTab({ index: 0 });
             setTimeout(function () {
                 expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
                 helper.setAnimationToNone('.e-dialog');
@@ -378,7 +378,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                 let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
                 editorElem.click();
                 editorElem.value = '<TestSheet>';
-                helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+                helper.triggerKeyNativeEvent(13, false, false, editorElem);
                 expect(helper.getInstance().sheets[0].name.toString()).toBe('<TestSheet>');
                 done();
             });
@@ -391,7 +391,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                     let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
                     editorElem.click();
                     editorElem.value = 'New Sheet';
-                    helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+                    helper.triggerKeyNativeEvent(13, false, false, editorElem);
                     expect(helper.getInstance().sheets[1].name).toBe('New Sheet');
                     done();
                 });

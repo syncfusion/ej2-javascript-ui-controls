@@ -193,9 +193,13 @@ export class WorkbookFormula {
             }
             args.isFormulaDependent = this.refreshCalculate(
                 <number>args.rowIndex, <number>args.colIndex, <string>args.value, <boolean>args.isFormula, <number>args.sheetIndex,
-                <boolean>args.isRefreshing, <boolean>args.isDependentRefresh);
+                <boolean>args.isRefreshing, <boolean>args.isDependentRefresh, <boolean>args.isRandomFormula);
             args.value = args.value ? args.value.toString().split('-*').join('-').split('/*').join('/').split('*/').
                 join('*').split('-/').join('-').split('*+').join('*').split('+*').join('+') : args.value;
+            break
+        case 'refreshRandomFormula':
+            this.refreshRandomFormula();
+            this.calculateInstance.cell = '';
             break;
         case 'getArgumentSeparator':
             args.argumentSeparator = this.calculateInstance.getParseArgumentSeparator();
@@ -458,7 +462,7 @@ export class WorkbookFormula {
         }
     }
     private refreshCalculate(
-        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean, isDependentRefresh?: boolean): boolean {
+        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean, isDependentRefresh?: boolean, isRandomFormula?: boolean): boolean {
         const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
         let sheetId: string = sheet.id + '';
         const sheetName: string = sheet.name;
@@ -471,24 +475,10 @@ export class WorkbookFormula {
             value = this.parseSheetRef(value);
             const cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
             const usedRange: number[] = [sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
-            this.calculateInstance.valueChanged(sheetId, cellArgs, true, usedRange, isRefreshing, sheetName);
+            this.calculateInstance.valueChanged(sheetId, cellArgs, true, usedRange, isRefreshing, sheetName, isRandomFormula);
             const referenceCollection: string[] = this.calculateInstance.randCollection;
-            if (this.calculateInstance.isRandomVal === true) {
-                let rowId: number;
-                let colId: number;
-                let refValue: string = '';
-                if (this.calculateInstance.randomValues.size > 1 && this.calculateInstance.randomValues.size ===
-                    referenceCollection.length) {
-                    for (let i: number = 0; i < this.calculateInstance.randomValues.size; i++) {
-                        rowId = this.calculateInstance.rowIndex(referenceCollection[i as number]);
-                        colId = this.calculateInstance.colIndex(referenceCollection[i as number]);
-                        refValue = this.calculateInstance.randomValues.get(referenceCollection[i as number]);
-                        sheetId = (parseFloat(this.calculateInstance.getSheetToken(
-                            referenceCollection[i as number]).split(this.calculateInstance.sheetToken).join('')) + 1).toString();
-                        const tempArgs: ValueChangedArgs = new ValueChangedArgs(rowId, colId, refValue);
-                        this.calculateInstance.valueChanged(sheetId, tempArgs, true);
-                    }
-                }
+            if (this.calculateInstance.isRandomVal === true && !isRandomFormula) {
+                this.refreshRandomFormula();
             }
         } else {
             if (this.calculateInstance.getFormulaInfoTable().has(cellRef)) {
@@ -500,10 +490,6 @@ export class WorkbookFormula {
         }
         this.calculateInstance.cell = '';
         const updatedCell: CellModel = getCell(rowIdx, colIdx, this.parent.getActiveSheet());
-        if (value && value.toString().toUpperCase().startsWith('=DOLLAR(') &&
-            updatedCell && updatedCell.value && updatedCell.value.startsWith('$')) {
-            this.dollarFormulaDecimalHandler(updatedCell);
-        }
         if (updatedCell && value && value.toString().toUpperCase().indexOf('=SUM(') === 0 && !isDependentRefresh) {
             const errorStrings: string[] = ['#N/A', '#VALUE!', '#REF!', '#DIV/0!', '#NUM!', '#NAME?', '#NULL!', 'invalid arguments'];
             const val: string = value.toString().toUpperCase().replace('=SUM', '').replace('(', '').replace(')', '').split(':')[0];
@@ -519,13 +505,23 @@ export class WorkbookFormula {
         return this.calculateInstance.getDependentCells().has(cellRef);
     }
 
-    private dollarFormulaDecimalHandler(updatedCell: CellModel) {
-        const decimalCount: number = updatedCell.value.split('.')[1].length;
-        let decimalValue: string = '';
-        for (let decimalIdx: number = 1; decimalIdx <= decimalCount; decimalIdx++) {
-            decimalValue += '0';
+    private refreshRandomFormula(): void {
+        let rowId: number;
+        let colId: number;
+        let refValue: string = '';
+        const referenceCollection: string[] = this.calculateInstance.randCollection;
+        if (this.calculateInstance.randomValues.size > 1 && this.calculateInstance.randomValues.size ===
+            referenceCollection.length) {
+            for (let i: number = 0; i < this.calculateInstance.randomValues.size; i++) {
+                rowId = this.calculateInstance.rowIndex(referenceCollection[i as number]);
+                colId = this.calculateInstance.colIndex(referenceCollection[i as number]);
+                refValue = this.calculateInstance.randomValues.get(referenceCollection[i as number]);
+                let sheetId: string = (parseFloat(this.calculateInstance.getSheetToken(
+                    referenceCollection[i as number]).split(this.calculateInstance.sheetToken).join('')) + 1).toString();
+                const tempArgs: ValueChangedArgs = new ValueChangedArgs(rowId, colId, refValue);
+                this.calculateInstance.valueChanged(sheetId, tempArgs, true, undefined, undefined, undefined, false, true);
+            }
         }
-        updatedCell.format = '$#,##.' + decimalValue;
     }
 
     private autoCorrectFormula(formula: string, rowIdx: number, colIdx: number, sheetIdx: number): string {
@@ -1073,9 +1069,12 @@ export class WorkbookFormula {
         if (!len) { return; }
         const definedNames: DefineNameModel[] = Object.assign({}, this.parent.definedNames);
         let range: number[]; let sheetName: string; let splitedRef: string[]; let definedName: DefineNameModel; let updated: boolean;
+        let checkSheetName: string;
         for (let i: number = 0; i < len; i++) {
             definedName = definedNames[i as number]; splitedRef = definedName.refersTo.split('!'); sheetName = splitedRef[0].split('=')[1];
-            if (sheetName !== args.sheet.name) { continue; }
+            checkSheetName = sheetName;
+            if (checkSheetName.match(/'/g)) { checkSheetName = checkSheetName.slice(1, -1); }
+            if (checkSheetName !== args.sheet.name) { continue; }
             range = getRangeIndexes(splitedRef[1]);
             updated = this.parent.updateRangeOnInsertDelete(args, range);
             if (args.isInsert) {

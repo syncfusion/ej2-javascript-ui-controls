@@ -792,3 +792,87 @@ describe('Paging module', () => {
         });
     });
 });
+
+describe('BUG-830382 - Page count is not increased while adding new records if the Grid has pager dropdown', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 4),
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true },
+                allowPaging: true,
+                pageSettings: { pageSize: 5, pageSizes: [5, 10, 15, 'All'] },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120},
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140},
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2'},
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit', format: 'yMd', width: 170},
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } }},
+                ],
+                actionComplete: actionComplete,
+            }, done);
+        });
+    
+    it('Add first record', (done: Function) => {
+        (<any>gridObj.editModule).editModule.addRecord({ OrderID: 10246, CustomerID: 'updated' });
+        done();
+    });
+
+    it('Add complete', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.currentViewData.length).toBe(5);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.editModule).editModule.addRecord({ OrderID: 10247, CustomerID: 'New updated' });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+
+    describe('Cancelling paging action not working properly with Pager Dropdown', () => {
+        let gridObj: Grid;
+        let pagerElements: NodeListOf<HTMLElement>;
+        let actionBegin: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 24),
+                    allowPaging: true,
+                    pageSettings: { pageSize: 12, pageSizes: [5, 10, 12, 'All'] },
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120},
+                        { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140},
+                        { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2'},
+                        { field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit', format: 'yMd', width: 170},
+                        { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } }},
+                    ],
+                    actionBegin: actionBegin
+                }, done);
+        });
+
+        it('change page size action', function (done: Function) {
+            gridObj.pageSettings.pageSize = 5;
+            actionBegin = (args?: any): void => {
+                args.cancel = true;
+                done();
+            };
+            gridObj.actionBegin = actionBegin;
+        });
+
+        it ('check pagesize after cancel', () => {
+            expect(gridObj.pageSettings.pageSize).toBe(12);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = null;
+        });
+    });
+});

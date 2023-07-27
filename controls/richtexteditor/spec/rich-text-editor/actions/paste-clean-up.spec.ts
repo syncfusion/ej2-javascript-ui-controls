@@ -637,7 +637,7 @@ describe("paste cleanup testing", () => {
       expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
       expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here</span>14</p>`;
+      let expectedElem: string = `<p><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here</span>14</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -669,7 +669,7 @@ describe("paste cleanup testing", () => {
       expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
       expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>text after second URL</span>15</p>`;
+      let expectedElem: string = `<p><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here with another URL <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>text after second URL</span>15</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -703,7 +703,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
+      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -733,7 +733,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p><span><a classname="e-rte-anchor" href="http://www.google.com?first=a&amp;parameters=foo" title="http://www.google.com?first=a&amp;parameters=foo" target="_blank">http://www.google.com?first=a&amp;parameters=foo </a></span>160</p>`;
+      let expectedElem: string = `<p><span><a class="e-rte-anchor" href="http://www.google.com?first=a&amp;parameters=foo" title="http://www.google.com?first=a&amp;parameters=foo" target="_blank">http://www.google.com?first=a&amp;parameters=foo </a></span>160</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -2895,6 +2895,64 @@ describe("EJ2-69216 - Pasting from Word doesn't work properly with enterKey 'BR'
             pasteOK[0].click();
           }
           expect((rteObj as any).inputElement.innerHTML === `<p><span>This is a test</span></p><p><br></p><p><i>This is test 1</i></p>`).toBe(true)
+          done();
+        }, 50);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe("BLAZ-30316 - Image file data in the after paste cleanup event testing - ", () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+    let afterPasteCleanupEvent: boolean = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            pasteCleanupSettings: {
+              prompt: true
+            },
+            afterPasteCleanup : function(e : PasteCleanupArgs) {
+                if (e.filesData.length > 0) {
+                    afterPasteCleanupEvent = true;
+                }
+            }
+        });
+        done();
+      });
+    it("Image file data in the after paste cleanup event testing - ", (done) => {
+        let localElem: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><p style="margin: 0in 0in 8pt; color: rgb(51, 51, 51); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; line-height: 15.6933px; font-size: 11pt; font-family: Calibri, sans-serif;">Vsdvds</p><p style="margin: 0in 0in 8pt; color: rgb(51, 51, 51); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; line-height: 15.6933px; font-size: 11pt; font-family: Calibri, sans-serif;"><span><img width="45" height="31" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEQAAAAvCAYAAABaIGwrAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAARFSURBVGhD7VZNa1tHFH0/opbt1OnGG7e7bLppVwEvCoVuuors4posRBdxS1NqmhJsEH5ZKBAIFByC5WAJFSIKsQQyxY2NjbDhBRvhgH7O7f2cmSenJbRyU5i3uBydO3e+zpyZp2Tig6/gveuLQDihGDNPJq7TD210v+Pl7BAmBTKiQ5DkFIsbk5IqU9Jk7FwdImHJmHliyQIF2SEljAIFxSEzYTJujoKEjT5i5SyIU6hA75AiJHIOKY0oFiP3DrFk5FwEQTLJuOAaY+UJEUsWiA4xZQoUFIdwWDJuXjhkBNEhSFQlwavjHy5uQ/OPHqz9Rfv/gf+nDlnrDmE4PERB3q7+XWAySYTVuXoUQQ7YIW9T/y4wyQ73YWOx4pXC5K36OS78HOpLwp2CSx3IhkPI6qnWp1A/xU2edqDyza+w17/AfrRprPm9C99/flv7a522cXS33XyluSpsPD+B7LW2vb6A/osG3LoRzv9Axug24Ounmavbe7jq12fj/QueyCLOob36LTZSwQKUc4JIJ0YnyAPN60YHFzCgfK8DtbQF9R71xzwKVea672D5/g40j2iuDJppAzZW1mSMuRrU+5QfwuBoHx6nO/D4+Sseb9jvwPKczR/MNTiB5iOqw8P80toJLf45TybnG7A3wImyHlS0MS+IFSOGDuG8nTyeVLrq62Zuw0+/kVtoDN8/94bouF9svmIxsmc1mA3yN6uHInLjEfPJGXUIztW+J87z840P+Q2506LFX0BzRZJeECvWWOoGglDOFnkMG+4kpfazX054o7vr2hfDvyGWq8Imu+MEap8SD+dTsc96cCfkuf4j6xsDT6YoWT2QxVcXgHjoEG7HYsbAIczfT2FbF7nOPKjHE5Yxff/QIdJ/G3axZnh2DE/oGuF1SQOUKyZiT5n4p11Ydv0Vx8jZIbPpsS5elLr8hmjkrgzl3nRqGoHIlrvsEBXkb8PWoXO5d+lqgh3ir4woVd4iQTwXJbHDSk/u9RY5hAYIHSIDunoniO/vHGLj4ZV5QlcGN0mnnut/iZsgXSi/sX08HB/VHXlUB/twV5N2uv1N/RJwVOAeP5TeIW6Reuo2aDhG6JD1F1Rr743UVxoi/m71x3z/eXQPP/Yd94aw+IFDcvVj4vrZlQU5pT5BkXAzlH/ZaOGdbkP7CMWwz6s5JPeGENf+hKEgmjfnvWy1IL1fg48pH3x26bP9EN+P2tYB9M9G1xVcmXCeMWOSHexDin/MKBE2frS4A7u5P1p4UnRq9JsfVarzDiFBwv6hIFKLMf8U2rp59/Wg+hsppPTHjByh8w36+ND+8DPM2ngjDrEx3Xxj4viGULKca4yZJ1OaLFCQHTLlFBKMmecdYhExT6aZeKVi5+IQDkvGzZ1DChREh6AyplCBgUM0GTtXh0hYMmaeWLJAQXbIdBCxc3HINSKBUhFzFIRIERbskGlTSDFeXoY/AeO6JRV0z+rkAAAAAElFTkSuQmCC" v:shapes="Picture_x0020_4" id="msWordImg-clip_image002" class="e-rte-image e-imginline" style="border: 0px; cursor: pointer; display: inline-block; float: none; margin: auto; max-width: calc(100% - 10px); position: relative; box-sizing: border-box; padding: 1px; vertical-align: bottom; z-index: 1000;"></span></p><p style="margin: 0in 0in 8pt; color: rgb(51, 51, 51); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; line-height: 15.6933px; font-size: 11pt; font-family: Calibri, sans-serif;">Sdvsdv</p>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        keyBoardEvent.clipboardData = {
+            getData: () => {
+              return localElem;
+            },
+            items: []
+          };
+        rteObj.value = '<p>RTE</p>';
+        rteObj.pasteCleanupSettings.deniedTags = [];
+        rteObj.pasteCleanupSettings.deniedAttrs = [];
+        rteObj.pasteCleanupSettings.allowedStyleProps = [];
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        setCursorPoint((rteObj as any).inputElement.childNodes[0], 0);
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+          if (rteObj.pasteCleanupSettings.prompt) {
+            let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+            keepFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+          }
+          expect(afterPasteCleanupEvent).toBe(true)
           done();
         }, 50);
     });

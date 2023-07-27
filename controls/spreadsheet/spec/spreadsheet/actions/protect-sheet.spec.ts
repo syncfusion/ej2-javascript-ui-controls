@@ -750,21 +750,18 @@ describe('Protect sheet ->', () => {
             });
             it('Cancel button in hyperlink popup is not working in protected sheet', (done: Function) => {
                 helper.invoke('protectSheet', ['Sheet1', { selectCells: true, insertLink: true }]);
+                helper.invoke('lockCells', ['A1', false]);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
                 let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
                 const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(9)');
                 setTimeout(() => {
-                    helper.click('#' + helper.id + '_contextmenu li:nth-child(9)');
-                    setTimeout(() => {
-                        helper.triggerKeyEvent('keydown', 65, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                        setTimeout(() => {
-                            expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
-                            helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
-                            helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
-                            expect(helper.getElement('.e-hyperlink-dlg.e-dialog')).toBeNull();
-                            done();
-                        });
-                    });
+                    expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
+                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
+                    expect(helper.getElement('.e-hyperlink-dlg.e-dialog')).toBeNull();
+                    done();
                 });
             });
         });

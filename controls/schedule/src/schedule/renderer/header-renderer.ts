@@ -190,7 +190,7 @@ export class HeaderRenderer {
         }
         else {
             const text: string = this.parent.activeView.getDateRangeText(date);
-            selEle.setAttribute('aria-label', text);
+            selEle.firstElementChild.setAttribute('aria-label', text);
             textEle.textContent = text;
         }
         this.refresh();
@@ -224,16 +224,16 @@ export class HeaderRenderer {
         const items: ItemModel[] = [];
         items.push({
             align: 'Left', prefixIcon: 'e-icon-prev', tooltipText: 'Previous', overflow: 'Show',
-            cssClass: 'e-prev', htmlAttributes: { 'aria-label': 'previous period', 'role': 'navigation' }
+            cssClass: 'e-prev', htmlAttributes: { 'role': 'navigation' }
         });
         items.push({
             align: 'Left', prefixIcon: 'e-icon-next', tooltipText: 'Next', overflow: 'Show',
-            cssClass: 'e-next', htmlAttributes: { 'aria-label': 'next period', 'role': 'navigation' }
+            cssClass: 'e-next', htmlAttributes: { 'role': 'navigation' }
         });
         items.push({
             align: 'Left', text: this.getDateRangeText(), suffixIcon: 'e-icon-down-arrow', cssClass: 'e-date-range',
             overflow: 'Show',
-            htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'aria-label': 'title', 'role': 'navigation' }
+            htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'role': 'navigation' }
         });
         if (this.parent.isAdaptive || this.parent.enableAdaptiveUI) {
             items.push({

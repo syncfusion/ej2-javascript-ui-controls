@@ -17,6 +17,7 @@ export * from './document/pdf-catalog';
 export * from './document/pdf-document';
 export * from './document/pdf-document-base';
 export * from './document/pdf-document-template';
+export * from './document/pdf-viewer-preferences';
 export * from './document/automatic-fields/pdf-numbers-convertor';
 export * from './document/automatic-fields/pdf-page-number-field';
 export * from './document/automatic-fields/automatic-field-info';

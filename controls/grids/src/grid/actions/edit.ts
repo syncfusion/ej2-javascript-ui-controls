@@ -15,7 +15,7 @@ import { InlineEdit } from './inline-edit';
 import { BatchEdit } from './batch-edit';
 import { DialogEdit } from './dialog-edit';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { parentsUntil, getComplexFieldID, setComplexFieldID, getScrollBarWidth, setValidationRuels } from '../base/util';
+import { parentsUntil, getComplexFieldID, getParsedFieldID, setComplexFieldID, getScrollBarWidth, setValidationRuels } from '../base/util';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { DatePickerEditCell } from '../renderer/datepicker-edit-cell';
 import { calculateRelativeBasedPosition, OffsetPosition } from '@syncfusion/ej2-popups';
@@ -23,7 +23,7 @@ import { EJ2Intance } from '../base/interface';
 import { TemplateEditCell } from '../renderer/template-edit-cell';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Row } from '../models/row';
-import { addRemoveEventListener, getColumnModelByFieldName } from '../base/util';
+import { addRemoveEventListener, getColumnModelByFieldName, padZero } from '../base/util';
 import * as literals from '../base/string-literals';
 
 /**
@@ -176,6 +176,10 @@ export class Edit implements IAction {
             }
         } else if (!tr) {
             tr = gObj.getSelectedRows()[0] as HTMLTableRowElement;
+        }
+        if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal') {
+            const idx: number = parseInt(tr.getAttribute('data-rowindex'), 10);
+            tr = this.parent.getRowByIndex(idx) as HTMLTableRowElement;
         }
         this.isLastRow = tr.rowIndex === (this.parent.getContent().querySelector('tr:last-child') as HTMLTableRowElement).rowIndex;
         if (tr.style.display === 'none') {
@@ -433,6 +437,10 @@ export class Edit implements IAction {
                 val = null;
             }
             break;
+        case 'dateonly':
+            val = value && (value = new Date(value as string| Date)) ?
+                (value as Date).getFullYear() + '-' + padZero((value as Date).getMonth() + 1) + '-' + padZero((value as Date).getDate()) : null;
+            break;
         }
         return val;
     }
@@ -577,7 +585,7 @@ export class Edit implements IAction {
     }
 
     private actionComplete(e: NotifyArgs): void {
-        const actions: string[] = ['add', 'beginEdit', 'save', 'delete', 'cancel'];
+        const actions: string[] = ['add', 'beginEdit', 'save', 'delete', 'cancel', 'filterafteropen', 'filterchoicerequest'];
         if (actions.indexOf(e.requestType) < 0) {
             this.parent.isEdit = false;
         }
@@ -653,7 +661,7 @@ export class Edit implements IAction {
                 }
                 for (let k: number = 0; k < temp.length; k++) {
                     let value: number | string | Date | boolean = this.getValue(col[parseInt(j.toString(), 10)],
-                                                                                  temp[parseInt(k.toString(), 10)], editedData);
+                                                                                temp[parseInt(k.toString(), 10)], editedData);
                     if (col[parseInt(j.toString(), 10)].type === 'string') {
                         value = this.parent.sanitize(value as string);
                     }
@@ -712,7 +720,7 @@ export class Edit implements IAction {
                 && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.dataRowIndex), 10) < this.parent.frozenRows) {
                 return;
             }
-            const restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll', 'virtualscroll'];
+            const restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'filtersearchbegin', 'save', 'infiniteScroll', 'virtualscroll'];
             const isRestrict: boolean = restrictedRequestTypes.indexOf(e.requestType) === -1;
             const isDestroyVirtualForm: boolean = this.parent.enableVirtualization && this.formObj
                 && !this.formObj.isDestroyed && (editRow || addRow || e.requestType === 'cancel') && isRestrict;
@@ -1009,7 +1017,7 @@ export class Edit implements IAction {
     private valErrorPlacement(inputElement: HTMLElement, error: HTMLElement): void {
         if (this.parent.isEdit) {
             const id: string = error.getAttribute('for');
-            const elem: Element = this.getElemTable(inputElement).querySelector('#' + id + '_Error');
+            const elem: Element = this.getElemTable(inputElement).querySelector('#' + getParsedFieldID(id) + '_Error');
             if (!elem) {
                 this.createTooltip(inputElement, error, id, '');
             } else {
@@ -1065,7 +1073,7 @@ export class Edit implements IAction {
 
     private validationComplete(args: { status: string, inputName: string, element: HTMLElement, message: string }): void {
         if (this.parent.isEdit) {
-            const elem: HTMLElement = this.getElemTable(args.element).querySelector('#' + args.inputName + '_Error') as HTMLElement;
+            const elem: HTMLElement = this.getElemTable(args.element).querySelector('#' + getParsedFieldID(args.inputName) + '_Error') as HTMLElement;
             if (elem) {
                 if (args.status === 'failure') {
                     elem.style.display = '';

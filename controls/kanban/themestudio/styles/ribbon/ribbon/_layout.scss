@@ -20,6 +20,7 @@
         border-width: $ribbon-file-menu-border-width;
         font-size: $ribbon-file-menu-size;
         font-weight: $ribbon-file-menu-weight;
+        box-shadow: none;
 
         &.e-active {
           border-radius: $ribbon-file-menu-border-radius;
@@ -196,6 +197,7 @@
         border: $ribbon-items-border;
         height: $ribbon-overflow-btn-height;
         margin: auto;
+        box-shadow: none;
 
         .e-btn-icon {
           font-size: 16px;
@@ -234,6 +236,10 @@
 
       .e-ribbon-tab .e-hscroll-bar {
         overflow-y: hidden;
+      }
+
+      .e-input-group {
+        margin-bottom: 0;
       }
 
       .e-ribbon-group {
@@ -365,6 +371,8 @@
 
         .e-clear-icon {
           min-width: auto;
+          min-height: auto;
+          border-radius: unset;
         }
       }
 
@@ -442,6 +450,7 @@
         font-weight: $ribbon-items-font-weight;
         font-size: $ribbon-items-btn-size;
         text-transform: none;
+        box-shadow: none;
 
         &:focus {
           outline: none;
@@ -525,6 +534,7 @@
 
       .e-colorpicker-wrapper {
         border: 1px solid transparent;
+        border-radius: $ribbon-items-border-radius;
 
         .e-split-btn-wrapper.e-rtl .e-split-colorpicker {
           &.e-split-btn {
@@ -536,6 +546,7 @@
       .e-split-btn-wrapper {
         border: 1px solid transparent;
         border-radius: $ribbon-items-border-radius;
+        box-shadow: none;
 
         .e-btn {
           border-radius: 0;
@@ -691,6 +702,7 @@
         > .e-split-btn-wrapper .e-btn,
         > .e-btn {
           line-height: $ribbon-overflow-item-btn-height;
+          overflow: hidden;
         }
 
         >.e-split-btn-wrapper {
@@ -761,6 +773,17 @@
           padding-left: $ribbon-menu-blank-icon-padding !important; /* stylelint-disable-line declaration-no-important */
         }
       }
+    }
+  }
+
+  .e-ribbon-control.e-dropdown-popup ul .e-item {
+    font-size: $ribbon-ddb-popup-font-size;
+    height: $ribbon-ddb-popup-height;
+    align-items: center;
+
+    .e-menu-icon {
+      font-size: 16px;
+      line-height: 16px;
     }
   }
 
@@ -912,6 +935,10 @@
 
       .e-ribbon-group {
         height: auto;
+      }
+
+      .e-input-group {
+        margin-bottom: 0;
       }
 
       .e-ribbon-group-content {
@@ -1073,6 +1100,16 @@
           }
         }
       }
+    }
+  }
+
+  .e-bigger .e-ribbon-control.e-dropdown-popup ul .e-item {
+    font-size: $ribbon-bigger-ddb-popup-font-size;
+    height: $ribbon-bigger-ddb-popup-height;
+
+    .e-menu-icon {
+      font-size: 20px;
+      line-height: 20px;
     }
   }
 

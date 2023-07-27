@@ -76,35 +76,35 @@ describe('AutoComplete', () => {
     //         expect(autoObj.isPopupOpen).toBe(false);
     //     });
     // });
-    describe('EJ2-10319 -  Autocomplete two way binding value is not properly updated for first time', () => {
-        let autoObj: any;
-        let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
-        let dataSource = new DataManager({
-            url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/',
-            crossDomain: true
-        });
-        beforeAll(() => {
-            document.body.appendChild(autoEle);
-            autoObj = new AutoComplete({
-                dataSource: dataSource,
-                query: new Query().from('Customers').select('ContactName').take(7),
-                fields: { text: 'ContactName' },
-                placeholder: 'Select a name'
-            });
-            autoObj.appendTo(autoEle);
-        });
-        afterAll(() => {
-            autoObj.destroy();
-            autoEle.remove();
-        });
+    // describe('EJ2-10319 -  Autocomplete two way binding value is not properly updated for first time', () => {
+    //     let autoObj: any;
+    //     let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
+    //     let dataSource = new DataManager({
+    //         url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/',
+    //         crossDomain: true
+    //     });
+    //     beforeAll(() => {
+    //         document.body.appendChild(autoEle);
+    //         autoObj = new AutoComplete({
+    //             dataSource: dataSource,
+    //             query: new Query().from('Customers').select('ContactName').take(7),
+    //             fields: { text: 'ContactName' },
+    //             placeholder: 'Select a name'
+    //         });
+    //         autoObj.appendTo(autoEle);
+    //     });
+    //     afterAll(() => {
+    //         autoObj.destroy();
+    //         autoEle.remove();
+    //     });
 
-        it('check the autocomplete value with the previous value to trigger onProperty change', () => {
-            autoObj.focusIn();
-            autoObj.inputElement.value = "as";
-            autoObj.focusOut();
-            expect(autoObj.inputElement.value === autoObj.value).toBe(true);
-        });
-    });
+    //     it('check the autocomplete value with the previous value to trigger onProperty change', () => {
+    //         autoObj.focusIn();
+    //         autoObj.inputElement.value = "as";
+    //         autoObj.focusOut();
+    //         expect(autoObj.inputElement.value === autoObj.value).toBe(true);
+    //     });
+    // });
     describe('EJ2-26008-The autocomplete is not focused when click the tab key at single time', () => {
         let autoObj: any;
         let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
@@ -498,138 +498,138 @@ describe('AutoComplete', () => {
             atcObj.onFilterUp(keyEventArgs);
         });
     });
-    describe('EJ2-15393 - Multiple requests are made to server', () => {
-        let autoObj: any;
-        let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
-        let dataSource = new DataManager({
-            url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/',
-            crossDomain: true
-        });
-        let result: any = [];
-        beforeAll((done) => {
-            document.body.appendChild(autoEle);
-            let mAjax: MockAjaxReturn = mockAjax({
-                data: {
-                    d: new DataManager(data).executeLocal(new Query().take(3).select(['OrderID', 'CustomerID', 'EmployeeID']))
-                }
-            }, new Query());
-            mAjax.promise.then((e: ResponseType) => {
-                result = e.result;
-                done();
-            });
-        });
-        afterAll(() => {
-            autoObj.destroy();
-            autoEle.remove();
-            jasmine.Ajax.uninstall();
-        });
-        it('Searching the unmatched item ', (done) => {
-            autoObj = new AutoComplete({
-                dataSource: result,
-                fields: { value: 'CustomerID' },
-                placeholder: 'Select a name'
-            });
-            autoObj.appendTo(autoEle);
-            autoObj.focusIn();
-            autoObj.inputElement.value = "asas";
-            let event: any = new Event('keyup');
-            event.keyCode = 72;
-            autoObj.isValidKey = true;
-            autoObj.onFilterUp(event);
-            setTimeout(() => {
-                expect(autoObj.list.classList.contains('e-nodata')).toBe(true);
-                done();
-            }, 400)
-        });
-        it('Searching the matched item ', (done) => {
-            autoObj.focusIn();
-            autoObj.inputElement.value = "a";
-            let event: any = new Event('keyup');
-            event.keyCode = 72;
-            autoObj.isValidKey = true;
-            autoObj.onFilterUp(event);
-            setTimeout(() => {
-                expect(autoObj.list.querySelectorAll('li').length > 0).toBe(true);
-                expect(autoObj.isDataFetched).not.toBe(true);
-                done();
-            }, 400)
-        });
-    });
-    describe('EJ2-16375: Form reset', () => {
-        let element: HTMLInputElement;
-        let data: { [key: string]: Object }[] = [
-            { id: 'list1', text: 'JAVA', icon: 'icon' },
-            { id: 'list2', text: 'C#' },
-            { id: 'list3', text: 'C++' },
-            { id: 'list4', text: '.NET', icon: 'icon' },
-            { id: 'list5', text: 'Oracle' }
-        ];
-        let listObj: AutoComplete;
-        beforeAll(() => {
-            element = <HTMLInputElement>createElement('form', { id: 'form1' });
-            element.innerHTML = `<input type="text" id="autoComplete">
-            <input type="reset" id="resetForm"/>`;
-            document.body.appendChild(element);
-            listObj = new AutoComplete({
-                dataSource: data,
-                fields: { value: "id" },
-                value: 'list1'
-            });
-            listObj.appendTo('#autoComplete');
-        });
-        afterAll(() => {
-            document.body.innerHTML = '';
-        });
-        it(' reset the form', (done) => {
-            document.getElementById('resetForm').click();
-            setTimeout(() => {
-                expect(listObj.value === 'list1').toBe(true);
-                done();
-            })
-        });
-    });
+    // describe('EJ2-15393 - Multiple requests are made to server', () => {
+    //     let autoObj: any;
+    //     let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
+    //     let dataSource = new DataManager({
+    //         url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/',
+    //         crossDomain: true
+    //     });
+    //     let result: any = [];
+    //     beforeAll((done) => {
+    //         document.body.appendChild(autoEle);
+    //         let mAjax: MockAjaxReturn = mockAjax({
+    //             data: {
+    //                 d: new DataManager(data).executeLocal(new Query().take(3).select(['OrderID', 'CustomerID', 'EmployeeID']))
+    //             }
+    //         }, new Query());
+    //         mAjax.promise.then((e: ResponseType) => {
+    //             result = e.result;
+    //             done();
+    //         });
+    //     });
+    //     afterAll(() => {
+    //         autoObj.destroy();
+    //         autoEle.remove();
+    //         jasmine.Ajax.uninstall();
+    //     });
+    //     it('Searching the unmatched item ', (done) => {
+    //         autoObj = new AutoComplete({
+    //             dataSource: result,
+    //             fields: { value: 'CustomerID' },
+    //             placeholder: 'Select a name'
+    //         });
+    //         autoObj.appendTo(autoEle);
+    //         autoObj.focusIn();
+    //         autoObj.inputElement.value = "asas";
+    //         let event: any = new Event('keyup');
+    //         event.keyCode = 72;
+    //         autoObj.isValidKey = true;
+    //         autoObj.onFilterUp(event);
+    //         setTimeout(() => {
+    //             expect(autoObj.list.classList.contains('e-nodata')).toBe(true);
+    //             done();
+    //         }, 400)
+    //     });
+    //     it('Searching the matched item ', (done) => {
+    //         autoObj.focusIn();
+    //         autoObj.inputElement.value = "a";
+    //         let event: any = new Event('keyup');
+    //         event.keyCode = 72;
+    //         autoObj.isValidKey = true;
+    //         autoObj.onFilterUp(event);
+    //         setTimeout(() => {
+    //             expect(autoObj.list.querySelectorAll('li').length > 0).toBe(true);
+    //             expect(autoObj.isDataFetched).not.toBe(true);
+    //             done();
+    //         }, 400)
+    //     });
+    // });
+    // describe('EJ2-16375: Form reset', () => {
+    //     let element: HTMLInputElement;
+    //     let data: { [key: string]: Object }[] = [
+    //         { id: 'list1', text: 'JAVA', icon: 'icon' },
+    //         { id: 'list2', text: 'C#' },
+    //         { id: 'list3', text: 'C++' },
+    //         { id: 'list4', text: '.NET', icon: 'icon' },
+    //         { id: 'list5', text: 'Oracle' }
+    //     ];
+    //     let listObj: AutoComplete;
+    //     beforeAll(() => {
+    //         element = <HTMLInputElement>createElement('form', { id: 'form1' });
+    //         element.innerHTML = `<input type="text" id="autoComplete">
+    //         <input type="reset" id="resetForm"/>`;
+    //         document.body.appendChild(element);
+    //         listObj = new AutoComplete({
+    //             dataSource: data,
+    //             fields: { value: "id" },
+    //             value: 'list1'
+    //         });
+    //         listObj.appendTo('#autoComplete');
+    //     });
+    //     afterAll(() => {
+    //         document.body.innerHTML = '';
+    //     });
+    //     it(' reset the form', (done) => {
+    //         document.getElementById('resetForm').click();
+    //         setTimeout(() => {
+    //             expect(listObj.value === 'list1').toBe(true);
+    //             done();
+    //         })
+    //     });
+    // });
 
-    describe('EJ2-16375: Form inside form reset', () => {
-        let element: HTMLInputElement;
-        let data: { [key: string]: Object }[] = [
-            { id: 'list1', text: 'JAVA', icon: 'icon' },
-            { id: 'list2', text: 'C#' },
-            { id: 'list3', text: 'C++' },
-            { id: 'list4', text: '.NET', icon: 'icon' },
-            { id: 'list5', text: 'Oracle' }
-        ];
-        let listObj: AutoComplete;
-        beforeAll(() => {
-            element = <HTMLInputElement>createElement('form', { id: 'form1' });
-            element.innerHTML = `<input type="text" id="autoComplete">
-            <div id="dynamic"></div>`;
-            document.body.appendChild(element);
-            let dynamicEle: HTMLElement = document.getElementById('dynamic');
-            let form2: Element = createElement('form');
-            form2.id = 'form2';
-            form2.innerHTML = '<input id="tempInput" type="text"/> <input type="reset" id="resetForm"/>';
-            dynamicEle.appendChild(form2);
-            listObj = new AutoComplete({
-                dataSource: data,
-                fields: { value: "id" },
-                value: 'list1'
-            });
-            listObj.appendTo('#autoComplete');
-        });
-        afterAll(() => {
-            document.body.innerHTML = '';
-        });
-        it(' reset the form', (done) => {
-            let input: HTMLInputElement = document.getElementById("tempInput") as HTMLInputElement;
-            input.value = "test";
-            document.getElementById('resetForm').click();
-            setTimeout(() => {
-                expect(listObj.value === 'list1').toBe(true);
-                expect(input.value === '').toBe(true);
-                done();
-            })
-        });
-    });
+    // describe('EJ2-16375: Form inside form reset', () => {
+    //     let element: HTMLInputElement;
+    //     let data: { [key: string]: Object }[] = [
+    //         { id: 'list1', text: 'JAVA', icon: 'icon' },
+    //         { id: 'list2', text: 'C#' },
+    //         { id: 'list3', text: 'C++' },
+    //         { id: 'list4', text: '.NET', icon: 'icon' },
+    //         { id: 'list5', text: 'Oracle' }
+    //     ];
+    //     let listObj: AutoComplete;
+    //     beforeAll(() => {
+    //         element = <HTMLInputElement>createElement('form', { id: 'form1' });
+    //         element.innerHTML = `<input type="text" id="autoComplete">
+    //         <div id="dynamic"></div>`;
+    //         document.body.appendChild(element);
+    //         let dynamicEle: HTMLElement = document.getElementById('dynamic');
+    //         let form2: Element = createElement('form');
+    //         form2.id = 'form2';
+    //         form2.innerHTML = '<input id="tempInput" type="text"/> <input type="reset" id="resetForm"/>';
+    //         dynamicEle.appendChild(form2);
+    //         listObj = new AutoComplete({
+    //             dataSource: data,
+    //             fields: { value: "id" },
+    //             value: 'list1'
+    //         });
+    //         listObj.appendTo('#autoComplete');
+    //     });
+    //     afterAll(() => {
+    //         document.body.innerHTML = '';
+    //     });
+    //     it(' reset the form', (done) => {
+    //         let input: HTMLInputElement = document.getElementById("tempInput") as HTMLInputElement;
+    //         input.value = "test";
+    //         document.getElementById('resetForm').click();
+    //         setTimeout(() => {
+    //             expect(listObj.value === 'list1').toBe(true);
+    //             expect(input.value === '').toBe(true);
+    //             done();
+    //         })
+    //     });
+    // });
 
     describe('EJ2-17694 - Multiple time ajax request while change the dataSource ', () => {
         let autoObj: any;

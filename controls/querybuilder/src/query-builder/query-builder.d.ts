@@ -51,14 +51,16 @@ export declare class Columns extends ChildProperty<Columns> {
      * Specifies the rule template for the field with any other widgets.
      *
      * @default null
+     * @aspType string
      */
-    ruleTemplate: string;
+    ruleTemplate: string | Function;
     /**
      * Specifies the template for value field such as slider or any other widgets.
      *
      * @default null
+     * @aspType string
      */
-    template: TemplateColumn | string;
+    template: TemplateColumn | string | Function;
     /**
      * Specifies the validation for columns (text, number and date).
      *
@@ -395,8 +397,9 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Specifies the template for the header with any other widgets.
      *
      * @default null
+     * @aspType string
      */
-    headerTemplate: string;
+    headerTemplate: string | Function;
     /**
      * Defines class or multiple classes, which are separated by a space in the QueryBuilder element.
      * You can add custom styles to the QueryBuilder using the cssClass property.
@@ -538,6 +541,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private filterValue;
     private changeValueSuccessCallBack;
     private fieldClose;
+    private onSelectField;
     private changeField;
     private changeRule;
     private changeFilter;
@@ -858,4 +862,5 @@ export interface ActionEventArgs extends BaseEventArgs {
     condition?: string;
     notCondition?: boolean;
     renderTemplate?: boolean;
+    groupID?: string;
 }

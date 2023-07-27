@@ -650,11 +650,13 @@ export function getCirclePath(start: GaugeLocation, end: GaugeLocation, radius: 
  * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getTemplateFunction(template: string, gauge: CircularGauge): any {
+export function getTemplateFunction(template: string | Function, gauge: CircularGauge): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
     try {
-        if (isNaN(parseFloat(template)) && document.querySelectorAll(template).length) {
+        if (typeof template === 'function') {
+            templateFn = templateComplier(template);
+        } else if (isNaN(parseFloat(template)) && document.querySelectorAll(template).length) {
             if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
                 templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
             }

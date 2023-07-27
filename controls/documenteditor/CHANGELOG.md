@@ -2,6 +2,185 @@
 
 ## [Unreleased]
 
+## 22.2.5 (2023-07-27)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I475597` - Now, show alert Message while entering invalid hyperlink address.
+- `#I473464` - Resolved the Toolbar disappear issue while destroy and re-append container instance.
+- `#I478156` - Resolved the text cut issue while highlighting selected text
+
+#### Breaking Changes
+
+- By default, the `enableOptimizedSpellCheck` property is set to `false`. However, when you enable the `enableSpellCheck` property, the `enableOptimizedSpellCheck` is automatically enabled as well.
+
+## 22.1.39 (2023-07-18)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I476853` - Resolved the script error while pasting content when enable track changes.
+- `#I475577` - Now, text inserted correctly when setting column as left, right.
+- `#I478156` - Resolved the exception throw while SaveAsBlobAsync and load in blazor.
+- `#I477929` - Fixed the issue in header rendering.
+- `#I476855` - Resolved the script error is thrown when deleting the tracked content.
+- `#I461189` - Fixed the paste issue in Footnote content.
+- `#I477905` - Resolved the Comments not highlighting issue.
+- `#I477735` - Now, Properties pane has proper focus while moving mouse from the properties.
+
+## 22.1.38 (2023-07-11)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I476430`, `#I475526` - Resolved the control freeze issue when inserting an image inside the table.
+- `#I475535` - Fixed the wrong image rendering while pasting.
+- `#I475151` - Resolved the time delay issue while editing the document.
+- `#I471381` - Fixed the shape layout issue when do enter before the table.
+- `#I477735` - Now, the properties pane has focus while moving the mouse from the properties.
+- `#F182887` - Resolved the table missing issue while importing.
+- `#I477569` - Fixed the formatting pane issue with Material 3 theme.
+
+## 22.1.37 (2023-07-04)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I472778` - Fixed Console error occurred while managing options in the footer and header.
+- `#I470576` - Table is now rendered properly without content overlapping issue.
+- `#I471848` - The cell merging now working properly.
+- `#I470071` - Resolved the Editor Stuck while giving comment.
+- `#I469081` - Fixed the script error when delete the resize table.
+
+## 22.1.36 (2023-06-28)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I462679` - Resolved performance issue occurred when inserting Text.
+- `#F182725` - Resolved the table with border color below 1pt.
+- `#I470871` - Resolved the issue in displaying the page number in the header section.
+- `#I471871` - Resolved the drag & drop shape issue.
+- `#I464996` - Resolved the table formatting issue while undoing.
+- `#I466554` - Resolved the table unresponsive issue when backspacing.
+- `#I473944` - Resolved the font change when exporting a document in docx format.
+- `#I471205` - Resolved the issue occurred when loading a document.
+- `#FB44186` - Resolved the horizontal line appears issue in the page header.
+- `#F182850` - Resolved the issue in docx exporting.
+- `#I469096` - Resolved the loss of original text formatting while pasting.
+- `#I464759` - Resolved the issue in shape rendering.
+- `#I464934` - Resolved the issue in customize the page size after inserting next page break.
+
+### Document Editor
+
+#### New Features
+
+- `#I397854`, `#I401771` - Added support for editing alternate text for images.
+- `#I370306`, `#I438565` - Added support for character spacing and scaling.
+- `#I273864`, `#I318326`, `#I325320`, `#I331615`, `#I339872`, `#F164047` - Added support for linking to the previous header/footer.
+- `#I445060`, `#I468741` - Added a property in the `selectionChanged` event arguments to identify whether the user has completed their selection.
+
+## 21.2.10 (2023-06-13)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I470779` - Resolved the script error when inserting comments while restrict editing is enabled.
+- `#I467632` - Resolved the Script error is thrown when opening a document after performing FindAllAsync.
+- `#I444469`, `#I467461` - Resolved the Script error occurs when opening a document.
+- `#I467769` - Print widow now closed properly after closing the parent window.
+
+## 21.2.9 (2023-06-06)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I454822` - Resolved the issue occurred when performing the pasting functionality.
+- `#I455887` - Resolved the Editor height is increased issue when selecting or inserting text.
+- `#I461390` - Resolved the Endnote/footnote number inconsistency.
+- `#F182256` - Table cell border now applying properly.
+- `#I458144` - Now, Docx exporting properly.
+- `#I464522` - Resolved the issue in bookmark removal when deleting table.
+- `#I466742` - Resolved the text selection issue while retrieving the selected text.
+
+## 21.2.8 (2023-05-30)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I454919` - ShowComment API is now working properly.
+- `#FB43366` - when track changes is enabled, chinese letters are now properly rendered.
+- `#I457517` - Resolved script error occurred when removing the content.
+- `#I454821` - Resolved the issue with document parsing in the Tika server.
+- `#I457688` - Resolved the selected content removing issue.
+- `#I457853` - Select all content is now removed properly.
+- `#I458134` - Table is now rendered properly without overlapping issue.
+- `#I459215` - Resolved Black color chart appearance while exporting as Docx.
+- `#I459220` - Resolved the component hanging issue on loading a document.
+- `#I459229` - Delete/backspace is now working for RTL last content.
+- `#I461305` - Resolved the style issue while pasting content from office 365.
+- `#I453980` - When opening the exported document with chart in Document Editor is not throwing an error.
+- `#I459906` - Header/Footer class is now added while converting docx/SFDT into HTML.
+- `#F182457` - Resolved the style issue while pasting content from office 365.
+
+## 21.2.6 (2023-05-23)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I455945` - Resolved the issue in Shape position.
+- `#I457467` - Now, getStyle() API will return the paragraph format.
+- `#I454858` - Resolved the image missing issue in footer.
+- `#I451667` - Horizontal scroll bar is not update properly based on cursor position.
+- `#I457039` - Resolved the console error while giving accept all.
+- `#I453407` - Resolved the script error when loading the document with smileys.
+
+#### New Features
+
+- `#I448978` - Added preservation support for text wrapping break.
+- `#F179297` - Added navigation support between the multiple comments in a single line while clicking the comment icon.
+- `#I433546` - Added support to show start and end markers for restricted range.
+- `#I450206` - Added support to restrict maximum number of columns when creating a table.
+
+## 21.2.5 (2023-05-16)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I449912` - Resolved layout issue while opening document.
+- `#I450342` - Resolved the wrong Font issue while opening a document.
+- `#I458331` - Resolved the paragraph combine issue when insert and delete comment.
+- `#I458334` - Cursor position issue is resolved when shift enter key is pressed.
+- `#I449581` - Resolved the script error when loading the track changes document with author field empty
+- `#I452303` - Layout issue is now not occurred when editing the document.
+- `#I452150` - Resolved the hanging issue when opening the attached document.
+- `#I453495` - Resolved the Overlapping issue when we do enter/page break before the shape.
+- `#I453196` - Resolved the issue in when perform undo action for Arabic content
+- `#I454659` - Resolved the issue occurred when performing track changes for Arabic content.
+- `#I449049` - A performance issue is resolved when typing inside the table.
+
+## 21.2.4 (2023-05-09)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I451421` - Resolved the issue with list indentation.
+- `#I450834` - Resolved the Script issue while opening SFDT.
+- `#I452243` - Resolved the issue with modifying the style in existing styles.
+- `#I449324` - Resolved the issue occurred while exporting the document in the .docx format.
+
 ## 21.2.3 (2023-05-03)
 
 ### Document Editor

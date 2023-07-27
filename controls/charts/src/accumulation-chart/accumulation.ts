@@ -211,7 +211,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Options for customizing the `title` of accumulation chart.
      */
 
-    @Complex<FontModel>(Theme.chartTitleFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "16px", fontStyle: 'Normal', fontWeight: '600', color: null}, Font)
     public titleStyle: FontModel;
 
     /**
@@ -226,7 +226,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Options for customizing the `subtitle` of accumulation chart.
      */
 
-    @Complex<FontModel>(Theme.chartSubTitleFont, Font)
+    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
     public subTitleStyle: FontModel;
 
     /**
@@ -857,7 +857,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         this.element.setAttribute('role', 'region');
         this.element.setAttribute('tabindex', '0');
-        this.element.setAttribute('aria-label', this.title);
+        this.element.setAttribute('aria-label', this.title + '. Syncfusion interactive chart.');
         this.element.setAttribute('class', this.element.getAttribute('class') + ' e-accumulationchart-focused');
         const loadEventData: IAccLoadedEventArgs = {
             chart: this.isBlazor ? {} as AccumulationChart : this,
@@ -1655,16 +1655,16 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         let maxWidth: number = 0;
         let titleWidth: number = 0;
         if (this.title) {
-            this.titleCollection = getTitle(this.title, this.titleStyle, this.initialClipRect.width);
+            this.titleCollection = getTitle(this.title, this.titleStyle, this.initialClipRect.width, this.themeStyle.chartTitleFont);
         }
-        titleHeight = this.title ? measureText(this.title, this.titleStyle).height * this.titleCollection.length : titleHeight;
+        titleHeight = this.title ? measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont).height * this.titleCollection.length : titleHeight;
         if (this.subTitle) {
             for (const titleText of this.titleCollection) {
-                titleWidth = measureText(titleText, this.titleStyle).width;
+                titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
                 maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
             }
-            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth);
-            subTitleHeight = (measureText(this.subTitle, this.subTitleStyle).height * this.subTitleCollection.length);
+            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.themeStyle.chartTitleFont);
+            subTitleHeight = (measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length);
         }
         subtractRect(
             this.initialClipRect,
@@ -1847,7 +1847,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             return null;
         }
         const getAnchor: string = getTextAnchor(this.titleStyle.textAlignment, this.enableRtl);
-        const titleSize: Size = measureText(this.title, this.titleStyle);
+        const titleSize: Size = measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont);
         const padding: number = 20;
         const titleHeight: number = this.margin.top + (titleSize.height * 3 / 4);
         const legendHeight: number = this.accumulationLegendModule === undefined ? 0 : this.legendSettings.position === 'Top' ?
@@ -1880,11 +1880,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             }
         }
         const element: Element = textElement(
-            this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw
+            this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitleFont.color, this.svgObject, false, this.redraw, null, null, null, null, null, null, null, null, this.themeStyle.chartTitleFont
         );
         if (element) {
             element.setAttribute('tabindex', '0');
-            element.parentNode.insertBefore(element, this.svgObject.children[1]);
+            element.parentNode.insertBefore(element, this.svgObject.children && this.svgObject.children[1]);
         }
         if (this.subTitle) {
             this.renderSubTitle(options);
@@ -1943,14 +1943,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         const getAnchor: string = getTextAnchor(this.centerLabel.textStyle.textAlignment, this.enableRtl);
         const padding: number = 10;
         // To get side of square inside the circle , which is considered as maxwidth , d*sqrt(0.5)
-        const maxwidth: number = (((2 * this.pieSeriesModule.innerRadius) * (0.7071067)));
+        const maxwidth: number = this.pieSeriesModule.innerRadius ? ((2 * this.pieSeriesModule.innerRadius) * (0.7071067)) : ((2 * this.pieSeriesModule.radius) * (0.7071067));
         const labelCollection: string[] = (this.format || this.centerLabel.text).split('<br>');
-        const centerLabelSize: Size = measureText(labelCollection[0], this.centerLabel.textStyle);
+        const centerLabelSize: Size = measureText(labelCollection[0], this.centerLabel.textStyle, this.themeStyle.chartTitleFont);
         const collectionLength: number = labelCollection.length;
         for (let i: number = 0; i < collectionLength; i++) {
-            const labelSize: Size = measureText(labelCollection[i as number], this.centerLabel.textStyle);
+            const labelSize: Size = measureText(labelCollection[i as number], this.centerLabel.textStyle, this.themeStyle.chartTitleFont);
             if (labelSize.width > maxwidth) {
-                labelCollection.splice(i, 1, ...(textWrap(labelCollection[i as number], maxwidth, this.centerLabel.textStyle)));
+                labelCollection.splice(i, 1, ...(textWrap(labelCollection[i as number], maxwidth, this.centerLabel.textStyle, null, null, this.themeStyle.chartTitleFont)));
             }
         }
         if (centerLabelSize.height * (labelCollection.length) > maxwidth) {
@@ -1958,7 +1958,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         else if (series.startAngle && series.endAngle) {
             ypos = this.accBaseModule.center.y - (centerLabelSize.height * labelCollection.length / 2) +
-            ((centerLabelSize.height + padding) / 2) - this.pieSeriesModule.innerRadius / 2 + padding;
+            ((centerLabelSize.height + padding) / 2) - this.pieSeriesModule.innerRadius / 2 + (this.pieSeriesModule.innerRadius ? padding : 0);
             if ((centerLabelSize.height * (labelCollection.length) + this.pieSeriesModule.innerRadius / 2 + padding > maxwidth)) {
                 ypos = this.accBaseModule.center.y + ((centerLabelSize.height + padding) / 2) - (maxwidth / 2);
             }
@@ -1975,7 +1975,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         );
         const element: Element = textElement(
             this.renderer, options, this.centerLabel.textStyle, this.centerLabel.textStyle.color ||
-             this.themeStyle.chartTitle, this.svgObject, false, this.redraw
+             this.themeStyle.chartTitleFont.color, this.svgObject, false, this.redraw, null, null, null, null, null, null, null, null, this.themeStyle.chartTitleFont
         );
         if (isanimate && this.series[0].animation.enable && this.animateSeries) {
             this.centerLabelDelay(element);
@@ -2001,9 +2001,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         let titleWidth: number = 0;
         const padding: number = 10;
         const alignment: Alignment = this.titleStyle.textAlignment;
-        const subTitleElementSize: Size = measureText(this.subTitle, this.subTitleStyle);
+        const subTitleElementSize: Size = measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont);
         for (const titleText of this.titleCollection) {
-            titleWidth = measureText(titleText, this.titleStyle).width;
+            titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
             maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
         }
         const rect: Rect = new Rect(
@@ -2018,8 +2018,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding,
             getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl), this.subTitleCollection, '', 'auto'
         );
-        textElement(this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle,
-                    this.svgObject, false, this.redraw);
+        textElement(this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartSubTitleFont.color,
+                    this.svgObject, false, this.redraw, null, null, null, null, null, null, null, null, this.themeStyle.chartSubTitleFont);
     }
     /**
      * To get the series parent element
@@ -2227,7 +2227,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                             blazorProp = true;
                         }
                         if (newProp.series[i as number] && (newProp.series[i as number].dataSource || newProp.series[i as number].yName
-                            || newProp.series[i as number].xName ||
+                            || newProp.series[i as number].xName || series.type ||
                             newProp.series[i as number].dataLabel || blazorProp)) {
                             extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                             seriesRefresh = true;
@@ -2239,6 +2239,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                             this.accBaseModule.deExplodeAll(newProp.series[i as number].explodeIndex, this.enableAnimation ? 300 : 0);
                         } else if (newProp.series[i as number].explodeIndex < 0) {
                             this.accBaseModule.deExplodeAll(newProp.series[i as number].explodeIndex, this.enableAnimation ? 300 : 0);
+                        }
+                        if (!this.pieSeriesModule) {
+                            this.pieSeriesModule = new PieSeries(this);
                         }
                     }
                     if (seriesRefresh) {

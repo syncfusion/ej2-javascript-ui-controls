@@ -487,6 +487,7 @@ export interface CellUpdateArgs {
     cellDelete?: boolean;
     isFormulaDependent?: boolean;
     skipFormatCheck?: boolean;
+    isRandomFormula?: boolean;
 }
 /** @hidden */
 export interface NumberFormatArgs {

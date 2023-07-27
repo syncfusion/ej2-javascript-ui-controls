@@ -151,6 +151,8 @@ export function getDefaultHtmlTbStatus(): IToolbarStatus {
         strikethrough: false,
         orderedlist: false,
         unorderedlist: false,
+        numberFormatList: false,
+        bulletFormatList: false,
         underline: false,
         alignments: null,
         backgroundcolor: null,

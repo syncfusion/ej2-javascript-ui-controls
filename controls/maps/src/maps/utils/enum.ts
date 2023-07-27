@@ -45,7 +45,11 @@ export type MapsTheme =
     /** Renders a map with Fluent theme. */
     'Fluent' |
     /**  Render a map with Fluent dark theme. */
-    'FluentDark';
+    'FluentDark' |
+    /** Renders a map with material3 theme. */
+    'Material3' |
+    /** Renders a map with material3dark theme. */
+    'Material3Dark';
 
 /**
  * Defines the position of the legend.

@@ -49,11 +49,15 @@ export class VirtualScroll {
 
     private wireEvents(): void {
         this.engineModule = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
-        if (this.parent.displayOption.view !== 'Chart') {
+        if (this.parent.displayOption.view !== 'Chart'&& !this.parent.isVirtualScrollEventsAdded) {
             const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
             const fCont: HTMLElement = this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
             const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
             const mScrollBar: HTMLElement = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            if (this.parent.mScrollBarEvents.length === 0) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                this.parent.mScrollBarEvents = [...(mScrollBar as any)['__eventList']['events']];
+            }
             EventHandler.clearEvents(mCont);
             EventHandler.clearEvents(fCont);
             if (this.isFireFox) {
@@ -87,6 +91,7 @@ export class VirtualScroll {
                 args.cancel = true;
             });
             this.parent.grid.isPreventScrollEvent = true;
+            this.parent.isVirtualScrollEventsAdded = true;
         }
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -254,11 +259,10 @@ export class VirtualScroll {
         const pivot: PivotView = control ? control : this.parent;
         const eventArgs: EnginePopulatedEventArgs = {
             dataSourceSettings: pivot.dataSourceSettings as IDataOptions,
-            pivotValues: pivot.pivotValues
+            pivotValues: engine.pivotValues
         };
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         pivot.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
-            this.parent.pivotValues = engine.pivotValues;
+            this.parent.pivotValues = observedArgs.pivotValues;
         });
     }
 

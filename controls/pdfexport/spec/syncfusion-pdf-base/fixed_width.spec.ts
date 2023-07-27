@@ -12,6 +12,10 @@ import { PdfPageCountField } from './../../src/implementation/document/automatic
 import { PdfCompositeField } from './../../src/implementation/document/automatic-fields/composite-field';
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { PdfTextElement, PdfLayoutResult } from './../../src/index';
+import { PdfDictionary } from './../../src/implementation/primitives/pdf-dictionary';
+import { PdfName } from './../../src/implementation/primitives/pdf-name';
+import { PdfViewerPreferences, PdfPageMode, PdfPageLayout, DuplexMode, PageScalingMode } from './../../src/implementation/document/pdf-viewer-preferences';
+import { PdfBoolean } from './../../src/implementation/primitives/pdf-boolean';
 import { Utils } from './utils.spec';
 
 describe('PDFGrid_longtext_innercell',()=>{
@@ -2082,5 +2086,100 @@ describe('PDFGrid_nestedgrid_parent_width',()=>{
             }
         });
         document.destroy();             
-    })
-})
+    });
+});
+describe('830268 Viewer Preferences',()=>{
+    it('Properties',(done)=>{
+        let document: PdfDocument = new PdfDocument();
+        let viewerPreferences: PdfViewerPreferences = document.viewerPreferences;
+        expect(document.catalog.items.containsKey('ViewerPreferences')).toEqual(true);
+        viewerPreferences.pageMode = PdfPageMode.UseThumbs;
+        expect(document.catalog.items.containsKey('PageMode')).toEqual(true);
+        expect((document.catalog.items.getValue('PageMode') as PdfName).value).toEqual('UseThumbs');
+        viewerPreferences.pageMode = PdfPageMode.FullScreen;
+        expect((document.catalog.items.getValue('PageMode') as PdfName).value).toEqual('FullScreen');
+        viewerPreferences.pageMode = PdfPageMode.UseAttachments;
+        expect((document.catalog.items.getValue('PageMode') as PdfName).value).toEqual('UseAttachments');
+        viewerPreferences.pageMode = PdfPageMode.UseNone;
+        expect((document.catalog.items.getValue('PageMode') as PdfName).value).toEqual('UseNone');
+        viewerPreferences.pageMode = PdfPageMode.UseOC;
+        expect((document.catalog.items.getValue('PageMode') as PdfName).value).toEqual('UseOC');
+        viewerPreferences.pageMode = PdfPageMode.UseOutlines;
+        expect((document.catalog.items.getValue('PageMode') as PdfName).value).toEqual('UseOutlines');
+        expect(viewerPreferences.pageMode).toEqual(PdfPageMode.UseOutlines);
+        viewerPreferences.pageLayout = PdfPageLayout.SinglePage;
+        expect(document.catalog.items.containsKey('PageLayout')).toEqual(true);
+        expect((document.catalog.items.getValue('PageLayout') as PdfName).value).toEqual('SinglePage');
+        viewerPreferences.pageLayout = PdfPageLayout.OneColumn;
+        expect((document.catalog.items.getValue('PageLayout') as PdfName).value).toEqual('OneColumn');
+        viewerPreferences.pageLayout = PdfPageLayout.TwoColumnLeft;
+        expect((document.catalog.items.getValue('PageLayout') as PdfName).value).toEqual('TwoColumnLeft');
+        viewerPreferences.pageLayout = PdfPageLayout.TwoColumnRight;
+        expect((document.catalog.items.getValue('PageLayout') as PdfName).value).toEqual('TwoColumnRight');
+        viewerPreferences.pageLayout = PdfPageLayout.TwoPageLeft;
+        expect((document.catalog.items.getValue('PageLayout') as PdfName).value).toEqual('TwoPageLeft');
+        viewerPreferences.pageLayout = PdfPageLayout.TwoPageRight;
+        expect((document.catalog.items.getValue('PageLayout') as PdfName).value).toEqual('TwoPageRight');
+        expect(viewerPreferences.pageLayout).toEqual(PdfPageLayout.TwoPageRight);
+        viewerPreferences.duplex = DuplexMode.DuplexFlipLongEdge;
+        expect(document.catalog.items.containsKey('Duplex')).toEqual(true);
+        expect((document.catalog.items.getValue('Duplex') as PdfName).value).toEqual('DuplexFlipLongEdge');
+        viewerPreferences.duplex = DuplexMode.DuplexFlipShortEdge;
+        expect((document.catalog.items.getValue('Duplex') as PdfName).value).toEqual('DuplexFlipShortEdge');
+        viewerPreferences.duplex = DuplexMode.None;
+        expect((document.catalog.items.getValue('Duplex') as PdfName).value).toEqual('None');
+        viewerPreferences.duplex = DuplexMode.Simplex;
+        expect((document.catalog.items.getValue('Duplex') as PdfName).value).toEqual('Simplex');
+        expect(viewerPreferences.duplex).toEqual(DuplexMode.Simplex);
+        expect(viewerPreferences._dictionary.items.containsKey('PrintScaling')).toEqual(false);
+        viewerPreferences.pageScaling = PageScalingMode.AppDefault;
+        expect(viewerPreferences._dictionary.items.containsKey('PrintScaling')).toEqual(false);
+        viewerPreferences.pageScaling = PageScalingMode.None;
+        expect(viewerPreferences._dictionary.items.containsKey('PrintScaling')).toEqual(true);
+        expect((viewerPreferences._dictionary.items.getValue('PrintScaling') as PdfName).value).toEqual('None');
+        viewerPreferences.pageScaling = PageScalingMode.AppDefault;
+        expect(viewerPreferences._dictionary.items.containsKey('PrintScaling')).toEqual(false);
+        expect(viewerPreferences.pageScaling).toEqual(PageScalingMode.AppDefault);
+        expect(viewerPreferences._dictionary.items.containsKey('CenterWindow')).toEqual(false);
+        viewerPreferences.centerWindow = true;
+        expect((viewerPreferences._dictionary.items.getValue('CenterWindow') as PdfBoolean).value).toEqual(true);
+        expect(viewerPreferences.centerWindow).toEqual(true);
+        expect(viewerPreferences._dictionary.items.containsKey('DisplayTitle')).toEqual(false);
+        viewerPreferences.displayTitle = true;
+        expect((viewerPreferences._dictionary.items.getValue('DisplayTitle') as PdfBoolean).value).toEqual(true);
+        expect(viewerPreferences.displayTitle).toEqual(true);
+        expect(viewerPreferences._dictionary.items.containsKey('HideMenubar')).toEqual(false);
+        viewerPreferences.hideMenuBar = true;
+        expect((viewerPreferences._dictionary.items.getValue('HideMenubar') as PdfBoolean).value).toEqual(true);
+        expect(viewerPreferences.hideMenuBar).toEqual(true);
+        expect(viewerPreferences._dictionary.items.containsKey('HideToolbar')).toEqual(false);
+        viewerPreferences.hideToolBar = true;
+        expect((viewerPreferences._dictionary.items.getValue('HideToolbar') as PdfBoolean).value).toEqual(true);
+        expect(viewerPreferences.hideToolBar).toEqual(true);
+        expect(viewerPreferences._dictionary.items.containsKey('HideWindowUI')).toEqual(false);
+        viewerPreferences.hideWindowUI = true;
+        expect((viewerPreferences._dictionary.items.getValue('HideWindowUI') as PdfBoolean).value).toEqual(true);
+        expect(viewerPreferences.hideWindowUI).toEqual(true);
+        expect(viewerPreferences._dictionary.items.containsKey('FitWindow')).toEqual(false);
+        viewerPreferences.fitWindow = true;
+        expect((viewerPreferences._dictionary.items.getValue('FitWindow') as PdfBoolean).value).toEqual(true);
+        expect(viewerPreferences.fitWindow).toEqual(true);
+        expect(viewerPreferences.element instanceof PdfDictionary).toEqual(true);
+        expect(viewerPreferences._dictionary.items.size()).toEqual(6);
+        //document.save('830268-sample.pdf');
+        document.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, '830268-sample.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        document.destroy();  
+    });
+});

@@ -970,52 +970,54 @@ describe('Auto fill ->', () => {
         it('Down - Direction with more than one Selected Cell', (done: Function) => {
             helper.invoke('selectRange', ['D2:D3']);
             helper.triggerKeyNativeEvent(68, true);
-            setTimeout(() => {
-                expect(helper.invoke('getCell', [2, 3]).textContent).toBe('10');
-                done();
-            });
+            expect(helper.invoke('getCell', [2, 3]).textContent).toBe('10');
+            done();
         });
         it('Down - Direction with Top Left Cell', (done: Function) => {
             helper.invoke('selectRange', ['A1']);
             helper.triggerKeyNativeEvent(68, true);
-            setTimeout(() => {
-                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
-                done();
-            });
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+            done();
         });
         it('Down - Direction with one Selected Cell', (done: Function) => {
             helper.invoke('selectRange', ['D2']);
             helper.triggerKeyNativeEvent(68, true);
-            setTimeout(() => {
-                expect(helper.invoke('getCell', [1, 3]).textContent).toBe('Quantity');
-                done();
-            });
+            expect(helper.invoke('getCell', [1, 3]).textContent).toBe('Quantity');
+            helper.edit('D12', '=SUM(D2:D11)');
+            expect(helper.getInstance().sheets[0].rows[11].cells[3].formula).toBe('=SUM(D2:D11)');
+            expect(helper.invoke('getCell', [11, 3]).textContent).toBe('257');
+            helper.invoke('selectRange', ['D13']);
+            helper.triggerKeyNativeEvent(68, true);
+            expect(helper.getInstance().sheets[0].rows[12].cells[3].formula).toBe('=SUM(D3:D12)');
+            expect(helper.invoke('getCell', [12, 3]).textContent).toBe('514');
+            done();
         });
         it('Right - Direction with more than one Selected Cell', (done: Function) => {
             helper.invoke('selectRange', ['D2:F2']);
             helper.triggerKeyNativeEvent(82, true);
-            setTimeout(() => {
-                expect(helper.invoke('getCell', [1, 3]).textContent).toBe('Quantity');
-                expect(helper.invoke('getCell', [1, 4]).textContent).toBe('Quantity');
-                expect(helper.invoke('getCell', [1, 5]).textContent).toBe('Quantity');
-                done();
-            });
+            expect(helper.invoke('getCell', [1, 3]).textContent).toBe('Quantity');
+            expect(helper.invoke('getCell', [1, 4]).textContent).toBe('Quantity');
+            expect(helper.invoke('getCell', [1, 5]).textContent).toBe('Quantity');
+            helper.edit('I4', '=SUM(D4:H4)');
+            expect(helper.getInstance().sheets[0].rows[3].cells[8].formula).toBe('=SUM(D4:H4)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('369');
+            helper.invoke('selectRange', ['I4:J4']);
+            helper.triggerKeyNativeEvent(82, true);
+            expect(helper.getInstance().sheets[0].rows[3].cells[9].formula).toBe('=SUM(E4:I4)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('718');
+            done();
         });
         it('Right - Direction with Top Left Cell', (done: Function) => {
             helper.invoke('selectRange', ['A1']);
             helper.triggerKeyNativeEvent(82, true);
-            setTimeout(() => {
-                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
-                done();
-            });
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+            done();
         });
         it('Right - Direction with one Selected Cell', (done: Function) => {
             helper.invoke('selectRange', ['D2']);
             helper.triggerKeyNativeEvent(82, true);
-            setTimeout(() => {
-                expect(helper.invoke('getCell', [1, 3]).textContent).toBe('11:34:32 AM');
-                done();
-            });
+            expect(helper.invoke('getCell', [1, 3]).textContent).toBe('11:34:32 AM');
+            done();
         });
         it('Apply Autofill with Protect Sheet', (done: Function) => {
             helper.switchRibbonTab(4);
@@ -1715,6 +1717,39 @@ describe('Auto fill ->', () => {
                 expect(helper.invoke('getCell', [0, 13]).textContent).toBe('1E+11');
                 expect(JSON.stringify(getCell(1, 13, instance.sheets[0]).value)).toBe('100000001000');
                 expect(helper.invoke('getCell', [1, 13]).textContent).toBe('1E+11');
+                done();
+            });
+        });
+        describe('Auto fill popup displays wrong options when the component is loaded with different locale ->', () => {
+            L10n.load({
+                'zh': {
+                    'spreadsheet': {
+                        "FillSeries": "填充系列",
+                        "CopyCells": "複製單元格",
+                        "FillFormattingOnly": "僅填充格式",
+                        "FillWithoutFormatting": "無格式填充",
+                    }
+                }
+            });
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'E1' }], locale: 'zh' }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('applying auto fill with different locale', (done:Function) => {
+                helper.invoke('selectRange', ['A9']);
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [13, 0]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                helper.click('#spreadsheet_autofilloptionbtn');
+                const fillPopup: HTMLElement = document.getElementById('spreadsheet_autofilloptionbtn-popup');
+                expect(fillPopup.childNodes[0].childNodes.length).toBe(3);
                 done();
             });
         });

@@ -7,7 +7,7 @@ import {
 import { PivotView } from '../base/pivotview';
 import * as events from '../../common/base/constant';
 import { BeforeExportEventArgs, PdfThemeStyle, PdfBorder, PdfTheme, PdfCellRenderArgs, ExportCompleteEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';
-import { IAxisSet, IPivotValues, IPageSettings, IDataOptions, PivotEngine } from '../../base/engine';
+import { IAxisSet, IPageSettings, IDataOptions, PivotEngine } from '../../base/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfBorderStyle } from '../../common/base/enum';
 import { OlapEngine } from '../../base/olap/engine';
@@ -69,11 +69,13 @@ export class PDFExport {
             }
         }
         if (!isNullOrUndefined(this.exportProperties.pdfMargins)) {
-            let margins: PdfMargins = eventParams.document.pageSettings.margins;
+            const margins: PdfMargins = eventParams.document.pageSettings.margins;
             margins.top = !isNullOrUndefined(this.exportProperties.pdfMargins.top) ? this.exportProperties.pdfMargins.top : margins.top;
-            margins.bottom = !isNullOrUndefined(this.exportProperties.pdfMargins.bottom) ? this.exportProperties.pdfMargins.bottom : margins.bottom;
+            margins.bottom = !isNullOrUndefined(this.exportProperties.pdfMargins.bottom) ? this.exportProperties.pdfMargins.bottom :
+                margins.bottom;
             margins.left = !isNullOrUndefined(this.exportProperties.pdfMargins.left) ? this.exportProperties.pdfMargins.left : margins.left;
-            margins.right = !isNullOrUndefined(this.exportProperties.pdfMargins.right) ? this.exportProperties.pdfMargins.right : margins.right;
+            margins.right = !isNullOrUndefined(this.exportProperties.pdfMargins.right) ? this.exportProperties.pdfMargins.right :
+                margins.right;
         }
         documentSection.setPageSettings(eventParams.document.pageSettings);
         const page: PdfPage = documentSection.pages.add();
@@ -285,6 +287,7 @@ export class PDFExport {
                 pdfGrid.columns.add(pivotValues[0].length - integratedCnt >= pageSize ? pageSize : pivotValues[0].length - integratedCnt);
                 const rowLen: number = pivotValues.length;
                 let actualrCnt: number = 0; let maxLevel: number = 0;
+                let columnWidth: number = 0;
                 for (let rCnt: number = 0; rCnt < rowLen; rCnt++) {
                     if (pivotValues[rCnt as number]) {
                         const isColHeader: boolean = !(pivotValues[rCnt as number][0] && (pivotValues[rCnt as number][0] as IAxisSet).axis === 'row');
@@ -338,7 +341,8 @@ export class PDFExport {
                                 let args: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs = {
                                     style: undefined,
                                     pivotCell: pivotCell,
-                                    cell: pdfGridRow.cells.getCell(localCnt)
+                                    cell: pdfGridRow.cells.getCell(localCnt),
+                                    column: pdfGrid.columns.getColumn(localCnt)
                                 };
                                 this.parent.trigger(events.onPdfCellRender, args);
                                 if (pivotCell.axis === 'column') {
@@ -370,9 +374,11 @@ export class PDFExport {
                                 let args: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs = {
                                     style: undefined,
                                     pivotCell: undefined,
-                                    cell: pdfGridRow.cells.getCell(localCnt)
+                                    cell: pdfGridRow.cells.getCell(localCnt),
+                                    column: pdfGrid.columns.getColumn(localCnt)
                                 };
                                 this.parent.trigger(events.onPdfCellRender, args);
+                                columnWidth = args.column.width;
                                 const pivotCell: IAxisSet = { formattedText: '' };
                                 if (pivotCell.axis === 'column') {
                                     args = {
@@ -431,7 +437,7 @@ export class PDFExport {
                         actualrCnt++;
                     }
                 }
-                pdfGrid.columns.getColumn(0).width = 100 + (maxLevel * 20);
+                pdfGrid.columns.getColumn(0).width = columnWidth > 0 ? columnWidth : 100 + (maxLevel * 20);
             }
             if (integratedCnt === 0 && this.parent.dataSourceSettings.columns && this.parent.dataSourceSettings.columns.length > 0) {
                 pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan--;

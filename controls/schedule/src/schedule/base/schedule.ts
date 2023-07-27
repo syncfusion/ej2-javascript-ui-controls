@@ -182,8 +182,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * When set to `false`, hides the header bar of the Schedule from UI. By default,
      * the header bar holds the date and view navigation options, to which the user can add their own custom items onto it.
      *
-     * {% codeBlock src='schedule/showHeaderBar/index.md' %}{% endcodeBlock %}
-     *
      * @default true
      */
     @Property(true)
@@ -192,8 +190,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * When set to `false`, hides the current time indicator from the Schedule. Otherwise,
      * it visually depicts the live current system time appropriately on the user interface.
-     *
-     * {% codeBlock src='schedule/showTimeIndicator/index.md' %}{% endcodeBlock %}
      *
      * @default true
      */
@@ -314,8 +310,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * When set to `false`, it hides the weekend days of a week from the Schedule. The days which are not defined in the working days
      * collection are usually treated as weekend days.
      *
-     * {% codeBlock src='schedule/showWeekend/index.md' %}{% endcodeBlock %}
-     *
      * Note: By default, this option is not applicable on `Work Week` view.
      * For example, if the working days are defined as [1, 2, 3, 4], then the remaining days of that week will be considered as
      *  the weekend days and will be hidden on all the views.
@@ -419,8 +413,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * When set to `true`, If valid, the scroll on the all day row is activated when the all day row
      * height reaches the max height when the all day row is expanded.
      *
-     * {% codeBlock src='schedule/enableAllDayScroll/index.md' %}{% endcodeBlock %}
-     *
      * @default false
      */
     @Property(false)
@@ -428,8 +420,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * When set to `true`, the header view navigations are listed under the popup and if we enable resource grouping, the compact view will be enabled.
-     *
-     * {% codeBlock src='schedule/enableAdaptiveUI/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -439,8 +429,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * When set to `true`, allows the resizing of appointments. It allows the rescheduling of appointments either by changing the
      * start or end time by dragging the event resize handlers.
-     *
-     * {% codeBlock src='schedule/allowResizing/index.md' %}{% endcodeBlock %}
      *
      * @default true
      */
@@ -473,8 +461,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * When set to `true`, allows the keyboard interaction to take place on Schedule.
      *
-     * {% codeBlock src='schedule/allowKeyboardInteraction/index.md' %}{% endcodeBlock %}
-     *
      * @default true
      */
     @Property(true)
@@ -483,8 +469,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * When set to `true`, allows the appointments to move over the time slots. When an appointment is dragged, both its start
      * and end time tends to change simultaneously allowing it to reschedule the appointment on some other time.
-     *
-     * {% codeBlock src='schedule/allowDragAndDrop/index.md' %}{% endcodeBlock %}
      *
      * @default true
      */
@@ -498,17 +482,25 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/dateHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public dateHeaderTemplate: string;
+    public dateHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the header date range.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public dateRangeTemplate: string;
+    public dateRangeTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -517,9 +509,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/cellHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public cellHeaderTemplate: string;
+    public cellHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -528,9 +524,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/dayHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public dayHeaderTemplate: string;
+    public dayHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -539,9 +539,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/monthHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public monthHeaderTemplate: string;
+    public monthHeaderTemplate: string | Function;
 
     /**
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
@@ -556,14 +560,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public cellTemplate: string;
+    public cellTemplate: string | Function;
 
     /**
      * When set to `true`, makes the Schedule to render in a read only mode. No CRUD actions will be allowed at this time.
-     *
-     * {% codeBlock src='schedule/readonly/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -574,8 +580,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * When set to `true`, displays a quick popup with cell or event details on single clicking over the cells or on events.
      * By default, it is set to `true`.
      *
-     * {% codeBlock src='schedule/showQuickInfo/index.md' %}{% endcodeBlock %}
-     *
      * @default true
      */
     @Property(true)
@@ -583,8 +587,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * This property helps user to add/edit the event in inline. By default, it is set to `false`.
-     *
-     * {% codeBlock src='schedule/allowInline/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -594,8 +596,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This property helps user to allow/prevent the selection of multiple cells. By default, it is set to `true`.
      *
-     * {% codeBlock src='schedule/allowMultiCellSelection/index.md' %}{% endcodeBlock %}
-     *
      * @default true
      */
     @Property(true)
@@ -603,8 +603,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * This property helps user to allow/prevent the selection of multiple days(rows). By default, it is set to `true`.
-     *
-     * {% codeBlock src='schedule/allowMultiRowSelection/index.md' %}{% endcodeBlock %}
      *
      * @default true
      */
@@ -614,8 +612,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This property helps to show quick popup after multiple cell selection. By default, it is set to `false`.
      *
-     * {% codeBlock src='schedule/quickInfoOnSelectionEnd/index.md' %}{% endcodeBlock %}
-     *
      * @default false
      */
     @Property(false)
@@ -623,8 +619,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * When set to `true`, displays the week number of the current view date range. By default, it is set to `false`.
-     *
-     * {% codeBlock src='schedule/showWeekNumber/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -635,8 +629,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * when set to `true`, allows the height of the work-cells to adjust automatically
      * based on the number of appointments present in those time ranges.
      *
-     * {% codeBlock src='schedule/rowAutoHeight/index.md' %}{% endcodeBlock %}
-     *
      * @default false
      */
     @Property(false)
@@ -644,8 +636,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * This property helps to drag the multiple selected events. By default, it is set to `false`.
-     *
-     * {% codeBlock src='schedule/allowMultiDrag/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -669,9 +659,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/editorTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public editorTemplate: string;
+    public editorTemplate: string | Function;
 
     /**
      * The template option to customize the quick window. The three sections of the quick popup whereas the header, content,
@@ -699,8 +693,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * The days which does not has even a single event to display will be hidden from the UI of Agenda View by default.
      * When this property is set to `false`, the empty dates will also be displayed on the Schedule.
      *
-     * {% codeBlock src='schedule/hideEmptyAgendaDays/index.md' %}{% endcodeBlock %}
-     *
      * @default true
      */
     @Property(true)
@@ -708,8 +700,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The recurrence validation will be done by default. When this property is set to `false`, the recurrence validation will be skipped.
-     *
-     * {% codeBlock src='schedule/enableRecurrenceValidation/index.md' %}{% endcodeBlock %}
      *
      * @default true
      */
@@ -763,9 +753,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/resourceHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public resourceHeaderTemplate: string;
+    public resourceHeaderTemplate: string | Function;
 
     /**
      * Template option to customize the header indent bar. Here, the template accepts either
@@ -776,9 +770,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/headerIndentTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public headerIndentTemplate: string;
+    public headerIndentTemplate: string | Function;
 
     /**
      * Allows defining the group related settings of multiple resources. When this property is non-empty, it means
@@ -1700,7 +1698,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             };
         }
         this.currentTimezoneDate = this.getCurrentTime();
-        this.activeCellsData = { startTime: new Date(this.currentTimezoneDate), endTime: new Date(this.currentTimezoneDate), isAllDay: false };
+        this.activeCellsData = {
+            startTime: new Date(this.currentTimezoneDate),
+            endTime: new Date(this.currentTimezoneDate),
+            isAllDay: false
+        };
         this.activeEventData = { event: undefined, element: undefined };
         this.getDefaultLocale();
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
@@ -2206,6 +2208,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.quickPopup) {
             this.quickPopup.onClosePopup();
         }
+        util.resetScrollbarWidth();
         if (this.currentView === 'Month' || ((this.currentView !== 'Agenda' && this.currentView !== 'MonthAgenda')
             && !this.activeViewOptions.timeScale.enable) || this.activeView.isTimelineView()) {
             this.activeView.resetColWidth();
@@ -2219,17 +2222,21 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Method to process the templates
      *
-     * @param {string} template Accepts the template in string
+     * @param {string | Function} template Accepts the template in string
      * @returns {CallbackFunction} Returns the callback function
      * @private
      */
-    public templateParser(template: string): CallbackFunction {
+    public templateParser(template: string | Function): CallbackFunction {
         if (template) {
             try {
-                if (document.querySelectorAll(template).length) {
-                    return compile(document.querySelector(template).innerHTML.trim());
-                } else {
+                if (typeof template === 'function') {
                     return compile(template);
+                } else {
+                    if (document.querySelectorAll(template).length) {
+                        return compile(document.querySelector(template).innerHTML.trim());
+                    } else {
+                        return compile(template);
+                    }
                 }
             } catch (error) {
                 return compile(template);

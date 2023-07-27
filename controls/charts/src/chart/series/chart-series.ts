@@ -6,7 +6,7 @@
 /* eslint-disable valid-jsdoc */
 import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { DataLabelSettingsModel, MarkerSettingsModel, TrendlineModel, ChartSegmentModel } from '../series/chart-series-model';
+import { DataLabelSettingsModel, MarkerSettingsModel, TrendlineModel, ChartSegmentModel, ParetoOptionsModel } from '../series/chart-series-model';
 import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
 import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';
@@ -169,7 +169,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * Option for customizing the data label text.
      */
 
-    @Complex<FontModel>({ size: '11px', color: '', fontStyle: 'Normal', fontWeight: 'Normal', fontFamily: 'Segoe UI' }, Font)
+    @Complex<FontModel>({ size: '12px', color: null, fontStyle: 'Normal', fontWeight: '400', fontFamily: null }, Font)
     public font: FontModel;
 
     /**
@@ -177,10 +177,11 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * text to display the corresponding data point.
      *
      * @default null
+     * @aspType string
      */
 
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * Show Datalabel Even two Data Labels Are Overflow.
@@ -221,10 +222,10 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
      * * InvertedTriangle
      * * Image
      *
-     * @default 'Circle'
+     * @default null
      */
 
-    @Property('Circle')
+    @Property(null)
     public shape: ChartShape;
 
 
@@ -288,7 +289,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public fill: string;
 
     /**
-     * By default trackball will be enabled on mouse move, however it can be disabled by setting false to allowHighlight in marker.
+     * Trackball is enabled by default when the mouse moves, but it can be disabled by setting "false" to the marker's "allowHighlight" property.
      *
      * @default true
      */
@@ -312,6 +313,56 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     @Complex<DataLabelSettingsModel>({}, DataLabelSettings)
     public dataLabel: DataLabelSettingsModel;
 
+}
+
+/**
+ *  Configures the pareto in the series.
+ */
+
+export class ParetoOptions extends ChildProperty<ParetoOptions> {
+    
+    /** 
+     * The fill color of the pareto line that accepts value in hex and rgba as a valid CSS color string. By default, it will take color based on theme. 
+     * 
+     * @default null
+     */ 
+    
+    @Property(null)
+    public fill: string;
+
+    /** 
+     * Defines the width of the pareto line series.
+     * 
+     * @default 1
+     */ 
+
+    @Property(1)
+    public width: number;
+
+    /** 
+     * Defines the pattern of dashes and gaps to stroke. 
+     * 
+     * @default '0' 
+     */ 
+
+    @Property('0')
+    public dashArray: string;
+
+    /** 
+     * Options for displaying and customizing markers for individual points in a pareto line. 
+     */
+
+    @Complex<MarkerSettingsModel>(null, MarkerSettings)
+    public marker: MarkerSettingsModel;
+
+    /** 
+     * By default, the axis for the Pareto line will be displayed, but this can be disabled by using the 'showAxis' property. 
+     * 
+     * @default true 
+     */ 
+
+    @Property(true) 
+    public showAxis: boolean;
 }
 
 /**
@@ -382,6 +433,8 @@ export class Points {
     public interior: string;
     /** To know the point is selected. */
     public isSelect: boolean = false;
+    /** point x. */
+    public series: Object;
     /** point marker. */
     public marker: MarkerSettingsModel = {
         visible: false
@@ -1158,6 +1211,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     private pushData(point: Points, i: number): void {
         point.index = i;
         point.yValue = <number>point.y;
+        point.series = this;
         // To find the min, max for the axis range.
         this.xMin = Math.min(this.xMin, point.xValue);
         this.xMax = Math.max(this.xMax, point.xValue);
@@ -1201,7 +1255,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     private isAdvancedColorSupported(): boolean {
         if (isNullOrUndefined(this.isAdvancedColor)) {
-            if (this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.chart.visibleSeries.length === 1 &&
+            if (this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 &&
                 (this.chart.series[0].type === 'Column' || this.chart.series[0].type === 'Bar' ||
                     this.chart.series[0].type === 'Scatter' || this.chart.series[0].type === 'Bubble')) {
                 this.isAdvancedColor = true;
@@ -1577,20 +1631,20 @@ export class Series extends SeriesBase {
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is less than the closing price.
      *
-     * @default '#2ecd71'
+     * @default null
      */
 
-    @Property('#2ecd71')
+    @Property(null)
     public bearFillColor: string;
 
     /**
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is higher than the closing price.
      *
-     * @default '#e74c3d'
+     * @default null
      */
 
-    @Property('#e74c3d')
+    @Property(null)
     public bullFillColor: string;
 
     /**
@@ -1722,6 +1776,12 @@ export class Series extends SeriesBase {
      */
     @Complex<MarkerSettingsModel>(null, MarkerSettings)
     public marker: MarkerSettingsModel;
+
+    /** 
+     * Options for customizing the pareto line series. 
+     */ 
+    @Complex<ParetoOptionsModel>(null, ParetoOptions) 
+    public paretoOptions: ParetoOptionsModel;
 
     /**
      * Options to customize the drag settings for series
@@ -2079,67 +2139,82 @@ export class Series extends SeriesBase {
         if (isStacking100) {
             frequencies = <number[]>this.findFrequencies(seriesCollection);
         }
-        const stackingSeies: Series[] = [];
-        const stackedValues: number[] = [];
+        const groupingValues: string[] = [];
         let visiblePoints: Points[] = [];
-        for (const series of seriesCollection) {
-            if (series.type.indexOf('Stacking') !== -1 || (series.drawType.indexOf('Stacking') !== -1 &&
-                (series.chart.chartAreaType === 'PolarRadar'))) {
-                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
-                    (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
-                if (!lastPositive[stackingGroup as string]) {
-                    lastPositive[stackingGroup as string] = [];
-                    lastNegative[stackingGroup as string] = [];
-                }
-                yValues = series.yData;
-                startValues = [];
-                endValues = [];
-                stackingSeies.push(series);
-                visiblePoints = getVisiblePoints(series);
-                for (let j: number = 0, pointsLength: number = visiblePoints.length; j < pointsLength; j++) {
-                    lastValue = 0;
-                    value = +yValues[j as number]; // Fix for chart not rendering while y value is given as string issue
-                    if (lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
-                        lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
-                    }
-                    if (lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
-                        lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
-                    }
-                    if (isStacking100) {
-                        value = value / frequencies[stackingGroup as string][visiblePoints[j as number].xValue] * 100;
-                        value = !isNaN(value) ? value : 0;
-                        visiblePoints[j as number].percentage = +(value.toFixed(2));
-                    } else {
-                        stackedValues[j as number] = stackedValues[j as number] ? stackedValues[j as number] + Math.abs(value) : Math.abs(value);
-                    }
-                    if (value >= 0) {
-                        lastValue = lastPositive[stackingGroup as string][visiblePoints[j as number].xValue];
-                        lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] += value;
-                    } else {
-                        lastValue = lastNegative[stackingGroup as string][visiblePoints[j as number].xValue];
-                        lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] += value;
-                    }
-                    startValues.push(lastValue);
-                    endValues.push(value + lastValue);
-                    if (isStacking100 && (endValues[j as number] > 100)) {
-                        endValues[j as number] = 100;
-                    }
-                }
-                series.stackedValues = new StackValues(startValues, endValues);
-                const isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
-                const isColumnBarType: boolean = (series.type.indexOf('Column') !== -1 || series.type.indexOf('Bar') !== -1);
-                series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, startValues);
-                series.yMax = Math.max.apply(0, endValues);
-                if (series.yMin > Math.min.apply(0, endValues)) {
-                    series.yMin = (isStacking100) ? -100 :
-                        isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, endValues);
-                }
-                if (series.yMax < Math.max.apply(0, startValues)) {
-                    series.yMax = 0;
-                }
+        for (let i: number = 0; i < seriesCollection.length; i++) {
+            const series: Series = seriesCollection[i as number];
+            if (!groupingValues[series.stackingGroup]) {
+                groupingValues[series.stackingGroup] = [];
+                groupingValues[series.stackingGroup].push(series);
+            }
+            else if (groupingValues[series.stackingGroup] !== undefined) {
+                groupingValues[series.stackingGroup].push(series);
             }
         }
-        this.findPercentageOfStacking(stackingSeies, stackedValues, isStacking100);
+        const keys: string[] = Object.keys(groupingValues);
+        for (let k: number = 0; k < keys.length; k++) {
+            const stackingSeies: Series[] = [];
+            const stackedValues: number[] = [];
+            const seriesCollection: Series[] = groupingValues[keys[k as number]];
+            for (const series of seriesCollection) {
+                if (series.type.indexOf('Stacking') !== -1 || (series.drawType.indexOf('Stacking') !== -1 &&
+                    (series.chart.chartAreaType === 'PolarRadar'))) {
+                    stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
+                        (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
+                    if (!lastPositive[stackingGroup as string]) {
+                        lastPositive[stackingGroup as string] = [];
+                        lastNegative[stackingGroup as string] = [];
+                    }
+                    yValues = series.yData;
+                    startValues = [];
+                    endValues = [];
+                    stackingSeies.push(series);
+                    visiblePoints = getVisiblePoints(series);
+                    for (let j: number = 0, pointsLength: number = visiblePoints.length; j < pointsLength; j++) {
+                        lastValue = 0;
+                        value = +yValues[j as number]; // Fix for chart not rendering while y value is given as string issue
+                        if (lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
+                            lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
+                        }
+                        if (lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
+                            lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
+                        }
+                        if (isStacking100) {
+                            value = value / frequencies[stackingGroup as string][visiblePoints[j as number].xValue] * 100;
+                            value = !isNaN(value) ? value : 0;
+                            visiblePoints[j as number].percentage = +(value.toFixed(2));
+                        } else {
+                            stackedValues[j as number] = stackedValues[j as number] ? stackedValues[j as number] + Math.abs(value) : Math.abs(value);
+                        }
+                        if (value >= 0) {
+                            lastValue = lastPositive[stackingGroup as string][visiblePoints[j as number].xValue];
+                            lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] += value;
+                        } else {
+                            lastValue = lastNegative[stackingGroup as string][visiblePoints[j as number].xValue];
+                            lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] += value;
+                        }
+                        startValues.push(lastValue);
+                        endValues.push(value + lastValue);
+                        if (isStacking100 && (endValues[j as number] > 100)) {
+                            endValues[j as number] = 100;
+                        }
+                    }
+                    series.stackedValues = new StackValues(startValues, endValues);
+                    const isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
+                    const isColumnBarType: boolean = (series.type.indexOf('Column') !== -1 || series.type.indexOf('Bar') !== -1);
+                    series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, startValues);
+                    series.yMax = Math.max.apply(0, endValues);
+                    if (series.yMin > Math.min.apply(0, endValues)) {
+                        series.yMin = (isStacking100) ? -100 :
+                            isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, endValues);
+                    }
+                    if (series.yMax < Math.max.apply(0, startValues)) {
+                        series.yMax = 0;
+                    }
+                }
+            }
+            this.findPercentageOfStacking(stackingSeies, stackedValues, isStacking100);
+        }
     }
     private findPercentageOfStacking(stackingSeies: Series[], values: number[], isStacking100: boolean): void {
         for (const item of stackingSeies) {

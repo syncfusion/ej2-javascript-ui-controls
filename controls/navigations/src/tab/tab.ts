@@ -107,6 +107,8 @@ export interface SelectEventArgs extends BaseEventArgs {
     selectedContent: HTMLElement
     /** Determines whether the event is triggered via user interaction or programmatic way. True, if the event is triggered by user interaction. */
     isInteracted?: boolean
+    /** Determines whether the Tab item needs to focus or not after it is selected */
+    preventFocus?: boolean
 }
 /** An interface that holds options to control the selecting item action. */
 export interface SelectingEventArgs extends SelectEventArgs {
@@ -244,16 +246,24 @@ export class TabItem extends ChildProperty<TabItem> {
      * Specifies the header text of Tab item.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property(null)
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
     /**
      * Specifies the content of Tab item, that is displayed when concern item header is selected.
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property('')
-    public content: string | HTMLElement;
+    public content: string | HTMLElement | Function;
     /**
      * Sets the CSS classes to the Tab item to customize its styles.
      *
@@ -343,7 +353,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private isInteracted: boolean = false;
     private prevActiveEle: string;
     private lastIndex: number = 0;
-    private isSwipeed: boolean;
+    private isSwiped: boolean;
     private isNested: boolean;
     private itemIndexArray: string[];
     private templateEle: string[];
@@ -691,7 +701,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.isNested = false;
         this.isPopup = false;
         this.initRender = true;
-        this.isSwipeed = false;
+        this.isSwiped = false;
         this.itemIndexArray = [];
         this.templateEle = [];
         if (this.allowDragAndDrop) {
@@ -769,15 +779,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.setContentHeight(true);
                 this.select(this.selectedItem);
             }
-            this.tbItem = selectAll('.' + CLS_TB_ITEM, this.hdrEle);
-            if (!isNOU(this.tbItem)) {
-                for (let i: number = 0; i < this.items.length; i++) {
-                    if (this.tbItem[i]) {
-                        const tabID: string = this.items[i].id;
-                        this.tbItem[i].setAttribute('data-id', tabID);
-                    }
-                }
-            }
             this.setRTL(this.enableRtl);
         }
     }
@@ -793,23 +794,20 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.setProperties({ headerPlacement: 'Bottom' }, true);
             }
             const count: number = this.hdrEle.children.length;
-            const hdrItems: string[] = [];
+            const hdrItems: Element[] = [];
             for (let i: number = 0; i < count; i++) {
-                hdrItems.push(this.hdrEle.children.item(i).innerHTML);
+                hdrItems.push(this.hdrEle.children.item(i));
             }
             if (count > 0) {
-                while (this.hdrEle.firstElementChild) {
-                    detach(this.hdrEle.firstElementChild);
-                }
                 const tabItems: HTMLElement = this.createElement('div', { className: CLS_ITEMS });
                 this.hdrEle.appendChild(tabItems);
-                hdrItems.forEach((item: string, index: number) => {
+                hdrItems.forEach((item: Element, index: number) => {
                     this.lastIndex = index;
                     const attr: object = {
                         className: CLS_ITEM, id: CLS_ITEM + this.tabId + '_' + index
                     };
                     const txt: Str = this.createElement('span', {
-                        className: CLS_TEXT, innerHTML: item, attrs: { 'role': 'presentation' }
+                        className: CLS_TEXT, attrs: { 'role': 'presentation' }
                     }).outerHTML;
                     const cont: Str = this.createElement('div', {
                         className: CLS_TEXT_WRAP, innerHTML: txt + this.btnCls.outerHTML
@@ -818,6 +816,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         className: CLS_WRAP, innerHTML: cont,
                         attrs: { role: 'tab', tabIndex: '-1', 'aria-selected': 'false', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index, 'aria-disabled': 'false' }
                     });
+                    wrap.querySelector('.' + CLS_TEXT).appendChild(item);
                     tabItems.appendChild(this.createElement('div', attr));
                     selectAll('.' + CLS_ITEM, tabItems)[index].appendChild(wrap);
                 });
@@ -895,7 +894,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 spliceArray.push(i);
                 return;
             }
-            let txt: Str | HTEle = item.headerTemplate || item.header.text;
+            let txt: Str | HTEle | Function = item.headerTemplate || item.header.text;
             if (typeof txt === 'string' && this.enableHtmlSanitizer) {
                 txt = SanitizeHtmlHelper.sanitize(<Str>txt);
             }
@@ -950,7 +949,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.itemIndexArray.splice((index + i), 0, CLS_ITEM + this.tabId + '_' + this.lastIndex);
             }
             const attrObj: Object = {
-                id: CLS_ITEM + this.tabId + '_' + this.lastIndex
+                id: CLS_ITEM + this.tabId + '_' + this.lastIndex, 'data-id': item.id
             };
             const tItem: { [key: string]: {} } = { htmlAttributes: attrObj, template: wrap };
             tItem.cssClass = ((item.cssClass !== undefined) ? item.cssClass : ' ') + ' ' + disabled + ' ' + hidden + ' '
@@ -1218,7 +1217,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private headerTextCompile(element: HTEle, text: string, index: number): void {
         this.compileElement(element, text, 'headerTemplate', index);
     }
-    private getContent(ele: HTEle, cnt: Str | HTEle, callType: string, index: number): void {
+    private getContent(ele: HTEle, cnt: Str | HTEle | Function, callType: string, index: number): void {
         let eleStr: Str;
         cnt = isNOU(cnt) ? "" : cnt;
         if (typeof cnt === 'string' || isNOU((<HTEle>cnt).innerHTML)) {
@@ -1242,7 +1241,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.templateCompile(ele, <Str>cnt, index);
             }
         } else {
-            ele.appendChild(cnt);
+            ele.appendChild(cnt as HTMLElement);
         }
         if (!isNOU(eleStr)) {
             if (this.templateEle.indexOf(cnt.toString()) === -1) {
@@ -1514,17 +1513,21 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.setActiveBorder();
         this.refreshItemVisibility(trg);
         if (!this.initRender && !skipDataBind) {
-            (<HTEle>trg.firstElementChild).focus();
             const eventArg: SelectEventArgs = {
                 previousItem: this.prevItem,
                 previousIndex: this.prevIndex,
                 selectedItem: trg,
                 selectedIndex: value,
                 selectedContent: <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.selectingID, this.content),
-                isSwiped: this.isSwipeed,
-                isInteracted: isInteracted
+                isSwiped: this.isSwiped,
+                isInteracted: isInteracted,
+                preventFocus: false
             };
-            this.trigger('selected', eventArg);
+            this.trigger('selected', eventArg, (selectEventArgs: SelectEventArgs) => {
+                if(!selectEventArgs.preventFocus) {
+                    (<HTEle>trg.firstElementChild).focus();
+                }
+            });
         }
     }
     private setItems(items: object[]): void {
@@ -1626,7 +1629,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             nestedTab.removeAttribute('data-swipe');
             return;
         }
-        this.isSwipeed = true;
+        this.isSwiped = true;
         if (e.swipeDirection === 'Right' && this.selectedItem !== 0) {
             for (let k: number = this.selectedItem - 1; k >= 0; k--) {
                 if (!this.tbItem[k].classList.contains(CLS_HIDDEN)) {
@@ -1642,7 +1645,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
             }
         }
-        this.isSwipeed = false;
+        this.isSwiped = false;
     }
     private spaceKeyDown(e: KeyboardEvent): void {
         if ((e.keyCode === 32 && e.which === 32) || (e.keyCode === 35 && e.which === 35)) {
@@ -1984,6 +1987,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         };
         this.trigger('onDragStart', dragArgs, (tabitemDragArgs: DragEventArgs) => {
             if (tabitemDragArgs.cancel) {
+                const dragObj: Draggable = (e.element as EJ2Instance).ej2_instances[0] as Draggable;
+                if (!isNullOrUndefined(dragObj)) {
+                    dragObj.intDestroy(e.event);
+                }
                 detach(this.cloneElement);
             } else {
                 this.removeActiveClass();
@@ -2158,7 +2165,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             const tabItems: object[] = this.parseObject(items, index);
             this.isAdd = false;
             let i: number = 0;
-            let textValue: string | HTEle;
+            let textValue: string | HTEle | Function;
             items.forEach((item: TabItemModel, place: number) => {
                 textValue = item.headerTemplate || item.header.text;
                 if (!(isNOU(item.headerTemplate || item.header) || isNOU(textValue) ||
@@ -2361,7 +2368,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             selectingIndex: args as number,
             selectingContent: !isNOU(this.content) ?
                 <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.selectingID, this.content) : null,
-            isSwiped: this.isSwipeed,
+            isSwiped: this.isSwiped,
             isInteracted: this.isInteracted,
             cancel: false
         };
@@ -2555,7 +2562,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 const item: TabItemModel = this.items[this.selectedItem];
                 const pos: Str = (isNOU(item.header) || isNOU(item.header.iconPosition)) ? '' : item.header.iconPosition;
                 const css: Str = (isNOU(item.header) || isNOU(item.header.iconCss)) ? '' : item.header.iconCss;
-                const text: Str | HTEle = item.headerTemplate || item.header.text;
+                const text: Str | HTEle | Function = item.headerTemplate || item.header.text;
                 const txtWrap: HTEle = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
                 if (!isNOU((<HTEle>text).tagName)) {
                     txtWrap.appendChild(text as HTEle);
@@ -2592,7 +2599,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
                 this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).appendChild(wraper);
                 const crElem: HTEle = this.createElement('div');
-                let cnt: string | HTMLElement = item.content; let eleStr: string;
+                let cnt: string | HTMLElement | Function = item.content; let eleStr: string;
                 if (typeof cnt === 'string' || isNOU((<HTEle>cnt).innerHTML)) {
                     if (typeof cnt === 'string' && this.enableHtmlSanitizer) {
                         cnt = SanitizeHtmlHelper.sanitize(<Str>cnt);
@@ -2610,7 +2617,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         this.compileElement(crElem, <Str>cnt, 'content', this.selectedItem);
                     }
                 } else {
-                    crElem.appendChild(cnt);
+                    crElem.appendChild(cnt as HTEle);
                 }
                 if (!isNOU(eleStr)) {
                     if (this.templateEle.indexOf(cnt.toString()) === -1) {

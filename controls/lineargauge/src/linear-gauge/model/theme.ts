@@ -19,8 +19,10 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         style = {
             backgroundColor: '#333232',
             titleFontColor: '#ffffff',
+            titleFontSize: '15px',
             tooltipFillColor: '#FFFFFF',
             tooltipFontColor: '#000000',
+            tooltipFontSize: '13px',
             labelColor: '#DADADA',
             lineColor: '#C8C8C8',
             majorTickColor: '#C8C8C8',
@@ -39,8 +41,10 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         style = {
             backgroundColor: '#000000',
             titleFontColor: '#FFFFFF',
+            titleFontSize: '15px',
             tooltipFillColor: '#ffffff',
             tooltipFontColor: '#000000',
+            tooltipFontSize: '13px',
             labelColor: '#FFFFFF',
             lineColor: '#FFFFFF',
             majorTickColor: '#FFFFFF',
@@ -59,8 +63,10 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         style = {
             backgroundColor: '#FFFFFF',
             titleFontColor: '#212529',
+            titleFontSize: '15px',
             tooltipFillColor: '#000000',
             tooltipFontColor: '#FFFFFF',
+            tooltipFontSize: '13px',
             labelColor: '#212529',
             lineColor: '#ADB5BD',
             majorTickColor: '#ADB5BD',
@@ -83,8 +89,10 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#374151',
+            titleFontSize: '15px',
             tooltipFillColor: '#111827',
             tooltipFontColor: '#F9FAFB',
+            tooltipFontSize: '13px',
             labelColor: '#6B7280',
             lineColor: '#E5E7EB',
             majorTickColor: '#9CA3AF',
@@ -107,8 +115,10 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#D1D5DB',
+            titleFontSize: '15px',
             tooltipFillColor: '#F9FAFB',
             tooltipFontColor: '#1F2937',
+            tooltipFontSize: '13px',
             labelColor: '#9CA3AF',
             lineColor: '#374151',
             majorTickColor: '#6B7280',
@@ -131,8 +141,10 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#343A40',
+            titleFontSize: '15px',
             tooltipFillColor: '#212529',
             tooltipFontColor: '#F9FAFB',
+            tooltipFontSize: '13px',
             labelColor: '#495057',
             lineColor: '#E5E7EB',
             majorTickColor: '#9CA3AF',
@@ -155,8 +167,10 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#E9ECEF',
+            titleFontSize: '15px',
             tooltipFillColor: '#E9ECEF',
             tooltipFontColor: '#212529',
+            tooltipFontSize: '13px',
             labelColor: '#CED4DA',
             lineColor: '#343A40',
             majorTickColor: '#6C757D',
@@ -179,8 +193,10 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#201F1E',
+            titleFontSize: '15px',
             tooltipFillColor: '#FFFFFF',
             tooltipFontColor: '#323130',
+            tooltipFontSize: '13px',
             labelColor: '#3B3A39',
             lineColor: '#EDEBE9',
             majorTickColor: '#C8C6C4',
@@ -203,8 +219,10 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#F3F2F1',
+            titleFontSize: '15px',
             tooltipFillColor: '#252423',
             tooltipFontColor: '#F3F2F1',
+            tooltipFontSize: '13px',
             labelColor: '#C8C6C4',
             lineColor: '#292827',
             majorTickColor: '#484644',
@@ -223,12 +241,66 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             containerBorderColor: '#292827'
         };
         break;
+    case 'material3':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#1C1B1F',
+            titleFontSize: '16px',
+            tooltipFillColor: '#313033',
+            tooltipFontColor: '#F4EFF4',
+            tooltipFontSize: '14px',
+            labelColor: ' #1E192B',
+            lineColor: '#C4C7C5',
+            majorTickColor: '#C4C7C5',
+            minorTickColor: '#C4C7C5',
+            pointerColor: '#49454E',
+            fontFamily: 'Roboto',
+            fontSize: '12px',
+            labelFontFamily: 'Roboto',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            containerBackground: '#E7E0EC',
+            titleFontStyle: 'normal',
+            titleFontWeight: '500',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            containerBorderColor: '#E7E0EC'
+        };
+        break;
+    case 'material3dark':
+        style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#E6E1E5',
+            titleFontSize: '16px',
+            tooltipFillColor: '#E6E1E5',
+            tooltipFontColor: '#313033',
+            tooltipFontSize: '14px',
+            labelColor: '#E6E1E5',
+            lineColor: '#938F99',
+            majorTickColor: '#938F99',
+            minorTickColor: '#938F99',
+            pointerColor: '#CAC4D0',
+            fontFamily: 'Roboto',
+            fontSize: '12px',
+            labelFontFamily: 'Roboto',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            containerBackground: '#49454F',
+            titleFontStyle: 'normal',
+            titleFontWeight: '500',
+            labelStyle: 'normal',
+            labelWeight: '400',
+            containerBorderColor: '#49454F'
+        };
+        break;
     default:
         style = {
             backgroundColor: '#FFFFFF',
             titleFontColor: '#424242',
+            titleFontSize: '15px',
             tooltipFillColor: '#FFFFF',
             tooltipFontColor: '#FFFFFF',
+            tooltipFontSize: '13px',
             labelColor: '#686868',
             lineColor: '#a6a6a6',
             majorTickColor: '#a6a6a6',

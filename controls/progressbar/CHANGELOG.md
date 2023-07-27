@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.1.36 (2023-06-28)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I470963` - Fixed an issue where the progress bar displaying an extra segment at the end.
+
 ## 21.1.37 (2023-03-29)
 
 ### ProgressBar

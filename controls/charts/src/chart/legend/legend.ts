@@ -23,6 +23,7 @@ import { legendRender, legendClick, regSub, regSup} from '../../common/model/con
 import { Axis } from '../axis/axis';
 import { LegendTitlePosition } from '../../common/utils/enum';
 import { textWrap } from '../../common/utils/helper';
+import { markerShapes } from '../series/marker';
 /**
  * `Legend` module is used to render legend for the chart.
  */
@@ -110,7 +111,8 @@ export class Legend extends BaseLegend {
                     this.legendCollections.push(new LegendOptions(
                         series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
                             (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
-                        seriesType, series.legendImageUrl ? series.legendImageUrl : (series.type === 'Scatter' && series.marker.shape === 'Image' ? series.marker.imageUrl : ''),
+                        seriesType, series.legendImageUrl ? series.legendImageUrl : (series.type === 'Scatter' && series.marker.shape === 'Image' ?
+                            series.marker.imageUrl : ''),
                         series.marker.shape, series.marker.visible, null, null, dashArray
                     ));
                 }
@@ -123,7 +125,8 @@ export class Legend extends BaseLegend {
                         this.legendCollections.push(new LegendOptions(
                             points.x.toString(), fill, series.legendShape, (series.category === 'TrendLine' ?
                                 (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
-                            seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '', series.marker.shape, series.marker.visible
+                            seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '',
+                            series.marker.shape, series.marker.visible
                         ));
                     }
                 }
@@ -144,7 +147,8 @@ export class Legend extends BaseLegend {
                             this.legendCollections.push(new LegendOptions(
                                 legendLabel, fill, series.legendShape, (series.category === 'TrendLine' ?
                                     (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
-                                seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '', series.marker.shape, series.marker.visible
+                                seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '',
+                                series.marker.shape, series.marker.visible
                             ));
                         }
                     }
@@ -204,7 +208,7 @@ export class Legend extends BaseLegend {
         let titlePlusArrowSpace: number = 0;
         let legendEventArgs: ILegendRenderEventArgs;
         let render: boolean = false;
-        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle, this.chart.themeStyle.legendLabelFont).height, legend.shapeHeight);
         for (let i: number = 0; i < this.legendCollections.length; i++) {
             legendOption = this.legendCollections[i as number];
             if (regSub.test(legendOption.text)) {
@@ -223,7 +227,7 @@ export class Legend extends BaseLegend {
             legendOption.fill = legendEventArgs.fill;
             legendOption.shape = legendEventArgs.shape;
             legendOption.markerShape = legendEventArgs.markerShape;
-            legendOption.textSize = measureText(legendOption.text, legend.textStyle);
+            legendOption.textSize = measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont);
             shapeWidth = legendOption.text ? legend.shapeWidth : 0;
             shapePadding = legendOption.text ? legend.shapePadding : 0;
             if (legendOption.render && legendOption.text) {
@@ -284,7 +288,7 @@ export class Legend extends BaseLegend {
             if (legendWidth > legend.maximumLabelWidth || legendWidth + rowWidth > legendBounds.width) {
                 legendOption.textCollection = textWrap(
                     legendOption.text,
-                    (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (legendBounds.width - textPadding)) : (legendBounds.width - textPadding)), legend.textStyle
+                    (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (legendBounds.width - textPadding)) : (legendBounds.width - textPadding)), legend.textStyle, null, null, this.chart.themeStyle.legendLabelFont
                 );
             } else {
                 legendOption.textCollection.push(legendOption.text);
@@ -314,7 +318,7 @@ export class Legend extends BaseLegend {
             textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + this.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x;
         availwidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availwidth) : availwidth;
         if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
-            legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
+            legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
         }
 
     }
@@ -449,7 +453,7 @@ export class Legend extends BaseLegend {
         if (this.isSecondaryAxis(series.xAxis)) {
             series.xAxis.internalVisibility = series.xAxis.series.some((value: Series) => (value.visible));
         }
-        if (this.isSecondaryAxis(series.yAxis)) {
+        if (this.isSecondaryAxis(series.yAxis) || (series.category == 'Pareto' && series.type == 'Line')) {
             series.yAxis.internalVisibility = series.yAxis.series.some((value: Series) => (value.visible));
         }
     }

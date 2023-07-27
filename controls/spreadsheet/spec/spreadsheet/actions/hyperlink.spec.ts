@@ -197,7 +197,7 @@ describe('Hyperlink ->', () => {
 
         it('Checking Insert Button in Hyperlink Dialog Box ->', (done: Function) => {
             helper.switchRibbonTab(2);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+            helper.triggerKeyNativeEvent(75, true);
             setTimeout(() => {
                 setTimeout(() => {
                     helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
@@ -273,8 +273,7 @@ describe('Hyperlink ->', () => {
             helper.invoke('selectRange', ['E2']);
             const textAlignIcon: HTMLElement = helper.getElement(`#${helper.id}_text_align .e-btn-icon`);
             expect(textAlignIcon.className).toContain('e-right-icon');
-            helper.setAnimationToNone(`#${helper.id}_contextmenu`);
-            helper.openAndClickCMenuItem(1, 4, [9]);
+            helper.triggerKeyNativeEvent(75, true);
             setTimeout((): void => {
                 const address: HTMLInputElement = helper.getElements('.e-hyperlink-dlg .e-webpage input')[1];
                 address.value = 'www.google.com';
@@ -872,6 +871,7 @@ describe('Hyperlink ->', () => {
                 });
             });
         });
+
         describe('EJ2-72081 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);

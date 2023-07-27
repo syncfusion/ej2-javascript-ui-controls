@@ -204,9 +204,9 @@ describe('Funnel Series checking', () => {
         chart.loaded = () => {
             //debugger//checked
             let group: Element = getElement('ej2container_chart_legend_element');
-            expect(group.getAttribute('x') === '74' || group.getAttribute('x') === '85.5').toBe(true);
+            expect(group.getAttribute('x') === '75.5' || group.getAttribute('x') === '85.5').toBe(true);
             expect(group.getAttribute('y')).toBe('11');
-            expect(group.getAttribute('width') === '452' || group.getAttribute('width') === '429').toBe(true);
+            expect(group.getAttribute('width') === '449' || group.getAttribute('width') === '429').toBe(true);
             expect(group.getAttribute('height') === '33' || group.getAttribute('height') === '32').toBe(true);
             done();
 
@@ -219,7 +219,7 @@ describe('Funnel Series checking', () => {
     it('Checking default legend shape', (done: Function) => {
         //debugger //checked
         let group: Element = getElement('ej2container_chart_legend_shape_0');
-        expect(group.getAttribute('d') === 'M 92 23 L 87 33 L 82 23 L 92 23 z' ||
+        expect(group.getAttribute('d') === 'M 93.5 22 L 88.5 32 L 83.5 22 L 93.5 22 z' ||
             group.getAttribute('d') == 'M 103.5 22 L 98.5 32 L 93.5 22 L 103.5 22 z').toBe(true);
         done();
     });
@@ -440,7 +440,7 @@ describe('Funnel Series checking', () => {
             //debugger
             let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
             expect(group.getAttribute('x')).toBe('545');
-            expect(group.getAttribute('y') === '220.0535226455787' ||
+            expect(group.getAttribute('y') === '219.551509705248' ||
                 group.getAttribute('y') === '218.801509705248').toBe(true);
             done();
 
@@ -493,7 +493,7 @@ describe('Funnel Series checking', () => {
             expect(group.getAttribute('stroke')).toBe('red');
             expect(group.getAttribute('stroke-width')).toBe('5');
             expect(group.getAttribute('stroke-dasharray')).toBe('');
-            expect(group.getAttribute('d') == 'M360.20532319391634,351.89176172370094 L363.29907319391634,350.8504383185467 L366.39282319391634,349.8091149133925 L369.48657319391634,348.76779150823836 L372.58032319391634,347.72646810308413 L375.67407319391634,346.6851446979299 L378.76782319391634,345.64382129277567 L381.86157319391634,344.60249788762155 L384.95532319391634,343.5611744824673 L388.04907319391634,342.5198510773131 L391.14282319391634,341.47852767215886 L394.23657319391634,340.4372042670047 L397.33032319391634,339.39588086185046 L400.42407319391634,338.3545574566962 L403.51782319391634,337.31323405154205 L406.61157319391634,336.2719106463879 L409.70532319391634,335.23058724123365' ||
+            expect(group.getAttribute('d') == 'M360.20532319391634,351.7816223067174 L363.61157319391634,350.7407213772708 L367.01782319391634,349.69982044782427 L370.42407319391634,348.65891951837773 L373.83032319391634,347.61801858893114 L377.23657319391634,346.5771176594846 L380.64282319391634,345.53621673003806 L384.04907319391634,344.49531580059147 L387.45532319391634,343.45441487114493 L390.86157319391634,342.4135139416984 L394.26782319391634,341.3726130122518 L397.67407319391634,340.33171208280527 L401.08032319391634,339.29081115335873 L404.48657319391634,338.24991022391214 L407.89282319391634,337.2090092944656 L411.29907319391634,336.168108365019 L414.70532319391634,335.1272074355725' ||
                 group.getAttribute('d') == 'M360.20532319391634,351.7816223067174 L363.29907319391634,350.9282213772708 L366.39282319391634,350.07482044782427 L369.48657319391634,349.22141951837773 L372.58032319391634,348.36801858893114 L375.67407319391634,347.5146176594846 L378.76782319391634,346.66121673003806 L381.86157319391634,345.80781580059147 L384.95532319391634,344.95441487114493 L388.04907319391634,344.1010139416984 L391.14282319391634,343.2476130122518 L394.23657319391634,342.39421208280527 L397.33032319391634,341.54081115335873 L400.42407319391634,340.68741022391214 L403.51782319391634,339.8340092944656 L406.61157319391634,338.980608365019 L409.70532319391634,338.1272074355725' ||
                 group.getAttribute('d') == 'M360.20532319391634,351.7816223067174 L363.61157319391634,350.9282213772708 L367.01782319391634,350.07482044782427 L370.42407319391634,349.22141951837773 L373.83032319391634,348.36801858893114 L377.23657319391634,347.5146176594846 L380.64282319391634,346.66121673003806 L384.04907319391634,345.80781580059147 L387.45532319391634,344.95441487114493 L390.86157319391634,344.1010139416984 L394.26782319391634,343.2476130122518 L397.67407319391634,342.39421208280527 L401.08032319391634,341.54081115335873 L404.48657319391634,340.68741022391214 L407.89282319391634,339.8340092944656 L411.29907319391634,338.980608365019 L414.70532319391634,338.1272074355725').toBe(true);
             done();
@@ -550,7 +550,7 @@ describe('Funnel Series checking', () => {
             //debugger
             let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
             expect(group.getAttribute('x')).toBe('545');
-            expect(group.getAttribute('y') == '254.70691318327977' ||
+            expect(group.getAttribute('y') == '254.35996784565918' ||
                 group.getAttribute('y') === '256.6099678456592').toBe(true);
             done();
         };
@@ -566,7 +566,7 @@ describe('Funnel Series checking', () => {
             //debugger
             let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
             expect(group.getAttribute('x')).toBe('298');
-            expect(group.getAttribute('y') === '265.8065916398714' ||
+            expect(group.getAttribute('y') === '265.433922829582' ||
                 group.getAttribute('y') === '264.683922829582').toBe(true);
             done();
 
@@ -583,7 +583,7 @@ describe('Funnel Series checking', () => {
         chart.loaded = () => {
             let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
             expect(group.getAttribute('x')).toBe('545');
-            expect(group.getAttribute('y') === '264.8065916398714' ||
+            expect(group.getAttribute('y') === '264.433922829582' ||
                 group.getAttribute('y') === '263.683922829582').toBe(true);
             done();
 
@@ -720,7 +720,7 @@ describe('Funnel Series checking', () => {
         chart.loaded = () => {
             //debugger
             let group: Element = getElement('ej2container_chart_legend_shape_0');
-            expect(group.getAttribute('d') === 'M 82 28 L 87 23 L 92 28 L 87 33 L 82 28 z' ||
+            expect(group.getAttribute('d') === 'M 83.5 27 L 88.5 22 L 93.5 27 L 88.5 32 L 83.5 27 z' ||
                 group.getAttribute('d') === 'M 93.5 27 L 98.5 22 L 103.5 27 L 98.5 32 L 93.5 27 z' ||
                 group.getAttribute('d') === 'M 103.5 22 L 98.5 32 L 93.5 22 L 103.5 22 z').toBe(true);
                 done();
@@ -734,9 +734,9 @@ describe('Funnel Series checking', () => {
         chart.loaded = () => {            //debugger
 
             let group: Element = getElement('ej2container_chart_legend_element');
-            expect(group.getAttribute('x') == '483' || group.getAttribute('x') == '490').toBe(true);
+            expect(group.getAttribute('x') == '484' || group.getAttribute('x') == '490').toBe(true);
             expect(group.getAttribute('y') == '133.5' || group.getAttribute('y') == '136').toBe(true);
-            expect(group.getAttribute('width') == '107' || group.getAttribute('width') == '100').toBe(true);
+            expect(group.getAttribute('width') == '106' || group.getAttribute('width') == '100').toBe(true);
             expect(group.getAttribute('height') == '133' || group.getAttribute('height') == '128').toBe(true);
             done();
         };
@@ -810,7 +810,7 @@ describe('Funnel Series checking', () => {
             let group: Element = getElement('ej2container_datalabel_Series_0_text_6');
             expect(group.getAttribute('x') === '47.20472756410254'|| group.getAttribute('x') === '488.79527243589746').toBe(true);
             expect(group.getAttribute('y') === '202.79615384615386' ||
-                group.getAttribute('y') === '180.75128205128203' || group.getAttribute('y') === '191.76666666666668').toBe(true);
+                group.getAttribute('y') === '180.75128205128203' || group.getAttribute('y') === '180.51666666666668').toBe(true);
             done();
         };
         chart.series[0].dataSource = dataPoints;
@@ -825,7 +825,7 @@ describe('Funnel Series checking', () => {
     it('Checking data label with Legend position',(done:Function) =>{
         loaded = (args: Object): void => {
             let group: Element = getElement('ej2container_datalabel_Series_0_text_11');
-            expect(group.getAttribute('x') === '117.5' || group.getAttribute('x') === '559.0679086538461').toBe(true);
+            expect(group.getAttribute('x') === '118.5' || group.getAttribute('x') === '559.0679086538461').toBe(true);
             expect(group.getAttribute('y') === '115.57051282051282' ||
                 group.getAttribute('y') === '84.35897435897436').toBe(true);
             done();
@@ -861,7 +861,7 @@ describe('Funnel Series checking', () => {
             let group: Element = getElement('ej2container_datalabel_Series_0_text_6');
             expect(group.getAttribute('x') === '458'|| group.getAttribute('x') === '488.79527243589746').toBe(true);
             expect(group.getAttribute('y') === '215.4' ||
-                group.getAttribute('y') === '209.09846153846155' || group.getAttribute('y') === '219.47384615384613').toBe(true);
+                group.getAttribute('y') === '205.65615384615387' || group.getAttribute('y') === '219.47384615384613').toBe(true);
             done();
         };
         chart.series[0].dataLabel.position = 'Outside';

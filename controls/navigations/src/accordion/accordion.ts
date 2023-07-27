@@ -309,16 +309,24 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * Specifies the template option for accordion items.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public itemTemplate: string;
+    public itemTemplate: string | Function;
     /**
      * Specifies the header title template option for accordion items.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
     /**
      * Specifies the width of the Accordion in pixels/number/percentage. Number value is considered as pixels.
      *
@@ -528,10 +536,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 });
         }
     }
-    private templateParser(template: string): (template: string) => NodeList | undefined {
+    private templateParser(template: string | Function): (template: string | Function) => NodeList | undefined {
         if (template) {
             try {
-                if (document.querySelectorAll(template).length) {
+                if (typeof template !== 'function' && document.querySelectorAll(template).length) {
                     return templateCompiler(document.querySelector(template).innerHTML.trim());
                 } else {
                     return templateCompiler(template);
@@ -1392,6 +1400,12 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             const itemObj: Object = items[parseInt(index.toString(), 10)];
             items.splice(index, 1);
             this.restoreContent(index);
+            const header: HTEle = <HTEle>select('.' + CLS_HEADERCTN, item);
+            const content: HTEle = <HTEle>select('.' + CLS_CTENT, item);
+            if ((this as any).isReact || (this as any).isAngular) {
+                this.clearAccordionTemplate(header, 'header', CLS_HEADERCTN);
+                this.clearAccordionTemplate(content, 'content', CLS_CTENT);
+            }
             detach(item);
             this.addItem(itemObj, index);
         }
@@ -1410,6 +1424,29 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             [].slice.call(tempEle.childNodes).forEach((childEle: HTMLElement): void => {
                 ele.appendChild(childEle);
             });
+        }
+    }
+    private clearAccordionTemplate(templateEle: HTMLElement, templateName: string, className: string): void {
+        if ((this as Record<string, any>).registeredTemplate && (this as Record<string, any>).registeredTemplate[`${templateName}`]) {
+            const registeredTemplates: Record<string, any> = (this as Record<string, any>).registeredTemplate;
+            for (let index: number = 0; index < registeredTemplates[`${templateName}`].length; index++) {
+                const registeredItem: Record<string, any> = registeredTemplates[`${templateName}`][parseInt(index.toString(), 10)].rootNodes[0];
+                const closestItem: Element = closest(registeredItem.containerInfo, '.' + className);
+                if (!isNOU(closestItem) && closestItem === templateEle) {
+                    this.clearTemplate([templateName], [registeredTemplates[`${templateName}`][parseInt(index.toString(), 10)]]);
+                    break;
+                }
+            }
+        } else if ((this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
+            const portals: Record<string, any>[] = (this as Record<string, any>).portals;
+            for (let index: number = 0; index < portals.length; index++) {
+                const portalItem: Record<string, any> = portals[parseInt(index.toString(), 10)];
+                const closestItem: Element = closest(portalItem.containerInfo, '.' + className);
+                if (!isNOU(closestItem) && closestItem === templateEle) {
+                    this.clearTemplate([templateName], index);
+                    break;
+                }
+            }
         }
     }
     protected getPersistData(): string {
@@ -1434,38 +1471,44 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                     const changedProp: Object[] = Object.keys(newProp.items);
                     for (let j: number = 0; j < changedProp.length; j++) {
                         const index: number = parseInt(Object.keys(newProp.items)[parseInt(j.toString(), 10)], 10);
-                        const property: Str = Object.keys(newProp.items[parseInt(index.toString(), 10)])[0];
-                        const item: HTEle = <HTEle>selectAll('.' + CLS_ITEM, this.element)[parseInt(index.toString(), 10)];
-                        const oldVal: Str = Object(oldProp.items[parseInt(index.toString(), 10)])[`${property}`];
-                        const newVal: Str = Object(newProp.items[parseInt(index.toString(), 10)])[`${property}`];
-                        const temp: Str = property;
-                        if (temp === 'header' || temp === 'iconCss' || temp === 'expanded' || ((temp === 'content') && (oldVal === ''))) {
-                            this.updateItem(item, index);
-                        }
-                        if (property === 'cssClass' && !isNOU(item)) {
-                            if (oldVal) { removeClass([item], oldVal.split(' ')); }
-                            if (newVal) { addClass([item], newVal.split(' ')); }
-                        }
-                        if (property === 'visible' && !isNOU(item)) {
-                            if (Object(newProp.items[parseInt(index.toString(), 10)])[`${property}`] === false) {
-                                item.classList.add(CLS_ITEMHIDE);
-                            } else {
-                                item.classList.remove(CLS_ITEMHIDE);
+                        const property: Str[] = Object.keys(newProp.items[parseInt(index.toString(), 10)]);
+                        for (let k: number = 0; k < property.length; k++) {
+                            const item: HTEle = <HTEle>selectAll('.' + CLS_ITEM, this.element)[parseInt(index.toString(), 10)];
+                            const oldVal: Str = Object(oldProp.items[parseInt(index.toString(), 10)])[`${property[parseInt(k.toString(), 10)]}`];
+                            const newVal: Str = Object(newProp.items[parseInt(index.toString(), 10)])[`${property[parseInt(k.toString(), 10)]}`];
+                            const temp: Str = property[parseInt(k.toString(), 10)];
+                            const content: HTEle = <HTEle>select('.' + CLS_CTENT, item);
+                            if (temp === 'header' || temp === 'iconCss' || temp === 'expanded' || ((temp === 'content') && (oldVal === ''))) {
+                                this.updateItem(item, index);
                             }
-                        }
-                        if (property === 'disabled' && !isNOU(item)) {
-                            this.enableItem(index, !newVal);
-                        }
-                        if (property === 'content' && !isNOU(item) && item.children.length === 2) {
-                            if (typeof newVal === 'function') {
-                                const activeContent: HTEle = item.querySelector('.' + CLS_CTENT);
-                                activeContent.innerHTML = '';
-                                this.setTemplate(newVal, activeContent, index);
-                            } else {
-                                if (item.classList.contains(CLS_SLCTED)) {
-                                    this.expandItem(false, index);
+                            if (property[parseInt(k.toString(), 10)] === 'cssClass' && !isNOU(item)) {
+                                if (oldVal) { removeClass([item], oldVal.split(' ')); }
+                                if (newVal) { addClass([item], newVal.split(' ')); }
+                            }
+                            if (property[parseInt(k.toString(), 10)] === 'visible' && !isNOU(item)) {
+                                if (Object(newProp.items[parseInt(index.toString(), 10)])[`${property[parseInt(k.toString(), 10)]}`] === false) {
+                                    item.classList.add(CLS_ITEMHIDE);
+                                } else {
+                                    item.classList.remove(CLS_ITEMHIDE);
                                 }
-                                detach(item.querySelector('.' + CLS_CONTENT));
+                            }
+                            if (property[parseInt(k.toString(), 10)] === 'disabled' && !isNOU(item)) {
+                                this.enableItem(index, !newVal);
+                            }
+                            if (property[parseInt(k.toString(), 10)] === 'content' && !isNOU(item) && item.children.length === 2) {
+                                if (typeof newVal === 'function') {
+                                    if ((this as any).isAngular || (this as any).isReact) {
+                                        this.clearAccordionTemplate(content, property[parseInt(k.toString(), 10)], CLS_CTENT);
+                                    }
+                                    const activeContent: HTEle = item.querySelector('.' + CLS_CTENT);
+                                    activeContent.innerHTML = '';
+                                    this.setTemplate(newVal, activeContent, index);
+                                } else {
+                                    if (item.classList.contains(CLS_SLCTED)) {
+                                        this.expandItem(false, index);
+                                    }
+                                    detach(item.querySelector('.' + CLS_CONTENT));
+                                }
                             }
                         }
                     }

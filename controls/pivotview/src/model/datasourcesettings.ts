@@ -255,7 +255,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
 export class FieldListFieldOptions extends FieldOptions { }
 
 /**
- * Allows the style information to cusotmize the pivot table cell apprearance.
+ * Allows the style information to customize the pivot table cell appearance.
  */
 export class Style extends ChildProperty<Style> implements IStyle {
     /**
@@ -309,7 +309,7 @@ export class Filter extends ChildProperty<Filter> implements IFilter {
     public type: FilterType;
 
     /**
-     * Allows yoy to specify the field members that used to be displayed based on the filter type provided in the pivot table.
+     * Allows you to specify the field members that used to be displayed based on the filter type provided in the pivot table.
      */
     @Property()
     public items: string[];
@@ -406,7 +406,7 @@ export class ConditionalFormatSettings extends ChildProperty<ConditionalFormatSe
 
     /**
      * Allows to apply conditional formatting to the grand totals of row and column axis in the pivot table.
-     * 
+     *
      * @default true
      */
     @Property(true)
@@ -458,7 +458,7 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to specify minimum fraction digits to the formatted value.
-     * 
+     *
      * @aspType int
      */
     @Property()
@@ -466,7 +466,7 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to specify maximum fraction digits to the  formatted value.
-     * 
+     *
      * @aspType int
      */
     @Property()
@@ -474,7 +474,7 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to specify minimum significant digits to the formatted value.
-     * 
+     *
      * @aspType int
      */
     @Property()
@@ -482,7 +482,7 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to specify maximum significant digits to the formatted value.
-     * 
+     *
      * @aspType int
      */
     @Property()
@@ -498,7 +498,7 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to specify the skeleton such as full, medium, long, short, etc. to perform date formatting.
-     * > It is applicable only fot date type formatting.
+     * > It is applicable only for date type formatting.
      */
     @Property()
     public skeleton: string;
@@ -517,7 +517,7 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to specify minimum integer digits to the formatted value.
-     * 
+     *
      * @aspType int
      */
     @Property()
@@ -749,7 +749,7 @@ export class Authentication extends ChildProperty<Authentication> implements IAu
  * * `providerType`: Allows to set the provider type to identify the given connection is either Relational or SSAS to render the pivot table and field list.
  * * `url`: Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list. **Note: It is applicable only for OLAP data source.**
  * * `localeIdentifier`: Allows you to set the specific culture code as number type to render pivot table with desired localization.
- * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale. **Note: It is applicale only for OLAP data source.**
+ * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale. **Note: It is applicable only for OLAP data source.**
  * * `dataSource`: Allows you to set the data source as JSON collection to the pivot report either from local or from remote server to the render the pivot that and field list.
  * You can fetch JSON data from remote server by using DataManager. **Note: It is applicable only for relational data source.**
  * * `rows`: Allows specific fields associated with field information that needs to be displayed in row axis of pivot table.
@@ -816,7 +816,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     public cube: string;
 
     /**
-     * Allows you to assign multiple roles to the OLAP cube, separated by commas, each of which can access only restricted OLAP cube information such as measures, dimensions, and more that can be rendered in the pivot table. 
+     * Allows you to assign multiple roles to the OLAP cube, separated by commas, each of which can access only restricted OLAP cube information such as measures, dimensions, and more that can be rendered in the pivot table.
      * > It is applicable only for OLAP data source.
      */
     @Property()
@@ -842,7 +842,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     /**
      * Allows you to set the specific culture code as number type to render pivot table with desired localization.
      * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale.
-     * > It is applicale only for OLAP data source.
+     * > It is applicable only for OLAP data source.
      *
      * @default 1033
      * @aspType int
@@ -1025,7 +1025,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     /**
      * Allows you to display the value headers based on the index position in row or column axis in the pivot table.
      * By default, the value headers are displayed at last index position based on the `valueAxis` property.
-     * > It is applicale only for relational data source.
+     * > It is applicable only for relational data source.
      *
      * @default '-1'
      * @aspType int

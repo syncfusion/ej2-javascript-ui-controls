@@ -3,7 +3,6 @@ import { SmithchartFont} from '../utils/utils';
 import { AxisLabelPosition, SmithchartLabelIntersectAction} from '../utils/enum';
 import { SmithchartFontModel} from '../utils/utils-model';
 import { SmithchartMajorGridLinesModel, SmithchartMinorGridLinesModel, SmithchartAxisLineModel  } from '../axis/axis-model';
-import { Theme} from '../model/theme';
 
 /**
  * Configures the major Grid lines in the `axis`.
@@ -198,7 +197,7 @@ export class SmithchartAxis extends ChildProperty<SmithchartAxis> {
      * Options for customizing font.
      */
 
-    @Complex<SmithchartFontModel>(Theme.axisLabelFont, SmithchartFont)
+    @Complex<SmithchartFontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, SmithchartFont)
     public labelStyle: SmithchartFontModel;
 
 }

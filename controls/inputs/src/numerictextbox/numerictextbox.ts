@@ -1360,8 +1360,12 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         event.stopPropagation();
         clearInterval(this.timeOut);
         this.isCalled = false;
-        EventHandler.remove(this.spinUp, 'mouseleave', this.mouseUpClick);
-        EventHandler.remove(this.spinDown, 'mouseleave', this.mouseUpClick);
+        if (this.spinUp) {
+            EventHandler.remove(this.spinUp, 'mouseleave', this.mouseUpClick);
+        }
+        if (this.spinDown) {
+            EventHandler.remove(this.spinDown, 'mouseleave', this.mouseUpClick);
+        }
     }
 
     /**

@@ -169,6 +169,13 @@ export interface TimePickerModel extends ComponentModel{
     enabled?: boolean;
 
     /**
+     * Specifies the component popup display full screen in mobile devices.
+     *
+     * @default false
+     */
+    fullScreenMode?: boolean;
+
+    /**
      * Specifies the component in readonly state.
      *
      * @default false

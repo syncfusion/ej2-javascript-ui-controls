@@ -448,7 +448,8 @@ export class InsertHtml {
     private static findDetachEmptyElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
         if (!isNOU(element.parentElement)) {
-            if (element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true') {
+            if (element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true' &&
+                isNOU(element.parentElement.querySelector('img'))) {
                 removableElement = this.findDetachEmptyElem(element.parentElement);
             } else {
                 removableElement = element as HTMLElement;
@@ -461,7 +462,12 @@ export class InsertHtml {
     private static removeEmptyElements(element: HTMLElement): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         for (let i: number = 0; i < emptyElements.length; i++) {
-            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(emptyElements[i as number].tagName.toLowerCase()) < 0) {
+            let lineWithDiv: boolean = true;
+            if (emptyElements[i as number].tagName === 'DIV') {
+                lineWithDiv =  (emptyElements[i as number] as HTMLElement).style.borderBottom === 'none' ||
+                (emptyElements[i as number] as HTMLElement).style.borderBottom === '' ? true : false;
+            }
+            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(emptyElements[i as number].tagName.toLowerCase()) < 0 && lineWithDiv) {
                 const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i as number]);
                 if (!isNOU(detachableElement)) {
                     detach(detachableElement);

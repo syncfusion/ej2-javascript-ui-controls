@@ -130,7 +130,6 @@ export class FocusModule {
                 if (ganttObj.editModule.dialogModule.dialogObj && getValue('dialogOpen', ganttObj.editModule.dialogModule.dialogObj)) {
                     return;
                 }
-                ganttObj.editModule.cellEditModule.isCellEdit = false;
                 ganttObj.treeGrid.grid.saveCell();
                 const focussedElement: HTMLElement = <HTMLElement>ganttObj.element.querySelector('.e-treegrid');
                 focussedElement.focus();
@@ -155,7 +154,10 @@ export class FocusModule {
             break;
         case 'addRow':
         {
-            if (isNullOrUndefined(document.getElementById(this.parent.element.id + '_dialog'))) {
+            if (ganttObj.editModule && ganttObj.editModule.cellEditModule && ganttObj.editModule.cellEditModule.isCellEdit) {
+                e.stopPropagation();
+               } 
+            else if (isNullOrUndefined(document.getElementById(this.parent.element.id + '_dialog'))) {
                 e.preventDefault();
                 ganttObj.addRecord(undefined, this.parent.editSettings.newRowPosition);
                 const focussedElement: HTMLElement = <HTMLElement>ganttObj.element;

@@ -91,9 +91,13 @@ export class Views extends ChildProperty<Views> {
      *  This template is only applicable for month view day cells.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public cellHeaderTemplate: string;
+    public cellHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
@@ -101,17 +105,22 @@ export class Views extends ChildProperty<Views> {
      *  It gets applied only to the view objects on which it is defined.
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public dateHeaderTemplate: string;
+    public dateHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the header date range.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public dateRangeTemplate: string;
+    public dateRangeTemplate: string | Function;
 
     /**
      * The template option which is used to render the customized work cells on the Schedule. Here, the
@@ -119,9 +128,13 @@ export class Views extends ChildProperty<Views> {
      *  The field accessible via template is `date`. It gets applied only to the view objects on which it is defined.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public cellTemplate: string;
+    public cellTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
@@ -129,9 +142,13 @@ export class Views extends ChildProperty<Views> {
      *  This template is only applicable for year view header cells.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public dayHeaderTemplate: string;
+    public dayHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
@@ -139,9 +156,13 @@ export class Views extends ChildProperty<Views> {
      *  This template is only applicable for year view header cells.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public monthHeaderTemplate: string;
+    public monthHeaderTemplate: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -150,9 +171,13 @@ export class Views extends ChildProperty<Views> {
      *  whereas it will get applied only on the events of the view to which it is currently being defined.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public eventTemplate: string;
+    public eventTemplate: string | Function;
 
     /**
      * When set to `false`, it hides the weekend days of a week from the Schedule.
@@ -238,9 +263,13 @@ export class Views extends ChildProperty<Views> {
      *  It gets applied only to the view objects on which it is defined.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public resourceHeaderTemplate: string;
+    public resourceHeaderTemplate: string | Function;
 
     /**
      * The template option which is used to render the customized header indent cell on the schedule. Here, the
@@ -248,9 +277,13 @@ export class Views extends ChildProperty<Views> {
      *  It gets applied only to the view objects on which it is defined.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
     @Property()
-    public headerIndentTemplate: string;
+    public headerIndentTemplate: string | Function;
 
     /**
      * By default, Schedule follows the time-format as per the default culture assigned to it.

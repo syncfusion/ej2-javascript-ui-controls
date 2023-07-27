@@ -663,7 +663,7 @@ export class MoveTool extends ToolBase {
         if (shapeAnnotationType && shapeAnnotationType !== 'Image' && shapeAnnotationType !== 'SignatureImage') {
             super.mouseUp(args);
         }
-        else if (shapeAnnotationType === 'Image' || shapeAnnotationType === 'SignatureImage'){
+        else if (shapeAnnotationType === 'Image' || shapeAnnotationType === 'SignatureImage') {
             this.inAction = false;
         }
         else if (this.commandHandler && this.commandHandler.selectedItems && this.commandHandler.selectedItems.formFields && this.commandHandler.selectedItems.formFields.length > 0) {

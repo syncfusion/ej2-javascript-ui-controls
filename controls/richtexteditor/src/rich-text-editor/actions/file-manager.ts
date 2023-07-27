@@ -135,6 +135,7 @@ export class FileManager {
             detailsViewSettings: this.parent.fileManagerSettings.detailsViewSettings,
             contextMenuSettings: this.parent.fileManagerSettings.contextMenuSettings,
             navigationPaneSettings: this.parent.fileManagerSettings.navigationPaneSettings,
+            beforeSend: this.parent.fileManagerSettings.beforeSend,
             fileSelect: (e: FileSelectEventArgs) => {
                 const selectedFile: { [key: string]: string } = e.fileDetails as { [key: string]: string };
                 if (selectedFile.isFile && proxy.parent.insertImageSettings.allowedTypes.indexOf(selectedFile.type) > -1) {

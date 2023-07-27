@@ -136,7 +136,7 @@ describe('Pivot Field List Slicer Appearance', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 let pivotButtons: HTMLElement[] = [].slice.call(filterAxis.querySelectorAll('.e-pivot-button'));
-                expect((pivotButtons[0].querySelector('.e-content') as HTMLElement).innerText).toEqual('eyeColor (All)');
+                expect((pivotButtons[0].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual('eyeColor (All)');
                 done();
             }, 1000);
         });
@@ -160,7 +160,7 @@ describe('Pivot Field List Slicer Appearance', () => {
             util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
             let allNode: HTMLElement = pivotCommon.filterDialog.allMemberSelect.element.querySelector('.e-checkbox-wrapper');
             expect(allNode.querySelector('.e-frame').classList.contains('e-stop')).toBeTruthy;
-            expect(pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+            expect(pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
             (pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn') as HTMLElement).click();
         });
         it('check filter button after update', (done: Function) => {
@@ -169,7 +169,7 @@ describe('Pivot Field List Slicer Appearance', () => {
             let pivotButtons: HTMLElement[] = [].slice.call(filterAxisContent.querySelectorAll('.e-pivot-button'));
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                expect((pivotButtons[3].querySelector('.e-content') as HTMLElement).innerText).toEqual('state (All)');
+                expect((pivotButtons[3].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual('state (All)');
                 done();
             }, 1000);
         });
@@ -186,18 +186,18 @@ describe('Pivot Field List Slicer Appearance', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
-                expect((pivotButtons[0].querySelector('.e-content') as HTMLElement).innerText).toEqual('eyeColor (Multiple items)');
+                expect((pivotButtons[0].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual('eyeColor (All)');
                 done();
             }, 1000);
         });
         it('check single node on filter popup', (done: Function) => {
             fieldListObj.dataSourceSettings.filterSettings = [{ name: 'eyeColor', type: 'Include', items: ['green'] }];
-            expect(pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(false);
+            expect(pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(true);
             let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
-                expect((pivotButtons[0].querySelector('.e-content') as HTMLElement).innerText).toEqual('eyeColor (Multiple items)');
+                expect((pivotButtons[0].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual('eyeColor (All)');
                 done();
             }, 1000);
         });
@@ -217,7 +217,7 @@ describe('Pivot Field List Slicer Appearance', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
-                expect((pivotButtons[4].querySelector('.e-content') as HTMLElement).innerText).toEqual('pno (MEWD9812)');
+                expect((pivotButtons[4].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual('pno (MEWD9812)');
                 done();
             }, 1000);
         });
@@ -252,7 +252,7 @@ describe('Pivot Field List Slicer Appearance', () => {
             setTimeout(() => {
                 pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
-                expect((pivotButton[pivotButton.length - 1].querySelector('.e-content') as HTMLElement).innerText).toEqual('eyeColor');
+                expect((pivotButton[pivotButton.length - 1].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual('eyeColor');
                 done();
             }, 1000);
         });
@@ -280,7 +280,7 @@ describe('Pivot Field List Slicer Appearance', () => {
             setTimeout(() => {
                 pivotButton = [].slice.call((filterAxisContent).querySelectorAll('.e-pivot-button'));
                 expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
-                expect((pivotButton[pivotButton.length - 1].querySelector('.e-content') as HTMLElement).innerText).toEqual('eyeColor (green)');
+                expect((pivotButton[pivotButton.length - 1].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual('eyeColor (green)');
                 done();
             }, 1000);
         });

@@ -1,7 +1,7 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 import { BulletChart } from '../bullet-chart';
-import { measureText, textElement, TextOption, Rect } from '@syncfusion/ej2-svg-base';
+import { measureText, TextOption, Rect, textElement } from '@syncfusion/ej2-svg-base';
 import { Orientation } from '../../chart/utils/enum';
 import { MajorTickLinesModel } from '../../chart/axis/axis-model';
 
@@ -300,13 +300,13 @@ export class BulletChartAxis {
         const interval: number = bullet.interval;
         const localizedText: boolean = locale && this.bulletChart.enableGroupSeparator;
         const format: string = this.getFormat(this.bulletChart);
-        let strokeColor: string = bullet.labelStyle.color || bullet.themeStyle.labelFontColor;
+        let strokeColor: string = bullet.labelStyle.color || bullet.themeStyle.axisLabelFont.color;
         let condition: boolean; const isCustomFormat: boolean = format.match('{value}') !== null;
         this.format = this.bulletChart.intl.getNumberFormat({
             format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
         });
         const size: number = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
-        y += measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bullet.labelStyle).height / 3;
+        y += measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bullet.labelStyle, this.bulletChart.themeStyle.axisLabelFont).height / 3;
         for (let i: number = min; i <= max; i += interval) {
             condition = (!bullet.enableRtl) ? (i === max) : (i === min);
             if (bullet.labelStyle.useRangeColor) {
@@ -316,6 +316,8 @@ export class BulletChartAxis {
             }
             text = localizedText ? i.toLocaleString(locale) : this.formatValue(this, isCustomFormat, format, i);
             const labelOptions: TextOption = this.labelXOptions(x, y, text, i);
+            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily || this.bulletChart.themeStyle.axisLabelFont.fontFamily;
+            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily || this.bulletChart.themeStyle.axisLabelFont.fontFamily;
             const label: Element = textElement(
                 labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup
             );
@@ -358,7 +360,7 @@ export class BulletChartAxis {
         const min: number = bulletChart.minimum; const max: number = bulletChart.maximum;
         const interval: number = bulletChart.interval;
         const localizedText: boolean = locale && this.bulletChart.enableGroupSeparator;
-        let strokeColor: string = bulletChart.labelStyle.color || bulletChart.themeStyle.labelFontColor;
+        let strokeColor: string = bulletChart.labelStyle.color || bulletChart.themeStyle.axisLabelFont.color;
         const format: string = this.getFormat(this.bulletChart);
         const isCustomFormat: boolean = format.match('{value}') !== null;
         let condition: boolean;
@@ -367,9 +369,9 @@ export class BulletChartAxis {
         });
         const size: number = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
         const labelWidth: number = measureText(
-            this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle).width / 2;
+            this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle, this.bulletChart.themeStyle.axisLabelFont).width / 2;
         const height: number = measureText(
-            this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle).height / 3;
+            this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle, this.bulletChart.themeStyle.axisLabelFont).height / 3;
         y += height;
         for (let i: number = min; i <= max; i += interval) {
             condition = (bulletChart.enableRtl) ? (i === max) : (i === min);
@@ -382,6 +384,8 @@ export class BulletChartAxis {
             //labelWidth = measureText(text, bullet.labelStyle).width / 2;
             const labelOptions: TextOption = this.labelXOptions(
                 x - (!this.bulletChart.opposedPosition ? labelWidth : -labelWidth), y, text, i);
+            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily || this.bulletChart.themeStyle.axisLabelFont.fontFamily;
+            this.bulletChart.labelStyle.fontFamily = this.bulletChart.labelStyle.fontFamily || this.bulletChart.themeStyle.axisLabelFont.fontFamily;
             const label: Element = textElement(
                 labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup
             );

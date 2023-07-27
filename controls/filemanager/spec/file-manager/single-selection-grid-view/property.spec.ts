@@ -166,7 +166,8 @@ describe('FileManager control single selection Grid view', () => {
                         {field: 'name',template: '<div class="e-fe-text">${name}</div>', headerText: 'File Name', minWidth: 120}
                     ]
                 },
-                showFileExtension: false
+                showFileExtension: false,
+                showItemCheckBoxes:false
             });
             feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
@@ -205,7 +206,8 @@ describe('FileManager control single selection Grid view', () => {
                         {field: 'name', headerText: 'File Name', minWidth: 120}
                     ]
                 },
-                showFileExtension: false
+                showFileExtension: false,
+                showItemCheckBoxes:false
             });
             feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
@@ -239,6 +241,7 @@ describe('FileManager control single selection Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
+                showItemCheckBoxes:false,
                 detailsViewSettings: {
                     columns: [
                         {
@@ -246,9 +249,7 @@ describe('FileManager control single selection Grid view', () => {
                             template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name' }
                         },
                         {
-                            field: '_fm_modified', headerText: 'DateModified',
-                            format: { type: 'date', format: 'MMMM dd, yyyy HH:mm' },
-                            minWidth: 120, width: '190'
+                            field: '_fm_modified', headerText: 'DateModified', format: 'MMMM dd, yyyy HH:mm', minWidth: 120, width: '190'
                         },
                         {
                             field: 'isFile', headerText: 'Is File', minWidth: 90, width: '110', headerTextAlign: "Center", allowResizing: false, allowSorting: false

@@ -91,8 +91,12 @@ export interface ItemModel {
      * ```
      *
      * @default ""
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    template?: string | Object;
+    template?: string | Object | Function;
 
     /**
      * Specifies the types of command to be rendered in the Toolbar.
@@ -154,6 +158,7 @@ export interface ItemModel {
      * ```
      *
      * @default "Left"
+     * @aspPopulateDefaultValue
      */
     align?: ItemAlign;
 

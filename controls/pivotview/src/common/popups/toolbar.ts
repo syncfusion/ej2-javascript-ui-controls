@@ -653,7 +653,7 @@ export class Toolbar {
             this.parent.actionObj.actionInfo = actionInfo;
             this.parent.trigger(events.renameReport, renameArgs);
             this.currentReport = reportInput.value;
-            this.updateReportList(); 
+            this.updateReportList();
             this.dialog.hide();
         }
         this.parent.actionObj.actionName = this.parent.getActionCompleteName();
@@ -1193,7 +1193,7 @@ export class Toolbar {
     }
 
     private getLableState(): boolean {
-        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
+        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData(true)).chartSettings;
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
             this.showLableState = chartSettings.legendSettings.visible;
         } else {
@@ -1371,9 +1371,15 @@ export class Toolbar {
                     workbook: undefined
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    this.parent.excelExport(
-                        observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
-                    );
+                    if (this.parent.dataSourceSettings.mode === 'Server') {
+                        this.parent.getEngine(
+                            'onExcelExport', null, null, null, null, null, null, null, null, observedArgs.excelExportProperties
+                        );
+                    } else {
+                        this.parent.excelExport(
+                            observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
+                        );
+                    }
                 });
                 break;
             case (this.parent.element.id + 'csv'):
@@ -1384,9 +1390,15 @@ export class Toolbar {
                     workbook: undefined
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    this.parent.csvExport(
-                        observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
-                    );
+                    if (this.parent.dataSourceSettings.mode === 'Server') {
+                        this.parent.getEngine(
+                            'onCsvExport', null, null, null, null, null, null, null, null, observedArgs.excelExportProperties
+                        );
+                    } else {
+                        this.parent.csvExport(
+                            observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
+                        );
+                    }
                 });
                 break;
             case (this.parent.element.id + 'png'):
@@ -1683,7 +1695,7 @@ export class Toolbar {
         return mainWrapper;
     }
     private changeDropDown(args: ChangeEventArgs): void {
-        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
+        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData(true)).chartSettings;
         if (!(chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined)) {
             (getInstance(select('#' + this.parent.element.id + '_DialogShowLabel'), CheckBox) as CheckBox).checked = true;
         }
@@ -1724,7 +1736,7 @@ export class Toolbar {
             checkbox.disabled = true;
             (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = false;
         }
-        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
+        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData(true)).chartSettings;
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
             this.chartLableState = true;
         } else {

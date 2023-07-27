@@ -17,6 +17,7 @@ export * from './implementation/document/pdf-catalog';
 export * from './implementation/document/pdf-document';
 export * from './implementation/document/pdf-document-base';
 export * from './implementation/document/pdf-document-template';
+export * from './implementation/document/pdf-viewer-preferences';
 export * from './implementation/document/automatic-fields/pdf-page-number-field';
 export * from './implementation/document/automatic-fields/composite-field';
 export * from './implementation/document/automatic-fields/page-count-field';

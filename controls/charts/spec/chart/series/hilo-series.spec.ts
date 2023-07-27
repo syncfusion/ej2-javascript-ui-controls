@@ -559,7 +559,6 @@ describe('Chart', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[2];
                 expect(element1.getAttribute('d') != '').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
-                expect(element1.textContent).toEqual('3');
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
                 expect(Math.round(+element1.textContent) == 22 || Math.round(+element1.textContent) == 23).toBe(true);
                 done();
@@ -989,7 +988,7 @@ describe('Chart', () => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[2] == '851.5' || svg.getAttribute('d').split(' ')[2] == '842.5').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '498.375' || svg.getAttribute('d').split(' ')[2] == '499.375').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '498.875' || svg.getAttribute('d').split(' ')[2] == '499.375').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

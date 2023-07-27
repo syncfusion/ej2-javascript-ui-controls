@@ -79,6 +79,6 @@ export interface IToolbarStatus {
     lowercase?: boolean
     createlink?: boolean
     insertcode?: boolean
-    numberFormatList?: string
-    bulletFormatList?: string
+    numberFormatList?: string | boolean
+    bulletFormatList?: string | boolean
 }

@@ -77,7 +77,7 @@ export class AggregateMenu {
                     this.createContextMenu(isStringField, observedArgs.displayMenuCount);
                     this.currentMenu = args.target as Element;
                     const pos: OffsetPosition = this.currentMenu.getBoundingClientRect();
-                    if (this.parent.enableRtl) { /* eslint-disable security/detect-non-literal-fs-filename */
+                    if (this.parent.enableRtl) {
                         this.menuInfo[isStringField as number].open(
                             pos.top + (window.scrollY || document.documentElement.scrollTop), pos.left - 105);
                     } else {
@@ -179,7 +179,7 @@ export class AggregateMenu {
         const valueDialog: HTMLElement = createElement('div', {
             id: this.parentElement.id + '_ValueDialog',
             className: 'e-value-field-settings',
-            attrs: { 'data-field': target.getAttribute('data-uid') }
+            attrs: { 'data-field': target.getAttribute('data-uid') ? target.getAttribute('data-uid') : target.getAttribute('data-field') }
         });
         this.parentElement.appendChild(valueDialog);
         this.valueDialog = new Dialog({
@@ -193,7 +193,7 @@ export class AggregateMenu {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-            width: 'auto',
+            width: '320px',
             height: 'auto',
             position: { X: 'center', Y: 'center' },
             buttons: [
@@ -227,7 +227,7 @@ export class AggregateMenu {
         let baseItem: string = buttonElement.getAttribute('data-baseitem');
         summaryType = (summaryType.toString() !== 'undefined' ? summaryType : 'Sum');
         const summaryDataSource: { [key: string]: Object }[] = [];
-        const summaryItems: AggregateTypes[] = this.summaryTypes;
+        const summaryItems: AggregateTypes[] = this.parent.aggregateTypes;
         const checkDuplicates: AggregateTypes[] = [];
         for (let i: number = 0; i < summaryItems.length; i++) {
             if (this.parent.getAllSummaryType().indexOf(summaryItems[i as number]) > -1 &&
@@ -274,9 +274,12 @@ export class AggregateMenu {
         const optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-container' });
         const optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-container' });
         const texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title' });
-        texttitle.innerText = this.parent.localeObj.getConstant('sourceName') + '&nbsp;';
+        texttitle.innerText = this.parent.localeObj.getConstant('sourceName') + ' ';
         const textContent: HTMLElement = createElement('div', { className: 'e-field-name-content' });
-        textContent.innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(buttonElement.getAttribute('data-uid')) : buttonElement.getAttribute('data-uid');
+        textContent.innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(buttonElement.getAttribute('data-uid') ?
+            buttonElement.getAttribute('data-uid') : buttonElement.getAttribute('data-field')) :
+            (buttonElement.getAttribute('data-uid') ? buttonElement.getAttribute('data-uid') : buttonElement.getAttribute('data-field'));
+        this.buttonElement = this.buttonElement ? this.buttonElement : document.querySelector('.' + textContent.innerText);
         const inputTextDiv1: HTMLElement = createElement('div', {
             className: 'e-type-option-text'
         });
@@ -396,7 +399,7 @@ export class AggregateMenu {
                 } else {
                     const field: string = buttonElement.getAttribute('data-uid');
                     const valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
-                    const contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
+                    const contentElement: HTMLElement = buttonElement.querySelector('.' + cls.PIVOT_BUTTON_CONTENT_CLASS) as HTMLElement;
                     let captionName: string = menu.item.text + ' ' + this.parent.localeObj.getConstant('of') + ' ' +
                         this.parent.engineModule.fieldList[field as string].caption;
                     captionName = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(captionName) : captionName;
@@ -450,7 +453,7 @@ export class AggregateMenu {
                 querySelector('.' + cls.PIVOT_BUTTON_CLASS + '.' + fieldName.replace(/[^A-Z0-9]/ig, '')) as HTMLElement;
         }
         if (buttonElement) {
-            const contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
+            const contentElement: HTMLElement = buttonElement.querySelector('.' + cls.PIVOT_BUTTON_CONTENT_CLASS) as HTMLElement;
             let captionName: string = this.parent.localeObj.getConstant(summaryInstance.value as string) + ' ' +
                 this.parent.localeObj.getConstant('of') + ' ' + captionInstance.value;
             captionName = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(captionName) : captionName;
@@ -475,7 +478,7 @@ export class AggregateMenu {
         this.updateDataSource(true);
     }
     private removeDialog(): void {
-        if (select('#' + this.buttonElement.id, this.parentElement)) {
+        if (this.buttonElement && select('#' + this.buttonElement.id, this.parentElement)) {
             (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
         }
         if (this.valueDialog && !this.valueDialog.isDestroyed) { this.valueDialog.destroy(); }

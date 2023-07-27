@@ -424,7 +424,7 @@ export class Crud {
                             }
                             if (isSpanned) {
                                 followData.occurrence = followData.occurrence.filter((eventObj: Record<string, any>) =>
-                                    eventObj[fields.recurrenceID] === childEvent[fields.id]);
+                                    eventObj[fields.recurrenceID] === parentEvent[fields.id]);
                             }
                             editParams.deletedRecords = editParams.deletedRecords.concat(followData.occurrence);
                         }

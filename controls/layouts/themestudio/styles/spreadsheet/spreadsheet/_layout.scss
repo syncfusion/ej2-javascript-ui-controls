@@ -13,18 +13,28 @@
     }
 
     & .e-protect-dlg.e-dialog {
-      height: $protect-dlg-height;
+      @if $skin-name != 'Material3' {
+        height: $protect-dlg-height;
+      }
       width: $protect-dlg-width;
 
-      & .e-sheet-password-content .e-header {
+      & .e-sheet-password-content {
         font-size: $protect-sheet-dlg-password-header-font-size;
-        line-height: 28px;
-        margin-bottom: 4px;
+
+        @if $sheet-skin == 'Material3' {
+          padding: 4px 0 16px;
+        }
+        & .e-header {
+          @if $sheet-skin != 'Material3' {
+            line-height: 28px;
+            margin-bottom: 4px;
+          }
+        }
       }
     }
 
     & .e-custom-format-dlg.e-dialog {
-      @if $sheet-skin != 'material' {
+      @if $sheet-skin != 'material' and $sheet-skin != 'Material3' {
         height: 510px !important; /* stylelint-disable-line declaration-no-important */
         width: 530px !important; /* stylelint-disable-line declaration-no-important */
       }
@@ -35,7 +45,9 @@
 
       & .e-dlg-content {
         display: inline-table;
-        padding-top: 3px;
+        @if $sheet-skin != 'Material3' {
+          padding-top: 3px;
+        }
       }
     }
 
@@ -43,64 +55,61 @@
       display: inline;
     }
 
-    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-      & .e-dlg-header-content {
-        padding: 18px;
-      }
-    }
-    @if $skin-name == 'bootstrap5' {
-      & .e-dlg-header-content {
-        padding: 12px;
-      }
-    }
-
     & .e-unprotectworksheet-dlg.e-dialog {
-      & .e-dlg-header-content .e-dlg-header {
-        font-size: $unprotect-sheet-dlg-header-font-size;
-        line-height: 21px;
-      }
-
       & .e-dlg-content {
         & .e-unprotectsheetpwd-alert-span {
           color: $dlg-error-color;
           font-size: $unprotectsheet-alert-span-font-size;
           padding-top: 7px;
+          @if $sheet-skin == 'Material3' {
+            display: block;
+            padding-top: 4px;
+          }
         }
 
         & .e-unprotectsheetpwd-content {
           & .e-header {
             font-size: $unprotectsheet-content-header-font-size;
             line-height: 16px;
+            @if $sheet-skin == 'Material3' {
+              padding-top: 4px;
+            }
           }
 
           & .e-input {
-            margin-top: 10px;
+            @if $sheet-skin != 'Material3' {
+              margin-top: 10px;
+            }
           }
         }
       }
     }
 
     & .e-reenterpwd-dlg.e-dialog {
-      & .e-dlg-header-content .e-dlg-header {
-        font-size: $reenterpwd-dlg-content-header-font-size;
-        line-height: 21px;
-      }
-
       & .e-dlg-content {
         & .e-reenterpwd-alert-span {
           color: $dlg-error-color;
           font-size: $reenterpwd-dlg-alert-span-font-size;
           padding-top: 7px;
+          @if $sheet-skin == 'Material3' {
+            display: block;
+            padding-top: 4px;
+          }
         }
 
         & .e-reenterpwd-content {
           & .e-header {
             font-size: $reenterpwd-dlg-content-header-font-size;
             line-height: 16px;
+            @if $sheet-skin == 'Material3' {
+              padding-top: 4px;
+            }
           }
 
           & .e-input {
-            margin-top: 10px;
+            @if $sheet-skin != 'Material3' {
+              margin-top: 10px;
+            }
           }
         }
       }
@@ -125,13 +134,34 @@
 
     & .e-findtool-dlg {
       border: 1px solid;
-      height: $find-tool-dlg-height;
+      @if $sheet-skin != 'Material3' {
+        height: $find-tool-dlg-height;
+      }
       width: $find-tool-dlg-width;
+
+      &.e-rtl .e-find-toolbar {
+        & .e-toolbar-items:not(.e-tbar-pos):not(.e-toolbar-multirow) .e-toolbar-item:first-child {
+          @if $sheet-skin == 'Material3' {
+            margin-left: 0;
+            margin-right: 16px;
+          }
+        }
+
+        & .e-toolbar-items:first-child:not(.e-toolbar-multirow) > .e-toolbar-item:last-child {
+          @if $sheet-skin == 'Material3' {
+            margin-left: 16px;
+            margin-right: 0;
+          }
+        }
+      }
 
       & .e-dlg-content {
         padding: 0%;
         @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
           border-radius: 5px;
+        }
+        @else if $sheet-skin == 'Material3' {
+          border-radius: 8px;
         }
 
         @if $skin-name == 'FluentUI' {
@@ -140,8 +170,13 @@
 
         & .e-input-group {
           width: 170px;
-
+          @if $sheet-skin == 'Material3' {
+            background: $sheet-tab-active-bg-color;
+          }
           & .e-input-group-icon {
+            @if $sheet-skin == 'Material3' {
+              font-size: $find-tool-dlg-icon-size;
+            }
             width: 70px;
           }
         }
@@ -161,38 +196,57 @@
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
         margin-top: 10px;
       }
+      @if $sheet-skin == 'Material3' {
+        margin-top: 0;
+      }
     }
 
     & .e-protect-checkbox {
-      height: 30px;
-      padding-top: 20px;
+      @if $sheet-skin != 'Material3' {
+        height: 30px;
+        margin-top: 20px;
+      }
 
       & .e-label {
-        font-size: $protect-checkbox-label-font-size;
+        @if $sheet-skin != 'Material3' {
+          font-size: $protect-checkbox-label-font-size;
+        }
       }
     }
 
-    & .e-dlg-content .e-custom-dialog .e-input.e-dialog-input {
-      float: left;
-      @if $sheet-skin == 'bootstrap5' {
-        margin-right: 4.8%;
+    & .e-dlg-content .e-custom-dialog {
+      & .e-input.e-dialog-input {
+        float: left;
+        width: 80%;
+        @if $sheet-skin == 'bootstrap5' {
+          margin-right: 4.8%;
+        }
+        @else if $sheet-skin == 'FluentUI' {
+          margin-right: 6.8%;
+        }
+        @else if $sheet-skin == 'Material3' {
+          margin-right: 24px;
+          width: 74%;
+        }
+        @else {
+          margin-right: 2.8%;
+        }
       }
-      @else if $sheet-skin == 'FluentUI' {
-        margin-right: 6.8%;
-      }
-      @else {
-        margin-right: 2.8%;
-      }
-      width: 80%;
     }
 
     & .e-dlg-content .e-custom-dialog .e-custom-sample {
       margin: 10px 10px 10px 0;
+      @if $sheet-skin == 'Material3' {
+        font-size: $find-dialog-header-font-size;
+        margin: 20px 0 4px;
+      }
     }
 
     & .e-dlg-content .e-custom-dialog .e-custom-listview {
-      border: 1px solid $custom-listview-color;
-      border-radius: 3px;
+      @if $sheet-skin != 'Material3' {
+        border: 1px solid $custom-listview-color;
+        border-radius: 3px;
+      }
       height: 300px;
     }
 
@@ -201,6 +255,10 @@
       height: 37px;
       padding-top: 20px;
       width: 100%;
+      @if $sheet-skin == 'Material3' {
+        height: auto;
+        padding: 20px 0 4px;
+      }
     }
 
     & .e-formula-bar-panel {
@@ -253,14 +311,17 @@
           width: $name-box-width;
 
           & input.e-input {
-            height: 23px;
+            height: $define-name-input-height;
             min-height: 15px;
-            padding: 0 0 0 8px;
+            padding: $define-name-input-padding;
           }
 
           @if $skin-name != 'bootstrap4' {
             & .e-input-group-icon {
               font-size: $namebox-icon-size;
+              @if $skin-name == 'Material3' {
+                margin-right: 5px;
+              }
             }
           }
         }
@@ -268,6 +329,10 @@
         &.e-input-group.e-control-wrapper.e-name-box .e-input-group-icon {
           border-left-width: 0;
           min-height: 15px;
+          @if $skin-name == 'Material3' {
+            min-height: 14px;
+            min-width: 14px;
+          }
 
           @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
             font-size: $name-box-icon-font-size;
@@ -287,6 +352,9 @@
         font-size: $formula-bar-font-size;
         overflow: auto;
         padding: 0 4px;
+        @if $skin-name == 'Material3' {
+          padding: 0 8px;
+        }
         resize: none;
       }
 
@@ -358,15 +426,18 @@
         line-height: normal;
         outline: none;
         overflow-wrap: break-word;
-        padding: 0 1px;
         position: absolute;
         user-select: text;
         vertical-align: bottom;
         white-space: pre-wrap;
         z-index: 2;
+        padding: 0 1px;
 
         &.e-right-align {
           text-align: right;
+          @if $skin-name == 'Material3' {
+            padding: 0 1.2px;
+          }
         }
       }
 
@@ -461,7 +532,7 @@
         & .e-cell {
           font-family: 'Calibri';
           font-size: 11pt;
-          padding: 0 2px;
+          padding: $content-cell-padding;
           position: relative;
           text-align: left;
           vertical-align: bottom;
@@ -661,6 +732,10 @@
       transform: translate(-50%, -50%);
     }
 
+    & .e-sheet-panel.e-rtl .e-ss-overlay-active .e-ss-overlay-l {
+      left: 0;
+    }
+
     & .e-header-panel .e-table tr .e-header-cell.e-colresize {
       cursor: col-resize;
     }
@@ -759,6 +834,9 @@
 
           &::after {
             border-top: $spreadsheet-border;
+            @if $skin-name == 'Material3' {
+              border-top: $spreadsheet-hidden-row-column-border;
+            }
             bottom: .5px;
           }
         }
@@ -768,6 +846,9 @@
 
           &::before {
             border-bottom: $spreadsheet-border;
+            @if $skin-name == 'Material3' {
+              border-bottom: $spreadsheet-hidden-row-column-border;
+            }
             top: .5px;
           }
         }
@@ -798,6 +879,9 @@
 
           &::after {
             border-right: $spreadsheet-border;
+            @if $skin-name == 'Material3' {
+              border-right: $spreadsheet-hidden-row-column-border;
+            }
             right: .5px;
           }
         }
@@ -808,6 +892,9 @@
 
           &::before {
             border-left: $spreadsheet-border;
+            @if $skin-name == 'Material3' {
+              border-left: $spreadsheet-hidden-row-column-border;
+            }
             left: .5px;
           }
         }
@@ -903,6 +990,14 @@
             transition: none;
           }
 
+          & .e-toolbar-item.e-active {
+            & .e-text-wrap::before {
+              @if $skin-name == 'Material3' {
+                border: none;
+              }
+            }
+          }
+
           @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
             &::before {
               border-bottom-width: 0;
@@ -931,6 +1026,12 @@
               @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
                 padding: 0;
               }
+
+              &.e-active {
+                @if $skin-name == 'Material3' {
+                  background: $sheet-tab-selected-bg-color;
+                }
+              }
             }
           }
 
@@ -943,6 +1044,12 @@
               box-shadow: none;
               min-width: 20px;
               padding: 0;
+              @if $skin-name == 'Material3' {
+                font-weight: 500;
+                height: 32px;
+                letter-spacing: .24px;
+                line-height: 32px;
+              }
             }
 
             & .e-tab-wrap {
@@ -1106,14 +1213,21 @@
           text-align: left;
           text-overflow: ellipsis;
           white-space: nowrap;
-          width: 80px;
+          @if $skin-name == 'Material3' {
+            width: 50px;
+          }
+          @else {
+            width: 80px;
+          }
         }
 
         &.e-font-size-ddb {
           align-items: center;
           display: inline-flex;
           justify-content: left;
-          width: $fontsize-btn-width;
+          @if $skin-name != 'Material3' {
+            width: $fontsize-btn-width;
+          }
 
           & .e-caret {
             flex: 1;
@@ -1126,6 +1240,9 @@
         font-weight: normal;
         padding-bottom: 0;
         padding-top: 0;
+        @if $skin-name =='Material3' {
+          font-size: 14px;
+        }
 
         @if $skin-name == 'highcontrast' {
           border-width: 2px;
@@ -1137,6 +1254,12 @@
 
         &:not(.e-split-colorpicker) {
           line-height: $spreadsheet-ribbon-btn-height;
+        }
+
+        &:not(.e-split-btn) {
+          @if $skin-name == 'Material3' {
+            border: none;
+          }
         }
 
         &:not(.e-dropdown-btn):not(.e-split-btn) {
@@ -1153,7 +1276,7 @@
         }
 
         &:not(.e-split-colorpicker) .e-btn-icon {
-          @if $skin-name != 'bootstrap5' {
+          @if $skin-name != 'bootstrap5'and $skin-name != 'Material3' {
             line-height: $spreadsheet-ribbon-btn-height;
             min-height: $spreadsheet-ribbon-btn-height;
             vertical-align: bottom;
@@ -1187,13 +1310,17 @@
         }
 
         & .e-switch-row-column-icon {
-          font-size: $spreadsheet-switch-row-column-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
-          margin-right: 5px;
+          @if $skin-name != 'Material3' {
+            font-size: $spreadsheet-switch-row-column-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
+            margin-right: 5px;
+          }
         }
 
         & .e-addchart-icon {
           font-size: $spreadsheet-addchart-icon-font-size !important; /* stylelint-disable-line declaration-no-important */
-          margin-right: -5px;
+          @if $skin-name != 'Material3' {
+            margin-right: -5px;
+          }
         }
 
         &.e-split-colorpicker {
@@ -1202,7 +1329,11 @@
           padding-left: 0;
           padding-right: 0;
           width: $cpicker-btn-width;
-
+          @if $skin-name == 'Material3' {
+            background: transparent;
+            line-height: $spreadsheet-ribbon-btn-height - 2;
+            padding-bottom: 0;
+          }
           & .e-icons.e-btn-icon:not(.e-caret) {
             &.e-font-color {
               font-size: $spreadsheet-cpicker-font-color-font-size;
@@ -1216,6 +1347,11 @@
       }
 
       & .e-colorpicker-wrapper {
+        & .e-dropdown-btn {
+          @if $skin-name == 'Material3' {
+            background: transparent;
+          }
+        }
         & .e-split-btn .e-selected-color {
           background: none;
           border-bottom-style: solid;
@@ -1421,6 +1557,9 @@
 
             &::after {
               border-left: $spreadsheet-border;
+              @if $skin-name == 'Material3' {
+                border-left: $spreadsheet-hidden-row-column-border;
+              }
               border-right: none;
               left: .5px;
             }
@@ -1431,6 +1570,9 @@
             &::before {
               border-left: none;
               border-right: $spreadsheet-border;
+              @if $skin-name == 'Material3' {
+                border-right: $spreadsheet-hidden-row-column-border;
+              }
               right: .5px;
             }
           }
@@ -1439,6 +1581,7 @@
     }
 
     .e-sheet-panel {
+      
       & .e-frozen-columns {
         & .e-selectall-container {
           position: relative;
@@ -1503,6 +1646,12 @@
           min-width: 0;
           width: 20px;
         }
+        @if $skin-name == 'Material3' {
+          bottom: 1px;
+          height: 20px;
+          min-height: 20px;
+          min-width: 20px;
+        }
 
         @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
           padding: 0;
@@ -1522,22 +1671,12 @@
         height: 360px !important; /* stylelint-disable-line declaration-no-important */
       }
 
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        & .e-dlg-header-content {
-          padding: 18px;
-        }
-      }
-
-      @if $skin-name == 'bootstrap5' {
-        & .e-dlg-header-content {
-          padding: 12px;
-        }
-      }
-
       & .e-dlg-content {
-        padding-bottom: 0;
-        padding-left: 0;
-        padding-right: 0;
+        @if $skin-name != 'Material3' {
+          padding-bottom: 0;
+          padding-left: 0;
+          padding-right: 0;
+        }
 
         @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
           & .e-sort-dialog {
@@ -1565,23 +1704,47 @@
     & .e-conditionalformatting-dlg {
       & .e-input,
       & .e-input-group {
-        height: 34px;
-        @if $skin-name == 'FlunetUI' {
-          height: 40px;
+        @if $skin-name != 'Material3' {
+          height: 34px;
+          @if $skin-name == 'FlunetUI' {
+            height: 40px;
+          }
         }
       }
 
       & .e-cfmain {
-        margin-bottom: 22px;
+        & .e-header {
+          font-size: $cfmain-header-font-size;
+        }
+        @if $skin-name == 'Material3' {
+          margin: 6px 0 20px;
+        }
+        @else {
+          margin-bottom: 22px;
+        }
+      }
+
+      & .e-cfsub {
+        & .e-header {
+          font-size: $cfmain-header-font-size;
+        }
+        @if $skin-name == 'Material3' {
+          margin-bottom: 12px;
+        }
       }
 
       & .e-header {
         display: block;
-        margin-bottom: 6px;
+        @if $skin-name != 'Material3' {
+          margin-bottom: 6px;
+        }
       }
 
       & .e-header-2 {
         margin-top: 10px;
+        @if $skin-name == 'Material3' {
+          margin-top: 16px;
+        }
       }
 
       & .e-top-header {
@@ -1609,22 +1772,19 @@
     }
 
     & .e-datavalidation-dlg {
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        & .e-dlg-header-content {
-          padding: 18px;
-        }
-      }
-      @if $skin-name == 'bootstrap5' {
-        & .e-dlg-header-content {
-          padding: 12px;
-        }
-      }
-
       & .e-validation-dlg {
-        margin-top: 14px;
+        @if $skin-name != 'Material3' {
+          margin-top: 14px;
+        }
 
         & .e-cellrange {
-          margin-bottom: 24px;
+          @if $skin-name != 'Material3' {
+            margin-bottom: 24px;
+          }
+
+          @if $skin-name == 'Material3' {
+            padding-top: 4px;
+          }
 
           & .e-header {
             font-size: $validation-dlg-content-header-font-size;
@@ -1632,14 +1792,21 @@
           }
 
           & .e-input {
-            font-size: $validation-dlg-content-input-font-size;
-            height: 32px;
-            margin-top: 5px;
+            @if $skin-name != 'Material3' {
+              height: 32px;
+              margin-top: 5px;
+              font-size: $validation-dlg-content-input-font-size;
+            }
           }
         }
 
         & .e-allowdata {
-          margin-bottom: 24px;
+          @if $skin-name == 'Material3' {
+            padding-top: 20px;
+          }
+          @else {
+            margin-bottom: 24px;
+          }
 
           & .e-allow {
             display: inline-block;
@@ -1652,8 +1819,10 @@
             }
 
             & .e-valid-input {
-              height: 34px;
-              margin-top: 5px;
+              @if $skin-name != 'Material3' {
+                height: 34px;
+                margin-top: 5px;
+              }
             }
           }
 
@@ -1668,14 +1837,21 @@
             }
 
             & .e-valid-input {
-              height: 34px;
-              margin-top: 5px;
+              @if $skin-name != 'Material3' {
+                height: 34px;
+                margin-top: 5px;
+              }
             }
           }
         }
 
         & .e-values {
-          margin-bottom: 24px;
+          @if $skin-name == 'Material3' {
+            padding-top: 20px;
+          }
+          @else {
+            margin-bottom: 24px;
+          }
 
           & .e-minimum {
             display: inline-block;
@@ -1688,9 +1864,11 @@
             }
 
             & .e-input {
-              font-size: $validation-dlg-content-input-font-size;
-              height: 32px;
-              margin-top: 5px;
+              @if $skin-name != 'Material3' {
+                font-size: $validation-dlg-content-input-font-size;
+                height: 32px;
+                margin-top: 5px;
+              }
             }
           }
 
@@ -1705,15 +1883,22 @@
             }
 
             & .e-input {
-              font-size: $validation-dlg-content-input-font-size;
-              height: 32px;
-              margin-top: 5px;
+              @if $skin-name != 'Material3' {
+                font-size: $validation-dlg-content-input-font-size;
+                height: 32px;
+                margin-top: 5px;
+              }
             }
           }
 
           & .e-dlg-error {
             font-size: $validation-dlg-error-font-size;
-            padding-top: 10px;
+            @if $skin-name == 'Material3' {
+              padding-top: 4px;
+            }
+            @else {
+              padding-top: 10px;
+            }
           }
 
           & .e-header {
@@ -1722,18 +1907,26 @@
           }
 
           & .e-input {
-            font-size: $validation-dlg-content-input-font-size;
-            height: 32px;
+            @if $skin-name != 'Material3' {
+              font-size: $validation-dlg-content-input-font-size;
+              height: 32px;
+            }
           }
         }
 
         & .e-ignoreblank {
           margin-bottom: 5px;
+          @if $skin-name == 'Material3' {
+            padding-top: 20px;
+          }
         }
       }
 
       & .e-footer-content .e-clearall-btn {
         float: left;
+        @if $skin-name == 'Material3' {
+          margin-left: 0;
+        }
       }
     }
 
@@ -1744,33 +1937,22 @@
 
     & .e-hyperlink-dlg.e-dialog,
     .e-edithyperlink-dlg.e-dialog {
-      max-height: 640px !important; /* stylelint-disable-line declaration-no-important */
-
-      & .e-dlg-header-content {
-        @if $skin-name == 'FluentUI' {
-          padding: 14px 24px;
-        }
-        @else {
-          padding: 24px 24px 16px;
-        }
-
-        & .e-dlg-header {
-          font-size: $hyperlink-dlg-header-content-font-size;
-          line-height: 21px;
-        }
+      @if $skin-name != 'Material3' {
+        max-height: 640px !important; /* stylelint-disable-line declaration-no-important */
       }
-
       & .e-dlg-content {
-        padding-bottom: 0;
-        padding-left: 0;
-        padding-right: 0;
+        @if $skin-name != 'Material3' {
+          padding-bottom: 0;
+          padding-left: 0;
+          padding-right: 0;
+        }
 
         & .e-link-dialog {
           & .e-tab-header {
             @if $skin-name == 'bootstrap5' {
               padding: 0 12px;
             }
-            @else {
+            @else if $skin-name != 'Material3' {
               padding: 0 24px 0 25px;
             }
 
@@ -1780,13 +1962,18 @@
 
             & .e-toolbar-item {
               text-align: center;
-              width: 136px;
+              @if $skin-name != 'Material3' {
+                width: 136px;
+              }
             }
           }
 
           & .e-content {
             @if $skin-name == 'bootstrap5' {
               padding-top: 12px;
+            }
+            @else if $skin-name == 'Material3' {
+              padding-top: 20px;
             }
             @else {
               padding-top: 24px;
@@ -1799,6 +1986,9 @@
               @else if $skin-name == 'FluentUI' {
                 margin: 0 0 12px 24px;
               }
+              @else if $skin-name == 'Material3' {
+                margin: 0 0 20px;
+              }
               @else {
                 margin: 0 0 15.5px 24px;
               }
@@ -1809,13 +1999,16 @@
               }
 
               & .e-text {
-                @if $skin-name != 'material' and $skin-name != 'material-dark' {
-                  margin-top: 8px;
+                @if $skin-name != 'Material3' {
+                  font-size: $hyperlink-dlg-content-text-font-size;
+                  height: 32px;
+                  line-height: 16px;
+                  width: 275px;
+                  @if $skin-name != 'material' or $skin-name != 'material-dark' {
+                    margin-top: 8px;
+                  }
                 }
-                font-size: $hyperlink-dlg-content-text-font-size;
-                height: 32px;
-                line-height: 16px;
-                width: 275px;
+                
                 @if $skin-name == 'FluentUI'  {
                   padding-bottom: 4px;
                 }
@@ -1831,14 +2024,14 @@
                 margin: 8px 24px 0 0;
                 overflow: auto;
                 width: 273px;
+                @if $skin-name == 'Material3'  {
+                  border: 0;
+                  margin: 0 16px 0 0;
+                }
               }
             }
           }
         }
-      }
-
-      & .e-footer-content {
-        margin: 4px 0;
       }
     }
 
@@ -1857,6 +2050,10 @@
           color: $dlg-error-color;
           font-size: $open-dlg-file-alert-span-font-size;
           padding-top: 7px;
+          @if $skin-name == 'Material3' {
+            display: block;
+            padding-top: 4px;
+          }
         }
       }
     }
@@ -1865,32 +2062,58 @@
       height: auto;
       width: $find-dlg-width;
 
+      & .e-dlg-header-content {
+        @if $skin-name == 'Material3' {
+          padding-bottom: 4px;
+        }
+      }
+
       & .e-dlg-content {
         & .e-find-alert-span {
           color: $dlg-error-color;
           font-size: $find-dlg-alert-span-font-size;
           padding-top: 7px;
+          @if $skin-name == 'Material3' {
+            display: block;
+          }
         }
 
         & .e-replace-alert-span {
           color: $dlg-error-color;
           font-size: $find-dlg-alert-span-font-size;
           padding-top: 7px;
+          @if $skin-name == 'Material3' {
+            display: block;
+          }
         }
 
         & .e-findnreplace-casecheckbox {
           padding-right: 12px;
+          @if $skin-name == 'Material3' {
+            padding-bottom: 8px;
+            padding-top: 20px;
+          }
         }
 
         & .e-findnreplace-exactmatchcheckbox {
           padding: 12px 0;
+          @if $skin-name == 'Material3' {
+            padding: 20px 0 8px;
+          }
         }
       }
 
       & p.e-header {
         margin: 0;
-        padding-bottom: 8px;
         padding-top: 12px;
+        @if $skin-name == 'Material3' {
+          font-size: $find-dialog-header-font-size;
+          padding-bottom: 0;
+          padding-top: 16px;
+        }
+        @else {
+          padding-bottom: 8px;
+        }
       }
 
       & .e-footer-content {
@@ -1899,41 +2122,57 @@
     }
 
     & .e-protectworkbook-dlg.e-dialog {
-      & .e-dlg-header-content .e-dlg-header {
-        font-size: $protectworkbook-dlg-header-font-size;
-        line-height: 31px;
-      }
-
       & .e-dlg-content {
+        @if $skin-name == 'Material3' {
+          & .e-password-content {
+            padding: 4px 0 0;
+          }
+          & .e-password-content + .e-password-content {
+            padding: 16px 0 0;
+          }
+        }
         & .e-pwd-alert-span {
           color: $dlg-error-color;
           font-size: $protectworkbook-dlg-alert-span-font-size;
-          padding-top: 12px;
+          @if $skin-name == 'Material3' {
+            display: block;
+            padding-top: 4px;
+          }
+          @else {
+            padding-top: 12px;
+          }
         }
 
         & .e-password-content {
-          padding-top: 12px;
-
+          @if $skin-name != 'Material3' {
+            padding-top: 12px;
+          }
           & .e-header {
             font-size: $protectworkbook-dlg-content-header-font-size;
-            line-height: 24px;
-            margin-bottom: 4px;
+            @if $skin-name != 'Material3' {
+              line-height: 24px;
+              margin-bottom: 4px;
+            }
+            @else {
+              line-height: 16px;
+            }
           }
         }
       }
     }
 
     & .e-unprotectworkbook-dlg.e-dialog {
-      & .e-dlg-header-content .e-dlg-header {
-        font-size: $protectworkbook-dlg-header-font-size;
-        line-height: 21px;
-      }
-
       & .e-dlg-content {
         & .e-unprotectpwd-alert-span {
           color: $dlg-error-color;
           font-size: $protectworkbook-dlg-alert-span-font-size;
-          padding-top: 7px;
+          @if $skin-name == 'Material3' {
+            display: block;
+            padding-top: 4px;
+          }
+          @else {
+            padding-top: 7px;
+          }
         }
 
         & .e-unprotectpwd-content {
@@ -1943,23 +2182,24 @@
           }
 
           & .e-input {
-            margin-top: 10px;
+            @if $skin-name != 'Material3' {
+              margin-top: 10px;
+            }
           }
         }
       }
     }
 
     & .e-importprotectworkbook-dlg.e-dialog {
-      & .e-dlg-header-content .e-dlg-header {
-        font-size: $protectworkbook-dlg-header-font-size;
-        line-height: 21px;
-      }
-
       & .e-dlg-content {
         & .e-importprotectpwd-alert-span {
           color: $dlg-error-color;
           font-size: $protectworkbook-dlg-alert-span-font-size;
           padding-top: 7px;
+          @if $skin-name == 'Material3' {
+            display: block;
+            padding-top: 6px;
+          }
         }
 
         & .e-importprotectpwd-content {
@@ -1975,18 +2215,37 @@
       }
     }
 
+    @if $skin-name =='Material3' {
+      & .e-open-dlg.e-dialog {
+        & .e-open-dialog {
+          & .e-open-head .e-header {
+            color: $spreadsheet-label-font-color;
+            font-size: $open-dialog-header-font-size;
+            margin-top: 0;
+            margin-bottom: 0;
+          }
+
+          & .e-input-group .e-input-group-icon:hover {
+            background: none;
+          }
+        }
+      }
+    }
+
     & .e-filter-icon {
       margin-bottom: $filter-icon-margin-bottom;
       @if $skin-name == 'FluentUI' {
         margin-top: -9px;
       }
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark'or $sheet-skin == 'Material3' {
         font-size: $filter-icon-font-size;
       }
 
       &::before {
         font-size: $filter-icon-before-font-size;
-        margin-left: -3px;
+        @if $skin-name != 'Material3' {
+          margin-left: -3px;
+        }
       }
     }
 
@@ -2003,6 +2262,12 @@
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
         bottom: 1px;
       }
+      @if $sheet-skin == 'Material3' {
+        background-color: $cell-background;
+        border-color: $cell-border-color;
+        box-shadow: none;
+        width: 22px;
+      }
     }
   }
 
@@ -2011,7 +2276,12 @@
 
     & .e-container {
       box-shadow: none;
-      width: 270px !important; /* stylelint-disable-line declaration-no-important */
+      @if $skin-name == 'Material3' {
+        width: 330px !important; /* stylelint-disable-line declaration-no-important */
+      }
+      @else {
+        width: 270px !important; /* stylelint-disable-line declaration-no-important */
+      }
 
       & .e-selected-value {
         display: flex;
@@ -2049,6 +2319,9 @@
       padding: $align-ddb-ul-padding;
 
       & .e-item {
+        @if $sheet-skin == 'Material3' {
+          border-radius: $align-ddb-item-border-radius;
+        }
         display: inline-flex;
         height: $align-ddb-item-height;
         line-height: $align-ddb-item-height;
@@ -2062,14 +2335,24 @@
       }
     }
 
-    &.e-colorpicker-popup {
+    &.e-spreadsheet-color-popup {
       & .e-container {
         & .e-custom-palette .e-palette {
-          padding: 0;
+          @if $sheet-skin != 'Material3' {
+            padding: 0;
+          }
         }
 
         & .e-switch-ctrl-btn {
-          padding-top: $ctrl-btn-padding;
+          @if $sheet-skin != 'Material3' {
+            padding-top: $ctrl-btn-padding;
+          }
+        }
+
+        & .e-custom-palette + .e-switch-ctrl-btn {
+          @if $sheet-skin == 'Material3' {
+            padding: 2px 8px 12px;
+          }
         }
       }
     }
@@ -2386,7 +2669,7 @@
 
         & .e-line-main,
         & .e-area-main {
-          height: 90px;
+          height: auto;
 
           & .e-line-text,
           & .e-area-text {
@@ -2403,7 +2686,10 @@
             & .e-stackedarea100,
             & .e-line,
             & .e-stackedline,
-            & .e-stackedline100 {
+            & .e-stackedline100,
+            & .e-line-marker,
+            & .e-stackedline-marker,
+            & .e-stackedline100-marker {
               display: inline-block;
               font-size: 40px;
               height: 60px;
@@ -2455,30 +2741,23 @@
   .e-spreadsheet-function-dlg.e-dialog {
     min-height: $dlg-min-height;
     user-select: none;
-
-    & .e-dlg-header-content {
-      @if $skin-name == 'bootstrap5' {
-        padding: 12px;
-      }
-      @else {
-        padding: 18px;
-      }
-
-      & .e-dlg-header {
-        font-size: $function-dlg-header-content-font-size;
-        font-weight: normal;
-      }
-    }
-
     & .e-dlg-content {
-      overflow: hidden;
-      padding-left: $dlg-content-padding;
-      padding-right: $dlg-content-padding;
+      @if $sheet-skin != 'Material3' {
+        overflow: hidden;
+        padding-left: $dlg-content-padding;
+        padding-right: $dlg-content-padding;
+      }
 
       & .e-category-content {
         font-size: $dlg-category-content-font-size;
-        font-weight: $dlg-category-content-font-weight;
-        margin-bottom: $dlg-category-margin-bottom;
+        @if $sheet-skin != 'Material3' {
+          font-weight: $dlg-category-content-font-weight;
+          margin-bottom: $dlg-category-margin-bottom;
+        }
+
+        @if $sheet-skin == 'Material3' {
+          padding: 4px 0 0;
+        }
 
         @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
           padding: 10px 0;
@@ -2486,20 +2765,35 @@
       }
 
       & .e-formula-description {
-        margin-left: -4px;
-        margin-top: 5px;
-        padding: 4px;
+        @if $sheet-skin != 'Material3' {
+          margin-left: -4px;
+          margin-top: 5px;
+          padding: 4px;
+        }
+
+        @if $sheet-skin == 'Material3' {
+          padding: 4px 0;
+        }
       }
 
       & .e-description-content {
-        font-size: $dlg-description-content-font-size;
-        font-weight: $dlg-description-font-weight;
-        padding-top: 10px;
+        @if $sheet-skin != 'Material3' {
+          font-size: $dlg-description-content-font-size;
+          font-weight: $dlg-description-font-weight;
+          padding-top: 10px;
+        }
+
+        @if $sheet-skin == 'Material3' {
+          font-size: $dlg-description-content-font-size;
+          padding-top: 16px;
+        }
       }
 
       & .e-formula-list {
-        border: $dlg-list-border;
         cursor: default;
+        @if $sheet-skin != 'Material3' {
+          border: $dlg-list-border;
+        }
         margin-top: 6px;
         overflow-y: auto;
       }
@@ -2533,15 +2827,28 @@
       & .e-btn.e-css.e-insert-function {
         border-left: $spreadsheet-border;
         height: 23px;
+        @if $skin-name == 'Material3' {
+          padding-left: 6px;
+          padding-right: 6px;
+        }
 
         & .e-btn-icon {
-          line-height: 24px;
+          @if $skin-name == 'Material3' {
+            line-height: 23px;
+          }
+          @else {
+            line-height: 24px;
+          }
         }
       }
 
       & .e-formula-bar {
         height: 23px;
         line-height: 23px;
+        @if $skin-name == 'Material3' {
+          height: 22px;
+          line-height: 22px;
+        }
         width: $formula-textarea-width;
       }
 
@@ -2549,6 +2856,9 @@
         & .e-formula-bar,
         & .e-btn.e-css.e-insert-function {
           height: 71px;
+          @if $skin-name == 'Material3' {
+            line-height: 24px;
+          }
         }
 
         & .e-btn.e-css.e-insert-function {
@@ -2582,6 +2892,9 @@
 
       & .e-btn-icon {
         line-height: 33px;
+        @if $skin-name == 'Material3' {
+          line-height: 32px;
+        }
         margin-top: 0;
       }
     }
@@ -2636,15 +2949,39 @@
       }
     }
 
+    .e-spreadsheet-function-dlg.e-dialog {
+      & .e-dlg-content {
+        & .e-description-content {
+          @if $sheet-skin == 'Material3' {
+            padding-top: 16px;
+          }
+        }
+      }
+    }
+
     & .e-ribbon {
+
       & .e-toolbar .e-btn:not(.e-tbar-btn) {
         &:not(.e-split-colorpicker) {
           line-height: $bigger-spreadsheet-ribbon-btn-height;
+          @if $sheet-skin == 'Material3' {
+            font-size: $function-dlg-header-content-font-size;
+          }
+        }
+
+        &.e-chart-ddb {
+          @if $sheet-skin == 'Material3' {
+            padding-left: 26px;
+          }
         }
 
         &.e-split-colorpicker {
           line-height: $bigger-spreadsheet-ribbon-btn-height - 2;
           padding-bottom: 2px;
+          @if $sheet-skin == 'Material3' {
+            line-height: $bigger-spreadsheet-ribbon-btn-height - 4;
+            padding-bottom: 0;
+          }
           width: $bigger-cpicker-btn-width;
         }
 
@@ -2656,6 +2993,11 @@
         &:not(.e-split-colorpicker) .e-btn-icon {
           line-height: $bigger-spreadsheet-ribbon-btn-height;
           min-height: $bigger-spreadsheet-ribbon-btn-height;
+
+          @if $sheet-skin == 'Material3' {
+            line-height: $bigger-spreadsheet-ribbon-btn-height - 4;
+            min-height: $bigger-spreadsheet-ribbon-btn-height - 4;
+          }
 
           &:not(.e-caret) {
             font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
@@ -2675,8 +3017,35 @@
         }
       }
 
+      @if $skin-name == 'Material3' {
+        & .e-toolbar .e-toolbar-item .e-btn {
+
+          & .e-chart-icon,
+          & .e-chart-type-icon {
+            font-size: $bigger-spreadsheet-chart-icon-size !important; /* stylelint-disable-line declaration-no-important */
+            margin-right: 0;
+            padding: 0;
+            width: 36px;
+          }
+
+          &.e-split-colorpicker {
+            & .e-icons.e-btn-icon:not(.e-caret) {
+              &.e-font-color {
+                font-size: $bigger-spreadsheet-cpicker-font-color-font-size;
+              }
+
+              &.e-fill-color {
+                font-size: $bigger-spreadsheet-tbar-btn-icon-font-size;
+              }
+            }
+          }
+        }
+      }
+
       & .e-dropdown-btn.e-font-size-ddb {
-        width: $bigger-fontsize-btn-width;
+        @if $skin-name != 'Material3' {
+          width: $bigger-fontsize-btn-width;
+        }
       }
 
       & .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-colorpicker.e-split-btn .e-selected-color {
@@ -2693,7 +3062,13 @@
     & .e-formula-bar-panel {
       & .e-input-group.e-control-wrapper.e-ddl.e-name-box .e-input-group-icon {
         font-size: $bigger-name-box-ddl-icon-font-size;
-        margin: 0;
+        @if $skin-name != 'Material3' {
+          margin: 0;
+        }
+
+        @if $skin-name == 'Material3' {
+          margin: 10px;
+        }
       }
 
       // Need to remove the below properties & its variable once touch support provided by UX team
@@ -2705,11 +3080,30 @@
 
     & .e-add-sheet-tab.e-btn.e-icon-btn.e-css,
     & .e-sheets-list.e-dropdown-btn {
-      height: 39px;
-      width: 39px;
+      @if $skin-name == 'Material3' {
+        height: 48px;
+        padding: 0;
+        width: 48px;
+      }
+      @else {
+        height: 39px;
+        width: 39px;
+      }
 
       & .e-btn-icon {
-        line-height: 39px;
+        @if $skin-name == 'Material3' {
+          line-height: 48px;
+        }
+        @else {
+          line-height: 39px;
+        }
+      }
+    }
+
+    @if $skin-name == 'Material3' {
+      & .e-add-sheet-tab,
+      & .e-sheets-list {
+        margin-left: 9px;
       }
     }
 
@@ -2732,21 +3126,38 @@
 
     &:not(.e-mobile-view) .e-formula-bar-panel {
       & .e-btn.e-css.e-insert-function {
-        height: 29px;
+        @if $skin-name == 'Material3' {
+          height: 31px;
+        }
+        @else {
+          height: 29px;
+        }
 
         & .e-btn-icon {
           font-size: $bigger-insert-function-btn-icon-font-size;
-          line-height: 30px;
+          @if $skin-name == 'Material3' {
+            line-height: 31px;
+          }
+          @else {
+            line-height: 30px;
+          }
         }
       }
 
       & .e-input-group.e-control-wrapper.e-ddl.e-name-box input.e-input {
         height: 29px;
+        @if $skin-name == 'Material3' {
+          height: 22px;
+          padding: 5px 0 5px 8px;
+          font-size: $bigger-name-box-ddl-icon-font-size;
+        }
       }
 
       & .e-drop-icon {
         line-height: 29px;
-
+        @if $skin-name == 'Material3' {
+          line-height: 32px;
+        }
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
           font-size: $bigger-formula-bar-drop-icon-font-size;
           line-height: 38px;
@@ -2754,20 +3165,39 @@
       }
 
       & .e-separator {
-        height: 15px;
+        height: 18px;
       }
 
       & .e-formula-bar {
         font-size: $bigger-formula-bar-font-size;
-        height: 29px;
-        line-height: 29px;
+        @if $skin-name == 'Material3' {
+          height: 32px;
+          line-height: 32px;
+        }
+        @else {
+          height: 29px;
+          line-height: 29px;
+        }
       }
 
       &.e-expanded {
-        & .e-formula-bar,
+        & .e-formula-bar {
+          height: 89px;
+        }
         & .e-btn.e-css.e-insert-function {
           height: 89px;
           line-height: 89px;
+
+          @if $skin-name == 'Material3' {
+            height: 87px;
+            line-height: 87px;
+          }
+        }
+
+        & .e-formula-bar {
+          @if $skin-name == 'Material3' {
+            line-height: 34px;
+          }
         }
 
         & .e-separator {
@@ -2776,19 +3206,43 @@
       }
     }
 
-    & .e-dlg-content .e-custom-dialog .e-input.e-dialog-input {
-      float: left;
-      margin-right: 2.8%;
-      width: 77%;
-      @if $skin-name == 'FluentUI' {
-        height: 40px;
+    & .e-dlg-content {
+      @if $skin-name == 'Material3' {
+        margin-top: 0;
+      }
+      .e-custom-dialog {
+        & .e-input.e-dialog-input {
+          float: left;
+          @if $skin-name == 'Material3' {
+            margin-right: 16px;
+            width: 74%;
+          }
+          @else {
+            margin-right: 2.8%;
+            width: 77%;
+          }
+          
+          @if $skin-name == 'FluentUI' {
+            height: 40px;
+          }
+        }
+        & .e-custom-sample {
+          @if $skin-name == 'Material3' {
+            margin-top: 8px;
+          }
+        }
       }
     }
 
     & .e-customsort-dlg.e-dialog {
-      width: 590px !important; /* stylelint-disable-line declaration-no-important */
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
         width: 630px !important; /* stylelint-disable-line declaration-no-important */
+      }
+      @else if $sheet-skin == 'Material3' {
+        width: 625px !important; /* stylelint-disable-line declaration-no-important */
+      }
+      @else {
+        width: 590px !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -2803,6 +3257,9 @@
         font-size: $bigger-filter-icon-font-size;
         margin-top: -3px;
       }
+      @if $sheet-skin == 'Material3' {
+        font-size: $bigger-filter-icon-font-size;
+      }
     }
 
     & .e-find-dlg .e-footer-content .e-btn {
@@ -2811,8 +3268,10 @@
     }
 
     & .e-findtool-dlg {
-      height: $bigger-find-tool-dlg-height;
-      width: $bigger-find-tool-dlg-width;
+      @if $sheet-skin != 'Material3'{
+        height: $bigger-find-tool-dlg-height;
+        width: $bigger-find-tool-dlg-width;
+      }
     }
 
     & .e-goto-dlg.e-dialog {
@@ -2826,17 +3285,49 @@
     & .e-protectworkbook-dlg.e-dialog .e-dlg-content {
       & .e-pwd-alert-span {
         color: $dlg-error-color;
-        font-size: $protectworkbook-dlg-pwd-alert-span-font-size;
-        padding-top: 16px;
+        @if $skin-name == 'Material3' {
+          padding-top: 6px;
+        }
+        @else {
+          font-size: $protectworkbook-dlg-pwd-alert-span-font-size;
+          padding-top: 16px;
+        }
       }
 
       & .e-password-content {
-        padding-top: 16px;
+        @if $sheet-skin != 'Material3'{
+          padding-top: 16px;
+          margin-bottom: 8px;
+        }
 
         & .e-header {
-          font-size: $protectworkbook-dlg-pwd-content-font-size;
-          line-height: 28px;
-          margin-bottom: 4px;
+          @if $skin-name != 'Material3' {
+            font-size: $protectworkbook-dlg-pwd-content-font-size;
+            line-height: 28px;
+            margin-bottom: 4px;
+          }
+        }
+      }
+    }
+
+    & .e-validation-dlg {
+      & .e-cellrange {
+        @if $skin-name == 'Material3' {
+          margin-bottom: 8px;
+        }
+      }
+
+      & .e-allowdata {
+        & .e-allow {
+          @if $skin-name == 'Material3' {
+            margin-bottom: 12px;
+          }
+        }
+      }
+
+      & .e-values {
+        @if $skin-name == 'Material3' {
+          margin-bottom: 8px;
         }
       }
     }
@@ -2897,13 +3388,14 @@
   }
 
   .e-bigger .e-spreadsheet .e-hyperlink-dlg.e-dialog {
-    @if $skin-name == 'FluentUI' {
-      & .e-dlg-content .e-link-dialog .e-content .e-cont {
-        margin: 0 0 16px 24px;
+    & .e-dlg-content .e-link-dialog .e-content {
+      @if $skin-name == 'Material3' {
+        padding-top: 24px;
       }
-
-      & .e-dlg-header-content {
-        padding: 24px 24px 16px;
+      @if $skin-name == 'FluentUI' {
+        & .e-cont {
+          margin: 0 0 16px 24px;
+        }
       }
     }
   }
@@ -2911,6 +3403,12 @@
   .e-sort-dialog {
     height: 100%;
     position: relative;
+
+    @if $skin-name == 'Material3' {
+      & .e-sort-header {
+        border-bottom: 1px solid $spreadsheet-customsrt-line-color;
+      }
+    }
 
     & .e-sort-listsection {
       @if $skin-name != 'FluentUI' {
@@ -2927,7 +3425,9 @@
 
     & .e-sort-listwrapper .text {
       font-size: $sort-dlg-listwrapper-text-font-size;
-      padding: 10px 0 5px;
+      @if $skin-name != 'Material3' {
+        padding: 10px 0 5px;
+      }
     }
 
     & .e-list-sort {
@@ -2938,14 +3438,37 @@
       align-items: center;
       display: flex;
       padding: 5px 0 10px;
+      @if $skin-name == 'Material3' {
+        padding: 6px 0 10px;
+      }
     }
 
     & .e-sort-error,
     & .e-sort-header,
     & .e-sort-casecheckbox,
     & .e-sort-listsection {
-      padding-left: $dlg-content-padding;
-      padding-right: $dlg-content-padding;
+      @if $skin-name != 'Material3' {
+        padding-left: $dlg-content-padding;
+        padding-right: $dlg-content-padding;
+        padding-bottom: $dlg-content-padding-bottom;
+      }
+    }
+
+    @if $skin-name == 'Material3' {
+      & .e-sort-header {
+        padding-bottom: 20px;
+        padding-top: 6px;
+      }
+
+      & .e-sort-casecheckbox {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      & .e-sort-listsection {
+        padding-bottom: 14px;
+        padding-top: 16px;
+      }
     }
 
     & .e-sort-error {
@@ -2985,7 +3508,15 @@
     }
 
     & .e-radio-wrapper {
-      margin-left: 16px;
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'Material3' {
+        margin-left: 20px;
+      }
+      @else {
+        margin-left: 16px;
+      }
+      @if $skin-name == 'Material3' {
+        padding: 8px 0;
+      }
     }
 
     & li:first-of-type .e-sort-delete {
@@ -3023,6 +3554,329 @@
 
       &.e-active {
         margin: 0;
+      }
+    }
+  }
+
+  @if $skin-name == 'Material3' {
+    .e-spreadsheet .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
+      &.e-active {
+        margin: 0;
+      }
+    }
+  }
+
+  .e-bigger .e-spreadsheet,
+  .e-bigger.e-spreadsheet {
+    @if $skin-name =='Material3' {
+
+      & .e-sheet-tab {
+        & .e-tab-header {
+          & .e-toolbar-item {
+            & input.e-input.e-sheet-rename {
+              height: 48px;
+              line-height: 48px;
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+
+      & .e-validation-list {
+        & .e-ddl-icon {
+          bottom: 0;
+          font-size: $spreadsheet-drop-icon-font-size;
+          height: 20px;
+          min-height: 20px;
+          min-width: 20px;
+          width: 20px;
+        }
+      }
+
+      & .e-open-dlg.e-dialog {
+        & .e-open-dialog {
+          & .e-open-head .e-header {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+          }
+        }
+
+        & .e-dlg-content {
+          & .e-file-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: 6px;
+          }
+        }
+      }
+
+      & .e-dlg-content .e-custom-dialog .e-custom-sample {
+        font-size: $bigger-spreadsheet-dlg-label-font-size;
+        margin: 20px 0 4px;
+      }
+
+      & .e-conditionalformatting-dlg {
+        & .e-cfmain {
+          & .e-header {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+          }
+          margin: 8px 0 20px;
+        }
+
+        & .e-cfsub {
+          & .e-header {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+          }
+          margin-bottom: 12px;
+        }
+
+        & .e-header-2 {
+          margin-top: 20px;
+        }
+      }
+      & .e-sort-dialog {
+        & .e-sort-listwrapper .text {
+          font-size: $bigger-spreadsheet-dlg-label-font-size;
+        }
+
+        & .e-sort-error {
+          font-size: $bigger-spreadsheet-dlg-error-font-size;
+        }
+      }
+
+      & .e-find-dlg.e-dialog {
+        & .e-dlg-header-content {
+          @if $skin-name == 'Material3' {
+            padding-bottom: 8px;
+          }
+        }
+        & .e-dlg-content {
+          & .e-find-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: 7px;
+          }
+
+          & .e-replace-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: 7px;
+          }
+
+          & .e-findnreplace-casecheckbox {
+            padding-bottom: 10px;
+            padding-top: 20px;
+          }
+
+          & .e-findnreplace-exactmatchcheckbox {
+            padding: 20px 0 10px;
+          }
+        }
+
+        & p.e-header {
+          font-size: $bigger-spreadsheet-dlg-label-font-size;
+          padding-bottom: 0;
+          padding-top: 16px;
+        }
+      }
+
+      & .e-hyperlink-dlg.e-dialog,
+      .e-edithyperlink-dlg.e-dialog {
+        & .e-dlg-content {
+
+          & .e-link-dialog {
+
+            & .e-content {
+              padding-top: 24px;
+
+              & .e-cont {
+                margin: 0 0 24px;
+
+                & .e-header {
+                  font-size: $bigger-spreadsheet-dlg-label-font-size;
+                  line-height: 20px;
+                }
+
+                & .e-refcont {
+                  border: 0;
+                  margin: 0 16px 0 0;
+                }
+              }
+            }
+          }
+        }
+      }
+      & .e-spreadsheet-function-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-category-content {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+            padding: 4px 0 0;
+          }
+
+          & .e-formula-description {
+            padding: 4px 0;
+          }
+
+          & .e-description-content {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+            padding-top: 20px;
+          }
+        }
+      }
+      & .e-protect-dlg.e-dialog {
+        & .e-sheet-password-content {
+          font-size: $bigger-spreadsheet-dlg-label-font-size;
+          padding: 4px 0 20px;
+
+          & .e-header {
+            line-height: 20px;
+          }
+        }
+
+        & .e-protect-content {
+          font-size: $bigger-spreadsheet-dlg-label-font-size;
+          line-height: 20px;
+          padding: 20px 0 4px;
+        }
+      }
+
+      & .e-reenterpwd-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-reenterpwd-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: 6px;
+          }
+
+          & .e-reenterpwd-content {
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: 20px;
+            }
+          }
+        }
+      }
+
+      & .e-unprotectworksheet-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-unprotectsheetpwd-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: 6px;
+          }
+
+          & .e-unprotectsheetpwd-content {
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: 20px;
+            }
+          }
+        }
+      }
+
+      & .e-protectworkbook-dlg.e-dialog {
+        & .e-dlg-content {
+          padding-bottom: 8px;
+          & .e-pwd-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+          }
+
+          & .e-password-content + .e-password-content {
+            padding: 20px 0 0;
+          }
+
+          & .e-password-content {
+            padding: 4px 0 0;
+
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: 20px;
+            }
+          }
+        }
+      }
+    
+      & .e-unprotectworkbook-dlg.e-dialog {
+        & .e-dlg-content {
+          & .e-unprotectpwd-alert-span {
+            font-size: $bigger-spreadsheet-dlg-error-font-size;
+            padding-top: 6px;
+          }
+
+          & .e-unprotectpwd-content {
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: 20px;
+            }
+          }
+        }
+      }
+
+      & .e-datavalidation-dlg {
+        & .e-validation-dlg {
+          & .e-header {
+            font-size: $bigger-spreadsheet-dlg-label-font-size;
+            line-height: 20px;
+          }
+
+          & .e-cellrange {
+            padding-top: 4px;
+
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: 20px;
+            }
+          }
+
+          & .e-allowdata {
+            padding-top: 20px;
+
+            & .e-allow {
+
+              & .e-header {
+                font-size: $bigger-spreadsheet-dlg-label-font-size;
+                line-height: 20px;
+              }
+            }
+
+            & .e-data {
+
+              & .e-header {
+                font-size: $bigger-spreadsheet-dlg-label-font-size;
+                line-height: 20px;
+              }
+            }
+          }
+
+          & .e-values {
+            padding-top: 20px;
+
+            & .e-minimum {
+
+              & .e-header {
+                font-size: $bigger-spreadsheet-dlg-label-font-size;
+                line-height: 20px;
+              }
+            }
+
+            & .e-maximum {
+
+              & .e-header {
+                font-size: $bigger-spreadsheet-dlg-label-font-size;
+                line-height: 20px;
+              }
+            }
+
+            & .e-dlg-error {
+              font-size: $bigger-spreadsheet-dlg-error-font-size;
+              padding-top: 6px;
+            }
+
+            & .e-header {
+              font-size: $bigger-spreadsheet-dlg-label-font-size;
+              line-height: 20px;
+            }
+          }
+
+          & .e-ignoreblank {
+            margin-bottom: 8px;
+            padding-top: 20px;
+          }
+        }
       }
     }
   }

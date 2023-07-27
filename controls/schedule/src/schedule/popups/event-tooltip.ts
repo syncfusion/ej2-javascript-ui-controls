@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isNullOrUndefined, Internationalization, append, createElement, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Internationalization, append, createElement, addClass, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Schedule } from '../base/schedule';
 import { TdData, ResourceDetails, EventFieldsMapping } from '../base/interface';
@@ -25,7 +25,7 @@ export class EventTooltip {
             cssClass: this.parent.cssClass + ' ' + cls.EVENT_TOOLTIP_ROOT_CLASS,
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
-            beforeClose: this.onBeforeClose.bind(this),
+            afterClose: this.onTooltipClose.bind(this),
             enableRtl: this.parent.enableRtl,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
@@ -128,16 +128,19 @@ export class EventTooltip {
                 '<div class="e-location">' + tooltipLocation + '</div>' +
                 '<div class="e-details">' + tooltipDetails + '</div>' +
                 '<div class="e-all-day">' + tooltipTime + '</div></div>';
-            this.setContent(content);
+            const contentTemp: Function = function(): string {
+                return content;
+            };
+            this.setContent(initializeCSPTemplate(contentTemp));
         }
         this.parent.renderTemplates();
     }
 
-    private onBeforeClose(): void {
+    private onTooltipClose(): void {
         this.parent.resetTemplates(['tooltipTemplate', 'headerTooltipTemplate']);
     }
 
-    private setContent(content: string | HTMLElement): void {
+    private setContent(content: string | HTMLElement | Function): void {
         this.tooltipObj.setProperties({ content: content }, true);
     }
 

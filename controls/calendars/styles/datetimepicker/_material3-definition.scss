@@ -1,0 +1,71 @@
+$datetime-default-text-indent: 16px !default;
+$datetime-list-bigger-line-height: 48px !default;
+$datetime-list-normal-line-height: 36px !default;
+$datetime-list-normal-font-size: 13px !default;
+$datetime-list-bigger-font-size: 14px !default;
+$datetime-list-normal-text-indent: $datetime-default-text-indent !default;
+$datetime-list-bigger-text-indent: 16px !default;
+$datetime-popup-border-radius: 4px !default;
+$datetime-list-font-weight: normal !default;
+$datetime-popup-shadow: $shadow-md !default;
+$datetime-list-default-font-color: rgba($flyout-text-color) !default;
+$datetime-list-border-color: none !default;
+$datetime-list-bg-color: $flyout-bg-color !default;
+$datetime-list-active-bg-color: rgba($content-bg-color-selected) !default;
+$datetime-list-active-font-color: rgba($flyout-text-color-selected) !default;
+$datetime-list-active-icon-color: rgba($content-text-color) !default;
+$datetime-list-hover-bg-color: $flyout-bg-color-hover !default;
+$datetime-list-hover-font-color: rgba($flyout-text-color-hover) !default;
+$datetime-list-popup-icon-active-color: rgba($content-text-color) !default;
+$datetime-list-active-hover-bg-color: rgba($primary) !default;
+$datetime-list-active-hover-font-color: rgba($primary-text-color) !default;
+$datetime-list-normal-padding: 8px !default;
+$datetime-list-bigger-padding: 8px !default;
+$datetime-time-font-icon: '\e20c' !default;
+$datetime-icon-normal-font-size: $font-icon-16 !default;
+$datetime-icon-bigger-font-size: $font-icon-20 !default;
+$datetime-date-icon-margin: 0 !default;
+$datetime-time-icon-margin: 0 !default;
+$datetime-time-bigger-icon-margin: 0 !default;
+$datetime-time-rtl-icon-margin: 0 !default;
+$datetime-time-rtl-bigger-icon-margin: 0 !default;
+$datetime-normal-min-height: 30px !default;
+$datetime-normal-min-width: 30px !default;
+$datetime-normal-border-radius: 16px !default;
+$datetime-bigger-min-height: 38px !default;
+$datetime-bigger-min-width: 38px !default;
+$datetime-bigger-icon-border-radius: 20px !default;
+$datetime-time-icon-border: 0 !default;
+$datetime-time-icon-border-style: none !default;
+$datetime-list-hover-border-color: none !default;
+$datetime-list-default-border-style: none !default;
+$datetime-default-overlay: $content-bg-color-alt1 !default;
+
+//mouse small
+$datetime-list-small-line-height: 26px !default;
+$datetime-list-small-text-indent: 12px !default;
+$datetime-list-small-font-size: 12px !default;
+
+// mouse small icon
+$datetime-icon-small-font-size: $font-icon-16 !default;
+$datetime-small-min-height: 22px !default;
+$datetime-small-min-width: 22px !default;
+$datetime-small-icon-border-radius: 14px !default;
+$datetime-time-small-icon-margin: 0 !default;
+
+//touch small
+$datetime-list-bigger-small-line-height: 40px !default;
+$datetime-list-bigger-small-text-indent: 16px !default;
+$datetime-list-bigger-small-font-size: 13px !default;
+
+// touch small icon
+$datetime-icon-bigger-small-font-size: $font-icon-20 !default;
+$datetime-bigger-small-min-height: 34px !default;
+$datetime-bigger-small-min-width: 34px !default;
+$datetime-bigger-small-icon-border-radius: 20px !default;
+$datetime-time-bigger-small-icon-margin: 0 !default;
+
+// modal full-screen popup
+$modal-datetime-position: fixed !default;
+$modal-datetime-wrapper-position: relative !default;
+$modal-datetime-wrapper-width: 100% !default;

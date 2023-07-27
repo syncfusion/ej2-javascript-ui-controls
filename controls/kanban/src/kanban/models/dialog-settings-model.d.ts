@@ -9,8 +9,9 @@ export interface DialogSettingsModel {
      * Defines the dialog template
      *
      * @default null
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Defines the dialog fields
@@ -20,7 +21,7 @@ export interface DialogSettingsModel {
     fields?: DialogFieldsModel[];
 
     /**
-     * Customize the model object configuration for the edit or add Dialog component.
+     * Customize the model object configuration for the edit or add Dialog of Kanban.
      *
      * @default null
      */

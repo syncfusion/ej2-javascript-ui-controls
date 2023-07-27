@@ -187,7 +187,7 @@ export function phaseDefine(
         annotations: [cloneObject(shape.phases[parseInt(phaseIndex.toString(), 10)].header.annotation)],
         maxWidth: maxWidth,
         id: object.id + shape.phases[parseInt(phaseIndex.toString(), 10)].id + '_header',
-        addInfo:shape.phases[parseInt(phaseIndex.toString(), 10)].addInfo,
+        addInfo: shape.phases[parseInt(phaseIndex.toString(), 10)].addInfo,
         offsetX: object.offsetX, offsetY: object.offsetY,
         style: shape.phases[parseInt(phaseIndex.toString(), 10)].style,
         rowIndex: rowValue, columnIndex: colValue,
@@ -232,7 +232,7 @@ export function laneCollection(
             width: gridCell.minWidth, height: gridCell.minHeight,
             offsetX: object.offsetX, offsetY: object.offsetY,
             style: shape.lanes[parseInt(laneIndex.toString(), 10)].style,
-            addInfo:shape.lanes[parseInt(laneIndex.toString(), 10)].addInfo,
+            addInfo: shape.lanes[parseInt(laneIndex.toString(), 10)].addInfo,
             constraints: NodeConstraints.Default | NodeConstraints.ReadOnly | NodeConstraints.AllowDrop,
             container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
         };
@@ -541,8 +541,8 @@ export function arrangeChildNodesInSwimLane(diagram: Diagram, obj: NodeModel): v
                 node.offsetY = lanes[parseInt(i.toString(), 10)].height;
                 diagram.initObject(node as Node);
                 diagram.nodes.push(node);
-                 // EJ2-63939 - Check whether the lane child is BPMN text node or not
-                 if(node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations && (node.shape as BpmnShapeModel).annotations.length > 0) {
+                // EJ2-63939 - Check whether the lane child is BPMN text node or not
+                if (node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations && (node.shape as BpmnShapeModel).annotations.length > 0) {
                     (obj as Node).isTextNode = true;
                 }
                 canvas = node.wrapper;
@@ -1730,7 +1730,6 @@ export function removeSwimLane(diagram: Diagram, obj: NodeModel): void {
                                 deleteNode(diagram, removeNode);
                             } else {
                                 diagram.removeDependentConnector(removeNode);
-                                diagram.diagramActions |= DiagramAction.PreventHistory;
                                 if ((removeNode.constraints & NodeConstraints.Delete)) {
                                     diagram.remove(removeNode);
                                 } else {
@@ -2137,7 +2136,7 @@ export function considerSwimLanePadding(diagram: Diagram, node: NodeModel, paddi
         node.offsetX = node.wrapper.offsetX; node.offsetY = node.wrapper.offsetY;
         diagram.nodePropertyChange(node as Node, {} as Node, { margin: { left: node.margin.left, top: node.margin.top } } as Node);
         //EJ2-68372- Text-Annotation in event node is not positioned properly while drag the swimlane
-        if(diagram.bpmnModule && node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations &&  (node.shape as BpmnShapeModel).annotations.length>0) {
+        if (diagram.bpmnModule && node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations &&  (node.shape as BpmnShapeModel).annotations.length > 0) {
             diagram.nodePropertyChange(node as Node, {} as Node, { margin: { left: node.margin.left, top: node.margin.top } } as Node);
         }
         grid.measure(new Size(grid.width, grid.height));
@@ -2200,8 +2199,8 @@ export function canLaneInterchange(laneNode: Node, diagram: Diagram): boolean {
     if (laneNode.isLane) {
         const lane: LaneModel = findLane(laneNode, diagram);
         const eventHandler: string = 'eventHandler';
-        let resize: string = diagram[`${eventHandler}`].action;
-        let canResize: boolean = resize.includes('Resize');
+        const resize: string = diagram[`${eventHandler}`].action;
+        const canResize: boolean = resize.includes('Resize');
         if (canResize || lane.canMove) {
             return true;
         }

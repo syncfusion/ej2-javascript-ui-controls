@@ -111,7 +111,7 @@ $calendar-decade-title-left-margin-style: 15px !default;
 // end year decade
 
 //other months
-$calendar-other-month-display-style: block !default;
+$calendar-other-month-display-style: inline-block !default;
 $calendar-other-month-row-display-style: none !default;
 $calendar-other-month-date: $grey-lighter !default;
 $calendar-other-month-date-hover-bg: $grey-lighter !default;

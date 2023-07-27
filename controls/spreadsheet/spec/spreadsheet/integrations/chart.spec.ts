@@ -188,7 +188,7 @@ describe('Chart ->', () => {
             const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Line"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
-            helper.getElement('#stackedline100').click();
+            helper.getElement('#stackedLine100').click();
             setTimeout(() => {
                 const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
                 expect(chart).not.toBeNull();
@@ -380,6 +380,45 @@ describe('Chart ->', () => {
                 const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
                 expect(chart).not.toBeNull();
                 done();
+            });
+        });
+        it('Copy and paste line chart->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:E5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#line').click();
+            setTimeout(() => {
+                helper.switchRibbonTab(1);
+                helper.getElement('#' + helper.id + '_copy').click();
+                setTimeout(() => {
+                    helper.invoke('paste');
+                    expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id).classList).toContain('e-chart');
+                    done();
+                });
+            });
+        });
+        it('Copy and paste the Line Chart With Marker->', (done: Function) => {
+            helper.invoke('selectRange', ['F1:G5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#lineMarker').click();
+            setTimeout(() => {
+                helper.invoke('selectRange', ['F1']);
+                helper.switchRibbonTab(1);
+                helper.getElement('#' + helper.id + '_copy').click();
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['I4']);
+                    helper.invoke('paste');
+                    expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[0].rows[3].cells[8].chart[0].id).classList).toContain('e-chart');
+                    expect(helper.getInstance().sheets[0].rows[3].cells[8].chart[0].markerSettings.visible).toBeTruthy();
+                    done();
+                });
             });
         });
     });
@@ -1569,7 +1608,7 @@ describe('Chart ->', () => {
                 const editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
                 editorElem.click();
                 editorElem.value = 'Sheet11';
-                helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+                helper.triggerKeyNativeEvent(13, false, false, editorElem);
                 expect(spreadsheet.sheets[0].rows[1].cells[6].chart[0].range).toEqual('Sheet11!A1:E8');
                 done();
             });
@@ -1655,7 +1694,7 @@ describe('Chart ->', () => {
         });
         describe('EJ2-71624', () => {
             beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'K2:K2' }] }, done);
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }],  selectedRange: 'K2:K2' }]}, done);
             });
             afterAll(() => {
                 helper.invoke('destroy');
@@ -1703,5 +1742,179 @@ describe('Chart ->', () => {
                 done()
             })
         });
+    });
+    describe('Provide support for inserting a line chart with/without marker options in the spreadsheet', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('insert Line chart without marker', (done: Function) => {
+            helper.invoke('selectRange', ['G1:H6']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#line').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).toBe(0);
+            helper.invoke('deleteChart');
+            done();  
+        });
+        it('insert Stacked Line chart without marker', (done: Function) => {
+            helper.invoke('selectRange', ['G1:H6']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#stackedLine').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).toBe(0);
+            helper.invoke('deleteChart');
+            done();  
+        });
+        it('insert 100% Stacked Line chart without marker', (done: Function) => {
+            helper.invoke('selectRange', ['G1:H6']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#stackedLine100').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).toBe(0);
+            helper.invoke('deleteChart');
+            done();  
+        });
+        it('insert Line chart with marker', (done: Function) => {
+            helper.invoke('selectRange', ['G1:H6']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#lineMarker').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).not.toBe(0);
+            helper.invoke('deleteChart');
+            done();  
+        });
+        it('insert Stacked Line chart with marker', (done: Function) => {
+            helper.invoke('selectRange', ['G1:H6']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#stackedLineMarker').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).not.toBe(0);
+            helper.invoke('deleteChart');
+            done();  
+        });
+        it('insert 100% Stacked Line chart with marker', (done: Function) => {
+            helper.invoke('selectRange', ['G1:H6']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#stackedLine100Marker').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).not.toBe(0);
+            helper.invoke('deleteChart');
+            done();  
+        });
+        it('insert chart using insertChart function with marker : { visible: true}', (done : Function) => {
+            helper.invoke('insertChart', [[{ type: 'StackingLine', range: 'D1:E5', markerSettings: { visible: true }}]]);
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).not.toBe(0);
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('insert chart using insertChart function with marker: { visible: true, width: 10, height: 10, shape: Diamond }', (done : Function) => {
+            helper.invoke('insertChart', [[{ type: 'StackingLine', range: 'D1:E5', markerSettings: { visible: true, size: 10, shape: 'Diamond' }}]]);
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGPathElement> = chart.getElementsByTagName("path");
+            expect(marker.length).not.toBe(0);
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('insert chart using insertChart function with marker: { visible: true, width: 10, height: 10, shape: Diamond, border: { width: 1, color: blue }}', (done : Function) => {
+            helper.invoke('insertChart', [[{ type: 'StackingLine', range: 'D1:E5', markerSettings: { visible: true, size: 10, shape: 'Diamond', border: { width: 1, color: 'blue' }}}]]);
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGPathElement> = chart.getElementsByTagName("path");
+            expect(marker.length).not.toBe(0);
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('changing chart type from without marker chart to with marker chart', (done: Function) => {
+            helper.invoke('selectRange', ['G1:H6']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#stackedLine100').click();
+            helper.getElement('#' + helper.id + '_chart-type-btn').click();
+            const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Line"]');
+            helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+            helper.getElement('#lineMarker').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).not.toBe(0);
+            done();
+        });
+    });
+    describe('insert chart using cell binding', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges:  [{ dataSource: defaultData }] ,rows: [{ index: 1, cells: [{ index: 6, chart: [{ id: 'chart1', type: 'Line', range: 'A1:E8', markerSettings: { visible: true }}, 
+            {id: 'chart2', type: 'Line', range: 'A1:E8', markerSettings: { visible: true,  size: 10, shape: 'Diamond' }}, 
+            {id: 'chart3', type: 'Line', range: 'A1:E8', markerSettings: { visible: true, border: { width: 1, color: 'blue' } }}] }] }]}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('using cell binding', (done: Function) => {
+            const chart: HTMLElement = document.getElementById('chart1_svg');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).not.toBe(0);
+            done();
+        })
+        it('using cell binding with marker visible, shape', (done: Function) => {
+            const chart: HTMLElement = document.getElementById('chart2_svg');
+            const marker: HTMLCollectionOf<SVGPathElement> = chart.getElementsByTagName("path");
+            expect(marker.length).not.toBe(0);
+            done();
+        })
+        it('using cell binding with marker visible, shape and border', (done: Function) => {
+            const chart: HTMLElement = document.getElementById('chart3_svg');
+            const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+            expect(marker.length).not.toBe(0);
+            done();
+        })
+    });
+    describe('EJ2-832434', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], enableRtl: true }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Issue in chart series and legend when enable rtl set to true', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'G2:H5' }]]);
+            const chartId: string = `#${spreadsheet.sheets[0].rows[1].cells[6].chart[0].id}`;
+            const chart: HTMLElement = spreadsheet.element.querySelector(chartId);
+            expect(chart).not.toBeNull();
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.enableRtl).toBeTruthy();
+            done();
+        })
     });
 });

@@ -42,7 +42,8 @@ export class TimelineEvent extends MonthEvent {
         if (this.parent.activeViewOptions.headerRows.length > 0 &&
             this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             this.renderType = 'day';
-            this.cellWidth = this.content.offsetWidth / this.dateRender.length;
+            const workCell: HTMLTableCellElement = this.content.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLTableCellElement;
+            this.cellWidth = workCell.getBoundingClientRect().width / +(workCell.getAttribute('colspan') || 1);
             this.slotsPerDay = 1;
         } else {
             this.slotsPerDay = (this.dayLength / this.dateRender.length);
@@ -188,10 +189,20 @@ export class TimelineEvent extends MonthEvent {
                     'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
                 });
                 this.wireAppointmentEvents(appointmentElement, event);
-                this.renderEventElement(event, appointmentElement, cellTd);
                 if (this.parent.rowAutoHeight) {
+                    const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+                    const conWidth: number = conWrap.getBoundingClientRect().width;
+                    const isWithoutScroll: boolean = conWrap.offsetHeight === conWrap.clientHeight &&
+                        conWrap.offsetWidth === conWrap.clientWidth;
+                    this.renderEventElement(event, appointmentElement, cellTd);
                     const firstChild: HTMLElement = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
+                    if (isWithoutScroll &&
+                        (conWrap.offsetWidth > conWrap.clientWidth || conWidth !== conWrap.getBoundingClientRect().width)) {
+                        this.adjustAppointments(conWidth);
+                    }
+                } else {
+                    this.renderEventElement(event, appointmentElement, cellTd);
                 }
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {
@@ -231,7 +242,7 @@ export class TimelineEvent extends MonthEvent {
     private renderTimelineMoreIndicator(startTime: Date, startDate: Date, endDate: Date, appHeight: number, interval: number, resIndex: number, appointmentsList: Record<string, any>[], top: number, appLeft: number, appRight: number, cellTd: HTMLElement, moreIndicator: HTMLElement, appPos: number, position: number): void {
         appLeft = (this.parent.enableRtl) ? appRight = position : position;
         appPos = (this.parent.enableRtl) ? appRight : appLeft;
-        appPos = (Math.round(appPos / this.cellWidth) * this.cellWidth);
+        appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
         if ((cellTd && isNullOrUndefined(moreIndicator)) ||
             (!this.isAlreadyAvail(appPos, cellTd))) {
             const startDateTime: Date = (this.parent.activeViewOptions.option === 'TimelineMonth' || this.renderType === 'day') ? new Date(+startTime) : startDate;
@@ -259,8 +270,8 @@ export class TimelineEvent extends MonthEvent {
             }
             moreIndicatorElement.style.top = top + appArea + 'px';
             moreIndicatorElement.style.width = this.cellWidth + 'px';
-            moreIndicatorElement.style.left = ((appLeft / this.cellWidth) * this.cellWidth) + 'px';
-            moreIndicatorElement.style.right = ((appRight / this.cellWidth) * this.cellWidth) + 'px';
+            moreIndicatorElement.style.left = (Math.floor(appLeft / this.cellWidth) * this.cellWidth) + 'px';
+            moreIndicatorElement.style.right = (Math.floor(appRight / this.cellWidth) * this.cellWidth) + 'px';
             this.renderElement(cellTd, moreIndicatorElement);
             EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
         }
@@ -282,6 +293,21 @@ export class TimelineEvent extends MonthEvent {
                 setStyleAttribute(monthHeader, { 'height': height + 'px' });
             }
         }
+    }
+
+    private adjustAppointments(conWidth: number): void {
+        const tr: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr');
+        this.cellWidth = this.workCells[0].getBoundingClientRect().width;
+        const currentPercentage: number = (this.cellWidth * tr.children.length) / (conWidth / 100);
+        const apps: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+        apps.forEach((app: HTMLElement) => {
+            if (this.parent.enableRtl && app.style.right !== '0px') {
+                app.style.right = ((parseFloat(app.style.right) / 100) * currentPercentage) + 'px';
+            } else if (app.style.left !== '0px') {
+                app.style.left = ((parseFloat(app.style.left) / 100) * currentPercentage) + 'px';
+            }
+            app.style.width = ((parseFloat(app.style.width) / 100) * currentPercentage) + 'px';
+        });
     }
 
     private getFirstChild(index: number): HTMLElement {

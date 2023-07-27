@@ -135,6 +135,8 @@ export const chartPointClick: string = 'chartPointClick';
 /** @hidden */
 export const beforeServiceInvoke: string = 'beforeServiceInvoke';
 /** @hidden */
+export const afterServiceInvoke: string = 'afterServiceInvoke';
+/** @hidden */
 export const actionBegin: string = 'actionBegin';
 /** @hidden */
 export const actionComplete: string = 'actionComplete';

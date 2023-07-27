@@ -1783,6 +1783,76 @@ describe('Schedule CRUD', () => {
         });
     });
 
+    describe('Es-835427 - Duplicate event created after changing recurring of the following events', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Meeting',
+            StartTime: new Date(2018, 1, 13, 10, 0),
+            EndTime: new Date(2018, 1, 13, 12, 30),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=4'
+        }
+        ];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                showWeekend: false,
+                selectedDate: new Date(2018, 1, 15),
+                eventSettings: {editFollowingEvents: true}
+            };
+            schObj = util.createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Editing recurrence appointment', () => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+            };
+            const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(4);
+            eventElementList[2].click();
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            (eventPopup.querySelector('.e-edit') as HTMLElement).click();
+            const quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startTime: DateTimePicker = (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            startTime.value = new Date(2018, 1, 15, 8, 30);
+            startTime.dataBind();
+            const endTime: DateTimePicker = (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            endTime.value = new Date(2018, 1, 15, 11, 0);
+            endTime.dataBind();
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+        });
+        it('To check recurrence appointment after changing editing following events', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                done();
+            };
+            const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(4);
+            util.triggerMouseEvent(eventElementList[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(eventElementList[0] as HTMLElement, 'dblclick');
+            const quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-following-events') as HTMLElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startTime: DateTimePicker = (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            startTime.value = new Date(2018, 1, 12, 10, 0);
+            startTime.dataBind();
+            const endTime: DateTimePicker = (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            endTime.value = new Date(2018, 1, 12, 12, 30);
+            endTime.dataBind();
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            (document.querySelector( '.e-quick-dialog-alert-btn') as HTMLElement).click();
+            done();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

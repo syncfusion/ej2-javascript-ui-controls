@@ -101,15 +101,23 @@ export interface TabItemModel {
      * Specifies the header text of Tab item.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * Specifies the content of Tab item, that is displayed when concern item header is selected.
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    content?: string | HTMLElement;
+    content?: string | HTMLElement | Function;
 
     /**
      * Sets the CSS classes to the Tab item to customize its styles.

@@ -251,7 +251,7 @@ export function isValidCellReference(value: string): boolean {
  * @returns {number} - To skip the hidden index
  *
  */
-export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows'): number {
+export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows', count?: number): number {
     let rowColObj: object;
     if (increase) {
         for (let i: number = index; i < Infinity; i++) {
@@ -259,7 +259,12 @@ export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolea
             if (rowColObj[index as number] && rowColObj[index as number].hidden) {
                 index++;
             } else {
-                break;
+                if (count) {
+                    count--;
+                    index++;
+                } else {
+                    break;
+                }
             }
         }
     } else {
@@ -394,7 +399,7 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             const evtArgs: { [key: string]: string | boolean | number[] | number } = { action: 'updateCellValue',
                 address: [args.rowIndex, args.colIndex], sheetIndex: getSheetIndex(context, sheet.name), value:
                 isFormulaCell && !cell.formula ? (cell.value || (<unknown>cell.value === 0 ? '0' : '')) : (cell.formula || cell.value ||
-                    (<unknown>cell.value === 0 ? '0' : '')), skipFormatCheck: prop.skipFormatCheck };
+                    (<unknown>cell.value === 0 ? '0' : '')), skipFormatCheck: prop.skipFormatCheck, isRandomFormula: prop.isRandomFormula };
             context.notify(workbookEditOperation, evtArgs);
             prop.isFormulaDependent = <boolean>evtArgs.isFormulaDependent;
             if (prop.requestType && args.cell === null) {
@@ -407,7 +412,7 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             }
             if (prop.uiRefresh) {
                 context.serviceLocator.getService<{ refresh: Function }>('cell').refresh(
-                    args.rowIndex, args.colIndex, prop.lastCell, prop.td, prop.checkCF, prop.checkWrap, prop.skipFormatCheck);
+                    args.rowIndex, args.colIndex, prop.lastCell, prop.td, prop.checkCF, prop.checkWrap, prop.skipFormatCheck, prop.isRandomFormula);
             }
             if (!prop.preventEvt) {
                 const cellDisplayText: string = context.getDisplayText(cell);

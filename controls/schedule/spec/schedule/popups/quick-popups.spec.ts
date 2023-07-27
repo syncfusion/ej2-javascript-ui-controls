@@ -2214,7 +2214,7 @@ describe('Quick Popups', () => {
             util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
         });
-        it('Check Following Edit Button Availability for Recurrenece Edited Event', (done: DoneFn) => {
+        it('ES-827815 - Check Following Edit Button Availability for Recurrence Edited Event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(2);
                 done();
@@ -2228,7 +2228,7 @@ describe('Quick Popups', () => {
             const quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
             expect(quickDialog.querySelector('.e-footer-content .e-quick-dialog-following-events').classList.contains('e-disable'))
-                .toEqual(true);
+                .toEqual(false);
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
             const eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
@@ -2263,23 +2263,19 @@ describe('Quick Popups', () => {
         it('Edit Following Event', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.currentAction).toEqual('EditFollowingEvents');
-                expect(schObj.eventsData.length).toEqual(4);
+                expect(schObj.eventsData.length).toEqual(3);
                 const dataObj: Record<string, any>[] = schObj.eventsData as Record<string, any>[];
                 expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(2);
                 expect(dataObj[0].Subject).toEqual('Recurrence');
                 expect(dataObj[0].RecurrenceException as string).toEqual('20190205T100000Z,20190204T100000Z');
                 expect(dataObj[0].Id).toEqual(1);
-                expect(dataObj[1].Id).toEqual(2);
+                expect(dataObj[1].Id).toEqual(3);
                 expect(dataObj[1].RecurrenceID).toEqual(1);
-                expect(dataObj[1].Subject).toEqual('Recurrence - Edited');
-                expect(dataObj[2].Id).toEqual(3);
-                expect(dataObj[2].Subject).toEqual('Recurrence - Edited1');
+                expect(dataObj[1].Subject).toEqual('Recurrence - Edited1');
+                expect(dataObj[2].Id).toEqual(4);
+                expect(dataObj[2].Subject).toEqual('Recurrence - Following Edited');
                 expect(dataObj[2].FollowingID).toBeNull();
-                expect(dataObj[2].RecurrenceID).toEqual(1);
-                expect(dataObj[3].Id).toEqual(4);
-                expect(dataObj[3].Subject).toEqual('Recurrence - Following Edited');
-                expect(dataObj[3].FollowingID).toBeNull();
-                expect(dataObj[3].RecurrenceID).toBeNull();
+                expect(dataObj[2].RecurrenceID).toBeNull();
                 done();
             };
             expect(schObj.eventsData.length).toEqual(3);

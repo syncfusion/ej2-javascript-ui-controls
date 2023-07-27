@@ -45,6 +45,12 @@
         top: $cbox-ripple-size;
         width: $cbox-ripple-width;
         z-index: 1;
+
+        & .e-ripple-element {
+          @if $skin-name == 'Material3' {
+            border-radius: 50%;
+          }
+        }
       }
 
       & .e-label {
@@ -316,6 +322,10 @@
         line-height: $cbox-bigger-height;
         margin-left: $cbox-bigger-margin;
       }
+
+      +.e-ripple-container {
+        left: auto;
+      }
     }
 
     & .e-check {
@@ -359,6 +369,10 @@
         +.e-label {
           margin-left: 0;
           margin-right: $cbox-bigger-margin;
+        }
+
+        +.e-ripple-container {
+          left: auto;
         }
 
         +.e-ripple-container {

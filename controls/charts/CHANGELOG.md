@@ -2,6 +2,156 @@
 
 ## [Unreleased]
 
+## 22.2.5 (2023-07-27)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I477552` - Fixed an issue where the column was overlapping with the axis line.
+- `#I477506` - Fixed an issue where the trendline was not changing when updating its properties.
+- `#I475454` - Now UseGroupingSeparator is working in accumulation tooltip.
+- `#F183277` - Fixed an issue where range color mapping was not working when using two series.
+- `#I479131` - Fixed the issue of data label cropping when setting the value as the minimum.
+- `#I479171` - Fixed an issue where the range values of the scroll bar were not proper.
+- `#I471081` - Now, stripline is proper when the width is changed.
+
+## 22.1.39 (2023-07-18)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I474743` - Fixed issue where chart type did not change when updated using the "type" attribute.
+- `#I473789` - Fixed an issue where the chart was not getting rendered in PhantomJS.
+- `#I473845` - Resolved an issue where axis labels were not rendering correctly during export and initial render.
+- `#I478252` - Improved the accessibility of the legend.
+- `#I478253` - Updated the accessibility text in the chart container.
+- `#I481747` - Now, the double axis labels are correct when the culture is set to 'it'.
+
+## 22.1.38 (2023-07-11)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I475437` - Resolved issue where crosshair intersection point was not properly displayed.
+- `#I463171` - Resolved issue where column width was not properly displayed.
+
+## 22.1.37 (2023-07-04)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I464403` - Fixed an issue where the dash array in segmented stripline was not working properly.
+- `#I473748` - Fixed issue where the chart was not being rendered when a null value was given as the series name.
+- `#I474198` - Fixed an issue where the x axis label was not displayed correctly.
+- `#I474198` - Fixed an issue where the first label was getting cut off when the edgeLabelPlacement was set to 'shift'.
+
+## 22.1.36 (2023-06-28)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F182477` - Resolved the issue where the X axis displayed all values even when an interval of 1 and only one data point was provided.
+- `#I471069` - Fixed an issue where multiple axes were not displaying properly when using large records of data.
+- `#I461357` - Fixed issue with selection not working when using zoom settings.
+
+## 22.1.34 (2023-06-21)
+
+### Chart
+
+#### New Features
+
+- `#I461049` - Provided support to display a zoom toolbar for the chart on initial load, which allows user to zoom in on the chart.
+- `#I439527` - Provided support for a cross-shaped marker to the data points in the chart.
+- `#I283789` - Provided support to position the chart title to the left, right, or bottom of the chart.
+- `#I286744` - It is now possible to customize the axis scroll bar by changing its color and height, and disable zooming in the scrollbar.
+- `#I386094` - Improved the axis label placement after line break.
+- `#I428708` - Provided distinct markers shape for each series in the chart.
+- `#I404448` - It is now possible to customize the Pareto axis and line in terms of marker, width, dash array, and color.
+
+#### Breaking Changes
+
+- To differentiate between marker shapes in the `ChartShape` enumeration, the existing Cross shape has been replaced with Plus, while a new enumeration, Cross, has been added for the cross shape.
+
+#### Bug Fixes
+
+- `#I467459` - The legend is now rendering properly when resizing the chart.
+- `#F182605` - The multicolored line series chart is now rendering properly while using `isInversed` in the primary Y-axis.
+- `#I467459` - Now, the axis labels are rotating properly in the canvas mode.
+
+### Stock Chart
+
+#### Breaking Changes
+
+- By default, the series type and trendline dropdowns have been removed from the stock chart period selector. However, you can still add them to the list upon request or as needed. This modification provides a cleaner interface and reduces clutter in the stock chart period selector.
+- By default, the tooltip for the range selector in the stock chart has been removed. Instead, the tooltip will now appear only when you move the slider.
+- The print option has been removed from the period selector because it is already available in the export dropdown. This modification provides a cleaner interface and reduces clutter in the stock chart's period selector.
+
+## 21.2.10 (2023-06-13)
+
+### Chart
+
+#### Bug Fixes
+
+`#I451537` - Spline is now proper for negative points without specify the range.
+
+## 21.2.9 (2023-06-06)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F182216` - Fixed the issue where the data label was hidden.
+- `#I464403` - Fixed an issue where strip line text was getting cut off when it was too long.
+
+## 21.2.8 (2023-05-30)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F181551` - The tooltip now displays the percentage of each stacking group.
+- `#F182191` - Now, tooltip values are displayed correctly when no data is given for the data point in a series.
+- `#I461357` - Now, zooming and selection are working properly when using both at the same time.
+- `#I452148` - The issue of the y-axis label overlap has been fixed.
+- `#I464813` - Fixed MinorGridLine to be visible even when the width is not set for MajorTickLine.
+- `#I463171` - Fixed issue where column width was not being set properly.
+- `#I462090` - Fixed an issue where startFromAxis was not working correctly for stripLine.
+
+## 21.2.6 (2023-05-23)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F182033` - The marker is now proper while zooming the chart.
+
+## 21.2.5 (2023-05-16)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F181976` - Now the tooltip is proper when using two axes in a chart.
+- `#I451537` - Now, the axis label value is correct when an interval is not given.
+- `#I451537` - Fixed an issue where the axis label was not displaying correctly.
+- `#I451537` - Now, the secondary axis label will be correctly displayed without an interval.
+- `#I452395` - Fixed an issue where the y-axis axis label was displaying double values.
+- `#I452390` - Fixed the issue where the axis label was being trimmed despite the shift given to the edgeLabelPlacement.
+
+## 21.2.4 (2023-05-09)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I457088` - Fixed the console error thrown on clicking on the legend.
+- `#I459170` - Now the accumulation data label is visible when using a template.
+
 ## 21.2.3 (2023-05-03)
 
 ### Chart

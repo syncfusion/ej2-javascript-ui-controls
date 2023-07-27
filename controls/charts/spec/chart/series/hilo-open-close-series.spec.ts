@@ -805,7 +805,7 @@ describe('Chart Control Series', () => {
         it('Legend position', (done: Function) => {
             loaded = (args: Object) => {
                 let legendElement: HTMLElement = document.getElementById('container_chart_legend_element');
-                expect(legendElement.getAttribute('y') === '46.25' || legendElement.getAttribute('y') === '43.25').toBe(true);
+                expect(legendElement.getAttribute('y') === '44.25' || legendElement.getAttribute('y') === '43.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -873,9 +873,10 @@ describe('Chart Control Series', () => {
         it('Checking with category axis with multiple panes- rows', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '235.375' || svg.getAttribute('d').split(' ')[2] == '239.125').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '239.625' || svg.getAttribute('d').split(' ')[2] == '239.125').toBe(true);
                 svg = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[2] == '79.25' || svg.getAttribute('d').split(' ')[2] == '84.75').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '85.75' || svg.getAttribute('d').split(' ')[2] == '84.75').toBe(true);
+
                 done();
             };
             chartObj.loaded = loaded;

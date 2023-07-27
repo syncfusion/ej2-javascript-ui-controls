@@ -38,6 +38,14 @@ export class InkAnnotation {
      * @private
      */
     public currentPageNumber: string = '';
+    /**
+     * @private
+     */
+    public inkAnnotationInitialZoom: number = 1;
+    /**
+     * @private
+     */
+    public inkPathDataCollection: IInkPathDataCollection[] = [];
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
@@ -55,7 +63,7 @@ export class InkAnnotation {
             this.pdfViewerBase.isInkAdded = true;
             this.pdfViewer.annotationModule.isFormFieldShape = false;
             const pageIndex: number = !isNaN(pageNumber) ? pageNumber : this.pdfViewerBase.currentPageNumber - 1;
-            if (this.outputString && this.outputString !== '') {
+            if ((this.outputString && this.outputString !== '') || this.inkPathDataCollection.length > 0) {
                 const currentAnnot: PdfAnnotationBaseModel = this.addInk(pageIndex);
                 this.pdfViewer.renderDrawing(undefined, pageIndex);
                 this.pdfViewer.clearSelection(pageIndex);
@@ -71,11 +79,41 @@ export class InkAnnotation {
                 this.newObject = [];
                 this.pdfViewerBase.isToolbarInkClicked = false;
                 this.pdfViewer.tool = '';
+                this.inkPathDataCollection = [];
             }
             this.pdfViewerBase.isInkAdded = false;
         }
     }
 
+    /**
+     * @private
+     */
+    public updateInkDataWithZoom(): any {
+        let updatedPathData: string = '';
+        if (this.outputString !== '') {
+            this.inkPathDataCollection.push({ pathData: this.outputString, zoomFactor: this.inkAnnotationInitialZoom });
+        }
+        if (this.inkPathDataCollection.length > 0) {
+            //for loop to get the path data from the collection with path zoom factor
+            for (let i: number = 0; i < this.inkPathDataCollection.length; i++) {
+                updatedPathData += this.updatePathDataWithZoom(this.inkPathDataCollection[i].pathData, this.inkPathDataCollection[i].zoomFactor);
+            }
+        } else {
+            updatedPathData += this.updatePathDataWithZoom(this.outputString, this.inkAnnotationInitialZoom);
+        }
+        return updatedPathData;
+    }
+    private updatePathDataWithZoom(pathData: any, pathZoomFactor: number): any {
+        let pathString: string = '';
+        let zoom: any = this.pdfViewerBase.getZoomFactor();
+        let collectionData: any = processPathData(pathData);
+        let csData: any = splitArrayCollection(collectionData);
+        for (let j: number = 0; j < csData.length; j++) {
+            let pathValue: any = csData[j];
+            pathString += pathValue.command + pathValue.x * (zoom / pathZoomFactor) + ',' + pathValue.y * (zoom / pathZoomFactor) + ' ';
+        }
+        return pathString;
+    }
     /**
      * @private
      */
@@ -98,6 +136,7 @@ export class InkAnnotation {
             this.pdfViewer.tool = 'Ink';
         }
         let zoom : any = this.pdfViewerBase.getZoomFactor();
+        this.inkAnnotationInitialZoom = zoom;
         let ratio : number = this.pdfViewerBase.getWindowDevicePixelRatio();;
         // eslint-disable-next-line
         let canvas: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
@@ -151,6 +190,7 @@ export class InkAnnotation {
      */
     // eslint-disable-next-line
     public addInk(pageNumber?:number): any {
+        this.outputString = this.updateInkDataWithZoom();
         // eslint-disable-next-line
         let currentBounds: any = this.calculateInkSize();
         const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
@@ -173,7 +213,7 @@ export class InkAnnotation {
             // eslint-disable-next-line
             let allowedInteractions: any = this.pdfViewer.inkAnnotationSettings.allowedInteractions ? this.pdfViewer.inkAnnotationSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             // eslint-disable-next-line
-            let annotationSettings: any = this.pdfViewer.inkAnnotationSettings ? this.pdfViewer.inkAnnotationSettings : this.pdfViewer.annotationSettings;
+            let annotationSettings = this.pdfViewer.annotationSettings ? this.pdfViewer.annotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(this.pdfViewer.inkAnnotationSettings);
             annot = {
                 // eslint-disable-next-line max-len
                 id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentBounds.x, y: currentBounds.y, width: currentBounds.width, height: currentBounds.height }, pageIndex: pageIndex, data: this.outputString, customData: customData,
@@ -205,6 +245,7 @@ export class InkAnnotation {
             if (this.pdfViewerBase.isInkAdded) {
                 this.outputString = '';
                 this.newObject = [];
+                this.inkPathDataCollection = [];
             }
             this.pdfViewerBase.isToolbarInkClicked = false;
             this.pdfViewer.tool = '';
@@ -225,12 +266,15 @@ export class InkAnnotation {
     public saveInkSignature(): string {
         // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_ink');
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_ink'];
+        }
         // eslint-disable-next-line
         let annotations: Array<any> = new Array();
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
-        if (storeObject) {
+        if (storeObject && !this.pdfViewer.annotationSettings.skipDownload) {
             const annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 // eslint-disable-next-line
@@ -327,7 +371,7 @@ export class InkAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderExistingInkSignature(annotationCollection: any, pageIndex: number, isImport: boolean): void {
+    public renderExistingInkSignature(annotationCollection: any, pageIndex: number, isImport: boolean,  isAnnotOrderAction?: boolean): void {
         let annot: PdfAnnotationBaseModel;
         let isinkAnnotationAdded: boolean = false;
         if (!isImport) {
@@ -338,7 +382,7 @@ export class InkAnnotation {
                 }
             }
         }
-        if (annotationCollection && !isinkAnnotationAdded) {
+        if (annotationCollection && (!isinkAnnotationAdded || isAnnotOrderAction)) {
             if (annotationCollection.length > 0 && this.inkAnnotationindex.indexOf(pageIndex) === -1) {
                 this.inkAnnotationindex.push(pageIndex);
             }
@@ -405,7 +449,7 @@ export class InkAnnotation {
                         // eslint-disable-next-line max-len
                         comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: currentAnnotation.allowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
                         // eslint-disable-next-line max-len
-                        review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, annotationSettings: { isLock: isLock },
+                        review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, annotationSettings: currentAnnotation.AnnotationSettings,
                         annotationSelectorSettings: selectorSettings, customData: customData, isPrint: isPrint, isCommentLock: currentAnnotation.IsCommentLock
                     };
                     this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -706,10 +750,11 @@ export class InkAnnotation {
         //Creating annotation settings
         let annotationSelectorSettings: any = this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings ? this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
         let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.inkAnnotationSettings);
+        annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('ink', annotationSettings.AnnotationType);
         let allowedInteractions: any = this.pdfViewer.inkAnnotationSettings.allowedInteractions ? this.pdfViewer.inkAnnotationSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
-        annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
-        annotationObject.width = annotationObject.width?annotationObject.width :150;
-        annotationObject.height = annotationObject.height?annotationObject.height :60;        
+        annotationSettings.isLock = annotationObject.isLock ? annotationObject.isLock : annotationSettings.isLock;
+        annotationObject.width = annotationObject.width ? annotationObject.width : 150;
+        annotationObject.height = annotationObject.height ? annotationObject.height : 60;        
         let pathData: string = annotationObject.path?annotationObject.path:'';
         if (!isNullOrUndefined(pathData)) {
             // Check whether the given path of the ink annotation is starts with Move path or Line path. 
@@ -761,4 +806,13 @@ export class InkAnnotation {
          signatureInkAnnotation[0] = ink;
          return {signatureInkAnnotation};  
     }
+}
+/**
+ * Defines the FormFields Bound properties
+ *
+ * @hidden
+ */
+export interface IInkPathDataCollection {
+    pathData: any;
+    zoomFactor: number;
 }

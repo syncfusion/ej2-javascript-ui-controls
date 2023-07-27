@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-    closest, classList, createElement, remove, addClass, removeClass, isNullOrUndefined, Base, formatUnit, createInstance, detach
+    closest, classList, createElement, remove, addClass, removeClass, isNullOrUndefined as isNoU, Base, formatUnit, createInstance, detach
 } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { CardClickEventArgs, ActionEventArgs } from '../base/interface';
@@ -118,7 +118,11 @@ export class Action {
                 if (!clickArgs.cancel) {
                     if (target.classList.contains(cls.CARD_SELECTION_CLASS) && e.type === 'click') {
                         removeClass([target], cls.CARD_SELECTION_CLASS);
-                        this.parent.layoutModule.disableAttributeSelection(target);
+                        if (this.parent.enableVirtualization) {
+                            this.parent.virtualLayoutModule.disableAttributeSelection(target);
+                        } else {
+                            this.parent.layoutModule.disableAttributeSelection(target);
+                        }
                     } else {
                         let isCtrlKey: boolean = e.ctrlKey;
                         if (this.parent.isAdaptive && this.parent.touchModule) {
@@ -155,7 +159,7 @@ export class Action {
 
     public rowExpandCollapse(e: Event | HTMLElement, isFrozenElem?: HTMLElement): void {
         const headerTarget: HTMLElement = (e instanceof HTMLElement) ? e : e.target as HTMLElement;
-        const currentSwimlaneHeader: HTMLElement = !isNullOrUndefined(isFrozenElem) ? isFrozenElem : headerTarget;
+        const currentSwimlaneHeader: HTMLElement = !isNoU(isFrozenElem) ? isFrozenElem : headerTarget;
         const args: ActionEventArgs = { cancel: false, target: headerTarget, requestType: 'rowExpandCollapse' };
         this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
@@ -219,7 +223,11 @@ export class Action {
         if (target.classList.contains(cls.COLLAPSED_CLASS)) {
             removeClass(colGroup, cls.COLLAPSED_CLASS);
             if (this.parent.isAdaptive) {
-                colGroup.forEach((col: HTMLElement) => col.style.width = formatUnit(this.parent.layoutModule.getWidth()));
+                if (this.parent.enableVirtualization) {
+                    colGroup.forEach((col: HTMLElement) => col.style.width = formatUnit(this.parent.virtualLayoutModule.getWidth()));
+                } else {
+                    colGroup.forEach((col: HTMLElement) => col.style.width = formatUnit(this.parent.layoutModule.getWidth()));
+                }
             }
             classList(targetIcon, [cls.COLUMN_EXPAND_CLASS], [cls.COLUMN_COLLAPSE_CLASS]);
             for (const row of targetRow) {
@@ -250,8 +258,17 @@ export class Action {
             for (const row of targetRow) {
                 const targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}[data-key="${key}"]`);
                 const index: number = (targetCol as HTMLTableCellElement).cellIndex;
-                const text: string = (this.parent.columns[index as number].showItemCount ? '[' +
+                let text: string;
+                if (!this.parent.enableVirtualization) {
+                    text = (this.parent.columns[index as number].showItemCount ? '[' +
                     targetCol.querySelectorAll('.' + cls.CARD_CLASS).length + '] ' : '') + this.parent.columns[index as number].headerText;
+                } else {
+                    const value: number = this.parent.dataModule.isRemote() ?
+                        this.parent.columnDataCount[this.parent.columns[index as number].keyField]
+                        : this.parent.virtualLayoutModule.columnData[this.parent.columns[index as number].keyField].length;
+                    text = (this.parent.columns[index as number].showItemCount ? '[' +
+                    value + '] ' : '') + this.parent.columns[index as number].headerText;
+                }
                 targetCol.appendChild(createElement('div', { className: cls.COLLAPSE_HEADER_TEXT_CLASS, innerHTML: text }));
                 addClass([targetCol, target], cls.COLLAPSED_CLASS);
                 target.setAttribute('aria-expanded', 'false');
@@ -275,11 +292,15 @@ export class Action {
         const cards: HTMLElement[] = this.parent.getSelectedCards();
         if (this.parent.cardSettings.selectionType !== 'None') {
             const contentRow: HTMLTableRowElement = closest(target, '.' + cls.CONTENT_ROW_CLASS) as HTMLTableRowElement;
-            const index: number = !isNullOrUndefined(this.lastSelectionRow) ? this.lastSelectionRow.rowIndex : contentRow.rowIndex;
+            const index: number = !isNoU(this.lastSelectionRow) ? this.lastSelectionRow.rowIndex : contentRow.rowIndex;
             if (index !== contentRow.rowIndex && (isCtrl || isShift) && this.parent.cardSettings.selectionType === 'Multiple') { return; }
             if (cards.length !== 0 && (!isCtrl || this.parent.cardSettings.selectionType === 'Single')) {
                 removeClass(cards, cls.CARD_SELECTION_CLASS);
-                this.parent.layoutModule.disableAttributeSelection(cards);
+                if (this.parent.enableVirtualization) {
+                    this.parent.virtualLayoutModule.disableAttributeSelection(cards);
+                } else {
+                    this.parent.layoutModule.disableAttributeSelection(cards);
+                }
                 cards.forEach((el: Element) => {
                     this.selectionArray.splice(this.selectionArray.indexOf(el.getAttribute('data-id')), 1);
                     this.selectedCardsElement.splice(this.selectedCardsElement.indexOf(el), 1);

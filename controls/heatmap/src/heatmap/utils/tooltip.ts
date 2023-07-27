@@ -140,6 +140,12 @@ export class Tooltip {
         if (this.heatMap.theme === 'FluentDark') {
             this.heatMap.setProperties({ tooltipSettings : { fill : '#252423', textStyle : { size: '12px', fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif', fontWeight : '500', color : '#F3F2F1' }}}, true);
         }
+        if (this.heatMap.theme === 'Material3') {
+            this.heatMap.setProperties({ tooltipSettings : { fill : '#313033', textStyle : { size: '14px', fontFamily : 'Roboto', fontWeight : '400', color : '#F4EFF4' }}}, true);
+        }
+        if (this.heatMap.theme === 'Material3Dark') {
+            this.heatMap.setProperties({ tooltipSettings : { fill : '#E6E1E5', textStyle : { size: '14px', fontFamily : 'Roboto', fontWeight : '400', color : '#313033' }}}, true);
+        }
         this.tooltipObject = new tool(
             {
                 opacity: (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark' || this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark' || this.heatMap.theme === 'Fluent' || this.heatMap.theme === 'FluentDark') ? 1 : 0.75,

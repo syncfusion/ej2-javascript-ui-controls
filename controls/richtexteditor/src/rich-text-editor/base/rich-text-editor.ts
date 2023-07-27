@@ -22,8 +22,8 @@ import { ExecCommandCallBack } from '../actions/execute-command-callback';
 import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';
 import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';
-import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel , FormatPainterSettingsModel} from '../models/models';
-import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings } from '../models/toolbar-settings';
+import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel } from '../models/models';
+import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, EmojiSettings } from '../models/toolbar-settings';
 import { FileManagerSettings } from '../models/toolbar-settings';
 import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';
 import { FontColor, BackgroundColor } from '../models/toolbar-settings';
@@ -51,8 +51,8 @@ import { DialogRenderer } from '../renderer/dialog-renderer';
 import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
-import { EditorManager } from '../../editor-manager';
 import { FormatPainter } from '../actions/format-painter';
+import { EmojiPicker } from '../actions/emoji-picker';
 
 /**
  * Represents the Rich Text Editor component.
@@ -210,6 +210,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public formatPainterModule: FormatPainter;
+    /**
+     * @hidden
+     * @deprecated
+     */
+    public emojiPickerModule: EmojiPicker;
     public needsID: boolean;
     /**
      * Specifies the group of items aligned horizontally in the toolbar as well as defined the toolbar rendering type.
@@ -299,7 +304,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public pasteCleanupSettings: PasteCleanupSettingsModel;
     /**
      * Specifies the format painter options in Rich Text Editor with the following properties.
-     * * allowedContext - Sets the context or contexts in which styles will be copied.
      * * allowedFormats - Sets the tag name selectors  for elements from which the formats  can be copied.
      * * deniedFormats - Sets the selectors  for elements from which formats  cannot be copied.
      *
@@ -307,15 +311,21 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      *
      * @default
      * {
-     * allowedContext: ['Text', 'List', 'Table'],
-     * allowedFormats: 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; table; thead; tbody; tr; td; th; ol; ul; li; pre;',
+     * allowedFormats: 'b; em; font; sub; sup; kbd; i; s; u; code; strong; span; p; div; h1; h2; h3; h4; h5; h6; blockquote; ol; ul; li; pre;',
      * deniedFormats: null
      * }
-     * @aspignore
-     * @private
      */
     @Complex<FormatPainterSettingsModel>({}, FormatPainterSettings)
     public formatPainterSettings: FormatPainterSettingsModel
+    /**
+     * Specifies the emoji picker options in Rich Text Editor with the following properties.
+     * * iconsSet – Specify an array of items representing emoji icons.
+     * * showSearchBox -  Enables or disables the search box in an emoji picker.
+     *
+     *
+     */
+    @Complex<EmojiSettingsModel>({}, EmojiSettings)
+    public emojiPickerSettings : EmojiSettingsModel
     /**
      * Specifies the items to be rendered in an iframe mode, and it has the following properties.
      * * enable - Set Boolean value to enable, the editors content is placed in an iframe and isolated from the rest of the page.
@@ -867,9 +877,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * {% codeBlock src='rich-text-editor/value-template/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public valueTemplate: string;
+    public valueTemplate: string | Function;
 
     /**
      * Specifies the saveInterval in milliseconds for autosave the value.
@@ -1277,6 +1288,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 member: 'formatPainter',
                 args: [this ]
             });
+            modules.push({
+                member: 'emojiPicker',
+                args: [this, this.serviceLocator]
+            });
         }
         if (this.fileManagerSettings.enable) {
             modules.push(
@@ -1481,6 +1496,20 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         });
         return str;
+    }
+    /**
+     * Shows the emoji picker
+     *
+     * @param {number} x - specifies the number value.
+     * @param {number} y - specifies the number value.
+     * @returns {void}
+     * @public
+     */
+    public  showEmojiPicker(x?: number, y?: number): void {
+        if (this.readonly){
+            return ;
+        }
+        this.notify(events.emojiPicker, {x, y});
     }
     /**
      * Executes the commands
@@ -1726,7 +1755,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.valueContainer.defaultValue = this.value;
         }
         // eslint-disable-next-line
-        (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
+        (this.enabled && !this.readonly) ? this.eventInitializer() : this.unWireEvents();
         this.notify(events.bindCssClass, {cssClass: this.cssClass});
         this.addAudioVideoWrapper();
         this.notify(events.tableclass, {});
@@ -1814,6 +1843,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const currentEndContainer: Node = range.endContainer;
         const currentStartOffset: number = range.startOffset;
         const isSameContainer: boolean = currentStartContainer === currentEndContainer ? true : false;
+        // eslint-disable-next-line
         const currentEndOffset: number = currentEndContainer.textContent.length;
         const endNode: Element = range.endContainer.nodeName === '#text' ? range.endContainer.parentElement :
             range.endContainer as Element;
@@ -1901,11 +1931,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.contentModule.getDocument(), range.startContainer as Element, range.startOffset);
             }
         }
-        if (this.formatter.getUndoRedoStack().length === 0) {
+        const notFormatPainterCopy: boolean = !isNOU((e as KeyboardEventArgs).action) && (e as KeyboardEventArgs).action !== 'format-copy';
+        if (this.formatter.getUndoRedoStack().length === 0 && notFormatPainterCopy) {
             this.formatter.saveData();
         }
         if ((e as KeyboardEventArgs).action !== 'insert-link' &&
         (e as KeyboardEventArgs).action !== 'format-copy' && (e as KeyboardEventArgs).action !== 'format-paste' &&
+        (!(e as KeyboardEvent).target || !((e as KeyboardEvent).target as Element).classList.contains('e-mention')) &&
         ((e as KeyboardEventArgs).action && (e as KeyboardEventArgs).action !== 'paste' && (e as KeyboardEventArgs).action !== 'space'
         || e.which === 9 || (e.code === 'Backspace' && e.which === 8))) {
             let FormatPainterEscapeAction: boolean = false;
@@ -1931,8 +1963,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.placeholder)) {
             if ((!isNOU(this.placeHolderWrapper)) && (this.inputElement.textContent.length !== 1)) {
                 this.placeHolderWrapper.style.display = 'none';
-            } else if (this.iframeSettings.enable && this.inputElement.classList.contains("e-rte-placeholder")) {
-                removeClass([this.inputElement], "e-rte-placeholder");
+            } else if (this.iframeSettings.enable && this.inputElement.classList.contains('e-rte-placeholder')) {
+                removeClass([this.inputElement], 'e-rte-placeholder');
             } else {
                 this.setPlaceHolder();
             }
@@ -1964,7 +1996,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.inputElement.innerHTML = getEditValue(getDefaultValue(this), this);
         }
         const allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
-        if (((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
+        const formatPainterCopy: boolean = e.key === 'C' && e.altKey && e.shiftKey;
+        const formatPainterPaste: boolean = e.key === 'V' && e.altKey && e.shiftKey;
+        if ((!formatPainterCopy && !formatPainterPaste) && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
             && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
             this.formatter.onKeyHandler(this, e);
         }
@@ -2065,7 +2099,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notifyMouseUp(e);
         if (e.detail === 3) {
             const range: Range = this.getRange();
-            const selection: Selection = (this.formatter.editorManager as EditorManager).domNode.getSelection();
+            const selection: Selection = this.formatter.editorManager.domNode.getSelection();
             if (/\s+$/.test(selection.toString())) {
                 if (!isNOU(range.startContainer.parentElement) && (!isNOU(range.startContainer.parentElement.nextSibling) &&
                 (range.startContainer.parentElement.nextSibling.nodeType !== 3 ||
@@ -2507,6 +2541,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
                 this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
                 break;
+            case 'formatPainterSettings':
+                this.formatter.editorManager.observer.notify(CONSTANT.MODEL_CHANGED,{ module: 'formatPainter', newProp: newProp });
+                break;
             default:
                 this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
                 break;
@@ -2624,16 +2661,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.inputElement.setAttribute('placeholder', this.placeholder);
             }
         }
-        if(this.placeholder && this.iframeSettings.enable)
+        if (this.placeholder && this.iframeSettings.enable)
         {
             if ( this.inputElement.textContent.length === 0 && this.inputElement.childNodes.length < 2 && !isNOU(this.inputElement.firstChild) && (this.inputElement.firstChild.nodeName === 'BR' ||
                 ((this.inputElement.firstChild.nodeName === 'P' || this.inputElement.firstChild.nodeName === 'DIV') && !isNOU(this.inputElement.firstChild.firstChild) &&
-                this.inputElement.firstChild.firstChild.nodeName === 'BR'))){
-                addClass([this.inputElement],"e-rte-placeholder");
+                this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
+                addClass([this.inputElement], 'e-rte-placeholder');
                 this.inputElement.setAttribute('placeholder', this.placeholder);
             } else {
-                removeClass([this.inputElement], "e-rte-placeholder");
-            }      
+                removeClass([this.inputElement], 'e-rte-placeholder');
+            }
         }
     }
 
@@ -2864,7 +2901,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private setValue(isPropertyChange?: boolean): void {
         if (this.valueTemplate) {
             const regEx: RegExp = new RegExp(/<(?=.*? .*?\/ ?>|br|hr|input|!--|wbr)[a-z]+.*?>|<([a-z]+).*?<\/\1>/i);
-            if (regEx.test(this.valueTemplate)) {
+            if (typeof this.valueTemplate === 'string' && regEx.test(this.valueTemplate)) {
                 this.setProperties({ value: this.valueTemplate });
             } else {
                 const compiledTemplate: NodeList = compile(this.valueTemplate)('', this, 'valueTemplate');
@@ -3366,7 +3403,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             if (!isNOU(this.placeHolderWrapper) && this.element.querySelector('[title = Preview]'))
             {
-                this.placeHolderWrapper.style.display = "none";
+                this.placeHolderWrapper.style.display = 'none';
             }
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         } else {
@@ -3424,7 +3461,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.add(element, 'scroll', this.scrollHandler, this);
         }
         if (!this.iframeSettings.enable) {
-            EventHandler.add(this.contentModule.getPanel(), 'scroll', this.contentScrollHandler, this);
+            // Add the scroll event handler from the inputElement
+            EventHandler.add(this.inputElement, 'scroll', this.contentScrollHandler, this);
         }
     }
 
@@ -3455,7 +3493,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(element, 'scroll', this.scrollHandler);
         }
         if (!this.iframeSettings.enable) {
-            EventHandler.remove(this.contentModule.getPanel(), 'scroll', this.contentScrollHandler);
+            // Remove the scroll event handler from the inputElement
+            EventHandler.remove(this.inputElement, 'scroll', this.contentScrollHandler);
         }
     }
 
@@ -3501,7 +3540,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private setAutoHeight(element: HTMLElement): void {
         if (!isNOU(element)) {
-            element.style.height = '';
             element.style.height = this.inputElement.scrollHeight + 'px';
             element.style.overflow = 'hidden';
         }

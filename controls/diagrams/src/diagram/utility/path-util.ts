@@ -196,12 +196,12 @@ export function getPolygonPath(collection: PointModel[]): string {
  * @param { PointModel[] } collection - provide the data  value.
  * @private
  */
- export function getFreeHandPath(collection:any): string {
-    var k:number;
-    for(k=0;k<collection.length;k++)
+export function getFreeHandPath(collection: any): string {
+    var k: number;
+    for (k = 0; k < collection.length; k++)
     {
-        collection[parseInt(k.toString(), 10)].x = Math.round(collection[parseInt(k.toString(), 10)].x)
-        collection[parseInt(k.toString(), 10)].y = Math.round(collection[parseInt(k.toString(), 10)].y)
+        collection[parseInt(k.toString(), 10)].x = Math.round(collection[parseInt(k.toString(), 10)].x);
+        collection[parseInt(k.toString(), 10)].y = Math.round(collection[parseInt(k.toString(), 10)].y);
     }
     let path: string = '';
     let seg: PointModel;

@@ -187,7 +187,9 @@ export class ScrollBar {
         this.component.trigger(scrollStart, this.getArgs(scrollStart));
         if (this.isExist(id, 'scrollBarThumb_') || this.isExist(id, 'gripCircle')) {
             this.isThumbDrag = true;
-            (this.svgObject as HTMLElement).style.cursor = '-webkit-grabbing';
+            if (this.axis.scrollbarSettings.height >= 12) {
+                (this.svgObject as HTMLElement).style.cursor = '-webkit-grabbing';
+            }
         } else if (this.isExist(id, 'scrollBarBackRect_')) {
             const currentX: number = this.moveLength(this.previousXY, this.previousRectX);
             elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
@@ -232,7 +234,7 @@ export class ScrollBar {
      */
 
     private isWithIn(currentX: number): boolean {
-        const circleRadius: number = 8;
+        const circleRadius: number = this.axis.scrollbarSettings.height / 2;
         return (currentX - circleRadius >= 0 &&
             currentX + this.scrollElements.thumbRectWidth + circleRadius <= this.width);
     }
@@ -245,7 +247,7 @@ export class ScrollBar {
      * @param circleRadius
      */
 
-    private moveLength(mouseXY: number, thumbX: number, circleRadius: number = 8): number {
+    private moveLength(mouseXY: number, thumbX: number, circleRadius: number = this.axis.scrollbarSettings.height / 2): number {
         let moveLength: number = (10 / 100) * (this.width - circleRadius * 2);
         if (mouseXY < thumbX) {
             moveLength = thumbX - (thumbX - moveLength > circleRadius ? moveLength : circleRadius);
@@ -265,7 +267,7 @@ export class ScrollBar {
     private setZoomFactorPosition(currentX: number, currentWidth: number, isRequire: boolean = true): void {
         this.isScrollUI = true;
         const axis: Axis = this.axis;
-        const circleRadius: number = 8;
+        const circleRadius: number = this.axis.scrollbarSettings.height / 2;
         const circleWidth: number = 1;
         const currentScrollWidth: number = currentX + currentWidth + circleRadius + circleWidth;
         const currentZPWidth: number = circleRadius + (circleWidth / 2);
@@ -312,7 +314,9 @@ export class ScrollBar {
             if ( mouseXY >= currentX + elem.thumbRectWidth) {
                 this.setCursor(target);
             } else {
-                (this.svgObject as HTMLElement).style.cursor = '-webkit-grabbing';
+                if (this.axis.scrollbarSettings.height >= 12) {
+                    (this.svgObject as HTMLElement).style.cursor = '-webkit-grabbing';
+                }
             }
             if (mouseXY >= 0 && mouseXY <= currentX + elem.thumbRectWidth) {
                 elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
@@ -383,7 +387,7 @@ export class ScrollBar {
     public scrollMouseUp(): void {
         let args: IScrollEventArgs;
         this.startX = this.scrollElements.thumbRectX;
-        const circleRadius: number = 8;
+        const circleRadius: number = this.axis.scrollbarSettings.height / 2;
         const circleWidth: number = 1;
         const currentScrollWidth: number = this.startX + this.scrollElements.thumbRectWidth + circleRadius + circleWidth;
         const currentZPWidth: number = circleRadius + (circleWidth / 2);
@@ -444,7 +448,7 @@ export class ScrollBar {
         let args: IScrollEventArgs;
         const range: VisibleRangeModel = this.scrollRange;
         const previousRange: ScrollbarSettingsRangeModel = this.getStartEnd(this.previousStart, this.previousEnd, false);
-        const circleRadius: number = 8;
+        const circleRadius: number = this.axis.scrollbarSettings.height / 2;
         if ((scrollThumbX + scrollThumbWidth + circleRadius) <= this.width) {
             zoomPosition = (scrollThumbX - circleRadius) / this.width;
             zoomFactor = scrollThumbWidth / (this.width);
@@ -482,11 +486,11 @@ export class ScrollBar {
         let args: IScrollEventArgs;
         const range: VisibleRangeModel = this.scrollRange;
         const previousRange: ScrollbarSettingsRangeModel = this.getStartEnd(this.previousStart, this.previousEnd, false);
-        const circleRadius: number = 8;
+        const circleRadius: number = this.axis.scrollbarSettings.height / 2;
         const circleWidth: number = 16;
         if (this.isResizeRight || thumbMove === 'RightMove') {
             currentScrollWidth = this.isResizeRight ? currentScrollWidth + circleWidth : currentScrollWidth;
-            zoomFactor = (currentScrollWidth + circleRadius) / this.width;
+            zoomFactor = (currentScrollWidth) / this.width;
             zoomPosition = thumbMove === 'RightMove' ? (scrollThumbX + circleRadius) / this.width : this.axis.zoomPosition;
             currentStart = thumbMove === 'RightMove' ? (range.min + zoomPosition * range.delta) : this.previousStart;
             currentEnd = currentStart + zoomFactor * range.delta;
@@ -599,7 +603,7 @@ export class ScrollBar {
 
     private setCursor(target: Element): void {
         const id: string = target.id;
-        (this.svgObject as HTMLElement).style.cursor = id.indexOf('scrollBarThumb_') > -1 || id.indexOf('_gripCircle') > -1 ?
+        (this.svgObject as HTMLElement).style.cursor = ((id.indexOf('scrollBarThumb_') > -1 || id.indexOf('_gripCircle') > -1) && this.axis.scrollbarSettings.height >= 12) ?
             '-webkit-grab' : (id.indexOf('Circle_') > -1 || id.indexOf('Arrow_') > -1) ? this.isVertical ? 'ns-resize' :
                 'ew-resize' : 'auto';
     }
@@ -650,7 +654,7 @@ export class ScrollBar {
 
     private resizeThumb(): void {
         let currentWidth: number;
-        const circleRadius: number = 8;
+        const circleRadius: number = this.axis.scrollbarSettings.height / 2;
         const padding: number = 5;
         const gripWidth: number = 14;
         const minThumbWidth: number = circleRadius * 2 + padding * 2 + gripWidth;
@@ -698,14 +702,14 @@ export class ScrollBar {
         const gripWidth: number = 14;
         const gripCircleDiameter: number = 2;
         const padding: number = gripWidth / 2 - gripCircleDiameter;
-        elem.slider.setAttribute('x', currentX.toString());
-        elem.slider.setAttribute('width', currentWidth.toString());
+        elem.slider.setAttribute('x',  this.axis.scrollbarSettings.enableZoom ? currentX.toString() : (currentX - this.axis.scrollbarSettings.height / 2).toString());
+        elem.slider.setAttribute('width', this.axis.scrollbarSettings.enableZoom ? currentWidth.toString() : (currentWidth + this.axis.scrollbarSettings.height).toString());
         elem.leftCircleEle.setAttribute('cx', currentX.toString());
         elem.rightCircleEle.setAttribute('cx', (currentX + currentWidth).toString());
         elem.setArrowDirection(currentX, currentWidth, this.height);
         elem.gripCircle.setAttribute(
             'transform', 'translate(' + (currentX + currentWidth / 2 + ((this.isVertical ? 1 : -1) * padding)) +
-            ',' + (this.isVertical ? '10' : '5') + ') rotate(' + (this.isVertical ? '180' : '0') + ')'
+            ',' + (this.isVertical ? (this.axis.scrollbarSettings.height / 2 + padding / 2) - 0.5 : (this.axis.scrollbarSettings.height / 2 - padding / 2) - 0.5) + ') rotate(' + (this.isVertical ? '180' : '0') + ')'
         );
     }
     /**
@@ -716,7 +720,7 @@ export class ScrollBar {
 
     private getDefaults(): void {
         const axis: Axis = this.axis;
-        const circleRadius: number = 8;
+        const circleRadius: number = this.axis.scrollbarSettings.height / 2;
         const padding: number = 5;
         const gripWidth: number = 14;
         const minThumbWidth: number = circleRadius * 2 + padding * 2 + gripWidth;
@@ -732,11 +736,11 @@ export class ScrollBar {
         this.scrollX = axis.rect.x;
         this.scrollY = axis.rect.y;
         this.width = this.isVertical ? axis.rect.height : axis.rect.width;
-        this.height = 16;
+        this.height = this.axis.scrollbarSettings.height;
         const currentX: number = this.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
         const minThumbX: number = (this.width - minThumbWidth - circleRadius);
         this.scrollElements.thumbRectX = currentX > minThumbX ? minThumbX : currentX < circleRadius ? circleRadius : currentX;
-        this.scrollElements.thumbRectWidth = ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
+        this.scrollElements.thumbRectWidth = this.isThumbDrag ? this.scrollElements.thumbRectWidth : ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
             ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;
     }
 

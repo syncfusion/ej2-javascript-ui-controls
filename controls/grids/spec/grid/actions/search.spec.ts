@@ -422,4 +422,49 @@ describe('Search module=>', () => {
             gridObj = actionComplete = null;
         });
     });
+
+    describe('EJ2-71340 - Boolean value(false) search is not working properly for Data Grid => ', () => {
+        let gridObj: Grid;
+        let actionComplete: (args?: Object) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    toolbar: ['Search'],
+                    columns: [
+                        {
+                            field: 'OrderID',
+                            headerText: 'OrderID',
+                            width: 140,
+                        },
+                        {
+                            field: 'CustomerID',
+                            headerText: 'Customer Name',
+                            width: 140,
+                        },
+                        {
+                            field: 'Verified',
+                            headerText: 'Verified', 
+                            width: 150,
+                            displayAsCheckBox: true, 
+                            type: 'boolean'
+                        },
+                    ],
+                    height: 350,
+                    actionComplete: actionComplete,
+                }, done);
+        });
+        it('Search boolean value(false)', (done: Function) => {
+            actionComplete = (args: any): void => {
+                expect(gridObj.currentViewData.length).toBe(1);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;            
+            gridObj.searchModule.search('false');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

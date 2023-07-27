@@ -11,7 +11,7 @@ import { Axis } from '../axis/axis';
 import { StripLineSettingsModel } from '../model/chart-base-model';
 import {
     valueToCoefficient, textElement, RectOption,
-    appendChildElement, appendClipElement, withIn, getElement
+    appendChildElement, appendClipElement, withIn, getElement, ImageOption
 } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { ZIndex, Anchor, SizeType } from '../utils/enum';
@@ -97,6 +97,7 @@ export class StripLine {
         start: number, end: number, size: number, startFromAxis: boolean, axis: Axis,
         stripline: StripLineSettingsModel): { from: number, to: number } {
         let from: number = (!stripline.isRepeat && startFromAxis) ? axis.visibleRange.min : start;
+        if (axis.valueType === 'Double' && size !== null && !startFromAxis && stripline.start == null) { from += size; }
         let to: number = this.getToValue(Math.max(start, isNullOrUndefined(end) ? start : end), from, size, axis, end, stripline);
         from = this.findValue(from, axis); to = this.findValue(to, axis);
         return { from: valueToCoefficient(axis.isAxisInverse ? to : from, axis), to: valueToCoefficient(axis.isAxisInverse ? from : to, axis) };
@@ -185,9 +186,9 @@ export class StripLine {
         const options: RectOption = new RectOption(
             id + 'ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1,
             {
-                x: chart.initialClipRect.x, y: chart.initialClipRect.y,
-                width: chart.initialClipRect.width,
-                height: chart.initialClipRect.height
+                x: seriesClipRect.x, y: seriesClipRect.y,
+                width: seriesClipRect.width,
+                height: seriesClipRect.height
             }
         );
         const striplineGroup: Element = chart.renderer.createGroup({
@@ -273,13 +274,21 @@ export class StripLine {
     ): void {
         const element: Element = getElement(id);
         const direction: string = element ? element.getAttribute('d') : '';
-        const d: string = (axis.orientation === 'Vertical') ? ('M ' + rect.x + ' ' + rect.y + ' ' + 'L ' + (rect.x + rect.width)
+        let strokeWidth: number = stripline.size;
+        let d: string = (axis.orientation === 'Vertical') ? ('M ' + rect.x + ' ' + rect.y + ' ' + 'L ' + (rect.x + rect.width)
             + ' ' + rect.y) :
             ('M ' + rect.x + ' ' + rect.y + ' ' + 'L ' + rect.x + ' ' + (rect.y + rect.height));
+
+        if (stripline.sizeType !== 'Pixel') {
+            d = (axis.orientation === 'Vertical') ? ('M ' + rect.x + ' ' + (rect.y + (rect.height / 2)) + ' ' + 'L ' + (rect.x + rect.width)
+                + ' ' + (rect.y + (rect.height / 2))) :
+                ('M ' + (rect.x + (rect.width / 2)) + ' ' + rect.y + ' ' + 'L ' + (rect.x + (rect.width / 2)) + ' ' + (rect.y + rect.height));
+            strokeWidth = axis.orientation === 'Vertical' ? rect.height : rect.width;
+        }
         appendChildElement(
             chart.enableCanvas, parent, chart.renderer.drawPath(
                 new PathOption(
-                    id, 'none', stripline.size, stripline.color, stripline.opacity, stripline.dashArray, d
+                    id, 'none', strokeWidth, stripline.color, stripline.opacity, stripline.dashArray, d
                 )
             ),
             chart.redraw, true, 'x', 'y', null, direction, true
@@ -305,13 +314,33 @@ export class StripLine {
         appendChildElement(
             chart.enableCanvas, parent, chart.renderer.drawRectangle(
                 new RectOption(
-                    id, stripline.color, stripline.border, stripline.opacity,
-                    rect, 0, 0, '', stripline.dashArray
+                    id, 'none', stripline.border, stripline.opacity,
+                    rect, 0, 0, '', null
                 )
             ),
             chart.redraw, true, 'x', 'y', null, null, true, true, previousRect
         );
     }
+
+    /**
+     * To draw the Image
+     *
+     * @param {StripLineSettingsModel} stripline stripline
+     * @param {Rect} rect rect
+     * @param {string} id id
+     * @param {Element} parent parent
+     * @param {Chart} chart chart
+     */
+    private drawImage(stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart): void {
+        if (stripline.sizeType === 'Pixel') {
+            rect.width = rect.width ? rect.width : stripline.size;
+            rect.height = rect.height ? rect.height : stripline.size;
+        }
+        const image: ImageOption = new ImageOption(rect.height, rect.width, stripline.imageUrl, rect.x, rect.y, id, 'visible', 'none');
+        let htmlObject: HTMLElement = chart.renderer.drawImage(image) as HTMLElement;
+        appendChildElement(chart.enableCanvas, parent, htmlObject, chart.redraw, true, 'x', 'y', null, null, true, true);
+    }
+
     /**
      * To create the text on strip line
      *
@@ -325,7 +354,7 @@ export class StripLine {
     private renderText(
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart, axis: Axis
     ): void {
-        const textSize: Size = measureText(stripline.text, stripline.textStyle);
+        const textSize: Size = measureText(stripline.text, stripline.textStyle, chart.themeStyle.stripLineLabelFont);
         const isRotationNull: boolean = (stripline.rotation === null);
         const textMid: number = isRotationNull ? 3 * (textSize.height / 8) : 0;
         let ty: number = rect.y + (rect.height / 2) + textMid;
@@ -341,7 +370,7 @@ export class StripLine {
             ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment) +
                 (stripline.verticalAlignment === 'Start' && !isRotationNull ? (textSize.height / 4) : 0);
             anchor = isRotationNull ? this.invertAlignment(stripline.verticalAlignment) : stripline.horizontalAlignment;
-
+            anchor = tx - textSize.width / 2 < axis.rect.x ? 'Start' : tx + textSize.width / 2 > axis.rect.width ? 'End' : anchor;
         } else {
             tx = this.getTextStart(tx, rect.width, stripline.horizontalAlignment);
             ty = this.getTextStart(
@@ -353,7 +382,7 @@ export class StripLine {
         textElement(
             chart.renderer,
             new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'),
-            stripline.textStyle, stripline.textStyle.color, parent, null, null, null, null, null, null, null, null, chart.enableCanvas
+            stripline.textStyle, stripline.textStyle.color || chart.themeStyle.stripLineLabelFont.color, parent, null, null, null, null, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.stripLineLabelFont
         );
     }
     private invertAlignment(anchor: Anchor): Anchor {
@@ -426,12 +455,13 @@ export class StripLine {
         startValue: number, segmentAxis: Axis, count: number
     ): void {
         const rect: Rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis, chart);
-        if (stripline.sizeType === 'Pixel') {
-            this.renderPath(stripline, rect, id + 'path_' + axis.name + '_' + count, striplineGroup, chart, axis);
+        if (stripline.imageUrl) {
+            this.drawImage(stripline, rect, id + 'rect_' + axis.name + '_' + count, striplineGroup, chart);
         } else {
-            if (rect.height !== 0 && rect.width !== 0) {
-                this.renderRectangle(stripline, rect, id + 'rect_' + axis.name + '_' + count, striplineGroup, chart);
-            }
+            this.renderPath(stripline, rect, id + (stripline.sizeType === 'Pixel' ? 'path_' : 'rect_') + axis.name + '_' + count, striplineGroup, chart, axis);
+            const pixelRect: Rect = new Rect(axis.orientation === 'Horizontal' ? (rect.x - stripline.size / 2) : rect.x, axis.orientation === 'Vertical' ? (rect.y - stripline.size / 2) : rect.y,
+                                             rect.width ? rect.width : stripline.size, rect.height ? rect.height : stripline.size);
+            this.renderRectangle(stripline, stripline.sizeType === 'Pixel' ? pixelRect : rect, id + 'border_' + axis.name + '_' + count, striplineGroup, chart);
         }
         if (stripline.text !== '') {
             this.renderText(stripline, rect, id + 'text_' + axis.name + '_' + count, striplineGroup, chart, axis);

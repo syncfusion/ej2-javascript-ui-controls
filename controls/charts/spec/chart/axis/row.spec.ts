@@ -75,16 +75,16 @@ describe('Chart Control', () => {
 
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_1');
-                expect(svg.getAttribute('y') == '162.5625' || svg.getAttribute('y') == '163.8125').toBe(true);
+                expect(svg.getAttribute('y') == '162.5625' || svg.getAttribute('y') == '163.3125').toBe(true);
                 svg = document.getElementById('chartContainer1_AxisLabel_0');
-                expect(svg.getAttribute('y') == '292').toBe(true);
+                expect(svg.getAttribute('y') == '293').toBe(true);
                 expect(svg.getAttribute('x') == '40').toBe(true);
 
                 svg = document.getElementById('chartContainer_AxisTitle_2');
-                expect(svg.getAttribute('y') == '413.1875' || svg.getAttribute('y') == '410.9375' || svg.getAttribute('y') == '292').toBe(true);
+                expect(svg.getAttribute('y') == '413.4375' || svg.getAttribute('y') == '410.9375' || svg.getAttribute('y') == '292').toBe(true);
 
                 svg = document.getElementById('chartContainer2_AxisLabel_3');
-                expect(svg.getAttribute('y') == '292').toBe(true);
+                expect(svg.getAttribute('y') == '293').toBe(true);
                 expect(svg.getAttribute('x') == '43').toBe(true);
                 done();
             };
@@ -471,11 +471,12 @@ describe('Chart Control', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) + 50);
                 let yValue: number = chartObj.visibleSeries[1].points[6].yValue;
-                expect(yValue == 29.06 || yValue == 29.16).toBe(true);
+                expect(yValue == 29.06 || yValue == 29.21).toBe(true);
                 chartObj.loaded = null;
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series[1].marker.shape = 'Circle';
             chartObj.refresh();
         });
     });
@@ -565,13 +566,13 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_1');
                 expect(svg.getAttribute('y') == '336.4475' || svg.getAttribute('y') == '340.9525').toBe(true);
-                expect(svg.getAttribute('x') == '74.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
+                expect(svg.getAttribute('x') == '68.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
                 svg = document.getElementById('chartContainer_AxisTitle_2');
-                expect(svg.getAttribute('y') == '195.34249999999997' || svg.getAttribute('y') == '216.85749999999996').toBe(true);
-                expect(svg.getAttribute('x') == '74.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
+                expect(svg.getAttribute('y') == '200.85749999999996' || svg.getAttribute('y') == '216.85749999999996').toBe(true);
+                expect(svg.getAttribute('x') == '68.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
                 svg = document.getElementById('chartContainer_AxisTitle_3');
-                expect(svg.getAttribute('y') == '58.144999999999996' || svg.getAttribute('y') == '60.65499999999999').toBe(true);
-                expect(svg.getAttribute('x') == '74.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
+                expect(svg.getAttribute('y') == '60.65499999999999' || svg.getAttribute('y') == '60.65499999999999').toBe(true);
+                expect(svg.getAttribute('x') == '68.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
                 done();
             };
             chartElem.loaded = loaded;

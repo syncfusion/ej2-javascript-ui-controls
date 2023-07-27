@@ -77,9 +77,9 @@ Smithchart.Inject(TooltipRender);
         it('tooltip template checking with mouse move', (done: Function) => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_series0_points');
-                trigger.mousemoveEvent(element, 0, 0, 156, 250);
+                trigger.mousemoveEvent(element, 0, 0, 50, 255);
                 element = document.getElementById(id + '_smithchart_tooltip_divparent_template');
-                expect(element.firstChild.textContent).toBe('0.1');
+                expect(element.firstChild.textContent).toBe('0.05');
                 trigger.mousemoveEvent(element, 0, 0, 35, 255);
                 done();
             };

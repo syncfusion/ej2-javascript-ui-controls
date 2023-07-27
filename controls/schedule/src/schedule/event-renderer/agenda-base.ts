@@ -300,6 +300,7 @@ export class AgendaBase extends ViewBase {
                         className.push(data.cssClass);
                     }
                     addClass([ntd], className);
+                    if (this.isCurrentDate(new Date( data.date.getTime()))) { addClass(ntd.childNodes, cls.AGENDA_CURRENT_DAY_CLASS); }
                     ntr.appendChild(ntd);
                 } else if (data.type === 'eventColumn') {
                     const elementType: string = (data.eventData.length === 0) ? 'noEvents' : 'data';

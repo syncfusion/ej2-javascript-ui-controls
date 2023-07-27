@@ -123,6 +123,7 @@ export class PagerDropDown {
             } else {
                 this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerDropDown');
             }
+            this.pagerDropDownDiv.classList.remove('e-hide');
         }
     }
 
@@ -154,7 +155,9 @@ export class PagerDropDown {
 
     public setDropDownValue(prop: string, value: string | number): void {
         if (this.dropDownListObject) {
+            const isbeforeAll: boolean = this.pagerModule.isAllPage;
             this.pagerModule.isAllPage = this.isPageSizeAll(value);
+            this.pagerModule.checkAll = (isbeforeAll && this.pagerModule.isAllPage) ? true : false;
             this.dropDownListObject[`${prop}`] = this.pagerModule.isAllPage ? this.pagerModule.getLocalizedLabel('All') : value;
         }
     }

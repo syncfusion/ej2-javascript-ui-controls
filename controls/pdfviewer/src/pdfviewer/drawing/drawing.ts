@@ -1166,6 +1166,16 @@ export class Drawing {
         return canvas as SVGSVGElement;
     }
 
+    private shownBorder(): boolean {
+        let annotation: any = this.pdfViewer.selectedItems.annotations[0];
+        let allowedInteraction: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        let isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
+        if(allowedInteraction[0] === 'Select' || !isLock)
+            return true
+        else
+            return false
+    }
+
     /**
      * @private
      * @param {DrawingElement} selector - Specified the annotation selector object.
@@ -1259,9 +1269,12 @@ export class Drawing {
                 this.getBorderSelector(shapeType, options);
             }
         }
-        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector') as SVGSVGElement;
-        // eslint-disable-next-line max-len
-        this.svgRenderer.drawRectangle(canvas as SVGElement, options as RectAttributes, this.pdfViewer.element.id, undefined, true, parentSvg);
+        let checkBorder: boolean = this.shownBorder();
+        if(checkBorder){
+            const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector') as SVGSVGElement;
+            // eslint-disable-next-line max-len
+            this.svgRenderer.drawRectangle(canvas as SVGElement, options as RectAttributes, this.pdfViewer.element.id, undefined, true, parentSvg);
+        }
     }
     /**
      * @private
@@ -1772,7 +1785,9 @@ export class Drawing {
         options.visible = true;
         options.class = 'e-diagram-rotate-handle';
         options.id = 'rotateThumb';
-        this.svgRenderer.drawCircle(canvas as SVGElement, options, ThumbsConstraints.Rotate, { 'aria-label': 'Thumb to rotate the selected object' });
+        let checkBorder: boolean = this.shownBorder();
+        if(checkBorder)
+            this.svgRenderer.drawCircle(canvas as SVGElement, options, ThumbsConstraints.Rotate, { 'aria-label': 'Thumb to rotate the selected object' });
         let circleHandle = canvas.querySelector('#' + options.id);
         if (circleHandle) {
             circleHandle.setAttribute('role', 'separator');
@@ -1828,6 +1843,9 @@ export class Drawing {
             const isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
             if ((isLock || annotation.annotationSettings.isLock) && this.getAllowedInteractions(allowedInteraction)) {
                 allowPermission = true;
+            }
+            if(allowedInteraction[0] === 'Select'){
+                allowPermission = false;
             }
         }
         let resizerLocation: AnnotationResizerLocation = this.getResizerLocation(shapeType, currentSelector);
@@ -2027,7 +2045,9 @@ export class Drawing {
         const endPoint: PointModel = { x: wrapper.actualSize.width * wrapper.pivot.x * scale, y: 0 };
         (options as LineAttributes).startPoint = startPoint;
         (options as LineAttributes).endPoint = endPoint;
-        this.svgRenderer.drawLine(canvas as SVGElement, options as LineAttributes);
+        let checkBorder: boolean = this.shownBorder();
+        if(checkBorder)
+            this.svgRenderer.drawLine(canvas as SVGElement, options as LineAttributes);
     }
 
     /**
@@ -2050,11 +2070,14 @@ export class Drawing {
         const sourcePoint: PointModel = selector.sourcePoint;
         const targetPoint: PointModel = selector.targetPoint;
         const wrapper: DrawingElement = selector.wrapper; let i: number;
-        for (i = 0; i < selector.vertexPoints.length; i++) {
-            const segment: PointModel = selector.vertexPoints[parseInt(i.toString(), 10)];
-            this.renderCircularHandle(
-                ('segementThumb_' + (i + 1)), wrapper, segment.x, segment.y, canvas, true,
-                constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, currentSelector);
+        let checkBorder: boolean = this.shownBorder();
+        if (checkBorder) {
+            for (i = 0; i < selector.vertexPoints.length; i++) {
+                const segment: PointModel = selector.vertexPoints[parseInt(i.toString(), 10)];
+                this.renderCircularHandle(
+                    ('segementThumb_' + (i + 1)), wrapper, segment.x, segment.y, canvas, true,
+                    constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, currentSelector);
+            }
         }
         let leaderCount: number = 0;
         if (selector.shapeAnnotationType === 'Distance') {
@@ -2073,8 +2096,10 @@ export class Drawing {
                     }
                     const matrix: Matrix = identityMatrix();
                     rotateMatrix(matrix, angle, center.x, center.y);
-                    const rotatedPoint: PointModel = transformPointByMatrix(matrix, { x: newPoint1.x, y: newPoint1.y });
-                    this.renderCircularHandle(('leaderThumb_' + (i + 1)), wrapper, rotatedPoint.x, rotatedPoint.y, canvas, true, constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, currentSelector);
+                    if (checkBorder) {
+                        const rotatedPoint: PointModel = transformPointByMatrix(matrix, { x: newPoint1.x, y: newPoint1.y });
+                        this.renderCircularHandle(('leaderThumb_' + (i + 1)), wrapper, rotatedPoint.x, rotatedPoint.y, canvas, true, constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, currentSelector);
+                    }
                     leaderCount++;
                 }
             }
@@ -2113,18 +2138,20 @@ export class Drawing {
                     // eslint-disable-next-line
                     let annotationSettings: any;
                     if (obj.annotationSettings) {
-                        annotationSettings = obj.annotationSettings;
-                        annotationSettings.isLock = JSON.parse(annotationSettings.isLock);
+                        if (!isNullOrUndefined(annotationSettings) && !isNullOrUndefined(annotationSettings.isLock)) {
+                            annotationSettings.isLock = JSON.parse(annotationSettings.isLock);
+                        }
                     } else if (!obj.formFieldAnnotationType) {
                         annotationSettings = this.pdfViewer.annotationModule.findAnnotationSettings(obj, true);
                         obj.annotationSettings = annotationSettings;
                     }
-                    let isLock: boolean = !obj.formFieldAnnotationType ? annotationSettings.isLock : false;
+                    let isLock: boolean = !obj.formFieldAnnotationType ? (annotationSettings ? annotationSettings.isLock : false) : false;
                     if (annotationSettings && annotationSettings.isLock && this.pdfViewer.annotationModule.checkAllowedInteractions('Select', obj)) {
                         isLock = false;
                     }
-                    if (!isLock) {
-                        selectorModel.annotations.push(obj);
+                    selectorModel.annotations.push(obj);
+                    let checkBorder: boolean = this.shownBorder();
+                    if (checkBorder) {
                         this.initSelectorWrapper();
                         selectorModel.wrapper.rotateAngle = selectorModel.rotateAngle = 0;
                         selectorModel.wrapper.children.push(obj.wrapper);
@@ -3309,7 +3336,11 @@ export class Drawing {
      */
 
     public copy(): Object {
-        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.annotationModule) && (this.pdfViewer.designerMode || this.pdfViewer.enableAnnotation) && (this.pdfViewer.selectedItems.formFields.length !== 0 || this.pdfViewer.selectedItems.annotations.length !== 0)) {
+        let annotationSettings: any;
+        if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
+            annotationSettings = this.pdfViewer.annotationModule.findAnnotationSettings(this.pdfViewer.selectedItems.annotations[0]);
+        }
+        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.annotationModule) && (this.pdfViewer.designerMode || this.pdfViewer.enableAnnotation) && (this.pdfViewer.selectedItems.formFields.length !== 0 || (this.pdfViewer.selectedItems.annotations.length !== 0 && !isNullOrUndefined(annotationSettings) && !annotationSettings.isLock))) {
             this.pdfViewer.clipboardData.pasteIndex = 1;
             this.pdfViewer.clipboardData.clipObject = this.copyObjects();
         }
@@ -3452,7 +3483,7 @@ export class Drawing {
                         }
                     }
                     const addedAnnot: PdfAnnotationBaseModel | PdfFormFieldBaseModel = this.add(newNode);
-                    if (this.pdfViewer.formDesigner && addedAnnot.formFieldAnnotationType) {
+                    if (this.pdfViewer.formDesigner && addedAnnot.formFieldAnnotationType && this.pdfViewer.annotation) {
                         this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(true), null, addedAnnot as PdfFormFieldBase, 'Addition', '', addedAnnot as PdfFormFieldBase, addedAnnot as PdfFormFieldBase);
                     }
                     if ((newNode.shapeAnnotationType === 'FreeText' || newNode.enableShapeLabel) && addedAnnot) {

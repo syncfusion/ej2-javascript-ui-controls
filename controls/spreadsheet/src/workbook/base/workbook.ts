@@ -560,8 +560,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /** @hidden */
     public formulaRefCell: string;
 
-     /** @hidden */
-     public customFormulaCollection: Map<string, IFormulaColl> = new Map<string, IFormulaColl>();
+    /** @hidden */
+    public customFormulaCollection: Map<string, IFormulaColl> = new Map<string, IFormulaColl>();
 
     /**
      * Constructor for initializing the library.
@@ -1138,12 +1138,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {string} formula - Specifies the colIndex.
      * @returns {void} - To set the value for row and col.
      */
-    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string): void {
+    public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string, isRandomFormula?: boolean): void {
         this.notify(
             workbookEditOperation,
             {
                 action: 'updateCellValue', address: [rowIndex - 1, colIndex - 1], value: value,
-                sheetIndex: getSheetIndexFromId(this, sheetId), isValueOnly: true, formula: formula
+                sheetIndex: getSheetIndexFromId(this, sheetId), isValueOnly: true, formula: formula, isRandomFormula: isRandomFormula
             });
     }
 
@@ -1714,8 +1714,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         if (!sheet) { sheet = this.getActiveSheet(); }
         const indexes: number[] = getCellIndexes(sheet.topLeftCell);
         if (sheet.frozenRows || sheet.frozenColumns) {
-            if (isNullOrUndefined(top)) { top = sheet.frozenRows ? 0 : indexes[0]; }
-            if (isNullOrUndefined(left)) { left = sheet.frozenColumns ? 0 : indexes[1]; }
+            if (isNullOrUndefined(top)  || top < 0) { top = sheet.frozenRows ? 0 : indexes[0]; }
+            if (isNullOrUndefined(left)  || left < 0) { left = sheet.frozenColumns ? 0 : indexes[1]; }
             top += this.frozenRowCount(sheet); left += this.frozenColCount(sheet);
             if (model) {
                 if (model === 'row') {

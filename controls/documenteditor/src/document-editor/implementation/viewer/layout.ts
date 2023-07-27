@@ -837,7 +837,7 @@ export class Layout {
             //When the vertical position is related to margin, then it should be adjusted based on the layouted header height. Not default header height.
             if (section.sectionFormat.topMargin < page.boundingRectangle.bottom && page.headerWidget.floatingElements.length > 0 && (page.headerWidget.floatingElements[0] as ImageElementBox).textWrappingStyle !== "Behind")
             {
-                page.headerWidget = this.shiftItemsForVerticalAlignment(page.headerWidget);
+                page.headerWidget = this.shiftItemsForVerticalAlignment(header);
             }
         }
         //Footer Layout

@@ -80,8 +80,12 @@ export interface ViewsModel {
      *  This template is only applicable for month view day cells.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    cellHeaderTemplate?: string;
+    cellHeaderTemplate?: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
@@ -89,15 +93,20 @@ export interface ViewsModel {
      *  It gets applied only to the view objects on which it is defined.
      *
      * @default null
+     * @aspType string
      */
-    dateHeaderTemplate?: string;
+    dateHeaderTemplate?: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the header date range.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    dateRangeTemplate?: string;
+    dateRangeTemplate?: string | Function;
 
     /**
      * The template option which is used to render the customized work cells on the Schedule. Here, the
@@ -105,8 +114,12 @@ export interface ViewsModel {
      *  The field accessible via template is `date`. It gets applied only to the view objects on which it is defined.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    cellTemplate?: string;
+    cellTemplate?: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
@@ -114,8 +127,12 @@ export interface ViewsModel {
      *  This template is only applicable for year view header cells.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    dayHeaderTemplate?: string;
+    dayHeaderTemplate?: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
@@ -123,8 +140,12 @@ export interface ViewsModel {
      *  This template is only applicable for year view header cells.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    monthHeaderTemplate?: string;
+    monthHeaderTemplate?: string | Function;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -133,8 +154,12 @@ export interface ViewsModel {
      *  whereas it will get applied only on the events of the view to which it is currently being defined.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    eventTemplate?: string;
+    eventTemplate?: string | Function;
 
     /**
      * When set to `false`, it hides the weekend days of a week from the Schedule.
@@ -212,8 +237,12 @@ export interface ViewsModel {
      *  It gets applied only to the view objects on which it is defined.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    resourceHeaderTemplate?: string;
+    resourceHeaderTemplate?: string | Function;
 
     /**
      * The template option which is used to render the customized header indent cell on the schedule. Here, the
@@ -221,8 +250,12 @@ export interface ViewsModel {
      *  It gets applied only to the view objects on which it is defined.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    headerIndentTemplate?: string;
+    headerIndentTemplate?: string | Function;
 
     /**
      * By default, Schedule follows the time-format as per the default culture assigned to it.

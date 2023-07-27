@@ -1,9 +1,9 @@
-import { Workbook, CellModel, getCell } from '../base/index';
+import { Workbook, CellModel, getCell, setCell, SheetModel, getSheet } from '../base/index';
 import { executeTaskAsync } from '../common/worker';
 import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, removeUniquecol } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
-import { SaveCompleteEventArgs } from '../common/index';
+import { SaveCompleteEventArgs, ChartModel } from '../common/index';
 import { detach } from '@syncfusion/ej2-base';
 
 /**
@@ -273,7 +273,8 @@ export class WorkbookSave extends SaveWorker {
         if (sheetIdx === 0) {
             this.parent.notify(removeUniquecol, { clearAll: true });
         }
-        return JSON.stringify(model, (key: string, value: { [key: string]: object }) => {
+        const chartColl: { index: number[], chart: ChartModel[] }[] = []; let chartModel: ChartModel[];
+        const json: string = JSON.stringify(model, (key: string, value: { [key: string]: object }) => {
             if (skipProp.indexOf(key) > -1) {
                 return undefined;
             } else {
@@ -281,12 +282,25 @@ export class WorkbookSave extends SaveWorker {
                     for (let i: number = 0, len: number = (value.cells as CellModel[]).length; i < len; i++) {
                         const cell: CellModel = value.cells[i as number];
                         const cellIdx: number[] = [Number(key), i];
-                        if (cell && !cell.value && cell.formula && cell.formula.indexOf('=UNIQUE(') < 0) {
-                            this.parent.notify(
-                                workbookFormulaOperation, {
+                        if (cell) {
+                            if (!cell.value && cell.formula && cell.formula.indexOf('=UNIQUE(') < 0) {
+                                this.parent.notify(
+                                    workbookFormulaOperation, {
                                     action: 'refreshCalculate', value: cell.formula, rowIndex: cellIdx[0],
-                                    colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true });
-                            cell.value = getCell(cellIdx[0], i, model).value;
+                                    colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true
+                                });
+                                cell.value = getCell(cellIdx[0], i, model).value;
+                            }
+                            if (cell.chart) {
+                                chartColl.push({ index: cellIdx, chart: cell.chart });
+                                chartModel = [];
+                                for (let i: number = 0, len: number = cell.chart.length; i < len; i++) {
+                                    const chart: ChartModel = Object.assign({}, cell.chart[i as number]);
+                                    delete chart.id;
+                                    chartModel.push(chart);
+                                }
+                                cell.chart = chartModel;
+                            }
                         }
                     }
                 }
@@ -300,6 +314,11 @@ export class WorkbookSave extends SaveWorker {
                 }
             }
         });
+        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
+        chartColl.forEach((obj: { index: number[], chart: ChartModel[] }): void => {
+            setCell(obj.index[0], obj.index[1], sheet, { chart: obj.chart }, true);
+        });
+        return json;
     }
 
     private getFileNameWithExtension(filename?: string): string {

@@ -65,7 +65,7 @@
               @include focused-icon-color;
               background: $menu-li-bgcolor;
               @if $skin-name == 'Material3' {
-                border-radius: 20px;
+                border-radius: 2px;
               }
             }
           }
@@ -84,7 +84,7 @@
               background: $menu-li-selection-bgcolor;
             }
             @if $skin-name == 'Material3' {
-              border-radius: 20px;
+              border-radius: 2px;
             }
 
             & .e-caret {
@@ -204,6 +204,9 @@
           & .e-icons {
             color: $menu-icon-focussed-color;
           }
+        }
+        @else if $skin-name == 'Material3' {
+          border-radius: 2px;
         }
         @else {
           background: $menu-li-bgcolor;

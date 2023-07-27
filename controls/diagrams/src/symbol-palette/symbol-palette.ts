@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Component, Property, Complex, CollectionFactory, ChildProperty, Event, L10n } from '@syncfusion/ej2-base';
+import { Component, Property, Complex, CollectionFactory, ChildProperty, Event, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
-import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, TextDecoration } from '../diagram/index';
+import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, TextDecoration, BlazorTooltip, ConnectorConstraints, NodeConstraints, DiagramTooltipModel } from '../diagram/index';
 import { Transform, SwimLane, PathModel, IPaletteExpandArgs } from '../diagram/index';
 import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
 import { DiagramElement, TextElement, MarginModel, Canvas, PointModel, IElement } from '../diagram/index';
@@ -20,6 +20,7 @@ import { Point } from '../diagram/primitives/point';
 import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';
 import { Rect } from '../diagram/primitives/rect';
 import { SymbolSizeModel, SymbolPaletteInfoModel } from '../diagram/objects/preview-model';
+import { Tooltip, TooltipModel } from '@syncfusion/ej2-popups';
 // eslint-disable-next-line
 let getObjectType: Function = (obj: Object): Object => {
     const conn: Connector = obj as Connector;
@@ -443,6 +444,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private paletteid: number = 88123;
     private checkOnRender: boolean = false;
     private l10n: L10n;
+    private currentPosition: PointModel;
+    public symbolTooltipObject: Tooltip | BlazorTooltip = null;
 
     //region - protected methods
 
@@ -483,93 +486,93 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let refresh: boolean = false;
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'width':
-                    this.element.style.width = this.width.toString(); break;
-                case 'height':
-                    this.element.style.height = this.height.toString(); break;
-                case 'symbolPreview':
-                    break;
-                case 'symbolWidth':
-                case 'symbolHeight':
-                case 'getSymbolInfo':
-                    if ((this as any).isReact) {
-                        refresh = false;
-                    } else {
-                        refresh = true;
-                    }
-                    break;
-                case 'enableSearch':
-                    if (newProp.enableSearch && !isBlazor()) {
-                        this.createTextbox();
-                    } else {
-                        const divElement: HTMLElement = document.getElementById(this.element.id + '_search');
-                        if (divElement) { divElement.parentNode.removeChild(divElement); }
-                    }
-                    break;
-                case 'palettes':
-                    for (const i of Object.keys(newProp.palettes)) {
-                        const index: number = Number(i);
-                        if (!isBlazor() && !this.accordionElement.items[parseInt(index.toString(), 10)]) {
-                            this.accordionElement.items[parseInt(index.toString(), 10)] = {
-                                header: newProp.palettes[parseInt(index.toString(), 10)].title || '',
-                                expanded: newProp.palettes[parseInt(index.toString(), 10)].expanded,
-                                iconCss: newProp.palettes[parseInt(index.toString(), 10)].iconCss || ''
-                            };
-                        }
-                        if (newProp.palettes[parseInt(index.toString(), 10)].height) {
-                            const paletteDiv: HTMLElement = document.getElementById((this.palettes[parseInt(index.toString(), 10)] as Palette).id + '_content');
-                            paletteDiv.style.height = newProp.palettes[parseInt(index.toString(), 10)].height + 'px';
-                        }
-                        if (newProp.palettes[parseInt(index.toString(), 10)].iconCss !== undefined) {
-                            if (!isBlazor()) {
-                                this.accordionElement.items[parseInt(index.toString(), 10)].iconCss = newProp.palettes[parseInt(index.toString(), 10)].iconCss || '';
-                                refresh = true;
-                            }
-                        }
-                        if (newProp.palettes[parseInt(index.toString(), 10)].expanded !== undefined && !isBlazor()) {
-                            if (!(this.palettes[parseInt(index.toString(), 10)] as Palette).isInteraction) {
-                                this.accordionElement.items[parseInt(index.toString(), 10)].expanded = newProp.palettes[parseInt(index.toString(), 10)].expanded;
-                                this.isExpand = true;
-                            } else {
-                                (this.palettes[parseInt(index.toString(), 10)] as Palette).isInteraction = false;
-                            }
-                            if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
-                                this.isExpand = true;
-                            }
-                        }
-                        if (isBlazor() && newProp.palettes[parseInt(index.toString(), 10)].symbols !== null) { refresh = true; }
-                        if (isBlazor() && newProp.palettes[parseInt(index.toString(), 10)].symbols === null) {
-                            this.updateBlazorProperties(newProp);
-                        }
-                    }
-                    break;
-                case 'enableAnimation':
-                    if (!isBlazor()) {
-                        if (!this.enableAnimation) {
-                            this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
-                        } else {
-                            this.accordionElement.animation = { expand: { duration: 400 }, collapse: { duration: 400 } };
-                        }
-                    }
-                    break;
-                case 'expandMode':
-                    if (!isBlazor()) {
-                        this.accordionElement.expandMode = this.expandMode;
-                        refresh = true; this.isExpandMode = true;
-                    }
-                    break;
-                case 'allowDrag':
-                    this.allowDrag = newProp.allowDrag;
-                    if (!this.allowDrag) {
-
-                        this.draggable.helper = (): Function => {
-                            return null;
+            case 'width':
+                this.element.style.width = this.width.toString(); break;
+            case 'height':
+                this.element.style.height = this.height.toString(); break;
+            case 'symbolPreview':
+                break;
+            case 'symbolWidth':
+            case 'symbolHeight':
+            case 'getSymbolInfo':
+                if ((this as any).isReact) {
+                    refresh = false;
+                } else {
+                    refresh = true;
+                }
+                break;
+            case 'enableSearch':
+                if (newProp.enableSearch && !isBlazor()) {
+                    this.createTextbox();
+                } else {
+                    const divElement: HTMLElement = document.getElementById(this.element.id + '_search');
+                    if (divElement) { divElement.parentNode.removeChild(divElement); }
+                }
+                break;
+            case 'palettes':
+                for (const i of Object.keys(newProp.palettes)) {
+                    const index: number = Number(i);
+                    if (!isBlazor() && !this.accordionElement.items[parseInt(index.toString(), 10)]) {
+                        this.accordionElement.items[parseInt(index.toString(), 10)] = {
+                            header: newProp.palettes[parseInt(index.toString(), 10)].title || '',
+                            expanded: newProp.palettes[parseInt(index.toString(), 10)].expanded,
+                            iconCss: newProp.palettes[parseInt(index.toString(), 10)].iconCss || ''
                         };
-                    } else {
-                        this.initDraggable();
-                        this.draggable.helper = this.helper;
                     }
-                    break;
+                    if (newProp.palettes[parseInt(index.toString(), 10)].height) {
+                        const paletteDiv: HTMLElement = document.getElementById((this.palettes[parseInt(index.toString(), 10)] as Palette).id + '_content');
+                        paletteDiv.style.height = newProp.palettes[parseInt(index.toString(), 10)].height + 'px';
+                    }
+                    if (newProp.palettes[parseInt(index.toString(), 10)].iconCss !== undefined) {
+                        if (!isBlazor()) {
+                            this.accordionElement.items[parseInt(index.toString(), 10)].iconCss = newProp.palettes[parseInt(index.toString(), 10)].iconCss || '';
+                            refresh = true;
+                        }
+                    }
+                    if (newProp.palettes[parseInt(index.toString(), 10)].expanded !== undefined && !isBlazor()) {
+                        if (!(this.palettes[parseInt(index.toString(), 10)] as Palette).isInteraction) {
+                            this.accordionElement.items[parseInt(index.toString(), 10)].expanded = newProp.palettes[parseInt(index.toString(), 10)].expanded;
+                            this.isExpand = true;
+                        } else {
+                            (this.palettes[parseInt(index.toString(), 10)] as Palette).isInteraction = false;
+                        }
+                        if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
+                            this.isExpand = true;
+                        }
+                    }
+                    if (isBlazor() && newProp.palettes[parseInt(index.toString(), 10)].symbols !== null) { refresh = true; }
+                    if (isBlazor() && newProp.palettes[parseInt(index.toString(), 10)].symbols === null) {
+                        this.updateBlazorProperties(newProp);
+                    }
+                }
+                break;
+            case 'enableAnimation':
+                if (!isBlazor()) {
+                    if (!this.enableAnimation) {
+                        this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
+                    } else {
+                        this.accordionElement.animation = { expand: { duration: 400 }, collapse: { duration: 400 } };
+                    }
+                }
+                break;
+            case 'expandMode':
+                if (!isBlazor()) {
+                    this.accordionElement.expandMode = this.expandMode;
+                    refresh = true; this.isExpandMode = true;
+                }
+                break;
+            case 'allowDrag':
+                this.allowDrag = newProp.allowDrag;
+                if (!this.allowDrag) {
+
+                    this.draggable.helper = (): Function => {
+                        return null;
+                    };
+                } else {
+                    this.initDraggable();
+                    this.draggable.helper = this.helper;
+                }
+                break;
             }
         }
         if (refresh) { this.refreshPalettes(); }
@@ -625,7 +628,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     protected preRender(): void {
-        this.l10n = new L10n(this.getModuleName(),this.defaultLocale(), this.locale);
+        this.l10n = new L10n(this.getModuleName(), this.defaultLocale(), this.locale);
         if (this.element.id === '') {
             const collection: number = document.getElementsByClassName('e-symbolpalette').length;
             this.element.id = 'symbolpalette_' + this.paletteid + '_' + collection;
@@ -679,7 +682,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         this.wireEvents();
     }
     /**
-     * EJ2-61531- Localization support for the symbol palette search box placeholder. 
+     * EJ2-61531- Localization support for the symbol palette search box placeholder.
      * @returns defaultLocale
      */
     private defaultLocale()
@@ -1169,10 +1172,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         return container;
     }
 
-/**
-* Feature [EJ2- 47318] - Support for the change of the symbol description
-* Feature [EJ2- 50705] - Support to add margin between the text and symbols
-*/
+    /**
+     * Feature [EJ2- 47318] - Support for the change of the symbol description
+     * Feature [EJ2- 50705] - Support to add margin between the text and symbols
+    */
 
     private getSymbolDescription(symbolInfo: SymbolInfo, width: number, parent: StackPanel | Container): void {
         if (symbolInfo && symbolInfo.description && symbolInfo.description.text) {
@@ -1259,10 +1262,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                id: symbol.id + '_preview',
-                width: Math.ceil(symbolPreviewWidth) + 1,
-                height: Math.ceil(symbolPreviewHeight) + 1
-            });
+                    id: symbol.id + '_preview',
+                    width: Math.ceil(symbolPreviewWidth) + 1,
+                    height: Math.ceil(symbolPreviewHeight) + 1
+                });
             const gElement: SVGElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             previewContainer.appendChild(canvas);
@@ -1332,10 +1335,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         const height: number = size.height + 1;
         const container: HTMLElement = createHtmlElement(
             'div', {
-            id: symbol.id + '_container',
-            style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
-            title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
-        });
+                id: symbol.id + '_container',
+                style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
+                // title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
+            });
         parentDiv.appendChild(container);
         let canvas: HTMLCanvasElement | SVGElement;
         let gElement: SVGElement;
@@ -1343,10 +1346,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                id: symbol.id,
-                width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
-                height: Math.ceil(symbol.wrapper.actualSize.height) + 1
-            });
+                    id: symbol.id,
+                    width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
+                    height: Math.ceil(symbol.wrapper.actualSize.height) + 1
+                });
             gElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             container.appendChild(canvas);
@@ -1419,17 +1422,17 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             'div', { 'id': item.id + (isPreview ? '_html_div_preview' : '_html_div') });
         const htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-            'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-            'class': 'e-html-layer'
-        });
+                'class': 'e-html-layer'
+            });
         const htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-            'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute'
-        });
+            });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(
@@ -1446,22 +1449,22 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     ): HTMLElement {
         const div: HTMLElement = createHtmlElement(
             'div', {
-            'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
-        }
+                'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
+            }
         );
         const htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-            'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-            'class': 'e-html-layer'
-        });
+                'class': 'e-html-layer'
+            });
         const htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-            'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute'
-        });
+            });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(
@@ -1516,7 +1519,99 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
         return { x: offsetX, y: offsetY };
     }
+    private hoverElement: NodeModel | ConnectorModel;
 
+    /** Gets the default content of the Tooltip*/
+    private getContent(obj: object): string | HTMLElement {
+        const isPrivateTooltip: number = ((this.hoverElement instanceof Node) &&
+            (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
+            ((this.hoverElement instanceof Connector) &&
+                (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip);
+        const content: string | HTMLElement = isPrivateTooltip ? this.hoverElement.tooltip.content :
+            (obj as Node).id;
+        return content;
+    }
+
+    /**
+    * Initialize the basic properties of Toolip object 
+    */
+    private initTooltip(element: NodeModel | ConnectorModel): Tooltip | BlazorTooltip {
+        let tooltip: Tooltip | BlazorTooltip;
+        if (!isBlazor()) {
+            let tooltipOption: Tooltip = new Tooltip;
+            tooltipOption = this.updateTooltipContent(this.hoverElement.tooltip, tooltipOption) as Tooltip;
+            tooltip = new Tooltip(tooltipOption);
+            tooltip.cssClass = 'e-symbolPalette-tooltip';
+            tooltip.opensOn = 'custom';
+            tooltip.appendTo('#' + element.id);
+            tooltip.close();
+        } else {
+            tooltip = this.updateTooltipContent(this.hoverElement.tooltip, tooltip) as BlazorTooltip;
+        }
+        return tooltip;
+    }
+
+    /**Method to update Tooltip Content*/
+    private updateTooltipContent(tooltip: TooltipModel, tooltipObject: Tooltip | BlazorTooltip): Tooltip | BlazorTooltip {
+            tooltipObject.content = tooltip.content;
+            tooltipObject.position = 'BottomRight';
+            tooltipObject.showTipPointer = tooltip.showTipPointer;
+            tooltipObject.width = tooltip.width;
+            tooltipObject.height = tooltip.height;
+            if (!tooltip.animation) {
+                tooltipObject.animation = { close: { effect: 'None' } };
+            } else {
+                tooltipObject.animation = tooltip.animation;
+            }
+        return tooltipObject as Tooltip;
+    }
+
+    /**
+     * To open the Tooltip element relevant to the target and relative mode */ 
+    private elementEnter(mousePosition: PointModel, elementOver: boolean): void {
+        if (!elementOver) {
+            //set the collision target element to given position if enabled
+            (this.symbolTooltipObject as Tooltip).windowCollision = true;
+            if (this.hoverElement instanceof Node) {
+                if (!(this.hoverElement.constraints & (NodeConstraints.Default && NodeConstraints.Tooltip))) {
+                    this.hoverElement.tooltip.content = this.hoverElement.id;
+                    //Task 834121: Content-Security-Policy support for diagram
+                    this.symbolTooltipObject.content = initializeCSPTemplate(function() {return this.hoverElement.id;},this);
+                }
+            } else if (this.hoverElement instanceof Connector) {
+                if (!(this.hoverElement.constraints & (ConnectorConstraints.Default && ConnectorConstraints.Tooltip))) {
+                    this.hoverElement.tooltip.content = this.hoverElement.id;
+                    this.symbolTooltipObject.content = initializeCSPTemplate(function() {return this.hoverElement.id;},this);
+                }
+            }
+            if (this.hoverElement.tooltip.content) {
+                if (this.hoverElement.tooltip.relativeMode === 'Mouse') {
+                    //To set relative mode only to object for Symbol Palatte
+                    this.hoverElement.tooltip.relativeMode = 'Object';
+                    this.symbolTooltipObject.offsetX = 0;
+                    this.symbolTooltipObject.offsetY = 0;
+                }
+                else {
+                    this.symbolTooltipObject.offsetX = 0;
+                    this.symbolTooltipObject.offsetY = 0;
+                }
+            }
+            const targetEle: HTMLElement = document.getElementById(this.hoverElement.id);
+            if (this.hoverElement.tooltip.openOn === 'Auto' && this.hoverElement.tooltip.content !== '') {
+                (this.symbolTooltipObject as Tooltip).close();
+                (this.symbolTooltipObject as TooltipModel).opensOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
+                if (isBlazor()) {
+                    (this.symbolTooltipObject as BlazorTooltip).open(targetEle, {});
+                } else {
+                    (this.symbolTooltipObject as Tooltip).dataBind();
+                }
+            }
+            if (this.hoverElement.tooltip.openOn === 'Auto') {
+                (this.symbolTooltipObject as Tooltip).target = this.hoverElement.id;
+                (this.symbolTooltipObject as Tooltip).open(targetEle);
+            }
+        }
+    }
     // eslint-disable-next-line
     private mouseMove(e: PointerEvent | TouchEvent, touches: TouchList): void {
         if (this.highlightedSymbol && (!this.selectedSymbol
@@ -1532,6 +1627,44 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.highlightedSymbol = container;
         }
         e.preventDefault();
+        //EJ2-66311-tooltip support for Symbolpalette
+        const obj: any = this.symbolTable[`${id}`];
+        if (this.symbolTable[`${id}`] && obj !== this.hoverElement) {
+            this.currentPosition = this.getMousePosition(e);
+            let content: string | HTMLElement = this.getContent(obj);
+            if (this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
+                this.elementLeave();
+            }
+            this.hoverElement = obj;
+            this.symbolTooltipObject = this.initTooltip(this.hoverElement);
+            if (content === '') {
+                content = this.hoverElement.id;
+            }
+            if (this.hoverElement.tooltip && content !== '') {
+                this.elementEnter(this.currentPosition, false);
+            }
+        }
+        if (obj === undefined && this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto') {
+            this.hoverElement = null;
+            this.elementLeave();
+        }
+    }
+
+    /**
+     * When Mouse pointer leaves the symbol palette object Mouse leave event is called and closes Tooltip
+     */
+    private elementLeave(): void {
+        if (this.symbolTooltipObject && (this.symbolTooltipObject as TooltipModel).opensOn !== 'Custom') {
+            this.symbolTooltipObject.close();
+        }
+    }
+
+    /** @private 
+     * @param {PointerEvent} evt - provide event name
+    */
+    public mouseLeave(evt: PointerEvent): void {
+        this.elementLeave();
+        evt.preventDefault();
     }
     // eslint-enable
 
@@ -1941,13 +2074,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         const startEvent: string = Browser.touchStartEvent;
         const stopEvent: string = Browser.touchEndEvent;
         const moveEvent: string = Browser.touchMoveEvent;
-        //let cancelEvent: string = 'mouseleave';
+        const cancelEvent: string = 'mouseleave';
         const keyEvent: string = 'keyup';
         const keyDownEvent: string = 'keydown';
 
         EventHandler.add(this.element, startEvent, this.mouseDown, this);
         EventHandler.add(this.element, moveEvent, this.mouseMove, this);
         EventHandler.add(this.element, stopEvent, this.mouseUp, this);
+        EventHandler.add(this.element, cancelEvent, this.mouseLeave, this);
         EventHandler.add(this.element, keyEvent, this.keyUp, this);
         EventHandler.add(document, keyDownEvent, this.keyDown, this);
         // initialize the draggable component
@@ -1960,12 +2094,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         const startEvent: string = Browser.touchStartEvent;
         const stopEvent: string = Browser.touchEndEvent;
         const moveEvent: string = Browser.touchMoveEvent;
-        //const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         const keyEvent: string = 'keyup';
         const keyDownEvent: string = 'keydown';
         EventHandler.remove(this.element, startEvent, this.mouseDown);
         EventHandler.remove(this.element, moveEvent, this.mouseMove);
         EventHandler.remove(this.element, stopEvent, this.mouseUp);
+        EventHandler.remove(this.element, cancelEvent, this.mouseLeave);
         EventHandler.remove(this.element, keyEvent, this.keyUp);
         EventHandler.remove(document, keyDownEvent, this.keyDown);
     }
@@ -2101,7 +2236,7 @@ export interface SymbolDescription {
      * @default 'None'
      */
     textDecoration?: TextDecoration;
-	/**
+    /**
 	 * Sets/Gets the margin of the element
 	 * The margin top and bottom alone works for the symbol description
 	 */

@@ -177,7 +177,7 @@ export class ScaleGroup {
                 this.featureBarBounds[i as number] = { x: bounds.pointX, y: lPoint, width: bounds.width, height: bulletChart.valueHeight };
                 // Drawing category text element
                 if (!isNullOrUndefined(categoryValue)) {
-                    const categoryTextSize: Size = measureText(categoryValue, bulletChart.categoryLabelStyle);
+                    const categoryTextSize: Size = measureText(categoryValue, bulletChart.categoryLabelStyle, bulletChart.themeStyle.axisLabelFont);
                     const categorySize: number = isHorizontal ? categoryTextSize.width : categoryTextSize.height;
                     const initialRect: Rect = bulletChart.initialClipRect;
                     let x: number;
@@ -191,10 +191,10 @@ export class ScaleGroup {
                             initialRect.y + initialRect.height + padding + categorySize / 2;
                         categoryOptions = this.drawcategory(lPoint + bulletChart.valueHeight / 2, x, categoryValue);
                     }
+                    bulletChart.categoryLabelStyle.fontFamily = bulletChart.categoryLabelStyle.fontFamily || bulletChart.themeStyle.axisLabelFont.fontFamily;
                     textElement(
-                        categoryOptions, bulletChart.categoryLabelStyle,
-                        bulletChart.categoryLabelStyle.color || bulletChart.themeStyle.categoryFontColor,
-                        this.scaleSettingsGroup
+                        categoryOptions, bulletChart.categoryLabelStyle,bulletChart.categoryLabelStyle.color || bulletChart.themeStyle.axisLabelFont.color,
+                        this.scaleSettingsGroup 
                     );
                 }
             }
@@ -396,7 +396,7 @@ export class ScaleGroup {
             const valueDiff: number = bulletChart.maximum - value;
             const orientation: string = ((!bulletChart.enableRtl) ? 'forward' : 'backward') + this.scaleOrientation.toLowerCase();
             categoryValue = isNullOrUndefined(categoryValue) ? '' : categoryValue;
-            const stringLength: number = measureText(categoryValue.toString(), bulletChart.labelStyle).width;
+            const stringLength: number = measureText(categoryValue.toString(), bulletChart.labelStyle, this.bulletChart.themeStyle.axisLabelFont).width;
             switch (orientation) {
             case 'forwardhorizontal':
             case 'backwardvertical':

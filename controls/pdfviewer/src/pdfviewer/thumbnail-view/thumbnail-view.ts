@@ -230,7 +230,7 @@ export class ThumbnailView {
             const endPage: number = (data && isNaN(data.endPage)) ? data.endPage : this.thumbnailLimit;
             for (let i: number = startPage; i < endPage; i++) {
                 // eslint-disable-next-line max-len
-                const pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + i , attrs: {'aria-label': 'Thumbnail of Page' + (i + 1) , 'tabindex': '-1', 'role': 'link' }, className: 'e-pv-thumbnail-anchor-node'}) as HTMLAnchorElement;
+                const pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + i, attrs: { 'aria-label': 'Thumbnail of Page' + (i + 1), 'tabindex': '-1', 'role': 'link' }, className: 'e-pv-thumbnail-anchor-node' }) as HTMLAnchorElement;
                 // eslint-disable-next-line max-len
                 const thumbnail: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_' + i, className: 'e-pv-thumbnail e-pv-thumbnail-column' });
                 // eslint-disable-next-line max-len

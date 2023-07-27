@@ -2054,4 +2054,38 @@ describe('Data validation ->', () => {
             done();
         });
     });
+
+    describe('EJ2-69858 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ranges: [{dataSource : defaultData}]}],
+            }, done)
+        })
+        afterAll(() => {
+            helper.invoke('destroy');
+        })
+        it('The cell is still highlighted if we provide the valid data in the data validation applied cell', (done: Function) => {
+            helper.getInstance().addDataValidation({ type: 'List', value1: 'Loafers,Semi Formals', ignoreBlank: true }, `A:A`)
+            helper.invoke('addInvalidHighlight', ['A:A']);
+            helper.invoke('selectRange', ['A4'])
+            helper.edit('A4', 'Loafers')
+            helper.invoke('selectRange', ['A5'])
+            helper.edit('A5', 'Semi Formals')
+            expect(helper.invoke('getCell', [3,0]).style.backgroundColor).toBe('rgb(255, 255, 255)')
+            expect(helper.invoke('getCell', [3,0]).style.color).toBe('rgb(0, 0, 0)')
+            expect(helper.invoke('getCell', [4,0]).style.backgroundColor).toBe('rgb(255, 255, 255)')
+            expect(helper.invoke('getCell', [4,0]).style.color).toBe('rgb(0, 0, 0)')
+            helper.getInstance().addDataValidation({ type: 'WholeNumber', operator: 'Between', value1: '0', value2: '10', ignoreBlank: false }, `D:D`)
+            helper.invoke('addInvalidHighlight', ['D:D']);
+            helper.invoke('selectRange', ['D4'])
+            helper.edit('D4', '2')
+            helper.invoke('selectRange', ['D5'])
+            helper.edit('D5', '10')
+            expect(helper.invoke('getCell', [3,3]).style.backgroundColor).toBe('rgb(255, 255, 255)')
+            expect(helper.invoke('getCell', [3,3]).style.color).toBe('rgb(0, 0, 0)')
+            expect(helper.invoke('getCell', [4,3]).style.backgroundColor).toBe('rgb(255, 255, 255)')
+            expect(helper.invoke('getCell', [4,3]).style.color).toBe('rgb(0, 0, 0)')
+            done()
+        })
+    })
 });

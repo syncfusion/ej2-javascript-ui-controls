@@ -6,7 +6,7 @@
 import { Chart } from '../chart';
 import { extend, Browser, remove } from '@syncfusion/ej2-base';
 import { PointData, ChartLocation } from '../../common/utils/helper';
-import { getElement, Rect } from '@syncfusion/ej2-svg-base';
+import { getElement, measureText, Rect } from '@syncfusion/ej2-svg-base';
 import { valueToCoefficient, removeElement, valueToPolarCoefficient, withInBounds } from '../../common/utils/helper';
 import { Axis } from '../axis/axis';
 import { Series, Points } from '../series/chart-series';
@@ -72,6 +72,14 @@ export class Tooltip extends BaseTooltip {
         const chart: Chart = this.chart;
         chart.mouseX = chart.mouseX / chart.scaleX;
         chart.mouseY = chart.mouseY / chart.scaleY;
+        if (chart.stockChart && chart.stockChart.onPanning) {
+            if (chart.mouseY < chart.chartAxisLayoutPanel.seriesClipRect.y) {
+                chart.mouseY = chart.chartAxisLayoutPanel.seriesClipRect.y;
+            }
+            else if (chart.mouseY > chart.chartAxisLayoutPanel.seriesClipRect.y + chart.chartAxisLayoutPanel.seriesClipRect.height) {
+                chart.mouseY = chart.chartAxisLayoutPanel.seriesClipRect.y + chart.chartAxisLayoutPanel.seriesClipRect.height;
+            }
+        }
         // Tooltip for chart series.
         if (!chart.disableTrackTooltip && !this.isSelected(chart)) {
             if (!chart.tooltip.shared && (!chart.isTouch || (chart.startMove))) {
@@ -110,7 +118,6 @@ export class Tooltip extends BaseTooltip {
      * @returns {void}
      */
     public tooltip(): void {
-        if ((this.chart.stockChart && this.chart.stockChart.onPanning)) { this.removeTooltip(1000); return null; }
         const elementId: string = this.chart.enableCanvas ? this.element.id + '_tooltip_group' : this.element.id + '_tooltip_svg';
         const svgElement: HTMLElement = this.getElement(elementId);
         // To prevent the disappearance of the tooltip, while resize the stock chart.
@@ -145,7 +152,7 @@ export class Tooltip extends BaseTooltip {
         }
         const marker: ChartShape[] = [];
         for (const data of this.currentPoints) {
-            marker.push((<PointData>data).point.marker.shape || (<Series>data.series).marker.shape);
+            marker.push((<PointData>data).point.marker.shape || (<Series>data.series).marker.shape || 'Circle');
         }
         return marker;
     }
@@ -287,16 +294,17 @@ export class Tooltip extends BaseTooltip {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private getTemplateText(data: any): Points {
+    private getTemplateText(data: any): Points | Points[] {
         if (this.template && this.chart.tooltip.shared) {
-            const point: Points = extend({}, data[0].point) as Points;
-            point.x = this.formatPointValue(data[0].point, data[0].series.xAxis, 'x', true, false);
+            const point: Points[] = [];
             for (let i: number = 0; i < data.length; i++) {
+                point[i as number] = extend({}, data[i as number].point) as Points;
+                point[i as number].x = this.formatPointValue(data[1].point, data[1].series.xAxis, 'x', true, false);
                 if ((data[i as number].series.seriesType === 'XY')) {
-                    point.y = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'y', false, true);
+                    point[i as number].y = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'y', false, true);
                 } else {
-                    point.low = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'low', false, true);
-                    point.high = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'high', false, true);
+                    point[i as number].low = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'low', false, true);
+                    point[i as number].high = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'high', false, true);
                 }
             }
             return point;
@@ -342,6 +350,11 @@ export class Tooltip extends BaseTooltip {
         this.removeHighlight();
         this.currentPoints = [];
         const extraPoints: PointData[] = [];
+        let closestXValue: number = Number.MAX_VALUE;
+        let closetYValue: number = Number.MAX_VALUE;
+        let pointXValue: number;
+        let pointYValue: number;
+        let tempData: PointData;
         //let headerContent : string = '';
         if (isFirst) {
             if (!chart.stockChart) {
@@ -384,8 +397,16 @@ export class Tooltip extends BaseTooltip {
                 argument.headerText = this.findHeader(data);
                 (<PointData[]>this.currentPoints).push(data);
                 argument.text.push(this.getTooltipText(data));
+                pointXValue = (!chart.requireInvertedAxis) ? chart.mouseX - data.series.clipRect.x : chart.mouseY - data.series.clipRect.y;
+                pointYValue = chart.mouseY - data.series.clipRect.y;
+                if (data.point.symbolLocations && data.point.symbolLocations.length && Math.abs(pointXValue - data.point.symbolLocations[0].x) <= closestXValue &&
+                    Math.abs(data.point.symbolLocations[0].y - pointYValue) < Math.abs(closetYValue - pointYValue)) {
+                    closestXValue = Math.abs(pointXValue - data.point.symbolLocations[0].x);
+                    closetYValue = data.point.symbolLocations[0].y;
+                    tempData = data;
+                }
                 if (showNearest) {
-                    lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : data;
+                    lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : tempData || data;
                 }
                 dataCollection.push(data);
             }
@@ -416,7 +437,13 @@ export class Tooltip extends BaseTooltip {
         };
         const borderWidth : number = this.chart.border.width;
         const padding : number = 3;
+        let toolbarHeight: number;
+        let titleHeight: number;
         const currentPoints: PointData[] = [];
+        if (chart.stockChart) {
+            toolbarHeight = chart.stockChart.enablePeriodSelector ? chart.stockChart.toolbarHeight : 0;
+            titleHeight = measureText(this.chart.stockChart.title, this.chart.stockChart.titleStyle, this.chart.themeStyle.tooltipLabelFont).height + 10;
+        }
         const sharedTooltip: Function = (argsData: ISharedTooltipRenderEventArgs) => {
             if (!argsData.cancel) {
                 if (point.series.type === 'BoxAndWhisker') {
@@ -435,7 +462,7 @@ export class Tooltip extends BaseTooltip {
                     chart, isFirst, this.findSharedLocation(),
                     this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, dataCollection.length === 1 ? dataCollection[0].point : null,
                     this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
-                    new Rect(borderWidth, borderWidth, this.chart.availableSize.width - padding - borderWidth * 2, this.chart.availableSize.height - padding - borderWidth * 2),
+                    new Rect(borderWidth, (chart.stockChart ? (toolbarHeight + titleHeight + borderWidth) : borderWidth), this.chart.availableSize.width - padding - borderWidth * 2, this.chart.availableSize.height - padding - borderWidth * 2),
                     this.chart.crosshair.enable, extraPoints,
                     this.template ? this.getTemplateText(dataCollection) : null,
                     this.template ? argsData.template : ''
@@ -458,6 +485,9 @@ export class Tooltip extends BaseTooltip {
             const toolbarHeight: number = stockChart.enablePeriodSelector ? stockChart.toolbarHeight : 0;
             const element: Element = document.getElementById(stockChart.element.id + '_ChartTitle');
             const titleHeight: number = stockChart.title !== '' ? element.getBoundingClientRect().height + 10 : 0;
+            if (stockChart.tooltip.position === 'Nearest') {
+                return new ChartLocation(this.valueX, this.valueY + toolbarHeight + titleHeight);
+            }
             return new ChartLocation(this.chart.chartAxisLayoutPanel.seriesClipRect.x + 5,
                                      this.chart.chartAxisLayoutPanel.seriesClipRect.y + toolbarHeight + 5 + titleHeight);
 
@@ -530,8 +560,7 @@ export class Tooltip extends BaseTooltip {
         } else if (dataValue === 'size') {
             const format: Function = this.chart.intl.getNumberFormat({ format: '', useGrouping: this.chart.useGroupingSeparator });
             textValue = typeof point[dataValue as string] === 'number' ? format(point[dataValue as string]) : point[dataValue as string];
-        }
-        else {
+        } else {
             textValue = point[dataValue as string];
         }
         return textValue;

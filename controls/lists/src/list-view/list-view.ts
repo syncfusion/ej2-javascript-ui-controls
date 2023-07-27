@@ -46,7 +46,7 @@ export const classNames: ClassNames = {
     headerTemplateText: 'e-headertemplate-text',
     text: 'e-text',
     disable: 'e-disabled',
-    content: 'e-content',
+    container: 'e-list-container',
     icon: 'e-icons',
     backIcon: 'e-icon-back',
     backButton: 'e-back-button',
@@ -181,42 +181,24 @@ export interface AnimationSettings {
 
 /**
  * An enum type that denotes the effects of the ListView. Available options are as follows None, SlideLeft, SlideDown, Zoom, Fade;
+ * ```props
+ * None :- No animation is applied when items are added or removed from the ListView.
+ * SlideLeft :- Items slide in from the left when added and slide out to the left when removed.
+ * SlideDown :- Items slide in from the top when added and slide out to the top when removed.
+ * Zoom :- Items zoom in or out when added or removed.
+ * Fade :- Items fade in or out when added or removed.
+ * ```
  */
-export type ListViewEffect = 
-    /**
-     * No animation is applied when items are added or removed from the ListView.
-     */
-    'None' | 
-    /**
-     * Items slide in from the left when added and slide out to the left when removed.
-     */
-    'SlideLeft' | 
-    /**
-     * Items slide in from the top when added and slide out to the top when removed.
-     */
-    'SlideDown' | 
-    /**
-     * Items zoom in or out when added or removed.
-     */
-    'Zoom' | 
-    /**
-     *  Items fade in or out when added or removed.
-     */
-    'Fade';
+export type ListViewEffect = 'None' | 'SlideLeft' | 'SlideDown' | 'Zoom' | 'Fade';
 
 /**
  * An enum type that denotes the position of checkbox of the ListView. Available options are as follows Left and Right;
+ * ```props
+ * Left :- The checkbox is positioned on the left side of the ListView item.
+ * Right :- The checkbox is positioned on the right side of the ListView item.
+ * ```
  */
-export type checkBoxPosition = 
-    /**
-     *  The checkbox is positioned on the left side of the ListView item.
-     */
-    'Left' | 
-    /**
-     *  The checkbox is positioned on the right side of the ListView item.
-     */
-    'Right';
-
+export type checkBoxPosition = 'Left' | 'Right';
 
 /**
  * Represents the EJ2 ListView control.
@@ -463,6 +445,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='listview/template/index.md' %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @deprecated
      */
     @Property(null)
@@ -474,6 +459,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src="listview/headerTemplate/index.md" %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @deprecated
      */
     @Property(null)
@@ -485,6 +473,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src="listview/groupTemplate/index.md" %}{% endcodeBlock %}
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @deprecated
      */
     @Property(null)
@@ -675,11 +666,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     // Support Component Functions
     private header(text?: string, showBack?: boolean, prop?: string): void {
         if (this.headerEle === undefined && this.showHeader) {
+            this.headerEle = this.createElement('div', { className: classNames.header });
+            const innerHeaderEle: HTMLElement = this.createElement('span', { className: classNames.headerText });
             if (this.enableHtmlSanitizer) {
                 this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
+                innerHeaderEle.innerText = this.headerTitle;
+            }else { 
+                innerHeaderEle.innerHTML = this.headerTitle; 
             }
-            this.headerEle = this.createElement('div', { className: classNames.header });
-            const innerHeaderEle: HTMLElement = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
             const textEle: HTMLElement = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
             const hedBackButton: HTMLElement = this.createElement('div', {
                 className: classNames.icon + ' ' + classNames.backIcon + ' ' + classNames.backButton,
@@ -1316,7 +1310,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             const focusedElement: Element = this.curUL.querySelector('.' + classNames.focused);
             if (focusedElement) {
                 focusedElement.classList.remove(classNames.focused);
-                if (!this.showCheckBox) {
+                if (!this.showCheckBox && !isNullOrUndefined(this.selectedLI)) {
                    this.selectedLI.classList.add(classNames.selected);
                 }
             }
@@ -1774,7 +1768,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.virtualizationModule.uiVirtualization();
         } else {
             this.createList();
-            this.contentContainer = this.createElement('div', { className: classNames.content });
+            this.contentContainer = this.createElement('div', { className: classNames.container });
             this.element.appendChild(this.contentContainer);
             this.renderIntoDom(this.ulElement);
             // eslint-disable-next-line
@@ -2467,7 +2461,7 @@ export interface ClassNames {
     textContent: string;
     groupListItem: string;
     disable: string;
-    content: string;
+    container: string;
     backIcon: string;
     backButton: string;
     icon: string;

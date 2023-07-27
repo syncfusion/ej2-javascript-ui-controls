@@ -187,6 +187,22 @@ describe('DataUtil', () => {
             expect(DataUtil.fnOperators.wildcard('HaN%ar', '*a?%*', true)).toBe(true);
             expect(DataUtil.fnOperators.wildcard('Áèèleè', '*e?le*', true, true)).toBe(true);
         });
+        it('Searching was not working with brackets.', () => {
+            expect(DataUtil.fnOperators.wildcard('Chai (One)', '*)')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Chai (One)', '*(*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Chai (One)', 'Chai (')).toBe(true);
+        });
+        it('Searching bracket "[" in Grid throws script error.', () => {
+            expect(DataUtil.fnOperators.wildcard('Chai (One)[', '*[')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Chai [(One)', '*[*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('[Chai (One)', '[*')).toBe(true);
+        });
+        it('Searching backslash character throws script error.', () => {
+            expect(DataUtil.fnOperators.wildcard('Chai (One\\', '*\\')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Chai \\One)', '*\\*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('\\Chai One)', '\\*')).toBe(true);
+            expect(DataUtil.fnOperators.wildcard('Chai \\One)', 'Chai \\')).toBe(true);
+        });
     });
     describe('parse method', () => {
         it('To check method is properly working when given text as boolean.', () => {
@@ -205,6 +221,11 @@ describe('DataUtil', () => {
         it('EJ2-67751 - Milliseconds is displayed but time is incorrect', () => {
             const parsedDate: any = DataUtil.parse.parseJson(['2021-02-03T00:00:03.556123Z']);
             expect((parsedDate[0] as Date).getMilliseconds()).toBe(556);
+        });
+        it('EJ2-WI-835509 - parse the date without the seconds', () => {
+            const parsedDate: any = DataUtil.parse.parseJson(['2023-06-24T15:41', '2023-06-24T15:41Z']);
+            expect(!isNaN(parsedDate[0])).toBe(true);
+            expect(!isNaN(parsedDate[1])).toBe(true);
         });
     });
     describe('isJson method', () => {

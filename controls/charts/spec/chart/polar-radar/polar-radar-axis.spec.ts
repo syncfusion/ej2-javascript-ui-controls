@@ -854,7 +854,7 @@ describe('Chart Control', () => {
             chartObj.loaded = (args: Arg): void => {
                 let path: Element = document.getElementById('container_MajorGridLine_0_14');
                 let d: string = path.getAttribute("d");
-                expect(d === "M 300 200.125 L 258.06545209888503 105.93846331704785" || d === "M 300 199.625 L 256.9265894982728 102.88053603564855").toBe(true);
+                expect(d === "M 300 200.125 L 257.0892841555031 103.74595421870559" || d === "M 300 199.625 L 256.9265894982728 102.88053603564855").toBe(true);
                 done();
             };
             chartObj.refresh();
@@ -863,7 +863,7 @@ describe('Chart Control', () => {
             chartObj.loaded = (args: Arg): void => {
                 let path: Element = document.getElementById('container_MajorGridLine_0_14');
                 let d: string = path.getAttribute("d");
-                expect(d === "M 300 200.125 L 258.06545209888503 105.93846331704785" || d === "M 300 199.625 L 256.9265894982728 102.88053603564855").toBe(true);
+                expect(d === "M 300 200.125 L 257.0892841555031 103.74595421870559" || d === "M 300 199.625 L 256.9265894982728 102.88053603564855").toBe(true);
                 done();
             };
             chartObj.series[0].type = 'Polar';

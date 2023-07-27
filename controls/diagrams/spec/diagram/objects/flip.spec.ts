@@ -693,4 +693,5 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
 });

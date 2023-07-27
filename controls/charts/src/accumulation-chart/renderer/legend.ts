@@ -144,7 +144,7 @@ export class AccumulationLegend extends BaseLegend {
         let columnHeight: number = 0;
         let legendWidth: number = 0;
         let titleHeight: number = 0;
-        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle, this.chart.themeStyle.legendLabelFont).height, legend.shapeHeight);
         let legendEventArgs: IAccLegendRenderEventArgs;
         let render: boolean = false;
         for (let i: number = 0; i < this.legendCollections.length; i++) {
@@ -157,7 +157,7 @@ export class AccumulationLegend extends BaseLegend {
                 this.convertHtmlEntities(legendEventArgs.text) : legendEventArgs.text);
             legendOption.fill = legendEventArgs.fill;
             legendOption.shape = legendEventArgs.shape;
-            legendOption.textSize = measureText(legendOption.text, legend.textStyle);
+            legendOption.textSize = measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont);
             if (legendOption.render && legendOption.text !== '') {
                 render = true;
                 legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth :
@@ -262,7 +262,7 @@ export class AccumulationLegend extends BaseLegend {
                 option.textCollection = textWrap(
                     option.text,
                     (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (bounds.width - textPadding)) :
-                        (bounds.width - textPadding)), legend.textStyle
+                        (bounds.width - textPadding)), legend.textStyle, null, null, this.chart.themeStyle.legendLabelFont
                 );
             } else {
                 option.textCollection.push(option.text);
@@ -374,7 +374,7 @@ export class AccumulationLegend extends BaseLegend {
         let availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width);
         availablewidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availablewidth) : availablewidth;
         if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
-            legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle);
+            legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle, this.chart.themeStyle.legendTitleFont);
         }
     }
 
@@ -433,7 +433,7 @@ export class AccumulationLegend extends BaseLegend {
         if (!accumulation.title) {
             return null;
         }
-        const titleSize: Size = measureText(accumulation.title, accumulation.titleStyle);
+        const titleSize: Size = measureText(accumulation.title, accumulation.titleStyle, this.chart.themeStyle.legendTitleFont);
         this.titleRect = new Rect(
             accumulation.availableSize.width / 2 - titleSize.width / 2, accumulation.margin.top, titleSize.width, titleSize.height);
     }

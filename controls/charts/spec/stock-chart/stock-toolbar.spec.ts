@@ -37,7 +37,8 @@ describe('Stock chart', () => {
                     xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close', volume: 'volume',
                     dataSource: chartData, type: 'Candle', yName: 'close', name: 'Apple Inc',
                 }],
-                enablePeriodSelector: true
+                enablePeriodSelector: true,
+                seriesType : ['Line', 'Hilo', 'HiloOpenClose', 'Spline', 'Candle']
             });
             chart.appendTo('#stock1');
         });
@@ -45,50 +46,15 @@ describe('Stock chart', () => {
             chart.destroy();
             chartElement.remove();
         });
-        it('checking with Series button click', (done: Function) => {
-            element = document.getElementById('stock1_seriesType');
+        it('checking with date range selection', (done: Function) => {
+            element = document.getElementById('stock1customRange');
             trigger.clickEvent(element);
-            list = document.getElementsByClassName('e-item')[0];
-           // expect(list.textContent).toBe('Line');
-            done();
-        });
-        it('checking with Hilo series selection', (done: Function) => {
-            list = document.getElementsByClassName('e-item')[1];
+            list = document.getElementsByClassName('e-cell')[3];
             trigger.clickEvent(list);
-            expect(chart.series[0].type == 'Hilo').toBe(true);
-            done();
-        });
-        it('checking with HiloOpenClose series selection', (done: Function) => {
-            element = document.getElementById('stock1_seriesType');
+            list = document.getElementsByClassName('e-cell')[20];
+            trigger.clickEvent(list);
+            element = document.querySelector('.e-apply.e-flat.e-primary.e-css.e-lib.e-btn.e-control.e-keyboard')            
             trigger.clickEvent(element);
-            list = document.getElementsByClassName('e-item')[2];
-            trigger.clickEvent(list);
-            expect(chart.series[0].type == 'HiloOpenClose').toBe(true);
-            done();
-        });
-        it('checking with Candle series selection', (done: Function) => {
-            element = document.getElementById('stock1_seriesType');
-            trigger.clickEvent(element);
-            list = document.getElementsByClassName('e-item')[3];
-            trigger.clickEvent(list);
-            expect(chart.series[0].type == 'Candle').toBe(true);
-            expect(chart.series[0].enableSolidCandles == false).toBe(true);
-            done();
-        });
-        it('checking with Spline series selection', (done: Function) => {
-            element = document.getElementById('stock1_seriesType');
-            trigger.clickEvent(element);
-            list = document.getElementsByClassName('e-item')[4];
-            trigger.clickEvent(list);
-            expect(chart.series[0].type == 'Spline').toBe(true);
-            done();
-        });
-        it('checking with Candle series selection', (done: Function) => {
-            element = document.getElementById('stock1_seriesType');
-            trigger.clickEvent(element);
-            list = document.getElementsByClassName('e-item')[5];
-            trigger.clickEvent(list);
-            expect(chart.series[0].type == 'Candle').toBe(true);
             done();
         });
         it('checking with Ema Indicator selection', (done: Function) => {
@@ -197,17 +163,6 @@ describe('Stock chart', () => {
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[0];
             //expect(list.textContent == 'PNG').toBe(true);
-            done();
-        });
-        it('checking with print type', (done: Function) => {
-            element = document.getElementById('stock1_print');
-            expect(element.textContent == 'Print').toBe(true);
-            done();
-        });
-        it('checking with reset', (done: Function) => {
-            element = document.getElementById('stock1_reset');
-            trigger.clickEvent(element);
-            expect(chart.series[0].type == 'Candle').toBe(true);
             done();
         });
         it('checking with periodselector', (done: Function) => {

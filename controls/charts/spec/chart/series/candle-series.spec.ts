@@ -163,19 +163,19 @@ describe('Candle Series ', () => {
                 let x0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('x');
                 let y0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('y');
                 expect(Math.round(x0) === 363 || Math.round(x0) === 365).toBe(true);
-                expect(Math.round(y0) === 148 || Math.round(y0) === 144).toBe(true);
+                expect(Math.round(y0) === 147 || Math.round(y0) === 144).toBe(true);
                 let x1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('x');
                 let y1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('y');
                 expect(Math.round(x1) === 363 || Math.round(x1) === 365).toBe(true);
-                expect(Math.round(y1) === 326 || Math.round(y1) === 322).toBe(true);
+                expect(Math.round(y1) === 328 || Math.round(y1) === 322).toBe(true);
                 let x2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('x');
                 let y2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('y');
                 expect(Math.round(x2) === 363 || Math.round(x2) === 365).toBe(true);
-                expect(Math.round(y2) === 209 || Math.round(y2) === 208).toBe(true);
+                expect(Math.round(y2) === 211 || Math.round(y2) === 208).toBe(true);
                 let x3: number = +document.getElementById('container_Series_0_Point_0_Text_3').getAttribute('x');
                 let y3: number = +document.getElementById('container_Series_0_Point_0_Text_3').getAttribute('y');
                 expect(Math.round(x3) === 363 || Math.round(x3) === 365).toBe(true);
-                expect(Math.round(y3) === 246 || Math.round(y3) === 240).toBe(true);
+                expect(Math.round(y3) === 244 || Math.round(y3) === 240).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -186,15 +186,15 @@ describe('Candle Series ', () => {
                 let x0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('x');
                 let y0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('y');
                 expect(Math.round(x0) === 363 || Math.round(x0) === 365).toBe(true);
-                expect(Math.round(y0) === 209 || Math.round(y0) === 208).toBe(true);
+                expect(Math.round(y0) === 211 || Math.round(y0) === 208).toBe(true);
                 let x1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('x');
                 let y1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('y');
                 expect(Math.round(x1) === 363 || Math.round(x1) === 365).toBe(true);
-                expect(Math.round(y1) === 31 || Math.round(y1) === 30 || Math.round(y1) === 32).toBe(true);
+                expect(Math.round(y1) === 30 || Math.round(y1) === 30 || Math.round(y1) === 32).toBe(true);
                 let x2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('x');
                 let y2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('y');
                 expect(Math.round(x2) === 363 || Math.round(x2) === 365).toBe(true);
-                expect(Math.round(y2) === 148 || Math.round(y2) === 144).toBe(true);
+                expect(Math.round(y2) === 147 || Math.round(y2) === 144).toBe(true);
                 let x3: number = +document.getElementById('container_Series_0_Point_0_Text_3').getAttribute('x');
                 let y3: number = +document.getElementById('container_Series_0_Point_0_Text_3').getAttribute('y');
                 expect(Math.round(x3) === 363 || Math.round(x3) === 365).toBe(true);
@@ -211,7 +211,7 @@ describe('Candle Series ', () => {
             loaded = (args: Object): void => {
                 let x0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('x');
                 let y0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('y');
-                expect(Math.round(x0) === 421 || Math.round(x0) === 422 || Math.round(x0) === 423).toBe(true);
+                expect(Math.round(x0) === 421 || Math.round(x0) === 422 || Math.round(x0) === 424).toBe(true);
                 expect(Math.round(y0) === 179 || Math.round(y0) === 176).toBe(true);
                 let x1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('x');
                 let y1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('y');
@@ -219,7 +219,7 @@ describe('Candle Series ', () => {
                 expect(Math.round(y1) === 179 || Math.round(y1) === 176).toBe(true);
                 let x2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('x');
                 let y2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('y');
-                expect(Math.round(x2) === 317 || Math.round(x2) === 318 || Math.round(x2) === 320).toBe(true);
+                expect(Math.round(x2) === 317 || Math.round(x2) === 319 || Math.round(x2) === 320).toBe(true);
                 expect(Math.round(y2) === 179 || Math.round(y2) === 176).toBe(true);
                 let x3: number = +document.getElementById('container_Series_0_Point_0_Text_3').getAttribute('x');
                 let y3: number = +document.getElementById('container_Series_0_Point_0_Text_3').getAttribute('y');
@@ -237,7 +237,7 @@ describe('Candle Series ', () => {
             loaded = (args: Object): void => {
                 let x0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('x');
                 let y0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('y');
-                expect(Math.round(x0) === 317 || Math.round(x0) === 318 || Math.round(x0) === 320).toBe(true);
+                expect(Math.round(x0) === 317 || Math.round(x0) === 319 || Math.round(x0) === 320).toBe(true);
                 expect(Math.round(y0) === 179 || Math.round(y0) === 176).toBe(true);
                 let x1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('x');
                 let y1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('y');
@@ -245,11 +245,11 @@ describe('Candle Series ', () => {
                 expect(Math.round(y1) === 179 || Math.round(y1) === 176).toBe(true);
                 let x2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('x');
                 let y2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('y');
-                expect(Math.round(x2) === 421 || Math.round(x2) === 422 || Math.round(x2) === 423).toBe(true);
+                expect(Math.round(x2) === 421 || Math.round(x2) === 422 || Math.round(x2) === 424).toBe(true);
                 expect(Math.round(y2) === 179 || Math.round(y2) === 176).toBe(true);
                 let x3: number = +document.getElementById('container_Series_0_Point_0_Text_3').getAttribute('x');
                 let y3: number = +document.getElementById('container_Series_0_Point_0_Text_3').getAttribute('y');
-                expect(Math.round(x3) === 522 || Math.round(x3) === 523 || Math.round(x3) === 526).toBe(true);
+                expect(Math.round(x3) === 522 || Math.round(x3) === 523 || Math.round(x3) === 525).toBe(true);
                 expect(Math.round(y3) === 179 || Math.round(y3) === 176).toBe(true);
                 chartObj.loaded = null;
                 chartObj.isTransposed = false;
@@ -741,6 +741,7 @@ describe('Candle Series ', () => {
                 expect(tooltip.offsetTop < y + series.points[3].regions[0].height).toBe(true);
                 tooltip = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
+                trigger.mouseleavetEvent(target, Math.ceil(x), Math.ceil(y));
                 done();
             };
             chartObj.loaded = loaded;
@@ -787,17 +788,17 @@ describe('Candle Series ', () => {
         it('Checking with datalabel outer position', (done: Function) => {
             loaded = (args: Object): void => {
                 let x0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('x');
-                let y0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('y');                
+                let y0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('y');           
                 expect(Math.round(x0) === 99).toBe(true);
-                expect(Math.round(y0) === 203 || Math.round(y0) === 198 || Math.round(y0) === 183).toBe(true);
+                expect(Math.round(y0) === 202 || Math.round(y0) === 198 || Math.round(y0) === 183).toBe(true);
                 let x1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('x');
                 let y1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('y');
                 expect(Math.round(x1) === 99).toBe(true); 
-                expect(Math.round(y1) === 239 || Math.round(y1) === 237 || Math.round(y1) === 219).toBe(true);
+                expect(Math.round(y1) === 241 || Math.round(y1) === 237 || Math.round(y1) === 219).toBe(true);
                 let x2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('x');
                 let y2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('y');
                 expect(Math.round(x2) === 99).toBe(true); 
-                expect(Math.round(y2) === 430 || Math.round(y2) === 424 || Math.round(y2) === 392).toBe(true);
+                expect(Math.round(y2) === 431 || Math.round(y2) === 424 || Math.round(y2) === 378).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -823,15 +824,15 @@ describe('Candle Series ', () => {
                 let x0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('x');
                 let y0: number = +document.getElementById('container_Series_0_Point_0_Text_0').getAttribute('y');
                 expect(Math.round(x0) === 99).toBe(true);
-                expect(Math.round(y0) === 203 || Math.round(y0) === 198 || Math.round(y0) === 183).toBe(true);
+                expect(Math.round(y0) === 202 || Math.round(y0) === 198 || Math.round(y0) === 183).toBe(true);
                 let x1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('x');
                 let y1: number = +document.getElementById('container_Series_0_Point_0_Text_1').getAttribute('y');
                 expect(Math.round(x1) === 99).toBe(true);
-                expect(Math.round(y1) === 239 || Math.round(y1) === 237 || Math.round(y1) === 219).toBe(true);
+                expect(Math.round(y1) === 241 || Math.round(y1) === 237 || Math.round(y1) === 219).toBe(true);
                 let x2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('x');
                 let y2: number = +document.getElementById('container_Series_0_Point_0_Text_2').getAttribute('y');
                 expect(Math.round(x2) === 99).toBe(true);
-                expect(Math.round(y2) === 422 || Math.round(y2) === 421 || Math.round(y2) === 414 || Math.round(y2) === 383).toBe(true);
+                expect(Math.round(y2) === 421 || Math.round(y2) === 421 || Math.round(y2) === 414 || Math.round(y2) === 378).toBe(true);
                 done();
             };
 
@@ -883,7 +884,6 @@ describe('Candle Series ', () => {
                 let crosshair: Element = <Element>document.getElementById('container_svg').childNodes[4];
                 let element1: HTMLElement;
                 expect(crosshair.childNodes.length == 3).toBe(true);
-
                 element1 = <HTMLElement>crosshair.childNodes[0];
                 expect(element1.getAttribute('d').indexOf(chartArea.getAttribute('x')) > 0).toBe(true);
 
@@ -898,7 +898,8 @@ describe('Candle Series ', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
                 expect(element1.textContent).toEqual('#3');
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
-                expect(element1.textContent === '22.979K' || element1.textContent === '22.976K' || element1.textContent === '22.867K').toBe(true);
+                expect(element1.textContent === '22.756K' || element1.textContent === '22.976K' || element1.textContent === '22.867K').toBe(true);
+                trigger.mouseleavetEvent(chartArea, Math.ceil(x), Math.ceil(y));
                 done();
             }
             chartObj.loaded = loaded;
@@ -1006,7 +1007,8 @@ describe('Candle Series ', () => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[2] == '389.5' || svg.getAttribute('d').split(' ')[2] == '393.5').toBe(true);
                 svg = document.getElementById('containerAxisLine_1');
-                expect(svg.getAttribute('d').split(' ')[2] == '234.375' || svg.getAttribute('d').split(' ')[2] == '239.125' ).toBe(true);
+                expect(svg.getAttribute('d').split(' ')[2] == '239.625').toBe(true);
+
                 done();
             };
             chartObj.loaded = loaded;
@@ -1084,9 +1086,8 @@ describe('Candle Series ', () => {
             loaded = (args: Object): void => {
                 let point: Element = document.getElementById('containerSeriesGroup1');
                 expect(point != null).toBe(true);
-                expect(point.getAttribute('transform') == 'translate(464.5,259.625)' ||
-                    point.getAttribute('transform') == 'translate(462.5,257.625)' ||
-                    point.getAttribute('transform') == 'translate(462.5,262.375)').toBe(true);  
+                expect(point.getAttribute('transform') == 'translate(462.5,262.875)' ||
+                    point.getAttribute('transform') == 'translate(462.5,262.375)').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1365,6 +1366,17 @@ describe('Candle Series ', () => {
                 };
                 chartObj.loaded = loaded;
                 chartObj.primaryXAxis.rangePadding = 'Round';
+                chartObj.refresh();
+            });
+            it('Checking with Months and its Round rangePadding', (done: Function) => {
+                loaded = (args: Object): void => {
+                    expect(document.getElementById('container0_AxisLabel_0').getAttribute('fill') == '#1E192B').toBe(true);
+                    expect(document.getElementById('container_Series_0_Point_1').getAttribute('fill') == '#F7523F').toBe(true);
+                    done();
+                };
+                chartObj.loaded = loaded;
+                chartObj.primaryXAxis.rangePadding = 'Round';
+                chartObj.theme = 'Material3';
                 chartObj.refresh();
             });
         });

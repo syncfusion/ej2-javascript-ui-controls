@@ -195,12 +195,12 @@ export class ShapeAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderShapeAnnotations(shapeAnnotations: any, pageNumber: number, isImportAcion?: boolean): void {
+    public renderShapeAnnotations(shapeAnnotations: any, pageNumber: number, isImportAcion?: boolean,  isAnnotOrderAction?: boolean): void {
         if (shapeAnnotations) {
             if (shapeAnnotations.length >= 1) {
                 // eslint-disable-next-line
                 let shapeAnnots: any[] = this.pdfViewer.annotation.getStoredAnnotations(pageNumber, shapeAnnotations, '_annotations_shape');
-                if (!shapeAnnots || isImportAcion) {
+                if (!shapeAnnots || isAnnotOrderAction || isImportAcion) {
                     for (let i: number = 0; i < shapeAnnotations.length; i++) {
                     // eslint-disable-next-line
                     let annotation: any = shapeAnnotations[i];
@@ -247,12 +247,6 @@ export class ShapeAnnotation {
                             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
                             // eslint-disable-next-line max-len
                             annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-                            let isPrint: boolean = true;
-                            if (annotation.annotationAddMode === 'Imported Annotation') {
-                                isPrint = annotation.IsPrint;
-                            } else {
-                                isPrint = annotation.AnnotationSettings.isPrint;
-                            }
                             let left: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
                             let top: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
                             let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
@@ -270,7 +264,7 @@ export class ShapeAnnotation {
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                                 // eslint-disable-next-line max-len
                                 labelBounds: annotation.LabelBounds,  annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-                                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: annotation.IsCommentLock, isAnnotationRotated: isAnnotationRotated
+                                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isAnnotationRotated: isAnnotationRotated
                             };
                             let annot: PdfAnnotationBaseModel;
                             // eslint-disable-next-line
@@ -294,7 +288,7 @@ export class ShapeAnnotation {
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                                 labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                                 annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
-                                isPrint: isPrint, isCommentLock: annotationObject.isCommentLock
+                                isPrint: annotation.IsPrint, isCommentLock: annotationObject.isCommentLock
                             };
                             const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
@@ -882,7 +876,7 @@ export class ShapeAnnotation {
         // eslint-disable-next-line max-len
         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
         // eslint-disable-next-line max-len
-        annotation.allowedInteractions =  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
         // eslint-disable-next-line max-len
         annotationObject = {
             id: 'shape', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,pageNumber: pageNumber,
@@ -954,7 +948,7 @@ export class ShapeAnnotation {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // eslint-disable-next-line max-len
             labelBounds: annotation.LabelBounds, pageNumber: pageNumber, labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         return annotationObject;
     }
@@ -997,6 +991,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.lineSettings.annotationSelectorSettings ? this.pdfViewer.lineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.lineSettings);
+            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.lineSettings.allowedInteractions ? this.pdfViewer.lineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             shapeAnnotationType = 'Line';
             if(annotationObject.vertexPoints)
@@ -1011,6 +1006,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.arrowSettings.annotationSelectorSettings ? this.pdfViewer.arrowSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.arrowSettings);
+            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.arrowSettings.allowedInteractions ? this.pdfViewer.arrowSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             shapeAnnotationType = 'Line';
             isArrow=true;
@@ -1026,6 +1022,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.rectangleSettings.annotationSelectorSettings ? this.pdfViewer.rectangleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.rectangleSettings);
+            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.rectangleSettings.allowedInteractions ? this.pdfViewer.rectangleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             shapeAnnotationType = 'Square';
             annotationObject.width = annotationObject.width?annotationObject.width : 150;
@@ -1036,6 +1033,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.circleSettings.annotationSelectorSettings ? this.pdfViewer.circleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.circleSettings);
+            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.circleSettings.allowedInteractions ? this.pdfViewer.circleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             shapeAnnotationType = 'Circle';
             annotationObject.width = annotationObject.width?annotationObject.width : 100;
@@ -1046,6 +1044,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.polygonSettings.annotationSelectorSettings ? this.pdfViewer.polygonSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.polygonSettings);
+            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ? this.pdfViewer.polygonSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             shapeAnnotationType = 'Polygon';
             if(annotationObject.vertexPoints)
@@ -1055,11 +1054,11 @@ export class ShapeAnnotation {
             annotationObject.width = annotationObject.width?annotationObject.width : 1;
             annotationObject.height = annotationObject.height?annotationObject.height : 1;
         }
-        annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
-        annotationSettings.minHeight = annotationObject.minHeight?annotationObject.minHeight: 0;
-        annotationSettings.minWidth = annotationObject.minWidth?annotationObject.minWidth: 0;
-        annotationSettings.maxWidth = annotationObject.maxWidth?annotationObject.maxWidth: 0;
-        annotationSettings.maxHeight = annotationObject.maxHeight?annotationObject.maxHeight: 0;
+        annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:annotationSettings.isLock;
+        annotationSettings.minHeight = annotationObject.minHeight?annotationObject.minHeight: annotationSettings.minHeight;
+        annotationSettings.minWidth = annotationObject.minWidth?annotationObject.minWidth: annotationSettings.minWidth;
+        annotationSettings.maxWidth = annotationObject.maxWidth?annotationObject.maxWidth: annotationSettings.maxWidth;
+        annotationSettings.maxHeight = annotationObject.maxHeight?annotationObject.maxHeight: annotationSettings.maxHeight;
 
         //Converting points model into vertex property
         if(vertexPoints)

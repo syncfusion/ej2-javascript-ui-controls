@@ -148,9 +148,14 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private changeHandler(event: Event): void {
-        this.checked = true; this.dataBind();
-        let value: string = this.element.getAttribute('value');
+        this.checked = true;
+        this.dataBind();
+        let value: string | boolean = this.element.getAttribute('value');
         value = this.isVue && value ? this.element.value : this.value;
+        const type: string = typeof this.value;
+        if (this.isVue && type === 'boolean') {
+            value = value === 'true' ? true : false;
+        }
         this.trigger('change', <ChangeArgs>{ value: value, event: event });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isAngular) {
@@ -164,7 +169,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         for (let i: number = 0; i < radioGrp.length; i++) {
             input = radioGrp[i as number] as HTMLInputElement;
             if (input !== this.element) {
-                instance = getInstance(input, RadioButton) as RadioButton; instance.checked = false;
+                instance = getInstance(input, RadioButton) as RadioButton;
+                instance.checked = false;
                 if (this.tagName === 'EJS-RADIOBUTTON') { instance.angularValue = this.value; }
             }
         }
@@ -269,11 +275,12 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
-        const value: string = this.element.getAttribute('value');
-        if (this.isVue && value && value === this.value) {
-            this.checked = true;
+        let value: string | boolean = this.element.getAttribute('value');
+        const type: string = typeof this.value;
+        if (this.isVue && type === 'boolean') {
+            value = value === 'true' ? true : false;
         }
-        if (this.isVue ? this.value && !value : this.value) {
+        if (this.isVue ? this.value && type !== 'boolean' && !value : this.value) {
             this.element.setAttribute('value', this.value);
         }
         if (this.checked) {
@@ -320,9 +327,31 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         }
     }
 
-    private labelRippleHandler(e: MouseEvent): void {
-        const ripple: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
-        rippleMouseHandler(e, ripple);
+    private labelMouseDownHandler(e: MouseEvent): void {
+        const rippleSpan: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
+        rippleMouseHandler(e, rippleSpan);
+    }
+
+    private labelMouseLeaveHandler(e: MouseEvent): void {
+        const rippleSpan: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
+        if (rippleSpan) {
+            const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
+            for (let i: number = rippleElem.length - 1; i > 0; i--) {
+                rippleSpan.removeChild(rippleSpan.childNodes[i as number]);
+            }
+            rippleMouseHandler(e, rippleSpan);
+        }
+    }
+
+    private labelMouseUpHandler(e: MouseEvent): void {
+        const rippleSpan: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
+        if (rippleSpan) {
+            const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
+            for (let i: number = rippleElem.length - 1; i > 0; i--) {
+                rippleSpan.removeChild(rippleSpan.childNodes[i as number]);
+            }
+            rippleMouseHandler(e, rippleSpan);
+        }
     }
 
     private formResetHandler(): void {
@@ -389,7 +418,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                 this.element.setAttribute('name', newProp.name);
                 break;
             case 'value':
-                if (!isNullOrUndefined(this.htmlAttributes) && this.htmlAttributes.value) { break; }
+                const type: string | undefined = typeof this.htmlAttributes.value;
+                if (!isNullOrUndefined(this.htmlAttributes) && (this.htmlAttributes.value || type === 'boolean' && !this.htmlAttributes.value)) { break; }
                 this.element.setAttribute('value', newProp.value);
                 break;
             case 'htmlAttributes':
@@ -444,6 +474,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         this.element.disabled = true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     private setText(text: string): void {
         const label: Element = this.getLabel();
         let textLabel: Element = label.getElementsByClassName(LABEL)[0];
@@ -486,8 +518,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         const rippleLabel: Element = label.getElementsByTagName('label')[0];
         if (rippleLabel) {
-            EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
-            EventHandler.remove(rippleLabel, 'mouseup', this.labelRippleHandler);
+            EventHandler.remove(rippleLabel, 'mousedown', this.labelMouseDownHandler);
+            EventHandler.remove(rippleLabel, 'mouseup', this.labelMouseUpHandler);
+            EventHandler.remove(rippleLabel, 'mouseleave', this.labelMouseLeaveHandler);
         }
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
@@ -502,8 +535,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         const rippleLabel: Element = label.getElementsByClassName(LABEL)[0];
         if (rippleLabel) {
-            EventHandler.add(rippleLabel, 'mousedown', this.labelRippleHandler, this);
-            EventHandler.add(rippleLabel, 'mouseup', this.labelRippleHandler, this);
+            EventHandler.add(rippleLabel, 'mousedown', this.labelMouseDownHandler, this);
+            EventHandler.add(rippleLabel, 'mouseup', this.labelMouseUpHandler, this);
+            EventHandler.add(rippleLabel, 'mouseleave', this.labelMouseLeaveHandler, this);
         }
         if (this.formElement) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);

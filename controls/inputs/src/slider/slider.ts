@@ -2,7 +2,7 @@
 import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Tooltip, Position, TooltipEventArgs, getZindexPartial } from '@syncfusion/ej2-popups';
 import { SliderModel, TicksDataModel, TooltipDataModel, LimitDataModel, ColorRangeDataModel } from './slider-model';
 
@@ -277,88 +277,53 @@ export class TooltipData extends ChildProperty<TooltipData> {
 
 /**
  * Ticks Placement.
+ * ```props
+ * Before :- Ticks are placed in the top of the horizontal slider bar or at the left of the vertical slider bar.
+ * After :- Ticks are placed in the bottom of the horizontal slider bar or at the right of the vertical slider bar.
+ * Both :- Ticks are placed on the both side of the slider bar.
+ * None :- Ticks are not shown.
+ * ```
  */
- export type Placement = 
- /**
- * Ticks are placed in the top of the horizontal slider bar or at the left of the vertical slider bar.
- */
- 'Before' | 
- /**
- * Ticks are placed in the bottom of the horizontal slider bar or at the right of the vertical slider bar.
- */
- 'After' | 
- /**
- * Ticks are placed on the both side of the slider bar.
- */
- 'Both' | 
- /**
- * Ticks are not shown.
- */
- 'None';
+ export type Placement = 'Before' | 'After' | 'Both' | 'None';
 
 /**
  * Tooltip Placement.
+ * ```props
+ * Before :- Tooltip is shown in the top of the horizontal slider bar or at the left of the vertical slider bar.
+ * After :- Tooltip is shown in the bottom of the horizontal slider bar or at the right of the vertical slider bar.
+ * ```
  */
- export type TooltipPlacement = 
- /**
- * Tooltip is shown in the top of the horizontal slider bar or at the left of the vertical slider bar.
- */
- 'Before' | 
- /**
- * Tooltip is shown in the bottom of the horizontal slider bar or at the right of the vertical slider bar.
- */
- 'After';
+ export type TooltipPlacement = 'Before' | 'After';
 
 /**
  * Tooltip ShowOn.
+ * ```props
+ * Focus :- Tooltip is shown while focusing the Slider handle.
+ * Hover :- Tooltip is shown while hovering the Slider handle.
+ * Always :- Tooltip is shown always.
+ * Auto :- Tooltip is shown while hovering the Slider handle in desktop and tap and hold in touch devices.
+ * ```
  */
- export type TooltipShowOn = 
- /**
- * Tooltip is shown while focusing the Slider handle.
- */
- 'Focus' | 
- /**
- * Tooltip is shown while hovering the Slider handle.
- */
- 'Hover' | 
- /**
- * Tooltip is shown always.
- */
- 'Always' | 
- /**
- * Tooltip is shown while hovering the Slider handle in desktop and tap and hold in touch devices.
- */
- 'Auto';
-
+ export type TooltipShowOn = 'Focus' | 'Hover' | 'Always' | 'Auto';
 
 /**
  * Slider type.
+ * ```props
+ * Default :- Allows to select a single value in the Slider.
+ * MinRange :- Allows to select a single value in the Slider, it display’s a shadow from the start to the current value.
+ * Range :- Allows to select a range of values in the Slider.
+ * ```
  */
- export type SliderType = 
- /**
- * Allows to select a single value in the Slider.
- */
- 'Default' | 
- /**
- * Allows to select a single value in the Slider, it display’s a shadow from the start to the current value.
- */
- 'MinRange' | 
- /**
- * Allows to select a range of values in the Slider.
- */
- 'Range';
+ export type SliderType = 'Default' | 'MinRange' | 'Range';
+
 /**
  * Slider orientation.
+ * ```props
+ * Horizontal :- Renders the slider in horizontal orientation.
+ * Vertical :- Renders the slider in vertical orientation.
+ * ```
  */
- export type SliderOrientation = 
- /**
- * Renders the slider in horizontal orientation.
- */
- 'Horizontal' | 
- /**
- * Renders the slider in vertical orientation.
- */
- 'Vertical';
+ export type SliderOrientation = 'Horizontal' | 'Vertical';
 
 type SliderHandleNumber = 1 | 2;
 
@@ -490,6 +455,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     // tslint:disable-next-line:no-any
     private repeatInterval: any;
     private isMaterial: boolean;
+    private isMaterial3: boolean;
     private isBootstrap: boolean;
     private isBootstrap4: boolean;
     private isTailwind: boolean;
@@ -854,7 +820,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setElementWidth(width: number | string): void {
-        if (!isNullOrUndefined(width)) {
+        if (!isNullOrUndefined(width) && !isNullOrUndefined(this.sliderContainer)) {
             if (typeof width === 'number') {
                 this.sliderContainer.style.width = formatUnit(width);
             } else if (typeof width === 'string') {
@@ -961,13 +927,15 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private getThemeInitialization(): void {
         this.isMaterial = this.getTheme(this.sliderContainer) === 'material'
             || this.getTheme(this.sliderContainer) === 'material-dark';
+        this.isMaterial3 = this.getTheme(this.sliderContainer) === 'Material3'
+            || this.getTheme(this.sliderContainer) === 'Material3-dark';
         this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap'
             || this.getTheme(this.sliderContainer) === 'bootstrap-dark';
         this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
         this.isTailwind = this.getTheme(this.sliderContainer) === 'tailwind' || this.getTheme(this.sliderContainer) === 'tailwind-dark';
         this.isBootstrap5 = this.getTheme(this.sliderContainer) === 'bootstrap5';
         this.isFluent = this.getTheme(this.sliderContainer) === 'FluentUI';
-        this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
+        this.isMaterialTooltip = (this.isMaterial || this.isMaterial3) && this.type !== 'Range' && this.tooltip.isVisible;
     }
 
     private createRangeBar(): void {
@@ -1124,7 +1092,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             if (this.type !== 'Default') {
                 this.rangeBar.style.transition = 'none';
             }
-            if (this.isMaterial && this.tooltip.isVisible && this.type === 'Default') {
+            if ((this.isMaterial || this.isMaterial3) && this.tooltip.isVisible && this.type === 'Default') {
                 this.tooltipElement.style.transition = this.transition.handle;
             }
             this.tooltipToggle(this.getHandle());
@@ -1171,9 +1139,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     }
     private setHandler(): void {
-        if (this.min > this.max) {
-            this.min = this.max;
-        }
         this.createFirstHandle();
         if (this.type === 'Range') {
             this.createSecondHandle();
@@ -1212,12 +1177,20 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.initialTooltip) {
             this.initialTooltip = false;
             this.setTooltipContent();
-            args.text = text = this.tooltipObj.content as string;
+            args.text = text = (typeof(this.tooltipObj.content) ==='function'? this.tooltipObj.content():this.tooltipObj.content) as string;
             this.trigger('tooltipChange', args, (observedArgs: SliderChangeEventArgs) => {
                 this.addTooltipClass(observedArgs.text);
                 if (text !== observedArgs.text) {
                     this.customAriaText = observedArgs.text;
-                    this.tooltipObj.content = observedArgs.text;
+                    if (this.enableHtmlSanitizer) {
+                        observedArgs.text = SanitizeHtmlHelper.sanitize(observedArgs.text.toString());
+                    } else {
+                        observedArgs.text = observedArgs.text.toString();
+                    }
+                    const contentTemp: Function = function (): string {
+                        return observedArgs.text;
+                    };
+                    this.tooltipObj.content = initializeCSPTemplate(contentTemp);
                     this.setAriaAttrValue(this.firstHandle);
                     if (this.type === 'Range') {
                         this.setAriaAttrValue(this.secondHandle);
@@ -1233,7 +1206,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private setTooltipContent(): void {
         let content: string;
         content = this.formatContent(this.tooltipFormatInfo, false);
-        this.tooltipObj.content = content;
+        const contentTemp: Function = function(): string {
+            return content;
+        };
+        this.tooltipObj.content = initializeCSPTemplate(contentTemp);
     }
 
     private formatContent(formatInfo: NumberFormatOptions, ariaContent: boolean): string {
@@ -1324,7 +1300,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private tooltipCollision(position: string): void {
-        if (this.isBootstrap || this.isBootstrap4 || (this.isMaterial && !this.isMaterialTooltip)) {
+        if (this.isBootstrap || this.isBootstrap4 || ((this.isMaterial || this.isMaterial3) && !this.isMaterialTooltip)) {
             const tooltipOffsetValue: number = this.isBootstrap4 ? bootstrap4TooltipOffset : bootstrapTooltipOffset;
             switch (position) {
             case 'TopCenter':
@@ -1414,9 +1390,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.tooltipElement.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
             }
             if (this.type === 'Default') {
-                setTimeout(() => { this.tooltipElement.style.transition = this.transition.handle; }, 2500);
+                setTimeout(() => { if (this.tooltipElement) this.tooltipElement.style.transition = this.transition.handle; }, 2500);
             } else {
-                setTimeout(() => { this.tooltipElement.style.transition = 'none'; }, 2500);
+                setTimeout(() => { if (this.tooltipElement) this.tooltipElement.style.transition = 'none'; }, 2500);
             }
 
         }
@@ -1434,7 +1410,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.tooltipElement.classList.remove(classNames.materialTooltipOpen);
             this.setTooltipTransform();
             this.tooltipTarget = undefined;
-            setTimeout(() => { this.tooltipElement.style.transition = 'none'; }, 2500);
+            setTimeout(() => { if (this.tooltipElement) this.tooltipElement.style.transition = 'none'; }, 2500);
         }
     }
 
@@ -1462,6 +1438,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setTooltipTransform(): void {
         let transformProperties: { [key: string]: string } = this.getTooltipTransformProperties(this.previousTooltipClass);
+        if (isNullOrUndefined(this.tooltipElement)) return;
         if ((this.tooltipElement.firstElementChild as HTMLElement).innerText.length > 4) {
             this.tooltipElement.style.transform = `${transformProperties.translate} scale(0.01)`;
         } else {
@@ -1471,9 +1448,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private renderTooltip(): void {
         this.tooltipObj = new Tooltip({
-            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4 || this.isTailwind || this.isBootstrap5 || this.isFluent,
+            showTipPointer: this.isBootstrap || this.isMaterial || this.isMaterial3 || this.isBootstrap4 || this.isTailwind || this.isBootstrap5 || this.isFluent,
             cssClass: classNames.sliderTooltip,
-            height: this.isMaterial ? 30 : 'auto',
+            height: (this.isMaterial || this.isMaterial3) ? 30 : 'auto',
             animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },
             opensOn: 'Custom',
             beforeOpen: this.tooltipBeforeOpen.bind(this),
@@ -1537,7 +1514,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private buttonFocusOut(): void {
-        if (this.isMaterial) {
+        if (this.isMaterial || this.isMaterial3) {
             this.getHandle().classList.remove('e-large-thumb-size');
         }
     }
@@ -1710,7 +1687,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 if (orien === 'h') {
                     start = this.makeRoundNumber(start + smallStep, decimalPoints);
                 } else {
-                    start = this.makeRoundNumber(start - smallStep, decimalPoints);
+                    if (this.min > this.max) {
+                        start = this.makeRoundNumber(start + smallStep, decimalPoints);
+                    }
+                    else {
+                        start = this.makeRoundNumber(start - smallStep, decimalPoints);
+                    }
                 }
                 left = this.makeRoundNumber(left + smallStep, decimalPoints);
             }
@@ -1944,16 +1926,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             enabledRTL ? (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), true)) :
                 (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), false));
         } else if (((<KeyboardEvent>args).keyCode === 36)) {
-            value = parseFloat(this.min.toString());
+            value = parseFloat(this.min < this.max ? this.min.toString() : this.max.toString());
 
         } else if (((<KeyboardEvent>args).keyCode === 35)) {
-            value = parseFloat(this.max.toString());
+            value = parseFloat(this.min < this.max ? this.max.toString() : this.min.toString());
         }
         if (this.limits.enabled) {
             value = this.getLimitCorrectedValues(value);
         }
         this.changeHandleValue(value);
-        if (this.isMaterial && !this.tooltip.isVisible &&
+        if ((this.isMaterial || this.isMaterial3) && !this.tooltip.isVisible &&
             !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
             this.materialChange();
         }
@@ -1990,7 +1972,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setRangeBar(): void {
-        if (this.orientation === 'Horizontal') {
+        if (this.orientation === 'Horizontal' && !isNullOrUndefined(this.rangeBar)) {
             if (this.type === 'MinRange') {
                 // eslint-disable-next-line
                 this.enableRtl ? (this.rangeBar.style.right = '0px') : (this.rangeBar.style.left = '0px');
@@ -2001,13 +1983,13 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     this.handlePos1 + 'px') : (this.rangeBar.style.left = this.handlePos1 + 'px');
                 setStyleAttribute(this.rangeBar, { 'width': this.handlePos2 - this.handlePos1 + 'px' });
             }
-        } else {
+        } else if(!isNullOrUndefined(this.rangeBar)) {
             if (this.type === 'MinRange') {
-                this.rangeBar.style.bottom = '0px';
-                setStyleAttribute(this.rangeBar, { 'height': isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
+                this.rangeBar.style.bottom = this.min > this.max ? this.handlePos1 + 'px' : '0px';
+                setStyleAttribute(this.rangeBar, { 'height': isNullOrUndefined(this.handlePos1) ? 0 : this.min > this.max ? this.element.clientHeight - this.handlePos1 + 'px' : this.handlePos1 + 'px' });
             } else {
-                this.rangeBar.style.bottom = this.handlePos1 + 'px';
-                setStyleAttribute(this.rangeBar, { 'height': this.handlePos2 - this.handlePos1 + 'px' });
+                this.rangeBar.style.bottom = this.min > this.max ? this.handlePos2 + 'px' : this.handlePos1 + 'px';
+                setStyleAttribute(this.rangeBar, { 'height': this.min > this.max ? this.handlePos1 - this.handlePos2 + 'px' : this.handlePos2 - this.handlePos1 + 'px' });
             }
         }
     }
@@ -2028,8 +2010,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.limitBarFirst.style.width = (fromMaxpostion - fromMinPostion) + 'px';
             }
         } else {
-            this.limitBarFirst.style.bottom = fromMinPostion + 'px';
-            this.limitBarFirst.style.height = (fromMaxpostion - fromMinPostion) + 'px';
+            this.limitBarFirst.style.bottom = (this.min < this.max ? fromMinPostion : fromMaxpostion) + 'px';
+            this.limitBarFirst.style.height = (this.min < this.max ? (fromMaxpostion - fromMinPostion) : (fromMinPostion - fromMaxpostion)) + 'px';
         }
         if (this.type === 'Range') {
             if (this.orientation === 'Horizontal') {
@@ -2041,8 +2023,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     this.limitBarSecond.style.width = (toMaxpostion - toMinPostion) + 'px';
                 }
             } else {
-                this.limitBarSecond.style.bottom = toMinPostion + 'px';
-                this.limitBarSecond.style.height = (toMaxpostion - toMinPostion) + 'px';
+                this.limitBarSecond.style.bottom = (this.min < this.max ? toMinPostion : toMaxpostion) + 'px';
+                this.limitBarSecond.style.height = (this.min < this.max ? (toMaxpostion - toMinPostion) : (toMinPostion - toMaxpostion)) + 'px';
             }
         }
     }
@@ -2075,13 +2057,13 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private getLimitValueAndPosition(currentValue: number, minValue: number, maxValue: number, limitBar?: boolean): number[] {
         if (isNullOrUndefined(minValue)) {
-            minValue = this.min;
+            minValue = this.min < this.max ? this.min : this.max;
             if (isNullOrUndefined(currentValue) && limitBar) {
                 currentValue = minValue;
             }
         }
         if (isNullOrUndefined(maxValue)) {
-            maxValue = this.max;
+            maxValue = this.min < this.max ? this.max : this.min;
             if (isNullOrUndefined(currentValue) && limitBar) {
                 currentValue = maxValue;
             }
@@ -2145,7 +2127,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private modifyZindex(): void {
-        if (this.type === 'Range') {
+        if (this.type === 'Range' && !isNullOrUndefined(this.firstHandle) && !isNullOrUndefined(this.secondHandle)) {
             if (this.activeHandle === 1) {
                 this.firstHandle.style.zIndex = (this.zIndex + 4) + '';
                 this.secondHandle.style.zIndex = (this.zIndex + 3) + '';
@@ -2225,7 +2207,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             eventArgs = {
                 value: this.value,
                 previousValue: eventName === 'change' ? this.previousVal : this.previousChanged,
-                action: eventName, text: <string>this.tooltipObj.content, isInteracted: isNullOrUndefined(e) ? false : true
+                action: eventName, text: <string>(typeof(this.tooltipObj.content) ==='function'? this.tooltipObj.content():this.tooltipObj.content), isInteracted: isNullOrUndefined(e) ? false : true
             };
         } else {
             eventArgs = {
@@ -2266,9 +2248,13 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.handlePos1 = this.checkHandlePosition(this.handleVal1);
         this.handlePos2 = this.checkHandlePosition(this.handleVal2);
 
-        if (this.handlePos1 > this.handlePos2) {
+        if (this.min < this.max && this.handlePos1 > this.handlePos2) {
             this.handlePos1 = this.handlePos2;
             this.handleVal1 = this.handleVal2;
+        }
+        if (this.min > this.max && this.handlePos1 < this.handlePos2) {
+            this.handlePos2 = this.handlePos1;
+            this.handleVal2 = this.handleVal1;
         }
         this.preHandlePos1 = this.handlePos1;
         this.preHandlePos2 = this.handlePos2;
@@ -2310,9 +2296,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private checkHandleValue(value: number): number {
-        if (this.min > this.max) {
-            this.min = this.max;
-        }
         if (this.min === this.max) {
             return (parseFloat(formatUnit(this.max)));
         }
@@ -2329,11 +2312,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * @returns void
      */
     public reposition(): void {
-        this.firstHandle.style.transition = 'none';
-        if (this.type !== 'Default') {
+        if (!isNullOrUndefined(this.firstHandle)) this.firstHandle.style.transition = 'none';
+        if (this.type !== 'Default' && !isNullOrUndefined(this.rangeBar)) {
             this.rangeBar.style.transition = 'none';
         }
-        if (this.type === 'Range') {
+        if (this.type === 'Range' && !isNullOrUndefined(this.secondHandle)) {
             this.secondHandle.style.transition = 'none';
         }
         this.handlePos1 = this.checkHandlePosition(this.handleVal1);
@@ -2344,16 +2327,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             // eslint-disable-next-line
             this.enableRtl ? this.firstHandle.style.right =
                 `${this.handlePos1}px` : this.firstHandle.style.left = `${this.handlePos1}px`;
-            if (this.isMaterialTooltip) {
+            if (this.isMaterialTooltip && !isNullOrUndefined(this.materialHandle)) {
                 // eslint-disable-next-line
                 this.enableRtl ? this.materialHandle.style.right =
                     `${this.handlePos1}px` : this.materialHandle.style.left = `${this.handlePos1}px`;
             }
-            if (this.type === 'MinRange') {
+            if (this.type === 'MinRange' && !isNullOrUndefined(this.rangeBar)) {
                 // eslint-disable-next-line
                 this.enableRtl ? (this.rangeBar.style.right = '0px') : (this.rangeBar.style.left = '0px');
                 setStyleAttribute(this.rangeBar, { 'width': isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
-            } else if (this.type === 'Range') {
+            } else if (this.type === 'Range' && !isNullOrUndefined(this.secondHandle) && !isNullOrUndefined(this.rangeBar)) {
                 // eslint-disable-next-line
                 this.enableRtl ? this.secondHandle.style.right =
                     `${this.handlePos2}px` : this.secondHandle.style.left = `${this.handlePos2}px`;
@@ -2368,12 +2351,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.materialHandle.style.bottom = `${this.handlePos1}px`;
             }
             if (this.type === 'MinRange') {
-                this.rangeBar.style.bottom = '0px';
-                setStyleAttribute(this.rangeBar, { 'height': isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
+                this.rangeBar.style.bottom = this.min > this.max ? this.handlePos1 + 'px' : '0px';
+                setStyleAttribute(this.rangeBar, { 'height': isNullOrUndefined(this.handlePos1) ? 0 : this.min > this.max ? this.element.clientHeight - this.handlePos1 + 'px' : this.handlePos1 + 'px' });
             } else if (this.type === 'Range') {
                 this.secondHandle.style.bottom = `${this.handlePos2}px`;
-                this.rangeBar.style.bottom = this.handlePos1 + 'px';
-                setStyleAttribute(this.rangeBar, { 'height': this.handlePos2 - this.handlePos1 + 'px' });
+                this.rangeBar.style.bottom = this.min > this.max ? this.handlePos2 + 'px' : this.handlePos1 + 'px';
+                setStyleAttribute(this.rangeBar, { 'height': this.min > this.max ? this.handlePos1 - this.handlePos2 + 'px' : this.handlePos2 - this.handlePos1 + 'px' });
             }
         }
         if (this.limits.enabled) {
@@ -2387,8 +2370,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.handleStart();
         if (!this.tooltip.isVisible) {
             setTimeout(() => {
-                this.firstHandle.style.transition = this.scaleTransform;
-                if (this.type === 'Range') {
+                if (!isNullOrUndefined(this.firstHandle)) this.firstHandle.style.transition = this.scaleTransform;
+                if (this.type === 'Range' && !isNullOrUndefined(this.secondHandle)) {
                     this.secondHandle.style.transition = this.scaleTransform;
                 }
             });
@@ -2404,7 +2387,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.handleVal1 = this.checkHandleValue(value);
                 this.handlePos1 = this.checkHandlePosition(this.handleVal1);
 
-                if (this.type === 'Range' && this.handlePos1 > this.handlePos2) {
+                if (this.type === 'Range' && ((this.handlePos1 > this.handlePos2 && this.min < this.max) || (this.handlePos1 < this.handlePos2 && this.min > this.max))) {
                     this.handlePos1 = this.handlePos2;
                     this.handleVal1 = this.handleVal2;
                 }
@@ -2418,7 +2401,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.handleVal2 = this.checkHandleValue(value);
                 this.handlePos2 = this.checkHandlePosition(this.handleVal2);
 
-                if (this.type === 'Range' && this.handlePos2 < this.handlePos1) {
+                if (this.type === 'Range' && ((this.handlePos2 < this.handlePos1 && this.min < this.max) || (this.handlePos2 > this.handlePos1 && this.min > this.max))) {
                     this.handlePos2 = this.handlePos1;
                     this.handleVal2 = this.handleVal1;
                 }
@@ -2536,7 +2519,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         let handlepos: number = this.xyToPosition(pos);
         let handleVal: number = this.positionToValue(handlepos);
-        if (this.type === 'Range' && (this.handlePos2 - handlepos) < (handlepos - this.handlePos1)) {
+        if (this.type === 'Range' && (this.min < (this.max) && (this.handlePos2 - handlepos) < (handlepos - this.handlePos1) || (this.min > this.max) && (this.handlePos1 - handlepos) > (handlepos - this.handlePos2))) {
             this.activeHandle = 2;
             if (!(this.limits.enabled && this.limits.endHandleFixed)) {
                 if (this.limits.enabled) {
@@ -2579,7 +2562,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             behindElement = document.elementFromPoint(eventX, eventY);
         }
         if (evt.target === handle && behindElement != handle) {
-            if (this.isMaterial && !this.tooltip.isVisible &&
+            if ((this.isMaterial || this.isMaterial3) && !this.tooltip.isVisible &&
                 !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
                 this.materialChange();
             }
@@ -2590,7 +2573,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (!this.checkRepeatedValue(handleVal)) {
             return;
         }
-        let transition: { [key: string]: string } = this.isMaterial && this.tooltip.isVisible ?
+        let transition: { [key: string]: string } = (this.isMaterial || this.isMaterial3) && this.tooltip.isVisible ?
             this.transitionOnMaterialTooltip : this.transition;
         this.getHandle().style.transition = transition.handle;
         if (this.type !== 'Default') {
@@ -2639,15 +2622,27 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             } else {
                 pos = { x: xPostion + this.secondPartRemain, y: yPostion + this.secondPartRemain };
             }
-            this.handlePos1 = this.xyToPosition(pos);
-            this.handleVal1 = this.positionToValue(this.handlePos1);
+            if (this.min > this.max) {
+                this.handlePos2 = this.xyToPosition(pos);
+                this.handleVal2 = this.positionToValue(this.handlePos2);
+            }
+            else {
+                this.handlePos1 = this.xyToPosition(pos);
+                this.handleVal1 = this.positionToValue(this.handlePos1);
+            }
             if (!this.enableRtl) {
                 pos = { x: xPostion + this.secondPartRemain, y: yPostion - this.firstPartRemain };
             } else {
                 pos = { x: xPostion - this.firstPartRemain, y: yPostion - this.firstPartRemain };
             }
-            this.handlePos2 = this.xyToPosition(pos);
-            this.handleVal2 = this.positionToValue(this.handlePos2);
+            if (this.min > this.max) {
+                this.handlePos1 = this.xyToPosition(pos);
+                this.handleVal1 = this.positionToValue(this.handlePos1);
+            }
+            else {
+                this.handlePos2 = this.xyToPosition(pos);
+                this.handleVal2 = this.positionToValue(this.handlePos2);
+            }
             if (this.limits.enabled) {
                 let value: number[] = this.getLimitValueAndPosition(this.handleVal1, this.limits.minStart, this.limits.minEnd);
                 this.handleVal1 = value[0];
@@ -2668,11 +2663,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     this.handleValueAdjust(this.handleVal2, this.limits.maxEnd, 2);
                 }
             }
-            if (this.handleVal2 === this.max) {
-                this.handleValueAdjust(this.handleVal2, this.max, 2);
+            if (this.handleVal2 === (this.min > this.max ? this.min : this.max)) {
+                this.handleValueAdjust(this.handleVal2, (this.min > this.max ? this.min : this.max), 2);
             }
-            if (this.handleVal1 === this.min) {
-                this.handleValueAdjust(this.handleVal1, this.min, 1);
+            if (this.handleVal1 === (this.min > this.max ? this.max : this.min)) {
+                this.handleValueAdjust(this.handleVal1, (this.min > this.max ? this.max : this.min), 1);
             }
         }
         this.activeHandle = 1;
@@ -2692,7 +2687,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.secondHandle.classList.remove(classNames.sliderActiveHandle);
         }
         this.closeTooltip();
-        if (this.isMaterial) {
+        if (this.isMaterial || this.isMaterial3) {
             this.getHandle().classList.remove('e-large-thumb-size');
             if (this.isMaterialTooltip) {
                 this.tooltipElement.classList.remove(classNames.materialTooltipActive);
@@ -2731,7 +2726,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             if (this.activeHandle === 1) {
                 this.firstHandle.classList.add(classNames.sliderActiveHandle);
                 if (!(this.limits.enabled && this.limits.startHandleFixed)) {
-                    if (handlepos > this.handlePos2) {
+                    if ((this.min < this.max && handlepos > this.handlePos2 || (this.min > this.max && handlepos < this.handlePos2))) {
                         handlepos = this.handlePos2;
                         handleVal = this.handleVal2;
                     }
@@ -2749,7 +2744,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             } else if (this.activeHandle === 2) {
                 this.secondHandle.classList.add(classNames.sliderActiveHandle);
                 if (!(this.limits.enabled && this.limits.endHandleFixed)) {
-                    if (handlepos < this.handlePos1) {
+                    if ((this.min < this.max && handlepos < this.handlePos1) || (this.min > this.max && handlepos > this.handlePos1)) {
                         handlepos = this.handlePos1;
                         handleVal = this.handleVal1;
                     }
@@ -2774,7 +2769,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.rangeBar.style.transition = 'none';
         }
         this.setHandlePosition(evt);
-        if (this.isMaterial && !this.tooltip.isVisible &&
+        if ((this.isMaterial || this.isMaterial3) && !this.tooltip.isVisible &&
             !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
             this.materialChange();
         }
@@ -3186,6 +3181,24 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.tooltipObj.destroy();
         }
         this.element.innerHTML = '';
+        this.hiddenInput = null;
+        this.sliderContainer = null;
+        this.sliderTrack = null;
+        this.rangeBar = null;
+        this.firstHandle = null;
+        this.secondHandle = null;
+        this.tickElementCollection = null;
+        this.ul = null;
+        this.firstBtn = null;
+        this.secondBtn = null;
+        this.materialHandle = null;
+        this.tooltipObj = null;
+        this.tooltipTarget = null;
+        this.limitBarFirst = null;
+        this.limitBarSecond = null;
+        this.firstChild = null;
+        this.lastChild = null;
+        this.tooltipElement = null;
     }
 
     /**
@@ -3226,6 +3239,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             case 'tooltip':
                 if (!isNullOrUndefined(newProp.tooltip) && !isNullOrUndefined(oldProp.tooltip)) {
                     this.setTooltip(prop);
+                    if (!this.showButtons) {
+                        this.wireEvents();
+                    }
                 }
                 break;
             case 'type':
@@ -3340,15 +3356,15 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setZindex(): void {
         this.zIndex = 6;
-        if (!isNullOrUndefined(this.ticks) && this.ticks.placement !== 'None') {
+        if (!isNullOrUndefined(this.ticks) && this.ticks.placement !== 'None' && !isNullOrUndefined(this.ul) && !isNullOrUndefined(this.element)) {
             this.ul.style.zIndex = (this.zIndex + -7) + '';
             this.element.style.zIndex = (this.zIndex + 2) + '';
         }
-        if (!this.isMaterial && !isNullOrUndefined(this.ticks) && this.ticks.placement === 'Both') {
+        if (!this.isMaterial && !this.isMaterial3 && !isNullOrUndefined(this.ticks) && this.ticks.placement === 'Both') {
             this.element.style.zIndex = (this.zIndex + 2) + '';
         }
-        this.firstHandle.style.zIndex = (this.zIndex + 3) + '';
-        if (this.type === 'Range') {
+        if (!isNullOrUndefined(this.firstHandle)) this.firstHandle.style.zIndex = (this.zIndex + 3) + '';
+        if (this.type === 'Range' && !isNullOrUndefined(this.secondHandle)) {
             this.secondHandle.style.zIndex = (this.zIndex + 4) + '';
         }
     }

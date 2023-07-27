@@ -31,6 +31,7 @@ export class Edit {
     private isFromDeleteMethod: boolean = false;
     private targetedRecords: IGanttData[] = [];
     private isNewRecordAdded: boolean = false;
+    private isValidatedEditedRecord: boolean = false;
     /**
      * @private
      */
@@ -475,7 +476,7 @@ export class Edit {
                 //..
             } else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
                 tasks.milestone, tasks.name, tasks.baselineStartDate,
-                tasks.baselineEndDate, tasks.id, tasks.segments].indexOf(key) !== -1) {
+                tasks.baselineEndDate, tasks.id, tasks.segments,tasks.cssClass].indexOf(key) !== -1) {
                 const column: ColumnModel = ganttObj.columnByField[key as string];
                 /* eslint-disable-next-line */
                 let value: any = data[key as string];
@@ -487,7 +488,9 @@ export class Edit {
                     ganttPropKey = 'taskId';
                 } else if (key === tasks.name) {
                     ganttPropKey = 'taskName';
-                } else if ((key === tasks.segments)&&(!isNullOrUndefined(ganttData.ganttProperties.segments)) ) {
+                }else if (key === tasks.cssClass) {
+                    ganttPropKey = 'cssClass'
+                }else if ((key === tasks.segments) && (!isNullOrUndefined(ganttData.ganttProperties.segments))) {
                     ganttPropKey = 'segments';
                     /* eslint-disable-next-line */
                     if (data && !isNullOrUndefined(data[this.parent.taskFields.segments]) && data[this.parent.taskFields.segments].length > 0) {
@@ -797,6 +800,11 @@ export class Edit {
                     newArgs.validateMode.respectLink === false) {
                     this.parent.connectorLineEditModule.openValidationDialog(validateObject);
                 } else {
+                    if (this.parent.editModule && this.parent.editModule.dialogModule &&
+                        this.parent.editModule.dialogModule['isEdit'] && this.predecessorUpdated) {
+                        this.isValidatedEditedRecord = true;
+                        this.parent.predecessorModule.validatePredecessor(args.data, [], '');
+                    }
                     this.parent.connectorLineEditModule.applyPredecessorOption();
                 }
             } else {
@@ -861,7 +869,10 @@ export class Edit {
                 if (this.taskbarMoved) {
                     this.parent.editedTaskBarItem = ganttRecord;
                 }
-                this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
+                if (!this.isValidatedEditedRecord) {
+                   this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
+                }
+                this.isValidatedEditedRecord = false;
                 this.parent.predecessorModule.isValidatedParentTaskID = '';
             }
             if (this.parent.allowParentDependency && ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
@@ -921,6 +932,10 @@ export class Edit {
         if (data.hasChildRecords && ganttProp.isAutoSchedule) {
             this.parent.setRecordValue('startDate', ganttProp.autoStartDate, ganttProp, true);
             this.parent.setRecordValue('endDate', ganttProp.autoEndDate, ganttProp, true);
+            this.parent.setRecordValue('StartDate', ganttProp.autoStartDate, data, true);
+            this.parent.setRecordValue('EndDate', ganttProp.autoEndDate, data, true);
+            this.parent.setRecordValue('taskData.StartDate', ganttProp.autoStartDate, data, true);
+            this.parent.setRecordValue('taskData.EndDate', ganttProp.autoEndDate, data, true);
             this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(data, true), ganttProp, true);
             this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttProp, true), ganttProp, true);
             this.parent.setRecordValue(
@@ -933,8 +948,8 @@ export class Edit {
         } else if (data.hasChildRecords && !ganttProp.isAutoSchedule) {
             this.parent.dataOperation.updateWidthLeft(data);
             this.parent.dataOperation.calculateDuration(data);
-            this.parent.setRecordValue('autoStartDate', ganttProp.startDate, ganttProp, true);
-            this.parent.setRecordValue('autoEndDate', ganttProp.endDate, ganttProp, true);
+            this.parent.setRecordValue('autoStartDate', ganttProp.autoStartDate, ganttProp, true);
+            this.parent.setRecordValue('autoEndDate', ganttProp.autoEndDate, ganttProp, true);
             this.parent.setRecordValue('autoDuration', this.parent.dataOperation.calculateAutoDuration(data), ganttProp, true);
             this.parent.dataOperation.updateAutoWidthLeft(data);
         } else {
@@ -1186,7 +1201,6 @@ export class Edit {
         }
         if (childRecords.length) {
             this.parent.dataOperation.updateParentItems(ganttRecord, true);
-            this.parent.dataOperation.updateGanttData()
         }
     }
 
@@ -1397,8 +1411,8 @@ export class Edit {
                 }
             } 
             if (this.parent.isConnectorLineUpdate && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
-                this.parent.updatedConnectorLineCollection = [];
-                this.parent.connectorLineIds = [];
+                // this.parent.updatedConnectorLineCollection = [];
+                // this.parent.connectorLineIds = [];
                 this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
                 this.updateScheduleDatesOnEditing(args);
             }
@@ -2758,6 +2772,7 @@ export class Edit {
         this.parent.treeGrid.parentData = [];
         this.parent.addDeleteRecord = true;
         this.parent.selectedRowIndex = 0;
+        this.parent.treeGrid['isAddedFromGantt'] = true;
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.parent.modifiedRecords = args.modifiedRecords;
@@ -2982,6 +2997,7 @@ export class Edit {
                                         let data: Object[] = [];
                                         data.push(args.data);
                                         this.updateRealDataSource(data as IGanttData, rowPosition);
+                                        this.parent.currentSelection = cAddedRecord[0].ganttProperties
                                     }
                                 }
                         } else {

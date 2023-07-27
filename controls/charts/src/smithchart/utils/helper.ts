@@ -40,14 +40,14 @@ export function getElement(id: string): Element {
  * @param {SmithchartFontModel} font text style
  * @returns {string} It returns trimmed text
  */
-export function textTrim(maximumWidth: number, text: string, font: SmithchartFontModel): string {
+export function textTrim(maximumWidth: number, text: string, font: SmithchartFontModel, themeFontStyle: SmithchartFontModel): string {
     let label: string = text;
-    let size: number = measureText(text, font).width;
+    let size: number = measureText(text, font, themeFontStyle).width;
     if (size > maximumWidth) {
         const textLength: number = text.length;
         for (let i: number = textLength - 1; i >= 0; --i) {
             label = text.substring(0, i) + '...';
-            size = measureText(label, font).width;
+            size = measureText(label, font, themeFontStyle).width;
             if (size <= maximumWidth || label.length < 4) {
                 if (label.length < 4) {
                     label = ' ';
@@ -61,14 +61,14 @@ export function textTrim(maximumWidth: number, text: string, font: SmithchartFon
 /**
  * Function to compile the template function for maps.
  *
- * @param {string} templateString template with string format
+ * @param {string | Function} templateString template with string format
  * @returns {Function} return template function
  * @private
  */
-export function getTemplateFunction(templateString: string): Function {
+export function getTemplateFunction(templateString: string | Function): Function {
     let templateFn: Function = null;
     try {
-        if (document.querySelectorAll(templateString).length) {
+        if (typeof templateString !== 'function' && document.querySelectorAll(templateString).length) {
             templateFn = templateComplier(document.querySelector(templateString).innerHTML.trim());
         } else {
             templateFn = templateComplier(templateString);
@@ -96,11 +96,11 @@ export function convertElementFromLabel(
         // eslint-disable-next-line security/detect-non-literal-regexp
         templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i as number] + '}}', 'g'), data[properties[i as number].toString()]);
     }
-    let templateElement: HTMLElement = createElement('div', {
+    let templateElement : HTMLElement = createElement('div', {
         id: labelId,
         styles: 'position: absolute'
     });
-    templateElement.innerText = templateHtml;
+    templateElement.innerText = templateHtml; 
     return templateElement;
 }
 
@@ -261,7 +261,7 @@ export class CircleOption extends PathOption {
  * @param {SmithchartFontModel} font text font style
  * @returns {SmithchartSize} size of the text
  */
-export function measureText(text: string, font: SmithchartFontModel): SmithchartSize {
+export function measureText(text: string, font: SmithchartFontModel, themeFontStyle?: SmithchartFontModel): SmithchartSize {
     let htmlObject: HTMLElement = document.getElementById('smithchartmeasuretext');
 
     if (htmlObject === null) {
@@ -275,10 +275,10 @@ export function measureText(text: string, font: SmithchartFontModel): Smithchart
     htmlObject.style.left = '0';
     htmlObject.style.top = '-100';
     htmlObject.style.whiteSpace = 'nowrap';
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
-    htmlObject.style.fontStyle = font.fontStyle;
-    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.fontSize = font.size || themeFontStyle.size;
+    htmlObject.style.fontWeight = font.fontWeight || themeFontStyle.fontWeight;
+    htmlObject.style.fontStyle = font.fontStyle || themeFontStyle.fontStyle;
+    htmlObject.style.fontFamily = font.fontFamily || themeFontStyle.fontFamily;
     // For bootstrap line height issue
     htmlObject.style.lineHeight = 'normal';
     return new SmithchartSize(htmlObject.clientWidth, htmlObject.clientHeight);
@@ -374,17 +374,17 @@ export function getAnimationFunction(effect: string): Function {
  * @private
  */
 export function renderTextElement(
-    options: TextOption, font: SmithchartFontModel, color: string, parent: HTMLElement | Element
+    options: TextOption, font: SmithchartFontModel, color: string, parent: HTMLElement | Element, themeFontStyle?: SmithchartFontModel
 ): Element {
     const renderOptions: Object = {
         'id': options.id,
         'x': options.x,
         'y': options.y,
         'fill': color,
-        'font-size': font.size,
-        'font-style': font.fontStyle,
-        'font-family': font.fontFamily,
-        'font-weight': font.fontWeight,
+        'font-size': font.size || themeFontStyle.size,
+        'font-style': font.fontStyle || themeFontStyle.fontStyle,
+        'font-family': font.fontFamily || themeFontStyle.fontFamily,
+        'font-weight': font.fontWeight || themeFontStyle.fontWeight,
         'text-anchor': options.anchor,
         'opacity': font.opacity
     };

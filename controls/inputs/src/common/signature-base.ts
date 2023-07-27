@@ -709,19 +709,28 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
      * @param {string} text - specify text to be drawn as signature.
      * @param {string} fontFamily - specify font family of a signature.
      * @param {number} fontSize - specify font size of a signature.
+     * @param {number} x- Specifies the x-coordinate to start the text of a signature. Default to the center point of the image if it not specified.
+     * @param {number} y - Specifies the y-coordinate to start the text of a signature. Default to the center point of the image if it not specified.
      *
      * @returns {void}.
      */
 
-    public draw(text: string, fontFamily?: string, fontSize?: number): void {
+    public draw(text: string, fontFamily?: string, fontSize?: number, x?: number, y?: number): void {
         const args: SignatureChangeEventArgs = { actionName: 'draw-text'};
         this.canvasContext.clearRect(0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
         fontFamily = fontFamily || 'Arial';
         fontSize = fontSize || 30;
         this.canvasContext.font = fontSize + 'px ' + fontFamily;
-        this.canvasContext.textAlign = 'center';
-        this.canvasContext.textBaseline = 'middle';
-        this.canvasContext.fillText(text, this.element.width / 2, this.element.height / 2);
+        let startX: number = this.element.width / 2;
+        let startY: number = this.element.height / 2;
+        if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
+            this.canvasContext.textAlign = 'center';
+            this.canvasContext.textBaseline = 'middle';
+        } else {
+            startX = isNullOrUndefined(x)? startX : x; 
+            startY = isNullOrUndefined(y)? startY + fontSize / 2 : (y + fontSize / 2);
+        }
+        this.canvasContext.fillText(text, startX, startY);
         this.updateSnapCollection();
         this.isSignatureEmpty = false;
         this.trigger('change', args);

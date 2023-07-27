@@ -360,10 +360,12 @@ export class CheckBoxSelection {
     }
 
     protected setPopupFullScreen(): void {
-        attributes(this.parent.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
-        addClass([document.body, this.parent.popupObj.element], popupFullScreen);
-        this.parent.popupObj.element.style.maxHeight = '100%';
-        this.parent.popupObj.element.style.width = '100%';
+        if (this.parent && this.parent.popupObj) {
+            attributes(this.parent.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
+            addClass([document.body, this.parent.popupObj.element], popupFullScreen);
+            this.parent.popupObj.element.style.maxHeight = '100%';
+            this.parent.popupObj.element.style.width = '100%';
+        }
     }
 
     protected targetElement(): string {

@@ -70,9 +70,10 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public footerTemplate: string;
+    public footerTemplate: string | Function;
 
     /**
      * Defines the group footer cell template as a string for the aggregate column.
@@ -84,9 +85,10 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * {% codeBlock src="grid/group-footer-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public groupFooterTemplate: string;
+    public groupFooterTemplate: string | Function;
 
     /**
      * Defines the group caption cell template as a string for the aggregate column.
@@ -98,9 +100,10 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * {% codeBlock src="grid/group-caption-api/index.ts" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public groupCaptionTemplate: string;
+    public groupCaptionTemplate: string | Function;
 
     /**
      * Defines a function to calculate custom aggregate value. The `type` value should be set to `custom`.

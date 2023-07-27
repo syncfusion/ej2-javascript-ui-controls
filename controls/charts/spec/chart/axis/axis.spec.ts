@@ -655,6 +655,30 @@ describe('Chart Control', () =>{
             chart.primaryXAxis.opposedPosition = false;
             chart.refresh();
         });
+        it('Checking with Wraped text in Middle Position', (done: Function) => {
+            loaded = (args: Object): void => {
+                text = document.getElementById('chartContainer0_AxisLabel_5');
+                expect(+text.children[1].getAttribute('x') == 209.84375 || +text.children[1].getAttribute('x') == 209.53125).toBe(true);
+                expect(+text.children[1].getAttribute('y') == 285 || +text.children[1].getAttribute('y') == 288.25).toBe(true);      
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelIntersectAction = 'Wrap';
+            chart.primaryXAxis.opposedPosition = false;
+            chart.refresh();
+        });
+        it('Checking with Wraped text in Middle Position with Opposed Position', (done: Function) => {
+            loaded = (args: Object): void => {
+                text = document.getElementById('chartContainer0_AxisLabel_4');
+                expect(+text.children[1].getAttribute('x') == 177.78125 || +text.children[1].getAttribute('x') == 177.34375).toBe(true);  
+                expect(+text.children[1].getAttribute('y') == 42.25 || +text.children[1].getAttribute('y') == 40.25).toBe(true);               
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelIntersectAction = 'Wrap';
+            chart.primaryXAxis.opposedPosition = true;
+            chart.refresh();
+        });
         it('Checking with Wraps with labels inside', (done: Function) => {
             loaded = (args: Object): void => {
                 text = document.getElementById('chartContainer0_AxisLabel_4');
@@ -668,6 +692,7 @@ describe('Chart Control', () =>{
             };
             chart.loaded = loaded;
             chart.primaryXAxis.labelPosition = 'Inside';
+            chart.primaryXAxis.opposedPosition = false;
             chart.refresh();
         });
         it('Checking with Wraps with Oppossed', (done: Function) => {
@@ -1566,10 +1591,10 @@ describe('Chart Control', () =>{
             chartObj.loaded = () => {
                 let gridLineElement: Element = document.getElementById('container_MinorGridLine_1_0');
                 let path: string = gridLineElement.getAttribute("d");
-                expect(path === "M 43 64L 490 64 M 43 83L 490 83 " || path === "M 42 61L 490 61 M 42 81L 490 81 ").toBe(true);
+                expect(path === "M 42 62L 490 62 M 42 81L 490 81 " || path === "M 42 61L 490 61 M 42 81L 490 81 ").toBe(true);
                 gridLineElement = document.getElementById('container_MinorGridLine_1_4');
                 path = gridLineElement.getAttribute("d");
-                expect(path === "M 43 296L 490 296 M 43 315L 490 315 " || path === "M 42 297L 490 297 M 42 317L 490 317 ").toBe(true);
+                expect(path === "M 42 297L 490 297 M 42 317L 490 317 " || path === "M 42 297L 490 297 M 42 317L 490 317 ").toBe(true);
                 done();
             }
             chartObj.refresh();

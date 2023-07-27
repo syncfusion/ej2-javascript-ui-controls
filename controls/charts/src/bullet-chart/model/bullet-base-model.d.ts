@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { BorderModel, MarginModel } from '../../common/model/base-model';import { Border, Margin } from '../../common/model/base';import { Alignment, TextOverflow } from '../../common/utils/enum';import { BulletChartTheme } from '../utils/theme';import { LegendShape, LegendPosition } from '../../chart/utils/enum';import { Location } from '../../common/legend/legend';import { LocationModel } from '../../common/legend/legend-model';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { BorderModel, MarginModel } from '../../common/model/base-model';import { Border, Margin } from '../../common/model/base';import { Alignment, TextOverflow } from '../../common/utils/enum';import { LegendShape, LegendPosition } from '../../chart/utils/enum';import { Location } from '../../common/legend/legend';import { LocationModel } from '../../common/legend/legend-model';
 
 /**
  * Interface for a class Range
@@ -264,9 +264,10 @@ export interface BulletTooltipSettingsModel {
      * The default value of tooltip template.
      *
      * @default null
+     * @aspType string
      */
 
-    template?: string;
+    template?: string | Function;
 
 }
 

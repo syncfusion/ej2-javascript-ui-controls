@@ -280,17 +280,16 @@ export class DataBinding {
         }
     }
 
+    // Bug 832897: Need to improve performance while rendering layout with large number of nodes.
+    // Replaced for loop with some() method to improve performance.
     private containsConnector(diagram: Diagram, sourceNode: string, targetNode: string): boolean {
-        if (sourceNode !== '' && targetNode !== '') {
-            for (let i: number = 0; i < diagram.connectors.length; i++) {
-                const connector: Connector = diagram.connectors[parseInt(i.toString(), 10)] as Connector;
-                if (connector !== undefined && (connector.sourceID === sourceNode && connector.targetID === targetNode)) {
-                    return true;
-                }
-            }
+        if (sourceNode === '' || targetNode === '') {
+          return false;
         }
-        return false;
-    }
+        return diagram.connectors.some((connector: Connector) => {
+          return connector !== undefined && connector.sourceID === sourceNode && connector.targetID === targetNode;
+        });
+      }  
 
     /**
      *  collectionContains method is used to  check wthear the node is already present in collection or not

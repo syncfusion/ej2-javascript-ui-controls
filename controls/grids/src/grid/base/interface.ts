@@ -46,6 +46,7 @@ import { Aggregate } from '../actions/aggregate';
 import { InfiniteScroll } from '../actions/infinite-scroll';
 import { Filter } from '../actions/filter';
 import { ContextMenu } from '../actions/context-menu';
+import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
 
 /**
  * Specifies grid interfaces.
@@ -382,12 +383,12 @@ export interface IGrid extends Component<HTMLElement> {
     /**
      * Specifies rowTemplate
      */
-    rowTemplate?: string;
+    rowTemplate?: string | Function;
 
     /**
      * Specifies detailTemplate
      */
-    detailTemplate?: string;
+    detailTemplate?: string | Function;
 
     /**
      * Defines the child Grid to add inside the data rows of the parent Grid with expand/collapse options.
@@ -490,14 +491,14 @@ export interface IGrid extends Component<HTMLElement> {
      * It used to render toolbar template
      * @default null
      */
-    toolbarTemplate?: string;
+    toolbarTemplate?: string | Function;
 
     /**
      * @hidden
      * It used to render pager template
      * @default null
      */
-    pagerTemplate?: string;
+    pagerTemplate?: string | Function;
 
     /**
      * @hidden
@@ -798,7 +799,7 @@ export interface IGrid extends Component<HTMLElement> {
     getLocaleConstants?(): Object;
     getForeignKeyColumns?(): Column[];
     getRowHeight?(): number;
-    setCellValue(key: string | number, field: string, value: string | number | boolean | Date): void;
+    setCellValue(key: string | number, field: string, value: string | number | boolean | Date | null): void;
     setRowData(key: string | number, rowData?: Object): void;
     getState?(): Object;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1060,6 +1061,8 @@ export interface NotifyArgs {
     isFrozenRowsRender?: boolean;
     /** Defines the action. */
     action?: string;
+    /** Defines the searched value. */
+    searchString?: string;
 }
 
 export interface LoadEventArgs {
@@ -1247,7 +1250,7 @@ export interface GridActionEventArgs {
 }
 
 export interface FailureEventArgs {
-    /** Defines the error information. */
+    /** Represents the Error object that contains information about the error that occurred. This property allows you to access details such as the error message, stack trace, error code, or any additional information associated with the error. */
     error?: Error;
 }
 
@@ -1560,12 +1563,16 @@ export interface ExportDetailDataBoundEventArgs {
 export interface AggregateQueryCellInfoEventArgs {
     /** Defines the row data associated with this cell. */
     row?: Object ;
+    /** Defines the cell. */
+    cell?: Object ;
     /** Defines the type of the cell */
     type?: AggregateTemplateType ;
     /** Defines the data of the current cell */
     data?: object ;
     /** Defines the style of the current cell. */
     style?: object;
+    /** Defines the cell value. */
+    value?: string;
 }
 
 
@@ -1628,7 +1635,9 @@ export interface ExcelHeaderQueryCellInfoEventArgs {
 }
 
 export interface FilterMenuRendererArgs {
-    /** Defines the current action. */
+    /** Defines the filter model */
+    filterModel?: FilterMenuRenderer;
+    /** Defines the current action */
     requestType?: string;
     /** Defines the field name of current column */
     columnName?: string;
@@ -2252,9 +2261,6 @@ export interface CheckBoxChangeEventArgs extends ICancel {
     target?: Element;
 }
 
-/**
- * @hidden
- */
 export interface BeforeCopyEventArgs extends ICancel {
     /** Defines the grid copied data. */
     data?: string;

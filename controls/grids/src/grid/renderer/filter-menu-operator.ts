@@ -71,10 +71,10 @@ export class FlMenuOptrUI {
                 const valInput: HTMLInputElement = document.querySelector('.e-flmenu-valuediv').querySelector('input');
                 if ((this as DropDownList).value === 'isempty' || (this as DropDownList).value === 'isnotempty' ||
                     (this as DropDownList).value === 'isnull' || (this as DropDownList).value === 'isnotnull') {
-                    valInput.setAttribute('disabled', '');
+                    valInput['ej2_instances'][0]['enabled'] = false;
                 }
                 else if (!isNullOrUndefined(valInput.getAttribute('disabled'))) {
-                    valInput.removeAttribute('disabled');
+                    valInput['ej2_instances'][0]['enabled'] = true;
                 }
             }
         });

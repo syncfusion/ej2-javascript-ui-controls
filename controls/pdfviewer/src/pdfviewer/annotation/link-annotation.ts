@@ -109,7 +109,7 @@ export class LinkAnnotation {
                             return false;
                         } else {                        
                             let isCancel =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
-                            if(isCancel){
+                            if(isCancel && this.pdfViewer.selectedItems.annotations.length === 0 && this.pdfViewer.selectedItems.formFields.length === 0){
                                 isHyperlinkClicked=true;
                                 aTag.click();
                             }
@@ -133,7 +133,7 @@ export class LinkAnnotation {
                             return false;
                         } else {                        
                             let isCancel =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
-                            if(isCancel){
+                            if(isCancel && this.pdfViewer.selectedItems.annotations.length === 0 && this.pdfViewer.selectedItems.formFields.length === 0){
                                 isHyperlinkClicked=true;
                                 aTag.click();
                             }
@@ -154,7 +154,7 @@ export class LinkAnnotation {
                         return false;
                     } else {                        
                         let isCancel =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
-                        if(isCancel){
+                        if(isCancel && this.pdfViewer.selectedItems.annotations.length === 0 && this.pdfViewer.selectedItems.formFields.length === 0){
                             window.open(aTag.href, '_blank', 'scrollbars=yes,resizable=yes');
                         }
                         return false;

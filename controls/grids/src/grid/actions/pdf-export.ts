@@ -154,8 +154,9 @@ export class PdfExport {
         this.headerOnPages = args[`${header}`];
         this.drawPosition = args[`${drawPos}`];
         this.parent.log('exporting_begin', this.getModuleName());
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
-            && pdfExportProperties.dataSource instanceof DataManager) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
+            pdfExportProperties.dataSource = pdfExportProperties.dataSource instanceof DataManager ?
+                pdfExportProperties.dataSource : new DataManager(pdfExportProperties.dataSource);
             return new Promise((resolve: Function, reject: Function) => {
                 (<DataManager>pdfExportProperties.dataSource).executeQuery(query).then((returnType: Object) => {
                     this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);
@@ -597,12 +598,6 @@ export class PdfExport {
                 this.hideColumnInclude = pdfExportProperties.includeHiddenColumn;
             }
             if (!isNullOrUndefined(pdfExportProperties.dataSource)) {
-                if (!(pdfExportProperties.dataSource instanceof DataManager)) {
-                    dataSource = pdfExportProperties.dataSource as Object[];
-                    if (pdfExportProperties.query) {
-                        dataSource = this.parent.getDataModule().dataManager.executeLocal(pdfExportProperties.query);
-                    }
-                }
                 this.customDataSource = true;
                 this.currentViewData = false;
             } else if (!isNullOrUndefined(pdfExportProperties.exportType)) {
@@ -830,6 +825,14 @@ export class PdfExport {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const value: any[] = [];
             const aggIdx: number = isAggregate ? 0 : 1;
+            let gridRow: PdfGridRow;
+            if (isNullOrUndefined(captionRow)) {
+                gridRow = pdfGrid.rows.addRow();
+                gridRow.style.setBorder(border);
+                gridRow.style.setFont(font);
+                gridRow.style.setTextBrush(brush);
+                gridRow.style.setBackgroundBrush(backgroundBrush);
+            }
             for (let i: number = 0; i < pdfGrid.columns.count + aggIdx; i++) {
                 let cell: Cell<AggregateColumnModel> = row.cells[parseInt(index.toString(), 10)];
                 if (cell.cellType === CellType.DetailFooterIntent) {
@@ -843,8 +846,6 @@ export class PdfExport {
                         }
                         if (!isNullOrUndefined(captionRow)) {
                             if (!isNullOrUndefined(captionRow.cells.getCell(i).value)) {
-                                const args: AggregateQueryCellInfoEventArgs = { row: row, type: 'GroupCaption', style: captionRow.cells };
-                                this.parent.trigger(events.pdfAggregateQueryCellInfo, args);
                                 value.push(captionRow.cells.getCell(i).value);
                                 isEmpty = false;
                                 if (!isCaption) {
@@ -867,24 +868,34 @@ export class PdfExport {
                 }
                 if (cell.isDataCell) {
                     let templateFn: { [x: string]: Function } = {};
-                    if (!isNullOrUndefined(cell.column.footerTemplate) || !isNullOrUndefined(cell.column.groupCaptionTemplate)
-                        || !isNullOrUndefined(cell.column.groupFooterTemplate)) {
+                    const footerTemplate: boolean = !isNullOrUndefined(cell.column.footerTemplate);
+                    const groupFooterTemplate: boolean = !isNullOrUndefined(cell.column.groupFooterTemplate);
+                    const groupCaptionTemplate: boolean = !isNullOrUndefined(cell.column.groupCaptionTemplate);
+                    if (footerTemplate || groupCaptionTemplate || groupFooterTemplate) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const result: any = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell);
                         templateFn = result.templateFunction;
                         leastCaptionSummaryIndex = result.leastCaptionSummaryIndex;
-                        let txt: NodeList;
+                        let txt: NodeList | string;
                         const data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
-                        if (this.parent.isReact || this.parent.isVue) {
-                            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
-                            if (this.parent.isReact) {
-                                this.parent.renderTemplates();
-                            }
+                        if ((this.parent.isReact || this.parent.isVue || this.parent.isVue3 || this.parent.isAngular) &&
+                            !(typeof cell.column.footerTemplate === 'string' || typeof cell.column.groupFooterTemplate === 'string' || typeof cell.column.groupCaptionTemplate === 'string')) {
+                            txt = data[(cell.column.type) as string];
+                            txt = !isNullOrUndefined(txt) ? txt : '';
                         } else {
-                            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data));
+                            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
+                            txt = !isNullOrUndefined(txt[0]) ? (<Text>txt[0]).textContent : '';
                         }
-                        value.push(!isNullOrUndefined(txt[0]) ? (<Text>txt[0]).textContent : '');
                         isEmpty = false;
+                        const args: AggregateQueryCellInfoEventArgs = {
+                            row: row,
+                            type: footerTemplate ? 'Footer' : groupFooterTemplate ? 'GroupFooter' : 'GroupCaption',
+                            style: isNullOrUndefined(captionRow) ? gridRow.cells : captionRow.cells,
+                            cell: cell,
+                            value: txt as string
+                        };
+                        this.parent.trigger(events.pdfAggregateQueryCellInfo, args);
+                        value.push(args.value);
                     } else {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const result: any = this.getSummaryWithoutTemplate(row.data[cell.column.field]);
@@ -912,15 +923,6 @@ export class PdfExport {
             }
             if (!isEmpty) {
                 if (!isCaption) {
-                    const gridRow: PdfGridRow = pdfGrid.rows.addRow();
-                    gridRow.style.setBorder(border);
-                    gridRow.style.setFont(font);
-                    gridRow.style.setTextBrush(brush);
-                    gridRow.style.setBackgroundBrush(backgroundBrush);
-                    const args: AggregateQueryCellInfoEventArgs = {
-                        row: row, type: isGroupedFooter ? 'GroupFooter' : 'Footer', style: gridRow.cells
-                    };
-                    this.parent.trigger(events.pdfAggregateQueryCellInfo, args);
                     for (let i: number = 0; i < pdfGrid.columns.count; i++) {
                         gridRow.cells.getCell(i).value = value[parseInt(i.toString(), 10)].toString();
                     }

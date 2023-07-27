@@ -2,6 +2,69 @@
 
 ## [Unreleased]
 
+## 22.2.5 (2023-07-27)
+
+### Signature
+
+#### New Features
+
+- `#F183395` - Provide the support to draw text in specific places in draw public method of the signature component.
+
+## 22.1.38 (2023-07-11)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#I460888` - Issue with "console error occurs when we render the toast in the `beforeUpload` event of the uploader" has been resolved.
+
+## 22.1.34 (2023-06-21)
+
+### NumericTextbox
+
+#### Bug Fixes
+
+- Issue with "Unwanted calls for CalculateWidth method" has been resolved.
+
+### TextBox
+
+#### New Features
+
+- Provided clear icon support for Multiline Textbox, allowing users to easily clear the contents of the textarea with a single click.
+
+### FormValidator
+
+#### New Features
+
+- Provided support for validating multiple date formats using a form validator.
+
+- Provided support for placing validation messages outside the component for all Syncfusion Form Components.
+
+## 21.2.9 (2023-06-06)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- Facing exception when mode switching from color palette to color picker has been resolved.
+- Color picker value is not getting reset for transparent case.
+
+## 21.2.8 (2023-05-30)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- Issue with keyboard navigation has been resolved.
+
+## 21.2.6 (2023-05-23)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#I460888` - Issue with "Console error occurs when deleting files after data load" has been resolved.
+
 ## 21.1.38 (2023-04-04)
 
 ### Range Slider
@@ -17,6 +80,19 @@
 #### Bug Fixes
 
 - `#I433821` - Correcting the signature scaling issue while resizing the web browser has been resolved.
+
+## 20.4.38 (2022-12-21)
+
+### Rating
+
+**Key features**:
+
+The Rating component lets the user provide a star rating or view other people’s ratings on a numeric scale for any service provided, such as for movies, applications, or products.
+
+- **Precision** - Different precision modes to provide more accurate rating.
+- **Tooltip and Label** - Provide more expressive rating with tooltip and label.
+- **Template** - Support to customize the rating item to heart, svg or any content that precisely match our unique needs.
+- **Accessibility** - The Rating provides built-in compliance with the `WAI-ARIA` specifications and it is achieved through attributes.
 
 ## 19.4.38 (2021-12-17)
 

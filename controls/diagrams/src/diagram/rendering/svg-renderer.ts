@@ -103,11 +103,13 @@ export class SvgRenderer implements IRenderer {
      *  @param { boolean} isSelector - Provide the selector possobilities .
      *  @param { SVGSVGElement} parentSvg - Provide the parent svg element .
      *  @param { Object} ariaLabel - Provide the Arial label attributes .
+     *  @param { boolean} isCircularHandle - Provide the boolean attribute for the circular handle .
+     *  @param { number} enableSelector - Provide the selector possobilities .
      *  @private
      */
     public drawRectangle(
         svg: SVGElement, options: RectAttributes, diagramId: string, onlyRect?: boolean,
-        isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object, isCircularHandle?: boolean,enableSelector?: number):
+        isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object, isCircularHandle?: boolean, enableSelector?: number):
         void {
         if (options.shadow && !onlyRect) {
             this.renderShadow(options, svg, undefined, parentSvg);
@@ -158,7 +160,7 @@ export class SvgRenderer implements IRenderer {
         }
         let classval = options.class || '';
         if (!enableSelector) {
-            if(classval.includes('e-diagram-resize-handle') ||classval.includes('e-diagram-endpoint-handle') || classval.includes('e-diagram-bezier-control-handle')){
+            if (classval.includes('e-diagram-resize-handle') || classval.includes('e-diagram-endpoint-handle') || classval.includes('e-diagram-bezier-control-handle')){
                 classval += ' e-disabled';
             }
         }
@@ -295,6 +297,7 @@ export class SvgRenderer implements IRenderer {
      *  @param {boolean} isSelector - Provide selector boolean value .
      *  @param {SVGSVGElement} parentSvg - Provide the parent SVG element .
      *  @param {Object} ariaLabel - Provide arial label value .
+     *  @param {number} scale - Provide the scale value .
      *  @private
      */
     public drawPath(
@@ -455,7 +458,7 @@ export class SvgRenderer implements IRenderer {
                 }
                 if (parentNode) { nodeContent = document.getElementById(parentNode.id + '_content_groupElement'); }
                 if (nodeContent && parentNode && parentNode.children && parentNode.children[0] instanceof DiagramNativeElement) {
-                    let textTag: SVGGElement = this.createGElement('g', { id: ariaLabel + '_groupElement' });
+                    const textTag: SVGGElement = this.createGElement('g', { id: ariaLabel + '_groupElement' });
                     nodeContent.appendChild(textTag);
                     textTag.appendChild(text);
                 } else {
@@ -581,7 +584,10 @@ export class SvgRenderer implements IRenderer {
             'id': obj.id + 'image', 'x': obj.x.toString(), 'y': obj.y.toString(), 'transform': 'rotate(' + obj.angle + ','
                 + (obj.x + obj.width * obj.pivotX) + ',' + (obj.y + obj.height * obj.pivotY) + ')',
             'width': obj.width.toString(), 'visibility': obj.visible ? 'visible' : 'hidden',
-            'height': obj.height.toString(), 'preserveAspectRatio': aspectRatio, 'opacity': (obj.opacity || 1).toString()
+            'height': obj.height.toString(), 'preserveAspectRatio': aspectRatio,
+            //832073 - Opacity when set to Zero for image node is not working 
+            //opacity value is already set as '1' by default
+            'opacity': obj.opacity.toString()
         };
         setAttributeSvg(image, attr);
         image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imageObj.src.toString());
@@ -681,7 +687,7 @@ export class SvgRenderer implements IRenderer {
             nativeElement = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             nativeElement.setAttribute('id', element.id + '_native_element');
             nativeElement.appendChild(element.template.cloneNode(true));
-            let svgContentTag: SVGGElement = this.createGElement('g', { id: element.id + '_inner_native_element' });
+            const svgContentTag: SVGGElement = this.createGElement('g', { id: element.id + '_inner_native_element' });
             svgContentTag.appendChild(nativeElement);
             canvas.appendChild(svgContentTag);
         }

@@ -146,3 +146,13 @@ export interface PathSegment {
     r1?: number; r2?: number; centp?: { x?: number, y?: number }; xAxisRotation?: number;
     rx?: number; ry?: number; a1?: number; ad?: number;
 }
+
+/** @private */
+export interface IKeyDownType {
+    type?:string;
+}
+
+/** @private */
+export interface IReactDiagram {
+    isReact?: boolean;
+}

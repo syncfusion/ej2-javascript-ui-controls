@@ -855,3 +855,28 @@ describe("insertText API validation when restrictEditing is enabled", () => {
         });
     });
 });
+describe("getStyles api validation for pargraph Format", () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ showPropertiesPane: false });
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        container.destroy();
+        document.body.removeChild(element);
+        document.body.innerHTML = '';
+        element = undefined;
+        container = undefined;
+    });
+    it("getStyles api validation", () => {
+        container.documentEditor.openBlank();
+        const style = (container.documentEditor.getStyles('Paragraph')[0] as any).style;
+        console.log(style);
+        const exptectedStyle = '{"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":0,"spaceBeforeAuto":false,"spaceAfterAuto":false,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"BodyText","bidi":false,"keepLinesTogether":false,"keepWithNext":false,"contextualSpacing":false,"widowControl":true},"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#00000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri","allCaps":false,"localeIdBidi":0,"complexScript":false}}';
+        expect(style).toEqual(exptectedStyle);
+    });
+});

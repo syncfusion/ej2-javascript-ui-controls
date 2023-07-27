@@ -332,7 +332,6 @@ describe('Ensure freeze direction after removing freeze in columns', () => {
 describe('RowEdit in Frozen Rows and columns', () => {
   let gridObj: TreeGrid;
   let rows: Element[];
-  let actionBegin: () => void;
   let actionComplete: () => void;
   let dataBound: () => void;
   let actionFailure: () => void;
@@ -374,7 +373,7 @@ describe('RowEdit in Frozen Rows and columns', () => {
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
  });
   it('Record double click', (done: Function) => {
-   gridObj.actionBegin = (args?: any): void => {
+   gridObj.actionComplete = (args?: any): void => {
      if (gridObj.element.getElementsByClassName('e-frozenheader')[0].getElementsByClassName('e-editedrow').length > 0) {
     expect((<any>+gridObj.element.getElementsByClassName('e-frozenheader')[0].getElementsByClassName('e-editedrow')[0].getAttribute('data-rowindex'))).toBe(2);
      done();
@@ -387,6 +386,39 @@ describe('RowEdit in Frozen Rows and columns', () => {
    });
    gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
    gridObj.freezeModule.destroy();
+ });
+      afterAll(() => {
+      destroy(gridObj);
+    });
+});
+
+describe('829685 - Frozen Rows and columns with enableCollapseAll', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  beforeAll((done: Function) => {
+
+    gridObj = createGrid(
+      {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          frozenRows: 3,
+          frozenColumns: 2,
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'taskID', headerText: 'Task ID',  textAlign: 'Right', width: 100 },
+              { field: 'taskName', headerText: 'Task Name', width: 190 },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 100 },
+              { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 120 },
+          ],
+          height: 315
+      },
+      done
+    );
+  });
+  it('Rendering check', (done: Function) => {
+    expect(gridObj.grid.currentViewData.length > 1).toBe(true);
+    done();
  });
       afterAll(() => {
       destroy(gridObj);

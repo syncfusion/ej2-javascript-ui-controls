@@ -174,6 +174,17 @@ describe('Floating Action Button', () => {
             speedDial.dataBind();
             expect(speedDialEle.classList.contains("e-fab-hidden")).toBe(true);
         });
+        it('isPrimary', () => {
+            speedDial = new SpeedDial({ content: "test content"});
+            speedDial.appendTo('#speedDial');
+            expect(speedDialEle.classList.contains('e-primary')).toBe(true);
+            speedDial.isPrimary = false;
+            speedDial.dataBind();
+            expect(speedDialEle.classList.contains('e-primary')).toBe(false);
+            speedDial.isPrimary = true;
+            speedDial.dataBind();
+            expect(speedDialEle.classList.contains('e-primary')).toBe(true);
+        });
         it('disabled', () => {
             speedDial = new SpeedDial({ disabled: true });
             speedDial.appendTo('#speedDial');

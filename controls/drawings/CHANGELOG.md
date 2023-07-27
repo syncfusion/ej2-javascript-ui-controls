@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.5 (2023-07-27)
+
+### Drawings
+
+#### Bug Fixes
+
+- `#I464511` – Now, the content of the free text annotation does not changes when we click outside of it.
+
 ## 20.1.47 (2022-04-04)
 
 ### Drawings

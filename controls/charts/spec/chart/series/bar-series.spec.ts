@@ -1139,6 +1139,17 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
 
+        it('checking default series marker shape', function (done) {
+            loaded = (args: Object): void => {
+                let series1 = document.getElementById('container_Series_0_Point_2_Symbol');
+                expect(series1.getAttribute('cy') == '209.70727999046034').toBe(true);
+                expect(series1.getAttribute('cx') == '329.59722222222223').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker.visible = true;
+            chartObj.refresh();
+        });
         it('Changing visibility', (done: Function) => {
             loaded = (args: Object): void => {
                 let series1: HTMLElement = document.getElementById('containerSymbolGroup0');
@@ -1388,7 +1399,7 @@ describe('Chart Control', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(barContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) + 50);
                 let yValue: number = barChart.visibleSeries[0].points[3].yValue;
-                expect(yValue == 22.87 || yValue == 23.12).toBe(true);
+                expect(yValue == 22.87 || yValue == 23.19).toBe(true);
                 barChart.loaded = null;
                 done();
             };

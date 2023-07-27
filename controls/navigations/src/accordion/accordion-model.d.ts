@@ -182,15 +182,23 @@ export interface AccordionModel extends ComponentModel{
      * Specifies the template option for accordion items.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
 
     /**
      * Specifies the header title template option for accordion items.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * Specifies the width of the Accordion in pixels/number/percentage. Number value is considered as pixels.

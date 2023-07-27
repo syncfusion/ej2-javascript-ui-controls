@@ -42,6 +42,9 @@
       vertical-align: top;
       white-space: nowrap;
       width: 80%;
+      @if $skin-name == 'Material3' {
+        line-height: 30px;
+      }
 
       &.e-hide {
         display: none;
@@ -158,6 +161,9 @@
 
     & .e-dlg-header {
       font-size: $dialog-bigger-header-content-font-size;
+      @if $skin-name == 'Material3' {
+        line-height: 40px;
+      }
     }
 
     & .e-dlg-content {
@@ -180,6 +186,9 @@
       width: $dialog-bigger-close-button-width;
       @if $skin-name == 'FluentUI' {
         padding: $dialog-bigger-header-btn-padding;
+      }
+      @if $skin-name == 'Material3' {
+        padding: $zero-value;
       }
     }
 
@@ -209,6 +218,9 @@
 
     & .e-dlg-content {
       padding: $dialog-content-padding;
+      @if $skin-name == 'Material3' {
+        border-radius: $dialog-border-radius;
+      }
     }
 
     & .e-footer-content {
@@ -277,6 +289,9 @@
     width: $dialog-close-button-width;
     @if $skin-name == 'FluentUI' {
       padding: $dialog-header-btn-padding;
+    }
+    @if $skin-name == 'Material3' {
+      padding: $zero-value;
     }
   }
 

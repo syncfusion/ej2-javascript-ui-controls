@@ -2,7 +2,7 @@
 /// <reference path='../calendar/calendar-model.d.ts'/>
 import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';
-import { detach, addClass, removeClass, closest, attributes } from '@syncfusion/ej2-base';
+import { detach, addClass, removeClass, closest, attributes, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
@@ -91,6 +91,10 @@ export class DatePicker extends Calendar implements IInput {
     protected isDynamicValueChanged: boolean = false;
     protected moduleName: string = this.getModuleName();
     protected isFocused: boolean = false;
+    protected touchModule: Touch;
+    protected touchStart: boolean;
+    protected iconRight: boolean;
+    protected isBlur: boolean = false;
     /**
      * Specifies the width of the DatePicker component.
      *
@@ -144,6 +148,13 @@ export class DatePicker extends Calendar implements IInput {
      */
     @Property(true)
     public enabled: boolean;
+    /**
+     * Specifies the component popup display full screen in mobile devices.
+     *
+     * @default false
+     */
+    @Property(false)
+    public fullScreenMode : boolean;
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
@@ -458,7 +469,9 @@ export class DatePicker extends Calendar implements IInput {
     public render(): void {
         this.initialize();
         this.bindEvents();
-        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        if (this.floatLabelType === 'Auto') {
+            Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        }
         if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
             this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
         }
@@ -541,6 +554,9 @@ export class DatePicker extends Calendar implements IInput {
             this.l10n = new L10n('datepicker', l10nLocale, this.locale);
             this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
         }
+        if(this.fullScreenMode && Browser.isDevice){
+            this.cssClass += ' ' + "e-popup-expand";
+        }
         let updatedCssClassValues: string = this.cssClass;
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
@@ -580,10 +596,10 @@ export class DatePicker extends Calendar implements IInput {
         Input.addAttributes({ 'aria-label': 'select' }, this.inputWrapper.buttons[0]);
         addClass([this.inputWrapper.container], DATEWRAPPER);
     }
-    protected updateInput(isDynamic: boolean = false): void {
+    protected updateInput(isDynamic: boolean = false, isBlur: boolean = false): void {
         let formatOptions: DateFormatOptions;
         if (this.value && !this.isCalendar()) {
-            this.disabledDates(isDynamic);
+            this.disabledDates(isDynamic, isBlur);
         }
         if (isNaN(+new Date(this.checkValue(this.value)))) {
             this.setProperties({ value: null }, true);
@@ -1064,7 +1080,9 @@ export class DatePicker extends Calendar implements IInput {
             this.invalidValueString = null;
             this.updateInputValue('');
         }
-        this.updateInput();
+        this.isBlur = true;
+        this.updateInput(false, true);
+        this.isBlur = false;
         this.popupUpdate();
         this.changeTrigger(e);
         if (this.enableMask && this.maskedDateValue && this.placeholder && this.floatLabelType !== 'Always' )
@@ -1225,10 +1243,12 @@ export class DatePicker extends Calendar implements IInput {
     }
     protected strictModeUpdate(): void {
         let format: string;
+        let pattern = /^y/ ;
+        let charPattern = /[^a-zA-Z]/;
         let formatOptions: DateFormatOptions;
         if (this.getModuleName() === 'datetimepicker') {
             format = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
-        } else {
+        } else if (!pattern.test(this.formatString) || charPattern.test(this.formatString)) {
             format = isNullOrUndefined(this.formatString) ? this.formatString : this.formatString.replace('dd', 'd');
         }
         if (!isNullOrUndefined(format)) {
@@ -1236,6 +1256,9 @@ export class DatePicker extends Calendar implements IInput {
             if (len < 3) {
                 format = format.replace('MM', 'M');
             }
+        }
+        else {
+            format = this.formatString;
         }
         let dateOptions: object;
         if (this.getModuleName() === 'datetimepicker') {
@@ -1333,6 +1356,13 @@ export class DatePicker extends Calendar implements IInput {
             zIndex: this.zIndex,
             collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : { X: 'flip', Y: 'flip' },
             open: () => {
+                if (Browser.isDevice && this.fullScreenMode) {
+                    this.iconRight = parseInt(window.getComputedStyle(this.calendarElement.querySelector('.e-header.e-month .e-prev')).marginRight, 10) > 16 ? true: false;
+                    this.touchModule = new Touch(<HTMLElement>this.calendarElement.querySelector(".e-content.e-month"), {
+                        swipe: this.CalendarSwipeHandler.bind(this)
+                    });
+                    EventHandler.add(<HTMLElement>this.calendarElement.querySelector(".e-content.e-month"), "touchstart", this.TouchStartHandler, this)
+                }
                 if (this.getModuleName() !== 'datetimepicker') {
                     if (document.activeElement !== this.inputElement) {
                         this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
@@ -1379,6 +1409,45 @@ export class DatePicker extends Calendar implements IInput {
         this.setAriaAttributes();
     }
 
+    private CalendarSwipeHandler(e: SwipeEventArgs): void {
+        let direction: number = 0;
+        if (this.iconRight) {
+            switch (e.swipeDirection) {
+                case "Left":
+                    direction = 1;
+                    break;
+                case "Right":
+                    direction = -1;
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            switch (e.swipeDirection) {
+                case "Up":
+                    direction = 1;
+                    break;
+                case "Down":
+                    direction = -1;
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (this.touchStart) {
+            if (direction === 1) {
+                this.navigateNext(e);
+            } else if (direction === -1) {
+                this.navigatePrevious(e);
+            }
+            this.touchStart = false;
+        }
+    }
+
+    private TouchStartHandler(e: MouseEvent) {
+        this.touchStart = true;
+    }
+
     private setAriaDisabled(): void {
         if (!this.enabled) {
             this.inputElement.setAttribute('aria-disabled', 'true');
@@ -1413,11 +1482,25 @@ export class DatePicker extends Calendar implements IInput {
             dateOptions = { format: 'MMM d', skeleton: 'dateTime', calendar: 'islamic' };
         }
         monthSpan.textContent = '' + this.globalize.formatDate(this.value || new Date(), dateOptions);
-        modelHeader.appendChild(yearHeading);
+        if (this.fullScreenMode) {
+            const modelCloseIcon = this.createElement("span", { className: "e-popup-close" });
+            EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.modelCloseHandler, this);
+            const modelTodayButton = this.calendarElement.querySelector("button.e-today");
+            h2.classList.add("e-day-wrapper");
+            modelTodayButton.classList.add("e-outline");
+            modelHeader.appendChild(modelCloseIcon);
+            modelHeader.appendChild(modelTodayButton);
+        }
+        if(!this.fullScreenMode)
+            modelHeader.appendChild(yearHeading);
         h2.appendChild(daySpan);
         h2.appendChild(monthSpan);
         modelHeader.appendChild(h2);
         this.calendarElement.insertBefore(modelHeader, this.calendarElement.firstElementChild);
+    }
+
+    private modelCloseHandler(e: MouseEvent| TouchEvent): void {
+        this.hide();
     }
 
     protected changeTrigger(event?: MouseEvent | KeyboardEvent): void {
@@ -1446,7 +1529,7 @@ export class DatePicker extends Calendar implements IInput {
         this.trigger('navigated', this.navigatedArgs);
     }
     protected changeEvent(event?: MouseEvent | KeyboardEvent | Event): void {
-        if (!this.isIconClicked) {
+        if (!this.isIconClicked && !this.isBlur) {
             this.selectCalendar(event);
         }
         if (((this.previousDate && this.previousDate.valueOf()) !== (this.value && this.value.valueOf()))) {
@@ -1582,6 +1665,7 @@ export class DatePicker extends Calendar implements IInput {
                     addClass(this.inputWrapper.buttons, ACTIVE);
                     this.preventArgs.appendTo.appendChild(this.popupWrapper);
                     this.popupObj.refreshPosition(this.inputElement);
+                    const popupLeft: number = parseFloat(this.popupWrapper.style.left) - (this.popupWrapper.offsetWidth - this.inputWrapper.container.offsetWidth);
                     const openAnimation: object = {
                         name: 'FadeIn',
                         duration: Browser.isDevice ? 0 : OPENDURATION
@@ -1594,6 +1678,9 @@ export class DatePicker extends Calendar implements IInput {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     super.setOverlayIndex(this.mobilePopupWrapper, this.popupObj.element, this.modal, Browser.isDevice as any);
                     this.setAriaAttributes();
+                    if(this.enableRtl && popupLeft > 0){
+                        this.popupWrapper.style.left =  popupLeft + "px";
+                    }
                 } else {
                     this.popupObj.destroy();
                     this.popupWrapper = this.popupObj = null;
@@ -1658,7 +1745,7 @@ export class DatePicker extends Calendar implements IInput {
             this.modal = null;
         }
         if (Browser.isDevice) {
-            if (!isNullOrUndefined(this.mobilePopupWrapper)) {
+            if (!isNullOrUndefined(this.mobilePopupWrapper) && (prevent && (isNullOrUndefined(this.preventArgs) || !this.preventArgs.cancel))) {
                 this.mobilePopupWrapper.remove();
                 this.mobilePopupWrapper = null;
             }
@@ -2002,7 +2089,7 @@ export class DatePicker extends Calendar implements IInput {
     protected getModuleName(): string {
         return 'datepicker';
     }
-    private disabledDates(isDynamic: boolean = false): void {
+    private disabledDates(isDynamic: boolean = false, isBlur: boolean = false): void {
         let formatOptions: DateFormatOptions;
         let globalize: string;
         const valueCopy: Date = this.checkDateValue(this.value) ? new Date(+this.value) : new Date(this.checkValue(this.value));
@@ -2054,7 +2141,7 @@ export class DatePicker extends Calendar implements IInput {
             {
                 this.updateInputValue(this.maskedDateValue);
                 this.notify('createMask', {
-                    module: 'MaskedDateTime'
+                    module: 'MaskedDateTime', isBlur: isBlur
                 });
             }
         }

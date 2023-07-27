@@ -1,10 +1,10 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer, completeAction } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer, completeAction, isLockedCells } from '../index';
 import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus } from '../common/index';
 import { editHyperlink, openHyperlink, editAlert, removeHyperlink, isImported } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
+import { getRangeIndexes, getCellIndexes, getRangeAddress, getSwapRange } from '../../workbook/common/address';
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell, CellStyleModel } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink, beginAction } from '../../workbook/common/event';
 import { isCellReference, DefineNameModel, updateCell } from '../../workbook/index';
@@ -109,12 +109,12 @@ export class SpreadsheetHyperlink {
     }
 
     private initiateHyperlinkHandler(): void {
-        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (sheet.isProtected && !sheet.protectSettings.insertLink) {
+        if (sheet.isProtected && (!sheet.protectSettings.insertLink || isLockedCells(this.parent))) {
             this.parent.notify(editAlert, null);
             return;
         }
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (!this.parent.element.querySelector('.e-hyperlink-dlg')) {
             const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
             let displayText: string;
@@ -129,6 +129,7 @@ export class SpreadsheetHyperlink {
                     this.parent.trigger('dialogBeforeOpen', dlgArgs);
                     if (dlgArgs.cancel) {
                         args.cancel = true;
+                        return;
                     }
                     dialogInst.dialogInstance.content = this.hyperlinkContent();
                     displayText = (dialogInst.dialogInstance.content.querySelector('.e-text') as HTMLInputElement).value;
@@ -260,7 +261,7 @@ export class SpreadsheetHyperlink {
         this.hlOpenHandler(trgt);
     }
 
-    private hlOpenHandler(trgt: HTMLElement): void {
+    private hlOpenHandler(trgt: HTMLElement, isClick?: boolean): void {
         if (trgt.classList.contains('e-hyperlink')) {
             const cellEle: HTMLElement = closest(trgt, '.e-cell') as HTMLElement;
             if (!cellEle) {
@@ -368,7 +369,7 @@ export class SpreadsheetHyperlink {
                         this.showInvalidHyperlinkDialog();
                     }
                 }
-            } else {
+            } else if (!isClick) {
                 if (this.isValidUrl(address)) {
                     window.open(address, befArgs.target);
                 } else {
@@ -470,7 +471,7 @@ export class SpreadsheetHyperlink {
                 insertBut.setAttribute('disabled', 'true');
             }
         } else {
-            this.hlOpenHandler(trgt);
+            this.hlOpenHandler(trgt, true);
         }
     }
 

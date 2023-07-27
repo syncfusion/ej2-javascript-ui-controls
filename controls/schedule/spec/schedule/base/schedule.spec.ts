@@ -15,6 +15,7 @@ import { readonlyEventsData, defaultData, tooltipData } from './datasource.spec'
 import { EJ2Instance } from '../../../src/schedule/base/interface';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
+import * as scheduleUtil from '../../../src/schedule/base/util';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth);
 
@@ -248,6 +249,31 @@ describe('Schedule base module', () => {
             expect(schObj.element.querySelectorAll('.e-week-agenda-view').length).toEqual(0);
         });
     });
+
+    describe('Browser Zoom', () => {
+        let schObj: Schedule;
+        beforeAll((): void => {
+            schObj = undefined;
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+            (document.body.style as any).zoom = '';
+        });
+
+        it('default Scroll width Check', () => {
+            document.getElementById('Schedule').style.width = '600px';
+            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), width: '600px', height:'400px', currentView: 'Month' });
+            schObj.appendTo('#Schedule');
+            expect(scheduleUtil.getScrollBarWidth()).toEqual(15);
+        });
+        it('check width after browser zoom', () => {
+            (document.body.style as any).zoom = '50%';
+            devicePixelRatio = 1.3;
+            (schObj as any).onScheduleResize();
+            expect(scheduleUtil.getScrollBarWidth()).toEqual(30);
+        });
+    }); 
 
     describe('Views and current view', () => {
         let schObj: Schedule;

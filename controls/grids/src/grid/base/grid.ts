@@ -556,9 +556,9 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * Checks for strings not equal to the specified string. <br/></td></tr>
      * </table>
      *
-     * @default 'wildcard'
+     * @default 'contains'
      */
-    @Property('wildcard')
+    @Property('contains')
     public operator: string;
 
     /**
@@ -694,9 +694,10 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
      * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
      *
      * @default ''
+     * @aspType string
      */
     @Property()
-    public captionTemplate: string | Object;
+    public captionTemplate: string | Object | Function;
 
     /**
      * The Lazy load grouping, allows the Grid to render only the initial level caption rows in collapsed state while grouping.
@@ -778,7 +779,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * @aspType string
      */
     @Property('')
-    public template: string | Object;
+    public template: string | Object | Function;
 
     /**
      * Defines the custom edit elements for the dialog header template.
@@ -787,7 +788,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * @aspType string
      */
     @Property('')
-    public headerTemplate: string | Object;
+    public headerTemplate: string | Object | Function;
 
     /**
      * Defines the custom edit elements for the dialog footer template.
@@ -796,7 +797,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * @aspType string
      */
     @Property('')
-    public footerTemplate: string | Object;
+    public footerTemplate: string | Object | Function;
 
     /**
      * Defines the position of adding a new row. The available position are:
@@ -1592,7 +1593,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Configures the column chooser in the Grid.
      *
-     * @default { columnChooserOperator: 'wildCard' }
+     * @default { columnChooserOperator: 'startsWith' }
      */
     @Complex<ColumnChooserSettingsModel>({}, ColumnChooserSettings)
     public columnChooserSettings: ColumnChooserSettingsModel;
@@ -1646,9 +1647,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > Check the [`Row Template`](../../grid/row/) customization.
      *
      * @default ''
+     * @aspType string
      */
     @Property()
-    public rowTemplate: string;
+    public rowTemplate: string | Function;
 
     /**
      * The detail template allows you to show or hide additional information about a particular row.
@@ -1658,9 +1660,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * {% codeBlock src="grid/detail-template-api/index.ts" %}{% endcodeBlock %}
      *
      * @default ''
+     * @aspType string
      */
     @Property()
-    public detailTemplate: string;
+    public detailTemplate: string | Function;
 
     /**
      * Defines Grid options to render child Grid.
@@ -1827,17 +1830,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * It used to render toolbar template
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public toolbarTemplate: string;
+    public toolbarTemplate: string | Function;
 
     /**
      * It used to render pager template
      *
      * @default null
+     * @aspType string
      */
     @Property()
-    public pagerTemplate: string;
+    public pagerTemplate: string | Function;
 
     /**
      * Gets or sets the number of frozen rows.
@@ -2562,7 +2567,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 delete currentObject[`${val}`];
             }
         }
-        const temp: string = this.pageSettings.template;
+        const temp: string | Function = this.pageSettings.template;
         const settings: PageSettingsModel = Object.assign({template: undefined}, this.pageSettings);
         this.setProperties({pageSettings: settings}, true);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3454,7 +3459,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (!this.isInitialLoad && !this.getColumns().length) {
             return;
         }
-        if (this.contentMaskTable) {
+        if (this.contentMaskTable && gridContent.querySelector('.e-masked-table')) {
             let content: Element = gridContent;
             if (this.isFrozenGrid()) {
                 content = content.querySelector('.e-frozen-left-content, .e-frozen-right-content');
@@ -3699,6 +3704,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let requireGridRefresh: boolean = false;
         let freezeRefresh: boolean = false;
         let checkCursor: boolean; const args: Object = { requestType: 'refresh' };
+        let childGridParent: Element = null;
+        let parentInstance: IGrid = null;
         if (this.isDestroyed) { return; }
         this.log('module_missing');
         if (this.isEllipsisTooltip()) {
@@ -3742,6 +3749,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             case 'height':
             case 'width':
                 this.notify(events.uiUpdate, { module: 'scroll', properties: { width: newProp.width, height: newProp.height } });
+                if (this.allowPaging) {
+                    this.pagerModule.refresh();
+                }
                 break;
             case 'allowReordering':
                 this.headerModule.refreshUI();
@@ -3777,7 +3787,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 checkCursor = true; break;
             case 'enableInfiniteScrolling':
             case 'childGrid':
-                requireRefresh = true; break;
+                requireRefresh = true;
+                childGridParent = this.parentDetails ? document.querySelector(`#${this.parentDetails.parentID}`) : null;
+                parentInstance = childGridParent ? (childGridParent as EJ2Intance).ej2_instances[0] : null;
+                if (this.childGrid  && parentInstance && isNullOrUndefined(parentInstance.childGrid.childGrid)) {
+                    const childGridObject: GridModel = Object.assign({}, parentInstance.childGrid, { childGrid: newProp.childGrid });
+                    parentInstance.setProperties({ childGrid: childGridObject }, true);
+                    while (!isNullOrUndefined(parentInstance.parentDetails)) {
+                        const currentParent: Element = document.querySelector(`#${parentInstance.parentDetails.parentID}`);
+                        const currentParentInstance: IGrid = currentParent ? (currentParent as EJ2Intance).ej2_instances[0] : null;
+                        if (currentParentInstance) {
+                            const currentChildObject: GridModel = Object.assign({}, currentParentInstance.childGrid);
+                            currentChildObject.childGrid = parentInstance.childGrid;
+                            currentParentInstance.setProperties({ childGrid: currentChildObject }, true);
+                        }
+                        parentInstance = currentParentInstance;
+                    }
+                }
+                break;
             case 'toolbar':
                 this.notify(events.uiUpdate, { module: 'toolbar' }); break;
             case 'groupSettings':
@@ -4636,7 +4663,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @returns {void}
      */
-    public setCellValue(key: string | number, field: string, value: string | number | boolean | Date): void {
+    public setCellValue(key: string | number, field: string, value: string | number | boolean | Date | null): void {
         const cells: string = 'cells';
         const rowData: string = 'data';
         const rowIdx: string = 'index';
@@ -4737,7 +4764,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      * @hidden
      */
-    public refreshReactTemplateTD (rows?:Element[] | NodeListOf<Element>, isChildGrid?: boolean, isFrozen?: boolean): void {
+    public refreshReactTemplateTD (rows?: Element[] | NodeListOf<Element>, isChildGrid?: boolean, isFrozen?: boolean): void {
         const cells: string = 'cells';
         const rowIdx: string = 'index';
         const indent: number = this.getIndentCount();
@@ -6621,7 +6648,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const tagName: string = (e.target as Element).tagName;
             const elemNames: string[] = ['A', 'BUTTON', 'INPUT'];
             if (element && e.type !== 'mouseout' && !(Browser.isDevice && elemNames.indexOf(tagName) !== -1)) {
-                if (element.getAttribute('aria-describedby')) {
+                if (element.getAttribute('data-tooltip-id')) {
                     return;
                 }
                 if (this.getTooltipStatus(element)) {
@@ -7550,7 +7577,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private getUserAgent(): boolean {
         const userAgent: string = Browser.userAgent.toLowerCase();
-        return (/iphone|ipod|ipad/ as RegExp).test(userAgent);
+        return (/iphone|ipod|ipad|macintosh/ as RegExp).test(userAgent);
     }
 
     /**

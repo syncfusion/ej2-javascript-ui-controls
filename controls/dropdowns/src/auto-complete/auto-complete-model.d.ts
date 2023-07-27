@@ -162,10 +162,11 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Not applicable to this component.
      *
      * @default null
+     * @aspType string
      * @private
      * @deprecated
      */
-    valueTemplate?: string;
+    valueTemplate?: string | Function;
 
     /**
      * Not applicable to this component.

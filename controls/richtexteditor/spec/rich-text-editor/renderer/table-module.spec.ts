@@ -2258,7 +2258,9 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 item.click();
                 let listItem: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_OrderedList') as HTMLElement;
                 listItem.click();
-                expect((window.getSelection().anchorNode as any).nextElementSibling.nodeName === 'BR').toBe(true);
+                const anchorOffset: number = window.getSelection().anchorOffset;
+                expect((window.getSelection().anchorNode.childNodes[anchorOffset - 1]).nodeName === 'OL').toBe(true);
+                expect((window.getSelection().anchorNode.childNodes[anchorOffset - 1]).childNodes[0].childNodes[0].nodeName).toEqual('BR');
                 done();
             });
         });
@@ -3384,7 +3386,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
     
-    describe("Table remove rows with cell merge", () => {
+     describe("Table remove rows with cell merge", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
         beforeEach(() => {
@@ -3410,6 +3412,43 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 cancelable: true
             });
             rteEle.querySelectorAll("td")[1].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), target, target, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[1] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[2] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelector('table tr').childElementCount === 4).toBe(true);
+                done();
+            }, 400);
+        });
+    });
+
+    describe("Table remove rows with cell merge - case 2", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-', 'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 25%;">Merged</td><td style="width: 25%;" class="">r1c1</td><td style="width: 25%;" class="">r1c2</td><td style="width: 25%;" class="">r1c3</td></tr><tr><td style="width: 25%;" class="" rowspan="2">r3</td><td style="width: 25%;">r1c1</td><td style="width: 25%;" class="">r2c2</td><td style="width: 25%;" class="">r3c3</td></tr><tr><td style="width: 25%;">r3</td><td style="width: 25%;">r3</td><td style="width: 25%;">r3</td></tr></tbody></table><p><br/></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Remove the row when the second row cells are merged', (done: Function) => {
+            let target = rteEle.querySelectorAll('.e-rte-table td')[4];
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            let domSelection = new NodeSelection();
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[4].dispatchEvent(ev);
             (rteObj as any).mouseUp(eventsArg);
             setTimeout(function () {
                 domSelection.setSelectionText(rteObj.contentModule.getDocument(), target, target, 0, 0);
@@ -4416,6 +4455,69 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
             expect((document.querySelectorAll('.e-rte-quick-popup') as any).length).toBe(1);
             done();
+        });
+    });
+
+    describe("Table last column resizing is not working when table is pasted from MS Word.", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                resizeStart: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                },
+                resizeStop: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                },
+                resizing: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('resizing last column in a table which has no width', () => {
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent1: any = document.createEvent("MouseEvents");
+            clickEvent1.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent1);
+            expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
+            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
+            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
+            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
+            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent1);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            table.style.removeProperty('width');
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            let reCol: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[3];
+            clickEvent1.initEvent("mousedown", false, true);
+            reCol.dispatchEvent(clickEvent1);
+            (rteObj.tableModule as any).resizeStart(clickEvent1);           
+            expect(table.querySelectorAll('tr').length === 3).toBe(true);
+            expect(table.querySelectorAll('td').length === 9).toBe(true);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[3];
+            (<any>rteObj.tableModule).resizeBtnStat.column = true;
+            (rteObj.tableModule as any).resizeStart({ target: reCol1, pageX: 100, pageY: 0, preventDefault: function () { } });
+            clickEvent.initEvent("mousedown", false, true);
+            reCol1.dispatchEvent(clickEvent);
+            (rteObj.tableModule as any).resizeStart(clickEvent);
+            (<any>rteObj.tableModule).resizeBtnStat.column = true;
+            let width: any = table.querySelectorAll("tr")[0].querySelectorAll("td")[2].offsetWidth;
+            (rteObj.tableModule as any).resizing({ target: reCol1, pageX: 200, pageY: 200, preventDefault: function () { } });
+            expect(width).not.toEqual((table as HTMLTableElement).querySelectorAll("tr")[0].querySelectorAll("td")[2].offsetWidth);
         });
     });
 });

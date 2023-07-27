@@ -1,5 +1,5 @@
-import { Component, EventHandler, Collection, Property, Event, EmitType, formatUnit, INotifyPropertyChanged, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { ChildProperty, addClass, removeClass, setStyleAttribute, attributes, getUniqueID, compile, getInstance, L10n } from '@syncfusion/ej2-base';import { append, closest, isNullOrUndefined, remove, classList, Touch, SwipeEventArgs, KeyboardEvents, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { Button } from '@syncfusion/ej2-buttons';
-import {CarouselAnimationEffect,CarouselButtonVisibility,SlideChangingEventArgs,SlideChangedEventArgs} from "./carousel";
+import { Component, EventHandler, Collection, Property, Event, EmitType, formatUnit, INotifyPropertyChanged, NotifyPropertyChanges, Browser } from '@syncfusion/ej2-base';import { ChildProperty, addClass, removeClass, setStyleAttribute, attributes, getUniqueID, compile, getInstance, L10n } from '@syncfusion/ej2-base';import { append, closest, isNullOrUndefined, remove, classList, Touch, SwipeEventArgs, KeyboardEvents, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { Button } from '@syncfusion/ej2-buttons';
+import {CarouselAnimationEffect,CarouselIndicatorsType,CarouselButtonVisibility,CarouselSwipeMode,SlideChangingEventArgs,SlideChangedEventArgs} from "./carousel";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -25,8 +25,12 @@ export interface CarouselItemModel {
      * Accepts the template for individual carousel item.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * Accepts HTML attributes/custom attributes to add in individual carousel item.
@@ -64,29 +68,45 @@ export interface CarouselModel extends ComponentModel{
      * Accepts the template for previous navigation button.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    previousButtonTemplate?: string;
+    previousButtonTemplate?: string | Function;
 
     /**
      * Accepts the template for next navigation button.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    nextButtonTemplate?: string;
+    nextButtonTemplate?: string | Function;
 
     /**
      * Accepts the template for indicator buttons.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    indicatorsTemplate?: string;
+    indicatorsTemplate?: string | Function;
 
     /**
      * Accepts the template for play/pause button.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    playButtonTemplate?: string;
+    playButtonTemplate?: string | Function;
 
     /**
      * Accepts single/multiple classes (separated by a space) to be used for carousel customization.
@@ -107,8 +127,12 @@ export interface CarouselModel extends ComponentModel{
      * Specifies the template option for carousel items.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
      */
-    itemTemplate?: string;
+    itemTemplate?: string | Function;
 
     /**
      * Specifies index of the current carousel item.
@@ -181,6 +205,18 @@ export interface CarouselModel extends ComponentModel{
     showIndicators?: boolean;
 
     /**
+     * Specifies the type of indicators. The available values for this property are:
+     *
+     * * `Default`: Displays the indicators with a bullet design.
+     * * `Dynamic`: Applies a dynamic animation design to the indicators.
+     * * `Fraction`: Displays the slides numerically as indicators.
+     * * `Progress`: Represents the slides using a progress bar design.
+     *
+     * @default 'Default'
+     */
+    indicatorsType?: CarouselIndicatorsType;
+
+    /**
      * Defines how to show the previous, next and play pause buttons visibility. The possible values for this property as follows
      * * `Hidden`: Navigation buttons are hidden.
      * * `Visible`: Navigation buttons are visible.
@@ -198,6 +234,17 @@ export interface CarouselModel extends ComponentModel{
      * @default false
      */
     partialVisible?: boolean;
+
+    /**
+     * Specifies whether the slide transition should occur while performing swiping via touch/mouse.
+     * The slide swiping is enabled or disabled using bitwise operators. The swiping is disabled using ‘~’ bitwise operator.
+     * * Touch - Enables or disables the swiping action in touch interaction.
+     * * Mouse - Enables or disables the swiping action in mouse interaction.
+     *
+     * @default 'Touch'
+     * @aspNumberEnum
+     */
+    swipeMode?: CarouselSwipeMode;
 
     /**
      * Accepts HTML attributes/custom attributes to add in individual carousel item.

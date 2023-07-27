@@ -142,7 +142,7 @@ describe('Sparkline testing Pie series spec for height greater than width', () =
     it('Sparkline pie series datalabel', () => {
         let ele: Element = getIdElement(id + '_sparkline_label_text_1');
         expect(ele.textContent).toBe('10');
-        expect(ele.getAttribute('fill')).toBe('#424242');
+        expect(ele.getAttribute('fill')).toBe('rgba(97, 97, 97, 1)');
         expect(parseInt(ele.getAttribute('x'), 10)).toBe(23);
         expect(parseInt(ele.getAttribute('y'), 10)).toBe(95);
     });

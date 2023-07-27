@@ -1941,4 +1941,72 @@ describe('Input Groups - Enable/Disable', () => {
             element.remove();
         });
     });
+    describe('check valid input', () => {
+        let inputObj: InputObject;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputpopup', attrs: { type: 'text' } });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            inputObj = Input.createInput({
+                element: element,
+                floatLabelType: "Always",
+                properties: {
+                 placeholder: 'Enter the value',
+                 cssClass: 'e-outline'
+                },
+            });
+        });
+        it('class name of valid input', () => {
+            expect(inputObj.container.classList.contains('e-valid-input')).toBe(true);
+        });
+        it('class name of input group', () => {
+            expect(inputObj.container.classList.contains('e-input-group')).toBe(true);
+        })
+        afterAll(() => {
+            element.remove();
+        });
+    });
+    describe('check floatable type', () => {
+        let inputObj: InputObject;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputpopup', attrs: { type: 'text '} });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            inputObj = Input.createInput({
+                element: element,
+                floatLabelType: "Auto",
+                properties: {
+                    placeholder: 'Enter the value for the input text component',
+                    cssClass: 'e-outline'
+                },
+            });
+        });
+        it('class name of input group', () => {
+            Input.addIcon("append", 'e-down-icon', inputObj.container, element);
+            expect(inputObj.container.classList.contains('e-input-group')).toBe(true);
+        });
+        afterAll(() => {
+            element.remove();
+        });
+    });
+    describe('check clear button class', () => {
+        let inputObj: InputObject;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputpopup', attrs: { type: 'text '} });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            inputObj = Input.createInput({
+                element: element,
+                floatLabelType: "Auto",
+                properties: {
+                    placeholder: 'Enter the value',
+                    showClearButton: true,
+                    cssClass: 'e-filled'
+                },
+            });
+        });
+        it('class name of input group', () => {
+            expect(inputObj.container.classList.contains('e-input-group')).toBe(true);
+        });
+        afterAll(() => {
+            element.remove();
+        });
+    });
 });
