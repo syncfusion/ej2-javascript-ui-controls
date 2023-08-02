@@ -79,7 +79,8 @@ export class FocusStrategy {
     protected passiveFocus(e: FocusEvent): void {
         if (this.parent.isDestroyed) { return; }
         const firstHeaderCell: Element = this.parent.getHeaderContent().querySelector('.e-headercell');
-        if (e.target === firstHeaderCell && e.relatedTarget && !parentsUntil((e.relatedTarget as Element), 'e-grid')
+        const lastRowCell: Element = this.parent.getContentTable().querySelector('tr:last-child td:last-child');
+        if ((e.target === firstHeaderCell || lastRowCell) && e.relatedTarget && !parentsUntil((e.relatedTarget as Element), 'e-grid')
             && !this.firstHeaderCellClick) {
             this.currentInfo.element = e.target as HTMLElement;
             this.currentInfo.elementToFocus = e.target as HTMLElement;
@@ -477,8 +478,7 @@ export class FocusStrategy {
         const cellColIndex: number = parseInt(cell.getAttribute('data-colindex'), 10);
         const cellCol: Column = this.parent.getColumns()[parseInt(cellColIndex.toString(), 10)];
         if (this.active.matrix.matrix[cellIndex[0]][cellIndex[1]] === 1
-            && ((tr.classList.contains('e-insertedrow') || !cellCol.isPrimaryKey) && cellCol.allowEditing)
-            || !tr.classList.contains('e-row')) {
+            && (!tr.classList.contains('e-row') || (tr.classList.contains('e-insertedrow') || !cellCol.isPrimaryKey) && cellCol.allowEditing)) {
             return true;
         }
         return false;

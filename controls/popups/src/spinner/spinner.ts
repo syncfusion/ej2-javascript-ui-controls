@@ -98,7 +98,8 @@ export function createSpinner ( args: SpinnerArgs, internalCreateElement ?: crea
     // eslint-disable-next-line
     let container: { wrap: HTMLElement; inner_wrap: HTMLElement } = create_spinner_container(args.target, makeElement);
     if (!isNullOrUndefined(args.cssClass)) {
-        container.wrap.classList.add(args.cssClass);
+        var classNames = args.cssClass.split(' ').filter((className) => className.trim() !== '');
+        container.wrap.classList.add(...classNames);
     }
     if (!isNullOrUndefined(args.template) || !isNullOrUndefined(spinTemplate)) {
         const template: string = !isNullOrUndefined(args.template) ? args.template : spinTemplate;

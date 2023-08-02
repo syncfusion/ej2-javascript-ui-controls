@@ -2841,12 +2841,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             return this.getChildGroup(this.groupedData, parentId, isRoot);
         } else {
             if (typeof this.fields.child === 'string') {
-                let index: number = obj.findIndex((data) => data[this.fields.id] && data[this.fields.id].toString() === parentId);
+                let index: number = obj.findIndex((data) => getValue(this.fields.id, data) && getValue(this.fields.id, data).toString() === parentId);
                 if(index !== -1){return <{ [key: string]: Object }[]>getValue(this.fields.child, obj[index]);}
                 if(index === -1){
                 for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
                     let tempArray: { [key: string]: Object }[] = getValue(this.fields.child, obj[i]);
-                    let childIndex: number= !isNOU(tempArray)?tempArray.findIndex((data) => data[this.fields.id] && data[this.fields.id].toString() === parentId) : -1;
+                    let childIndex: number= !isNOU(tempArray)?tempArray.findIndex((data) => getValue(this.fields.id, data) && getValue(this.fields.id, data).toString() === parentId) : -1;
                     if(childIndex!==-1){
                         return <{ [key: string]: Object }[]>getValue(this.fields.child, tempArray[childIndex]);
                     }

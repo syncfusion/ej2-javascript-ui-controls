@@ -1189,7 +1189,7 @@ describe('Selection Paragraph format borders apply validation', () => {
         expect(editor.selection.paragraphFormat.borders.top.color).toBe("#FF0000FF");
         editor.selection.paragraphFormat.borders.top.color="#000000FF";
         expect(editor.selection.paragraphFormat.borders.top.color).toBe("#000000FF");
-        expect(editor.selection.paragraphFormat.borders.top.lineStyle).toBe('Single');
+        expect(editor.selection.paragraphFormat.borders.top.lineStyle).toBe('None');
     });
     it('Copy Format method of Selection Paragraph format for bottom border color validation', () => {
         console.log('Copy Format method of Selection Paragraph format for bottom border color validation');

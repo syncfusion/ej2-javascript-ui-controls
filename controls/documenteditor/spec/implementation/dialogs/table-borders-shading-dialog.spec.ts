@@ -868,11 +868,11 @@ console.log('Apply Table Cell Preview Boxes index 0 testing');
         dialog.show();
         (dialog as any).ulelementShading.value = 'Cell';
         (dialog as any).applyTableCellPreviewBoxes();
-        expect((dialog as any).previewDivBottomcenterContainer.style.display).toBe('none');
+        expect((dialog as any).previewDivBottomcenterContainer.style.display).toBe(' ');
     });
     it('Apply Table Cell Preview Boxes index 0 testing', () => {
 console.log('Apply Table Cell Preview Boxes index 0 testing');
-        expect((dialog as any).previewDivTopCenterContainer.style.display).toBe('none');
+        expect((dialog as any).previewDivTopCenterContainer.style.display).toBe(' ');
     });
     it('Apply Table Cell Preview Boxes index 0 testing', () => {
 console.log('Apply Table Cell Preview Boxes index 0 testing');

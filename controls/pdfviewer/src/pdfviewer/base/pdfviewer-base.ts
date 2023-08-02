@@ -9553,8 +9553,6 @@ export class PdfViewerBase {
                         freeTextObject = this.annotationStorage[this.documentId + '_annotations_freetext'];
                         inkObject = this.annotationStorage[this.documentId + '_annotations_ink'];
                     }
-                    const annotationCanvas: HTMLElement = this.getElement('_annotationCanvas_' + i);
-                    if (annotationCanvas) {
                         this.drawPageAnnotations(annotation[parseInt(i.toString(), 10)], i);
                         if (this.isImportedAnnotation) {
                             let isAdded: boolean = false;
@@ -9571,7 +9569,6 @@ export class PdfViewerBase {
                             this.annotationPageList[parseInt(count.toString(), 10)] = i;
                             count = count + 1;
                         }
-                    }
                     if (annotation[parseInt(i.toString(), 10)].textMarkupAnnotation && annotation[parseInt(i.toString(), 10)].textMarkupAnnotation.length !== 0) {
                         if (textMarkupObject) {
                             const annotObject: IPageAnnotations[] = JSON.parse(textMarkupObject);

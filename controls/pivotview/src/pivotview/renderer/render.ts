@@ -1225,7 +1225,7 @@ export class Render {
                         '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>' : innerText)
                 }));
                 if (this.parent.gridSettings.allowReordering && !this.parent.showGroupingBar) {
-                    tCell.setAttribute('data-colindex', (args.column.customAttributes.cell as IAxisSet).colIndex.toString());
+                    tCell.setAttribute('data-colindex', args.column.customAttributes ? (args.column.customAttributes.cell as IAxisSet).colIndex.toString() : args.column.index.toString());
                 }
             }
             if (this.parent.cellTemplate) {

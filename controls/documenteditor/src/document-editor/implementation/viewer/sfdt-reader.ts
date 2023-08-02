@@ -170,8 +170,24 @@ export class SfdtReader {
             this.parseThemes(jsonObject[themesProperty[this.keywordIndex]],this.documentHelper.themes);
         }
         this.generalizeRevisions();
+        this.removeUnmappedBookmark();
         return sections;
     }
+    private removeUnmappedBookmark(): void {
+        let bookmarkKeys: string[] = this.documentHelper.bookmarks.keys;
+        let endBookmark: string[] = this.documentHelper.endBookmarksUpdated;
+        for (let i: number = 0; i < bookmarkKeys.length; i++) {
+            if (endBookmark.indexOf(bookmarkKeys[i]) === -1) {
+                let bookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(bookmarkKeys[i]);
+                if (bookmark) {
+                    bookmark.line.children.splice(bookmark.line.children.indexOf(bookmark), 1);
+                }
+                this.documentHelper.bookmarks.remove(bookmarkKeys[i]);
+            }
+        }
+        this.documentHelper.endBookmarksUpdated = [];
+    }
+    
     private generalizeRevisions(): void {
         let tempRevisionCollection: Dictionary<string, Revision> = new Dictionary<string, Revision>();
         let tempRevisons: Revision[] = [];
@@ -374,7 +390,7 @@ export class SfdtReader {
             if (!isNullOrUndefined(style[basedOnProperty[this.keywordIndex]])) {
                 const basedOn: Object = styles.findByName(style[basedOnProperty[this.keywordIndex]]);
                 if (!isNullOrUndefined(basedOn)) {
-                    if ((basedOn as WStyle).type === wStyle.type) {
+                    if ((basedOn as WStyle).type === wStyle.type && (basedOn as WStyle).name !== wStyle.name) {
                         wStyle.basedOn = basedOn;
                     }
                 } else {
@@ -1263,9 +1279,10 @@ export class SfdtReader {
                             if (!this.isPaste || isConsider) {
                                 bookmarkStart.reference = bookmark;
                                 bookmark.reference = bookmarkStart;
+                                this.documentHelper.endBookmarksUpdated.push(bookmark.name);
                             } else if (!isConsider) {
                                 lineWidget.children.splice(lineWidget.children.indexOf(bookmark), 1);
-                            }
+                            }                            
                         }
                     }
                 }

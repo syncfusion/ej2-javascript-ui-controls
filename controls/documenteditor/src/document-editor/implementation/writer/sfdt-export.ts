@@ -169,7 +169,12 @@ export class SfdtExport {
         if (writeInlineStyles) {
             this.writeInlineStyles = true;
         }
-        this.keywordIndex = index;
+        if (!isNullOrUndefined(index)) {
+            this.keywordIndex = index;
+        }
+        else {
+            this.keywordIndex = this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0;
+        } 
         this.Initialize();
         this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {

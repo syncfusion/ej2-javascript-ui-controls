@@ -2129,4 +2129,33 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+    describe('838394 - Updated values not sent to the server when we dynamically change the readOnly in RichTextEditor', function () {
+        let rteObj: RichTextEditor;
+        beforeAll(function (done) {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                value : "Rich Text Editor",
+                readonly : true 
+            });
+            rteObj.dataBind();
+            done();
+        });
+        it('Updated values not sent to the server when we dynamically change the readOnly in RichTextEditor', function (done) {
+            rteObj.focusIn();
+            rteObj.readonly = false;
+            rteObj.dataBind();
+            var rteValue = rteObj.value;
+            rteObj.value = 'rich text editor new value';
+            setTimeout(function () {
+                expect(rteObj.value != rteValue).toBe(true);
+                done();
+            },0);
+        });
+        afterAll(function (done) {
+            destroy(rteObj);
+            done();
+        });
+    });
 });

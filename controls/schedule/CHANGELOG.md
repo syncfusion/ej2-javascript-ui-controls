@@ -6,8 +6,8 @@
 
 ### Schedule
 
-- `#F45166` - An issue with "Role not inside the required context" accessibility issue in the Schedule component's recurrence editor has been fixed.
-- `#F44742` - The issue of duplicate events being created after changing the recurrence of certain events has been fixed.
+- `#I480473` - An issue with "Role not inside the required context" accessibility issue in the Schedule component's recurrence editor has been fixed.
+- `#I474091` - The issue of duplicate events being created after changing the recurrence of certain events has been fixed.
 `#I478902` - Performance issue in calculating scrollbar width has been fixed.
 
 ## 22.1.38 (2023-07-11)

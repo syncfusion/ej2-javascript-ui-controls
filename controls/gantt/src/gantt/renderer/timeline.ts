@@ -285,8 +285,7 @@ export class Timeline {
             this.parent.showSpinner();
         }
         this.changeTimelineSettings(newTimeline);
-        this.isZoomToFit=false;
-        this.parent.isTimelineRoundOff = this.isZoomToFit ? false : isNullOrUndefined(this.parent.projectStartDate) ? true : false;
+        this.parent.isTimelineRoundOff = isNullOrUndefined(this.parent.projectStartDate) ? true : false;
     }
     
     private bottomTierCellWidthCalc(mode: string, zoomLevel: ZoomTimelineSettings, date: Date) {

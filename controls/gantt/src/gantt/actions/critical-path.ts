@@ -622,7 +622,7 @@ export class CriticalPath {
             }
             const predecessorLength: IPredecessor[] = flatRecords[index as number].ganttProperties.predecessor;
             const noSlackValue: string = 0 + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
-            for (let i: number = 0; i < predecessorLength.length; i++) {
+            for (let i: number = predecessorLength.length - 1; i >= 0; i--) {
                 let toID: number;
                 if (this.parent.viewType === 'ProjectView') {
                     toID = this.parent.ids.indexOf(predecessorLength[i as number].to);
@@ -633,8 +633,19 @@ export class CriticalPath {
                 let dateDifference: number;
                 const currentData: ITaskData = flatRecords[index as number].ganttProperties;
                 if (predecessorLength[i as number].type === 'FS') {
-                    /* eslint-disable-next-line */
-                    dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                    if (predecessorLength[i as number].to != currentData.taskId.toString() || this.parent.viewType === 'ResourceView'){
+                        /* eslint-disable-next-line */
+                        dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                    }
+                    else {
+                        toID = this.parent.ids.indexOf(predecessorLength[i as number].from);
+                        /* eslint-disable-next-line */
+                        dateDifference = this.parent.dataOperation.getDuration(flatRecords[toID as number].ganttProperties.endDate, currentData.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                        if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack == noSlackValue) {
+                            flatRecords[toID as number].slack = flatRecords[index as number].slack;
+                            flatRecords[toID as number].ganttProperties.slack = flatRecords[index as number].slack;
+                        }
+                    }
                     if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack !== noSlackValue) {
                         flatRecords[index as number].slack = flatRecords[toID as number].slack;
                         flatRecords[index as number].ganttProperties.slack = flatRecords[toID as number].slack;

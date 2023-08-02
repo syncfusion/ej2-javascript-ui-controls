@@ -2717,8 +2717,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!initial) {
             if (this.readonly && this.enabled) {
                 this.unbindEvents();
+                this.unWireEvents();
             } else if (this.enabled) {
-                this.bindEvents();
+                this.wireEvents();
             }
         }
     }

@@ -787,7 +787,6 @@ describe('Legend checking for the pie series', () => {
                     },
                     position: 'Bottom',
                     margin: { top: 10 },
-                    enablePages: false
                 },
                 // Initialize tht tooltip
                 tooltip: { enable: true, format: '${point.x} : <b>${point.y}</b>' },
@@ -825,14 +824,14 @@ describe('Legend checking for the pie series', () => {
                 xValue = titleElement.getAttribute('x');
                 expect(xValue === '150').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '254.989169209323' || yValue === '255.98433900949567').toBe(true);
+                expect(yValue === '229.01694285833028' || yValue === '255.98433900949567').toBe(true);
                 backArrow = getElement('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 44 267.489169209323 L 36 271.489169209323 L 44 275.489169209323 L 44 273.489169209323 L 40 271.489169209323 L44 269.489169209323 Z' ||
+                expect(path === 'M 36 286.51694285833025 L 28 290.51694285833025 L 36 294.51694285833025 L 36 292.51694285833025 L 32 290.51694285833025 L36 288.51694285833025 Z' ||
                     path === 'M 27 268.48433900949567 L 19 272.48433900949567 L 27 276.48433900949567 L 27 274.48433900949567 L 23 272.48433900949567 L27 270.48433900949567 Z').toBe;
                 fontArrow = getElement('container_chart_legend_pagedown');
                 path = fontArrow.getAttribute('d');
-                expect(path === 'M 256 267.489169209323 L 264 271.489169209323 L 256 275.489169209323 L 256 273.489169209323 L 260 271.489169209323 L256 269.489169209323 Z'||
+                expect(path === 'M 70 286.51694285833025 L 78 290.51694285833025 L 70 294.51694285833025 L 70 292.51694285833025 L 74 290.51694285833025 L70 288.51694285833025 Z'||
                     path === 'M 273 268.48433900949567 L 281 272.48433900949567 L 273 276.48433900949567 L 273 274.48433900949567 L 277 272.48433900949567 L273 270.48433900949567 Z').toBe;
                 legendGroup = getElement('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 7).toBe(true);
@@ -847,16 +846,16 @@ describe('Legend checking for the pie series', () => {
                 titleElement = getElement('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '17' || xValue === '19.5').toBe(true);
+                expect(xValue === '17' || xValue === '33').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '276.21622576014306' || yValue === '275.96501821018626').toBe(true);
+                expect(yValue === '254.51694285833028' || yValue === '275.96501821018626').toBe(true);
                 backArrow = getElement('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 88 268.46501821018626 L 80 272.46501821018626 L 88 276.46501821018626 L 88 274.46501821018626 L 84 272.46501821018626 L88 270.46501821018626 Z' ||
+                expect(path === 'M 36 278.51694285833025 L 28 282.51694285833025 L 36 286.51694285833025 L 36 284.51694285833025 L 32 282.51694285833025 L36 280.51694285833025 Z' ||
                     path === 'M 98 267.71501821018626 L 90 271.71501821018626 L 98 275.71501821018626 L 98 273.71501821018626 L 94 271.71501821018626 L98 269.71501821018626 Z').toBe;
                 fontArrow = getElement('container_chart_legend_pagedown');
                 path = fontArrow.getAttribute('d');
-                expect(path === 'M 271 268.46501821018626 L 279 272.46501821018626 L 271 276.46501821018626 L 271 274.46501821018626 L 275 272.46501821018626 L271 270.46501821018626 Z' ||
+                expect(path === 'M 70 278.51694285833025 L 78 282.51694285833025 L 70 286.51694285833025 L 70 284.51694285833025 L 74 282.51694285833025 L70 280.51694285833025 Z' ||
                     path === 'M 256 267.71501821018626 L 264 271.71501821018626 L 256 275.71501821018626 L 256 273.71501821018626 L 260 271.71501821018626 L256 269.71501821018626 Z').toBe;
                 legendGroup = getElement('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 7).toBe(true);
@@ -871,16 +870,16 @@ describe('Legend checking for the pie series', () => {
                 titleElement = getElement('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '224' || xValue === '226.5').toBe(true);
+                expect(xValue === '208' || xValue === '226.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '276.21622576014306' || yValue === '275.96501821018626').toBe(true);
+                expect(yValue === '254.51694285833028' || yValue === '275.96501821018626').toBe(true);
                 backArrow = getElement('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 38.5 267.46622576014306 L 30.5 271.46622576014306 L 38.5 275.46622576014306 L 38.5 273.46622576014306 L 34.5 271.46622576014306 L38.5 269.46622576014306 Z' ||
+                expect(path === 'M 36 278.51694285833025 L 28 282.51694285833025 L 36 286.51694285833025 L 36 284.51694285833025 L 32 282.51694285833025 L36 280.51694285833025 Z' ||
                     path === 'M 29 268.46501821018626 L 21 272.46501821018626 L 29 276.46501821018626 L 29 274.46501821018626 L 25 272.46501821018626 L29 270.46501821018626 Z').toBe;
                 fontArrow = getElement('container_chart_legend_pagedown');
                 path = fontArrow.getAttribute('d');
-                expect(path === 'M 197.5 267.46622576014306 L 205.5 271.46622576014306 L 197.5 275.46622576014306 L 197.5 273.46622576014306 L 201.5 271.46622576014306 L197.5 269.46622576014306 Z' ||
+                expect(path === 'M 70 278.51694285833025 L 78 282.51694285833025 L 70 286.51694285833025 L 70 284.51694285833025 L 74 282.51694285833025 L70 280.51694285833025 Z' ||
                     path === 'M 207 268.46501821018626 L 215 272.46501821018626 L 207 276.46501821018626 L 207 274.46501821018626 L 211 272.46501821018626 L207 270.46501821018626 Z').toBe;
                 legendGroup = getElement('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 7).toBe(true);
@@ -918,14 +917,14 @@ describe('Legend checking for the pie series', () => {
                 xValue = titleElement.getAttribute('x');
                 expect(xValue === '150').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '35' || yValue === '31.999999999999993').toBe(true);
+                expect(yValue === '32' || yValue === '31.999999999999993').toBe(true);
                 backArrow = getElement('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 44 47.5 L 36 51.5 L 44 55.5 L 44 53.5 L 40 51.5 L44 49.5 Z' ||
+                expect(path === 'M 36 89.5 L 28 93.5 L 36 97.5 L 36 95.5 L 32 93.5 L36 91.5 Z' ||
                     path === 'M 48.5 44.49999999999999 L 40.5 48.49999999999999 L 48.5 52.49999999999999 L 48.5 50.49999999999999 L 44.5 48.49999999999999 L48.5 46.49999999999999 Z').toBe;
                 fontArrow = getElement('container_chart_legend_pagedown');
                 path = fontArrow.getAttribute('d');
-                expect(path === 'M 256 47.5 L 264 51.5 L 256 55.5 L 256 53.5 L 260 51.5 L256 49.5 Z' ||
+                expect(path === 'M 70 89.5 L 78 93.5 L 70 97.5 L 70 95.5 L 74 93.5 L70 91.5 Z' ||
                     path === 'M 251.5 44.49999999999999 L 259.5 48.49999999999999 L 251.5 52.49999999999999 L 251.5 50.49999999999999 L 255.5 48.49999999999999 L251.5 46.49999999999999 Z').toBe;
                 legendGroup = getElement('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 7).toBe(true);
@@ -941,17 +940,17 @@ describe('Legend checking for the pie series', () => {
                 titleElement = getElement('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '17' || xValue === '19.5').toBe(true);
+                expect(xValue === '17' || xValue === '33').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '37.25' || yValue === '36').toBe(true);
+                expect(yValue === '52.25' || yValue === '57.5').toBe(true);
                 backArrow = getElement('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 97.5 28.5 L 89.5 32.5 L 97.5 36.5 L 97.5 34.5 L 93.5 32.5 L97.5 30.5 Z' ||
+                expect(path === 'M 36 81.5 L 28 85.5 L 36 89.5 L 36 87.5 L 32 85.5 L36 83.5 Z' ||
                     path === 'M 88 28.5 L 80 32.5 L 88 36.5 L 88 34.5 L 84 32.5 L88 30.5 Z').toBe;
                 fontArrow = getElement('container_chart_legend_pagedown');
                 path = fontArrow.getAttribute('d');
                 expect(path === 'M 261.5 28.5 L 269.5 32.5 L 261.5 36.5 L 261.5 34.5 L 265.5 32.5 L261.5 30.5 Z' ||
-                    path === 'M 271 28.5 L 279 32.5 L 271 36.5 L 271 34.5 L 275 32.5 L271 30.5 Z').toBe;
+                    path === 'M 70 81.5 L 78 85.5 L 70 89.5 L 70 87.5 L 74 85.5 L70 83.5 Z').toBe;
                 legendGroup = getElement('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 7).toBe(true);
                 done();
@@ -966,16 +965,16 @@ describe('Legend checking for the pie series', () => {
                 titleElement = getElement('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '224' || xValue === '226.5').toBe(true);
+                expect(xValue === '208' || xValue === '226.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '37.25' || yValue === '36').toBe(true);
+                expect(yValue === '57.5' || yValue === '52').toBe(true);
                 backArrow = getElement('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 29 28.5 L 21 32.5 L 29 36.5 L 29 34.5 L 25 32.5 L29 30.5 Z' ||
+                expect(path === 'M 36 81.5 L 28 85.5 L 36 89.5 L 36 87.5 L 32 85.5 L36 83.5 Z' ||
                     path === 'M 44 28.5 L 36 32.5 L 44 36.5 L 44 34.5 L 40 32.5 L44 30.5 Z').toBe;
                 fontArrow = getElement('container_chart_legend_pagedown');
                 path = fontArrow.getAttribute('d');
-                expect(path === 'M 207 28.5 L 215 32.5 L 207 36.5 L 207 34.5 L 211 32.5 L207 30.5 Z' ||
+                expect(path === 'M 70 81.5 L 78 85.5 L 70 89.5 L 70 87.5 L 74 85.5 L70 83.5 Z' ||
                     path === 'M 197 28.5 L 205 32.5 L 197 36.5 L 197 34.5 L 201 32.5 L197 30.5 Z').toBe;
                 legendGroup = getElement('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 7).toBe(true);
@@ -991,23 +990,25 @@ describe('Legend checking for the pie series', () => {
                 titleElement = getElement('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '339.5').toBe(true);
+                console.log(xValue);
+                expect(xValue === '334.6450498628827').toBe(true);
                 yValue = titleElement.getAttribute('y');
+                console.log(yValue);
                 expect(yValue === '29' || yValue === '26').toBe(true);
                 backArrow = getElement('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 335.5 45 L 339.5 37 L 343.5 45L 341.5 45 L 339.5 41L337.5 45 Z' ||
+                expect(path === 'M 292.6450498628827 139 L 284.6450498628827 143 L 292.6450498628827 147 L 292.6450498628827 145 L 288.6450498628827 143 L292.6450498628827 141 Z' ||
                     path === 'M 335.5 42 L 339.5 34 L 343.5 42L 341.5 42 L 339.5 38L337.5 42 Z').toBe;
                 fontArrow = getElement('container_chart_legend_pagedown');
                 path = fontArrow.getAttribute('d');
-                expect(path === 'M 335.5 174 L 339.5 182 L 343.5 174L 341.5 174 L 339.5 178L337.5 174 Z' ||
+                expect(path === 'M 326.6450498628827 139 L 334.6450498628827 143 L 326.6450498628827 147 L 326.6450498628827 145 L 330.6450498628827 143 L326.6450498628827 141 Z'||
                     path === 'M 335.5 174 L 339.5 182 L 343.5 174L 341.5 174 L 339.5 178L337.5 174 Z').toBe;
                 legendGroup = getElement('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 7).toBe(true);
                 done();
             };
             chartContainer.style.width = '400px';
-            chartContainer.style.height = '200px';
+            chartContainer.style.height = '150px';
             pieObj.legendSettings.title = 'Countries';
             pieObj.legendSettings.titlePosition = 'Top';
             pieObj.legendSettings.position = 'Right';

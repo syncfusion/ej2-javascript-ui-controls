@@ -1110,3 +1110,13 @@ export interface IKeyEventArgs {
     /** Returns any, modifier keys were pressed when the flick gesture occurred */
     keyModifiers?: KeyModifiers;
 }
+
+/**
+ * ILoadEventArgs  defines the event arguments when diagram rendering is initialized.
+ */
+export interface ILoadEventArgs {
+    /** Returns the name of the event */
+    name?: string
+    /** Returns the diagram instance */
+    diagram?: Diagram;
+}

@@ -581,6 +581,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private wireEvents(): void {
         EventHandler.add(this.respectiveElement, 'focus', this.focusHandler, this);
         EventHandler.add(this.respectiveElement, 'blur', this.focusOutHandler, this);
+        EventHandler.add(this.respectiveElement, 'keydown', this.keydownHandler, this);
         EventHandler.add(this.respectiveElement, 'input', this.inputHandler, this);
         EventHandler.add(this.respectiveElement, 'change', this.changeHandler, this);
         if (this.isForm) {
@@ -652,6 +653,12 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         this.trigger('blur', eventArgs);
     }
 
+    private keydownHandler (args: KeyboardEvent): void {
+        if ((args.keyCode === 13 || args.keyCode === 9) && !((this.previousValue === null || this.previousValue === "") && (this.value === null || this.value === "") && this.respectiveElement.value === "")) {
+            this.setProperties({ value: this.respectiveElement.value }, true);
+        }
+    }
+    
     private inputHandler(args: KeyboardEvent): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias
         const textboxObj: any = this;
@@ -740,6 +747,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private unWireEvents(): void {
         EventHandler.remove(this.respectiveElement, 'focus', this.focusHandler);
         EventHandler.remove(this.respectiveElement, 'blur', this.focusOutHandler);
+        EventHandler.remove(this.respectiveElement, 'keydown', this.keydownHandler);
         EventHandler.remove(this.respectiveElement, 'input', this.inputHandler);
         EventHandler.remove(this.respectiveElement, 'change', this.changeHandler);
         if (this.isForm) {

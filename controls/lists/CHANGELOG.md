@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 22.2.5 (2023-07-27)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#F44817` - Issue with "Dragged item may be one that is adjacent to the item over which mouse down occurred in listbox." has been resolved.
+
+### ListView
+
+#### Bug Fixes
+
+- `#I481465` - Resolved the `enableHtmlSanitizer` property issue in the ListView component.
+
 ## 22.1.34 (2023-06-21)
 
 ### ListView

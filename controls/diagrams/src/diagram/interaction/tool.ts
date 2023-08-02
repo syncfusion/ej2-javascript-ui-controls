@@ -1293,6 +1293,9 @@ export class RotateTool extends ToolBase {
     /** @private */
     public canCancel: boolean;
 
+    /** @private */
+    public rotateStart: boolean = false;
+
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
@@ -1378,6 +1381,7 @@ export class RotateTool extends ToolBase {
             };
             this.commandHandler.addHistoryEntry(entry);
             this.commandHandler.updateSelector();
+            this.rotateStart =false;
         }
         this.commandHandler.updateBlazorSelector();
         this.canCancel = undefined;
@@ -1393,7 +1397,8 @@ export class RotateTool extends ToolBase {
         super.mouseMove(args);
         let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
-        if (this.undoElement.rotateAngle === object.wrapper.rotateAngle) {
+        //EJ2-837158-Resize - Event "Start" state triggers multiple times in rotate action
+        if (this.undoElement.rotateAngle === object.wrapper.rotateAngle && !this.rotateStart) {
             const oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
 
             const arg: IRotationEventArgs = {
@@ -1402,6 +1407,7 @@ export class RotateTool extends ToolBase {
             if (!isBlazor()) {
                 this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
             }
+            this.rotateStart =true;
         }
 
         this.currentPosition = args.position;
@@ -1470,6 +1476,9 @@ export class ResizeTool extends ToolBase {
 
     /**   @private  */
     public initialOffset: PointModel;
+    
+    /** @private */
+    public resizeStart: boolean = false;
 
     /**   @private  */
     public initialBounds: Rect = new Rect();
@@ -1590,6 +1599,7 @@ export class ResizeTool extends ToolBase {
                 type: 'SizeChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
                 childTable: this.childTable
             };
+            this.resizeStart = false;
             if (!isPreventHistory) {
                 this.commandHandler.startGroupAction();
                 this.commandHandler.addHistoryEntry(entry);
@@ -1616,7 +1626,8 @@ export class ResizeTool extends ToolBase {
         super.mouseMove(args);
         let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
-        if (this.undoElement.offsetX === object.wrapper.offsetX && this.undoElement.offsetY === object.wrapper.offsetY) {
+        //EJ2-837158-Resize - Event "Start" state triggers multiple times in resize
+        if (this.undoElement.offsetX === object.wrapper.offsetX && this.undoElement.offsetY === object.wrapper.offsetY && !this.resizeStart) {
             const oldValue: SelectorModel = {
                 offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
                 width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
@@ -1628,6 +1639,7 @@ export class ResizeTool extends ToolBase {
             if (!isBlazor()) {
                 this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
             }
+            this.resizeStart = true;
         }
         this.currentPosition = args.position;
         const x: number = this.currentPosition.x - this.startPosition.x;

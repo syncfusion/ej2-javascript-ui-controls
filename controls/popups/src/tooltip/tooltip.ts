@@ -537,10 +537,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         });
     }
 
-    private getScalingFactor(): { [key: string]: number } {
-        const xScalingFactor: number = this.element.getBoundingClientRect().width / this.element.offsetWidth;
-        const yScalingFactor: number = this.element.getBoundingClientRect().height / this.element.offsetHeight;
-        return { x: xScalingFactor, y: yScalingFactor };
+    private getScalingFactor(element: HTMLElement): { [key: string]: number } {
+        if (element) {
+            const xScalingFactor: number = element.getBoundingClientRect().width / element.offsetWidth;
+            const yScalingFactor: number = element.getBoundingClientRect().height / element.offsetHeight;
+            return { x: xScalingFactor, y: yScalingFactor };
+        }
+        else {
+            return { x: 1, y: 1 };
+        }
     }
 
     private getTooltipPosition(target: HTMLElement): OffsetPosition {
@@ -553,7 +558,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         const pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY, !this.isBodyContainer,
                                                       this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
-        const scalingFactors: { [key: string]: number } = this.getScalingFactor();
+        const scalingFactors: { [key: string]: number } = this.getScalingFactor(target);
         const offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position, scalingFactors.x, scalingFactors.y);
         const collisionPosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
         const collisionLeft: number = collisionPosition[0];
@@ -590,18 +595,31 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEventArgs = null;
     }
     private calculateTooltipOffset(position: Position, xScalingFactor: number = 1, yScalingFactor: number = 1): OffsetPosition {
-        const tooltipEleRect: DOMRect | ClientRect = this.tooltipEle.getBoundingClientRect();
-        let arrowEleRect: DOMRect | ClientRect ;
         const pos: OffsetPosition = { top: 0, left: 0 };
-        const tooltipEleWidth: number = Math.round(tooltipEleRect.width);
-        const tooltipEleHeight: number = Math.round(tooltipEleRect.height);
-        const arrowEle: HTMLElement = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
-        if (arrowEle) { arrowEleRect = arrowEle.getBoundingClientRect(); }
-        const tipWidth: number = arrowEle ? Math.round(arrowEleRect.width) : 0;
-        const tipHeight: number = arrowEle ? Math.round(arrowEleRect.height) : 0;
-        let tipAdjust: number = (this.showTipPointer ? SHOW_POINTER_TIP_GAP : HIDE_POINTER_TIP_GAP);
-        const tipHeightAdjust: number = (tipHeight / 2) + POINTER_ADJUST + (tooltipEleHeight - (this.tooltipEle.clientHeight * yScalingFactor));
-        const tipWidthAdjust: number = (tipWidth / 2) + POINTER_ADJUST + (tooltipEleWidth - (this.tooltipEle.clientWidth * xScalingFactor));
+        let tipWidth: number, tipHeight: number, tooltipEleWidth: number, tooltipEleHeight: number, arrowEle: HTMLElement;
+        let tipAdjust: number, tipHeightAdjust: number, tipWidthAdjust: number;
+        if (xScalingFactor != 1 || yScalingFactor != 1) {
+            const tooltipEleRect: DOMRect | ClientRect = this.tooltipEle.getBoundingClientRect();
+            let arrowEleRect: DOMRect | ClientRect ;
+            tooltipEleWidth = Math.round(tooltipEleRect.width);
+            tooltipEleHeight = Math.round(tooltipEleRect.height);
+            arrowEle = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
+            if (arrowEle) { arrowEleRect = arrowEle.getBoundingClientRect(); }
+            tipWidth = arrowEle ? Math.round(arrowEleRect.width) : 0;
+            tipHeight = arrowEle ? Math.round(arrowEleRect.height) : 0;
+            tipAdjust = (this.showTipPointer ? SHOW_POINTER_TIP_GAP : HIDE_POINTER_TIP_GAP);
+            tipHeightAdjust = (tipHeight / 2) + POINTER_ADJUST + (tooltipEleHeight - (this.tooltipEle.clientHeight * yScalingFactor));
+            tipWidthAdjust = (tipWidth / 2) + POINTER_ADJUST + (tooltipEleWidth - (this.tooltipEle.clientWidth * xScalingFactor));
+        } else {
+            tooltipEleWidth = this.tooltipEle.offsetWidth;
+            tooltipEleHeight = this.tooltipEle.offsetHeight;
+            arrowEle = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
+            tipWidth = arrowEle ? arrowEle.offsetWidth : 0;
+            tipHeight = arrowEle ? arrowEle.offsetHeight : 0;
+            tipAdjust = (this.showTipPointer ? SHOW_POINTER_TIP_GAP : HIDE_POINTER_TIP_GAP);
+            tipHeightAdjust = (tipHeight / 2) + POINTER_ADJUST + (this.tooltipEle.offsetHeight - this.tooltipEle.clientHeight);
+            tipWidthAdjust = (tipWidth / 2) + POINTER_ADJUST + (this.tooltipEle.offsetWidth - this.tooltipEle.clientWidth);
+        }
         if (this.mouseTrail) {
             tipAdjust += MOUSE_TRAIL_GAP;
         }
@@ -1061,7 +1079,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 const pos: OffsetPosition = calculatePosition(target, elePosHorizontal, elePosVertical, !this.isBodyContainer,
                                                             this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
                 this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
-                const scalingFactors: { [key: string]: number } = this.getScalingFactor();
+                const scalingFactors: { [key: string]: number } = this.getScalingFactor(target);
                 const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos, scalingFactors.x, scalingFactors.y);
                 offsetPos.top -= this.getOffSetPosition('TopBottom', newpos, this.offsetY);
                 offsetPos.left -= this.getOffSetPosition('RightLeft', newpos, this.offsetX);
@@ -1075,7 +1093,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         const eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
         const position: OffsetPosition = this.isBodyContainer ?
-            fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: true }, eleOffset) : eleOffset;
+            fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: this.windowCollision }, eleOffset) : eleOffset;
         this.tooltipEle.style.display = 'block';
         if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
             const arrowEle: HTMLElement = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
@@ -1227,7 +1245,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         removeClass([this.tooltipEle], POPUP_CLOSE);
         addClass([this.tooltipEle], POPUP_OPEN);
         this.adjustArrow(event.target as HTMLElement, this.position, this.tooltipPositionX, this.tooltipPositionY);
-        const scalingFactors: { [key: string]: number } = this.getScalingFactor();
+        const scalingFactors: { [key: string]: number } = this.getScalingFactor(event.target as HTMLElement);
         const pos: OffsetPosition = this.calculateTooltipOffset(this.position, scalingFactors.x, scalingFactors.y);
         const x: number = eventPageX + pos.left + this.offsetX;
         const y: number = eventPageY + pos.top + this.offsetY;

@@ -1623,10 +1623,13 @@ export class WordExport {
         return undefined;
     }
     // Serialize the paragraph items
-    private serializeParagraphItems(writer: XmlWriter, paraItems: any): void {
+    private serializeParagraphItems(writer: XmlWriter, paraItems: any,keyindex?:number): void {
         let inlines: boolean;
         let previousNode: any = undefined;
         let isContinueOverride: boolean = false;
+        if (isNullOrUndefined(this.keywordIndex)) {
+            this.keywordIndex = keyindex;
+        }
         for (let i: number = 0; i < paraItems.length; i++) {
             const item: any = paraItems[i];
             if (item.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
@@ -3698,7 +3701,11 @@ export class WordExport {
                 margin = Math.round(shape[textFrameProperty[this.keywordIndex]][bottomMarginProperty[this.keywordIndex]] * this.emusPerPoint).toString();
                 writer.writeAttributeString(undefined, 'bIns', undefined, margin);
             }
-            writer.writeAttributeString(undefined, 'anchor', undefined, 't');
+            if(shape[textFrameProperty[this.keywordIndex]][textVerticalAlignmentProperty[this.keywordIndex]]){
+                let vert: string;
+                vert = shape[textFrameProperty[this.keywordIndex]][textVerticalAlignmentProperty[this.keywordIndex]].toString().toLowerCase();
+                writer.writeAttributeString(undefined, 'anchor', undefined, this.getTextVerticalAlignmentProperty(vert));                          
+            }
             writer.writeAttributeString(undefined, 'anchorCtr', undefined, '0');
 
 
@@ -3709,6 +3716,18 @@ export class WordExport {
         writer.writeEndElement();
 
 
+    }
+    private getTextVerticalAlignmentProperty(vert: string): string{
+        switch(vert){
+            case 'top':
+                return 't';
+            case 'middle':
+                return 'ctr';
+            case 'bottom':
+                return 'b';
+            default:
+                return vert;
+        }
     }
     private serializeShapeWrapStyle(writer: XmlWriter, shape: any): void {
         let wrappingStyle: string = this.keywordIndex == 1 ? this.getTextWrappingStyle(shape[textWrappingStyleProperty[this.keywordIndex]]): shape[textWrappingStyleProperty[this.keywordIndex]];
@@ -5277,9 +5296,12 @@ export class WordExport {
         return false;
     }
     // Serializes the paragraph format
-    private serializeParagraphFormat(writer: XmlWriter, paragraphFormat: any, paragraph: any): void {
+    private serializeParagraphFormat(writer: XmlWriter, paragraphFormat: any, paragraph: any,keyindex?: number): void {
         if (isNullOrUndefined(paragraphFormat)) {
             return;
+        }
+        if (isNullOrUndefined(this.keywordIndex)) {
+            this.keywordIndex = keyindex
         }
         this.serializeParagraphBorders(writer, paragraphFormat);
         if (!isNullOrUndefined(paragraphFormat[styleNameProperty[this.keywordIndex]])) {

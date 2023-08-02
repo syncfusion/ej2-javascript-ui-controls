@@ -823,7 +823,7 @@ describe('Rtl text with list format validation', () => {
 console.log('Apply list on empty selection in para bidi');
         editor.editorModule.onApplyParagraphFormat('bidi', true, false, false);
         editor.editor.applyNumbering('%1.', 'Arabic');
-        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('\t');
+        expect((editor.selection.start.currentWidget.children[1] as ListTextElementBox).text).toBe('\t');
     });
     it('Apply tab key for the list format to change the list level', () => {
 console.log('Apply tab key for the list format to change the list level');
@@ -863,7 +863,7 @@ console.log('Apply tab to move to next line');
         for (let i: number = 0; i <= 12; i++) {
             editor.selection.handleTabKey(false, false);
         }
-        expect(((editor.selection.start.currentWidget.paragraph.nextWidget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('to the new world');
+        expect(((editor.selection.start.currentWidget.paragraph.nextWidget.childWidgets[0] as LineWidget).children[2] as TextElementBox).text).toBe('to the new world');
     });
 });
 
@@ -897,17 +897,17 @@ console.log('Apply tab on first element of RTL para');
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleDownKey();
         editor.selection.handleTabKey(false, false);
-        expect(((editor.selection.start.currentWidget as LineWidget).children[0] as TabElementBox).text).toBe('\t');
+        expect(((editor.selection.start.currentWidget as LineWidget).children[1] as TabElementBox).text).toBe('\t');
     });
     it('Test Undo tab applied on the last element', () => {
 console.log('Test Undo tab applied on the last element');
         editor.editorHistory.undo();
-        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('גכעגע');
+        expect((editor.selection.start.currentWidget.children[2] as TextElementBox).text).toBe('גכעגע');
     });
     it('Test redo applied on the last element', () => {
 console.log('Test redo applied on the last element');
         editor.editorHistory.redo();
-        expect((editor.selection.start.currentWidget.children[0] as TabElementBox).text).toBe('\t');
+        expect((editor.selection.start.currentWidget.children[1] as TabElementBox).text).toBe('\t');
     });
 });
 

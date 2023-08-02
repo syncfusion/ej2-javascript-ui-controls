@@ -1184,9 +1184,10 @@ export class DiagramEventHandler {
                     (Math.abs(evt.deltaX) < 100 && Math.abs(evt.deltaY) === -0)){
                     isTrackpadScroll = true;
                 }
-                if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0)) {
+                //Bug 837940: In mac, scrollbar flickers on horizontal and vertical scroll using trackpad.
+                if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0 && isTrackpadScroll)) {
                     this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel,undefined,isTrackpadScroll);
-                } else if((evt.deltaY && evt.deltaY !== -0)) {
+                } else if((evt.deltaY && evt.deltaY !== -0 && isTrackpadScroll)) {
                     this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel,undefined,isTrackpadScroll);
                 }
                 this.diagram.scrollActions &= ~ScrollActions.Interaction;

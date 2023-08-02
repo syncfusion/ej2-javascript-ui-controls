@@ -1936,6 +1936,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         for (let i: number = 0; i < attrs.length; i++) {
             this.element.removeAttribute(attrs[i as number]);
         }
+        this.ftrTemplateContent = null;
+        this.headerContent = null;
+        this.contentEle = null;
         if (!this.isBlazorServerRender()) {
             super.destroy();
         } else {

@@ -230,8 +230,18 @@ function setPopup(element: HTMLElement, pos: PositionLocation, elementRect: Clie
         left = data.left;
         top = data.top;
     }
-    element.style.top = (pos.position.top + pos.offsetY  - (top)) + 'px';
-    element.style.left = (pos.position.left + pos.offsetX - (left)) + 'px';
+    let scaleX = 1;
+    let scaleY = 1;
+    if (element.offsetParent) {
+        var transformStyle = getComputedStyle(element.offsetParent).transform;  
+        if (transformStyle !== 'none') {
+            var matrix = new DOMMatrix(transformStyle);
+            scaleX = matrix.a;
+            scaleY = matrix.d;
+        }
+    }
+    element.style.top = ((pos.position.top / scaleY) + pos.offsetY - (top)) + 'px';
+    element.style.left = ((pos.position.left / scaleX) + pos.offsetX - (left)) + 'px';
 }
 /**
  *

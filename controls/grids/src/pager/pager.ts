@@ -306,7 +306,11 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         this.initLocalization();
         this.element.setAttribute('aria-label', this.getLocalizedLabel('Container'));
         if (this.cssClass) {
-            addClass([this.element], [this.cssClass]);
+            if (this.cssClass.indexOf(' ') !== -1) {
+                addClass([this.element], this.cssClass.split(' '));
+            } else {
+                addClass([this.element], [this.cssClass]);
+            }
         }
         if (!this.hasParent) {
             this.element.setAttribute('tabindex', '0');

@@ -732,4 +732,28 @@ describe('column menu module', () => {
         });
     });
 
+    describe('EJ2-839022 - Multiple classes in cssClass property', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                showColumnMenu: true,
+                cssClass: 'class1 class2',
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 200, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer ID' },
+                    { field: 'Freight', format: 'C2', textAlign: 'Right', editType: 'numericedit' },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 300 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 200 }
+                ],
+            }, done);
+        });
+        it('Multiple class render', () => {
+            expect((gridObj.columnMenuModule as any).columnMenu.cssClass).toContain('class1 class2');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

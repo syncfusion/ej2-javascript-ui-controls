@@ -5583,3 +5583,108 @@ describe('BUG 836872 - The selectedRowIndex property is experiencing some issues
         gridObj = null;
     });
 });
+
+describe('BUG 837180 - Selection moved to first row when newRowPosition given as Bottom', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                allowPaging: true,
+                pageSettings: { pageCount: 5 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', newRowPosition: 'Bottom' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 140},
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140},
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 140, format: 'C2', validationRules: { required: true }},
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },},
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } }}],
+                    actionBegin : (args?: any): void => {
+                        if (args.requestType === 'save') {
+                            if (gridObj.pageSettings.currentPage !== 1 && gridObj.editSettings.newRowPosition === 'Top') {
+                                args.index = (gridObj.pageSettings.currentPage * gridObj.pageSettings.pageSize) - gridObj.pageSettings.pageSize;
+                            }
+                            else if (gridObj.editSettings.newRowPosition === 'Bottom') {
+                                args.index = (gridObj.dataSource['length']) ? gridObj.currentViewData.length  : 0;
+                            }
+                        }
+                    }
+                }, done);
+    });
+    
+    it('1st Add complete', function (done) {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.selectedRowIndex).toBe(0);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.editModule.editModule.addRecord({ OrderID: 10247, CustomerID: 'updated', Freight: 12 });
+    });
+    it('2st Add complete', function (done) {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.selectedRowIndex).toBe(1);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.editModule.editModule.addRecord({ OrderID: 10244, CustomerID: 'updated', Freight: 13 });
+    });
+
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj.actionComplete = null;
+        gridObj = null;
+    });
+});
+
+describe('BUG 839515 - Selection moved to first row while addRecord( ) with index value', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                pageSettings: { pageCount: 5 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 140},
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140},
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 140, format: 'C2', validationRules: { required: true }},
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },},
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } }}],
+            }, done);
+    });
+
+    it('Add new row using addRecord', function (done) {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.selectedRowIndex).toBe(5);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.editModule.editModule.addRecord({ OrderID: 10001, CustomerID: 'New Record', Freight: 10 }, 5);
+    });
+    it('Add 2nd row using addRecord', function (done) {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.selectedRowIndex).toBe(-1);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.editModule.editModule.addRecord({ OrderID: 10001, CustomerID: 'New Record', Freight: 10 }, 15);
+    });
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj.actionComplete = null;
+        gridObj = null;
+    });
+});

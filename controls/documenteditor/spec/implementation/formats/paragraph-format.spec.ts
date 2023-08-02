@@ -474,6 +474,7 @@ describe("Pargarph format in baseOn style", function () {
         }, 500);
     });
     it("Get first indent validation", () => {
+        console.log('Get first indent validation')
         editor.open(getStyleDocument());
         let paragraphFormat: WParagraphFormat = editor.selection.start.paragraph.paragraphFormat;
         //Defined in baseStyle.

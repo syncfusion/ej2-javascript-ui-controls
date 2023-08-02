@@ -1761,3 +1761,190 @@ describe('critical path rendering with empty datasource', () => {
             expect(ganttObj.currentViewData.length).toBe(0);    
         });
     });
+    describe('Critical path is not working properly when the baseline is changed dynamically', () => {
+        Gantt.Inject(CriticalPath, RowDD);
+        let ganttObj: Gantt;
+        let bwData: Object[] = [
+            {
+              TaskID: 1,
+              TaskName: 'New Task 1',
+              StartDate: new Date('05/22/2023'),
+              EndDate: new Date('05/22/2023'),
+              BaselineStartDate: new Date('05/22/2023'),
+              BaselineEndDate: new Date('05/22/2023'),
+              Progress: 59,
+              Duration: 1,
+            },
+            {
+              TaskID: 2,
+              TaskName: 'New Task 2',
+              StartDate: new Date('05/22/2023'),
+              EndDate: new Date('05/22/2023'),
+              BaselineStartDate: new Date('05/22/2023'),
+              BaselineEndDate: new Date('05/22/2023'),
+              Progress: 45,
+              Duration: 1,
+              Predecessor: '1FS',
+            },
+          ];
+    
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: bwData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'parentID',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate'
+                },
+                splitterSettings: {
+                    columnIndex: 2,
+                },
+                allowRowDragAndDrop: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                    newRowPosition: 'Bottom',
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'CriticalPath',],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    taskLabel: 'Progress',
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+            }, done);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it('check critical path class', () => {
+            ganttObj.enableCriticalPath=true;
+            ganttObj.renderBaseline=true;
+            ganttObj.dataBind();
+            expect(ganttObj.element.getElementsByClassName('e-gantt-child-critical-taskbar-inner-div').length).toBe(2);
+        });
+    });
+describe('Critical path is not working properly issue', () => {
+        Gantt.Inject(CriticalPath, RowDD);
+        let ganttObj: Gantt;
+        let bwData: Object[] = [
+            {
+                TaskID: 1,
+                TaskName: 'New Task 1',
+                StartDate: new Date('07/11/2023'),
+                EndDate: new Date('07/11/2023'),
+                Progress: 59,
+                Duration: 1,
+                Predecessor: '2FS',
+              },
+              {
+                TaskID: 2,
+                TaskName: 'New Task 2',
+                StartDate: new Date('07/10/2023'),
+                EndDate: new Date('07/10/2023'),
+                Progress: 45,
+                Duration: 1,
+              },
+              {
+                TaskID: 3,
+                TaskName: 'New Task 1',
+                StartDate: new Date('07/12/2023'),
+                EndDate: new Date('07/12/2023'),
+                Progress: 59,
+                Duration: 1,
+                Predecessor: '1FS',
+              },
+              {
+                TaskID: 4,
+                TaskName: 'New Task 2',
+                StartDate: new Date('07/13/2023'),
+                EndDate: new Date('07/13/2023'),
+                Progress: 45,
+                Duration: 1,
+                Predecessor: '3FS',
+              },
+          ];
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: bwData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'parentID',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate'
+                },
+                editSettings: {
+                    allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+                newRowPosition: 'Bottom',
+                },
+                toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan', 'CriticalPath'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                enableCriticalPath:false,
+                allowRowDragAndDrop:true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+            }, done);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it('check critical path class', () => {
+            ganttObj.enableCriticalPath=true;
+            ganttObj.dataBind();
+            expect(ganttObj.element.getElementsByClassName('e-gantt-child-critical-taskbar-inner-div').length).toBe(4);
+        });
+    });

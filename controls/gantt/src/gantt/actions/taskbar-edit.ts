@@ -1110,7 +1110,16 @@ export class TaskbarEdit extends DateProcessor {
                     segment.width = segment.width - differenceWidth;
                 } else {
                     if (this.mouseMoveX < (item.left + segment.left)) {
-                        segment.width = this.parent.perDayWidth;
+                        var segmentWidth =(this.parent.timelineModule.isSingleTier &&
+                        (this.parent.timelineModule.customTimelineSettings.bottomTier.unit === "Hour" ||
+                          this.parent.timelineModule.customTimelineSettings.topTier.unit === "Hour" ||
+                          this.parent.timelineModule.customTimelineSettings.bottomTier.unit === "Minutes" ||
+                          this.parent.timelineModule.customTimelineSettings.topTier.unit === "Minutes") ) || 
+                          (this.parent.timelineModule.customTimelineSettings.bottomTier.unit === "Hour" || 
+                            this.parent.timelineModule.customTimelineSettings.bottomTier.unit === "Minutes") ? 
+                          this.parent.timelineModule.customTimelineSettings.timelineUnitSize: 
+                            this.parent.perDayWidth;
+                        segment.width = segmentWidth;                        
                     }
                 }
             } else {

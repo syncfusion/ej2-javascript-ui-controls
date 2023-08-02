@@ -1111,13 +1111,13 @@ export class Layout {
         }
     }
 
-    private layoutBlock(block: BlockWidget, index: number): BlockWidget {
+    private layoutBlock(block: BlockWidget, index: number, isUpdatedList?: boolean): BlockWidget {
         let nextBlock: BlockWidget;
         if (block instanceof ParagraphWidget) {
             block.splitTextRangeByScriptType(0);
             block.splitLtrAndRtlText(0);
             block.combineconsecutiveRTL(0);
-            nextBlock = this.layoutParagraph(block, index);
+            nextBlock = this.layoutParagraph(block, index, isUpdatedList);
             const nextBlockToLayout: BlockWidget = this.checkAndRelayoutPreviousOverlappingBlock(block);
             if (nextBlockToLayout) {
                 nextBlock = nextBlockToLayout;
@@ -1485,12 +1485,12 @@ export class Layout {
         return height;
     }
 
-    private layoutParagraph(paragraph: ParagraphWidget, lineIndex: number): BlockWidget {
+    private layoutParagraph(paragraph: ParagraphWidget, lineIndex: number, isUpdatedList?: boolean): BlockWidget {
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
         let isListLayout: boolean = true;
         const isFirstElmIsparagraph: boolean = this.isFirstElementWithPageBreak(paragraph);
         if (!isFirstElmIsparagraph) {
-            this.layoutListItems(paragraph);
+            this.layoutListItems(paragraph, isUpdatedList);
             isListLayout = false;
         }
         if (paragraph.isEmpty()) {
@@ -3324,13 +3324,13 @@ export class Layout {
         }
     }
 
-    private layoutListItems(paragraph: ParagraphWidget): void {
+    private layoutListItems(paragraph: ParagraphWidget, isUpdatedList?: boolean): void {
         if (!this.isFieldCode) {
             if (!isNullOrUndefined(paragraph.paragraphFormat)
                 && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)
                 && !isNullOrUndefined(this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId)) &&
                 paragraph.paragraphFormat.listFormat.listLevelNumber >= 0
-                && paragraph.paragraphFormat.listFormat.listLevelNumber < 9) {
+                && paragraph.paragraphFormat.listFormat.listLevelNumber < 9 && !isUpdatedList) {
                 this.clearListElementBox(paragraph);
                 this.layoutList(paragraph, this.documentHelper);
             } else if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId === -1) {
@@ -4292,7 +4292,7 @@ export class Layout {
                         if (paragraphWidget instanceof TableWidget) {
                             this.clearTableWidget(paragraphWidget, true, true, false);
                         }
-                        this.layoutBlock(paragraphWidget, 0);
+                        this.layoutBlock(paragraphWidget, 0, true);
                         viewer.updateClientAreaForBlock(paragraphWidget, false);
                     }
                     let lastBlock: ParagraphWidget = line.paragraph;
@@ -4305,7 +4305,7 @@ export class Layout {
                                     if (nextBlock instanceof TableWidget) {
                                         this.clearTableWidget(nextBlock, true, true, false);
                                     }
-                                    this.layoutBlock(nextBlock, 0);
+                                    this.layoutBlock(nextBlock, 0, true);
                                     viewer.updateClientAreaForBlock(nextBlock, false);
                                 } else {
                                     this.viewer.updateClientAreaLocation(nextBlock, this.viewer.clientActiveArea);
@@ -8210,7 +8210,9 @@ export class Layout {
             table.buildTableColumns();
             table.isGridUpdated = true;
         }
-        if (this.documentHelper.compatibilityMode !== 'Word2013' && !table.isInsideTable) {
+        if (this.documentHelper.compatibilityMode !== 'Word2013' 
+                && !table.isInsideTable
+                && !isNullOrUndefined(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin)) {
             this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x -
                 HelperMethods.convertPointToPixel(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
         }
@@ -8257,7 +8259,10 @@ export class Layout {
             this.updateClientAreaForWrapTable(tableView, table, false, clientActiveAreaForTableWrap, clientAreaForTableWrap);
         }
         tableView[tableView.length - 1].isLayouted = true;
-        if (this.documentHelper.compatibilityMode !== 'Word2013' && !table.isInsideTable && !table.wrapTextAround) {
+        if (this.documentHelper.compatibilityMode !== 'Word2013' 
+                && !table.isInsideTable 
+                && !table.wrapTextAround
+                && !isNullOrUndefined(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin)) {
             this.viewer.clientArea.x = this.viewer.clientArea.x + HelperMethods.convertPointToPixel(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
         }
         return tableView[tableView.length - 1];
@@ -8971,7 +8976,7 @@ export class Layout {
         }
     }
     private shiftWidgetsForPara(paragraph: ParagraphWidget, viewer: LayoutViewer): void {
-        if (paragraph.height > (viewer.clientArea.height + viewer.clientArea.y)) {
+        if (paragraph.height > (viewer.clientArea.height + viewer.clientArea.y) && !this.documentHelper.owner.enableHeaderAndFooter) {
             return;
         }
         const bodywid: BodyWidget = paragraph.bodyWidget;

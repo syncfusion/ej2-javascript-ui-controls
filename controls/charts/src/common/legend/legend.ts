@@ -835,7 +835,7 @@ export class BaseLegend {
                 }
                 count++;
             }
-            if (this.isPaging && this.totalPages > 1) {
+            if (this.isPaging && this.totalPages > 1 && (this.isBulletChartControl || legend.enablePages)) {
                 this.renderPagingElements(chart, legendBounds, textOptions, legendGroup);
             } else {
                 this.totalPages = 1;
@@ -1156,7 +1156,7 @@ export class BaseLegend {
         }
         const symbolOption: PathOption = new PathOption(
             this.legendID + this.generateId(legendOption, '_shape_', legendIndex), symbolColor, strokewidth,
-            (isCustomBorder ? borderColor : symbolColor), 1, legendOption.dashArray, '');
+            (isCustomBorder ? borderColor : symbolColor), this.legend.opacity, legendOption.dashArray, '');
         const textSize: Size = measureText(legendOption.text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
         const x: number = this.legend.isInversed && !this.isRtlEnable ? legendOption.location.x + textSize.width + this.legend.shapePadding
             : legendOption.location.x;

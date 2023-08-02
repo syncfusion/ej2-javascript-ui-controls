@@ -73,6 +73,7 @@ console.log('Underline value changed and apply testing');
         event = { preventDefault: function () { }, value: 'Single' };
         (dialog as any).underlineUpdate(event);
         dialog.onInsertFontFormat();
+        editor.dataBind();
         expect(editor.selection.characterFormat.underline).toBe('Single');
     });
     it('handle context menu validation', () => {

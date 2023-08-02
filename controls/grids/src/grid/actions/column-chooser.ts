@@ -76,7 +76,11 @@ export class ColumnChooser implements IAction {
             addClass([this.cBoxTrue, this.cBoxFalse], ['e-rtl']);
         }
         if (this.parent.cssClass) {
-            addClass([this.cBoxTrue, this.cBoxFalse], [this.parent.cssClass]);
+            if (this.parent.cssClass.indexOf(' ') !== -1) {
+                addClass([this.cBoxTrue, this.cBoxFalse], this.parent.cssClass.split(' '));
+            } else {
+                addClass([this.cBoxTrue, this.cBoxFalse], [this.parent.cssClass]);
+            }
         }
     }
 
@@ -664,7 +668,11 @@ export class ColumnChooser implements IAction {
             this.ulElement.appendChild(cclist);
         }
         if (this.parent.cssClass) {
-            addClass([selectAll], [this.parent.cssClass]);
+            if (this.parent.cssClass.indexOf(' ') !== -1) {
+                addClass([selectAll], this.parent.cssClass.split(' '));
+            } else {
+                addClass([selectAll], [this.parent.cssClass]);
+            }
         }
         for (let i: number = 0; i < gdCol.length; i++) {
             const columns: Column = (gdCol[parseInt(i.toString(), 10)] as Column);
@@ -723,7 +731,11 @@ export class ColumnChooser implements IAction {
                 this.createCheckBox(column.headerText, (column.visible && !hideColState) || showColState, column.uid);
             cclist.appendChild(cccheckboxlist);
             if (this.parent.cssClass) {
-                addClass([cccheckboxlist], [this.parent.cssClass]);
+                if (this.parent.cssClass.indexOf(' ') !== -1) {
+                    addClass([cccheckboxlist], this.parent.cssClass.split(' '));
+                } else {
+                    addClass([cccheckboxlist], [this.parent.cssClass]);
+                }
             }
             this.ulElement.appendChild(cclist);
         }

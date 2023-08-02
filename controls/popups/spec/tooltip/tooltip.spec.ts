@@ -1485,6 +1485,20 @@ describe('Tooltip Control', () => {
             tooltip.refresh();
             expect(tipFn1).toHaveBeenCalledTimes(4);
         });
+        it('after open event without arrow element', () => {
+            let tipFn1: jasmine.Spy = jasmine.createSpy('tooltipevent');
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                target: '#tstooltip',
+                showTipPointer: false,
+                afterOpen: tipFn1
+            });
+            tooltip.appendTo('#tstooltip');
+            tooltip.open();
+            expect(tipFn1).toHaveBeenCalledTimes(1);
+            tooltip.close();
+            expect(tooltip.showTipPointer).toBe(false);
+        });
         it('cancel before render event', () => {
             function onBeforeRender(args: TooltipEventArgs) {
                 args.cancel = true;

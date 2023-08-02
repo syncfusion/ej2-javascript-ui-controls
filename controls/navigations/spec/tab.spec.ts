@@ -3772,9 +3772,11 @@ describe('Tab Control', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             expect(element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-hidden')).toEqual(false);
             expect(element.querySelectorAll('.e-toolbar-item').item(1).classList.contains('e-hidden')).toEqual(false);
+            expect(element.querySelectorAll('.e-toolbar-item').item(1).firstElementChild.getAttribute('aria-hidden')).toEqual(null);
             tab.hideTab(1, true);
             expect(element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-hidden')).toEqual(false);
             expect(element.querySelectorAll('.e-toolbar-item').item(1).classList.contains('e-hidden')).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-item').item(1).firstElementChild.getAttribute('aria-hidden')).toEqual('true');
         });
         it('Items - hideTab as false', () => {
             tab = new Tab({

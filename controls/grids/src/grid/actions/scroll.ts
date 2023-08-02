@@ -26,6 +26,8 @@ export class Scroll implements IAction {
     private pageXY: { x: number, y: number };
     private parentElement: HTMLElement;
     private eventElement: HTMLElement | Document;
+    private contentScrollHandler: Function;
+    private headerScrollHandler: Function;
 
     /**
      * Constructor for the Grid scrolling.
@@ -233,11 +235,13 @@ export class Scroll implements IAction {
             }
         } else {
             if (this.content) {
-                EventHandler.remove(this.content, 'scroll', this.onContentScroll);
+                EventHandler.remove(this.content, 'scroll', this.contentScrollHandler);
             }
             if (this.header) {
-                EventHandler.remove(this.header, 'scroll', this.onContentScroll);
+                EventHandler.remove(this.header, 'scroll', this.headerScrollHandler);
             }
+            this.contentScrollHandler = null;
+            this.headerScrollHandler = null;
         }
         if (this.parent.aggregates.length && this.parent.getFooterContent()) {
             EventHandler.remove(<HTMLDivElement>this.parent.getFooterContent().firstChild, 'scroll', this.onContentScroll);
@@ -424,8 +428,10 @@ export class Scroll implements IAction {
                     EventHandler.add(mCont, 'touchmove pointermove', this.onTouchScroll(mHdr), this);
                 }
             } else {
-                EventHandler.add(this.content, 'scroll', this.onContentScroll(this.header), this);
-                EventHandler.add(this.header, 'scroll', this.onContentScroll(this.content), this);
+                this.contentScrollHandler = this.onContentScroll(this.header);
+                this.headerScrollHandler = this.onContentScroll(this.content);
+                EventHandler.add(this.content, 'scroll', this.contentScrollHandler, this);
+                EventHandler.add(this.header, 'scroll', this.headerScrollHandler, this);
             }
             if (this.parent.aggregates.length) {
                 EventHandler.add(

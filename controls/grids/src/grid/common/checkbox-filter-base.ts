@@ -91,7 +91,11 @@ export class CheckBoxFilterBase {
             addClass([this.cBoxTrue, this.cBoxFalse], ['e-rtl']);
         }
         if (this.parent.cssClass) {
-            addClass([this.cBoxTrue, this.cBoxFalse], [this.parent.cssClass]);
+            if (this.parent.cssClass.indexOf(' ') !== -1) {
+                addClass([this.cBoxTrue, this.cBoxFalse], this.parent.cssClass.split(' '));
+            } else {
+                addClass([this.cBoxTrue, this.cBoxFalse], [this.parent.cssClass]);
+            }
         }
     }
 
@@ -1067,7 +1071,11 @@ export class CheckBoxFilterBase {
             }
             const checkBox: Element = this.createCheckbox(selectAllValue, false, { [this.options.field]: selectAllValue });
             if (this.parent.cssClass) {
-                addClass([checkBox], [this.parent.cssClass]);
+                if (this.parent.cssClass.indexOf(' ') !== -1) {
+                    addClass([checkBox], this.parent.cssClass.split(' '));
+                } else {
+                    addClass([checkBox], [this.parent.cssClass]);
+                }
             }
             const selectAll: Element = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
             selectAll.querySelector('.e-frame').classList.add('e-selectall');
@@ -1082,7 +1090,11 @@ export class CheckBoxFilterBase {
                 const predicateCheckBox: Element = this.createCheckbox(this.getLocalizedLabel('AddCurrentSelection'), false, {
                     [this.options.field]: this.getLocalizedLabel('AddCurrentSelection') });
                 if (this.parent.cssClass) {
-                    addClass([predicateCheckBox], [this.parent.cssClass]);
+                    if (this.parent.cssClass.indexOf(' ') !== -1) {
+                        addClass([predicateCheckBox], this.parent.cssClass.split(' '));
+                    } else {
+                        addClass([predicateCheckBox], [this.parent.cssClass]);
+                    }
                 }
                 const predicateElement: Element = createCboxWithWrap(getUid('cbox'), predicateCheckBox, 'e-ftrchk');
                 predicateElement.querySelector('.e-frame').classList.add('e-add-current');

@@ -1,7 +1,7 @@
 /**
  * Gantt taskbaredit spec
  */
-import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD } from '../../src/index';
+import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu} from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
 import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
@@ -3607,5 +3607,93 @@ describe('clone taskbar edit action', () => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
+    });
+});
+describe('Milestone get disappeared when we indent the record issue', () => {
+    let ganttObj: Gantt;
+    Gantt.Inject(Edit, ContextMenu);
+    let newData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: '1',
+            StartDate: new Date('05/23/2023'),
+            EndDate: new Date('05/23/2023'),
+            Progress: 59,
+            Duration: 1,
+          },
+          {
+            TaskID: 2,
+            TaskName: '2',
+            StartDate: new Date('05/23/2023'),
+            EndDate: new Date('05/23/2023'),
+            Progress: 0,
+            Duration: 0,
+            ParentID: 1,
+          },
+        ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: newData,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            parentID: 'parentID',
+            baselineStartDate: 'BaselineStartDate',
+            baselineEndDate: 'BaselineEndDate',
+            milestone: 'isMilestone'
+            },
+            editSettings: {
+                allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true,
+            newRowPosition: 'Bottom',
+            },
+            enableContextMenu:true,
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'Indent','Outdent'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            renderBaseline:false,
+            enableVirtualization:true,
+            allowRowDragAndDrop:true,
+            allowFiltering:true,
+            allowResizing:true,
+            allowParentDependency:false,
+            highlightWeekends: true,
+            labelSettings: {
+                taskLabel: 'Progress'
+            },
+            splitterSettings:{
+                columnIndex: 2,
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('check duration of taskbar', () => {
+        ganttObj.openAddDialog();
+        let duration: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+        duration.value = 0;
+        let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        triggerMouseEvent(save, 'click');
+        ganttObj.dataBind();
+        expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(0);
+    
     });
 });

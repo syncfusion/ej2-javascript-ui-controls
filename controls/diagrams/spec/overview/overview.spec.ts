@@ -9,8 +9,9 @@ import { OverviewModel } from '../../src/overview/overview-model';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import {
-    RadialTree, DataBinding,HierarchicalTree, DiagramTools, StackPanel, Container, TextElement, ZoomOptions, TreeInfo
+    RadialTree, DataBinding,HierarchicalTree, DiagramTools, StackPanel, Container, TextElement, ZoomOptions, TreeInfo, ILoadEventArgs 
 } from '../../src/diagram/index';
+import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 Diagram.Inject(RadialTree, DataBinding,HierarchicalTree);
 
 /**
@@ -1778,4 +1779,88 @@ describe('Overview', () => {
         });
     });
 
+    describe('830544-Support to add event to notify before rendering of diagram', () => {
+        let diagram: Diagram;
+        let overview: Overview;
+        let ele: HTMLElement;
+        let ove: HTMLElement;
+        let createEvent:boolean;
+        let createdEvent:boolean;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram', styles: "width:74%;height: 500px; float:left" });
+            document.body.appendChild(ele);
+            ove = createElement('div', { id: 'overview', styles: "width:25%;height:200px;float:left; border-color:lightgray;border-style:solid;" });
+            document.body.appendChild(ove);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'NewIdea',
+                    height: 60,
+                    width: 100,
+                    style: { fill: 'blue' },
+                    offsetX: 500,
+                    offsetY: 80,
+                    shape: {
+                        type: 'HTML',
+                        content:
+                            '<div style="background:#6BA5D7;height:100%;width:100%;"><button type="button" style="width:100px"> Button</button></div>',
+                    },
+                },
+                {
+                    id: 'Meeting',
+                    height: 60,
+                    width: 100,
+                    style: { fill: 'blue' },
+                    offsetX: 500,
+                    offsetY: 160,
+                    shape: {
+                        type: 'HTML',
+                        content:
+                            '<div style="background:#6BA5D7;height:100%;width:100%;"><button type="button" style="width:100px"> Button</button></div>',
+                    },
+                },
+            ];
+            diagram = new Diagram({
+                width: '100%',
+                height: '700px',
+                nodes: nodes,
+                load:load,
+                created:created
+            });
+            diagram.appendTo('#diagram');
+
+            let overview: Overview = new Overview({
+                width: '100%',
+                height: '150ppx',
+                sourceID: 'diagram',
+            });
+            overview.appendTo('#overview');
+
+
+        });
+
+        afterAll((): void => {
+            overview.destroy();
+            diagram.destroy();
+            ele.remove();
+            ove.remove();
+        });
+        it('check whether the load event triggers properly', (done: Function) => {
+            expect(createEvent==true).toBe(true);
+            expect(createdEvent==true).toBe(true);
+            done();
+        });
+        function load(args: ILoadEventArgs){
+            createSpinner({
+                // Specify the target for the spinner to show  
+                target: document.getElementById('diagram')
+            });
+            showSpinner(document.getElementById('diagram'));
+            createEvent=true
+        }
+        function created(arg:object){
+            hideSpinner(document.getElementById('diagram'));
+            createdEvent=true
+        }
+    });
 });

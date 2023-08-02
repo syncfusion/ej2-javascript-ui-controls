@@ -334,6 +334,8 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
             this.dropDown = this.secondaryBtnObj.dropDown;
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this as any).isPopupCreated = (this.secondaryBtnObj as any).isPopupCreated;
         this.secondaryBtnObj.activeElem = [this.element, this.secondaryBtnObj.element];
         this.secondaryBtnObj.element.querySelector('.e-btn-icon').classList.remove('e-icon-right');
         if (this.disabled) {
@@ -425,7 +427,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             break;
         case 'enter':
             this.clickHandler(e);
-            if (!this.getPopUpElement().classList.contains('e-popup-close')) {
+            if (this.getPopUpElement() && !this.getPopUpElement().classList.contains('e-popup-close')) {
                 this.element.classList.remove('e-active');
                 this.secondaryBtnObj.element.classList.add('e-active');
             } else {

@@ -873,7 +873,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
     }
     private parseObject(items: TabItemModel[], index: number): object[] {
-        const tbItems: HTMLElement[] = selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element);
+        const tbItems: HTMLElement[] = Array.prototype.slice.call(selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element));
         let maxId: number = this.lastIndex;
         if (!this.isReplace && tbItems.length > 0) {
             const idList: number[] = [];
@@ -1562,7 +1562,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (this.allowDragAndDrop) {
             const tabHeader: Element = this.element.querySelector('.' + CLS_HEADER);
             if (tabHeader){
-                const items: NodeList = tabHeader.querySelectorAll('.' + CLS_TB_ITEM);
+                const items: NodeList = Array.prototype.slice.call(tabHeader.querySelectorAll('.' + CLS_TB_ITEM));
                 items.forEach((element: HTMLElement) => {
                     this.initializeDrag(element as HTMLElement);
                 });
@@ -2317,7 +2317,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         }
         this.setActiveBorder();
-        item.setAttribute('aria-hidden', '' + value);
+        if (!isNullOrUndefined(item.firstElementChild)) {
+            item.firstElementChild.setAttribute('aria-hidden', '' + value);
+        }
         if (this.overflowMode === 'Popup' && this.tbObj) {
             this.tbObj.refreshOverflow();
         }

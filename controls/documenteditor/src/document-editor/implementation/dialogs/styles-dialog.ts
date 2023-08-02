@@ -194,7 +194,7 @@ export class StylesDialog {
      * @private
      * @returns {void}
      */
-    private addNewStyles = (): void => {
+    public addNewStyles = (): void => {
         this.documentHelper.dialog.hide();
         this.documentHelper.owner.styleDialogModule.show();
     };

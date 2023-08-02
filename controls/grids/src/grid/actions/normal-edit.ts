@@ -82,7 +82,7 @@ export class NormalEdit {
             if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
                 || (!this.parent.isPersistSelection)) {
                 if (e[`${action}`] !== 'edit') {
-                    this.parent.selectRow(0);
+                    this.parent.selectRow(e['index']);
                 }
             }
             this.parent.trigger(events.actionComplete, extend(e, {

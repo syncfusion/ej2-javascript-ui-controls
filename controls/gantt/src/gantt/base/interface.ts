@@ -423,8 +423,6 @@ export interface IConnectorLineObject {
     isCritical?: boolean;
     parentEndPoint?:number;
     childEndPoint?:number;
-    isManualChild?: boolean;
-    isManualParent?: boolean;
 }
 
 export interface ISplitterResizedEventArgs {

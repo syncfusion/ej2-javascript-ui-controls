@@ -21,8 +21,6 @@ export class ConnectorLine {
     private y2: number;
     private y3: number;
     private y4: number;
-    private manualParent:number;
-    private manualChild:number;
     private point1: number;
     private point2: number;
     private parent: Gantt;
@@ -141,8 +139,6 @@ export class ConnectorLine {
             connectorObj.connectorLineId = 'parent' + parentId + 'child' + childId;
             connectorObj.milestoneParent = parentGanttRecord.isMilestone ? true : false;
             connectorObj.milestoneChild = childGanttRecord.isMilestone ? true : false;
-            connectorObj.isManualParent = (!(this.parent.flatData[parentIndex as number].ganttProperties.isAutoSchedule) && this.parent.flatData[parentIndex as number].hasChildRecords);
-            connectorObj.isManualChild = (!(this.parent.flatData[childIndex as number].ganttProperties.isAutoSchedule) && this.parent.flatData[childIndex  as number].hasChildRecords);
             connectorObj.parentEndPoint= connectorObj.parentLeft + connectorObj.parentWidth;
             connectorObj.childEndPoint= connectorObj.childLeft + connectorObj.childWidth;
             if (isNullOrUndefined(isScheduledTask(parentGanttRecord)) || isNullOrUndefined(isScheduledTask(childGanttRecord))) {
@@ -493,27 +489,37 @@ export class ConnectorLine {
                         }
                     }
                 }
-                  if (this.parent.currentViewData[data.parentIndex].ganttProperties.isMilestone) {
-                if (data.parentIndex > data.childIndex) {
-            
-                    addTop = -5;
-                    borderTopWidth = 10;
+                if (this.parent.currentViewData[data.parentIndex].ganttProperties.isMilestone) {
+                    if (data.parentIndex > data.childIndex) {
+                        addTop = -11;
+                        borderTopWidth = 12;
+                    }
+                    else if (data.type === 'SS' || data.type === 'FF') {
+                        addTop = -5;
+                    }
                 }
-                else if (data.type === 'SS' || data.type === 'FF') {
-                    addTop = -5;
+                else if (this.parent.currentViewData[data.childIndex].ganttProperties.isMilestone) {
+                    if (data.parentIndex > data.childIndex) {
+                        addTop = 5;
+                        borderTopWidth = -10;
+                    }
+                    else if (data.parentIndex < data.childIndex) {
+                        if (data.type === 'SS' || data.type === 'FF') {
+                            addTop = -10;
+                        }
+                    }
                 }
-            }
-            else if (this.parent.currentViewData[data.childIndex].ganttProperties.isMilestone) {
-                if (data.parentIndex > data.childIndex) {
-                    addTop = 5;
-                    borderTopWidth = -10;
+                else {
+                    if (data.parentIndex < data.childIndex && fromRecordIsManual && !toRecordIsManual) {
+                        addTop = 0;
+                        borderTopWidth = -11
+                    }
+                    else if (data.childIndex < data.parentIndex && !fromRecordIsManual && toRecordIsManual) {
+                        addTop = 0;
+                        borderTopWidth = -11;
+                    }
                 }
-                else if (data.type === 'SS' || data.type === 'FF') {
-                    addTop = 5;
-                }
-            }
-            }
-          
+            }      
         }
         if (this.getParentPosition(data)) {
             // Create the group element
@@ -544,145 +550,125 @@ export class ConnectorLine {
             if (this.getParentPosition(data) === 'FSType1') {
                 this.taskLineValue = data.milestoneChild ? 1 : 0;
                 this.x1 = data.parentEndPoint + (data.milestoneParent ? -1 : (data.milestoneChild ? -1 : 0));
-                this.x2 = data.milestoneParent ? ((((data.childLeft - (data.parentEndPoint + 10)) + 1) - 10) + 1) : (((data.childLeft - (data.parentEndPoint + 10))) - 10);
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneParent)) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = heightValue + this.taskLineValue;
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.x2 = data.milestoneParent ? ((((data.childLeft - (data.parentLeft + data.parentWidth + 10)) + this.lineStroke) - 10) + 1) : (((data.childLeft - (data.parentLeft + data.parentWidth + 10)) + this.lineStroke) - 10);
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue));
+                this.y2 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
 
-                this.connectorLinePath = "M " + this.x1 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x1 + this.x2) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x1 + this.x2) + " " + (this.y1 + this.y2) +
-                    " L " + (this.x1 + this.x2 + 11) + " " + (this.y1 + this.y2);
-                this.arrowPath = "M " + (this.x1 + this.x2 + 18) + " " + (this.y1 + this.y2 + this.manualChild) +
-                    " L " + (this.x1 + this.x2 + 11) + " " + (this.y1 + this.y2 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + this.x2 + 11) + " " + (this.y1 + this.y2 + 4 + this.lineStroke + this.manualChild) + " Z";
-
+                this.connectorLinePath = "M " + this.x1 + " " + (this.y1) + " L " + (this.x1 + this.x2) + " " + (this.y1) + " L " + (this.x1 + this.x2) + " " + (this.y1 + this.y2) +
+                    " L " + (this.x1 + this.x2 + 12) + " " + (this.y1 + this.y2);
+                this.arrowPath = "M " + (this.x1 + this.x2 + 20) + " " + (this.y1 + this.y2) +
+                    " L " + (this.x1 + this.x2 + 12) + " " + (this.y1 + this.y2 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + this.x2 + 12) + " " + (this.y1 + this.y2 + 4) + " Z";
             }
             if (this.getParentPosition(data) === 'FSType2') {
-                this.taskLineValue = data.milestoneChild ? 1 : 0;
-                this.x1 = data.parentLeft + (data.milestoneChild ? -1 : 0);
-                this.x2 = data.parentWidth + (data.milestoneParent ? 1 : 0);
+                this.x1 = data.parentLeft;
+                this.x2 = data.parentWidth + (data.milestoneParent ? -1 : 0);
                 this.x3 = this.x2 + (data.milestoneParent ? 11 : 10);
                 this.x4 = data.parentWidth - ((data.parentEndPoint - data.childLeft) + 20);
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneParent)) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = heightValue - this.getconnectorLineGap(data) + this.taskLineValue;
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue));
+                this.y2 = heightValue + borderTopWidth - this.getconnectorLineGap(data) - this.lineStroke;
                 this.y3 = this.getconnectorLineGap(data);
-                this.y4 = this.y1 + this.y2 - ((this.y1 + this.y2) % data.rowHeight);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y4 = (!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (this.y1 + this.y2 - ((this.y1 + this.y2) % data.rowHeight)));
 
-                this.connectorLinePath = "M " + (this.x1 + this.x2) + " " + (this.y1 + this.manualParent + this.manualChild) + " " + " L " + (this.x1 + this.x3) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x1 + this.x3) + " " + this.y4 +
-                    " L " + (this.x1 + this.x4) + " " + this.y4 + " L " + (this.x1 + this.x4) + " " + (this.y1 + this.y2 + this.y3) + " L " + (this.x1 + this.x4 + 11) + " " + (this.y1 + this.y2 + this.y3);
-                this.arrowPath = "M " + (this.x1 + this.x4 + 18) + " " + (this.y1 + this.y2 + this.y3 + this.manualChild) +
-                    " L " + (this.x1 + this.x4 + 11) + " " + (this.y1 + this.y2 + this.y3 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + this.x4 + 11) + " " + (this.y1 + this.y2 + this.y3 + 4 + this.lineStroke + this.manualChild) + " Z";
-
+                this.connectorLinePath = "M " + (this.x1 + this.x2) + " " + (this.y1) + " " + " L " + (this.x1 + this.x3) + " " + (this.y1) + " L " + (this.x1 + this.x3) + " " + this.y4 +
+                    " L " + (this.x1 + this.x4) + " " + this.y4 + " L " + (this.x1 + this.x4) + " " + (this.y1 + this.y2 + this.y3) + " L " + (this.x1 + this.x4 + 12) + " " + (this.y1 + this.y2 + this.y3);
+                this.arrowPath = "M " + (this.x1 + this.x4 + 20) + " " + (this.y1 + this.y2 + this.y3) +
+                    " L " + (this.x1 + this.x4 + 12) + " " + (this.y1 + this.y2 + this.y3 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + this.x4 + 12) + " " + (this.y1 + this.y2 + this.y3 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'FSType3') {
                 this.taskLineValue = data.milestoneChild ? 1 : 0;
-                this.point1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.childIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneChild));
+                this.point1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1) - isMilestoneValue));
                 this.x1 = (data.childLeft + (data.milestoneChild ? -1 : 0) + (data.milestoneParent ? 1 : 0)) - 20;
                 this.x2 = (data.parentEndPoint - data.childLeft) + 30;
-                this.y1 = this.point1 + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = this.point1 + heightValue - this.getconnectorLineGap(data) + this.taskLineValue + (this.parent.renderBaseline ? (data.milestoneChild ? -10 : 0) : 0);
-                this.y3 = this.getconnectorLineGap(data) + (this.parent.renderBaseline ? (data.milestoneParent ? 10 : 0) : 0);
+                this.y1 = this.point1 + (this.parent.renderBaseline ? (data.milestoneChild && !(data.milestoneParent) ? 11 : data.milestoneParent && !(data.milestoneChild) ? -12 : 0) : 0);
+                this.y2 = this.point1 + heightValue + borderTopWidth - this.getconnectorLineGap(data) - this.lineStroke + this.taskLineValue;
+                this.y3 = this.getconnectorLineGap(data);
                 this.y4 = this.y2 - (this.y2 % data.rowHeight);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
 
-                this.connectorLinePath = "M " + (this.x1 + 12) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + this.y4 +
+                this.connectorLinePath = "M " + (this.x1 + 12) + " " + (this.y1) + " L " + this.x1 + " " + (this.y1) + " L " + this.x1 + " " + this.y4 +
                     " L " + (this.x1 + this.x2) + " " + this.y4 + " L " + (this.x1 + this.x2) + " " + (this.y2 + this.y3) + " L " + (this.x1 + this.x2 - 12) + " " + (this.y2 + this.y3);
-                this.arrowPath = "M " + (this.x1 + 18) + " " + (this.y1 + this.manualChild) +
-                    " L " + (this.x1 + 11) + " " + (this.y1 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + 11) + " " + (this.y1 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x1 + 20) + " " + (this.y1) +
+                    " L " + (this.x1 + 12) + " " + (this.y1 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + 12) + " " + (this.y1 + 4 + this.lineStroke) + " Z";
 
             }
 
             if (this.getParentPosition(data) === 'FSType4') {
-                this.point1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.childIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneChild));
+                this.point1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)));
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
                 this.x1 = data.parentEndPoint + (data.milestoneChild ? -1 : 0) + (data.milestoneParent ? 1 : 0);
                 this.x2 = data.childLeft - data.parentEndPoint - 20;
-                this.y1 = this.point1 + (data.milestoneChild ? 1 : 0) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = this.point1 + heightValue + this.taskLineValue + (this.parent.renderBaseline ? (data.milestoneParent ? 10 : 0) : 0);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y1 = this.point1 + (data.milestoneChild ? -1 : 0);
+                this.y2 = this.point1 + heightValue + borderTopWidth - this.lineStroke + 1 + this.taskLineValue + (this.parent.renderBaseline ? (data.milestoneChild && !(data.milestoneParent) ? -12 : data.milestoneParent && !(data.milestoneChild) ? 11 : 0) : 0);
 
-                this.connectorLinePath = "M " + (this.x1 + this.x2 + 11) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x1 + this.x2) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x1 + this.x2) + " " + this.y2 +
+                this.connectorLinePath = "M " + (this.x1 + this.x2 + 12) + " " + (this.y1) + " L " + (this.x1 + this.x2) + " " + (this.y1) + " L " + (this.x1 + this.x2) + " " + this.y2 +
                     " L " + this.x1 + " " + this.y2;
-                this.arrowPath = "M " + (this.x1 + this.x2 + 18) + " " + (this.y1 + this.manualChild) +
-                    " L " + (this.x1 + this.x2 + 11) + " " + (this.y1 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + this.x2 + 11) + " " + (this.y1 + 4 + this.lineStroke + this.manualChild) + " Z";
-
+                this.arrowPath = "M " + (this.x1 + this.x2 + 20) + " " + (this.y1) +
+                    " L " + (this.x1 + this.x2 + 12) + " " + (this.y1 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + this.x2 + 12) + " " + (this.y1 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'SSType4') {
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
-                this.point1 = heightValue + this.taskLineValue;
-                this.point2 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.childIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneChild));
-                this.x1 = data.parentLeft - 8;
+                this.point1 = heightValue + this.taskLineValue + borderTopWidth;
+                this.point2 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)));
+                this.x1 = data.parentLeft - 10;
                 this.x2 = data.childLeft - data.parentLeft;
-                this.y1 = this.point2 + (data.milestoneChild ? 1 : 0) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = this.y1 + this.point1 + (this.parent.renderBaseline ? (data.milestoneParent ? 10 : 0) : 0);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y1 = this.point2 + (data.milestoneChild ? 1 : 0);
+                this.y2 = this.y1 + this.point1 + (this.parent.renderBaseline ? (data.milestoneParent && !(data.milestoneChild) ? 10 : data.milestoneChild && !(data.milestoneParent) ? -13 : 0) : 0);
 
-                this.connectorLinePath = "M " + (this.x1 + this.x2) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + (this.y1 + this.manualParent + this.manualChild) +
+                this.connectorLinePath = "M " + (this.x1 + this.x2) + " " + (this.y1) + " L " + this.x1 + " " + (this.y1) +
                     " L " + this.x1 + " " + this.y2 + " L " + (this.x1 + 10) + " " + this.y2;
-                this.arrowPath = "M " + (this.x1 + this.x2 + 8) + " " + (this.y1 + this.manualChild) +
-                    " L " + (this.x1 + this.x2) + " " + (this.y1 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + this.x2) + " " + (this.y1 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x1 + this.x2 + 8) + " " + (this.y1) +
+                    " L " + (this.x1 + this.x2) + " " + (this.y1 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + this.x2) + " " + (this.y1 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'SSType3') {
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : data.milestoneChild ? 1 : 0;
-                this.point1 = heightValue + this.taskLineValue;
+                this.point1 = heightValue + this.taskLineValue + borderTopWidth - (this.lineStroke - 1);
                 this.x1 = data.childLeft - 20;
-                this.y1 = (data.milestoneChild ? 1 : 0) + ((this.parent.enableVirtualization ? rowPositionHeight : (!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.childIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneChild))) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
+                this.y1 = (data.milestoneChild ? 1 : 0) + (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)));
                 this.x2 = data.parentLeft - data.childLeft + 21;
-                this.y2 = this.y1 + this.point1 + (this.parent.renderBaseline ? (data.milestoneChild ? -11 : data.milestoneParent ? 10 : 0) : 0);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y2 = this.y1 + this.point1 + (this.parent.renderBaseline ? (data.milestoneChild && !(data.milestoneParent) ? -11 : data.milestoneParent && !(data.milestoneChild) ? 10 : 0) : 0);
 
-                this.connectorLinePath = "M " + (this.x1 + 12) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + (this.y1 + this.manualParent + this.manualChild) +
+                this.connectorLinePath = "M " + (this.x1 + 12) + " " + (this.y1) + " L " + this.x1 + " " + (this.y1) +
                     " L " + this.x1 + " " + this.y2 + " L " + (this.x1 + this.x2) + " " + this.y2;
-                this.arrowPath = "M " + (this.x1 + 20) + " " + (this.y1 + this.manualChild) +
-                    " L " + (this.x1 + 12) + " " + (this.y1 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + 12) + " " + (this.y1 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x1 + 20) + " " + (this.y1) +
+                    " L " + (this.x1 + 12) + " " + (this.y1 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + 12) + " " + (this.y1 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'SSType2') {
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : data.milestoneChild ? 1 : 0;
-                this.point1 = heightValue + this.taskLineValue;
+                this.point1 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
                 this.x1 = setInnerElementLeftSSType2;
                 this.x2 = setInnerChildWidthSSType2 + 1;
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneParent)) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)));
                 this.y2 = this.y1 + this.point1;
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
 
-                this.connectorLinePath = "M " + (this.x1 + this.x2) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + this.y2 +
+                this.connectorLinePath = "M " + (this.x1 + this.x2) + " " + (this.y1) + " L " + this.x1 + " " + (this.y1) + " L " + this.x1 + " " + this.y2 +
                     " L " + (this.x1 + setInnerElementWidthSSType2) + " " + this.y2;
-                this.arrowPath = "M " + (this.x1 + setInnerElementWidthSSType2 + 8) + " " + (this.y2 + this.manualChild) +
-                    " L " + (this.x1 + setInnerElementWidthSSType2) + " " + (this.y2 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + setInnerElementWidthSSType2) + " " + (this.y2 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x1 + setInnerElementWidthSSType2 + 8) + " " + (this.y2) +
+                    " L " + (this.x1 + setInnerElementWidthSSType2) + " " + (this.y2 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + setInnerElementWidthSSType2) + " " + (this.y2 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'SSType1') {
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : data.milestoneChild ? 1 : 0;
-                this.point1 = heightValue + this.taskLineValue;
+                this.point1 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
                 this.x1 = data.childLeft - 20;
                 this.x2 = data.parentLeft - data.childLeft + 21;
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneParent)) + + ((data.isManualParent && data.isManualChild) ? -10 : 0);
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)));
                 this.y2 = this.y1 + this.point1;
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
 
-                this.connectorLinePath = "M " + (this.x1 + this.x2) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + this.y2 +
+                this.connectorLinePath = "M " + (this.x1 + this.x2) + " " + (this.y1) + " L " + this.x1 + " " + (this.y1) + " L " + this.x1 + " " + this.y2 +
                     " L " + (this.x1 + 12) + " " + this.y2;
-                this.arrowPath = "M " + (this.x1 + 20) + " " + (this.y2 + this.manualChild) +
-                    " L " + (this.x1 + 12) + " " + (this.y2 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + 12) + " " + (this.y2 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x1 + 20) + " " + (this.y2) +
+                    " L " + (this.x1 + 12) + " " + (this.y2 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + 12) + " " + (this.y2 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'FFType1') {
@@ -691,34 +677,29 @@ export class ConnectorLine {
                 this.x2 = data.parentEndPoint + (data.milestoneParent ? -1 : 0);
                 this.x3 = data.milestoneParent ? 22 : 21;
                 this.x4 = data.milestoneChild ? 4 : 8;
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneParent)) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = heightValue + this.taskLineValue;
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)));
+                this.y2 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
 
-                this.connectorLinePath = "M " + this.x2 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x2 + this.x3) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x2 + this.x3) + " " + (this.y1 + this.y2) +
+                this.connectorLinePath = "M " + this.x2 + " " + (this.y1) + " L " + (this.x2 + this.x3) + " " + (this.y1) + " L " + (this.x2 + this.x3) + " " + (this.y1 + this.y2) +
                     " L " + (this.x1 + this.x4) + " " + (this.y1 + this.y2);
-                this.arrowPath = "M " + this.x1 + " " + (this.y1 + this.y2 + this.manualChild) +
-                    " L " + (this.x1 + 8) + " " + (this.y1 + this.y2 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + 8) + " " + (this.y1 + this.y2 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + this.x1 + " " + (this.y1 + this.y2) +
+                    " L " + (this.x1 + 8) + " " + (this.y1 + this.y2 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + 8) + " " + (this.y1 + this.y2 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'FFType2') {
-
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : (data.milestoneChild ? 1 : 0);
                 this.x1 = data.parentEndPoint;
                 this.x2 = data.childEndPoint + (data.milestoneParent ? 22 : 21);
                 this.x3 = data.childEndPoint + (data.milestoneChild ? 9 : 8);
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneParent)) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = heightValue + this.taskLineValue;
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(data.milestoneParent) - (this.lineStroke - 1)));
+                this.y2 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
 
-                this.connectorLinePath = "M " + this.x1 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x2 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x2 + " " + (this.y1 + this.y2) +
+                this.connectorLinePath = "M " + this.x1 + " " + (this.y1) + " L " + this.x2 + " " + (this.y1) + " L " + this.x2 + " " + (this.y1 + this.y2) +
                     " L " + this.x3 + " " + (this.y1 + this.y2);
-                this.arrowPath = "M " + (this.x3 - 8) + " " + (this.y1 + this.y2 + this.manualChild) +
-                    " L " + this.x3 + " " + (this.y1 + this.y2 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + this.x3 + " " + (this.y1 + this.y2 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x3 - 8) + " " + (this.y1 + this.y2) +
+                    " L " + this.x3 + " " + (this.y1 + this.y2 - (4 + this.lineStroke)) +
+                    " L " + this.x3 + " " + (this.y1 + this.y2 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'FFType3') {
@@ -727,16 +708,14 @@ export class ConnectorLine {
                 this.x2 = this.x1 + (data.milestoneChild ? 4 : 8);
                 this.x3 = data.parentEndPoint - data.childEndPoint + (data.milestoneChild ? 16 : 10);
                 this.x4 = data.parentEndPoint + (data.milestoneParent ? - 1 : 0);
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.childIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneChild)) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = heightValue + this.taskLineValue + (this.parent.renderBaseline ? (data.milestoneParent ? 10 : 0) : 0);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)));
+                this.y2 = heightValue + this.taskLineValue + borderTopWidth - this.lineStroke + (this.parent.renderBaseline ? (data.milestoneParent && !(data.milestoneChild) ? 10 : data.milestoneChild && !(data.milestoneParent) ? -11 : 0) : 0);
 
-                this.connectorLinePath = "M " + this.x2 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x2 + this.x3) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x2 + this.x3) + " " + (this.y1 + this.y2) +
+                this.connectorLinePath = "M " + this.x2 + " " + (this.y1) + " L " + (this.x2 + this.x3) + " " + (this.y1) + " L " + (this.x2 + this.x3) + " " + (this.y1 + this.y2) +
                     " L " + this.x4 + " " + (this.y1 + this.y2);
-                this.arrowPath = "M " + this.x1 + " " + (this.y1 + this.manualChild) +
-                    " L " + (this.x1 + 8) + " " + (this.y1 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + 8) + " " + (this.y1 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + this.x1 + " " + (this.y1) +
+                    " L " + (this.x1 + 8) + " " + (this.y1 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + 8) + " " + (this.y1 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'FFType4') {
@@ -744,92 +723,81 @@ export class ConnectorLine {
                 this.x1 = data.parentEndPoint;
                 this.x2 = data.childEndPoint + (data.milestoneChild ? 7 : 8);
                 this.x3 = this.x2 + (data.milestoneChild ? 12 : 11);
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.childIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneChild)) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = heightValue + this.taskLineValue + + (this.parent.renderBaseline ? (data.milestoneParent ? 10 : 0) : 0);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)));
+                this.y2 = heightValue + this.taskLineValue + borderTopWidth + (this.parent.renderBaseline ? (data.milestoneParent && !(data.milestoneChild) ? 10 : data.milestoneChild && !(data.milestoneParent) ? -12 : 0) : 0) - this.lineStroke + 1;
 
-                this.connectorLinePath = "M " + this.x2 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x3 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x3 + " " + (this.y1 + this.y2) +
+                this.connectorLinePath = "M " + this.x2 + " " + (this.y1) + " L " + this.x3 + " " + (this.y1) + " L " + this.x3 + " " + (this.y1 + this.y2) +
                     " L " + this.x1 + " " + (this.y1 + this.y2);
-                this.arrowPath = "M " + (this.x2 - 8) + " " + (this.y1 + this.manualChild) +
-                    " L " + this.x2 + " " + (this.y1 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + this.x2 + " " + (this.y1 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x2 - 8) + " " + (this.y1) +
+                    " L " + this.x2 + " " + (this.y1 - (4 + this.lineStroke)) +
+                    " L " + this.x2 + " " + (this.y1 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'SFType4') {
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : (data.milestoneChild ? -1 : 0);
-                this.point1 = heightValue - this.getconnectorLineGap(data) + this.taskLineValue;
-                this.point2 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.childIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneChild));
+                this.point1 = (this.taskLineValue + heightValue + borderTopWidth - this.getconnectorLineGap(data) - (this.lineStroke - 1));
+                this.point2 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue));
                 this.x1 = data.parentLeft - 10;
                 this.x2 = this.x1 + ((data.childEndPoint - data.parentLeft) + 18);
                 this.x3 = this.x2 + (data.milestoneChild ? 16 : 11);
-                this.y1 = this.point2 + (data.milestoneChild ? 1 : 0) + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = this.y1 + this.point1 + (this.parent.renderBaseline ? (data.milestoneChild ? -11 : 0) : 0);
-                this.y3 = this.getconnectorLineGap(data) + (this.parent.renderBaseline ? (data.milestoneParent ? 10 : 0) : 0);
+                this.y1 = this.point2 + (data.milestoneChild ? 2 : 0) + (this.parent.renderBaseline ? (data.milestoneParent ? -5 : 0) : 0);
+                this.y2 = this.y1 + this.point1 + (this.parent.renderBaseline ? (data.milestoneChild && !(data.milestoneParent) ? -9 : data.milestoneParent && !(data.milestoneChild) ? 9 : 0) : 0);
+                this.y3 = this.getconnectorLineGap(data);
                 this.y4 = this.y2 - (this.y2 % data.rowHeight);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
 
-                this.connectorLinePath = "M " + this.x2 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x3 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x3 + " " + this.y4 + " L " + this.x1 + " " + this.y4 +
+                this.connectorLinePath = "M " + this.x2 + " " + (this.y1) + " L " + this.x3 + " " + (this.y1) + " L " + this.x3 + " " + this.y4 + " L " + this.x1 + " " + this.y4 +
                     " L " + this.x1 + " " + (this.y2 + this.y3) + " L " + (this.x1 + 11) + " " + (this.y2 + this.y3);
-                this.arrowPath = "M " + (this.x2 - 8) + " " + (this.y1 + this.manualChild) +
-                    " L " + this.x2 + " " + (this.y1 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + this.x2 + " " + (this.y1 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x2 - 8) + " " + (this.y1) +
+                    " L " + this.x2 + " " + (this.y1 - (4 + this.lineStroke)) +
+                    " L " + this.x2 + " " + (this.y1 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'SFType3') {
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
-                this.point1 = (data.parentLeft - (data.childEndPoint + (data.milestoneParent ? 25 : 20))) + 1 + (this.parent.renderBaseline ? (data.milestoneParent ? 5 : 0) : 0);
-                this.point2 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.childIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneChild));
+                this.point1 = (data.parentLeft - (data.childEndPoint + (data.milestoneParent ? 23 : 20))) + 1;
+                this.point2 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? childOverlapTopValue : (data.childIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)));
                 this.x1 = data.childEndPoint;
                 this.x2 = this.x1 + (data.milestoneChild ? 9 : 8);
                 this.x3 = this.x2 + (data.milestoneChild ? 17 : 11);
-                this.y1 = this.point2 + ((data.isManualParent && data.isManualChild) ? -10 : 0);
-                this.y2 = this.y1 + heightValue + this.taskLineValue + (this.parent.renderBaseline ? (data.milestoneParent ? 10 : 0) : 0);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y1 = this.point2;
+                this.y2 = this.y1 + heightValue + borderTopWidth - (this.lineStroke - 1) + this.taskLineValue + (this.parent.renderBaseline ? (data.milestoneChild && !(data.milestoneParent) ? -12 : data.milestoneParent && !(data.milestoneChild) ? 10 : 0) : 0);
 
-                this.connectorLinePath = "M " + this.x2 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x3 + " " + (this.y1 + this.manualParent + this.manualChild) +
+                this.connectorLinePath = "M " + this.x2 + " " + (this.y1) + " L " + this.x3 + " " + (this.y1) +
                     " L " + this.x3 + " " + this.y2 + " L " + (this.x3 + this.point1) + " " + this.y2;
-                this.arrowPath = "M " + (this.x2 - 8) + " " + (this.y1 + this.manualChild) +
-                    " L " + this.x2 + " " + (this.y1 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + this.x2 + " " + (this.y1 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x2 - 8) + " " + (this.y1) +
+                    " L " + this.x2 + " " + (this.y1 - (4 + this.lineStroke)) +
+                    " L " + this.x2 + " " + (this.y1 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'SFType1') {
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : data.milestoneChild ? 1 : 0;
-                this.point1 = heightValue - this.getconnectorLineGap(data) + this.taskLineValue;
+                this.point1 = heightValue + borderTopWidth - this.getconnectorLineGap(data) + this.taskLineValue - this.lineStroke;
                 this.point2 = this.getconnectorLineGap(data);
                 this.x1 = data.parentLeft - 10;
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneParent)) + + ((data.isManualParent && data.isManualChild) ? -10 : 0);
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1) - isMilestoneValue));
                 this.x2 = (data.childEndPoint - data.parentLeft) + 31;
                 this.y2 = this.y1 + this.point1;
                 this.x3 = (data.childEndPoint - data.parentLeft) + 18;
                 this.y3 = this.y2 - (this.y2 % data.rowHeight);
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
-
-                this.connectorLinePath = "M " + (this.x1 + 11) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + this.x1 + " " + this.y3 +
+                this.connectorLinePath = "M " + (this.x1 + 11) + " " + (this.y1) + " L " + this.x1 + " " + (this.y1) + " L " + this.x1 + " " + this.y3 +
                     " L " + (this.x1 + this.x2) + " " + this.y3 + " L " + (this.x1 + this.x2) + " " + (this.y2 + this.point2) + " L " + (this.x1 + this.x3) + " " + (this.y2 + this.point2);
-                this.arrowPath = "M " + (this.x1 + this.x3 - 8) + " " + (this.y2 + this.point2 + this.manualChild) +
-                    " L " + (this.x1 + this.x3) + " " + (this.y2 + this.point2 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + this.x3) + " " + (this.y2 + this.point2 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + (this.x1 + this.x3 - 8) + " " + (this.y2 + this.point2) +
+                    " L " + (this.x1 + this.x3) + " " + (this.y2 + this.point2 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + this.x3) + " " + (this.y2 + this.point2 + 4 + this.lineStroke) + " Z";
             }
 
             if (this.getParentPosition(data) === 'SFType2') {
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
                 this.x1 = data.childEndPoint;
-                this.y1 = this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + this.getTaskbarMidpoint(data.milestoneParent)) + + ((data.isManualParent && data.isManualChild) ? -10 : 0);
+                this.y1 = (this.parent.enableVirtualization ? rowPositionHeight : ((!this.parent.allowTaskbarOverlap ? parentOverlapTopValue : (data.parentIndex * data.rowHeight)) + addTop + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)));
                 this.x2 = (data.parentLeft - data.childEndPoint);
-                this.y2 = this.y1 + heightValue + this.taskLineValue;
-                this.manualParent = (data.isManualParent && !data.isManualChild ? -10 : 0);
-                this.manualChild = (data.isManualChild && !data.isManualParent ? -10 : 0);
+                this.y2 = this.y1 + heightValue + this.taskLineValue + borderTopWidth - this.lineStroke;
 
-                this.connectorLinePath = "M " + (this.x1 + this.x2 + 1) + " " + (this.y1 + this.manualParent + this.manualChild) + " L " + (this.x1 + this.x2 - 10) + " " + (this.y1 + this.manualParent + this.manualChild) +
+                this.connectorLinePath = "M " + (this.x1 + this.x2 + 1) + " " + (this.y1) + " L " + (this.x1 + this.x2 - 10) + " " + (this.y1) +
                     " L " + (this.x1 + this.x2 - 10) + " " + this.y2 + " L " + (this.x1 + 8) + " " + this.y2;
-                this.arrowPath = "M " + this.x1 + " " + (this.y2 + this.manualChild) +
-                    " L " + (this.x1 + 8) + " " + (this.y2 - (4 + this.lineStroke) + this.manualChild) +
-                    " L " + (this.x1 + 8) + " " + (this.y2 + 4 + this.lineStroke + this.manualChild) + " Z";
+                this.arrowPath = "M " + this.x1 + " " + (this.y2) +
+                    " L " + (this.x1 + 8) + " " + (this.y2 - (4 + this.lineStroke)) +
+                    " L " + (this.x1 + 8) + " " + (this.y2 + 4 + this.lineStroke) + " Z";
             }
             this.connectorPath.setAttribute("d", this.connectorLinePath);
             this.arrowlinePath.setAttribute("d", this.arrowPath);

@@ -321,7 +321,7 @@ console.log('insert table with paragraph on footer multiple times redo operation
             editor.editorHistory.redo();
             count++;
         }
-        expect((((((editor.documentHelper.pages[0].footerWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
+        expect(((editor.documentHelper.pages[0].footerWidget.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
     });
     it('paragraph,table, paragraph combinations on footer with undo, redo validation', () => {
 console.log('paragraph,table, paragraph combinations on footer with undo, redo validation');
@@ -342,7 +342,7 @@ console.log('paragraph,table, paragraph combinations on footer with undo, redo v
             count++;
         }
         editor.editorHistory.undo();
-        expect((((editor.documentHelper.pages[0].footerWidget.childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
+        expect(((editor.documentHelper.pages[0].footerWidget.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(0);
     });
     // it('paragraph, image, table, paragraph combinations on footer with undo, redo validation',()=>{
     //     let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';

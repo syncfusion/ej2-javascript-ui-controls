@@ -6293,7 +6293,9 @@ export class Editor {
         newElement.line = element.line;
         if (newElement instanceof BookmarkElementBox) {
             let bookmarkCol: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
-            newElement.reference.reference = newElement;
+            if(newElement.reference){
+                newElement.reference.reference = newElement;
+                }
             if (!bookmarkCol.containsKey(newElement.name)) {
                 bookmarkCol.add(newElement.name, newElement);
             }
@@ -10749,6 +10751,16 @@ export class Editor {
      * @returns {void}
      */
     public updateSectionFormat(property: string, value: Object): void {
+        if (this.documentHelper.selection.startPage === 1 && property === "differentFirstPage") {
+            let paraInfo: ParagraphWidget;
+            if (this.documentHelper.selection.start.paragraph.containerWidget instanceof TableCellWidget) {
+                paraInfo = this.getFirstChildOfTable(this.documentHelper.selection.start.paragraph.containerWidget);
+            } else {
+                paraInfo = this.documentHelper.selection.start.paragraph.containerWidget.childWidgets[0] as ParagraphWidget;
+            }
+            let startIndex: string = this.selection.getHierarchicalIndex(paraInfo, "0");
+            this.documentHelper.selection.select(startIndex, startIndex);
+        }
         let selection: Selection = this.documentHelper.selection;
         selection.owner.isShiftingEnabled = true;
         let startPosition: TextPosition = selection.start;
@@ -10822,6 +10834,10 @@ export class Editor {
         }
         this.layoutWholeDocument();
         this.fireContentChange();
+    }
+    private getFirstChildOfTable(cellWidget: TableCellWidget): ParagraphWidget {
+        let ownerTable: TableWidget = cellWidget.ownerTable;
+        return ((ownerTable.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget;
     }
     //Apply Selection Table Format option implementation starts
     /**
@@ -12105,7 +12121,12 @@ export class Editor {
                         removedNodeLength = this.editorHistory.currentBaseHistoryInfo.removedNodes.length;
                     }
                     this.insertRevisionForBlock(paragraph, 'Deletion');
-                    if (paragraph.isEmpty() && !(end.paragraph.previousRenderedWidget instanceof TableWidget)) {
+                    if (paragraph.isEmpty()
+                        && !(!isNullOrUndefined(paragraph.previousWidget) && paragraph.previousWidget instanceof ParagraphWidget
+                            && (paragraph.previousWidget.characterFormat.revisions.length === 0 ||
+                                (paragraph.previousWidget.characterFormat.revisions.length > 0
+                                    && paragraph.previousWidget.characterFormat.revisions[0].author !== (this.owner.currentUser === '' ? 'Guest' : this.owner.currentUser))))
+                        && !(end.paragraph.previousRenderedWidget instanceof TableWidget)) {
                         newParagraph = this.checkAndInsertBlock(paragraph, start, end, editAction, prevParagraph);
                         this.removeBlock(paragraph);
                         if (removedNodeLength === -1) {
@@ -12119,7 +12140,7 @@ export class Editor {
                         // On deleting para, para items may be added with delete revisions so we need to ensure whether it can be combined with prev/ next para.
                         this.combineRevisionWithBlocks((paragraph.firstChild as LineWidget).children[0]);
                     }
-                    if (paragraph === end.paragraph && this.editorHistory.currentBaseHistoryInfo.action === 'Delete' && !this.isInsertingTOC) {
+                    if (paragraph === end.paragraph && paragraph.containerWidget && this.editorHistory.currentBaseHistoryInfo.action === 'Delete' && !this.isInsertingTOC) {
                         let paraInfo: ParagraphInfo = this.selection.getParagraphInfo(end);
                         this.selection.editPosition = this.selection.getHierarchicalIndex(paraInfo.paragraph, paraInfo.offset.toString());
                     }
@@ -12551,7 +12572,7 @@ export class Editor {
         for (let i: number = 0; i < collection.length; i++) {
             let element: FieldElementBox | BookmarkElementBox = isBookmark ?
                 this.documentHelper.bookmarks.get(collection[i] as string) : collection[i] as FieldElementBox;
-            if (element.line.paragraph === block || (element instanceof BookmarkElementBox && element.reference.line.paragraph === block)) {
+            if (element.line.paragraph === block || (element instanceof BookmarkElementBox && !isNullOrUndefined(element.reference) && element.reference.line.paragraph === block)) {
                 if (isBookmark) {
                     this.documentHelper.bookmarks.remove(collection[i] as string);
                     element.line.children.splice(element.indexInOwner, 1);
@@ -12560,8 +12581,10 @@ export class Editor {
                         cell.isRenderBookmarkStart ? cell.isRenderBookmarkStart = false : cell.isRenderBookmarkEnd = false;
                     }
                     const endBookMarkElement = (element as BookmarkElementBox).reference;
-                    endBookMarkElement.line.children.splice(endBookMarkElement.indexInOwner, 1);
-                    if(!isNullOrUndefined(endBookMarkElement.line.paragraph.associatedCell)) {
+                    if (endBookMarkElement) {
+                        endBookMarkElement.line.children.splice(endBookMarkElement.indexInOwner, 1);
+                    }
+                    if(endBookMarkElement && !isNullOrUndefined(endBookMarkElement.line.paragraph.associatedCell)) {
                         const cell = endBookMarkElement.line.paragraph.associatedCell;
                         cell.isRenderBookmarkStart ? cell.isRenderBookmarkStart = false : cell.isRenderBookmarkEnd = false;
                     }
@@ -14816,7 +14839,7 @@ export class Editor {
             if (HelperMethods.isLinkedFieldCharacter(inline)) {
                 let begin: FieldElementBox = inline.fieldBegin;
                 let end: ElementBox = inline.fieldEnd;
-                if (begin.nextNode instanceof BookmarkElementBox) {
+                if (begin.nextNode instanceof BookmarkElementBox && begin.nextNode.reference) {
                     end = begin.nextNode.reference;
                 }
                 selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
@@ -14871,7 +14894,7 @@ export class Editor {
                 inline = (prevInline as FieldElementBox).fieldBegin;
                 paragraph = inline.line.paragraph;
                 offset = inline.line.getOffset(inline, 0);
-                if (inline.nextNode instanceof BookmarkElementBox) {
+                if (inline.nextNode instanceof BookmarkElementBox && inline.nextNode.reference) {
                     let start: BookmarkElementBox = inline.nextNode.reference;
                     selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 1));
                 }
@@ -15117,7 +15140,7 @@ export class Editor {
 
     private removeCharacter(inline: ElementBox, offset: number, count: number, lineWidget: LineWidget, lineIndex: number, i: number, isRearrange?: boolean): boolean {
         let isBreak: boolean = false;
-        if (inline instanceof BookmarkElementBox && inline.line !== inline.reference.line && !(lineWidget.children[i] instanceof BookmarkElementBox)) {
+        if (inline instanceof BookmarkElementBox && inline.reference && inline.line !== inline.reference.line && !(lineWidget.children[i] instanceof BookmarkElementBox)) {
             if (!isNullOrUndefined(inline.line.previousLine)) {
                 inline.line.previousLine.children.splice(inline.line.previousLine.children.length, 0, inline);
                 inline.line = inline.line.previousLine;
@@ -16821,9 +16844,11 @@ export class Editor {
             const existingBookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(name);
             existingBookmark.line.children.splice(existingBookmark.line.children.indexOf(existingBookmark), 1);
             /* eslint-disable-next-line max-len */
+            if(existingBookmark.reference){
             existingBookmark.reference.line.children.splice(existingBookmark.reference.line.children.indexOf(existingBookmark.reference), 1);
+            }
             this.documentHelper.bookmarks.remove(name);
-            if(!isNullOrUndefined(existingBookmark.reference.paragraph.associatedCell)){
+            if(!isNullOrUndefined(existingBookmark.reference) && !isNullOrUndefined(existingBookmark.reference.paragraph.associatedCell)){
                 let row: TableRowWidget = existingBookmark.reference.paragraph.associatedCell.ownerRow;
                 if (row.isRenderBookmarkEnd) {
                     row.isRenderBookmarkEnd = false;
@@ -16914,7 +16939,6 @@ export class Editor {
         const bookmarks: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
         const bookmark: BookmarkElementBox = bookmarks.get(bookmarkName);
         if (bookmark instanceof BookmarkElementBox) {
-            const bookmarkEnd: BookmarkElementBox = bookmark.reference;
             this.initHistory('DeleteBookmark');
             if (this.editorHistory) {
                 this.editorHistory.currentBaseHistoryInfo.setBookmarkInfo(bookmark);
@@ -16946,7 +16970,7 @@ export class Editor {
                 cell.isRenderBookmarkStart = false;
             }
             let columnLast: number = parseInt(bookmark.properties["columnLast"]);
-            if (!isNullOrUndefined(bookmark.reference.paragraph.associatedCell)) {
+            if (!isNullOrUndefined(bookmark.reference) && !isNullOrUndefined(bookmark.reference.paragraph.associatedCell)) {
                 let endRow: TableRowWidget = bookmark.reference.paragraph.associatedCell.ownerRow;
                 let endCell: TableCellWidget = undefined;
                 let cellIndex: number = columnLast;
@@ -16963,7 +16987,7 @@ export class Editor {
         }
         else{
             if(this.documentHelper.selection.isRenderBookmarkAtEnd(bookmark)){
-                if(!isNullOrUndefined(bookmark.reference.paragraph.associatedCell)){
+                if(!isNullOrUndefined(bookmark.reference) && !isNullOrUndefined(bookmark.reference.paragraph.associatedCell)){
                     let row: TableRowWidget = bookmark.reference.paragraph.associatedCell.ownerRow;
                     if(row.isRenderBookmarkEnd){
                         row.isRenderBookmarkEnd = false;

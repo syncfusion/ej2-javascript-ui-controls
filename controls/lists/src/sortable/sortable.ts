@@ -120,7 +120,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
             enableTapHold: true,
             tapHoldThreshold: 200,
             queryPositionInfo: this.queryPositionInfo,
-            distance: 5
+            distance: 1
         });
         this.wireEvents();
     }

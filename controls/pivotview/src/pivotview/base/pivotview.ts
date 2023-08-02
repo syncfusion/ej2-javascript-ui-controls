@@ -13,7 +13,7 @@ import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } fr
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
-import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs, MultiLevelLabelClickEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs, MultiLevelLabelClickEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs, MultiLevelLabelRenderEventArgs } from '../../common/base/interface';
 import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';
 import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
 import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs, ExportCompleteEventArgs } from '../../common/base/interface';
@@ -1558,6 +1558,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     protected chartLegendClick: EmitType<ILegendClickEventArgs>;
 
     /**
+     * @event multiLevelLabelRender
+     * @hidden
+     */
+    @Event()
+    protected multiLevelLabelRender: EmitType<MultiLevelLabelRenderEventArgs>;
+
+    /**
      * @event chartLoaded
      * @hidden
      */
@@ -2640,6 +2647,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.contextMenuOpen = this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen : undefined;
         this.beforePdfExport = this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined;
         this.beforeExcelExport = this.gridSettings.beforeExcelExport ? this.gridSettings.beforeExcelExport.bind(this) : undefined;
+        this.multiLevelLabelRender = this.chartSettings.multiLevelLabelRender ? this.chartSettings.multiLevelLabelRender : undefined;
         if (this.gridSettings.rowHeight === null) {
             if (this.isTouchMode) {
                 this.setProperties({ gridSettings: { rowHeight: 36 } }, true);
@@ -3050,6 +3058,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         const chartPointClickEvent: any = this.chartSettings['pointClick'];
         const chartTooltipRenderEvent: any = this.chartSettings['tooltipRender'];
         const chartLegendClickEvent: any = this.chartSettings['legendClick'];
+        const multiLevelLabelRenderEvent: any = this.chartSettings['multiLevelLabelRender'];
         const dataSource: IDataSet[] = this.dataSourceSettings.dataSource ?
             [...this.dataSourceSettings.dataSource as IDataSet[]] :
             this.dataSourceSettings.dataSource as IDataSet[];
@@ -3061,6 +3070,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.gridSettings['pdfHeaderQueryCellInfo'] = undefined;
         this.chartSettings['tooltipRender'] = undefined;
         this.chartSettings['legendClick'] = undefined;
+        this.chartSettings['multiLevelLabelRender'] = undefined;
         this.chartSettings['load'] = undefined;
         this.chartSettings['loaded'] = undefined;
         this.chartSettings['textRender'] = undefined;
@@ -3086,6 +3096,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartSettings['pointClick'] = chartPointClickEvent;
         this.chartSettings['tooltipRender'] = chartTooltipRenderEvent;
         this.chartSettings['legendClick'] = chartLegendClickEvent;
+        this.chartSettings['multiLevelLabelRender'] = multiLevelLabelRenderEvent;
         this.setProperties({ dataSourceSettings: { dataSource: dataSource } }, true);
         return persistData;
     }

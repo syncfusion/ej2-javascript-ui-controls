@@ -202,6 +202,7 @@ export class CommentReviewPane {
      * @returns {void}
      */
     private onTabSelection = (arg: SelectEventArgs): void => {
+        arg.preventFocus = true;
         this.selectedTab = arg.selectedIndex;
         if (this.selectedTab === 1) {
             this.owner.trackChangesPane.updateHeight();

@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 22.2.7 (2023-08-02)
+
+### Diagram
+
+#### New Feature
+
+- `#I464388` - load Event to notify diagram initial render is added.
+
+#### Bug Fixes
+
+-`#I477967`  - Now, symbol size does not change after dragging the symbols.
+
+## 22.2.5 (2023-07-27)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#F-182592,#FB-45000` - scrollbar flickering issue in mac on zooming the diagram has been fixed now.
+- `#I44765` - Now, Event "Start" state triggers for single time in rotate and resize action.
+- `#I44765` - Now, Duplicate nodes and connectors are created after reset for layout type 'None' has been fixed now.
+
 ## 22.1.38 (2023-07-11)
 
 ### Diagram

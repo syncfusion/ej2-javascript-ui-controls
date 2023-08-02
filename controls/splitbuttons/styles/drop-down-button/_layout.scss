@@ -31,7 +31,7 @@
 
     &:focus-visible { // only for keybord
       @if $skin-name == 'Material3' {
-        box-shadow: $btn-keyboard-focus-box-shadow !important; /* stylelint-disable-line declaration-no-important */
+        box-shadow: $btn-keyboard-focus-box-shadow;
       }
     }
 

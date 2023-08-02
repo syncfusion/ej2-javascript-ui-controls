@@ -1,9 +1,17 @@
 /**
  * TextBox spec document
  */
-import { createElement, L10n, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, L10n, EmitType, extend, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TextBox, ChangedEventArgs } from '../src/textbox/textbox';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
+
+function eventObject(eventType: string, eventName: string): Object {
+    let tempEvent: any = document.createEvent(eventType);
+    tempEvent.initEvent(eventName, true, true);
+    let returnObject: any = extend({}, tempEvent);
+    returnObject.preventDefault = () => { return true; };
+    return returnObject;
+}
 
 describe('TextBox ', () => {
     beforeAll(() => {
@@ -3179,6 +3187,31 @@ describe('TextBox ', () => {
             textbox.addIcon('append', 'e-down-icon');
             expect(textbox.element.parentElement.classList.contains('e-input-group')).toBe(true);
 
+         });
+    });
+    
+    describe('Bug 837814 - Need to retrieve the component value during the keypress event', function (){
+        let textboxObj: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'textbox'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (textboxObj) {
+                textboxObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Enter key press',function() {
+            textboxObj = new TextBox({});
+            textboxObj.appendTo('#textbox');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('textbox');
+            input.value = 'Syncfusion';
+            let event: any = eventObject('KeyboardEvent', 'keydown');
+            event.key = 'Enter';
+            event.keyCode = 13;
+            EventHandler.trigger(input, 'keydown', event);
+            expect(textboxObj.value).toBe('Syncfusion');
          });
     });
 });

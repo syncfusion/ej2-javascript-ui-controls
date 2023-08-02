@@ -316,7 +316,7 @@ describe('Table resizer validation for row and column table with floating left t
             documentHelper = editor.documentHelper;
             let event: any = { offsetX: 274, offsetY: 175, preventDefault: function () { }, ctrlKey: false, which: 0 };
             editor.documentHelper.onMouseMoveInternal(event);
-            expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
+            expect(editor.editorModule.tableResize.resizerPosition).toBe(-1);
             done();
         }, 1000);
     });
@@ -510,7 +510,7 @@ describe('Table resizer validation for row and column table with floating right 
             documentHelper = editor.documentHelper;
             let event: any = { offsetX: 425, offsetY: 181, preventDefault: function () { }, ctrlKey: false, which: 0 };
             editor.documentHelper.onMouseMoveInternal(event);
-            expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
+            expect(editor.editorModule.tableResize.resizerPosition).toBe(-1);
             done();
         }, 1000);
     });

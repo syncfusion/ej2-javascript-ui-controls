@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 22.2.5 (2023-07-27)
+## 22.1.37 (2023-07-04)
+
+### SplitButton
+
+#### Bug Fixes
+
+- `#I464857` - Issue in Script error When we selecting SplitButton using keyboard interaction has been resolved.
+
+## 22.1.34 (2023-06-21)
 
 ### DropDownButton
 

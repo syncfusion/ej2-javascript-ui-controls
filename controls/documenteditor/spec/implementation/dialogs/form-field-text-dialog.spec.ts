@@ -108,7 +108,7 @@ describe('Form field Text dialog', () => {
         dialog.changeTypeDropDown(event as ChangeEventArgs);
         (dialog as any).defaultTextInput.value = 'Syncfusion';
         dialog.updateTextFormtas();
-        expect((dialog as any).textFormatDropDown.dataSource[0]).toBe('Uppercase');
+        expect((dialog as any).textFormatDropDown.dataSource[0].Value).toBe('Uppercase');
     });
     it('Change Type DropDown isinteracted - Form field Text Dialog', () => {
         console.log('Change Type DropDown isinteracted - Form field Text Dialog');

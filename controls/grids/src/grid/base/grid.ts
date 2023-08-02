@@ -6474,7 +6474,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.element.classList.add('e-grid-min-height');
         }
         if (this.cssClass) {
-            this.element.classList.add(this.cssClass);
+            if (this.cssClass.indexOf(' ') !== -1) {
+                this.element.classList.add(...this.cssClass.split(' '));
+            } else {
+                this.element.classList.add(this.cssClass);
+            }
         }
         // If the below if statement is removed, then drag and drop between grids will not work in firefox browser.
         if (this.allowRowDragAndDrop && this.rowDropSettings.targetID && Browser.info.name === 'mozilla') {

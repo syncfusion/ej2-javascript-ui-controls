@@ -50,7 +50,7 @@ console.log('For Rtl text with Bidi property validation');
     it('For combine text', () => {
 console.log('For combine text');
         editor.selection.handleShiftHomeKey();
-        expect(editor.selection.characterFormat.bidi).toBe(undefined);
+        expect(editor.selection.characterFormat.bidi).toBe(false);
     });
 });
 
@@ -100,7 +100,7 @@ console.log('For Rtl text with Bidi false');
 console.log('For combine paragraph');
         editor.selection.handleRightKey();
         editor.selection.handleShiftUpKey();
-        expect(editor.selection.paragraphFormat.bidi).toBe(undefined);
+        expect(editor.selection.paragraphFormat.bidi).toBe(false);
     });
 });
 

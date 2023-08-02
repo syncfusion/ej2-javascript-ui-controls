@@ -79,6 +79,7 @@ export class BulletsAndNumberingDialog {
 
     }
     private onTabSelect(args: SelectingEventArgs): void {
+        args.preventFocus = true;
         if (args.selectingIndex === 1) {
             this.bulletListDiv.style.display = 'block';
         }

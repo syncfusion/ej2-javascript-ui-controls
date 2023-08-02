@@ -265,7 +265,11 @@ export class ColumnMenu implements IAction {
                 check.classList.add('e-rtl');
             }
             if (this.parent.cssClass) {
-                check.classList.add(this.parent.cssClass);
+                if (this.parent.cssClass.indexOf(' ') !== -1) {
+                    check.classList.add(...this.parent.cssClass.split(' '));
+                } else {
+                    check.classList.add(this.parent.cssClass);
+                }
             }
             args.element.innerHTML = '';
             args.element.appendChild(check);

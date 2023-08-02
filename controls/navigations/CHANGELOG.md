@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
+## 22.2.7 (2023-08-02)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I483185` - The issue with "Script error throws on destroying menu when its sub menus are still open" has been resolved.
+
 ## 22.2.5 (2023-07-27)
+
+### Carousel
+
+#### Bug Fixes
+
+- `#I480096` - An issue with the indicators are not updated while dynamically changing the data source of the Carousel has been fixed.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I45423` - The issue with where the Tab control was throwing a script error when opened in Internet Explorer 11 has been resolved.
 
 ### ContextMenu
 
@@ -12,12 +32,6 @@
 - `#I484122` - The issue with "Context menu closed while scroll within the sub menu of context menu.
 
 ## 22.1.39 (2023-07-18)
-
-### Carousel
-
-#### Bug Fixes
-
-- `#I480096` - An issue with the indicators are not updated while dynamically changing the data source of the Carousel has been fixed.
 
 ### Menu
 

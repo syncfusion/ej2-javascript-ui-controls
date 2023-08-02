@@ -49,7 +49,7 @@ export class VirtualScroll {
 
     private wireEvents(): void {
         this.engineModule = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
-        if (this.parent.displayOption.view !== 'Chart'&& !this.parent.isVirtualScrollEventsAdded) {
+        if (this.parent.displayOption.view !== 'Chart' && !this.parent.isVirtualScrollEventsAdded) {
             const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
             const fCont: HTMLElement = this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
             const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;

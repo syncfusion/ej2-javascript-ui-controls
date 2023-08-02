@@ -189,7 +189,11 @@
           color: $acrdn-icon-color;
         }
       }
-
+      &.e-select.e-selected > .e-acrdn-header {
+        &:focus {
+          border: $acrdn-item-exp-not-selected-hdr-focus-border;
+        }
+      }
       &.e-expand-state.e-select:not(.e-selected) > .e-acrdn-header {
 
         &:focus {

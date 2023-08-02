@@ -1,6 +1,6 @@
 import { DocumentEditor, ContextType, BorderSettings, BorderType, LineStyle } from '../../document-editor';
 import { createElement, KeyboardEventArgs, classList, L10n } from '@syncfusion/ej2-base';
-import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
+import { Tab, TabItemModel, SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { TextProperties } from './text-properties-pane';
 import { ImageProperties } from './image-properties-pane';
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
@@ -119,7 +119,8 @@ export class TableProperties {
         this.parentElement.appendChild(this.element);
         this.container.propertiesPaneContainer.appendChild(this.parentElement);
     }
-    private onTabSelection(): void {
+    private onTabSelection(args: SelectingEventArgs): void {
+        args.preventFocus = true;
         this.documentEditor.resize();
         if(this.documentEditor.enableAutoFocus)
         {   
@@ -518,6 +519,18 @@ export class TableProperties {
             this.onBorderSizeChange('No Border');
         });
         let pixel: string = this.localObj.getConstant('px');
+        const quaterOption: HTMLElement = this.createDropdownOption(ulTag, '.25' + pixel);
+        quaterOption.addEventListener('click', (): void => {
+            this.onBorderSizeChange('.25px');
+        });
+        const halfOption: HTMLElement = this.createDropdownOption(ulTag, '.5' + pixel);
+        halfOption.addEventListener('click', (): void => {
+            this.onBorderSizeChange('.5px');
+        });
+        const threeQuatersOption: HTMLElement = this.createDropdownOption(ulTag, '.75' + pixel);
+        threeQuatersOption.addEventListener('click', (): void => {
+            this.onBorderSizeChange('.75px');
+        });
         const oneOption: HTMLElement = this.createDropdownOption(ulTag, '1' + pixel);
         oneOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('1px');
@@ -541,6 +554,10 @@ export class TableProperties {
         const fiveOption: HTMLElement = this.createDropdownOption(ulTag, '5' + pixel);
         fiveOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('5px');
+        });
+        const sixOption: HTMLElement = this.createDropdownOption(ulTag, '6' + pixel);
+        sixOption.addEventListener('click', (): void => {
+            this.onBorderSizeChange('6px');
         });
         const menuOptions: DropDownButtonModel = {
             target: div,

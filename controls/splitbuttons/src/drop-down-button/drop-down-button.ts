@@ -217,6 +217,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     public toggle(): void {
         if (this.canOpen()) {
             this.openPopUp();
+        } else if (this.createPopupOnClick && !this.isPopupCreated) {
+            this.createPopup();
+            this.openPopUp();
         } else {
             this.closePopup();
         }
@@ -492,6 +495,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
 
     protected getPopUpElement(): HTMLElement {
         let val: HTMLElement = null;
+        if (!this.dropDown && this.activeElem[0].classList.contains('e-split-btn')) {
+            const dropDownBtn: DropDownButton = getComponent(this.activeElem[1], 'dropdown-btn');
+            if (dropDownBtn) { this.dropDown = dropDownBtn.dropDown; }
+        }
         if (this.dropDown) {
             val = this.dropDown.element;
         }
@@ -516,6 +523,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     }
 
     protected popupWireEvents(): void {
+        if (!this.delegateMousedownHandler) {
+            this.delegateMousedownHandler = this.mousedownHandler.bind(this);
+        }
         const popupElement: HTMLElement = this.getPopUpElement();
         if (this.createPopupOnClick) {
             EventHandler.add(document, 'mousedown touchstart', this.delegateMousedownHandler, this);
@@ -640,7 +650,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     protected clickHandler(e: MouseEvent | KeyboardEventArgs): void {
         const trgt: HTMLElement = e.target as HTMLElement;
         if (closest(trgt, '[id="' + this.element.id + '"]')) {
-            if (!this.createPopupOnClick || (this.target && !this.isColorPicker())) {
+            if (!this.createPopupOnClick || (this.target && this.target !== '' && !this.isColorPicker())) {
                 if (this.getPopUpElement().classList.contains('e-popup-close')) {
                     this.openPopUp(e);
                 } else {
@@ -757,9 +767,6 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 if (!this.target && ul) { detach(ul); }
                 if (!this.target || this.isColorPicker()) {
                     if (this.createPopupOnClick) { this.destroyPopup(); }
-                }
-                if (this.target) {
-                    this.isPopupCreated = this.createPopupOnClick ? false : true;
                 }
             } else {
                 if (ul) {

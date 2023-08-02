@@ -374,6 +374,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public endBookmarksUpdated: string[] = [];
+    /**
+     * @private
+     */
     public formFields: FieldElementBox[] = [];
     /**
      * @private
@@ -898,6 +902,7 @@ export class DocumentHelper {
         }
         this.comments = [];
         this.bookmarks.clear();
+        this.endBookmarksUpdated = [];
         this.styles.clear();
         if (this.pages && this.pages.length > 0) {
             for (let i: number = 0; i < this.pages.length; i++) {

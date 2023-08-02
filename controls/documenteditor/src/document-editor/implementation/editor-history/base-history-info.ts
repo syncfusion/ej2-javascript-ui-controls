@@ -161,7 +161,9 @@ export class BaseHistoryInfo {
             if (previousNode instanceof FieldElementBox && !isNullOrUndefined(previousNode.formFieldData)) {
                 previousNode.formFieldData.name = bookmark.name;
             }
+            
             bookmark.reference.line.children.splice(bookmarkInfo.endIndex, 0, bookmark.reference);
+            
             this.editorHistory.recordChanges(this);
         } else {
             this.owner.editorModule.deleteBookmarkInternal(bookmark);

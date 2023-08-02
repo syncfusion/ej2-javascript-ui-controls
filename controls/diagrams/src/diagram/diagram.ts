@@ -24,7 +24,7 @@ import { PageSettings, ScrollSettings } from './diagram/page-settings';
 import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';
 import { DiagramElement } from './core/elements/diagram-element';
 import { ServiceLocator } from './objects/service';
-import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs, ISegmentChangeEventArgs } from './objects/interface/IElement';
+import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs, ISegmentChangeEventArgs, ILoadEventArgs } from './objects/interface/IElement';
 import { IClickEventArgs, ScrollValues, FixedUserHandleClickEventArgs } from './objects/interface/IElement';
 import { ChangedObject, IBlazorTextEditEventArgs, DiagramEventObject, DiagramEventAnnotation } from './objects/interface/IElement';
 import { IBlazorDragLeaveEventArgs } from './objects/interface/IElement';
@@ -1348,6 +1348,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Event()
     public expandStateChange: EmitType<IExpandStateChangeEventArgs>;
+    
+    /**
+     * This event triggers before the diagram load.
+     *
+     * @event
+     */
+    @Event()
+    public load: EmitType<ILoadEventArgs>;
 
     /**
      * Triggered when the diagram is rendered completely.
@@ -1845,10 +1853,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateSelector();
                     break;
                 case 'dataSourceSettings':
-                    this.clear(); this.initObjects();
+                    this.clear();
                     if (this.layout.type === 'None') {
                         refereshColelction = true;
                     } else {
+                        //EJ2-837322 - Duplicate nodes and connectors are created after reset for layout type 'None'
+                        this.initObjects();
                         refreshLayout = true;
                     }
                     break;
@@ -2195,6 +2205,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public render(): void {
         if (this.refreshing && this.dataSourceSettings.dataSource && !this.isLoading) {
             this.nodes = []; this.connectors = [];
+        }
+        //830544-Support to add load event to notify before rendering of diagram 
+        if (!this.refreshing) {
+            const loadEventData: ILoadEventArgs = {
+                diagram: this, name: 'load',
+            };
+            this.trigger('load', loadEventData);
         }
         // Bug 832897: Need to improve performance while rendering layout with large number of nodes.
         this.isRefreshed = false;

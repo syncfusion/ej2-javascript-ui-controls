@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.7 (2023-08-02)
+
+### TextBox
+
+#### Bug Fixes
+
+- `#I477545` - Fixed an issue where error colors were not being applied correctly in the Textbox Component.
+
 ## 22.2.5 (2023-07-27)
 
 ### Signature

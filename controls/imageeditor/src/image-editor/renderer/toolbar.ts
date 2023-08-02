@@ -2801,6 +2801,7 @@ export class ToolbarModule {
 
     private updateToolbarItems(): void {
         const parent: ImageEditor = this.parent;
+        if (!parent.isImageLoaded) {return; }
         const selFillElem: HTMLElement = parent.element.querySelector('.e-fill.e-template .e-dropdownbtn-preview') as HTMLElement;
         const selStrokeElem: HTMLElement = parent.element.querySelector('.e-stroke.e-template .e-dropdownbtn-preview') as HTMLElement;
         const selTextStrokeElem: HTMLElement = parent.element.querySelector('.e-text-font-color.e-template .e-dropdownbtn-preview') as HTMLElement;

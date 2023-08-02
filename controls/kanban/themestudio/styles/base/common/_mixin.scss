@@ -1,9 +1,0 @@
-$css: '' !default;
-$imported-modules: () !default;
-
-@mixin export-module($module) {
-  @if (index($imported-modules, $module) == null) {
-    $imported-modules: append($imported-modules, $module) !global;
-    @content;
-  }
-}

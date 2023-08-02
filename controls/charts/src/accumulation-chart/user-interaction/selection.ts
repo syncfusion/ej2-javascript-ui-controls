@@ -301,6 +301,11 @@ export class AccumulationSelection extends BaseSelection {
         for (const index of indexes) {
             this.removeStyles([this.getElementByIndex(index)], index);
         }
+        const points: AccPoints[] = accumulation.visibleSeries[0].points;
+        for (let i: number = 0; i < points.length; i++) {
+            const index: Index = new Index(0, points[i as number].index)
+            this.removeStyles([this.getElementByIndex(index)], index);
+        }
     }
     /**
      * To perform the selection for legend elements.

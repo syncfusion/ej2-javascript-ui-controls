@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 22.2.7 (2023-08-02)
+
+### Spinner
+
+#### Bug Fixes
+
+- `#483152` - Resolved an issue where the `cssClass` property was not able to accept multiple classes.
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I483277` - Fixed a memory leak issue in the dialog component.
+
 ## 22.2.5 (2023-07-27)
 
 ### Tooltip

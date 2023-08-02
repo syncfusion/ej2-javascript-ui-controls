@@ -677,7 +677,7 @@ export class HelperMethods {
         keywordIndex == 1 ? HelperMethods.getBaselineAlignmentEnumValue(format.baselineAlignment) :(format.baselineAlignment) : 
         keywordIndex == 1 ? HelperMethods.getBaselineAlignmentEnumValue(format.getValue('baselineAlignment') as BaselineAlignment):(format.getValue('baselineAlignment') as BaselineAlignment);
         characterFormat[highlightColorProperty[keywordIndex]] = isInline ? 
-        keywordIndex == 1 ? HelperMethods.getHighlightColorCode(format.highlightColor) :(format.highlightColor) : 
+        keywordIndex == 1 ? HelperMethods.getHighlightColorEnumValue(format.highlightColor) :(format.highlightColor) : 
         keywordIndex == 1 ? HelperMethods.getHighlightColorEnumValue(format.getValue('highlightColor') as HighlightColor):(format.getValue('highlightColor') as HighlightColor);
         characterFormat[fontColorProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontColor') : format.getValue('fontColor');
         characterFormat[styleNameProperty[keywordIndex]] = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : undefined;

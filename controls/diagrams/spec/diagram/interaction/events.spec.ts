@@ -181,6 +181,57 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Size Change Event', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let selArray: (NodeModel | ConnectorModel)[] = [];
+            let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 500 };
+
+            diagram = new Diagram({
+                width: 1000, height: 1000, nodes: [ node1],
+            });
+
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking size change event triggers', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 300, 300);
+            mouseEvents.clickEvent(diagramCanvas, 300, 500, true);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 350, 500, true);
+            mouseEvents.mouseDownEvent(diagramCanvas, 350, 500, true);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 450, 500, true);
+            mouseEvents.mouseUpEvent(diagramCanvas, 450, 500, true);
+            let offsetX: number = diagram.selectedItems.offsetX;
+            let offsetY: number = diagram.selectedItems.offsetY;
+            diagram.sizeChange = (args: ISizeChangeEventArgs) => {
+                if (args.state === 'Start') {
+                    console.log('Start');
+                  } else if (args.state === 'Progress') {
+                    console.log('Progress');
+                  } else if (args.state === 'Completed') {
+                    expect(args.newValue.offsetX == offsetX &&
+                        args.newValue.offsetY == offsetY).toBe(true);
+                    console.log('Completed');
+                  }
+            };
+            done();
+        });
+    });
     describe('Testing envent', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -236,6 +287,58 @@ describe('Diagram Control', () => {
                 }
             };
             mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + 8, rotator.y + 8, endPoint.x + 8, endPoint.y + 8);
+            done();
+        });
+    });
+
+    describe('Rotation Change Event', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram1' });
+            document.body.appendChild(ele);
+            let node2: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 500 };
+
+            diagram = new Diagram({
+                width: 1000, height: 1000, nodes: [ node2],
+            });
+            diagram.appendTo('#diagram1');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking rotation change', (done: Function) => {
+
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 300, 300, true);
+            mouseEvents.clickEvent(diagramCanvas, 300, 500, true);
+            mouseEvents.clickEvent(diagramCanvas, 400 + 8, 400 + 8, true);
+
+            let bounds: Rect = diagram.selectedItems.wrapper.bounds;
+            let rotator: PointModel = { x: bounds.center.x, y: bounds.y - 30 };
+            let matrix: Matrix = identityMatrix();
+            rotateMatrix(matrix, 320, bounds.center.x, bounds.center.y);
+            let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
+            diagram.rotateChange = (args: IRotationEventArgs) => {
+                if (args.state === 'Start') {
+                    console.log('Start');
+                } else if (args.state === 'Progress') {
+                    console.log('Progress');
+                }
+                if (args.state === 'Completed') {
+                    expect(diagram.nameTable['node2'].rotateAngle !== 320).toBe(true);
+                }
+            };
             done();
         });
     });

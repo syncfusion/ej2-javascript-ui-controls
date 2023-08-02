@@ -5,7 +5,7 @@ import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent,
 import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs, RowDropEventArgs } from '../base/interface';
 import { ColumnModel, Column as GanttColumn } from '../models/column';
 import { ColumnModel as GanttColumnModel } from '../models/column';
-import { DataManager, DataUtil, Query, AdaptorOptions, ODataAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, DataUtil, Query, AdaptorOptions, ODataAdaptor, WebApiAdaptor, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { ReturnType, RecordDoubleClickEventArgs, Row, Column, IEditCell, EJ2Intance, getUid } from '@syncfusion/ej2-grids';
 import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex, isCountRequired, updateDates } from '../base/utils';
 import { RowPosition } from '../base/enum';
@@ -2942,7 +2942,7 @@ export class Edit {
                         /* tslint:disable-next-line */
                         const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         const adaptor: AdaptorOptions = data.adaptor;
-                        if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
+                        if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor && adaptor instanceof ODataV4Adaptor) || data.dataSource.batchUrl) {
                             /* tslint:disable-next-line */
                             const crud: Promise<Object> =
                                 data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
@@ -3071,6 +3071,8 @@ export class Edit {
                 tempRecord[fieldName as string] = 0;
             } else if (ganttColumns[i as number].field === 'taskType') {
                 tempRecord[fieldName as string] = this.parent.taskType;
+            } else if (ganttColumns[i as number].field === taskSettingsFields.milestone) {
+                tempRecord[fieldName as string] = null;
             } else {
                 tempRecord[this.parent.ganttColumns[i as number].field] = '';
             }

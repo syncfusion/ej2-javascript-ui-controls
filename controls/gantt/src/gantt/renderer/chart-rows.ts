@@ -271,7 +271,7 @@ export class ChartRows extends DateProcessor {
                 childTaskbarNode = this.createDivElement(template);
             }
         }
-        if (this.parent.enableRtl && childTaskbarNode[0] && (childTaskbarNode[0] as Element).querySelector('.e-task-label')) {
+        if (this.parent.enableRtl && !isNullOrUndefined(childTaskbarNode) && childTaskbarNode[0] && (childTaskbarNode[0] as Element).querySelector('.e-task-label')) {
             ((childTaskbarNode[0] as Element).querySelector('.e-task-label') as HTMLElement).style.marginLeft = '15px';
             ((childTaskbarNode[0] as Element).querySelector('.e-task-label') as HTMLElement).style.marginRight = '8px';
             if ((childTaskbarNode[0] as Element).querySelector('.e-gantt-child-progressbar')) {
@@ -689,8 +689,8 @@ export class ChartRows extends DateProcessor {
                 extend({ index: i }, data), this.parent, 'MilestoneTemplate',
                 this.getTemplateID('MilestoneTemplate'), false, undefined, rootElement[0], this.parent.treeGrid['root']);
         } else {
-            const template: string = '<div class="' + cls.traceMilestone + '" style="width:' + ((this.parent.renderBaseline ? this.taskBarHeight - 3 : this.taskBarHeight - 7)) + 'px;height:' +
-                ((this.parent.renderBaseline ? this.taskBarHeight - 3 : this.taskBarHeight - 7)) + 'px;position:absolute;transform: rotate(45deg);top:' + (this.parent.rowHeight > 40 ? 0 : 2) + 'px;left:' + (this.parent.renderBaseline ? 2 : 1) + 'px;"> </div>';
+            const template: string = '<div class="' + cls.traceMilestone + '" style="width:' + ((this.parent.renderBaseline ? this.taskBarHeight  : this.taskBarHeight - 6)) + 'px;height:' +
+                ((this.parent.renderBaseline ? this.taskBarHeight  : this.taskBarHeight - 6)) + 'px;position:absolute;transform: rotate(45deg);top:' + (this.parent.rowHeight > 40 ? 0 : 1) + 'px;left:' + 1 + 'px;"> </div>';
             milestoneNode = this.createDivElement(template);
         }
         return milestoneNode;
@@ -720,9 +720,9 @@ export class ChartRows extends DateProcessor {
     private getMilestoneBaselineNode(): NodeList {
         const data: IGanttData = this.templateData;
         let baselineMilestoneHeight = this.parent.renderBaseline ? 5 : 2;
-        const template: string = '<div class="' + cls.baselineMilestoneContainer + '" style="width:' + ((this.parent.renderBaseline ? this.taskBarHeight - 5 : this.taskBarHeight - 10) + 2) + 'px;height:' +
-            ((this.parent.renderBaseline ? this.taskBarHeight - 5 : this.taskBarHeight - 10) + 2) + 'px;position:absolute;transform:rotate(45deg);' + (this.parent.enableRtl ? 'right:' : 'left:') + (this.parent.enableRtl ? (data.ganttProperties.left -
-                (this.milestoneHeight / 2) + 3) : (data.ganttProperties.baselineLeft - (this.milestoneHeight / 2) + 2)) + 'px;' + (this.baselineColor ? 'background-color: ' + this.baselineColor + ';' : '') + 'margin-top:' + ((-Math.floor(this.parent.rowHeight - this.milestoneMarginTop) + baselineMilestoneHeight) + 3) + 'px"> </div>';
+        const template: string = '<div class="' + cls.baselineMilestoneContainer + '" style="width:' + ((this.parent.renderBaseline ? this.taskBarHeight : this.taskBarHeight - 10)) + 'px;height:' +
+            ((this.parent.renderBaseline ? this.taskBarHeight : this.taskBarHeight - 10)) + 'px;position:absolute;transform:rotate(45deg);' + (this.parent.enableRtl ? 'right:' : 'left:') + (this.parent.enableRtl ? (data.ganttProperties.left -
+                (this.milestoneHeight / 2) + 3) : (data.ganttProperties.left - (this.milestoneHeight / 2) + 1)) + 'px;' + (this.baselineColor ? 'background-color: ' + this.baselineColor + ';' : '') + 'margin-top:' + ((-Math.floor(this.parent.rowHeight - this.milestoneMarginTop) + baselineMilestoneHeight) + 2) + 'px"> </div>';
         return this.createDivElement(template);
     }
 
@@ -1417,6 +1417,12 @@ export class ChartRows extends DateProcessor {
             (this.ganttChartTableBody as any).replaceChildren(...dupChartBody.childNodes as any);
             this.parent.initialChartRowElements = this.parent.ganttChartModule.getChartRows();
         }
+        if (this.parent.enableCriticalPath && this.parent.criticalPathModule) {
+            var criticalModule = this.parent.criticalPathModule;
+            if (criticalModule.criticalPathCollection) {
+                this.parent.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
+            }
+        }
         this.parent.renderTemplates();
         this.triggerQueryTaskbarInfo();
         this.parent.modifiedRecords = [];
@@ -1431,6 +1437,7 @@ export class ChartRows extends DateProcessor {
                 }
             }
         }
+        this.parent.isGanttChartRendered = true;
         this.parent.renderTemplates();
     }
 

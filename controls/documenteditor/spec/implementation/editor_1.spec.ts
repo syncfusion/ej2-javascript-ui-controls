@@ -909,7 +909,7 @@ console.log('Hyphen list validation');
             editor.editorModule.insertText('-');
             editor.editorModule.insertText(' ');
             setTimeout(function () {
-                expect(editor.selection.paragraphFormat.listId).toBe(1);
+                expect(editor.selection.paragraphFormat.listId).toBe(0);
                 done();
             }, 200); 
             

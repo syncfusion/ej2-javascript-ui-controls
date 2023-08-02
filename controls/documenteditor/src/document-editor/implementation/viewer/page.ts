@@ -1615,14 +1615,14 @@ export class ParagraphWidget extends BlockWidget {
                     if ((currentTxtRange.characterFormat.complexScript || currentTxtRange.characterFormat.bidi) && currentTxtRange.scriptType == nextTxtRange.scriptType &&
                         currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
                         !textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && !textHelper.isWordSplitChar(nextTxtRange.text[0])
-                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat)) {
+                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && currentTxtRange.characterFormat.revisions == nextTxtRange.characterFormat.revisions) {
                         currentTxtRange.text = currentTxtRange.text + nextTxtRange.text;
                         lineWidget.children.splice(i + 1, 1);
                         i--;
                     } else if (currentTxtRange.characterRange == CharacterRangeType.RightToLeft && nextTxtRange.characterRange == CharacterRangeType.RightToLeft &&
                         currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
                         textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && textHelper.isWordSplitChar(nextTxtRange.text[0])
-                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat)) {
+                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && currentTxtRange.characterFormat.revisions == nextTxtRange.characterFormat.revisions) {
                         currentTxtRange.text = currentTxtRange.text + nextTxtRange.text;
                         lineWidget.children.splice(i + 1, 1);
                         i--;

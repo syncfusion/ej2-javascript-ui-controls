@@ -218,7 +218,8 @@ export interface ListViewModel extends ComponentModel{
     showHeader?: boolean;
 
     /**
-     * If `enableHtmlSanitizer` set to true, allows the cross-scripting site.
+     * Specifies whether HTML content should be sanitized or escaped.
+     * When set to `true`, any HTML content will be sanitized to remove potentially harmful elements.
      *
      * {% codeBlock src='listview/enableHtmlSanitizer/index.md' %}{% endcodeBlock %}
      *

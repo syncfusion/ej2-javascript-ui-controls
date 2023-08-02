@@ -609,6 +609,7 @@ describe('image Cropping', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
+		editor.documentEditorSettings.optimizeSfdt=false;
         documentHelper = editor.documentHelper;
         editor.open(JSON.stringify(crop));
         exportData = JSON.parse(editor.sfdtExportModule.serialize());
@@ -648,6 +649,7 @@ describe('image uncrop', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
+		editor.documentEditorSettings.optimizeSfdt=false;
         documentHelper = editor.documentHelper;
         editor.open(JSON.stringify(uncrop));
         data = JSON.parse(editor.sfdtExportModule.serialize());

@@ -1404,7 +1404,7 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
             templateElement, markerID, data, markerIndex, maps
         );
         for (let i: number = 0; i < markerElement.children.length; i++) {
-            (<HTMLElement>markerElement.children[i as number]).style.pointerEvents = 'none';
+            (<HTMLElement>markerElement.children[i as number]).style.pointerEvents = 'auto';
         }
         markerElement.style.left = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x -  maps.mapAreaRect.x + 'px';
         markerElement.style.top = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y - maps.mapAreaRect.y + 'px';

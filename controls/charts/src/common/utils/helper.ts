@@ -1903,6 +1903,12 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
                 chart.element.getBoundingClientRect().width / chart.availableSize.width : 1;
             scaleY = chart.element.getBoundingClientRect().height > 0 ?
                 chart.element.getBoundingClientRect().height / chart.availableSize.height : 1;
+            let transformValue: string = chart.element.style.transform;
+            if (transformValue) {
+                let scaleValue: number = parseFloat(transformValue.match(/scale\((.*?)\)/)[1]);
+                scaleX = scaleValue ? scaleX / scaleValue : scaleX;
+                scaleY = scaleValue ? scaleY / scaleValue : scaleY;
+            }
             chart.availableSize.width = chart.availableSize.width * scaleX;
             chart.availableSize.height = chart.availableSize.height * scaleY;
             (chart as Chart).scaleX = scaleX;

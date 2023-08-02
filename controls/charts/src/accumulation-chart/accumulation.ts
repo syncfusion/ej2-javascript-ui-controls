@@ -2267,6 +2267,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                     if (isNullOrUndefined(this.accumulationSelectionModule.selectedDataIndexes)) {
                         this.accumulationSelectionModule.invokeSelection(this);
                     } else {
+                        this.accumulationSelectionModule.selectedDataIndexes = this.selectedDataIndexes  as Indexes[];
                         this.accumulationSelectionModule.redrawSelection(this);
                     }
                 }

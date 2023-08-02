@@ -626,8 +626,16 @@ export class GanttTreeGrid {
                 this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.width = column.width ? column.width : 150;
-            if (!column.edit  || (column.edit && !column.edit.create)) {
-                column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            if (column.edit && column.edit.params) {
+                column.edit.params['renderDayCell'] = this.parent.renderWorkingDayCell.bind(this.parent);
+            }
+            else {
+                if (column.edit) {
+                    column.edit.params = { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) };
+                }
+                else {
+                    column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+                }
             }
         } else if (taskSettings.endDate === column.field) {
             if (this.parent.isLocaleChanged && previousColumn) {
@@ -640,8 +648,16 @@ export class GanttTreeGrid {
             column.editType = column.editType ? column.editType :
                 this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.width = column.width ? column.width : 150;
-            if (!column.edit  || (column.edit && !column.edit.create)) {
-                column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+            if (column.edit && column.edit.params) {
+                column.edit.params['renderDayCell'] = this.parent.renderWorkingDayCell.bind(this.parent);
+            }
+            else {
+                if (column.edit) {
+                    column.edit.params = { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) };
+                }
+                else {
+                    column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+                }
             }
         } else if (taskSettings.duration === column.field) {
             column.width = column.width ? column.width : 150;

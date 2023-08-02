@@ -2476,7 +2476,8 @@ export class FormDesigner {
         let formFieldCollection: any = this.pdfViewer.formFieldCollections;
         for (let i: number = 0; i < formFieldCollection.length; i++) {
             let currentData: any = formFieldCollection[i];
-            if (currentData.id === formFieldId) {
+            let fieldId: any = (typeof formFieldId === 'object') ? formFieldId.id : formFieldId;
+            if (currentData.id === fieldId) {
                 this.updateFormFieldData(currentData, options);
                 let formFieldIndex: number = this.pdfViewer.formFieldCollections.findIndex(function (el) { return el.id === formFieldId; });
                 this.pdfViewer.formFieldCollections[formFieldIndex] = currentData;

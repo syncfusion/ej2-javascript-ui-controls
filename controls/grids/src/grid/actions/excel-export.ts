@@ -763,7 +763,11 @@ export class ExcelExport {
             for (const cell of row.cells) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const eCell: any = {};
-                if (cell.cellType === CellType.DetailFooterIntent) {
+                let columnsDetails: any = {};
+                if (!isNullOrUndefined(cell.attributes.index)) {
+                    columnsDetails = this.parent.getColumnByIndex(cell.attributes.index as number);
+                }
+                if (cell.cellType === CellType.DetailFooterIntent || columnsDetails.type === 'checkbox') {
                     continue;
                 }
                 if ((cell.visible || this.includeHiddenColumn)) {

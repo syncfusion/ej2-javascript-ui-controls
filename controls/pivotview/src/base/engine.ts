@@ -3274,8 +3274,9 @@ export class PivotEngine {
                         member.valueSort.axis + this.valueSortSettings.headerDelimiter + member.valueSort.levelName;
                     const isExpandMember: boolean = this.isExpandAll || (field && field.expandAll);
                     member.isDrilled = (valueFil && this.isValueFiltersAvail) ? true :
-                        (member.hasChild && this.fieldDrillCollection[memberString as string]) ?
-                            isExpandMember ? (!this.valueAxis && !this.isLastHeaderHasMeasures && (keysPos >= this.measureIndex) ? true : false) : true : isExpandMember;
+                        (member.hasChild && this.fieldDrillCollection[memberString as string]) ? isExpandMember ?
+                            (!this.valueAxis && !this.isLastHeaderHasMeasures && (keysPos >= this.measureIndex) ?
+                                true : false) : true : isExpandMember;
                     //if (!member.members) {
                     member.members = [];
                     //}

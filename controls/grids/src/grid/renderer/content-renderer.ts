@@ -1164,7 +1164,7 @@ export class ContentRender implements IRenderer {
     }
 
     private getInfiniteRowIndex(index: number): number {
-        if (this.parent.infiniteScrollSettings.enableCache) {
+        if (this.parent.infiniteScrollSettings.enableCache && !isNullOrUndefined(index)) {
             const fRows: number = this.parent.frozenRows;
             const idx: number = fRows > index ? 0 : fRows;
             const firstRowIndex: number = parseInt(this.parent.getRows()[parseInt(idx.toString(), 10)]

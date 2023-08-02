@@ -12,6 +12,7 @@ import { WCharacterFormat } from '../../../src/document-editor/implementation/fo
 import { FontDialog } from '../../../src/document-editor/implementation/dialogs/font-dialog';
 import { ParagraphDialog } from '../../../src/document-editor/implementation/dialogs/paragraph-dialog';
 import { BulletsAndNumberingDialog } from '../../../src/document-editor/implementation/dialogs/index';
+import { StylesDialog } from '../../../src/document-editor/implementation/dialogs/styles-dialog';
 /**
  * Style dialog spec
  */
@@ -438,6 +439,7 @@ console.log('Create New LinkedStyle');
 describe('Style dialog validation create - Next Different', () => {
     let editor: DocumentEditor;
     let styleDialog: StyleDialog;
+    let stylesDialog:StylesDialog;
     let fontDialog: FontDialog;
     let paragraphDialog: ParagraphDialog;
     let numBulletDialog: BulletsAndNumberingDialog;
@@ -446,7 +448,7 @@ describe('Style dialog validation create - Next Different', () => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, StyleDialog, FontDialog, ParagraphDialog, ContextMenu, EditorHistory);
+        DocumentEditor.Inject(Editor, Selection, StyleDialog, FontDialog, ParagraphDialog, ContextMenu, EditorHistory,StylesDialog);
         editor = new DocumentEditor({
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true
@@ -457,6 +459,7 @@ describe('Style dialog validation create - Next Different', () => {
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         styleDialog = editor.styleDialogModule;
+        stylesDialog = editor.stylesDialogModule;
         fontDialog = editor.fontDialogModule;
         paragraphDialog = editor.paragraphDialogModule;
         menu = editor.contextMenuModule;
@@ -477,7 +480,8 @@ console.log('Create New ParagraphStyle-Change Next Paragraph');
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
-        styleDialog.show();
+        stylesDialog.addNewStyles();
+        // styleDialog.show();
         (styleDialog as any).styleNameElement.value = 'style 2';
         styleDialog.updateOkButton();
 
@@ -492,7 +496,7 @@ console.log('Create New ParagraphStyle-Change Next Paragraph');
         let style: any = editor.documentHelper.styles.findByName('style 2');
         expect(style.name).toBe('style 2');
         expect(style.basedOn.name).toBe('Normal');
-        expect(style.next.name).toBe('Heading 6');
+        expect(style.next.name).toBe('Footer');
         expect(style.type).toBe('Paragraph');
     });
 });

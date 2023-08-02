@@ -420,13 +420,31 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         for (const element of elements) {
             const input: HTMLInputElement = <HTMLInputElement>element;
             input.removeAttribute('aria-invalid');
-            input.classList.remove(this.errorClass);
+            const inputParent = input.parentElement;
+            const grandParent = inputParent.parentElement;
+            if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper')) {
+                inputParent.classList.remove(this.errorClass);
+            }
+            else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+                grandParent.classList.remove(this.errorClass);
+            }
+            else {
+                input.classList.remove(this.errorClass);
+            }
             if (input.name.length > 0) {
                 this.getInputElement(input.name);
                 this.getErrorElement(input.name);
                 this.hideMessage(input.name);
             }
-            input.classList.remove(this.validClass);
+            if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper')) {
+                inputParent.classList.remove(this.validClass);
+            }
+            else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+                grandParent.classList.remove(this.validClass);
+            }
+            else {
+                input.classList.remove(this.validClass);
+            }
         }
     }
 
@@ -669,8 +687,20 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                     // Set aria attributes to invalid elements
                     this.inputElement.setAttribute('aria-invalid', 'true');
                     this.inputElement.setAttribute('aria-describedby', this.inputElement.id + '-info');
-                    this.inputElement.classList.add(this.errorClass);
-                    this.inputElement.classList.remove(this.validClass);
+                    const inputParent = this.inputElement.parentElement;
+                    const grandParent = inputParent.parentElement;
+                    if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper')) {
+                        inputParent.classList.add(this.errorClass);
+                        inputParent.classList.remove(this.validClass);
+                    }
+                    else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+                        grandParent.classList.add(this.errorClass);
+                        grandParent.classList.remove(this.validClass);
+                    }
+                    else {
+                        this.inputElement.classList.add(this.errorClass);
+                        this.inputElement.classList.remove(this.validClass);
+                    }
                     if (!this.infoElement) {
                         this.createErrorElement(name, errorRule.message, this.inputElement);
                     } else {
@@ -678,8 +708,18 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                     }
                     eventArgs.errorElement = this.infoElement;
                     eventArgs.status = 'failure';
-                    this.inputElement.classList.add(this.errorClass);
-                    this.inputElement.classList.remove(this.validClass);
+                    if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper')) {
+                        inputParent.classList.add(this.errorClass);
+                        inputParent.classList.remove(this.validClass);
+                    }
+                    else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+                        grandParent.classList.add(this.errorClass);
+                        grandParent.classList.remove(this.validClass);
+                    }
+                    else {
+                        this.inputElement.classList.add(this.errorClass);
+                        this.inputElement.classList.remove(this.validClass);
+                    }
                     this.optionalValidationStatus(name, eventArgs);
                     this.trigger('validationComplete', eventArgs);
                     // Set aria-required to required rule elements
@@ -823,8 +863,20 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         if (this.infoElement) {
             this.infoElement.style.display = 'none';
             this.removeErrorRules(name);
-            this.inputElement.classList.add(this.validClass);
-            this.inputElement.classList.remove(this.errorClass);
+            const inputParent = this.inputElement.parentElement;
+            const grandParent = inputParent.parentElement;
+            if(inputParent.classList.contains('e-control-wrapper') || inputParent.classList.contains('e-wrapper')) {
+                inputParent.classList.add(this.validClass);
+                inputParent.classList.remove(this.errorClass);
+            }
+            else if((grandParent != null) && (grandParent.classList.contains('e-control-wrapper') || grandParent.classList.contains('e-wrapper'))) {
+                grandParent.classList.add(this.validClass);
+                grandParent.classList.remove(this.errorClass);
+            }
+            else {
+                this.inputElement.classList.add(this.validClass);
+                this.inputElement.classList.remove(this.errorClass);
+            }
             this.inputElement.setAttribute('aria-invalid', 'false');
         }
     }

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 22.2.7 (2023-08-02)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#F183545` - Now, the scale ratio is being applied when we set it in the measure settings object.
+- `#I481837` - Now, when updating the form field to be read-only programmatically, it is functioning properly for the pages that are not rendered.
+
 ## 22.2.5 (2023-07-27)
 
 ### PDF Viewer

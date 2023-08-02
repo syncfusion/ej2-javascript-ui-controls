@@ -52,7 +52,7 @@ console.log('Center alignment Property validation');
         //Bold Property
         event = { keyCode: 69, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.documentHelper.onKeyDownInternal(event);
-        expect(editor.selection.paragraphFormat.textAlignment).not.toBe('Center');
+        expect(editor.selection.paragraphFormat.textAlignment).toBe('Center');
     });
     it('Center alignment Property validation', () => {
 console.log('Center alignment Property validation');

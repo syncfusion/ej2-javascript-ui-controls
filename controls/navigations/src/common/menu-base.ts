@@ -1683,6 +1683,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
     private afterCloseMenu(e: MouseEvent): void {
+        if (isNullOrUndefined(e)) {
+            return;
+        }
         let isHeader: Element;
         if (this.showSubMenu) {
             if (this.showItemOnClick && this.navIdx.length === 0) {

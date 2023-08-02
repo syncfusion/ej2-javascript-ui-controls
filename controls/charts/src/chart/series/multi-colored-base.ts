@@ -151,9 +151,12 @@ export class MultiColoredSeries extends LineBase {
                         attributeOptions.fill = 'transparent';
                     }
                     pathAnimation(getElement(attributeOptions.id), attributeOptions.d, chart.redraw);
-                    series.seriesElement.appendChild(
-                        chart.renderer.drawPath(attributeOptions)
-                    );
+                    series.pathElement = chart.renderer.drawPath(attributeOptions);
+                    if (!series.chart.enableCanvas) {
+                        series.seriesElement.appendChild(
+                            chart.renderer.drawPath(attributeOptions)
+                        );
+                    }
                 });
             }
         }
@@ -206,9 +209,11 @@ export class MultiColoredSeries extends LineBase {
                     height: series.yAxis.isInversed ? startPointLocation.y - endPointLocation.y : endPointLocation.y - startPointLocation.y
                 }
             );
-            series.seriesElement.appendChild(
-                appendClipElement(series.chart.redraw, options, series.chart.renderer as SvgRenderer)
-            );
+            if (!series.chart.enableCanvas) {
+                series.seriesElement.appendChild(
+                    appendClipElement(series.chart.redraw, options, series.chart.renderer as SvgRenderer)
+                );
+            }
             return 'url(#' + series.chart.element.id + '_ChartSegment' + series.index + 'ClipRect_' + index + ')';
         }
         return null;

@@ -2383,6 +2383,7 @@ export class TaskProcessor extends DateProcessor {
                     this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                     this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
                     this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
+                    this.parent.setRecordValue('autoDuration', parentProp.duration,  parentProp, true);
                     if (!parentProp.isAutoSchedule) {
                         this.parent.setRecordValue('autoDuration', this.calculateAutoDuration(parentProp), parentProp, true);
                         this.updateAutoWidthLeft(parentData);

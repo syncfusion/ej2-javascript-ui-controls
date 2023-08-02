@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.7 (2023-08-02)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `I459099` - The pivot table can now be rendered properly with the reordering feature.
+
 ## 22.2.5 (2023-07-27)
 
 ### Pivot Table
@@ -12,7 +20,7 @@
 - `F183271` - When defer layout update is enabled, the pivot table now renders properly with the pivot chart.
 - `I463929` - When enabling virtualization dynamically at runtime, the pivot table will now render properly.
 
-#### New features
+#### Features
 
 - `I398184` - Provided support to customize the column width when exporting the pivot table to a PDF document.
 

@@ -150,6 +150,9 @@ export class GanttChart {
         }
         this.updateWidthAndHeight();
         this.parent.notify('selectRowByIndex', {});
+        if(this.parent.timelineModule.isZoomToFit){
+            this.parent.timelineModule.processZoomToFit();
+        }
     }
 
     /**

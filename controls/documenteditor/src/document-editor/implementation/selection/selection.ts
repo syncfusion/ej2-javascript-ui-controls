@@ -761,7 +761,7 @@ export class Selection {
             const startPosition: TextPosition = new TextPosition(this.owner);
             startPosition.setPositionParagraph(fieldStart.line, offset);
             const isBookmark: boolean = fieldStart.nextNode instanceof BookmarkElementBox;
-            if (isBookmark && !formFillingMode) {
+            if (isBookmark && !formFillingMode && (fieldStart.nextElement as BookmarkElementBox).reference) {
                 fieldEnd = (fieldStart.nextElement as BookmarkElementBox).reference;
             }
             const endoffset: number = fieldEnd.line.getOffset(fieldEnd, formFillingMode ? 0 : 1);
@@ -3653,7 +3653,7 @@ export class Selection {
             // isAfterCellMark
             let bookmarkStart = bookmark.reference;
             let selectedCells: TableCellWidget[] = this.getSelectedCells();
-            if(!isNullOrUndefined(bookmarkStart.properties)){
+            if(bookmarkStart && !isNullOrUndefined(bookmarkStart.properties)){
                 if(selectedCells.length == 1){
                     if(this.isCellSelected(selectedCells[0], this.start, this.end)){
                         properties.isAfterCellMark = true;
@@ -5871,13 +5871,16 @@ export class Selection {
             } else {
                 bookmarkElement = bookmark;
             }
-            if (isNullOrUndefined(bookmarkElement.properties)) {
-                let endCell: TableCellWidget = bookmarkElement.reference.paragraph.associatedCell;
+            if (bookmarkElement && isNullOrUndefined(bookmarkElement.properties)) {
+                let endCell: TableCellWidget =bookmarkElement.reference ? bookmarkElement.reference.paragraph.associatedCell: undefined;
                 if(isNullOrUndefined(endCell)){
                     return false;
                 }
-                let lastRow: TableRowWidget = bookmarkElement.reference.paragraph.associatedCell.ownerRow as TableRowWidget;
-                let lastCell: TableCellWidget = lastRow.childWidgets[lastRow.childWidgets.length - 1] as TableCellWidget;
+                let lastRow: TableRowWidget =bookmarkElement.reference ? bookmarkElement.reference.paragraph.associatedCell.ownerRow as TableRowWidget:undefined;
+                let lastCell: TableCellWidget =lastRow ? lastRow.childWidgets[lastRow.childWidgets.length - 1] as TableCellWidget:undefined;
+                if(isNullOrUndefined(lastCell)){
+                    return false;
+                }
                 if (endCell == lastCell) {
                     return true;
                 } else {
@@ -9158,7 +9161,7 @@ export class Selection {
             fieldCode = fieldCode.trim().toLowerCase();
             let fieldBegin: FieldElementBox = this.documentHelper.fields[i];
             let fieldEnd: ElementBox = fieldBegin.fieldEnd;
-            if (isRetrieve && fieldBegin.nextNode instanceof BookmarkElementBox) {
+            if (isRetrieve && fieldBegin.nextNode instanceof BookmarkElementBox && fieldBegin.nextNode.reference) {
                 fieldEnd = fieldBegin.nextNode.reference;
             }
 
@@ -10419,7 +10422,7 @@ export class Selection {
      */
     public getCellsToSelect(table: TableWidget, columnFirst: number, columnLast: number, bookmark: BookmarkElementBox): TableCellWidget[] {
         let rows: TableRowWidget[] = table.childWidgets as TableRowWidget[];
-        if(isNullOrUndefined(bookmark.paragraph.associatedCell) || isNullOrUndefined(bookmark.reference.paragraph.associatedCell)){
+        if(isNullOrUndefined(bookmark.paragraph.associatedCell) || !isNullOrUndefined(bookmark.reference) && isNullOrUndefined(bookmark.reference.paragraph.associatedCell)){
             return undefined;
         }
         let startRowIndex: number = bookmark.paragraph.associatedCell.ownerRow.rowIndex;
@@ -10478,7 +10481,7 @@ export class Selection {
                 } else {
                     //bookmark end element
                     let bookmrkEnd: BookmarkElementBox = bookmrkElmnt.reference;
-                    if (bookmrkElmnt.reference.line.paragraph.bodyWidget == null) {
+                    if (bookmrkElmnt.reference && bookmrkElmnt.reference.line.paragraph.bodyWidget == null) {
                         bookmrkEnd = bookmrkElmnt;
                     }
                     let endoffset: number = bookmrkEnd.line.getOffset(bookmrkEnd, 1);
@@ -11111,9 +11114,14 @@ export class Selection {
         } else if (element instanceof CommentCharacterElementBox) {
             endElement = element.comment.commentEnd;
         }
-        offset = endElement.line.getOffset(endElement, 1);
-        let endPosition: TextPosition = new TextPosition(this.owner);
-        endPosition.setPositionParagraph(endElement.line, offset);
+        let endPosition: TextPosition;
+        if(!isNullOrUndefined(endElement.line)) {
+            offset = endElement.line.getOffset(endElement, 1);
+            endPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(endElement.line, offset);
+        } else {
+            endPosition = startPosition.clone();
+        }
         return { 'startPosition': startPosition, 'endPosition': endPosition };
     }
     /**
@@ -11210,7 +11218,7 @@ export class Selection {
                         let bookmarkEnd: ElementBox = (bookmarkStart as BookmarkElementBox).reference;
                         let previousNode: ElementBox = bookmarkStart.previousNode;
                         if ((isNullOrUndefined(previousNode) || !(previousNode instanceof FieldElementBox))
-                            && bookmarkEnd.previousNode instanceof FieldElementBox
+                            && bookmarkEnd && bookmarkEnd.previousNode instanceof FieldElementBox
                             && bookmarkEnd.previousNode.fieldType === 1
                             && !isNullOrUndefined(bookmarkEnd.previousNode.fieldBegin)
                             && !isNullOrUndefined(bookmarkEnd.previousNode.fieldBegin.formFieldData)) {
