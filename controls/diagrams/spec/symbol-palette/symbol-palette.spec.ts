@@ -1320,6 +1320,95 @@ describe('Symbol Palette', () => {
             }, 1000);
         });
     });
+
+    describe('Checking symbol wrapper After dragging symbols form search container',()=>{
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let flowshapes: NodeModel[] = [{ id: 'start', shape: { type: 'Flow', shape: 'Terminator' } },
+        { id: 'process', shape: { type: 'Flow', shape: 'Process' } },
+        { id: 'decision', shape: { type: 'Flow', shape: 'Decision' } },
+        { id: 'data', shape: { type: 'Flow', shape: 'Data' } },
+        { id: 'end', shape: { type: 'Flow', shape: 'Terminator' } }];
+
+
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagramIssue', styles: 'width:50%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '70%', height: 500
+            });
+            diagram.appendTo('#diagramIssue');
+
+            palette = new SymbolPalette({
+                width: '25%', height: '500px',
+                palettes: [
+                    { id: 'flow', expanded: true, symbols: flowshapes, iconCss: '', title: 'Flow Shapes' },
+                 ], enableAnimation: false, enableSearch: true,
+                symbolMargin: { top: 5, bottom: 5, left: 5, right: 5 }
+            });
+            palette.appendTo('#symbolpalette');
+        
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+        it('Check symbol size after dragging from search container', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+                let symbols: IElement = palette.symbolTable[target['id']];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                expect((arg.element as NodeModel).width === 300).toBe(true);
+                expect((arg.element as NodeModel).height === 300).toBe(true);
+                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            expect(palette.selectedSymbols.wrapper.children[0].width === 199).toBe(true);
+            expect(palette.selectedSymbols.wrapper.children[0].height === 199).toBe(true);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
+            events.mouseMoveEvent(diagram.element, 400, 400, false, false);
+            done();
+            palette.enableSearch = true;
+            palette.dataBind();
+            let element: HTMLElement = document.getElementById("textEnter");
+            element.focus();
+            (document.getElementById("textEnter") as HTMLInputElement).value = "st";
+            let eventName = "keyUp";
+            palette[eventName]({ target: element });
+            setTimeout(() => {
+                expect(document.getElementById("SearchPalette").children.length === 1).toBe(true);
+                done();
+            }, 500);
+          
+        });
+    });
     
     describe('Adding lane at runtime from palette', () => {
         let diagram: Diagram;

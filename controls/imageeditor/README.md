@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-image-editor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-image-editor)
-
 # JavaScript Image Editor Control (JavaScript Photo Editor Control)
 
 The [JavaScript Image Editor](https://www.syncfusion.com/javascript-ui-controls/js-image-editor?utm_source=npm&utm_medium=listing&utm_campaign=javascript-image-editor-npm) control is a graphical user interface used for editing images. It provides built-in support for rotate, flip, zoom, and crop the images based on the selection. It also has support for inserting an annotations including rectangle, ellipse, line, text, and freehand drawings.

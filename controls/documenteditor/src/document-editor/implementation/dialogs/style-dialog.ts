@@ -641,6 +641,8 @@ export class StyleDialog {
         }
         if (!this.isEdit) {
             this.styleType.value = 'Paragraph';
+        } else {
+            this.styleType.value = this.style instanceof WCharacterStyle ? 'Character' : 'Paragraph';
         }
         if (isNullOrUndefined(header)) {
             header = localObj.getConstant('Create New Style');

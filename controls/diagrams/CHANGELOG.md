@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I482420` - Now, Connector draw cursor is enabled while hover the group node port.
+- `#I484353` - Now, copy paste the group node multiple times is working properly.
+
 ## 22.2.7 (2023-08-02)
 
 ### Diagram

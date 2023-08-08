@@ -318,7 +318,7 @@ export class SheetRender implements IRenderer {
             }
             this.parent.notify(contentLoaded, args);
             this.checkTableWidth(sheet);
-            this.parent.notify(editOperation, { action: 'renderEditor' });
+            this.parent.notify(editOperation, { action: 'renderEditor', initLoad: args.initLoad && !this.parent.isOpen });
             if (!args.initLoad && !this.parent.isOpen) { this.parent.hideSpinner(); }
             setAriaOptions(content, { busy: false });
             this.parent.trigger(dataBound, {});

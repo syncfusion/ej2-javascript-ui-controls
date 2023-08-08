@@ -534,8 +534,13 @@ export class ScrollBar {
             this.previousStart = start as number;
             this.previousEnd = end as number;
         } else if (isCurrentStartEnd) {
-            this.previousStart = Math.round(start as number);
-            this.previousEnd = Math.ceil(end as number);
+            let currentStart: number = Math.round(start as number);
+            let currentEnd: number = Math.ceil(end as number);
+            if (this.axis.valueType === 'Category') {
+                currentEnd -= (!this.axis.scrollbarSettings.enableZoom && currentEnd - currentStart > this.previousEnd - this.previousStart) ? (currentEnd - currentStart) - (this.previousEnd - this.previousStart) : 0;
+            }
+            this.previousStart = start = currentStart;
+            this.previousEnd = end = currentEnd;
         }
         switch (valueType) {
         case 'Double':
@@ -732,7 +737,7 @@ export class ScrollBar {
         this.zoomFactor = this.isLazyLoad ? this.zoomFactor : axis.zoomFactor;
         this.zoomPosition = this.isLazyLoad ? this.zoomPosition : axis.zoomPosition;
         let currentWidth: number = this.zoomFactor * (this.isVertical ? axis.rect.height : axis.rect.width);
-        currentWidth = currentWidth > minThumbWidth ? currentWidth : minThumbWidth;
+        currentWidth = (this.isLazyLoad && !this.axis.scrollbarSettings.enableZoom) || currentWidth > minThumbWidth ? currentWidth : minThumbWidth;
         this.scrollX = axis.rect.x;
         this.scrollY = axis.rect.y;
         this.width = this.isVertical ? axis.rect.height : axis.rect.width;

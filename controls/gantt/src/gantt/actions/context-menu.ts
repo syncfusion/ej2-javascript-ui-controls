@@ -164,7 +164,13 @@ export class ContextMenu {
                 }
                 break;
             case 'DeleteTask':
-                this.parent.editModule.deleteRecord(this.rowData);
+                if ((this.parent.selectionSettings.mode !== 'Cell' && this.parent.selectionModule.selectedRowIndexes.length > 1)
+                        || (this.parent.selectionSettings.mode === 'Cell' && this.parent.selectionModule.getSelectedRowCellIndexes().length)) {
+                            this.parent.editModule.startDeleteAction();
+                }
+                else{
+                    this.parent.editModule.deleteRecord(this.rowData);
+                }
                 break;
             case 'ToTask':
                 if (!isNullOrUndefined(this.rowData)) {

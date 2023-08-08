@@ -302,6 +302,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isFieldClose;
     private isDestroy;
     private isGetNestedData;
+    private isCustomOprCols;
     /**
      * Triggers when the component is created.
      *

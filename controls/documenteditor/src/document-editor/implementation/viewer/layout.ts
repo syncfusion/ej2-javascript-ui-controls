@@ -5965,7 +5965,7 @@ export class Layout {
         }
         return false;
     }
-    private addWidgetToTable(viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], row: TableRowWidget, footnotes: FootnoteElementBox[], endRowWidget?: TableRowWidget, isInitialLayout?: boolean, startRowIndex?: number): void {
+    private addWidgetToTable(viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], row: TableRowWidget, footnotes: FootnoteElementBox[], endRowWidget?: TableRowWidget, isInitialLayout?: boolean, startRowIndex?: number, isRepeatRowHeader?: boolean): void {
         //Adds table row widget to owner table widget.
         let tableWidget: TableWidget = tableCollection[0] as TableWidget;
         let index: number = tableWidget.childWidgets.length;
@@ -6006,6 +6006,9 @@ export class Layout {
         }
         if (tableWidget.childWidgets.indexOf(row) === -1) {
             tableWidget.childWidgets.splice(index, 0, row);
+            if (isRepeatRowHeader) {
+                tableWidget.bodyWidget.page.repeatHeaderRowTableWidget = true;
+            }
         }
         row.containerWidget = tableWidget;
         if (!row.ownerTable.isInsideTable) {
@@ -6335,6 +6338,7 @@ export class Layout {
         let tableRowWidget: TableRowWidget = row;
         let moveRowToNextTable: boolean = false;
         let footnoteElements = this.layoutedFootnoteElement;
+        let isRepeatRowHeader: boolean = false;
         if(tableRowWidget.bodyWidget.page.footnoteWidget !== undefined) {
             this.footHeight = tableRowWidget.bodyWidget.page.footnoteWidget.height;
             if(this.footnoteHeight === 0) {
@@ -6359,7 +6363,7 @@ export class Layout {
                     || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
                     this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1);
                 }
-                this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements, undefined, isInitialLayout, startRowIndex);
+                this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements, undefined, isInitialLayout, startRowIndex, isRepeatRowHeader);
                 if (this.documentHelper.splittedCellWidgets.length > 0 && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
                     count--;
                     isLastRow = true;
@@ -6591,6 +6595,7 @@ export class Layout {
                     if (insertHeaderRow && rowToMove.ownerTable.header && tableRowWidget.height < viewer.clientArea.bottom && !keepNext) {
                         if (viewer instanceof PageLayoutViewer) {
                             tableRowWidget.bodyWidget.page.repeatHeaderRowTableWidget = true;
+                            isRepeatRowHeader = true;
                         }
                         //Updates table widgets location.
                         viewer.updateClientAreaForBlock(rowToMove.ownerTable, true, tableWidgets);

@@ -503,6 +503,12 @@ export class TaskbarEdit extends DateProcessor {
      */
     private updateMouseDownProperties(event: PointerEvent): void {
         const e: MousePoint = this.getCoordinate(event);
+        const parentWithZoomStyle = this.parent.element.closest('[style*="zoom"]') as HTMLElement;
+        if (parentWithZoomStyle) {
+            const zoom1: number = parseFloat((getComputedStyle(parentWithZoomStyle) as any).zoom);
+            e.pageX = e.pageX / zoom1;
+            e.pageY = e.pageY / zoom1;
+        }
         if (e.pageX || e.pageY) {
             const containerPosition: { top: number, left: number } =
                 this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
@@ -712,6 +718,12 @@ export class TaskbarEdit extends DateProcessor {
         const containerPosition: { top: number, left: number } =
             this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
         const e: MousePoint = this.getCoordinate(event);
+        const parentWithZoomStyle = this.parent.element.closest('[style*="zoom"]') as HTMLElement;
+        if (parentWithZoomStyle) {
+            const zoom1: number = parseFloat((getComputedStyle(parentWithZoomStyle) as any).zoom);
+            e.pageX = e.pageX / zoom1;
+            e.pageY = e.pageY / zoom1;
+        }
         if (e.pageX || e.pageY) {
             if (this.parent.enableRtl) {
                 this.mouseMoveX = Math.abs(e.pageX - (containerPosition.left +
@@ -2138,6 +2150,12 @@ export class TaskbarEdit extends DateProcessor {
     }
     // eslint-disable-next-line
     private triggerDependencyEvent(e: PointerEvent, mouseUp?: boolean): void {
+        const parentWithZoomStyle = this.parent.element.closest('[style*="zoom"]');
+        let zoomedPageY: number;
+        if (parentWithZoomStyle) {
+            const zoom1: number = parseFloat((getComputedStyle(parentWithZoomStyle) as any).zoom);
+            zoomedPageY = e.pageY / zoom1;
+        }
         const fromItem: ITaskData = this.taskBarEditRecord.ganttProperties;
         const toItem: ITaskData = this.connectorSecondRecord ? this.connectorSecondRecord.ganttProperties : null;
         let predecessor: string;
@@ -2204,7 +2222,7 @@ export class TaskbarEdit extends DateProcessor {
                 (table[1] as HTMLElement).innerText = toItem.taskName;
                 (table[2] as HTMLElement).innerText = this.parent.localeObj.getConstant(currentTarget);
                 const tooltipElement: HTMLElement = this.parent.connectorLineModule.tooltipTable.parentElement.parentElement;
-                if (tooltipElement.offsetTop + tooltipElement.offsetHeight > e.pageY) {
+                if (tooltipElement.offsetTop + tooltipElement.offsetHeight > zoomedPageY) {
                     tooltipElement.style.top = (e.pageY - tooltipElement.offsetHeight - 20) + 'px';
                 }
             }

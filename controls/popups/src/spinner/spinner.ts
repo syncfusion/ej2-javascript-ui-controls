@@ -1,4 +1,4 @@
-import { isNullOrUndefined, classList, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, classList, createElement, Browser } from '@syncfusion/ej2-base';
 import { CreateElementArgs } from '@syncfusion/ej2-buttons';
 
 const globalTimeOut: { [key: string]: GlobalTimeOut } = {};
@@ -837,13 +837,25 @@ export function showSpinner(container: HTMLElement): void {
 function showHideSpinner(container: HTMLElement, isHide: boolean): void {
     let spinnerWrap: HTMLElement;
     if (container) {
-        if(container.classList.contains(CLS_SPINWRAP)){
+        if (container.classList.contains(CLS_SPINWRAP)) {
             spinnerWrap = container;
         }
         else {
-            let spinWrapCollection : NodeListOf<HTMLElement>;
-            spinWrapCollection = container.querySelectorAll('.' + CLS_SPINWRAP) as NodeListOf<HTMLElement>;
-            spinnerWrap = Array.from(spinWrapCollection).find((wrap) => wrap.parentElement === container) || null;
+            const spinWrapCollection: NodeListOf<HTMLElement> = container.querySelectorAll('.' + CLS_SPINWRAP) as NodeListOf<HTMLElement>;
+            if (Browser.isIE) {
+                for (let i: number = 0; i < spinWrapCollection.length; i++) {
+                    // eslint-disable-next-line
+                    if (spinWrapCollection[i].parentElement && spinWrapCollection[i].parentElement === container) {
+                        // eslint-disable-next-line
+                        spinnerWrap = spinWrapCollection[i];
+                        break;
+                    }
+                }
+            }
+            else {
+                spinnerWrap = Array.from(spinWrapCollection).find((wrap) => wrap.parentElement === container) || null;
+            }
+
         }
     }
     if (container && spinnerWrap) {

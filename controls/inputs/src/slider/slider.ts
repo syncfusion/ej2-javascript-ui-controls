@@ -2583,7 +2583,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.isMaterialTooltip) {
            this.initialTooltip = false;
         }
-        this.changeEvent('changed', evt);
+        if (evt.target != handle) {
+            this.changeEvent('changed', evt);
+        }
         if (this.type !== 'Default') {
             this.setRangeBar();
         }

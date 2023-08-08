@@ -2023,7 +2023,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 this.tbarAlgEle[(this.items[parseInt(eleIdx.toString(), 10)].align + 's').toLowerCase() as ItmAlign].splice(parseInt(indexAgn.toString(), 10), 1);
             }
             if ((this as any).isReact) {
-                this.clearTemplate();
+                this.clearToolbarTemplate(innerItems[parseInt(index.toString(), 10)]);
             }
             const btnItem: EJ2Instance = innerItems[parseInt(index.toString(), 10)].querySelector('.e-control.e-btn');
             if (!isNOU(btnItem) && !isNOU(btnItem.ej2_instances[0]) && !((btnItem.ej2_instances[0] as Button).isDestroyed)) {
@@ -2326,6 +2326,30 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    private clearToolbarTemplate(templateEle: HTMLElement): void {
+        if ((this as Record<string, any>).registeredTemplate && (this as Record<string, any>).registeredTemplate[`${'template'}`]) {
+            const registeredTemplates: Record<string, any> = (this as Record<string, any>).registeredTemplate;
+            for (let index: number = 0; index < registeredTemplates[`${'template'}`].length; index++) {
+                const registeredItem: any = registeredTemplates[`${'template'}`][parseInt(index.toString(), 10)].rootNodes[0] as any;
+                const closestItem: Element = closest(registeredItem, '.' + CLS_ITEM);
+                if (!isNOU(closestItem) && closestItem === templateEle) {
+                    this.clearTemplate(['template'], [registeredTemplates[`${'template'}`][parseInt(index.toString(), 10)]]);
+                    break;
+                }
+            }
+        } else if ((this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
+            const portals: Record<string, any>[] = (this as Record<string, any>).portals;
+            for (let index: number = 0; index < portals.length; index++) {
+                const portalItem: Record<string, any> = portals[parseInt(index.toString(), 10)];
+                const closestItem: Element = closest(portalItem.containerInfo, '.' + CLS_ITEM);
+                if (!isNOU(closestItem) && closestItem === templateEle) {
+                    this.clearTemplate(['template'], index);
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * Gets called when the model property changes.The data that describes the old and new values of the property that changed.
      *
@@ -2347,31 +2371,29 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         const index: number = parseInt(Object.keys(newProp.items)[parseInt(i.toString(), 10)], 10);
                         const property: Str = Object.keys(newProp.items[parseInt(index.toString(), 10)])[0];
                         const newProperty: Str = Object(newProp.items[parseInt(index.toString(), 10)])[`${property}`];
-                        if (typeof newProperty !== 'function') {
-                            if (this.tbarAlign || property === 'align') {
-                                this.refresh();
-                                this.trigger('created');
-                                break;
-                            }
-                            const popupPriCheck: boolean = property === 'showAlwaysInPopup' && !newProperty;
-                            const booleanCheck: boolean = property === 'overflow' && this.popupPriCount !== 0;
-                            if ((popupPriCheck) || (this.items[parseInt(index.toString(), 10)].showAlwaysInPopup) && booleanCheck) {
-                                --this.popupPriCount;
-                            }
-                            if (isNOU(this.scrollModule)) {
-                                this.destroyMode();
-                            }
-                            const itemCol: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
-                            if ((this as any).isReact && this.items[parseInt(index.toString(), 10)].template) {
-                                this.clearTemplate();
-                            }
-                            detach(itemCol[parseInt(index.toString(), 10)]);
-                            this.tbarEle.splice(index, 1);
-                            this.addItems([this.items[parseInt(index.toString(), 10)]], index);
-                            this.items.splice(index, 1);
-                            if (this.items[parseInt(index.toString(), 10)].template) {
-                                this.tbarEle.splice(this.items.length, 1);
-                            }
+                        if (this.tbarAlign || property === 'align') {
+                            this.refresh();
+                            this.trigger('created');
+                            break;
+                        }
+                        const popupPriCheck: boolean = property === 'showAlwaysInPopup' && !newProperty;
+                        const booleanCheck: boolean = property === 'overflow' && this.popupPriCount !== 0;
+                        if ((popupPriCheck) || (this.items[parseInt(index.toString(), 10)].showAlwaysInPopup) && booleanCheck) {
+                            --this.popupPriCount;
+                        }
+                        if (isNOU(this.scrollModule)) {
+                            this.destroyMode();
+                        }
+                        const itemCol: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
+                        if ((this as any).isReact && this.items[parseInt(index.toString(), 10)].template) {
+                            this.clearToolbarTemplate(itemCol[parseInt(index.toString(), 10)]);
+                        }
+                        detach(itemCol[parseInt(index.toString(), 10)]);
+                        this.tbarEle.splice(index, 1);
+                        this.addItems([this.items[parseInt(index.toString(), 10)]], index);
+                        this.items.splice(index, 1);
+                        if (this.items[parseInt(index.toString(), 10)].template) {
+                            this.tbarEle.splice(this.items.length, 1);
                         }
                     }
                 } else {

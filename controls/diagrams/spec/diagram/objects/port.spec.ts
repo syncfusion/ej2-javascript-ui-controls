@@ -692,3 +692,89 @@ describe('Port Draw', () => {
         done();
     });
 });
+
+describe('Port Hover for group node', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramPort' });
+        document.body.appendChild(ele);
+        let port = [
+            {
+              id: 'port1',
+              offset: { x: 0, y: 0.5 },
+              visibility: PortVisibility.Visible,
+              constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+            {
+              id: 'port2',
+              offset: { x: 1, y: 0.5 },
+              visibility: PortVisibility.Visible,
+              constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+            {
+              id: 'port3',
+              offset: { x: 0.5, y: 0 },
+              visibility: PortVisibility.Visible,
+              constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+            {
+              id: 'port4',
+              offset: { x: 0.5, y: 1 },
+              visibility: PortVisibility.Visible,
+              constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+          ];
+        let nodes: NodeModel[] = [
+            // Group
+            {
+              id: 'child1',
+              width: 70,
+              height: 70,
+              offsetX: 400,
+              offsetY: 100,
+              shape: {
+                type: 'Image',
+                source:
+                  'data:image/jpeg;base64,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',
+              },
+            },
+            {
+              id: 'child2',
+              width: 70,
+              height: 70,
+              offsetX: 550,
+              offsetY: 100,
+              shape: {
+                type: 'Path',
+                data: 'M100,20 L132.7,71.6 L200,78.4 L152.3,119.6 L166.5,186.2 L100,155 L33.5,186.2 L47.7,119.6 L0,78.4 L67.3,71.6 Z',
+              },
+            },
+            {
+              id: 'group1',
+              children: ['child1', 'child2'],
+              padding: { left: 10, right: 10, top: 10, bottom: 10 },
+              ports: port,
+              style: { strokeColor: 'black' },
+            },
+          ];
+        diagram = new Diagram({ width: 700, height: 600, nodes: nodes,});
+        diagram.appendTo('#diagramPort');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking port hover for group node', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 330, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 340, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 360, 100);
+        expect(diagram.nodes[0].ports[0].outEdges.length === 0).toBe(true);
+        done();
+    });
+});

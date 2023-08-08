@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I469225` - Resolved the Custom operator not working properly in QueryBuilder While dynamically change locale property.
+
 ## 22.1.38 (2023-07-11)
 
 ### QueryBuilder

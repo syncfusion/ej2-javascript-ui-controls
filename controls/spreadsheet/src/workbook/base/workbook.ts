@@ -22,7 +22,7 @@ import { WorkbookNumberFormat, getFormatFromType } from '../integrations/number-
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet, WorkbookAutoFill } from '../actions/index';
 import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
-import { setLinkModel, setImage, setChart, activeCellChanged, setAutoFill, BeforeCellUpdateArgs, updateCell } from '../common/index';
+import { setLinkModel, setImage, setChart, activeCellChanged, setAutoFill, BeforeCellUpdateArgs, updateCell, isNumber } from '../common/index';
 import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event';
 import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
@@ -1104,7 +1104,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         }
         let sheetIndex: number = getSheetIndexFromId(this, sheetId);
         const sheet: SheetModel = getSheet(this, sheetIndex);
-        const cell: CellModel = getCell(rowIndex - 1, colIndex - 1, sheet);
+        let cell: CellModel = getCell(rowIndex - 1, colIndex - 1, sheet);
         if (formulaCellReference && formulaCellReference.includes('!') && !cell && sheet.ranges && sheet.ranges.length) {
             let isNotLoaded: boolean;
             if (this.formulaRefCell && this.formulaRefCell === formulaCellReference) { return cell && cell.value; }
@@ -1126,6 +1126,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             this.notify(
                 'calculateFormula', { cell: cell, rowIdx: rowIndex - 1, colIdx: colIndex - 1, sheetIndex: sheetIndex,
                     formulaRefresh: true });
+        }
+        if (cell && !isNumber(cell.value) && !this.isEdit) {
+            const eventArgs: NumberFormatArgs = { formattedText: cell.value, value: cell.value, format: cell.format, cell: cell,
+                skipFormatCheck: false };
+            this.notify(events.getFormattedCellObject, eventArgs);
+            cell = eventArgs.cell;
         }
         return cell && cell.value;
     }

@@ -5,7 +5,7 @@ import { getRangeIndexes, getSwapRange, isHiddenRow, isColumnSelected, isRowSele
 import { getRowsHeight, getColumnsWidth, isLocked, getColumn, ColumnModel } from '../../workbook/index';
 import { getBottomOffset } from '../common/index';
 import { Dialog } from '../services/index';
-import { closest, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, closest, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Represents keyboard navigation support for Spreadsheet.
@@ -461,9 +461,13 @@ export class KeyboardNavigation {
                 if (range === sheet.selectedRange) { return; }
                 this.parent.setSheetPropertyOnMute(sheet, 'activeCell', range);
                 this.parent.notify(cellNavigate, { range: actIdxes, preventAnimation: preventAnimation });
-                const cell: HTMLElement = this.parent.getCell(actIdxes[0], actIdxes[1]);
-                if (cell) {
-                    focus(cell);
+                let ele: HTMLElement;
+                if (Browser.isDevice && Browser.info.name === 'safari' && (Browser.isIos || Browser.isIos7)) {
+                    ele = this.parent.element.querySelector('.e-ss-focus-edit');
+                }
+                ele = ele || this.parent.getCell(actIdxes[0], actIdxes[1]);
+                if (ele) {
+                    focus(ele);
                 }
             };
             if (this.parent.scrollModule && this.parent.scrollModule.isKeyScroll) {

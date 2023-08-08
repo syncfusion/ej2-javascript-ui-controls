@@ -254,7 +254,7 @@ export class ScrollElements {
         );
         this.gripCircle = renderer.createGroup({
             id: this.chartId + 'scrollBar_gripCircle_' + scroll.axis.name,
-            transform: 'translate(' + (!scrollBar.enableZoom ? ((this.thumbRectX + this.thumbRectWidth / 2) - scrollBar.height / 2) : (this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 1 : -1) * padding)) +
+            transform: 'translate(' + (!scrollBar.enableZoom ? ((this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 2 : 0) * padding) - scrollBar.height / 2) : (this.thumbRectX + this.thumbRectWidth / 2) + ((scroll.isVertical ? 1 : -1) * padding)) +
                 ',' + (scroll.isVertical ? (scroll.height / 2 + padding / 2) - 0.5 : (scroll.height / 2 - padding / 2) -0.5) + ') rotate(' + (scroll.isVertical ? '180' : '0') + ')'
         });
         for (let i: number = 1; i <= 6; i++) {

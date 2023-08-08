@@ -1144,7 +1144,7 @@ export class Renderer {
                     this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(yTop, 2),this.getScaledValue(lineWidget.height - lineWidget.margin.bottom),1,color);
                 }
             }
-            if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks) {
+            if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks && this.documentHelper.getBookmarks().indexOf(elementBox.name) !== -1) {
                 var height = elementBox.line.height - elementBox.line.margin.bottom;
                 let xLeft = left;
                 let yTop = top;

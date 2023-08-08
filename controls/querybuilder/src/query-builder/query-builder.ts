@@ -343,6 +343,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isFieldClose: boolean = false;
     private isDestroy: boolean = false;
     private isGetNestedData: boolean = false;
+    private isCustomOprCols: string[] = [];
     /**
      * Triggers when the component is created.
      *
@@ -626,7 +627,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.columnSort();
                 const columns: ColumnsModel[] = this.columns;
                 for (let i: number = 0, len: number = columns.length; i < len; i++) {
-                    this.updateCustomOperator(columns[i as number]);
+                    this.updateCustomOperator(columns[i as number], "initial");
                     if (!columns[i as number].type) {
                         if (columnKeys.indexOf(columns[i as number].field) > -1) {
                             value = this.dataColl[0][columns[i as number].field];
@@ -653,7 +654,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (categories.indexOf(columns[i as number].category) < 0) {
                         categories.push(columns[i as number].category);
                     }
-                    if (!columns[i as number].operators || this.isLocale) {
+                    if (!columns[i as number].operators || (this.isLocale && this.isCustomOprCols.indexOf(columns[i as number].field) !== 0)) {
                         columns[i as number].operators = this.customOperators[columns[i as number].type + 'Operator'];
                     }
                 }
@@ -741,8 +742,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
 
-    private updateCustomOperator(column: ColumnsModel): void {
+    private updateCustomOperator(column: ColumnsModel, from?: string): void {
         if (column.operators) {
+            if (!this.isLocale && from === "initial" && !isNullOrUndefined(this.isCustomOprCols)) {
+                this.isCustomOprCols.push(column.field);
+            }
             for (let j: number = 0; j < column.operators.length; j++) {
                 const sqlIdx: number = Object.keys(column.operators[j as number]).indexOf('sqlOperator');
                 if (sqlIdx > -1) {

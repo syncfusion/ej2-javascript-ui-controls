@@ -318,6 +318,16 @@ export interface TimePickerModel extends ComponentModel{
     maskPlaceholder?: TimeMaskPlaceholderModel;
 
     /**
+     * By default, the time value will be processed based on system time zone.
+     * If you want to process the initial time value using server time zone
+     * then specify the time zone value to `serverTimezoneOffset` property.
+     *
+     * @default null
+     * @deprecated
+     */
+    serverTimezoneOffset?: number;
+
+    /**
      * Triggers when the value is changed.
      *
      * @event change

@@ -48,6 +48,7 @@ export const chartRowCell: string = 'e-chart-row-cell';
 export const chartRow: string = 'e-chart-row';
 export const rowExpand: string = 'e-row-expand';
 export const rowCollapse: string = 'e-row-collapse';
+export const collapseParent: string   = 'e-collapse-parent';
 export const taskBarLeftResizer: string = 'e-taskbar-left-resizer';
 export const taskBarRightResizer: string = 'e-taskbar-right-resizer';
 export const childProgressResizer: string = 'e-child-progress-resizer';

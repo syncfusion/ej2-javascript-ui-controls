@@ -2246,6 +2246,13 @@ export class Gantt extends Component<HTMLElement>
             if (this.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
                 this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true,criticalModule.predecessorCollectionTaskIds);
             }
+            this.calculateDimensions();
+            const pane1: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[0] as HTMLElement;
+            const pane2: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[1] as HTMLElement;
+            this.splitterModule.splitterPreviousPositionGrid = pane1.scrollWidth + 1 + 'px';
+            this.splitterModule.splitterPreviousPositionChart = pane2.scrollWidth + 1 + 'px';
+            this.splitterModule.splitterObject.paneSettings[0].size = this.splitterModule['getSpliterPositionInPercentage'](this.splitterModule.splitterPreviousPositionGrid);
+            this.splitterModule.splitterObject.paneSettings[1].size = this.splitterModule.splitterPreviousPositionChart;
         }
     }
     public keyActionHandler(e: KeyboardEventArgs): void {

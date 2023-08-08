@@ -490,7 +490,7 @@ export class Trendlines {
                 pts.push(
                     this.getDataPoint(xValue, yValue, series, pts.length));
             } else {
-                x1 += (points.length + trendline.forwardForecast) / polynomialSlopes.length;
+                x1 += (points.length + (series.xAxis.valueType === 'DateTime' ? index : trendline.forwardForecast)) / polynomialSlopes.length;
                 xValue = xValues[parseInt(x1.toString(), 10) - 1];
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);
                 pts.push(

@@ -4,7 +4,6 @@
 import { TextStyleModel } from './tooltip-model';
 import { Tooltip } from './tooltip';
 import { TooltipTheme } from './enum';
-import { isBlazor} from '@syncfusion/ej2-base';
 /**
  * Specifies the Theme style for chart and accumulation.
  */
@@ -71,7 +70,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A',
             tooltipLightLabel: theme === 'MaterialDark' ? 'rgba(18, 18, 18, 1)' : theme === 'FabricDark' ? '#DADADA' : '#1A1A1A',
             tooltipHeaderLine: '#9A9A9A',
-            textStyle: theme === 'MaterialDark' ? { fontFamily: isBlazor() ? 'Segoe UI' : 'Roboto', color: 'rgba(18, 18, 18, 1)' } : theme === 'FabricDark' ? { fontFamily: 'Segoe UI', color: '#DADADA' } : { fontFamily: 'Helvetica', color: '#1A1A1A' }
+            textStyle: theme === 'MaterialDark' ? { fontFamily: 'Roboto', color: 'rgba(18, 18, 18, 1)' } : theme === 'FabricDark' ? { fontFamily: 'Segoe UI', color: '#DADADA' } : { fontFamily: 'Helvetica', color: '#1A1A1A' }
         };
         break;
     case 'Bootstrap4':
@@ -161,7 +160,7 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipBoldLabel: theme === 'Material' ? 'rgba(249, 250, 251, 1)' : theme === 'Fabric' ? '#333333' : '#F9FAFB',
             tooltipLightLabel: theme === 'Material' ? 'rgba(249, 250, 251, 1)' : theme === 'Fabric' ? '#333333' : '#F9FAFB',
             tooltipHeaderLine: theme === 'Fabric' ? '#D2D0CE' : '#ffffff',
-            textStyle: theme === 'Material' ? { fontFamily: isBlazor() ? 'Segoe UI' : 'Roboto', color: 'rgba(249, 250, 251, 1)' } : theme === 'Fabric' ? { fontFamily: 'Segoe UI', color: '#333333' } : { fontFamily: 'Helvetica', color: '#F9FAFB' }
+            textStyle: theme === 'Material' ? { fontFamily: 'Roboto', color: 'rgba(249, 250, 251, 1)' } : theme === 'Fabric' ? { fontFamily: 'Segoe UI', color: '#333333' } : { fontFamily: 'Helvetica', color: '#F9FAFB' }
         };
         break;
     }

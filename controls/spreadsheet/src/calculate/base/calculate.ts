@@ -1739,7 +1739,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     private getValArithmetic(stack: string[], operator: string, isIfError?: boolean): void {
         let num1: string = stack.pop();
-        num1 = num1 === this.emptyString ? '0' : num1;
+        num1 = num1 === this.emptyString ? '0' : (this.getErrorStrings().indexOf(num1.toString()) < 0 ? this.parseFloat(num1 + '').toString() : num1);
         let num: number = Number(num1);
         if (isNaN(num) && !isIfError) {
             if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
@@ -1749,7 +1749,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         let num2: string = stack.pop();
-        num2 = num2 === this.emptyString ? '0' : num2;
+        num2 = num2 === this.emptyString ? '0' : (this.getErrorStrings().indexOf(num2.toString()) < 0 ? this.parseFloat(num2 + '').toString() : num2);
         num = Number(num2);
         if (isNaN(num) && !isIfError) {
             if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {

@@ -38,6 +38,7 @@ export class Edit {
     private uniqueCell: boolean;
     private uniqueActCell: string = '';
     private isSpill: boolean = false;
+    private tapedTwice: boolean;
     private keyCodes: { [key: string]: number } = {
         BACKSPACE: 8,
         SPACE: 32,
@@ -88,7 +89,11 @@ export class Edit {
     }
 
     private addEventListener(): void {
-        EventHandler.add(this.parent.element, 'dblclick', this.dblClickHandler, this);
+        if (Browser.isDevice && Browser.info.name === 'safari' && (Browser.isIos || Browser.isIos7)) {
+            EventHandler.add(this.parent.element, 'touchend', this.tapHandler, this);
+        } else {
+            EventHandler.add(this.parent.element, 'dblclick', this.dblClickHandler, this);
+        }
         this.parent.on(mouseDown, this.mouseDownHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
@@ -104,7 +109,11 @@ export class Edit {
     }
 
     private removeEventListener(): void {
-        EventHandler.remove(this.parent.element, 'dblclick', this.dblClickHandler);
+        if (Browser.isDevice && Browser.info.name === 'safari' && (Browser.isIos || Browser.isIos7)) {
+            EventHandler.remove(this.parent.element, 'touchend', this.tapHandler);
+        } else {
+            EventHandler.remove(this.parent.element, 'dblclick', this.dblClickHandler);
+        }
         if (!this.parent.isDestroyed) {
             this.parent.off(mouseDown, this.mouseDownHandler);
             this.parent.off(keyUp, this.keyUpHandler);
@@ -136,6 +145,18 @@ export class Edit {
         switch (action) {
         case 'renderEditor':
             this.renderEditor();
+            if (args.initLoad && Browser.isDevice && Browser.info.name === 'safari' && (Browser.isIos || Browser.isIos7)) {
+                const focusEditEle: HTMLElement = this.parent.createElement(
+                    'div', { className: 'e-ss-focus-edit', attrs: { 'contentEditable': 'true', 'inputmode': 'none', 'tabindex': '-1' } });
+                const sheetPanel: HTMLElement = this.parent.element.querySelector('.e-sheet-panel');
+                if (sheetPanel) {
+                    sheetPanel.style.position = 'relative';
+                    sheetPanel.appendChild(focusEditEle);
+                }
+                this.parent.element.onfocus = () => {
+                    focus(focusEditEle);
+                };
+            }
             break;
         case 'refreshEditor':
             this.refreshEditor(
@@ -318,7 +339,7 @@ export class Edit {
                             }
                         } else {
                             this.startEdit(null, null, true, true);
-                            this.getEditElement(sheet).focus();
+                            focus(this.getEditElement(sheet));
                         }
                     }
                     if (keyCode === this.keyCodes.DELETE || isMacDelete) {
@@ -667,7 +688,27 @@ export class Edit {
         }
     }
 
-    private dblClickHandler(e: MouseEvent & TouchEvent): void {
+    private tapHandler(e: TouchEvent): void {
+        if (!this.tapedTwice) {
+            this.tapedTwice = true;
+            /* eslint-disable */
+            setTimeout((): void => {
+                this.tapedTwice = false;
+                if (!this.parent.isEdit && (e.target as Element).classList.contains('e-cell')) {
+                    const focusEditEle: HTMLElement = this.parent.element.querySelector('.e-ss-focus-edit') as HTMLElement;
+                    if (focusEditEle) {
+                        focus(focusEditEle);
+                    }
+                }
+            }, 300);
+            /* eslint-enable */
+            return;
+        }
+        e.preventDefault();
+        this.dblClickHandler(e);
+    }
+
+    private dblClickHandler(e: MouseEvent | TouchEvent): void {
         const trgtElem: HTMLElement = <HTMLElement>e.target;
         const sheet: SheetModel = this.parent.getActiveSheet();
         const actCell: number[] = getCellIndexes(sheet.activeCell);
@@ -693,6 +734,7 @@ export class Edit {
                 } else {
                     this.isNewValueEdit = false;
                     this.startEdit();
+                    focus(this.getEditElement(sheet));
                 }
             }
         } else {

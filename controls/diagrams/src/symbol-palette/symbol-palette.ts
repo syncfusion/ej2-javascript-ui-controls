@@ -1270,14 +1270,20 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             canvas.appendChild(gElement);
             previewContainer.appendChild(canvas);
             this.svgRenderer.renderElement(content, gElement, undefined, undefined, canvas as SVGSVGElement);
+            //EJ2-838575 - for refreshing the symbols after dragged
+            this.prepareSymbol(symbol);
         } else if (symbol.shape.type === 'HTML') {
             div = this.getHtmlSymbol(symbol, canvas, previewContainer, symbolPreviewHeight, symbolPreviewWidth, true);
+            //EJ2-838575 - for refreshing the symbols after dragged
+            this.prepareSymbol(symbol);
         } else {
             if ((symbol as NodeModel).children &&
                 (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable)) {
                 div = this.getGroupParent(
                     symbol, canvas, previewContainer, symbol.wrapper.actualSize.height,
                     symbol.wrapper.actualSize.width, true);
+                    //EJ2-838575 - for refreshing the symbols after dragged
+                    this.prepareSymbol(symbol);
             } else {
                 canvas = CanvasRenderer.createCanvas(
                     symbol.id + '_preview',
@@ -1295,6 +1301,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 if (symbol instanceof Connector) { index = 1.9; }
                 canvas.getContext('2d').setTransform(index, 0, 0, index, 0, 0);
                 this.diagramRenderer.renderElement(content, canvas, undefined);
+                //EJ2-838575 - for refreshing the symbols after dragged
+                this.prepareSymbol(symbol);
             }
         }
         applyStyleAgainstCsp(

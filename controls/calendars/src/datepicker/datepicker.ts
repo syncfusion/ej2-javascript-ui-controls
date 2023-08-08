@@ -1349,7 +1349,7 @@ export class DatePicker extends Calendar implements IInput {
         this.popupObj = new Popup(this.popupWrapper as HTMLElement, {
             content: this.calendarElement,
             relateTo: Browser.isDevice ? document.body : this.inputWrapper.container,
-            position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
+            position: Browser.isDevice ?  { X: 'center', Y: 'center' } : (this.enableRtl ? { X: 'right', Y: 'bottom' } : { X: 'left', Y: 'bottom' }),
             offsetY: OFFSETVALUE,
             targetType: 'container',
             enableRtl: this.enableRtl,
@@ -1665,7 +1665,6 @@ export class DatePicker extends Calendar implements IInput {
                     addClass(this.inputWrapper.buttons, ACTIVE);
                     this.preventArgs.appendTo.appendChild(this.popupWrapper);
                     this.popupObj.refreshPosition(this.inputElement);
-                    const popupLeft: number = parseFloat(this.popupWrapper.style.left) - (this.popupWrapper.offsetWidth - this.inputWrapper.container.offsetWidth);
                     const openAnimation: object = {
                         name: 'FadeIn',
                         duration: Browser.isDevice ? 0 : OPENDURATION
@@ -1678,9 +1677,6 @@ export class DatePicker extends Calendar implements IInput {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     super.setOverlayIndex(this.mobilePopupWrapper, this.popupObj.element, this.modal, Browser.isDevice as any);
                     this.setAriaAttributes();
-                    if(this.enableRtl && popupLeft > 0){
-                        this.popupWrapper.style.left =  popupLeft + "px";
-                    }
                 } else {
                     this.popupObj.destroy();
                     this.popupWrapper = this.popupObj = null;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I483794` - Fixed an issue where the bold formatting was not applied correctly in the tooltip header.
+
 ## 22.2.5 (2023-07-27)
 
 ### Svg Base

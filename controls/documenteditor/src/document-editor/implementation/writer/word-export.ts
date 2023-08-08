@@ -4715,6 +4715,10 @@ export class WordExport {
     // serialize the row margin
     private serializeRowMargins(writer: XmlWriter, format: any): void {
         writer.writeStartElement(undefined, 'tblPrEx', this.wNamespace);
+        // serialize the row borders
+        writer.writeStartElement(undefined, 'tblBorders',this.wNamespace);
+        this.serializeBorders(writer, format[bordersProperty[this.keywordIndex]], 8, false);
+        writer.writeEndElement();
         this.serializeMargins(writer, format, 'tblCellMar');
         writer.writeEndElement();
     }

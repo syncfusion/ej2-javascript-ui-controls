@@ -61,13 +61,13 @@ export class EditTooltip {
      * @returns {void} .
      */
     private updateTooltipPosition(args: TooltipEventArgs): void {
-        const containerPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.chartPane);
-        const leftEnd: number = containerPosition.left + this.parent.chartPane.offsetWidth;
-        let tooltipPositionX: number = args.element.offsetLeft;
-        if (leftEnd < (tooltipPositionX + args.element.offsetWidth)) {
-            tooltipPositionX += leftEnd - (tooltipPositionX + args.element.offsetWidth);
-        }
-        args.element.style.left = tooltipPositionX + 'px';
+        // const containerPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.chartPane);
+        // const leftEnd: number = containerPosition.left + this.parent.chartPane.offsetWidth;
+        // let tooltipPositionX: number = args.element.offsetLeft;
+        // if (leftEnd < (tooltipPositionX + args.element.offsetWidth)) {
+        //     tooltipPositionX += leftEnd - (tooltipPositionX + args.element.offsetWidth);
+        // }
+        // args.element.style.left = tooltipPositionX + 'px';
         args.element.style.visibility = 'visible';
     }
     /**

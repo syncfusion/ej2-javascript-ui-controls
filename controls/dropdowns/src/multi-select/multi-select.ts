@@ -846,9 +846,6 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.isFirstClick) {
                     this.loadTemplate();
                 }
-                if(this.enableRtl){
-                    this.popupWrapper.style.visibility = 'hidden';
-                }
             }
         });
     }
@@ -2705,7 +2702,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.list.style.maxHeight = formatUnit(this.popupHeight);
                 }
                 this.popupObj = new Popup(this.popupWrapper, {
-                    width: this.calcPopupWidth(), targetType: 'relative', position: { X: 'left', Y: 'bottom' },
+                    width: this.calcPopupWidth(), targetType: 'relative', 
+                    position: this.enableRtl ? { X: 'right', Y: 'bottom' } : { X: 'left', Y: 'bottom' },
                     relateTo: this.overAllWrapper, collision: { X: 'flip', Y: 'flip' }, offsetY: 1,
                     enableRtl: this.enableRtl, zIndex: this.zIndex,
                     close: () => {
@@ -2721,11 +2719,6 @@ export class MultiSelect extends DropDownBase implements IInput {
                     },
                     open: () => {
                         this.popupObj.resolveCollision();
-                        if(this.enableRtl){
-                            const popupLeft: number =  parseFloat(this.popupWrapper.style.left) - (this.popupWrapper.offsetWidth - this.overAllWrapper.offsetWidth);
-                            this.popupWrapper.style.left = popupLeft > 0 ? popupLeft + "px" : this.popupWrapper.style.left;
-                            this.popupWrapper.style.visibility = 'hidden';
-                        }
                         if (!this.isFirstClick) {
                             const ulElement: HTMLElement = this.list.querySelector('ul');
                             if (ulElement) {

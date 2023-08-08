@@ -509,6 +509,17 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     public maskPlaceholder: TimeMaskPlaceholderModel;
 
     /**
+     * By default, the time value will be processed based on system time zone.
+     * If you want to process the initial time value using server time zone
+     * then specify the time zone value to `serverTimezoneOffset` property.
+     *
+     * @default null
+     * @deprecated
+     */
+    @Property(null)
+    public serverTimezoneOffset: number;
+
+    /**
      * Triggers when the value is changed.
      *
      * @event change
@@ -632,6 +643,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.validateInterval();
         this.bindEvents();
         this.validateDisable();
+        this.setTimeZone();
         this.setValue(this.getFormattedValue(this.value));
         if (this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType === 'Always' || !this.floatLabelType || !this.placeholder)){
             this.updateInputValue(this.maskedDateValue);
@@ -647,6 +659,20 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.enabled = false;
         }
         this.renderComplete();
+    }
+    protected setTimeZone(): void {
+        if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {
+            const clientTimeZoneDiff: number = new Date().getTimezoneOffset() / 60;
+            const serverTimezoneDiff: number = this.serverTimezoneOffset;
+            let timeZoneDiff: number = serverTimezoneDiff + clientTimeZoneDiff;
+            timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
+            this.value = new Date((this.value).getTime() + (timeZoneDiff * 60 * 60 * 1000));
+        }
+    }
+    protected isDayLightSaving(): boolean {
+        const firstOffset: number = new Date(this.value.getFullYear(), 0 , 1).getTimezoneOffset();
+        const secondOffset: number = new Date(this.value.getFullYear(), 6 , 1).getTimezoneOffset();
+        return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
     }
     private setTimeAllowEdit(): void {
         if (this.allowEdit) {

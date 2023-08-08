@@ -66,10 +66,15 @@ export function fit(
     if (!position) {
         position = calculatePosition(element, 'left', 'top');
     }
+    let zoomingFactor: number = 1;
+    const parentWithZoomStyle: HTMLElement = element.closest('[style*="zoom"]') as HTMLElement;
+    if (parentWithZoomStyle) {
+        zoomingFactor = parseFloat((getComputedStyle(parentWithZoomStyle) as any).zoom);
+    }
     if (axis.X) {
         const containerWidth: number = targetContainer ? getTargetContainerWidth() : getViewPortWidth();
-        const containerLeft: number = ContainerLeft();
-        const containerRight: number = ContainerRight();
+        const containerLeft: number = ContainerLeft() / zoomingFactor;
+        const containerRight: number = ContainerRight() / zoomingFactor;
         const overLeft: number = containerLeft - position.left;
         const overRight: number = position.left + elemData.width - containerRight;
         if (elemData.width > containerWidth) {
@@ -88,8 +93,8 @@ export function fit(
     }
     if (axis.Y) {
         const containerHeight: number = targetContainer ? getTargetContainerHeight() : getViewPortHeight();
-        const containerTop: number = ContainerTop();
-        const containerBottom: number = ContainerBottom();
+        const containerTop: number = ContainerTop() / zoomingFactor;
+        const containerBottom: number = ContainerBottom() / zoomingFactor;
         const overTop: number = containerTop - position.top;
         const overBottom: number = position.top + elemData.height - containerBottom;
         if (elemData.height > containerHeight) {

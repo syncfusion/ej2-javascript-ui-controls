@@ -159,6 +159,10 @@ export class Editor {
      * @private
      */
     public copiedData: string = undefined;
+    /**
+    * @private
+    */
+    public isPasteContentCheck: boolean = false;
 
     private animationTimer: number;
     private pageRefFields: PageRefFields = {};
@@ -4627,7 +4631,11 @@ export class Editor {
         hideSpinner(this.owner.element);
         setTimeout((): void => {
             if (!isNullOrUndefined(this.viewer)) {
+                this.documentHelper.isScrollHandler = true;
+                this.isPasteContentCheck = true;
                 this.viewer.updateScrollBars();
+                this.documentHelper.isScrollHandler = false;
+                this.isPasteContentCheck = false;
             }
         }, 0);
     }
@@ -18421,7 +18429,7 @@ export class Editor {
             let paraStyle: Object = this.documentHelper.styles.findByName(tocStyleName, 'Paragraph');
             if (isNullOrUndefined(paraStyle)) {
 
-                this.documentHelper.owner.parser.parseStyle(JSON.parse(this.getCompleteStyles()), JSON.parse(this.documentHelper.preDefinedStyles.get(tocStyleName)), this.documentHelper.styles);
+                this.documentHelper.owner.parser.parseStyle(JSON.parse(this.getCompleteStyles()), JSON.parse(this.documentHelper.preDefinedStyles.get(tocStyleName)), this.documentHelper.styles, true);
                 paraStyle = this.documentHelper.styles.findByName(tocStyleName, 'Paragraph');
             }
             tocPara.paragraphFormat.applyStyle(paraStyle as WParagraphStyle);

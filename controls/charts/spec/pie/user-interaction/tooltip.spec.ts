@@ -137,7 +137,7 @@ describe('Tooltip checking for the pie series', () => {
             expect(path.localName == 'path').toBe(true);
             expect(path.getAttribute('d') != '' || ' ').toBe(true);
             expect(group.childNodes.length == 4).toBe(true);
-            expect(text1.childNodes.length == 5).toBe(true);
+            expect(text1.childNodes.length == 3).toBe(true);
             expect(text1.textContent.replace('\u200E', '') == 'AnimalsBald Eagle : 18').toBe(true);
             // expect(text1.childNodes[1].textContent == 'Bald Eagle ').toBe(true);
             // expect(text1.childNodes[2].textContent == '').toBe(true);
@@ -190,7 +190,7 @@ describe('Tooltip checking for the pie series', () => {
             expect(path.localName == 'path').toBe(true);
             expect(path.getAttribute('d') != '' || ' ').toBe(true);
             expect(group.childNodes.length == 4).toBe(true);
-            expect(text1.childNodes.length == 6).toBe(true);
+            expect(text1.childNodes.length == 2).toBe(true);
             expect(text1.textContent.replace(/\u200E/g, '') == 'AnimalsAnimals : Elk : 44').toBe(true);
             //expect(text1.childNodes[1].textContent == 'Animals : Elk : 44').toBe(true);          
             expect((<HTMLElement>group.childNodes[2]).getAttribute('d') != '' || ' ').toBe(true);
@@ -214,7 +214,7 @@ describe('Tooltip checking for the pie series', () => {
             expect(path.localName == 'path').toBe(true);
             expect(path.getAttribute('d') != '' || ' ').toBe(true);
             expect(group.childNodes.length == 3).toBe(true);
-            expect(text1.childNodes.length == 5).toBe(true);
+            expect(text1.childNodes.length == 1).toBe(true);
             expect(text1.textContent.replace(/\u200E/g, '') == 'Animals : Brown Bear : 30').toBe(true);
             expect((<HTMLElement>group.childNodes[2]).getAttribute('d') != '' || ' ').toBe(true);
 
@@ -367,8 +367,8 @@ describe('Checking tooltip text with useGroupSeparator is true', () => {
             segement = getElement(sliceid + 2);
             trigger.mousemoveEvent(segement, 0, 0, 200, 250);
             let tooltip: HTMLElement = document.getElementById('container_tooltip_text');
-            expect(tooltip.children[0].innerHTML).toEqual("Palletes ");
-            expect(tooltip.children[3].innerHTML).toEqual("1,377,507");
+            expect(tooltip.children[0].innerHTML).toEqual("Palletes : ");
+            expect(tooltip.children[1].innerHTML).toEqual("1,377,507");
             done();
         };
         accumulation.refresh();

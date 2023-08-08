@@ -418,7 +418,7 @@ describe('SVG Tooltip', () => {
         tooltip.animationComplete = (args: ITooltipAnimationCompleteArgs) => {
             if (args.tooltip.fadeOut) {
                 let text: HTMLElement = <HTMLElement>getElement("tooltipcontainer_text");
-                expect(text.childElementCount).toBe(6);
+                expect(text.childElementCount).toBe(4);
                 done();
             }
 
@@ -434,13 +434,11 @@ describe('SVG Tooltip', () => {
         tooltip.animationComplete = (args: ITooltipAnimationCompleteArgs) => {
             if (args.tooltip.fadeOut) {
                 let text: HTMLElement = <HTMLElement>getElement("tooltipcontainer_text");
-                expect(text.childElementCount).toBe(7);
-                expect(text.childNodes[1].textContent).toEqual('Consumption');
+                expect(text.childElementCount).toBe(3);
+                expect(text.childNodes[1].textContent).toEqual('Consumption:IST');
                 expect((text.childNodes[1] as HTMLElement).outerHTML.indexOf('bold') > -1).toBe(true);
-                expect(text.childNodes[3].textContent).toEqual('IST');
-                expect((text.childNodes[3] as HTMLElement).outerHTML.indexOf('bold') > -1).toBe(true);
-                expect(text.childNodes[6].textContent).toEqual(' normalText');
-                expect((text.childNodes[6] as HTMLElement).outerHTML.indexOf('bold') > -1).toBe(false);
+                expect(text.childNodes[2].textContent).toEqual(' : normalText');
+                expect((text.childNodes[2] as HTMLElement).outerHTML.indexOf('bold') > -1).toBe(false);
                 done();
             }
 
@@ -520,9 +518,9 @@ describe('SVG Tooltip', () => {
     });
     it('Checking RTL with arabic text', () => {
         tooltip.loaded = () => {
-            let textPosX: string  = (<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[5])).getAttribute("x");
-            expect((<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[1])).getAttribute("x")).toBe("44");
-            expect(textPosX === '35' || textPosX === '28').toBe(true);
+            let textPosX: string  = (<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[3])).getAttribute("x");
+            expect((<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[1])).getAttribute("x")).toBe("45");
+            expect(textPosX === '36' || textPosX === '28').toBe(true);
         };
        tooltip.header = "RTL For Arabic";
        tooltip.content = ['يناير : <b>3M</b>','فبراير : <b>3M</b>'];

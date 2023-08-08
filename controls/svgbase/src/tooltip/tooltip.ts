@@ -913,8 +913,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
             }
             for (let i: number = 0, len: number = textCollection.length; i < len; i++) { // string value of unicode for LTR is \u200E
-                lines = textCollection[i as number].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, (this.enableRTL) ? '<br>\u200E: <br>' : '<br>\u200E:<br>')
-                    .split('<br>');
+                lines = textCollection[i as number].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').split('<br>');
                 if (this.enableRTL && lines.length > 0 && textCollection[i as number].match(/:/g)) {
                     lines[0] = lines[0].trim();
                     lines.reverse();
@@ -1406,7 +1405,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const tooltipDiv: HTMLElement = <HTMLElement>getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;
-            if (tooltipGroup.nodeType !== Node.ELEMENT_NODE) {
+            if (tooltipGroup && tooltipGroup.nodeType !== Node.ELEMENT_NODE) {
                 tooltipGroup = tooltipElement.firstElementChild as HTMLElement;
             }
             if (this.isCanvas && !this.template) {

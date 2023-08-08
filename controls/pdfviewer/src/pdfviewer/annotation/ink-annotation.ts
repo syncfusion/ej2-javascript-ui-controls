@@ -158,6 +158,8 @@ export class InkAnnotation {
         context.lineWidth = thickness * zoom > 1 ? thickness * zoom : thickness;
         context.strokeStyle = strokeColor;
         context.globalAlpha = opacity;
+        // After the addition of a TextMarkup annotation, a LineDash value was introduced. To eliminate it, the value was cleared.
+        context.setLineDash([]); 
         context.stroke();
         // context.lineWidth = 2;
         context.arc(position.prevPosition.x, position.prevPosition.y, 2 / 2, 0, Math.PI * 2, true);

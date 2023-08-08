@@ -835,7 +835,7 @@ export class CheckBoxFilterBase {
             // query.select(this.options.field);
             const result: Object[] = new DataManager(args1.dataSource as JSON[]).executeLocal(query);
             const col: Column = this.options.column as Column;
-            this.filteredData = (CheckBoxFilterBase.getDistinct(result, this.options.field, col, this.foreignKeyData) as
+            this.filteredData = (CheckBoxFilterBase.getDistinct(result, this.options.field, col, this.foreignKeyData, this) as
                 { records: Object[] }).records || [];
         }
         const data: object[] = args1.executeQuery ? this.filteredData : args1.dataSource ;
@@ -1159,7 +1159,7 @@ export class CheckBoxFilterBase {
         }
     }
 
-    public static getDistinct(json: Object[], field: string, column?: Column, foreignKeyData?: Object[]): Object {
+    public static getDistinct(json: Object[], field: string, column?: Column, foreignKeyData?: Object[], checkboxFilter?: CheckBoxFilterBase): Object {
         let len: number = json.length;
         const result: Object[] = [];
         let value: string;
@@ -1170,10 +1170,13 @@ export class CheckBoxFilterBase {
         while (len--) {
             value = json[parseInt(len.toString(), 10)] as string;
             value = getObject(field, value); //local remote diff, check with mdu
-            if (!(value in lookup)) {
+            const currentFilterValue: string = (typeof value === 'string') && checkboxFilter &&
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            !((checkboxFilter.parent as any).filterSettings.enableCaseSensitivity) ? value.toLowerCase() : value;
+            if (!(currentFilterValue in lookup)) {
                 const obj: Object = {};
                 obj[`${ejValue}`] = value;
-                lookup[`${value}`] = true;
+                lookup[`${currentFilterValue}`] = true;
                 if (isForeignKey) {
                     const foreignDataObj: Object = getForeignData(column, {}, value, foreignKeyData)[0];
                     setValue(events.foreignKeyData, foreignDataObj, json[parseInt(len.toString(), 10)]);

@@ -498,6 +498,14 @@ export class Paragraph {
         let paraStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Paragraph");
         let linkedStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Linked");
         let charStyles: Object[] = this.documentEditor.getStyles('Character').filter(obj => (obj as any).type == "Character");
+        for (const linkedStyle of linkedStyles) {
+            for (const charStyle of charStyles) {
+                if (linkedStyle["name"] + " Char" === charStyle["name"]) {
+                    charStyles.splice(charStyles.indexOf(charStyle), 1);
+                    break;
+                }
+            }
+        }
         let styleData: Object[] = paraStyles.concat(linkedStyles, charStyles);
         this.style.dataSource = this.constructStyleDropItems(styleData);
         // this.style.dataBind();

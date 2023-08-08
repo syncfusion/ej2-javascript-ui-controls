@@ -2097,7 +2097,6 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.getFocusElement();
                 this.createPopup(popupEle, offsetValue, left);
                 this.checkCollision(popupEle);
-                const popupLeft: number = this.enableRtl ? parseFloat(popupEle.style.left) - (this.ulElement.parentElement.offsetWidth - this.inputWrapper.container.offsetWidth) : 0;
                 if (Browser.isDevice) {
                     this.popupObj.element.classList.add(dropDownListClasses.device);
                     if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
@@ -2148,9 +2147,6 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.beforePopupOpen = false;
                         this.destroyPopup();
                     }
-                    if(this.enableRtl && popupLeft > 0){
-                        popupEle.style.left =  popupLeft + "px";
-                    }
                 });
             } else {
                 this.beforePopupOpen = false;
@@ -2176,7 +2172,8 @@ export class DropDownList extends DropDownBase implements IInput {
         this.popupObj = new Popup(element, {
             width: this.setWidth(), targetType: 'relative',
             relateTo: this.inputWrapper.container, collision: { X: 'flip', Y: 'flip' }, offsetY: offsetValue,
-            enableRtl: this.enableRtl, offsetX: left, position: { X: 'left', Y: 'bottom' },
+            enableRtl: this.enableRtl, offsetX: left, 
+            position: this.enableRtl ? { X: 'right', Y: 'bottom' } : { X: 'left', Y: 'bottom' },
             zIndex: this.zIndex,
             close: () => {
                 if (!this.isDocumentClick) {

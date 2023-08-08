@@ -5380,9 +5380,14 @@ export class PageLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.triggerElementsOnLoading || this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
-            this.documentHelper.cachedPages.push(page.index);
-            let content: string = this.owner.spellChecker.getPageContent(page);
+        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && (this.documentHelper.cachedPages.indexOf(page.index) < 0 || this.owner.editor.isPasteContentCheck)) {
+            this.owner.documentHelper.cachedPages.push(page.index);
+            let content: string;
+            if (this.owner.editor.isPasteContentCheck) {
+                content = !isNullOrUndefined(this.owner.editor.copiedTextContent) ? this.owner.editor.copiedTextContent : '';
+            } else {
+                content = this.documentHelper.owner.spellChecker.getPageContent(page);
+            }
             if (content.trim().length > 0) {
                 page.allowNextPageRendering = false;
                 if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellChecker)) {
@@ -5397,6 +5402,7 @@ export class PageLayoutViewer extends LayoutViewer {
                     }
                     page.allowNextPageRendering = true;
                     this.documentHelper.triggerSpellCheck = true;
+                    this.documentHelper.triggerElementsOnLoading = true;
                     this.renderPage(page, x, y, width, height);
                     this.documentHelper.triggerSpellCheck = false;
                     this.documentHelper.triggerElementsOnLoading = false;
@@ -5548,9 +5554,14 @@ export class WebLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
+        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && (this.documentHelper.cachedPages.indexOf(page.index) < 0 || this.owner.editor.isPasteContentCheck)) {
             this.owner.documentHelper.cachedPages.push(page.index);
-            let contentlen: string = this.documentHelper.owner.spellChecker.getPageContent(page);
+            let contentlen: string;
+            if (this.owner.editor.isPasteContentCheck) {
+                contentlen = !isNullOrUndefined(this.owner.editor.copiedTextContent) ? this.owner.editor.copiedTextContent : '';
+            } else {
+                contentlen = this.documentHelper.owner.spellChecker.getPageContent(page);
+            }
             if (contentlen.trim().length > 0) {
                 page.allowNextPageRendering = false;
                 if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellChecker)) {
@@ -5565,6 +5576,7 @@ export class WebLayoutViewer extends LayoutViewer {
                     }
                     page.allowNextPageRendering = true;
                     this.owner.documentHelper.triggerSpellCheck = true;
+                    this.owner.documentHelper.triggerElementsOnLoading = true;
                     this.renderPage(page, x, y, width, height);
                     this.owner.documentHelper.triggerSpellCheck = false;
                     this.owner.documentHelper.triggerElementsOnLoading = false;

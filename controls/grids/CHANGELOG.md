@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### Grid
+
+#### Bug fixes
+
+- `#I475018` - Grid filter showing duplicate values without ignoring case has been resolved.
+
 ## 22.2.7 (2023-08-02)
 
 ### Grid

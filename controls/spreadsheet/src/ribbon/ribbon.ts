@@ -298,7 +298,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 }
                 this.trigger('beforeClose', args);
                 if (!args.parentItem || args.parentItem.text === menuItems[0].text) {
-                    requestAnimationFrame((): void => menuObj.setProperties({ showItemOnClick: true }, true));
+                    menuObj.setProperties({ showItemOnClick: true }, true);
                 }
             },
             beforeItemRender: (args: MenuEventArgs): void => {

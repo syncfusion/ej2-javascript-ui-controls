@@ -1636,6 +1636,8 @@ export class CommandHandler {
     private cloneGroup(obj: NodeModel, multiSelect: boolean): NodeModel {
         let value: NodeModel;
         const newChildren: string[] = [];
+        let sourceId: string;
+        let targetId: string;
         let children: string[] = [];
         const connectorObj: ConnectorModel[] = [];
         let newObj: NodeModel | ConnectorModel;
@@ -1670,14 +1672,19 @@ export class CommandHandler {
             if (connectorObj[parseInt(k.toString(), 10)].sourceID || connectorObj[parseInt(k.toString(), 10)].targetID) {
                 for (let j: number = 0; j < oldID.length; j++) {
                     if (connectorObj[parseInt(k.toString(), 10)].sourceID === (oldID[parseInt(j.toString(), 10)])) {
+                        sourceId = connectorObj[parseInt(k.toString(), 10)].sourceID 
                         connectorObj[parseInt(k.toString(), 10)].sourceID += id;
                     }
                     if (connectorObj[parseInt(k.toString(), 10)].targetID === (oldID[parseInt(j.toString(), 10)])) {
+                        targetId = connectorObj[parseInt(k.toString(), 10)].targetID;
                         connectorObj[parseInt(k.toString(), 10)].targetID += id;
                     }
                 }
             }
             newObj = this.cloneConnector(connectorObj[parseInt(k.toString(), 10)], multiSelect);
+            //EJ2-839982 - When we copy paste the group node multiple times, the connector is not rendered properly
+            connectorObj[parseInt(k.toString(), 10)].sourceID = sourceId;
+            connectorObj[parseInt(k.toString(), 10)].targetID = targetId;
             newChildren.push(newObj.id);
             objectCollection.push(newObj);
         }

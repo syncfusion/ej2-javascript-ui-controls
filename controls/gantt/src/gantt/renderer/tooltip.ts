@@ -196,34 +196,34 @@ export class Tooltip {
      */
     private updateTooltipPosition(args: TooltipEventArgs): void {
         args.element.style.visibility = 'visible';
-        if (isNullOrUndefined(this.tooltipMouseEvent) || args.target.classList.contains('e-notes-info')) {
-            return;
-        }
-        const postion: { x: number, y: number } = this.getPointorPosition(this.tooltipMouseEvent);
-        const containerPosition: { top: number, left: number, width?: number, height?: number } =
-         this.parent.getOffsetRect(this.parent.chartPane);
-        const topEnd: number = containerPosition.top + this.parent.chartPane.offsetHeight;
-        const leftEnd: number = containerPosition.left + this.parent.chartPane.offsetWidth;
-        let tooltipPositionX: number = postion.x;
-        let tooltipPositionY: number = postion.y;
-        if (leftEnd < (tooltipPositionX + args.element.offsetWidth + 10)) {
-            while (leftEnd < (tooltipPositionX + args.element.offsetWidth + 10)) {
-                tooltipPositionX = leftEnd - args.element.offsetWidth - 10;
-                args.element.style.left = tooltipPositionX + 'px';
-            }
-        } else {
-            tooltipPositionX = tooltipPositionX + 10;
-            args.element.style.left = tooltipPositionX + 'px';
-        }
-        if (window.innerHeight < args.element.offsetHeight + tooltipPositionY) {
-            tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
-        }
-        if ((topEnd < (tooltipPositionY + args.element.offsetHeight + 20))) {
-            tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
-        } else {
-            tooltipPositionY = tooltipPositionY + 10;
-        }
-        args.element.style.top = tooltipPositionY + 'px';
+        // if (isNullOrUndefined(this.tooltipMouseEvent) || args.target.classList.contains('e-notes-info')) {
+        //     return;
+        // }
+        // const postion: { x: number, y: number } = this.getPointorPosition(this.tooltipMouseEvent);
+        // const containerPosition: { top: number, left: number, width?: number, height?: number } =
+        //  this.parent.getOffsetRect(this.parent.chartPane);
+        // const topEnd: number = containerPosition.top + this.parent.chartPane.offsetHeight;
+        // const leftEnd: number = containerPosition.left + this.parent.chartPane.offsetWidth;
+        // let tooltipPositionX: number = postion.x;
+        // let tooltipPositionY: number = postion.y;
+        // if (leftEnd < (tooltipPositionX + args.element.offsetWidth + 10)) {
+        //     while (leftEnd < (tooltipPositionX + args.element.offsetWidth + 10)) {
+        //         tooltipPositionX = leftEnd - args.element.offsetWidth - 10;
+        //         args.element.style.left = tooltipPositionX + 'px';
+        //     }
+        // } else {
+        //     tooltipPositionX = tooltipPositionX + 10;
+        //     args.element.style.left = tooltipPositionX + 'px';
+        // }
+        // if (window.innerHeight < args.element.offsetHeight + tooltipPositionY) {
+        //     tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
+        // }
+        // if ((topEnd < (tooltipPositionY + args.element.offsetHeight + 20))) {
+        //     tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
+        // } else {
+        //     tooltipPositionY = tooltipPositionY + 10;
+        // }
+        // args.element.style.top = tooltipPositionY + 'px';
     }
     /**
      * Method to get mouse pointor position

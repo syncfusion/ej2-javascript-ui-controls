@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `I485463` - The pivot table can now be properly rendered when sorting is applied with virtualization.
+- `I486436` - The pivot chart can now be properly rendered with remote data binding.
+- `F183726` - The "multiLevelLabelRender" event will now work properly in the Angular pivot table.
+
 ## 22.2.7 (2023-08-02)
 
 ### Pivot Table

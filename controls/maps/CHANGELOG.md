@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I485498` - Mouse events will now work properly on the marker templates.
+
 ## 22.1.39 (2023-07-18)
 
 ### Maps

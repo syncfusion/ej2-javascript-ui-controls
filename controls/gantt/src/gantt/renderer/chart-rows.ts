@@ -1759,6 +1759,18 @@ export class ChartRows extends DateProcessor {
                 (trElement.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor = args.baselineColor;
             }
         } else if (taskbarElement) {
+            if (taskbarElement && this.parent.enableVirtualization && !args.data.expanded) {
+                const childElement: Element = trElement.querySelector('.' + cls.collapseParent);
+                if (childElement) {
+                    for (let i: number = 0; i < childElement.childNodes.length; i++) {
+                        const taskbar: Element = childElement.childNodes[i as number] as Element;
+                        const mainTaskbar: HTMLElement = taskbar.querySelector('.' + cls.traceChildTaskBar);
+                        if (mainTaskbar) {
+                            mainTaskbar.style.backgroundColor = args.taskbarBgColor;
+                        }
+                    }
+                }
+            }
             if (taskbarElement.querySelector(classCollections[0]) &&
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor !== args.taskbarBgColor) {
                 (taskbarElement.querySelector(classCollections[0]) as HTMLElement).style.backgroundColor = args.taskbarBgColor;

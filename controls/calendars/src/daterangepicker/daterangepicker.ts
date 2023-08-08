@@ -3509,10 +3509,6 @@ export class DateRangePicker extends CalendarBase {
                 else{
                     this.inputElement.removeAttribute('aria-activedescendant');
                 }
-                if(this.enableRtl){
-                    const popupLeft: number = parseFloat(this.popupWrapper.style.left) -(this.popupWrapper.offsetWidth - this.inputWrapper.container.offsetWidth);
-                    this.popupWrapper.style.left = popupLeft > 0 ?  popupLeft  + "px": this.popupWrapper.style.left ;
-                }
                 addClass([this.inputWrapper.buttons[0]], ACTIVE);
                 if (!this.isMobile) {
                     if (this.cancelButton) {

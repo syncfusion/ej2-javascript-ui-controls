@@ -8703,7 +8703,7 @@ export class PdfViewerBase {
         }
         const target: HTMLElement = evt.target as HTMLElement;
         // eslint-disable-next-line max-len
-        if (!touches && evt.cancelable && this.skipPreventDefault(target) && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
+        if (!touches && evt.cancelable && this.skipPreventDefault(target)) {
             evt.preventDefault();
         }
         this.eventArgs = {};

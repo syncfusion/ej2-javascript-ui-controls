@@ -538,14 +538,16 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private getScalingFactor(element: HTMLElement): { [key: string]: number } {
-        if (element) {
-            const xScalingFactor: number = element.getBoundingClientRect().width / element.offsetWidth;
-            const yScalingFactor: number = element.getBoundingClientRect().height / element.offsetHeight;
-            return { x: xScalingFactor, y: yScalingFactor };
-        }
-        else {
+        if (!element) {
             return { x: 1, y: 1 };
         }
+        const eleRect = element.getBoundingClientRect();
+        const xScalingFactor: number = (eleRect.width / element.offsetWidth) || 1;
+        const yScalingFactor: number = (eleRect.height / element.offsetHeight) || 1;
+        return {
+            x: isFinite(xScalingFactor) ? xScalingFactor : 1,
+            y: isFinite(yScalingFactor) ? yScalingFactor : 1
+        };
     }
 
     private getTooltipPosition(target: HTMLElement): OffsetPosition {

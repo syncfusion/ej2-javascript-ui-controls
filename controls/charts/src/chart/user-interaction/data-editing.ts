@@ -42,11 +42,12 @@ export class DataEditing {
         let series: SeriesModel;
         const data: ChartData = new ChartData(chart);
         const pointData: PointData = data.getData();
+        const isZooming: boolean = chart.zoomSettings.enableSelectionZooming || chart.zoomSettings.enablePinchZooming;
         if (pointData.point && (data.insideRegion || !pointData.series.isRectSeries)) {
             this.seriesIndex = pointData.series.index;
             this.pointIndex = pointData.point.index;
             series = chart.series[this.seriesIndex];
-            if (series.dragSettings.enable && !chart.zoomModule) {
+            if (series.dragSettings.enable && !isZooming) {
                 chart.trigger(dragStart, {
                     series: pointData.series, seriesIndex: this.seriesIndex, pointIndex: this.pointIndex, point: pointData.point,
                     oldValue: chart.visibleSeries[this.seriesIndex].yData[this.pointIndex],

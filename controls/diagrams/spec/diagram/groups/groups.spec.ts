@@ -509,6 +509,54 @@ describe('Group', () => {
             done();
         });
     });
+    describe('Copy and paste two time for group', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+     
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourceID: 'node1', targetID: 'node2'
+            };
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 100,
+                    offsetY: 200,
+                }, {
+                    id: 'node2', width: 200, height: 100, offsetX: 400,
+                    offsetY: 400
+                },
+                { id: 'group', children: ['node1', 'node2'], }
+            ];
+            diagram = new Diagram({
+                width: '1000px', height: '500px', nodes: nodes,
+                connectors: [connector],
+            }, '#diagram');
+
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Copy paste - group two times', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.selectAll();
+                diagram.copy();
+                diagram.paste();
+                diagram.paste();
+            expect(diagram.connectors.length === 3).toBe(true);
+            done();
+        });
+    });
     describe('Group with annnotation', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

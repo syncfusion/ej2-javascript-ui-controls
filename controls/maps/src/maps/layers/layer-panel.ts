@@ -642,8 +642,14 @@ export class LayerPanel {
         }
         pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
             (currentShapeData['property'][properties as string]) : ''));
-        (pathEle as HTMLElement).tabIndex = this.mapObject.tabIndex + index + 3;
-        pathEle.setAttribute('role', '');
+        if (this.currentLayer.selectionSettings.enable || this.currentLayer.highlightSettings.enable) {
+            (pathEle as HTMLElement).tabIndex = this.mapObject.tabIndex + index + 3;
+            pathEle.setAttribute('role', 'button');
+            (pathEle as HTMLElement).style.cursor = this.currentLayer.highlightSettings.enable && !this.currentLayer.selectionSettings.enable ? 'default' : 'pointer';
+        }
+        else {
+            pathEle.setAttribute('role', 'region');
+        }
         if (drawingType === 'LineString' || drawingType === 'MultiLineString') {
             (pathEle as HTMLElement).style.cssText = 'outline:none';
         }

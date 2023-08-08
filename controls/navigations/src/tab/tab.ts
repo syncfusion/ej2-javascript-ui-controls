@@ -538,6 +538,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     @Property(false)
     public allowDragAndDrop: boolean;
     /**
+     * Specifies whether the templates need to be cleared or not while changing the Tab items dynamically.
+     * @default true
+     */
+    @Property(true)
+    public clearTemplates: boolean;
+    /**
      * Specifies the animation configuration settings while showing the content of the Tab.
      *
      * @default
@@ -1854,6 +1860,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
 
     private clearTabTemplate(templateEle: HTMLElement, templateName: string, className: string): void {
+        if(!this.clearTemplates) {
+            return;
+        }
         if ((this as Record<string, any>).registeredTemplate && (this as Record<string, any>).registeredTemplate[templateName]) {
             const registeredTemplates: Record<string, any> = (this as Record<string, any>).registeredTemplate;
             for (let index = 0; index < registeredTemplates[templateName].length; index++) {

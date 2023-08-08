@@ -180,6 +180,7 @@ export class MarkerExplode extends ChartData {
         const marker: MarkerSettingsModel = point.marker;
         const seriesMarker: MarkerSettingsModel = series.marker;
         const shape: ChartShape = marker.shape || seriesMarker.shape || 'Circle';
+        let svg: Element;
         if (shape === 'None' || shape === 'Image') {
             return null;
         }
@@ -211,6 +212,16 @@ export class MarkerExplode extends ChartData {
         if (!isNullOrUndefined(markerElement)) {
             markerElement.setAttribute('visibility', 'hidden');
         }
+        if (this.chart.enableCanvas) {
+            const trackElement: HTMLElement = document.getElementById(this.chart.element.id + '_Secondary_Element');
+            svg = this.chart.svgRenderer.createSvg({
+                id: this.chart.element.id + '_trackball_svg',
+                width: this.chart.availableSize.width,
+                height: this.chart.availableSize.height
+            });
+            (svg as SVGElement).style.cssText = 'position: absolute; pointer-events: none';
+            trackElement.appendChild(svg);
+        }
         for (let i: number = 0; i < 2; i++) {
             const options: PathOption = new PathOption(
                 symbolId + '_' + i,
@@ -234,7 +245,11 @@ export class MarkerExplode extends ChartData {
             symbol.setAttribute('role', 'img');
             symbol.setAttribute('clip-path', element.getAttribute('clip-path'));
             symbol.setAttribute('transform', element.getAttribute('transform'));
-            this.chart.svgObject.appendChild(symbol);
+            if (this.chart.enableCanvas) {
+                svg.appendChild(symbol);
+            } else {
+                this.chart.svgObject.appendChild(symbol);
+            }
         }
         this.doAnimation(series, point, false);
     }

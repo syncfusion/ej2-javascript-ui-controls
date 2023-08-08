@@ -98,6 +98,14 @@ export class StylesDialog {
         let paraStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter(obj => (obj as any).Type == "Paragraph");
         let linkedStyles: {[key: string]: string}[] = this.updateStyleNames('Paragraph').filter(obj => (obj as any).Type == "Linked");
         let charStyles: {[key: string]: string}[] = this.updateStyleNames('Character').filter(obj => (obj as any).Type == "Character");
+        for (const linkedStyle of linkedStyles) {
+            for (const charStyle of charStyles) {
+                if (linkedStyle["StyleName"] + " Char" === charStyle["StyleName"]) {
+                    charStyles.splice(charStyles.indexOf(charStyle), 1);
+                    break;
+                }
+            }
+        }
         let styles: {[key: string]: string}[] = paraStyles.concat(linkedStyles, charStyles);
         this.localValue = localValue;
         this.initStylesDialog(localValue, styles, this.documentHelper.owner.enableRtl);

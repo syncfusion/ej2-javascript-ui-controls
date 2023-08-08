@@ -871,6 +871,11 @@ export class Annotation {
                         }
                     );
                 }
+                if (!isNullOrUndefined(this.pdfViewerBase.importedAnnotation) && !isNullOrUndefined(this.pdfViewerBase.importedAnnotation[pageNumber]) && !isNullOrUndefined(this.pdfViewerBase.importedAnnotation[pageNumber][annotationType])) {
+                    this.pdfViewerBase.importedAnnotation[pageNumber][annotationType] = this.pdfViewerBase.importedAnnotation[pageNumber][annotationType].filter((currentAnnotation: any) => {
+                        return annotation.annotName !== currentAnnotation.AnnotName;
+                    });
+                }
             }
         }
         // eslint-disable-next-line

@@ -955,6 +955,37 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 done();
             });
         });
+        describe('EJ2-839539 ->', () => {
+            beforeEach((done: Function) => {
+                model = {
+                    sheets: [{
+                        rows: [{
+                            cells: [
+                                { formula: '=A2+A3' }
+                            ]
+                        },{
+                            cells: [
+                                { value: '22,313,432' }
+                            ]
+                        },{
+                            cells: [
+                                { value: '1234' },
+                            ]
+                        }]
+                    }]
+                };
+                helper.initializeSpreadsheet(model, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Formula cell that refers another formula valued cell in different sheet throws error while rendering in spreadsheet', (done: Function) => {
+                expect(helper.invoke('getCell', [0, 0]).textContent).not.toBe('#VALUE!');
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('22314666');
+                expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe('22314666');
+                done();
+            });
+        });
     });
 
     describe('Localization is not updated for placeholder and dialog content in the number format ->',(): void =>{

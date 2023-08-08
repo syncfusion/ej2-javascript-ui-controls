@@ -13,7 +13,7 @@ import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } fr
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
-import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs, MultiLevelLabelClickEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs, MultiLevelLabelRenderEventArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs, MultiLevelLabelClickEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs } from '../../common/base/interface';
 import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';
 import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
 import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs, ExportCompleteEventArgs } from '../../common/base/interface';
@@ -55,7 +55,7 @@ import { Toolbar } from '../../common/popups/toolbar';
 import { PivotChart } from '../../pivotchart/index';
 import { ChartSettings } from '../model/chartsettings';
 import { ChartSettingsModel } from '../model/chartsettings-model';
-import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs, IPointEventArgs, AccumulationChart, ILegendClickEventArgs } from '@syncfusion/ej2-charts';
+import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs, IPointEventArgs, AccumulationChart, ILegendClickEventArgs, IAxisMultiLabelRenderEventArgs } from '@syncfusion/ej2-charts';
 import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfusion/ej2-charts';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ClickEventArgs, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
@@ -1562,7 +1562,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     @Event()
-    protected multiLevelLabelRender: EmitType<MultiLevelLabelRenderEventArgs>;
+    protected multiLevelLabelRender: EmitType<IAxisMultiLabelRenderEventArgs>;
 
     /**
      * @event chartLoaded
@@ -3059,8 +3059,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         const chartTooltipRenderEvent: any = this.chartSettings['tooltipRender'];
         const chartLegendClickEvent: any = this.chartSettings['legendClick'];
         const multiLevelLabelRenderEvent: any = this.chartSettings['multiLevelLabelRender'];
-        const dataSource: IDataSet[] = this.dataSourceSettings.dataSource ?
-            [...this.dataSourceSettings.dataSource as IDataSet[]] :
+        const dataSource: IDataSet[] = (this.dataSourceSettings.dataSource && !(this.dataSourceSettings.dataSource instanceof DataManager))
+            ? [...this.dataSourceSettings.dataSource as IDataSet[]] :
             this.dataSourceSettings.dataSource as IDataSet[];
         /* eslint-enable @typescript-eslint/no-explicit-any */
         this.gridSettings['columnRender'] = undefined;
@@ -4448,10 +4448,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             : -mCntVScrollPos) : (mCntVScrollPos === mCntScrollPos ? (mCntScrollPos - hScrollPos) :
                             (mCntScrollPos < mCntVScrollPos && (hScrollPos === mCntVScrollPos || hScrollPos > mCntScrollPos) ?
                                 -(mCntVScrollPos - mCntScrollPos) : 0)));
-                    }
-                    if (this.actionObj.actionName === 'Sort value' || this.actionObj.actionName === 'Sort field') {
-                        const excessMove: number = -this.scrollPosObject.horizontalSection;
-                        this.scrollPosObject.horizontalSection = this.scrollPosObject.horizontalSection + excessMove;
                     }
                     horiOffset = (ele.scrollLeft > this.scrollerBrowserLimit) ?
                         ((mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim() + ',') :

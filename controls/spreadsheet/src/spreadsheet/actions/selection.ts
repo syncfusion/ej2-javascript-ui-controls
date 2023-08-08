@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue } from '../common/index';
+import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue, focus } from '../common/index';
 import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder, hideAutoFillElement } from '../common/index';
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
@@ -491,8 +491,10 @@ export class Selection {
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
             (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
-        if (isFormulaEdit && this.parent.isEdit) {
-            this.parent.notify(initiateCur, { isCellEdit: (e.target as HTMLElement).classList.contains('e-spreadsheet-edit') });
+        if (this.parent.isEdit) {
+            if (isFormulaEdit) {
+                this.parent.notify(initiateCur, { isCellEdit: (e.target as HTMLElement).classList.contains('e-spreadsheet-edit') });
+            }
         }
     }
 

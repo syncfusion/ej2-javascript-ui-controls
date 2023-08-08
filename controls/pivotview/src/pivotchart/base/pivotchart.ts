@@ -2,7 +2,7 @@ import { PivotEngine, IAxisSet, IDataOptions, IField, IFormatSettings, IFieldLis
 import { IPivotRows, INumberIndex, IFieldOptions, IDrilledItem } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel, StackingLineSeries, ILegendClickEventArgs } from '@syncfusion/ej2-charts';
+import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel, StackingLineSeries, ILegendClickEventArgs, IAxisMultiLabelRenderEventArgs } from '@syncfusion/ej2-charts';
 import { AccumulationChart, PieSeries, FunnelSeries, PyramidSeries } from '@syncfusion/ej2-charts';
 import { SplineAreaSeries, MultiColoredLineSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries } from '@syncfusion/ej2-charts';
 import { MultiColoredAreaSeries, SplineSeries, StepLineSeries, AccumulationLegend, AccumulationTooltip } from '@syncfusion/ej2-charts';
@@ -25,6 +25,7 @@ import { OlapEngine, ITupInfo, IDrillInfo } from '../../base/olap/engine';
 import { SummaryTypes } from '../../base/types';
 import { ContextMenu, ContextMenuModel, MenuItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { hideSpinner, OffsetPosition } from '@syncfusion/ej2-popups';
+import { DataManager } from '@syncfusion/ej2-data';
 
 export class PivotChart {
     private chartSeries: SeriesModel[] | AccumulationSeriesModel[];
@@ -88,7 +89,8 @@ export class PivotChart {
             : this.parent.dataSourceSettings.mode === 'Server' ? (!isNullOrUndefined(parent.dataSourceSettings.url) &&
                 parent.dataSourceSettings.url !== '' && parent.dataSourceSettings.values.length > 0 && !parent.engineModule.isEmptyData) :
                 (parent.dataSourceSettings.values.length > 0 && parent.dataSourceSettings.dataSource &&
-                    (parent.dataSourceSettings.dataSource as IDataSet[]).length > 0 && !parent.engineModule.isEmptyData);
+                    ((parent.dataSourceSettings.dataSource as IDataSet[]).length > 0 ||
+                        (parent.dataSourceSettings.dataSource instanceof DataManager)) && !parent.engineModule.isEmptyData);
         if (isDataAvail) {
             if (!this.parent.chart && (this.parent.element.querySelector('.e-chart') || this.parent.element.querySelector('.e-accumulationchart'))) {
                 remove(select('#' + this.parent.element.id + '_chart', this.parent.element));
@@ -753,8 +755,6 @@ export class PivotChart {
                         textRender: this.chartSettings.textRender ? this.chartSettings.textRender.bind(this) : undefined,
                         pointRender: this.chartSettings.pointRender ? this.chartSettings.pointRender.bind(this) : undefined,
                         seriesRender: this.chartSettings.seriesRender ? this.chartSettings.seriesRender.bind(this) : undefined,
-                        axisMultiLabelRender: this.chartSettings.multiLevelLabelRender ? this.chartSettings.multiLevelLabelRender.bind(this)
-                            : undefined,
                         chartMouseMove: this.chartSettings.chartMouseMove ? this.chartSettings.chartMouseMove.bind(this) : undefined,
                         chartMouseClick: this.chartSettings.chartMouseClick ? this.chartSettings.chartMouseClick.bind(this) : undefined,
                         pointMove: this.chartSettings.pointMove ? this.chartSettings.pointMove.bind(this) : undefined,
@@ -773,7 +773,8 @@ export class PivotChart {
                         load: this.load.bind(this),
                         resized: this.resized.bind(this),
                         axisLabelRender: this.axisLabelRender.bind(this),
-                        multiLevelLabelClick: this.multiLevelLabelClick.bind(this)
+                        multiLevelLabelClick: this.multiLevelLabelClick.bind(this),
+                        axisMultiLabelRender: this.multiLevelLabelRender.bind(this)
                     });
             }
             this.parent.chart.isStringTemplate = true;
@@ -1743,6 +1744,10 @@ export class PivotChart {
             args.chart.zoomModule.isZoomed = true;
         }
         this.parent.trigger(events.chartLoad, args);
+    }
+
+    private multiLevelLabelRender(args: IAxisMultiLabelRenderEventArgs): void {
+        this.parent.trigger(events.multiLevelLabelRender, args);
     }
 
     private resized(args: IResizeEventArgs): void {

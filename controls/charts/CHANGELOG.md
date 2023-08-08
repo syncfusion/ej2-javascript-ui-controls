@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I483107` - Data editing is now working properly, along with the zoom property.
+- `#I484578` - The trendline is now rendered for the polynomial type in datetime.
+- `#I485511` - Fixed an issue where the trackball was not rendered properly in canvas mode.
+
 ## 22.2.7 (2023-08-02)
 
 ### Chart
@@ -88,6 +98,15 @@
 #### Breaking Changes
 
 - To differentiate between marker shapes in the `ChartShape` enumeration, the existing Cross shape has been replaced with Plus, while a new enumeration, Cross, has been added for the cross shape.
+- The font family for chart elements such as the title, axis labels, data labels, legend, tooltip, etc., has been changed based on the theme in the 2023 Volume 2 release.
+
+| Theme | Previous Font Family| New Font Family |
+| -------- | -------- | -------- |
+| Material | Segoe UI | Roboto |
+| Bootstrap 5 | Segoe UI | Helvetica  |
+| Bootstrap 4 | Segoe UI | Helvetica |
+| Bootstrap | Segoe UI | Helvetica  |
+| TailWind | Segoe UI | Inter|
 
 #### Bug Fixes
 
@@ -102,6 +121,85 @@
 - By default, the series type and trendline dropdowns have been removed from the stock chart period selector. However, you can still add them to the list upon request or as needed. This modification provides a cleaner interface and reduces clutter in the stock chart period selector.
 - By default, the tooltip for the range selector in the stock chart has been removed. Instead, the tooltip will now appear only when you move the slider.
 - The print option has been removed from the period selector because it is already available in the export dropdown. This modification provides a cleaner interface and reduces clutter in the stock chart's period selector.
+- The font family for stock chart elements such as the title, axis labels, data labels, legend, tooltip, etc., has been changed based on the theme in the 2023 Volume 2 release.
+
+| Theme | Previous Font Family| New Font Family |
+| -------- | -------- | -------- |
+| Material | Segoe UI | Roboto |
+| Bootstrap 5 | Segoe UI | Helvetica  |
+| Bootstrap 4 | Segoe UI | Helvetica |
+| Bootstrap | Segoe UI | Helvetica  |
+| TailWind | Segoe UI | Inter|
+
+### Accumulation chart
+
+#### Breaking Changes
+
+- The font family for accumulation chart elements such as the title, data labels, legend, tooltip, etc., has been changed based on the theme in the 2023 Volume 2 release.
+
+| Theme | Previous Font Family| New Font Family |
+| -------- | -------- | -------- |
+| Material | Segoe UI | Roboto |
+| Bootstrap 5 | Segoe UI | Helvetica  |
+| Bootstrap 4 | Segoe UI | Helvetica |
+| Bootstrap | Segoe UI | Helvetica  |
+| TailWind | Segoe UI | Inter|
+
+### Bullet Chart
+
+#### Breaking Changes
+
+- The font family for bullet chart elements such as the title, labels, legend, tooltip, etc., has been changed based on the theme in the 2023 Volume 2 release.
+
+| Theme | Previous Font Family| New Font Family |
+| -------- | -------- | -------- |
+| Material | Segoe UI | Roboto |
+| Bootstrap 5 | Segoe UI | Helvetica  |
+| Bootstrap 4 | Segoe UI | Helvetica |
+| Bootstrap | Segoe UI | Helvetica  |
+| TailWind | Segoe UI | Inter|
+
+### RangeNavigator
+
+#### Breaking Changes
+
+- The font family for range navigator elements such as the axis labels, tooltip, etc., has been changed based on the theme in the 2023 Volume 2 release.
+
+| Theme | Previous Font Family| New Font Family |
+| -------- | -------- | -------- |
+| Material | Segoe UI | Roboto |
+| Bootstrap 5 | Segoe UI | Helvetica  |
+| Bootstrap 4 | Segoe UI | Helvetica |
+| Bootstrap | Segoe UI | Helvetica  |
+| TailWind | Segoe UI | Inter|
+
+### Sparkline
+
+#### Breaking Changes
+
+- The font family for sparkline elements such as the data labels, tooltip, etc., has been changed based on the theme in the 2023 Volume 2 release.
+
+| Theme | Previous Font Family| New Font Family |
+| -------- | -------- | -------- |
+| Material | Segoe UI | Roboto |
+| Bootstrap 5 | Segoe UI | Helvetica  |
+| Bootstrap 4 | Segoe UI | Helvetica |
+| Bootstrap | Segoe UI | Helvetica  |
+| TailWind | Segoe UI | Inter|
+
+### Smith Chart
+
+#### Breaking Changes
+
+- The font family for smith chart elements such as the title, data labels, legend, tooltip, etc., has been changed based on the theme in the 2023 Volume 2 release.
+
+| Theme | Previous Font Family| New Font Family |
+| -------- | -------- | -------- |
+| Material | Segoe UI | Roboto |
+| Bootstrap 5 | Segoe UI | Helvetica  |
+| Bootstrap 4 | Segoe UI | Helvetica |
+| Bootstrap | Segoe UI | Helvetica  |
+| TailWind | Segoe UI | Inter|
 
 ## 21.2.10 (2023-06-13)
 

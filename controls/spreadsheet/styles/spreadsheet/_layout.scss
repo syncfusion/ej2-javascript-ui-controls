@@ -458,6 +458,15 @@
       }
     }
 
+    & .e-ss-focus-edit {
+      clip: rect(1px, 1px, 1px, 1px);
+      height: 1px;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      width: 1px;
+    }
+
     & .e-ss-atc {
       display: none;
     }

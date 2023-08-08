@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#483288` - Fixed a script error that occurred when opening the combobox popup in the Internet Explorer browser.
+
+### DropDown List
+
+#### Bug Fixes
+
+- `#I474541` - Fixed an issue where the position of the popup was incorrect when enabling RTL mode.
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I485947` - Issue with "Script error thrown While Drag and Drop in dual ListBox with filtering option in blazor" has been resolved.
+
 ## 22.2.5 (2023-07-27)
 
 ### Dropdown Tree

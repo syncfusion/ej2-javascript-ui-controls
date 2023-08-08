@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### TimePicker
+
+#### Features
+
+- `#I480992` - Added support for configuring server time zone settings to the component. The `serverTimezoneOffset` property can now be used to set the pre-bound value based on the time zone provided to the component.
+
 ## 21.1.34 (2023-06-21)
 
 ### DatePicker

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 22.2.8 (2023-08-08)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I484429` - Now, the error does not occur when we programmatically delete the added annotation.
+- `#I485416` - Now, the ink annotations are rendered properly after programmatically adding the highlight annotation.
+
 ## 22.2.7 (2023-08-02)
 
 ### PDF Viewer

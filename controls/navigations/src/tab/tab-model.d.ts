@@ -316,6 +316,12 @@ export interface TabModel extends ComponentModel{
     allowDragAndDrop?: boolean;
 
     /**
+     * Specifies whether the templates need to be cleared or not while changing the Tab items dynamically.
+     * @default true
+     */
+    clearTemplates?: boolean;
+
+    /**
      * Specifies the animation configuration settings while showing the content of the Tab.
      *
      * @default
