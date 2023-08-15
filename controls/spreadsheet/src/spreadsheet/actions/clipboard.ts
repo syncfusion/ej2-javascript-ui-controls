@@ -176,6 +176,10 @@ export class Clipboard {
         isAction?: boolean, isInternal?: boolean, isFromUpdateAction?: boolean, focus?: boolean
     } & ClipboardEvent): void {
         if (this.parent.isEdit || this.parent.element.getElementsByClassName('e-dlg-overlay').length > 0) {
+            if (this.parent.isEdit) {
+                let editEle: HTMLElement = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement;
+                editEle.style.height = 'auto';
+            }
             return;
         }
         let rfshRange: number[];

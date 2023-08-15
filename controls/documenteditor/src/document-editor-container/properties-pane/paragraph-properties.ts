@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, classList, L10n } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, classList, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { DocumentEditor, WAbstractList, WListLevel } from '../../document-editor/index';
 import { ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -471,13 +471,23 @@ export class Paragraph {
             showClearButton: false,
             change: this.selectStyleValue.bind(this)
         });
+        let itemTemplate: string | Function = '';
         if (!this.container.enableCsp) {
             this.style.open = this.updateOptions.bind(this);
             if (this.isRtl) {
-                this.style.itemTemplate = '<span style="${Style}">${StyleName}</span><span class="${IconClass}"></span>';
+                itemTemplate = initializeCSPTemplate(
+                    function (data: any): string {
+                        return `<span style="${data.Style}">${data.StyleName}</span><span class="${data.IconClass}"></span>`;
+                    }
+                );
             } else {
-                this.style.itemTemplate = '<span class="${IconClass}"></span><span style="${Style}">${StyleName}</span>';
+                itemTemplate = initializeCSPTemplate(
+                    function (data: any): string {
+                        return `<span class="${data.IconClass}"></span><span style="${data.Style}">${data.StyleName}</span>`;
+                    }
+                );
             }
+            this.style.itemTemplate = itemTemplate;
             this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">'
                 + this.localObj.getConstant('Manage Styles') + '...' + '</span>';
             this.style.isStringTemplate = true;

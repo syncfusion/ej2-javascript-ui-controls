@@ -6,7 +6,7 @@
 import { closest, createElement, remove } from '@syncfusion/ej2-base';
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Kanban, KanbanModel, ColumnsModel } from '../../src/kanban/index';
-import { generateKanbanDataVirtualScroll } from './common/kanban-data.spec';
+import { generateKanbanDataVirtualScroll, generateKanbanDataVirtualScrollLessData } from './common/kanban-data.spec';
 import { profile, inMB, getMemoryProfile } from './common/common.spec';
 import * as util from './common/util.spec';
 
@@ -148,6 +148,77 @@ describe('Kanban Virtual Scroll Feature', () => {
                     done();
                 }, 2500);
             }, 500);
+        });
+
+        afterAll(() => {
+            kanbanObj.destroy();
+            remove(document.getElementById(kanbanObj.element.id));
+        });
+    });
+
+    describe('838077 - Kanban Virtual Scroll with less data', () => {
+        let kanbanObj: Kanban;
+        beforeAll(() => {
+            const element: HTMLElement = createElement('div', { id: 'Kanban' });
+            document.body.appendChild(element);
+            // eslint-disable-next-line no-console
+            const defaultOptions: KanbanModel = {
+                dataSource: generateKanbanDataVirtualScrollLessData(),
+                keyField: 'Status',
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open'},
+                    { headerText: 'In Progress', keyField: 'InProgress'},
+                    { headerText: 'Review', keyField: 'Review' },
+                    { headerText: 'Testing', keyField: 'Testing'},
+                    { headerText: 'Done', keyField: 'Close'}
+                ],
+                height: '800px',
+                cardHeight: '120px',
+                enableVirtualization: true,
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                }
+            };
+            kanbanObj = new Kanban(defaultOptions);
+            kanbanObj.appendTo(element);
+        });
+
+        it('Kanban virtual element rendering testing', (done: Function) => {
+            setTimeout(() => {
+                expect(kanbanObj.element.querySelector('.e-kanban-content')).not.toBeNull();
+                expect(kanbanObj.element.querySelector('.e-kanban-content').querySelectorAll('.e-card-wrapper')).not.toBeNull();
+                const cardWrappers: NodeListOf<Element> = kanbanObj.element.querySelector('.e-kanban-content').querySelectorAll('.e-card-wrapper')
+                for (let i: number = 0; i < cardWrappers.length; i++) {
+                    expect(cardWrappers[i].children[0].classList.contains('e-card-virtual-wrapper')).toBe(true);
+                }
+                done();
+            }, 500);
+        });
+
+        it('- Dragging the card from the first column (to drop on another column) - ', (done: Function) => {
+            let key: string;
+            let dragElement: HTMLElement;
+            setTimeout(() => {
+                dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="3"]') as NodeListOf<Element>).item(0) as HTMLElement;
+                key = dragElement.getAttribute('data-key');
+                util.triggerMouseEvent(dragElement, 'mousedown');
+                util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
+                expect(key).toEqual('Open');
+                expect(dragElement.closest('.e-content-cells').classList.contains('e-dragged-column')).toBe(true);
+                done();
+            }, 1000);
+        });
+
+        it(' - Dropping the dragged card in the another column - ', (done: Function) => {
+            setTimeout(() => {
+                const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="5"]').item(0);
+                util.triggerMouseEvent(element, 'mousemove', 250, 500);
+                util.triggerMouseEvent(element, 'mouseup', 250, 500);
+                const droppedElem: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="3"]') as NodeListOf<Element>).item(0) as HTMLElement;
+                expect(droppedElem.previousElementSibling.getAttribute('data-id')).toEqual('5');
+                done();
+            }, 1000);
         });
 
         afterAll(() => {

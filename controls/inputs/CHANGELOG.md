@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### Slider
+
+#### Bug Fixes
+
+- `F45705` - The issue with a changed event in the Slider component has been resolved.
+
 ## 22.2.7 (2023-08-02)
 
 ### TextBox

@@ -5382,7 +5382,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                     if (!id && ((node.shape.type !== 'Text' && node.annotations.length > 0) || (node.shape.type === 'Text'))) {
-                        id = (node.shape.type === 'Text') ? (node.wrapper.children[0].id).split('_')[1] : node.annotations[0].id;
+                        //(EJ2-840331)-Double click on node annotation will open the edit of invisible annotation
+                        if(node.shape.type === 'Text'){
+                            id = (node.wrapper.children[0].id).split('_')[1];
+                         }
+                         else{
+                             for(let i : number = node.annotations.length-1; i >= 0; i--){
+                                 if(node.annotations[parseInt(i.toString(), 10)].visibility){
+                                  id = node.annotations[parseInt(i.toString(), 10)].id;
+                                }
+                            }
+                        }
                     }
                     if (id) { textWrapper = this.getWrapper(node.wrapper, id); }
                 } else { bpmnAnnotation = true; }
@@ -8006,7 +8016,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.deleteVirtualObject) {
             for (let i: number = 0; i < this.scroller.removeCollection.length; i++) {
                 const obj: (NodeModel | ConnectorModel) = this.nameTable[this.scroller.removeCollection[parseInt(i.toString(), 10)]];
-                this.removeElements(obj);
+                //EJ2-840437 - Exception occurs When Removing connector with Virtualization Enabled
+                if(obj !=undefined){
+                    this.removeElements(obj);
+                }
             }
             this.deleteVirtualObject = false;
 

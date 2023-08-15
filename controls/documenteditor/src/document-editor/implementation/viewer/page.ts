@@ -359,6 +359,9 @@ export abstract class Widget implements IWidget {
         while (widget) {
             widgets.unshift(widget);
             widget = widget.previousSplitWidget;
+            if(widget && widget == widget.previousSplitWidget) {
+                break;
+            }
         }
         return widgets;
     }

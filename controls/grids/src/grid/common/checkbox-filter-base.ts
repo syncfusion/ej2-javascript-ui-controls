@@ -1170,9 +1170,11 @@ export class CheckBoxFilterBase {
         while (len--) {
             value = json[parseInt(len.toString(), 10)] as string;
             value = getObject(field, value); //local remote diff, check with mdu
-            const currentFilterValue: string = (typeof value === 'string') && checkboxFilter &&
+            const currentFilterValue: string = (typeof value === 'string') && !(isNullOrUndefined(checkboxFilter)) &&
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            !((checkboxFilter.parent as any).filterSettings.enableCaseSensitivity) ? value.toLowerCase() : value;
+            !(isNullOrUndefined((checkboxFilter.parent as any))) && !(isNullOrUndefined((checkboxFilter.parent as any).filterSettings)) &&
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            !(isNullOrUndefined((checkboxFilter.parent as any).filterSettings.enableCaseSensitivity)) ? value.toLowerCase() : value;
             if (!(currentFilterValue in lookup)) {
                 const obj: Object = {};
                 obj[`${ejValue}`] = value;

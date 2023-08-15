@@ -11,7 +11,10 @@ import { Paragraph } from './paragraph-properties';
 export class TextProperties {
     public element: HTMLElement;
     private container: DocumentEditorContainer;
-    private text: Text;
+    /** 
+    * @private
+    */
+    public text: Text;
     /** 
      * @private
      */

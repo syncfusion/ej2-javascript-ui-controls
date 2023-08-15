@@ -1469,7 +1469,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public setDefaultCharacterFormat(characterFormat: CharacterFormatProperties): void {
-        this.characterFormat = characterFormat;
+        this.characterFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(characterFormat)));
         this.documentHelper.setDefaultDocumentFormat();
         if(!isNullOrUndefined(this.selection)) {
             this.selection.retrieveCurrentFormatProperties();
@@ -1483,7 +1483,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public setDefaultParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
-        this.paragraphFormat = paragraphFormat;
+        this.paragraphFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(paragraphFormat)));
         this.documentHelper.setDefaultDocumentFormat();
         if(!isNullOrUndefined(this.selection)) {
             this.selection.retrieveCurrentFormatProperties();
@@ -1497,7 +1497,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
-        this.sectionFormat = sectionFormat;
+        this.sectionFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(sectionFormat)));
         this.documentHelper.setDefaultDocumentFormat();
         if(!isNullOrUndefined(this.selection)) {
             this.selection.retrieveCurrentFormatProperties();
@@ -2455,6 +2455,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public open(sfdtText: string): void {
+        sfdtText = HelperMethods.sanitizeString(sfdtText);
         if (!isNullOrUndefined(this.viewer)) {
             this.clearPreservedCollectionsInViewer();
             this.documentHelper.userCollection.push('Everyone');
@@ -2561,6 +2562,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo} Returns the form field info.
      */
     public getFormFieldInfo(name: string): TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo {
+        name = HelperMethods.sanitizeString(name);
         const formFields: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formFields.length; i++) {
             if ((formFields[parseInt(i.toString(), 10)].formFieldData.name === name) && (formFields[parseInt(i.toString(), 10)].formFieldData.name !== '')) {
@@ -2577,6 +2579,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public setFormFieldInfo(name: string, formFieldInfo: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo): void {
+        name = HelperMethods.sanitizeString(name);
         const formFields: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formFields.length; i++) {
             if ((formFields[parseInt(i.toString(), 10)].formFieldData.name === name) && (formFields[parseInt(i.toString(), 10)].formFieldData.name !== '')) {
@@ -2598,6 +2601,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public resetFormFields(name?: string): void {
+        if(!isNullOrUndefined(name)) {
+            name = HelperMethods.sanitizeString(name);
+        }
         const formFields: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formFields.length; i++) {
             if (isNullOrUndefined(name) || name === formFields[parseInt(i.toString(), 10)].formFieldData.name) {
@@ -2797,6 +2803,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public save(fileName: string, formatType?: FormatType): void {
+        if(!isNullOrUndefined(fileName)) {
+            fileName = HelperMethods.sanitizeString(fileName);
+        }
         fileName = fileName || 'Untitled';
         if (isNullOrUndefined(this.documentHelper)) {
             throw new Error('Invalid operation.');

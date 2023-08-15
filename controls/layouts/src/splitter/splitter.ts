@@ -2548,6 +2548,11 @@ export class Splitter extends Component<HTMLElement> {
             if ((this as any).isReact) {
                 this.clearTemplate();
             }
+            this.allBars = [];
+            this.allPanes = [];
+            this.previousPane = null;
+            this.nextPane = null;
+            this.currentSeparator = null;
         }
     }
 

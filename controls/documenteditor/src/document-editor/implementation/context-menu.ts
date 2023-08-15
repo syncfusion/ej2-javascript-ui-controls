@@ -6,7 +6,7 @@ import { Selection, ContextElementInfo } from './index';
 import { TextPosition } from './selection/selection-helper';
 import { FieldElementBox, ElementBox, TextFormField, CheckBoxFormField, DropDownFormField } from './viewer/page';
 import { SpellChecker } from './spell-check/spell-checker';
-import { Point } from './editor/editor-helper';
+import { HelperMethods, Point } from './editor/editor-helper';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DialogUtility } from '@syncfusion/ej2-popups';
 import { createElement } from '@syncfusion/ej2-base';
@@ -598,7 +598,7 @@ export class ContextMenu {
         }
     }
 
-    /**
+    /** 
      * To add and customize custom context menu
      * @param {MenuItemModel[]} items - To add custom menu item
      * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
@@ -606,7 +606,7 @@ export class ContextMenu {
      * @returns {void}
      */
     public addCustomMenu(items: MenuItemModel[], isEnable?: boolean, isBottom?: boolean): void {
-        let menuItems: MenuItemModel[] = JSON.parse(JSON.stringify(items));
+        let menuItems: MenuItemModel[] = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(items)));
         this.destroy();
         if (this.spellContextItems.length === 0) {
             this.customItems = items;

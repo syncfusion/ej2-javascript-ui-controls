@@ -441,7 +441,7 @@ export class UndoRedo {
                     }
                 }
                 if (actionData) {
-                    this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args);
+                    this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args, null, null, actionArgs ? (actionArgs as unknown as { isUndoRedo: boolean }).isUndoRedo : null);
                 }
                 if (eventArgs.cfActionArgs) {
                     eventArgs.cfActionArgs.cfModel.forEach((cf: ConditionalFormatModel): void => {
@@ -465,7 +465,7 @@ export class UndoRedo {
                     const addressInfo: { sheetIndex: number, indices: number[] } = this.parent.getAddressInfo(eventArgs.pastedRange);
                     this.updateCellDetails(
                         copiedInfo.cellDetails as PreviousCellDetails[], getSheet(this.parent, addressInfo.sheetIndex),
-                        addressInfo.indices, true, args);
+                        addressInfo.indices, true, args, null, null, actionArgs ? (actionArgs as unknown as { isUndoRedo: boolean }).isUndoRedo : null);
                     if (actionArgs && !isFromUpdateAction) {
                         this.parent.notify(completeAction, actionArgs);
                     }
@@ -729,7 +729,7 @@ export class UndoRedo {
 
     private updateCellDetails(
         cells: PreviousCellDetails[], sheet: SheetModel, range: number[], isRefresh: boolean, args?: CollaborativeEditArgs,
-        preventEvt?: boolean, isColSelected?: boolean): void {
+        preventEvt?: boolean, isColSelected?: boolean, isUndoRedo?: boolean): void {
         const len: number = cells.length;
         const triggerEvt: boolean = args && !preventEvt && (args.action === 'cellSave' || args.action === 'cellDelete' ||
             args.action === 'autofill' || args.action === 'clipboard');
@@ -747,11 +747,15 @@ export class UndoRedo {
             if (prevCell.style && args && (args.action === 'format' || args.action === 'clipboard')) {
                 if (prevCell.style.borderTop && (!cells[i as number].style || !(cells[i as number].style as CellStyleModel).borderTop)) {
                     this.parent.setBorder(
-                        { borderTop: '' }, sheet.name + '!' + getCellAddress(cells[i as number].rowIndex, cells[i as number].colIndex));
+                        { borderTop: '' }, sheet.name + '!' + getCellAddress(cells[i as number].rowIndex, cells[i as number].colIndex), null, isUndoRedo);
                 }
                 if (prevCell.style.borderLeft && (!cells[i as number].style || !(cells[i as number].style as CellStyleModel).borderLeft)) {
                     this.parent.setBorder(
-                        { borderLeft: '' }, sheet.name + '!' + getCellAddress(cells[i as number].rowIndex, cells[i as number].colIndex));
+                        { borderLeft: '' }, sheet.name + '!' + getCellAddress(cells[i as number].rowIndex, cells[i as number].colIndex), null, isUndoRedo);
+                }
+                if (prevCell.style.borderRight && (!cells[i as number].style || !(cells[i as number].style as CellStyleModel).borderRight)) {
+                    this.parent.setBorder(
+                        { borderRight: '' }, sheet.name + '!' + getCellAddress(cells[i as number].rowIndex, cells[i as number].colIndex), null, isUndoRedo);
                 }
                 if (prevCell.style.fontSize && (!cells[i as number].style || !(cells[i as number].style as CellStyleModel).fontSize)) {
                     prevCell.style.fontSize = '11pt'; select = true;

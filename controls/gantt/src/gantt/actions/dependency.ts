@@ -338,8 +338,8 @@ export class Dependency {
         for (let count: number = 0; count < length; count++) {
             ganttRecord = predecessorsCollection[count as number];
             if ((!ganttRecord.hasChildRecords && !this.parent.allowParentDependency) || this.parent.allowParentDependency) {
-               this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
-                if (!ganttRecord.ganttProperties.isAutoSchedule) {
+                this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
+                if (!ganttRecord.ganttProperties.isAutoSchedule && this.parent.editSettings.allowEditing) {
                     this.parent.connectorLineEditModule['calculateOffset'](ganttRecord);
                 }
             }

@@ -1876,7 +1876,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isNotSearchList = false;
             return;
         }
-        if (this.isActive) {
+        if (this.isActive || !isNullOrUndefined(ulElement)) {
             const selectedItem: HTMLElement = this.selectedLI ? <HTMLElement>this.selectedLI.cloneNode(true) : null;
             super.onActionComplete(ulElement, list, e);
             this.updateSelectElementData(this.allowFiltering);
@@ -2588,7 +2588,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private setFooterTemplate(popupEle: HTMLElement): void {
         let compiledString: Function;
         if (this.footer) {
-            if ((this as any).isReact) {
+            if ((this as any).isReact && typeof this.footerTemplate === 'function') {
                 this.clearTemplate(['footerTemplate']);
             } else {
                 this.footer.innerHTML = '';
@@ -2676,6 +2676,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.allowFiltering && newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
             this.actionData = this.actionCompleteData;
+            this.itemData = null;
         } else if (this.allowFiltering && newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
             this.actionCompleteData = this.getModuleName() === 'combobox' ?
                 { ulElement: null, list: null, isUpdated: false } : this.actionCompleteData;
@@ -3146,6 +3147,9 @@ export class DropDownList extends DropDownBase implements IInput {
         this.actionData.ulElement = null;
         if (this.inputElement && !isNullOrUndefined(this.inputElement.onchange)) {
             this.inputElement.onchange = null;
+        }
+        if(this.isAngular) {
+            this.inputElement = null;
         }
         super.destroy();
     }

@@ -296,7 +296,7 @@ export function getDateFromString(date: string): Date {
 let scrollWidth: number = null;
 
 /** @private */
-let pixelRatio: number = window.devicePixelRatio || window.screen.availWidth / document.documentElement.clientWidth;
+let pixelRatio: number = null;
 
 /**
  * Method to get scrollbar width
@@ -306,6 +306,9 @@ let pixelRatio: number = window.devicePixelRatio || window.screen.availWidth / d
  */
 export function getScrollBarWidth(): number {
     if (scrollWidth !== null) { return scrollWidth; }
+    if (pixelRatio === null) {
+        pixelRatio = window.devicePixelRatio || window.screen.availWidth / document.documentElement.clientWidth;
+    }
     const divNode: HTMLElement = createElement('div');
     let value: number = 0;
     divNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';
@@ -322,9 +325,9 @@ export function getScrollBarWidth(): number {
  *
  * @private
  */
-export function resetScrollbarWidth() {
-    const zoomPixelRatio = window.devicePixelRatio || window.screen.availWidth / document.documentElement.clientWidth;
-    if (pixelRatio != zoomPixelRatio) {
+export function resetScrollbarWidth(): void {
+    const zoomPixelRatio: number = window.devicePixelRatio || window.screen.availWidth / document.documentElement.clientWidth;
+    if (pixelRatio && pixelRatio !== zoomPixelRatio) {
         scrollWidth = null;
         pixelRatio = zoomPixelRatio;
     }

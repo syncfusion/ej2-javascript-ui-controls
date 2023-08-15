@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### Common
+
+#### Bug Fixes
+
+- `#I476890` - Memory leak issue in syncfusion components when using enable Persistence.
+
 ## 22.2.5 (2023-07-27)
 
 ### Common

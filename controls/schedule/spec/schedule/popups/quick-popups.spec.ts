@@ -191,9 +191,16 @@ describe('Quick Popups', () => {
         it('Cell Click and open event window with subject value', () => {
             schObj.showQuickInfo = true;
             schObj.dataBind();
+            const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            eventElements[1].click();
+            const editEventPoup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(editEventPoup.getAttribute('aria-label')).toEqual('Edit Event');
+            (schObj.element.querySelector('.e-quick-popup-wrapper').querySelector('.e-close') as HTMLElement).click();
             const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
             workCells[1].click();
             const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup.getAttribute('role')).toEqual('dialog');
+            expect(eventPopup.getAttribute('aria-label')).toEqual('New Event');
             (<HTMLInputElement>eventPopup.querySelector('.' + cls.SUBJECT_CLASS)).value = 'Meeting';
             (<HTMLInputElement>eventPopup.querySelector('.' + cls.QUICK_POPUP_EVENT_DETAILS_CLASS)).click();
             const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;

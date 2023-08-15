@@ -316,6 +316,9 @@ export class Legend extends BaseLegend {
         }
         let availwidth: number = (!this.isRtlEnable) ? (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
             textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + this.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x;
+        if (!this.isVertical && this.isPaging && !this.legend.enablePages) {
+            availwidth = this.legendBounds.width - legendOption.location.x - this.fivePixel;
+        }
         availwidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availwidth) : availwidth;
         if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
             legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);

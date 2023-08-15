@@ -201,7 +201,9 @@ export class CellFormat {
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string,
         sheet: SheetModel): void {
         if (first && first.includes('Column')) { return; }
-        const prevCell: HTMLElement = this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
+        const isRtl: boolean = this.parent.enableRtl;
+        const prevCell: HTMLElement = isRtl ? this.parent.getCell(rowIdx, colIdx + 1, <HTMLTableRowElement>row) :
+            this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
         if (prevCell) {
             let model: CellModel = getCell(rowIdx, colIdx - 1, sheet, false, true);
             if ((!!model.rowSpan && model.rowSpan !== 1) || (!!model.colSpan && model.colSpan !== 1)) {

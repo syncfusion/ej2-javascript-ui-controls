@@ -1600,13 +1600,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             element = dateElement.element;
         }
         let value: string | number | Date | boolean | string[];
-        let rbValue: number; let dropDownObj: DropDownList;
+        let rbValue: number; let dropDownObj: DropDownList | DropDownTree;
         if (element.className.indexOf('e-radio') > -1) {
             // eslint-disable-next-line
             rbValue = parseInt(element.id.split('valuekey')[1], 0);
-            dropDownObj =
-            getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdownlist');
-            this.selectedColumn =  dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
+            if (this.fieldMode === 'Default') {
+                dropDownObj = getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdownlist');
+                this.selectedColumn = (dropDownObj as DropDownList).getDataByValue(dropDownObj.value as string) as ColumnsModel;
+            } else {
+                dropDownObj = getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdowntree');
+                this.selectedColumn = this.getColumn(dropDownObj.value[0]) as ColumnsModel;
+            }
             if (this.selectedColumn.values) {
                 value = this.selectedColumn.values[rbValue as number];
             } else {

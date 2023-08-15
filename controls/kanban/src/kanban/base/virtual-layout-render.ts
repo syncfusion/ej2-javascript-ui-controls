@@ -337,7 +337,8 @@ export class VirtualLayoutRender extends MobileLayout {
                     const overallHeight: number = (this.cardHeight * currentColumnDataCount) + 7; //7 is difference between top space of the scroll element
                     const columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     const singleIndexCardCount: number = Math.ceil(parseFloat(columnWrapper.style.height.split('px')[0]) / this.cardHeight);
-                    const currentColumnBlock: number = Math.floor(currentColumnDataCount / singleIndexCardCount);
+                    const currentColumnBlock: number = singleIndexCardCount > currentColumnDataCount ? currentColumnDataCount :
+                        Math.floor(currentColumnDataCount / singleIndexCardCount);
                     // eslint-disable-next-line prefer-spread
                     blocks = Array.apply(null, Array(currentColumnDataCount)).map(() => ++cards);
                     this.offsets[1] = singleIndexCardCount * this.cardHeight + 7;
@@ -378,7 +379,7 @@ export class VirtualLayoutRender extends MobileLayout {
                     }
                     columnWrapper.appendChild(cardWrapper);
                     if (currentColumnDataCount > 0) {
-                        for (let i: number = currentScrollIndex; i < singleIndexCardCount * 2; i++) {
+                        for (let i: number = currentScrollIndex; i < singleIndexCardCount * 2 && i < columnData.length; i++) {
                             const cardText: string = columnData[i as number][this.parent.cardSettings.headerField] as string;
                             const cardIndex: number = this.parent.actionModule.selectionArray.indexOf(cardText);
                             const cardElement: HTMLElement = this.renderCard(columnData[i as number]);
@@ -878,32 +879,34 @@ export class VirtualLayoutRender extends MobileLayout {
         const draggedTdColummElement: HTMLElement = this.parent.element.querySelector('.e-content-row:not(.e-swimlane-row) [data-key="' + draggedColumnKey + '"]');
         const wrapperELement: HTMLElement = draggedTdColummElement.querySelector('.' + cls.CARD_VIRTUAL_WRAPPER_CLASS);
         const cardsList: NodeList = wrapperELement.querySelectorAll('.' + cls.CARD_CLASS);
-        const lastCardDataId: string = (cardsList[cardsList.length - 1] as HTMLElement).getAttribute('data-id');
-        const firstCardDataId: string = (cardsList[0] as HTMLElement).getAttribute('data-id');
-        let lastCardIndex: number;
-        let firstCardIndex: number;
-        if (cardsList.length < singleIndexCardCount * 2) {
-            for (let i: number = 0; i < draggedColumnData.length; i++) {
-                if (lastCardDataId === (draggedColumnData[i as number][this.parent.cardSettings.headerField]).toString()) {
-                    lastCardIndex = i;
+        if (cardsList.length > 0) {
+            const lastCardDataId: string = (cardsList[cardsList.length - 1] as HTMLElement).getAttribute('data-id');
+            const firstCardDataId: string = (cardsList[0] as HTMLElement).getAttribute('data-id');
+            let lastCardIndex: number;
+            let firstCardIndex: number;
+            if (cardsList.length < singleIndexCardCount * 2) {
+                for (let i: number = 0; i < draggedColumnData.length; i++) {
+                    if (lastCardDataId === (draggedColumnData[i as number][this.parent.cardSettings.headerField]).toString()) {
+                        lastCardIndex = i;
+                    }
+                    if (firstCardDataId === (draggedColumnData[i as number][this.parent.cardSettings.headerField]).toString()) {
+                        firstCardIndex = i;
+                    }
                 }
-                if (firstCardDataId === (draggedColumnData[i as number][this.parent.cardSettings.headerField]).toString()) {
-                    firstCardIndex = i;
-                }
-            }
-            const cardCount: number = cardsList.length;
-            for (let i: number = cardCount; i < singleIndexCardCount * 2; i++) {
-                const isLast: boolean = lastCardIndex === draggedColumnData.length - 1 ? true : false;
-                const nextCardIndex: number = lastCardIndex < draggedColumnData.length ? lastCardIndex + 1 : firstCardIndex - 1;
-                if (nextCardIndex <= draggedColumnData.length) {
-                    const nextCardData: Record<string, any> = draggedColumnData[nextCardIndex as number];
-                    if (!isNoU(nextCardData)) {
-                        const nextCard: HTMLElement = this.renderCard(nextCardData);
-                        this.triggerCardRendering(nextCard, nextCardIndex, draggedColumnData, wrapperELement, isLast);
-                        if (isLast) {
-                            firstCardIndex = nextCardIndex;
-                        } else {
-                            lastCardIndex = nextCardIndex;
+                const cardCount: number = cardsList.length;
+                for (let i: number = cardCount; i < singleIndexCardCount * 2; i++) {
+                    const isLast: boolean = lastCardIndex === draggedColumnData.length - 1 ? true : false;
+                    const nextCardIndex: number = lastCardIndex < draggedColumnData.length ? lastCardIndex + 1 : firstCardIndex - 1;
+                    if (nextCardIndex <= draggedColumnData.length) {
+                        const nextCardData: Record<string, any> = draggedColumnData[nextCardIndex as number];
+                        if (!isNoU(nextCardData)) {
+                            const nextCard: HTMLElement = this.renderCard(nextCardData);
+                            this.triggerCardRendering(nextCard, nextCardIndex, draggedColumnData, wrapperELement, isLast);
+                            if (isLast) {
+                                firstCardIndex = nextCardIndex;
+                            } else {
+                                lastCardIndex = nextCardIndex;
+                            }
                         }
                     }
                 }
@@ -947,7 +950,7 @@ export class VirtualLayoutRender extends MobileLayout {
             indexes = index === maxPage ? [max(index - 2, 1), max(index - 1, 1), index] :
                 [max(index - 1, 1), index, index + 1];
         }
-        return indexes;
+        return indexes.filter(indexRemoveZero => indexRemoveZero > 0);
     }
 
     private getInfoFromView(scrollStatus: VirtualScrollInfo): VirtualScrollInfo {
@@ -964,7 +967,7 @@ export class VirtualLayoutRender extends MobileLayout {
                 isBlockAdded = true;
             }
         }
-        infoType.newBlockIndex = blocks;
+        infoType.newBlockIndex = isBlockAdded ? blocks : infoType.newBlockIndex;
         return infoType;
     }
 
@@ -978,12 +981,12 @@ export class VirtualLayoutRender extends MobileLayout {
         this.offsetKeys = Object.keys(info.offsets);
         this.offsetKeys.some((offset: string) => {
             let iOffset: number = Number(offset);
-            const border: boolean = info.currentScrollTop <= this.offsets[parseInt(offset, 10)]
-                || (iOffset === total && info.currentScrollTop > this.offsets[parseInt(offset, 10)]);
+            const border: boolean = info.currentScrollTop <= info.offsets[parseInt(offset, 10)]
+                || (iOffset === total && info.currentScrollTop > info.offsets[parseInt(offset, 10)]);
             if (border) {
                 const maxPage: number = Math.ceil(total / info.singleIndexCardCount);
                 if (this.offsetKeys.length % 2 !== 0 && iOffset.toString() === this.offsetKeys[this.offsetKeys.length - 2]
-                    && info.currentScrollTop <= this.offsets[this.offsetKeys.length - 1]) {
+                    && info.currentScrollTop <= info.offsets[this.offsetKeys.length - 1]) {
                     iOffset = (iOffset + 1) > maxPage ? maxPage : iOffset + 1;
                 }
                 iOffset = iOffset > maxPage ? maxPage : iOffset;

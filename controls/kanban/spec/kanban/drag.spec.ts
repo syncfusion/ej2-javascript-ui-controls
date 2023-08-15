@@ -1679,3 +1679,47 @@ describe('Drag module', () => {
         });
     });
 });
+describe('840166 - Kanban should allow the whole station as dropdown', () => {
+    let kanbanObj: Kanban;
+    beforeAll((done: DoneFn) => {
+        const model: KanbanModel = {
+            keyField: 'Status',
+            columns: [
+                { headerText: 'Backlog', keyField: 'Open' },
+                { headerText: 'In Progress', keyField: 'InProgress' },
+                { headerText: 'Review', keyField: 'Review' },
+                { headerText: 'Testing', keyField: 'Testing' },
+                { headerText: 'Done', keyField: 'Close' }
+            ],
+            cardSettings: {
+                contentField: 'Summary',
+                headerField: 'Id'
+            }
+        };
+        kanbanObj = util.createKanban(model, kanbanData, done);
+    });
+
+    afterAll(() => {
+        util.destroy(kanbanObj);
+    });
+    it('- Dragging the card from the second column (to drop on first column) - ', (done: Function) => {
+        setTimeout(() => {
+            const dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="74"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 20, 80);
+            expect(dragElement.closest('.e-content-cells').classList.contains('e-dragged-column')).toBe(true);
+            done();
+        }, 1000);
+    });
+
+    it(' - Dropping the dragged card in the another column  at the place of column down- ', (done: Function) => {
+        setTimeout(() => {
+            const element: Element = kanbanObj.element.querySelectorAll('.e-kanban-border').item(2);
+            util.triggerMouseEvent(element, 'mousemove', 50, 400);
+            util.triggerMouseEvent(element, 'mouseup', 50, 400);
+            const droppedElem: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="74"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            expect(droppedElem.parentElement.parentElement.getAttribute('data-key')).toEqual('Review');
+            done();
+        }, 1000);
+    });
+});

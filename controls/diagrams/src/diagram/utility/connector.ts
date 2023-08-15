@@ -1374,6 +1374,10 @@ function findIntermeditatePoints(
                             seg.points.push(point2);
                             seg.points.push(point[parseInt(j.toString(), 10)]);
                             const segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
+                             //EJ2 - Orthogonal connector gets broken when dragging segment thumb
+                             if(ele.segments.length < 4){
+                                segment.points.pop();
+                            }
                             // Bug 834713: Orthogonal connector routing is not proper, When allowNodeOverlap is Set to true.
                             segment.points = segment.points.concat(seg.points);
 

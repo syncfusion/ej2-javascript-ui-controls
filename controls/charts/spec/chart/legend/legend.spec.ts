@@ -1489,6 +1489,7 @@ describe('Chart Legend', () => {
                         color: 'red'
                     },
                     position: 'Bottom',
+                    enablePages: false
                 }
             });
             chartObj.appendTo('#container');
@@ -1501,13 +1502,13 @@ describe('Chart Legend', () => {
             chartObj.loaded = (args: Object): void => {
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 31.5 269.5 L 23.5 273.5 L 31.5 277.5 L 31.5 275.5 L 27.5 273.5 L31.5 271.5 Z' ||
+                expect(path === 'M 25 267.5 L 17 271.5 L 25 275.5 L 25 273.5 L 21 271.5 L25 269.5 Z' ||
                     path === 'M 29 267.5 L 21 271.5 L 29 275.5 L 29 273.5 L 25 271.5 L29 269.5 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 65.5 269.5 L 73.5 273.5 L 65.5 277.5 L 65.5 275.5 L 69.5 273.5 L65.5 271.5 Z'||
+                expect(path === 'M 275 267.5 L 283 271.5 L 275 275.5 L 275 273.5 L 279 271.5 L275 269.5 Z' ||
                     path === 'M 271 267.5 L 279 271.5 L 271 275.5 L 271 273.5 L 275 271.5 L271 269.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1524,16 +1525,16 @@ describe('Chart Legend', () => {
                 xValue = titleElement.getAttribute('x');
                 expect(xValue === '150').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '228' || yValue === '250').toBe(true);
+                expect(yValue === '249' || yValue === '250').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 31.5 285.5 L 23.5 289.5 L 31.5 293.5 L 31.5 291.5 L 27.5 289.5 L31.5 287.5 Z' ||
+                expect(path === 'M 25 262.5 L 17 266.5 L 25 270.5 L 25 268.5 L 21 266.5 L25 264.5 Z' ||
                     path === 'M 29 262.5 L 21 266.5 L 29 270.5 L 29 268.5 L 25 266.5 L29 264.5 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 65.5 285.5 L 73.5 289.5 L 65.5 293.5 L 65.5 291.5 L 69.5 289.5 L65.5 287.5 Z'||
+                expect(path === 'M 275 262.5 L 283 266.5 L 275 270.5 L 275 268.5 L 279 266.5 L275 264.5 Z' ||
                     path === 'M 271 262.5 L 279 266.5 L 271 270.5 L 271 268.5 L 275 266.5 L271 264.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1550,18 +1551,18 @@ describe('Chart Legend', () => {
                 titleElement = document.getElementById('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                   xValue = titleElement.getAttribute('x');
-                expect(xValue === '20.5' || xValue === '28.5').toBe(true);
+                expect(xValue === '20.5' || xValue === '18.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '274.75' || yValue === '253.5').toBe(true);
+                expect(yValue === '274.75' || yValue === '275').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 31.5 277.5 L 23.5 281.5 L 31.5 285.5 L 31.5 283.5 L 27.5 281.5 L31.5 279.5 Z' ||
+                expect(path === 'M 84.5 267.5 L 76.5 271.5 L 84.5 275.5 L 84.5 273.5 L 80.5 271.5 L84.5 269.5 Z' ||
                     path === 'M 83.5 267.5 L 75.5 271.5 L 83.5 275.5 L 83.5 273.5 L 79.5 271.5 L83.5 269.5 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 65.5 277.5 L 73.5 281.5 L 65.5 285.5 L 65.5 283.5 L 69.5 281.5 L65.5 279.5 Z' ||
+                expect(path === 'M 272.5 267.5 L 280.5 271.5 L 272.5 275.5 L 272.5 273.5 L 276.5 271.5 L272.5 269.5 Z' ||
                     path === 'M 269.5 267.5 L 277.5 271.5 L 269.5 275.5 L 269.5 273.5 L 273.5 271.5 L269.5 269.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1578,18 +1579,18 @@ describe('Chart Legend', () => {
                 titleElement = document.getElementById('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '214.5' || xValue === '228.5').toBe(true);
+                expect(xValue === '222.5' || xValue === '228.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '253.5' || yValue === '275').toBe(true);
+                expect(yValue === '274.75' || yValue === '275').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 31.5 277.5 L 23.5 281.5 L 31.5 285.5 L 31.5 283.5 L 27.5 281.5 L31.5 279.5 Z' ||
+                expect(path === 'M 27.5 267.5 L 19.5 271.5 L 27.5 275.5 L 27.5 273.5 L 23.5 271.5 L27.5 269.5 Z' ||
                     path === 'M 30.5 267.5 L 22.5 271.5 L 30.5 275.5 L 30.5 273.5 L 26.5 271.5 L30.5 269.5 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 65.5 277.5 L 73.5 281.5 L 65.5 285.5 L 65.5 283.5 L 69.5 281.5 L65.5 279.5 Z' ||
+                expect(path === 'M 210.5 267.5 L 218.5 271.5 L 210.5 275.5 L 210.5 273.5 L 214.5 271.5 L210.5 269.5 Z' ||
                     path === 'M 211.5 267.5 L 219.5 271.5 L 211.5 275.5 L 211.5 273.5 L 215.5 271.5 L211.5 269.5 Z').toBe(true);
                  opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1605,12 +1606,12 @@ describe('Chart Legend', () => {
             chartObj.loaded = (args: Object): void => {
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 31.5 107 L 23.5 111 L 31.5 115 L 31.5 113 L 27.5 111 L31.5 109 Z' || path === 'M 29 58 L 21 62 L 29 66 L 29 64 L 25 62 L29 60 Z').toBe(true);
+                expect(path === 'M 25 62 L 17 66 L 25 70 L 25 68 L 21 66 L25 64 Z' || path === 'M 29 58 L 21 62 L 29 66 L 29 64 L 25 62 L29 60 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 65.5 107 L 73.5 111 L 65.5 115 L 65.5 113 L 69.5 111 L65.5 109 Z' || path === 'M 271 58 L 279 62 L 271 66 L 271 64 L 275 62 L271 60 Z').toBe(true);
+                expect(path === 'M 275 62 L 283 66 L 275 70 L 275 68 L 279 66 L275 64 Z' || path === 'M 271 58 L 279 62 L 271 66 L 271 64 L 275 62 L271 60 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
                 let legendGroup = document.getElementById('container_chart_legend_translate_g');
@@ -1627,23 +1628,22 @@ describe('Chart Legend', () => {
                 titleElement = document.getElementById('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                console.log(xValue);
                 expect(xValue === '150').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                console.log(yValue);
                 expect(yValue === '65.5' || yValue === '62.5').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 31.5 123 L 23.5 127 L 31.5 131 L 31.5 129 L 27.5 127 L31.5 125 Z' ||
+                expect(path === 'M 25 78 L 17 82 L 25 86 L 25 84 L 21 82 L25 80 Z' ||
                     path === 'M 29 74 L 21 78 L 29 82 L 29 80 L 25 78 L29 76 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 65.5 123 L 73.5 127 L 65.5 131 L 65.5 129 L 69.5 127 L65.5 125 Z' ||
+                expect(path === 'M 275 78 L 283 82 L 275 86 L 275 84 L 279 82 L275 80 Z' ||
                     path === 'M 271 74 L 279 78 L 271 82 L 271 80 L 275 78 L271 76 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
+                console.log(opacity);
                 let legendGroup = document.getElementById('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 6).toBe(true);
                 done();
@@ -1658,18 +1658,18 @@ describe('Chart Legend', () => {
                 titleElement = document.getElementById('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '20.5' || xValue === '28.5').toBe(true);
+                expect(xValue === '20.5' || xValue === '18.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '69.5' || yValue === '91').toBe(true);
+                expect(yValue === '69.5' || yValue === '66.5').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 31.5 115 L 23.5 119 L 31.5 123 L 31.5 121 L 27.5 119 L31.5 117 Z' ||
+                expect(path === 'M 84.5 62 L 76.5 66 L 84.5 70 L 84.5 68 L 80.5 66 L84.5 64 Z' ||
                        path === 'M 89.5 62 L 81.5 66 L 89.5 70 L 89.5 68 L 85.5 66 L89.5 64 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 65.5 115 L 73.5 119 L 65.5 123 L 65.5 121 L 69.5 119 L65.5 117 Z' ||
+                expect(path === 'M 272.5 62 L 280.5 66 L 272.5 70 L 272.5 68 L 276.5 66 L272.5 64 Z' ||
                        path === 'M 269.5 58 L 277.5 62 L 269.5 66 L 269.5 64 L 273.5 62 L269.5 60 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1687,18 +1687,18 @@ describe('Chart Legend', () => {
                 titleElement = document.getElementById('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '222.5' || xValue === '214.5').toBe(true);
+                expect(xValue === '222.5' || xValue === '228.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
-                expect(yValue === '69.5' || yValue === '91').toBe(true);
+                expect(yValue === '69.5' || yValue === '66.5').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 31.5 115 L 23.5 119 L 31.5 123 L 31.5 121 L 27.5 119 L31.5 117 Z' ||
+                expect(path === 'M 27.5 62 L 19.5 66 L 27.5 70 L 27.5 68 L 23.5 66 L27.5 64 Z' ||
                        path === 'M 30.5 58 L 22.5 62 L 30.5 66 L 30.5 64 L 26.5 62 L30.5 60 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 65.5 115 L 73.5 119 L 65.5 123 L 65.5 121 L 69.5 119 L65.5 117 Z' ||
+                expect(path === 'M 210.5 62 L 218.5 66 L 210.5 70 L 210.5 68 L 214.5 66 L210.5 64 Z' ||
                        path === 'M 211.5 58 L 219.5 62 L 211.5 66 L 211.5 64 L 215.5 62 L211.5 60 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1715,13 +1715,13 @@ describe('Chart Legend', () => {
             chartObj.loaded = (args: Object): void => {
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 295 174.75 L 287 178.75 L 295 182.75 L 295 180.75 L 291 178.75 L295 176.75 Z' ||
+                expect(path === 'M 333 61 L 337 53 L 341 61L 339 61 L 337 57L335 61 Z' ||
                     path === 'M 333 61 L 337 53 L 341 61L 339 61 L 337 57L335 61 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 329 174.75 L 337 178.75 L 329 182.75 L 329 180.75 L 333 178.75 L329 176.75 Z' ||
+                expect(path === 'M 333 180.5 L 337 188.5 L 341 180.5L 339 180.5 L 337 184.5L335 180.5 Z' ||
                     path === 'M 333 172.5 L 337 180.5 L 341 172.5L 339 172.5 L 337 176.5L335 172.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1746,13 +1746,13 @@ describe('Chart Legend', () => {
                 expect(yValue === '65' || yValue === '62').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 295 190.75 L 287 194.75 L 295 198.75 L 295 196.75 L 291 194.75 L295 192.75 Z' ||
+                expect(path === 'M 333 77 L 337 69 L 341 77L 339 77 L 337 73L335 77 Z' ||
                     path === 'M 333 77 L 337 69 L 341 77L 339 77 L 337 73L335 77 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 329 190.75 L 337 194.75 L 329 198.75 L 329 196.75 L 333 194.75 L329 192.75 Z' ||
+                expect(path === 'M 333 180.5 L 337 188.5 L 341 180.5L 339 180.5 L 337 184.5L335 180.5 Z' ||
                     path === 'M 333 172.5 L 337 180.5 L 341 172.5L 339 172.5 L 337 176.5L335 172.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1775,13 +1775,13 @@ describe('Chart Legend', () => {
                 expect(yValue === '65' || yValue === '62').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 295 190.75 L 287 194.75 L 295 198.75 L 295 196.75 L 291 194.75 L295 192.75 Z' ||
+                expect(path === 'M 333 77 L 337 69 L 341 77L 339 77 L 337 73L335 77 Z' ||
                     path === 'M 333 77 L 337 69 L 341 77L 339 77 L 337 73L335 77 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 329 190.75 L 337 194.75 L 329 198.75 L 329 196.75 L 333 194.75 L329 192.75 Z' ||
+                expect(path === 'M 333 180.5 L 337 188.5 L 341 180.5L 339 180.5 L 337 184.5L335 180.5 Z' ||
                     path === 'M 333 172.5 L 337 180.5 L 341 172.5L 339 172.5 L 337 176.5L335 172.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1798,13 +1798,13 @@ describe('Chart Legend', () => {
             chartObj.loaded = (args: Object): void => {
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 21 174.75 L 13 178.75 L 21 182.75 L 21 180.75 L 17 178.75 L21 176.75 Z' ||
+                expect(path === 'M 59 61 L 63 53 L 67 61L 65 61 L 63 57L61 61 Z' ||
                     path === 'M 56 61 L 60 53 L 64 61L 62 61 L 60 57L58 61 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 55 174.75 L 63 178.75 L 55 182.75 L 55 180.75 L 59 178.75 L55 176.75 Z' ||
+                expect(path === 'M 59 180.5 L 63 188.5 L 67 180.5L 65 180.5 L 63 184.5L61 180.5 Z' ||
                     path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1827,15 +1827,13 @@ describe('Chart Legend', () => {
                 expect(yValue === '65' || yValue === '62').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 21 190.75 L 13 194.75 L 21 198.75 L 21 196.75 L 17 194.75 L21 192.75 Z' ||
+                expect(path === 'M 59 77 L 63 69 L 67 77L 65 77 L 63 73L61 77 Z' ||
                     path === 'M 56 77 L 60 69 L 64 77L 62 77 L 60 73L58 77 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
-                console.log(opacity);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                console.log(path);
-                expect(path === 'M 55 190.75 L 63 194.75 L 55 198.75 L 55 196.75 L 59 194.75 L55 192.75 Z' ||
+                expect(path === 'M 59 180.5 L 63 188.5 L 67 180.5L 65 180.5 L 63 184.5L61 180.5 Z' ||
                     path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1858,14 +1856,13 @@ describe('Chart Legend', () => {
                 expect(yValue === '65' || yValue === '62').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 21 190.75 L 13 194.75 L 21 198.75 L 21 196.75 L 17 194.75 L21 192.75 Z' ||
+                expect(path === 'M 59 77 L 63 69 L 67 77L 65 77 L 63 73L61 77 Z' ||
                     path === 'M 56 77 L 60 69 L 64 77L 62 77 L 60 73L58 77 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                console.log(path);
-                expect(path === 'M 55 190.75 L 63 194.75 L 55 198.75 L 55 196.75 L 59 194.75 L55 192.75 Z' ||
+                expect(path === 'M 59 180.5 L 63 188.5 L 67 180.5L 65 180.5 L 63 184.5L61 180.5 Z' ||
                     path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
@@ -1888,13 +1885,13 @@ describe('Chart Legend', () => {
                 expect(yValue === '65' || yValue === '62').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 21 190.75 L 13 194.75 L 21 198.75 L 21 196.75 L 17 194.75 L21 192.75 Z' ||
+                expect(path === 'M 59 77 L 63 69 L 67 77L 65 77 L 63 73L61 77 Z' ||
                     path === 'M 56 77 L 60 69 L 64 77L 62 77 L 60 73L58 77 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
-                expect(opacity === '1').toBe(true);
+                expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 55 190.75 L 63 194.75 L 55 198.75 L 55 196.75 L 59 194.75 L55 192.75 Z' ||
+                expect(path === 'M 59 180.5 L 63 188.5 L 67 180.5L 65 180.5 L 63 184.5L61 180.5 Z' ||
                     path === 'M 56 172.5 L 60 180.5 L 64 172.5L 62 172.5 L 60 176.5L58 172.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);

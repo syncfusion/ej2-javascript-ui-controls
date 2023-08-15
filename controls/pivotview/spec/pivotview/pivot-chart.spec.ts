@@ -10,6 +10,7 @@ import { PivotChart } from '../../src/pivotchart/index';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { ILoadedEventArgs } from '@syncfusion/ej2-charts';
+import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 
 describe('Chart - ', () => {
     beforeAll(() => {
@@ -528,6 +529,56 @@ describe('Chart - ', () => {
                 expect(seriesRenderEvent).toBe("SeriesRender");
                 done();
             }, 2000);
+        });
+    });
+
+    describe('Remote Data', () => {
+        let pivotGridObj: PivotView;
+        let originalTimeout: number;
+        let elem: HTMLElement = createElement('div', { id: 'PivotView', styles: 'height:500px; width:100%' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 25000;
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(PivotChart, FieldList, GroupingBar);
+            let remoteData: DataManager = new DataManager({
+                url: 'https://bi.syncfusion.com/northwindservice/api/orders',
+                adaptor: new WebApiAdaptor,
+                crossDomain: true
+            });
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: remoteData,
+                    expandAll: true,
+                    filters: [],
+                    columns: [{ name: 'ProductName', caption: 'Product Name' }],
+                    rows: [{ name: 'ShipCountry', caption: 'Ship Country' }, { name: 'ShipCity', caption: 'Ship City' }],
+                    formatSettings: [{ name: 'UnitPrice', format: 'C0' }],
+                    values: [{ name: 'Quantity' }, { name: 'UnitPrice', caption: 'Unit Price' }]
+                },
+                height: '50%',
+                width: '100%',
+                dataBound: dataBound,
+                showGroupingBar: true,
+                showFieldList: true,
+                displayOption: { view: 'Both' },
+            });
+            pivotGridObj.appendTo('#PivotView');
+        });
+        it('Initial Check', (done: Function) => {
+            setTimeout(function () {
+                expect(document.querySelectorAll('td[aria-colindex="5"]')[0].textContent).toBe("$19");
+                done();
+            }, 15000);
         });
     });
 

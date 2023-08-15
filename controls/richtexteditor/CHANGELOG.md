@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I481854` - Now, pasting the content into the Rich Text Editor, which is rendered inside the Dialog without manually focusing the editor, works properly.
+
+- `#I484797` - Now, pressing the backspace key when the cursor is placed after a line with a `br` tag works properly.
+
 ## 22.2.5 (2023-07-27)
 
 ### RichTextEditor

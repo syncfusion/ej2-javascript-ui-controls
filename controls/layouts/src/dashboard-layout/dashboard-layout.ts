@@ -3033,6 +3033,27 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.dragCollection[i as number].destroy();
         }
         this.removeAllPanel();
+        this.panelCollection = null;
+        this.checkCollision = null;
+        this.mainElement = null;
+        this.dragobj = null;
+        this.dragStartArgs = null;
+        this.dragStopEventArgs = null;
+        this.draggedEventArgs = null;
+        this.sortedArray = null;
+        this.cloneArray = null;
+        this.overlapElement = null;
+        this.overlapElementClone = null;
+        this.dragCollection = [];
+        this.allItems = null;
+        this.moveTarget = null;
+        this.upTarget = null;
+        this.downTarget = null;
+        this.checkingElement = null;
+        this.panelHeaderElement = null;
+        this.panelContent = null;
+        this.panelBody = null;
+        this.table = null;
         super.destroy();
         this.clearTemplate();
         this.renderReactTemplates();

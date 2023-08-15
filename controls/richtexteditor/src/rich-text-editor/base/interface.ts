@@ -842,6 +842,14 @@ export interface IQuickToolbarOptions {
 }
 
 /**
+ * @deprecated
+ */
+export interface IPositionChanged {
+    x: Boolean
+    y: Boolean
+}
+
+/**
  * Provides information about a BeforeQuickToolbarOpen event.
  */
 export interface BeforeQuickToolbarOpenArgs {

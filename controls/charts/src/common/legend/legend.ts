@@ -835,7 +835,9 @@ export class BaseLegend {
                 }
                 count++;
             }
-            if (this.isPaging && this.totalPages > 1 && (this.isBulletChartControl || legend.enablePages)) {
+            this.totalPages = (this.isPaging && !this.isBulletChartControl && !this.legend.enablePages && !this.isVertical &&
+                this.totalPages > this.chartRowCount) ? this.chartRowCount : this.totalPages;
+            if (this.isPaging && this.totalPages > 1) {
                 this.renderPagingElements(chart, legendBounds, textOptions, legendGroup);
             } else {
                 this.totalPages = 1;
@@ -1333,7 +1335,7 @@ export class BaseLegend {
         let x: number = (bounds.x + iconSize / 2);
         let y: number = bounds.y + this.clipPathHeight + ((titleHeight + bounds.height - this.clipPathHeight) / 2);
         if (this.isPaging && !legend.enablePages && !this.isVertical && !this.isBulletChartControl) {
-            x = (bounds.x + this.fivePixel + this.pageButtonSize + titleWidth);
+            x = (bounds.x + this.pageButtonSize + titleWidth);
             y = legend.title && this.isTop ? (bounds.y + padding + titleHeight + (iconSize / 1) + 0.5) :
                 (bounds.y + padding + iconSize + 0.5);
         }
@@ -1342,7 +1344,7 @@ export class BaseLegend {
         if (!isCanvas) {
             if (this.isVertical && !legend.enablePages && !this.isBulletChartControl) {
                 x = bounds.x + (bounds.width / 2);
-                y = bounds.y + (iconSize / 2) + padding + titleHeight;
+                y = bounds.y + (iconSize / 2) + (padding / 2) + titleHeight;
                 symbolOption.opacity = this.backwardArrowOpacity;
                 paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'UpArrow', new Size(iconSize, iconSize), '', symbolOption, 'UpArrow'));
             } else {
@@ -1378,7 +1380,7 @@ export class BaseLegend {
         // Page right arrow rendering calculation started here
         x = textOption.x + padding + (iconSize / 2) + size.width;
         if (this.isPaging && !legend.enablePages && !this.isVertical) {
-            x = (bounds.x + bounds.width - this.fivePixel - this.pageButtonSize - (legend.title && legend.titlePosition === 'Right' ?
+            x = (bounds.x + bounds.width - (this.isBulletChartControl ? this.fivePixel : 0) - this.pageButtonSize - (legend.title && legend.titlePosition === 'Right' ?
                 this.legendTitleSize.width + this.fivePixel : 0));
         }
         symbolOption.id = pageDown;
@@ -1386,7 +1388,7 @@ export class BaseLegend {
         if (!isCanvas) {
             if (this.isVertical && !legend.enablePages && !this.isBulletChartControl) {
                 x = bounds.x + (bounds.width / 2);
-                y = bounds.y + bounds.height - (iconSize / 2) - padding;
+                y = bounds.y + bounds.height - (iconSize / 2);
                 paginggroup.appendChild(
                     drawSymbol({ x: x, y: y }, 'DownArrow', new Size(iconSize, iconSize), '', symbolOption, 'DownArrow')
                 );
@@ -1450,6 +1452,9 @@ export class BaseLegend {
         let size: number = (this.isChartControl || this.isAccChartControl) ? (page ? this.getPageHeight(this.pageHeights, page) : 0) : ((this.clipPathHeight) * page);
         if (!isCanvas && (this.isChartControl || this.isAccChartControl)) {
             this.clipRect.setAttribute('height', this.pageHeights[page as number].toString());
+            if (this.isAccChartControl && this.isPaging && !legend.enablePages && this.isVertical) {
+                this.clipRect.setAttribute('height', this.legendBounds.height.toString());
+            }
         }
         let translate: string = 'translate(0,-' + size + ')';
         if (!this.isChartControl && !this.isBulletChartControl && !this.isStockChartControl && this.isVertical) {

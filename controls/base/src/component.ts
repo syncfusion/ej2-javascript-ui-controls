@@ -91,6 +91,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         if (this.isDestroyed) { return; }
         if (this.enablePersistence) {
             this.setPersistData();
+            this.detachUnloadEvent();
         }
         this.localObserver.destroy();
         if (this.refreshing) { return; }
@@ -150,6 +151,25 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         }
     }
     /**
+     * Adding unload event to persist data when enable persistence true
+     */
+    public attachUnloadEvent():any {
+        this.handleUnload = this.handleUnload.bind(this);
+        window.addEventListener('unload', this.handleUnload);
+    }
+    /**
+     * Handling unload event to persist data when enable persistence true
+     */
+     public handleUnload():any{
+        this.setPersistData();
+    }
+    /**
+     * Removing unload event to persist data when enable persistence true
+     */
+    public detachUnloadEvent():any {
+        window.removeEventListener('unload',this.handleUnload);
+    }
+    /**
      * Appends the control within the given HTML element
      *
      * @param {string | HTMLElement} selector - Target element where control needs to be appended
@@ -170,7 +190,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             }
             if (this.enablePersistence) {
                 this.mergePersistData();
-                window.addEventListener('unload', this.setPersistData.bind(this));
+                this.attachUnloadEvent();
             }
             const inst: Object[] = getValue('ej2_instances', this.element);
             if (!inst || inst.indexOf(this) === -1) {

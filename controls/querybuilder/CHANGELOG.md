@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F183921` - Resolved the Script error thrown while changing Boolean value in dropdowntree fieldMode of QueryBuilder.
+
 ## 22.2.8 (2023-08-08)
 
 ### QueryBuilder

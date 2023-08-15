@@ -1651,14 +1651,14 @@ export class Gantt extends Component<HTMLElement>
         };
         this.focusModule = new FocusModule(this);
         if (this.zoomingLevels.length === 0) {
-            this.zoomingLevels = this.getZoomingLevels();
+            this.setProperties({ zoomingLevels: this.getZoomingLevels() }, true)
         }
         this.resourceFieldsMapping();
         if (isNullOrUndefined(this.resourceFields.unit)) { //set resourceUnit as unit if not mapping
-            this.resourceFields.unit = 'unit';
+            this.setProperties({ resourceFields: { unit: 'unit' } }, true)
         }
         if (!isNullOrUndefined(this.taskFields.work)) {
-            this.taskType = 'FixedWork';
+            this.setProperties({ taskType: 'FixedWork' }, true) 
         }
         this.taskIds = [];
     }

@@ -627,11 +627,13 @@ export class Renderer {
         let isClipped: boolean = false;
         let firstLine: LineWidget = paraWidget.firstChild as LineWidget;
         let paddingLeft: number = 0;
-        for (let i: number = 0; i < firstLine.children.length; i++) {
-            const element: ElementBox = firstLine.children[i] as ElementBox;
-            if (element instanceof TextElementBox) {
-                paddingLeft = element.padding.left;
-                break;
+        if(!isNullOrUndefined(firstLine)) {
+            for (let i: number = 0; i < firstLine.children.length; i++) {
+                const element: ElementBox = firstLine.children[i] as ElementBox;
+                if (element instanceof TextElementBox) {
+                    paddingLeft = element.padding.left;
+                    break;
+                }
             }
         }
         if (paddingLeft > 0) {

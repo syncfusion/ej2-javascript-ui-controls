@@ -125,7 +125,7 @@ export class TaskProcessor extends DateProcessor {
                 }
             }
             if (!this.parent.taskFields.child) {
-                this.parent.taskFields.child = 'Children';
+                this.parent.setProperties({ taskFields: { child: 'Children' } }, true)
             }
             this.constructDataSource(data);
             hierarchicalData = this.hierarchyData;
@@ -575,6 +575,7 @@ export class TaskProcessor extends DateProcessor {
                             segment.endDate = !taskSettings.duration && taskSettings.endDate
                                 && segment.endDate > data.ganttProperties.endDate ? data.ganttProperties.endDate : segment.endDate;
                             segment.offsetDuration = 1;
+                            segment.duration = this.getDuration(segment.startDate, segment.endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
                         }
 
                     } else {
@@ -1169,17 +1170,17 @@ export class TaskProcessor extends DateProcessor {
         let isValid: boolean = false;
         let modifiedsDate: Date = new Date(startDate.getTime());
         let hour: number = 0;
-        if (ganttData && ganttData.durationUnit == 'hour') {
+        if (!isNullOrUndefined(ganttData) && ganttData.durationUnit == 'hour') {
             modifiedsDate = new Date(modifiedsDate.getTime() + ganttData.duration * 60 * 60 * 1000);
         }
-        if (ganttData && ganttData.durationUnit == 'minute') {
+        if (!isNullOrUndefined(ganttData) && (ganttData.durationUnit == 'minute') ||!isNullOrUndefined(ganttData) && ganttData.durationUnit == "day" && ganttData.duration < 1) {
             modifiedsDate = new Date(modifiedsDate.getTime() + ganttData.duration * 60 * 1000);
         }
         for (let i: number = 0; i < this.parent.dayWorkingTime.length; i++) {
             hour = hour + this.parent.dayWorkingTime[i as number].to - this.parent.dayWorkingTime[i as number].from;
         }
         let dateDiff: number = modifiedsDate.getTime() - sDate.getTime();
-        if(ganttData && ganttData.durationUnit == 'minute' && ganttData.duration < (hour * 60)){
+        if(!isNullOrUndefined(ganttData) &&(ganttData.durationUnit == 'minute' && ganttData.duration < (hour * 60)) ||!isNullOrUndefined(ganttData) && ganttData.durationUnit == "day" && ganttData.duration < 1){
             if (tierMode === 'Day') {
                 if ((Math.floor((dateDiff / (1000 * 60 * 60)) % 24) >= hour || dateDiff === 0)) {
                     isValid = true;

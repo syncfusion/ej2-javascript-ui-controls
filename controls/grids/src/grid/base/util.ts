@@ -1861,8 +1861,19 @@ export function performComplexDataOperation(value: string, mapObject: Object): O
 export function setDisplayValue(tr: Object, idx: number, displayVal: string, rows: Row<Column>[], parent?: IGrid,
                                 isContent?: boolean): void {
     const trs: string[] = Object.keys(tr);
+    const actualIndex: number = idx;
     for (let i: number = 0; i < trs.length; i++) {
-        const td: HTMLElement = tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)];
+        let td: HTMLTableCellElement = tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)];
+        if (parent && !parent.isFrozenGrid() && !parent.isRowDragable()) {
+            td = (!isNullOrUndefined(td) && (parseInt(td.getAttribute('data-colindex'), 10) === idx))
+                ? td : tr[parseInt(i.toString(), 10)].querySelector(`td[data-colindex="${idx}"]`);
+            if (isNullOrUndefined(td)) {
+                continue;
+            }
+            else {
+                idx = td.cellIndex;
+            }
+        }
         if (tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell').length && td) {
             setStyleAttribute(<HTMLElement>tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)], { 'display': displayVal });
             if (tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.contains('e-hide')) {
@@ -1877,6 +1888,7 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
                     tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.add('e-hide');
                 }
             }
+            idx = actualIndex;
         }
     }
 }

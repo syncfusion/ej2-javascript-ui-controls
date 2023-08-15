@@ -1144,7 +1144,7 @@ export class BasicFormulas {
         if (this.parent.getFormulaInfoTable().get(formulaAddress)) {
             formulaString = this.parent.getFormulaInfoTable().get(formulaAddress).formulaText;
         }
-        if (value && (value.indexOf('UNIQUE') < 0 ||
+        if (value && (value.toUpperCase().indexOf('UNIQUE') < 0 ||
             (formulaString && !formulaString.toUpperCase().includes('UNIQUE'))) &&
             value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments]) {
             spill = true;
@@ -2057,20 +2057,36 @@ export class BasicFormulas {
         if (absValue.length === 0 || absValue.length > 1) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
-        if (argArr[0].toString().split(this.parent.tic).join('').trim() === '' || argArr[0].indexOf(this.parent.tic) > -1) {
+        if (argArr[0].toString().split(this.parent.tic).join('').trim() === '' || (argArr[0].indexOf(this.parent.tic) > -1 && isNaN(this.parent.parseFloat(argArr[0].split(this.parent.tic).join(''))))) {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
         if (this.parent.isCellReference(argArr[0])) {
             cellvalue = this.parent.getValueFromArg(argArr[0]);
-            if (cellvalue === '') {
-                return this.parent.getErrorStrings()[CommonErrors.name];
+            if (this.parent.getErrorStrings().indexOf(cellvalue) > -1) {
+                return cellvalue;
+            }
+            if (cellvalue === this.parent.trueValue) {
+                cellvalue = '1';
+            }
+            if (cellvalue === '' || cellvalue === this.parent.falseValue) {
+                cellvalue = '0';
             }
             absVal = this.parent.parseFloat(cellvalue);
             if (isNaN(absVal)) {
                 return this.parent.getErrorStrings()[CommonErrors.value];
             }
         } else {
-            absVal = this.parent.parseFloat(argArr[0]);
+            if (argArr[0].split(this.parent.tic).join('') === this.parent.trueValue) {
+                argArr[0] = '1';
+            }
+            if (argArr[0].split(this.parent.tic).join('') === this.parent.falseValue) {
+                argArr[0] = '0';
+            }
+            cellvalue = this.parent.getValueFromArg(argArr[0].split(this.parent.tic).join(''));
+            if (this.parent.getErrorStrings().indexOf(cellvalue) > -1) {
+                return cellvalue;
+            }
+            absVal = this.parent.parseFloat(cellvalue);
             if (isNaN(absVal)) {
                 return this.parent.getErrorStrings()[CommonErrors.name];
             }

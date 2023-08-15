@@ -7,6 +7,14 @@
     display: flex;
   }
 
+  .e-de-svg-border-color {
+    stroke: $de-svg-border-stroke;
+  }
+
+  .e-de-svg-border-fill-color {
+    fill: $de-svg-border-stroke;
+  }
+
   .e-de-container-row {
     display: flex;
     padding-bottom: $de-padding-full;

@@ -36,7 +36,7 @@ export class Text {
     private highlightColorInputElement: HTMLElement;
     private clearFormat: HTMLElement;
     private fontSize: ComboBox;
-    private fontFamily: ComboBox;
+    public fontFamily: ComboBox;
     private isRetrieving: boolean = false;
     public appliedHighlightColor: string = 'rgb(255, 255, 0)';
     public localObj: L10n;
@@ -625,6 +625,10 @@ export class Text {
                 }
                 this.fontFamily.value = fontFamily;
                 this.fontFamily.dataBind();
+                if (isNullOrUndefined(this.fontFamily.getDataByValue(fontFamily))) {
+                    const fontStyleValue: { [key: string]: any } = { 'FontName': fontFamily, 'FontValue': fontFamily };
+                    this.fontFamily.addItem(fontStyleValue);
+                }
             } else {
                 this.fontFamily.value = '';
             }

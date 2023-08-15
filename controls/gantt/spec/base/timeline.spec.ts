@@ -1846,4 +1846,104 @@ describe('Render top Tier alone in Zoom to fit', () => {
             destroyGantt(ganttObj);
         });
     });
+    describe('Bug-841056:console error occurs while using segment data', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: '2019-04-02',
+                        EndDate: '2019-04-25',
+                        Segments: [
+                            {
+                              StartDate: '2019-04-02',
+                              EndDate: '2019-04-16'
+                            },
+                            {
+                              StartDate: '2019-04-17',
+                              EndDate: '2019-04-25'
+                            }
+                          ]
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    segments: 'Segments'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                timelineSettings: {
+                    topTier: {
+                      unit: 'Week',
+                      format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                      unit: 'Day',
+                    },
+                },
+                projectStartDate: new Date('04/01/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Checking 1st segments startdate and enddate', () => {
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].startDate,'MM/dd/yyyy HH:mm')).toEqual('04/02/2019 08:00');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].endDate,'MM/dd/yyyy HH:mm')).toEqual('04/16/2019 17:00');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[1].endDate,'MM/dd/yyyy HH:mm')).toEqual('04/25/2019 17:00');
+          });
+    });
+    describe('Bug:839954-Vertical scroll and taskbar is not fully visible in yearly mode', () => {
+        let ganttObj: Gantt;
+        let tempData: object[] = [
+            {
+                TaskID: 1,
+                TaskName: 'Product Concept',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+            },
+          ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: tempData,
+                    taskFields: {
+                        id: 'TaskID',
+                      name: 'TaskName',
+                      startDate: 'StartDate',
+                      endDate: 'EndDate',
+                    },
+                splitterSettings :{
+                    columnIndex: 2
+                },
+                timelineSettings: {
+                    topTier: {
+                      format: 'yyyy',
+                      unit: 'Year',
+                    },
+                    bottomTier: {
+                      format: 'MMM `yy',
+                      unit: 'None',
+                      count: 1,
+                    },
+                },
+            }, done);
+        });
+        it('Checking scrollbar height in singletier mode', () => {
+            expect(ganttObj.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height).toBe('calc(100% - 46px)');
+        });  
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+    });
 });

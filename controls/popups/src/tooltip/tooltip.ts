@@ -537,13 +537,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         });
     }
 
-    private getScalingFactor(element: HTMLElement): { [key: string]: number } {
-        if (!element) {
-            return { x: 1, y: 1 };
-        }
-        const eleRect = element.getBoundingClientRect();
-        const xScalingFactor: number = (eleRect.width / element.offsetWidth) || 1;
-        const yScalingFactor: number = (eleRect.height / element.offsetHeight) || 1;
+    private getScalingFactor(): { [key: string]: number } {
+        const eleRect = this.tooltipEle.getBoundingClientRect();
+        const xScalingFactor: number = (Math.round(eleRect.width) / this.tooltipEle.offsetWidth) || 1;
+        const yScalingFactor: number = (Math.round(eleRect.height) / this.tooltipEle.offsetHeight) || 1;
         return {
             x: isFinite(xScalingFactor) ? xScalingFactor : 1,
             y: isFinite(yScalingFactor) ? yScalingFactor : 1
@@ -560,7 +557,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         const pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY, !this.isBodyContainer,
                                                       this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
-        const scalingFactors: { [key: string]: number } = this.getScalingFactor(target);
+        const scalingFactors: { [key: string]: number } = this.getScalingFactor();
         const offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position, scalingFactors.x, scalingFactors.y);
         const collisionPosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
         const collisionLeft: number = collisionPosition[0];
@@ -1081,7 +1078,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 const pos: OffsetPosition = calculatePosition(target, elePosHorizontal, elePosVertical, !this.isBodyContainer,
                                                             this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
                 this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
-                const scalingFactors: { [key: string]: number } = this.getScalingFactor(target);
+                const scalingFactors: { [key: string]: number } = this.getScalingFactor();
                 const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos, scalingFactors.x, scalingFactors.y);
                 offsetPos.top -= this.getOffSetPosition('TopBottom', newpos, this.offsetY);
                 offsetPos.left -= this.getOffSetPosition('RightLeft', newpos, this.offsetX);
@@ -1247,7 +1244,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         removeClass([this.tooltipEle], POPUP_CLOSE);
         addClass([this.tooltipEle], POPUP_OPEN);
         this.adjustArrow(event.target as HTMLElement, this.position, this.tooltipPositionX, this.tooltipPositionY);
-        const scalingFactors: { [key: string]: number } = this.getScalingFactor(event.target as HTMLElement);
+        const scalingFactors: { [key: string]: number } = this.getScalingFactor();
         const pos: OffsetPosition = this.calculateTooltipOffset(this.position, scalingFactors.x, scalingFactors.y);
         const x: number = eventPageX + pos.left + this.offsetX;
         const y: number = eventPageY + pos.top + this.offsetY;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I488474` - The issue with "Hovering the checkbox checked items of checkbox is unchecked while using RTL mode" in Bigger mode has been resolved.
+
 ## 22.2.8 (2023-08-08)
 
 ### Checkbox

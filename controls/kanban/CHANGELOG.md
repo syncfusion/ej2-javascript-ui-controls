@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I481342` - Now, kanban `virtualization` works properly when a small amount of data is loaded.
+
+- `#I484188` - Now, column scrolling works properly on Kanban `virtualization` when the Kanban columns have different data sizes.
+
+- `#F45534` - Now, dragging and dropping a card into any position within a column works properly.
+
 ## 22.1.38 (2023-07-11)
 
 ### Kanban

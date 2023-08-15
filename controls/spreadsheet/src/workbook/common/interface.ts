@@ -136,6 +136,7 @@ export interface SetCellFormatArgs {
     onActionUpdate?: boolean;
     cancel?: boolean;
     borderType?: BorderType;
+    isUndoRedo?: boolean;
 }
 
 /** @hidden */

@@ -1253,14 +1253,14 @@ export class BatchEdit {
                 const changes: Object = this.getBatchChanges();
                 editRowIdx = gObj.getCurrentViewRecords().length - changes[literals.deletedRecords].length;
             }
-            for (let i: number = 0; i < insertedRows.length; i++, editRowIdx++) {
+            for (let i: number = 0; i < insertedRows.length; i++) {
                 if (!gObj.isEdit) {
                     for (let j: number = 0; j < this.validationColObj.length; j++) {
                         if (gObj.isEdit) {
                             break;
                         }
-                        else if (insertedRows[parseInt(i.toString(), 10)].querySelectorAll('td')[this.validationColObj[parseInt(j.toString(), 10)].cellIdx].innerText === '') {
-                            this.editCell(editRowIdx, this.validationColObj[parseInt(j.toString(), 10)].field);
+                        else if (insertedRows[parseInt(i.toString(), 10)].querySelectorAll('td:not(.e-hide)')[this.validationColObj[parseInt(j.toString(), 10)].cellIdx].innerHTML === '') {
+                            this.editCell(insertedRows[parseInt(i.toString(), 10)]['rowIndex'], this.validationColObj[parseInt(j.toString(), 10)].field);
                             if (this.validateFormObj()) {
                                 this.saveCell();
                             }

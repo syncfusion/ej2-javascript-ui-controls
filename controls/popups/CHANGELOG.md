@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I488643` - Resolved an issue where the Tooltip does not update properly for the rect and g elements.
+
 ## 22.2.7 (2023-08-02)
 
 ### Spinner

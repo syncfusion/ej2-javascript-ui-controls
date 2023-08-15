@@ -2684,7 +2684,8 @@ class ObjectFinder {
     public findTargetElement(container: Container, position: PointModel, padding?: number): DiagramElement {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
             const element: DiagramElement = container.children[parseInt(i.toString(), 10)];
-            if (element && element.outerBounds.containsPoint(position, padding || 0)) {
+            //Checking whether the annotation is visible or not
+            if (element && element.visible && element.outerBounds.containsPoint(position, padding || 0)) {
                 if (element instanceof Container) {
                     const target: DiagramElement = this.findTargetElement(element, position);
                     if (target) {

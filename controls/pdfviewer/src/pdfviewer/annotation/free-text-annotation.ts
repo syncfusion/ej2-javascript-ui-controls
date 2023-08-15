@@ -851,7 +851,7 @@ export class FreeTextAnnotation {
                     review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author },
                     // eslint-disable-next-line max-len
                     annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
-                    customData: this.pdfViewer.annotationModule.getData('FreeText'), isPrint: this.pdfViewer.freeTextSettings.isPrint,
+                    customData: this.pdfViewer.annotationModule.getData('FreeText'), isPrint: (this.pdfViewer.freeTextSettings && !isNullOrUndefined(this.pdfViewer.freeTextSettings.isPrint)) ? this.pdfViewer.freeTextSettings.isPrint : true,
                     allowedInteractions: allowedInteractions, isReadonly: this.isReadonly
                 };
                 if (this.pdfViewer.enableRtl) {

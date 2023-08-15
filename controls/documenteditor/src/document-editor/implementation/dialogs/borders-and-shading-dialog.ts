@@ -114,24 +114,8 @@ export class BordersAndShadingDialog {
         const dropdownListDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-subcontainer-left'
         });
-        const dropDownList: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
+        const dropDownList: HTMLInputElement = <HTMLInputElement>createElement('input', {
         });
-        dropDownList.innerHTML = '<option value="None">' + localeValue.getConstant('None') + '</option><option value="Single">'
-            + localeValue.getConstant('Single') + '</option><option value="Dot">' + localeValue.getConstant('Dot') + '</option><option value="DashSmallGap">'
-            + localeValue.getConstant('DashSmallGap') + '</option><option value="DashLargeGap">' + localeValue.getConstant('DashLargeGap') + '</option><option value="DashDot">'
-            + localeValue.getConstant('DashDot') + '</option><option value="DashDotDot">' + localeValue.getConstant('DashDotDot') + '</option><option value="Double">'
-            + localeValue.getConstant('Double') + '</option><option value="Triple">' + localeValue.getConstant('Triple') + '</option><option value="ThinThickSmallGap">'
-            + localeValue.getConstant('ThinThickSmallGap') + '</option><option value="ThickThinSmallGap">'
-            + localeValue.getConstant('ThickThinSmallGap') + '</option><option value="ThinThickThinSmallGap">' + localeValue.getConstant('ThinThickThinSmallGap')
-            + '</option><option value="ThinThickMediumGap">' + localeValue.getConstant('ThinThickMediumGap') + '</option><option value="ThickThinMediumGap">'
-            + localeValue.getConstant('ThickThinMediumGap') + '</option><option value="ThinThickThinMediumGap">' + localeValue.getConstant('ThinThickThinMediumGap')
-            + '</option><option value="ThinThickLargeGap">' + localeValue.getConstant('ThinThickLargeGap') + '</option><option value="ThickThinLargeGap">'
-            + localeValue.getConstant('ThickThinLargeGap') + '</option><option value="ThinThickThinLargeGap">' + localeValue.getConstant('ThinThickThinLargeGap')
-            + '</option><option value="SingleWavy">' + localeValue.getConstant('SingleWavy') + '</option><option value="DoubleWavy">'
-            + localeValue.getConstant('DoubleWavy') + '</option><option value="DashDotStroked">' + localeValue.getConstant('DashDotStroked')
-            + '</option><option value="Emboss3D">' + localeValue.getConstant('Emboss3D') + '</option><option value="Engrave3D">' + localeValue.getConstant('Engrave3D')
-            + '</option><option value="Outset">' + localeValue.getConstant('Outset') + '</option><option value="Inset">'
-            + localeValue.getConstant('Inset') + '</option><option value="Thick">' + localeValue.getConstant('Thick') + '</option>';
         const widthcontainerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-container-row'
         });
@@ -485,10 +469,40 @@ export class BordersAndShadingDialog {
             enablePersistence: false
         });
         this.borderWidth.appendTo(widthNumeric);
+        let empList: any = [
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5.5H98" stroke-linejoin="round"/></svg></div>', "LineStyle": "Single" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5.5H98" stroke-linejoin="round" stroke-dasharray="1 1"/></svg></div>', "LineStyle": "Dot" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_1347_1852)"><path d="M3.05176e-05 5.5H98" stroke-linejoin="round" stroke-dasharray="4 1"/></g><defs><clipPath id="clip0_1347_1852"><rect width="98" height="10" fill="white"/></clipPath></defs></svg></div>', "LineStyle": "DashSmallGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5.5H98" stroke-linejoin="round" stroke-dasharray="4 4"/></svg></div>', "LineStyle": "DashLargeGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5.5H98" stroke-linejoin="round" stroke-dasharray="7 3 3 3"/></svg></div>', "LineStyle": "DashDot" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 4.5H98" stroke-linejoin="round" stroke-dasharray="6 2 2 2 2 2"/></svg></div>', "LineStyle": "DashDotDot" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 3.5H98" stroke-linejoin="round"/><path d="M0 5.5H98" stroke-linejoin="round"/></svg></div>', "LineStyle": "Double" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5.5H98" stroke-linejoin="round"/><path d="M0 3.5H98" stroke-linejoin="round"/><path d="M0 7.5H98" stroke-linejoin="round"/></svg></div>', "LineStyle": "Triple" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 4H98" stroke-width="4" stroke-linejoin="round"/><path d="M0 4H98" stroke-width="4" stroke-linejoin="round"/><path d="M0 7.5H98" stroke-linejoin="round"/></svg></div>', "LineStyle": "ThinThickSmallGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 6H98" stroke-width="4" stroke-linejoin="round"/><path d="M0 2.5H98" stroke-linejoin="round"/></svg></div>', "LineStyle": "ThickThinSmallGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 5H98" stroke-width="4" stroke-linejoin="round"/><path d="M0 1.5H98" stroke-linejoin="round"/><path d="M0 8.5H98" stroke-linejoin="round"/></svg></div>', "LineStyle": "ThinThickThinSmallGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 3H98" stroke-width="4" stroke-linejoin="round"/><path d="M0 8H98" stroke-width="2" stroke-linejoin="round"/></svg></div>', "LineStyle": "ThickThinMediumGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 7H98" stroke-width="4" stroke-linejoin="round"/><path d="M0 2H98" stroke-width="2" stroke-linejoin="round"/></svg></div>', "LineStyle": "ThinThickMediumGap" },
+            { "Svg": '<div class="e-de-svg-border-fill-color"><svg style="width:98%;" height="23" viewBox="0 0 98 23" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M98 8H0V9H98V8ZM98 10H0V14H98V10ZM0 15H98V16H0V15Z" /></svg></div>', "LineStyle": "ThinThickThinMediumGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 8.5H98" stroke-linejoin="round"/><path d="M0 3H98" stroke-width="2" stroke-linejoin="round"/></svg></div>', "LineStyle": "ThinThickLargeGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 2.5H98" stroke-linejoin="round"/><path d="M0 8H98" stroke-width="2" stroke-linejoin="round"/></svg></div>', "LineStyle": "ThickThinLargeGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_1347_1892)"><g clip-path="url(#clip0_1407_5)"><path d="M0 0.5H98" stroke-linejoin="round"/><path d="M0 9.5H98" stroke-linejoin="round"/><path d="M0 5H98" stroke-width="2" stroke-linejoin="round"/></g><defs><clipPath id="clip0_1407_5"><rect width="98" height="10" fill="white"/></clipPath></defs></svg></div>', "LineStyle": "ThinThickThinLargeGap" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M3 3H5V4H3V3ZM2 5V4H3V5H2ZM1 6V5H2V6H1ZM1 6V7H0V6H1ZM6 5H5V4H6V5ZM7 6H6V5H7V6ZM9 6V7H7V6H9ZM10 5V6H9V5H10ZM11 4V5H10V4H11ZM13 4H11V3H13V4ZM14 5H13V4H14V5ZM15 6H14V5H15V6ZM17 6V7H15V6H17ZM18 5V6H17V5H18ZM19 4V5H18V4H19ZM21 4H19V3H21V4ZM22 5H21V4H22V5ZM23 6H22V5H23V6ZM25 6V7H23V6H25ZM26 5V6H25V5H26ZM27 4V5H26V4H27ZM29 4H27V3H29V4ZM30 5H29V4H30V5ZM31 6H30V5H31V6ZM33 6V7H31V6H33ZM34 5V6H33V5H34ZM35 4V5H34V4H35ZM37 4H35V3H37V4ZM38 5H37V4H38V5ZM39 6H38V5H39V6ZM41 6V7H39V6H41ZM42 5V6H41V5H42ZM43 4V5H42V4H43ZM45 4H43V3H45V4ZM46 5H45V4H46V5ZM47 6H46V5H47V6ZM49 6V7H47V6H49ZM50 5V6H49V5H50ZM51 4V5H50V4H51ZM53 4H51V3H53V4ZM54 5H53V4H54V5ZM55 6H54V5H55V6ZM57 6V7H55V6H57ZM58 5V6H57V5H58ZM59 4V5H58V4H59ZM61 4H59V3H61V4ZM62 5H61V4H62V5ZM63 6H62V5H63V6ZM65 6V7H63V6H65ZM66 5V6H65V5H66ZM67 4V5H66V4H67ZM69 4H67V3H69V4ZM70 5H69V4H70V5ZM71 6H70V5H71V6ZM73 6V7H71V6H73ZM74 5V6H73V5H74ZM75 4V5H74V4H75ZM77 4H75V3H77V4ZM78 5H77V4H78V5ZM79 6H78V5H79V6ZM81 6V7H79V6H81ZM82 5V6H81V5H82ZM83 4V5H82V4H83ZM85 4H83V3H85V4ZM86 5H85V4H86V5ZM87 6H86V5H87V6ZM89 6V7H87V6H89ZM90 5V6H89V5H90ZM91 4V5H90V4H91ZM93 4H91V3H93V4ZM94 5H93V4H94V5ZM95 6V5H94V6H95ZM95 6V7H97V6H95Z" fill="black"/></svg></div>', "LineStyle": "SingleWavy" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M3 2H5V3H3V2ZM2 4V3H3V4H2ZM2 4V5H1V4H2ZM6 4H5V3H6V4ZM9 4V5H6V4H9ZM10 3V4H9V3H10ZM12 3H10V2H12V3ZM13 4H12V3H13V4ZM16 4V5H13V4H16ZM17 3V4H16V3H17ZM19 3H17V2H19V3ZM20 4H19V3H20V4ZM23 4V5H20V4H23ZM24 3V4H23V3H24ZM26 3H24V2H26V3ZM27 4H26V3H27V4ZM30 4V5H27V4H30ZM31 3V4H30V3H31ZM33 3H31V2H33V3ZM34 4H33V3H34V4ZM37 4V5H34V4H37ZM38 3V4H37V3H38ZM40 3H38V2H40V3ZM41 4H40V3H41V4ZM44 4V5H41V4H44ZM45 3V4H44V3H45ZM47 3H45V2H47V3ZM48 4H47V3H48V4ZM51 4V5H48V4H51ZM52 3V4H51V3H52ZM54 3H52V2H54V3ZM55 4H54V3H55V4ZM58 4V5H55V4H58ZM59 3V4H58V3H59ZM61 3H59V2H61V3ZM62 4H61V3H62V4ZM65 4V5H62V4H65ZM66 3V4H65V3H66ZM68 3H66V2H68V3ZM69 4H68V3H69V4ZM72 4V5H69V4H72ZM73 3V4H72V3H73ZM75 3H73V2H75V3ZM76 4H75V3H76V4ZM79 4V5H76V4H79ZM80 3V4H79V3H80ZM82 3H80V2H82V3ZM83 4H82V3H83V4ZM86 4V5H83V4H86ZM87 3V4H86V3H87ZM89 3H87V2H89V3ZM90 4H89V3H90V4ZM93 4V5H90V4H93ZM94 3V4H93V3H94ZM96 3H94V2H96V3ZM96 3H97V4H96V3ZM2 7H1V8H2V7ZM3 6H2V7H3V6ZM5 6H3V5H5V6ZM6 7H5V6H6V7ZM9 7V8H6V7H9ZM10 6V7H9V6H10ZM12 6H10V5H12V6ZM13 7H12V6H13V7ZM16 7H13V8H16V7ZM17 6H16V7H17V6ZM19 6V5H17V6H19ZM20 7V6H19V7H20ZM23 7H20V8H23V7ZM24 6H23V7H24V6ZM26 6V5H24V6H26ZM27 7V6H26V7H27ZM30 7V8H27V7H30ZM31 6V7H30V6H31ZM33 6H31V5H33V6ZM34 7H33V6H34V7ZM37 7V8H34V7H37ZM38 6V7H37V6H38ZM40 6H38V5H40V6ZM41 7H40V6H41V7ZM44 7H41V8H44V7ZM45 6H44V7H45V6ZM47 6V5H45V6H47ZM48 7V6H47V7H48ZM51 7H48V8H51V7ZM52 6H51V7H52V6ZM54 6V5H52V6H54ZM55 7V6H54V7H55ZM58 7V8H55V7H58ZM59 6V7H58V6H59ZM61 6H59V5H61V6ZM62 7H61V6H62V7ZM65 7V8H62V7H65ZM66 6V7H65V6H66ZM68 6H66V5H68V6ZM69 7H68V6H69V7ZM72 7H69V8H72V7ZM73 6H72V7H73V6ZM75 6V5H73V6H75ZM76 7V6H75V7H76ZM79 7H76V8H79V7ZM80 6H79V7H80V6ZM82 6V5H80V6H82ZM83 7V6H82V7H83ZM86 7V8H83V7H86ZM87 6V7H86V6H87ZM89 6H87V5H89V6ZM90 7H89V6H90V7ZM93 7V8H90V7H93ZM94 6V7H93V6H94ZM96 6H94V5H96V6ZM96 6V7H97V6H96Z" fill="black"/></svg></div>', "LineStyle": "DoubleWavy" },
+            { "Svg": '<div class="e-de-svg-border-fill-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 3H4V4H3V5H2V6H1V7H0V3ZM3 6V5H4V6H3ZM5 5V6H4V7H9V6H10V7H11V6H12V7H17V6H18V7H19V6H20V7H25V6H26V7H27V6H28V7H33V6H34V7H35V6H36V7H41V6H42V7H43V6H44V7H49V6H50V7H51V6H52V7H57V6H58V7H59V6H60V7H65V6H66V7H67V6H68V7H73V6H74V7H75V6H76V7H81V6H82V7H83V6H84V7H89V6H90V7H91V6H92V7H97V6H98V5V3H95V4H94V3H93V4H92V3H87V4H86V3H85V4H84V3H79V4H78V3H77V4H76V3H71V4H70V3H69V4H68V3H63V4H62V3H61V4H60V3H55V4H54V3H53V4H52V3H47V4H46V3H45V4H44V3H39V4H38V3H37V4H36V3H31V4H30V3H29V4H28V3H23V4H22V3H21V4H20V3H15V4H14V3H13V4H12V3H7V4H6V3H5V4H4V5H5ZM5 5H6V4H5V5ZM12 5V4H11V5H10V6H11V5H12ZM13 5V6H12V5H13ZM13 5V4H14V5H13ZM20 5V4H19V5H18V6H19V5H20ZM21 5H22V4H21V5ZM21 5H20V6H21V5ZM28 5V4H27V5H26V6H27V5H28ZM29 5V6H28V5H29ZM29 5H30V4H29V5ZM36 5V4H35V5H34V6H35V5H36ZM37 5V4H38V5H37ZM37 5H36V6H37V5ZM44 5V4H43V5H42V6H43V5H44ZM45 5V6H44V5H45ZM45 5V4H46V5H45ZM52 5V4H51V5H50V6H51V5H52ZM53 5H54V4H53V5ZM53 5H52V6H53V5ZM60 5V4H59V5H58V6H59V5H60ZM61 5V6H60V5H61ZM61 5H62V4H61V5ZM68 5V4H67V5H66V6H67V5H68ZM69 5V4H70V5H69ZM69 5H68V6H69V5ZM76 5V4H75V5H74V6H75V5H76ZM77 5V6H76V5H77ZM77 5V4H78V5H77ZM84 5V4H83V5H82V6H83V5H84ZM85 5H86V4H85V5ZM85 5H84V6H85V5ZM92 5V4H91V5H90V6H91V5H92ZM93 5V6H92V5H93ZM93 5H94V4H93V5ZM3 6H2V7H3V6Z" /></svg></div>', "LineStyle": "DashDotStroked" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 8H98" stroke-width="2" stroke-linejoin="round"/><path d="M0 5H98" stroke="#808080" stroke-width="4" stroke-linejoin="round"/><path d="M0 2H98" stroke="#C0C0C0" stroke-width="2" stroke-linejoin="round"/></svg></div>', "LineStyle": "Emboss3D" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 2H98" stroke-width="2" stroke-linejoin="round"/><path d="M0 5H98" stroke="#808080" stroke-width="4" stroke-linejoin="round"/><path d="M0 8H98" stroke="#C0C0C0" stroke-width="2" stroke-linejoin="round"/></svg></div>', "LineStyle": "Engrave3D" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 1.5H98" stroke="#A0A0A0" stroke-linejoin="round"/><path d="M0 8.5H98" stroke-linejoin="round"/></svg></div>', "LineStyle": "Outset" },
+            { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 1.5H98" stroke-linejoin="round"/><path d="M0 8.5H98" stroke="#A0A0A0" stroke-linejoin="round"/></svg></div>', "LineStyle": "Inset" }
+        ]
         widthNumeric.setAttribute('aria-labelledby', localeValue.getConstant('width'));
         this.borderStyle = new DropDownList({
-            popupHeight: '150px', index: 1,
-            floatLabelType: 'Always', placeholder: localeValue.getConstant('Style'),
+            popupHeight: '150px', dataSource: empList,
+            floatLabelType: 'Always',
+            fields: { text: 'Svg', value: 'LineStyle' },
+            itemTemplate: '<div>${Svg}</div>',
+            valueTemplate: '<div>${Svg}</div>',
+            placeholder: localeValue.getConstant('Style'),
             enableRtl: isRtl
         });
         this.borderStyle.appendTo(dropDownList);
@@ -630,7 +644,7 @@ export class BordersAndShadingDialog {
     private getBorder(type: string): WBorder {
         const border: WBorder = new WBorder();
         border.color = this.borderColorPicker.value;
-        border.lineStyle = <LineStyle>this.borderStyle.text;
+        border.lineStyle = <LineStyle>this.borderStyle.value;
         border.lineWidth = this.borderWidth.value;
         if (type === 'left' || type === 'right') {
             border.space = 4;
@@ -999,7 +1013,7 @@ export class BordersAndShadingDialog {
             if (!isNullOrUndefined(tableFormat) && !isNullOrUndefined(tableFormat.borders)) {
                 this.cloneBorders(tableFormat.borders);
                 if (isNullOrUndefined(tableFormat.borders) || isNullOrUndefined(tableFormat.borders.top)) {
-                    lineStyle = 1;
+                    lineStyle = 0;
                     borderColor = '#000000';
                     borderWidth = 0;
                     fillColor = '#000000';
@@ -1024,7 +1038,7 @@ export class BordersAndShadingDialog {
             this.cloneBorders(paraFormat.borders);
             let border = this.getSelectionBorderFormat();
             if (!border.hasValues()) {
-                lineStyle = 1;
+                lineStyle = 0;
                 borderColor = '#000000';
                 borderWidth = 0.5;
             } else {
@@ -1241,31 +1255,30 @@ export class BordersAndShadingDialog {
     }
     private getLineStyle(lineStyle: LineStyle): number {
         switch (lineStyle) {
-            case 'Single': return 1;
-            case 'Dot': return 2;
-            case 'DashSmallGap': return 3;
-            case 'DashLargeGap': return 4;
-            case 'DashDot': return 5;
-            case 'DashDotDot': return 6;
-            case 'Double': return 7;
-            case 'Triple': return 8;
-            case 'ThinThickSmallGap': return 9;
-            case 'ThickThinSmallGap': return 10;
-            case 'ThinThickThinSmallGap': return 11;
-            case 'ThinThickMediumGap': return 12;
-            case 'ThickThinMediumGap': return 13;
-            case 'ThinThickThinMediumGap': return 14;
-            case 'ThinThickLargeGap': return 15;
-            case 'ThickThinLargeGap': return 16;
-            case 'ThinThickThinLargeGap': return 17;
-            case 'SingleWavy': return 18;
-            case 'DoubleWavy': return 19;
-            case 'DashDotStroked': return 20;
-            case 'Emboss3D': return 21;
-            case 'Engrave3D': return 22;
-            case 'Outset': return 23;
-            case 'Inset': return 24;
-            case 'Thick': return 25;
+            case 'Single': return 0;
+            case 'Dot': return 1;
+            case 'DashSmallGap': return 2;
+            case 'DashLargeGap': return 3;
+            case 'DashDot': return 4;
+            case 'DashDotDot': return 5;
+            case 'Double': return 6;
+            case 'Triple': return 7;
+            case 'ThinThickSmallGap': return 8;
+            case 'ThickThinSmallGap': return 9;
+            case 'ThinThickThinSmallGap': return 10;
+            case 'ThinThickMediumGap': return 11;
+            case 'ThickThinMediumGap': return 12;
+            case 'ThinThickThinMediumGap': return 13;
+            case 'ThinThickLargeGap': return 14;
+            case 'ThickThinLargeGap': return 15;
+            case 'ThinThickThinLargeGap': return 16;
+            case 'SingleWavy': return 17;
+            case 'DoubleWavy': return 18;
+            case 'DashDotStroked': return 29;
+            case 'Emboss3D': return 20;
+            case 'Engrave3D': return 21;
+            case 'Outset': return 22;
+            case 'Inset': return 23;
         }
         return 0;
     }

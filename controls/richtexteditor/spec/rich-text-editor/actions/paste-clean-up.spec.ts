@@ -2960,3 +2960,60 @@ describe("BLAZ-30316 - Image file data in the after paste cleanup event testing 
         destroy(rteObj);
     });
 });
+
+describe("838345- Cut and paste not working properly when input element as range when focused  - ", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+    let innerHTML: string = "insertedText";
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            pasteCleanupSettings: {
+                prompt: true
+            },
+            enterKey: 'BR',
+            value: innerHTML
+        });
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+        done();
+    });
+    it("cut and paste not working properly when input element as range when focused - ", (done) => {
+        let localElem: string = `<p>Pasted Content</p>`;
+        keyBoardEvent.clipboardData = {
+            getData: () => {
+                return localElem;
+            },
+            items: []
+        };
+        rteObj.value = '<p>Hello</p>';
+        rteObj.pasteCleanupSettings.deniedTags = [];
+        rteObj.pasteCleanupSettings.deniedAttrs = [];
+        rteObj.pasteCleanupSettings.allowedStyleProps = [];
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        editorObj.nodeSelection.setSelectionText(document, (rteObj as any).inputElement, (rteObj as any).inputElement, 0, 0);
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+            if (rteObj.pasteCleanupSettings.prompt) {
+                let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+                keepFormat[0].click();
+                let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+                pasteOK[0].click();
+            }
+            expect((rteObj as any).inputElement.innerHTML === `<p>Pasted Content</p><p>Hello</p>`).toBe(true)
+            done();
+        }, 50);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

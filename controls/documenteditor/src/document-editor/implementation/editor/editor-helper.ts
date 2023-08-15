@@ -1,4 +1,4 @@
-import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
@@ -90,6 +90,21 @@ export class HelperMethods {
     }
     /**
      * @private
+     * Sanitize the string for xss string content
+     * @param value
+     * @returns 
+     */
+    public static sanitizeString(value: string): string {
+        if(isNullOrUndefined(value)) return '';
+        const sanitizedContent = SanitizeHtmlHelper.sanitize(value)
+                                    .replace(/&amp;/g, '&')
+                                    .replace(/&nbsp;/g, String.fromCharCode(160))
+                                    .replace(/&gt;/g, '>')
+                                    .replace(/&lt;/g, '<');
+        return sanitizedContent;
+    }
+    /**
+     * @private
      * Get the SFDT document from the optimized SFDT.
      * @param json 
      * @returns 
@@ -104,6 +119,7 @@ export class HelperMethods {
             let str: string = new TextDecoder("utf-8").decode(value);
             json = JSON.parse(str);
         }
+        json = JSON.parse(this.sanitizeString(JSON.stringify(json)));
         return json;
     }
     /* eslint-enable */

@@ -4322,7 +4322,7 @@ export class PdfViewerBase {
         }
         this.diagramMouseDown(event);
         // eslint-disable-next-line max-len
-        if (this.action === 'Perimeter' || this.action === 'Polygon' || this.action === 'DrawTool' || this.action === 'Drag' || this.action.indexOf('Rotate') !== -1 || this.action.indexOf('Resize') !== -1) {
+        if (this.action === 'Perimeter' || this.action === 'Distance' || this.action === 'Line' || this.action === 'Polygon' || this.action === 'DrawTool' || this.action === 'Drag' || this.action.indexOf('Rotate') !== -1 || this.action.indexOf('Resize') !== -1) {
             event.preventDefault();
         }
     };

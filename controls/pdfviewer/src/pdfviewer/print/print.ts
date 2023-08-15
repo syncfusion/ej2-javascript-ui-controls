@@ -161,18 +161,19 @@ export class Print {
                                 const shapeAnnotation: number[] = printCollection.shapeAnnotation;
                                 const measureShapeAnnotation: number[] = printCollection.measureShapeAnnotation;
                                 const stampAnnotation: number[] = printCollection.stampAnnotations;
+                                const freeTextAnnotation: number[] = printCollection.freeTextAnnotation;
                                 // eslint-disable-next-line
                                 let stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
                                 // eslint-disable-next-line max-len
-                                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, printImage.pageNumber, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
+                                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, printImage.pageNumber, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation, freeTextAnnotation);
                             } else {
                                 // eslint-disable-next-line max-len
-                                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, printImage.pageNumber, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation);
+                                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, printImage.pageNumber, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation, printCollection.freeTextAnnotation);
                             }
                         }
                         if (proxy.pdfViewerBase.isAnnotationCollectionRemoved) {
                             // eslint-disable-next-line max-len
-                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, printImage.pageNumber, null, null, null, null);
+                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, printImage.pageNumber, null, null, null, null, null);
                         }
                     }
                     const currentPageNumber: number = printImage.pageNumber;

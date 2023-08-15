@@ -556,8 +556,10 @@ export class Render {
      * @hidden
      */
     public dataManagerFailure(e: { result: Object[] }, args: NotifyArgs): void {
-        this.ariaService.setOptions(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), { busy: false, invalid: true });
-        this.setRowCount(1);
+        if (!isNullOrUndefined(this.parent.contentModule)) {
+            this.ariaService.setOptions(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), { busy: false, invalid: true });
+            this.setRowCount(1);
+        }
         this.parent.trigger(events.actionFailure, { error: e });
         this.parent.hideSpinner();
         this.parent.removeMaskRow();

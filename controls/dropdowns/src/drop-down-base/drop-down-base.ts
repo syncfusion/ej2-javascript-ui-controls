@@ -248,6 +248,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isDynamicDataChange: boolean = false;
     protected addedNewItem: boolean = false;
     protected isAddNewItemTemplate: boolean = false;
+    private isRequesting: boolean = false;
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -839,61 +840,67 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.isActive = true;
         const eventArgs: ActionBeginEventArgs = { cancel: false, data: dataSource, query: query };
         this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
-        this.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginEventArgs) => {
-            if (!eventArgs.cancel) {
-                this.showSpinner();
-                if (dataSource instanceof DataManager) {
-                    this.isRequested = true;
-                    if (this.isDataFetched) {
-                        this.emptyDataRequest(fields);
-                        return;
-                    }
-                    (eventArgs.data as DataManager).executeQuery(this.getQuery(eventArgs.query as Query)).then((e: Object) => {
-                        this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
-                        this.trigger('actionComplete', e, (e: Object) => {
-                            if (!(e as { [key: string]: object }).cancel) {
-                                const listItems: { [key: string]: Object }[] = (e as ResultData).result;
-                                if (listItems.length === 0) {
-                                    this.isDataFetched = true;
+        if(!this.isRequesting) {
+            this.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginEventArgs) => {
+                if (!eventArgs.cancel) {
+                    this.isRequesting = true;
+                    this.showSpinner();
+                    if (dataSource instanceof DataManager) {
+                        this.isRequested = true;
+                        if (this.isDataFetched) {
+                            this.emptyDataRequest(fields);
+                            return;
+                        }
+                        (eventArgs.data as DataManager).executeQuery(this.getQuery(eventArgs.query as Query)).then((e: Object) => {
+                            this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
+                            this.trigger('actionComplete', e, (e: Object) => {
+                                if (!(e as { [key: string]: object }).cancel) {
+                                    this.isRequesting = false;
+                                    const listItems: { [key: string]: Object }[] = (e as ResultData).result;
+                                    if (listItems.length === 0) {
+                                        this.isDataFetched = true;
+                                    }
+                                    ulElement = this.renderItems(listItems, fields);
+                                    this.onActionComplete(ulElement, listItems, e);
+                                    if (this.groupTemplate) {
+                                        this.renderGroupTemplate(ulElement);
+                                    }
+                                    this.isRequested = false;
+                                    this.bindChildItems(listItems, ulElement, fields, e);
                                 }
-                                ulElement = this.renderItems(listItems, fields);
-                                this.onActionComplete(ulElement, listItems, e);
+                            });
+                        }).catch((e: Object) => {
+                            this.isRequested = false;
+                            this.isRequesting = false;
+                            this.onActionFailure(e);
+                            this.hideSpinner();
+                        });
+                    } else {
+                        const dataManager: DataManager = new DataManager(eventArgs.data as DataOptions | JSON[]);
+                        const listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
+                            this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
+                        const localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
+                        this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
+                        this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
+                            if (!localDataArgs.cancel) {
+                                this.isRequesting = false;
+                                ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);                            
+                                this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object }[], event);
                                 if (this.groupTemplate) {
                                     this.renderGroupTemplate(ulElement);
                                 }
-                                this.isRequested = false;
-                                this.bindChildItems(listItems, ulElement, fields, e);
+                                this.bindChildItems(localDataArgs.result as { [key: string]: Object }[], ulElement, fields);
+                                setTimeout(() => {
+                                    if (this.getModuleName() === 'multiselect' && this.itemTemplate != null && (ulElement.childElementCount > 0 && (ulElement.children[0].childElementCount > 0 || (this.fields.groupBy && ulElement.children[1] && ulElement.children[1].childElementCount > 0)))) {
+                                        this.updateDataList();
+                                    }
+                                });
                             }
                         });
-                    }).catch((e: Object) => {
-                        this.isRequested = false;
-                        this.onActionFailure(e);
-                        this.hideSpinner();
-                    });
-                } else {
-                    const dataManager: DataManager = new DataManager(eventArgs.data as DataOptions | JSON[]);
-                    const listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
-                        this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
-                    const localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
-                    this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
-                    this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
-                        if (!localDataArgs.cancel) {
-                            ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);                            
-                            this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object }[], event);
-                            if (this.groupTemplate) {
-                                this.renderGroupTemplate(ulElement);
-                            }
-                            this.bindChildItems(localDataArgs.result as { [key: string]: Object }[], ulElement, fields);
-                            setTimeout(() => {
-                                if (this.getModuleName() === 'multiselect' && this.itemTemplate != null && (ulElement.childElementCount > 0 && (ulElement.children[0].childElementCount > 0 || (this.fields.groupBy && ulElement.children[1] && ulElement.children[1].childElementCount > 0)))) {
-                                    this.updateDataList();
-                                }
-                            });
-                        }
-                    });
+                    }
                 }
-            }
-        });
+            });
+        }
     }
     private bindChildItems(
         listItems: { [key: string]: Object }[],

@@ -357,8 +357,12 @@
         margin: 0;
 
         &:hover {
-          background-color: $cbox-hover-bgcolor;
-          border-color: $cbox-hover-border-color;
+          @if $skin-name != 'FluentUI' {
+            &.e-check {
+              background-color: $cbox-checkmark-hover-bgcolor;
+              border-color: $cbox-checkmark-hover-border-color;
+            }
+          }
           @if $skin-name == 'FluentUI' {
             &:not(.e-check),
             &:not(.e-stop)::before {

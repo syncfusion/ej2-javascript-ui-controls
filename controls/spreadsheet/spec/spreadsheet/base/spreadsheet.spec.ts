@@ -793,6 +793,19 @@ describe('Spreadsheet base module ->', () => {
             expect(spreadsheet.sheets[0].columns[3].width).toBe(64);
             done();
         });
+        it('I489622 -> setColumnsWidth without passing ranges ', (done: Function) => {
+            helper.invoke('setColumnsWidth', [130]);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].columns[0].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[1].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[2].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[4].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[5].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[6].width).toBe(130);
+            expect(spreadsheet.sheets[0].columns[7].width).toBe(130);
+            done();
+        });
     });
 
     describe('OnProperty change checking ->', () => {

@@ -20,6 +20,7 @@ import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeC
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DialogUtility } from '@syncfusion/ej2-popups';
+import { Text } from './properties-pane/text-properties';
 /**
  * Document Editor container component.
  */
@@ -702,6 +703,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     if (this.documentEditor) {
                         this.customizeDocumentEditorSettings();
                     }
+                    if (!isNullOrUndefined(newModel.documentEditorSettings.fontFamilies)) {
+                        const fontFamilyValue: string[] = newModel.documentEditorSettings.fontFamilies;
+                        this.refreshFontFamilies(fontFamilyValue);
+                    }
                     break;
                 case 'toolbarItems':
                     if (this.toolbarModule) {
@@ -834,19 +839,19 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     private setserverActionSettings(): void {
         if (this.serviceUrl) {
-            this.documentEditor.serviceUrl = this.serviceUrl;
+            this.documentEditor.serviceUrl = HelperMethods.sanitizeString(this.serviceUrl);
         }
         if (this.serverActionSettings.spellCheck) {
-            this.documentEditor.serverActionSettings.spellCheck = this.serverActionSettings.spellCheck;
+            this.documentEditor.serverActionSettings.spellCheck = HelperMethods.sanitizeString(this.serverActionSettings.spellCheck);
         }
         if (this.serverActionSettings.restrictEditing) {
-            this.documentEditor.serverActionSettings.restrictEditing = this.serverActionSettings.restrictEditing;
+            this.documentEditor.serverActionSettings.restrictEditing = HelperMethods.sanitizeString(this.serverActionSettings.restrictEditing);
         }
         if (this.serverActionSettings.systemClipboard) {
-            this.documentEditor.serverActionSettings.systemClipboard = this.serverActionSettings.systemClipboard;
+            this.documentEditor.serverActionSettings.systemClipboard = HelperMethods.sanitizeString(this.serverActionSettings.systemClipboard);
         }
         if (this.headers) {
-            this.documentEditor.headers = this.headers;
+            this.documentEditor.headers =  JSON.parse(HelperMethods.sanitizeString(JSON.stringify(this.headers)));
         }
     }
     private customizeDocumentEditorSettings(): void {
@@ -870,10 +875,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             }
         }
         if (this.documentEditorSettings.searchHighlightColor) {
-            this.documentEditor.documentEditorSettings.searchHighlightColor = this.documentEditorSettings.searchHighlightColor;
+            this.documentEditor.documentEditorSettings.searchHighlightColor = HelperMethods.sanitizeString(this.documentEditorSettings.searchHighlightColor);
         }
         if (this.documentEditorSettings.fontFamilies) {
-            this.documentEditor.documentEditorSettings.fontFamilies = this.documentEditorSettings.fontFamilies;
+            this.documentEditor.documentEditorSettings.fontFamilies = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(this.documentEditorSettings.fontFamilies)));
         }
         if (this.documentEditorSettings.collaborativeEditingSettings) {
             this.documentEditor.documentEditorSettings.collaborativeEditingSettings = this.documentEditorSettings.collaborativeEditingSettings;
@@ -1140,6 +1145,20 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
     }
     /**
+    * @private
+    */
+    public refreshFontFamilies(fontFamilies: string[]): void {
+        if (!isNullOrUndefined(this.tableProperties) && !isNullOrUndefined(this.tableProperties.tableTextProperties) && !isNullOrUndefined(this.tableProperties.tableTextProperties.text)) {
+            const text: Text = this.tableProperties.tableTextProperties.text;
+            text.fontFamily.refresh();
+            for (let i: number = 0; i < fontFamilies.length; i++) {
+                const fontValue: string = fontFamilies[i];
+                const fontStyleValue: { [key: string]: any } = { 'FontName': fontValue, 'FontValue': fontValue };
+                text.fontFamily.addItem(fontStyleValue, i);
+            }
+        }
+    }
+    /**
      * @private
      */
     public onContentChange(): void {
@@ -1160,6 +1179,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentSettings) && !isNullOrUndefined(this.documentEditor)
             && !isNullOrUndefined(this.documentEditor.documentSettings)) {
             this.documentSettings.compatibilityMode = this.documentEditor.documentSettings.compatibilityMode;
+        }
+        if (!isNullOrUndefined(this.documentEditorSettings) && !isNullOrUndefined(this.documentEditorSettings.fontFamilies)) {
+            const fontFamilyValue: string[] = this.documentEditorSettings.fontFamilies;
+            this.refreshFontFamilies(fontFamilyValue);
         }
         if (this.toolbarModule) {
             this.toolbarModule.isCommentEditing = false;

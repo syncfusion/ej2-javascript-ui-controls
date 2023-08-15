@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I483293` -  Fixed memory leak issue in Splitter component.
+
 ## 22.1.37 (2023-07-04)
 
 ### Splitter

@@ -1507,7 +1507,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public setColumnsWidth(width: number = 64, ranges?: string[]): void {
         if (!ranges) {
-            ranges = [`A:${getColumnHeaderText(this.getActiveSheet().usedRange.colIndex)}`];
+            ranges = [`A:${getColumnHeaderText(this.getActiveSheet().usedRange.colIndex + 1)}`];
         }
         this.setSize(width, ranges, (headerText: string) => getColIndex(headerText), this.setColWidth.bind(this));
     }

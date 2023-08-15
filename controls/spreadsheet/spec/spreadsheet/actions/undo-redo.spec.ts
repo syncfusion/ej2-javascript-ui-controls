@@ -162,7 +162,10 @@ describe('Undo redo ->', () => {
         it('redo after Wrongly applied Unique Formula->', (done: Function) => {
             let spreadsheet: Spreadsheet = helper.getInstance();
             helper.edit('J1', '=unique(e2:e11)');
-            expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('#SPILL!');
+            expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('30');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('10');
             helper.edit('J1', '=UNIQUE(E2:E11)');
             expect(spreadsheet.sheets[0].rows[0].cells[9].formula).toBe('=UNIQUE(E2:E11)');
             expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('20');

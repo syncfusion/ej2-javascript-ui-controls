@@ -335,8 +335,9 @@ export class HtmlEditor {
             currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH' &&
             isPreviousNotContentEditable) {
             const checkNode: Node = currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer;
-            if (!this.parent.formatter.editorManager.domNode.isBlockNode(checkNode as Element) &&
-                !isNOU(checkNode.previousSibling) && checkNode.previousSibling.nodeName === 'BR') {
+            if ((!this.parent.formatter.editorManager.domNode.isBlockNode(checkNode as Element) &&
+                !isNOU(checkNode.previousSibling) && checkNode.previousSibling.nodeName === 'BR') ||
+                (!isNOU(currentRange.startContainer.previousSibling) && currentRange.startContainer.previousSibling.nodeName === 'BR')) {
                 return;
             }
             this.rangeElement = (this.getRootBlockNode(currentRange.startContainer) as HTMLElement);

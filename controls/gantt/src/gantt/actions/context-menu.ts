@@ -323,7 +323,7 @@ export class ContextMenu {
                 this.parent.ganttChartModule.targetElement;
         // Closed edited cell before opening context menu
         // eslint-disable-next-line
-        if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit && target.parentElement.classList.contains('e-row')) {
+        if ((!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit && target.parentElement.classList.contains('e-row')) || target.parentElement.classList.contains('e-treecolumn-container')) {
             this.parent.treeGrid.closeEdit();
         }
         if (!isNullOrUndefined(args.element) && args.element.id === this.parent.element.id + '_contextmenu') {

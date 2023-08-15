@@ -4612,3 +4612,62 @@ describe('EJ2-837195 - Inline and Batch Edit mode behave differently when column
         gridObj = null;
     });
 });
+
+describe('EJ2-841523 - Batch Adding is not working properly with hidden primary key column =>', function () {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0,15),
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                allowPaging: true,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: false },
+                    { field: 'CustomerID', type: 'string', validationRules: { required: true } },
+                    { field: 'ShipCity', validationRules: { required: true }},
+                    { field: 'ShipCountry', validationRules: { required: true }},
+                ],
+            }, done);
+    });
+
+    it('Add the row', function (done) {
+        let batchAdd = (args?: any): void => {
+            gridObj.batchAdd = null;
+            done();
+        };
+        gridObj.batchAdd = batchAdd;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+
+    it('Editing the first row', function (done) {
+        let cellEdit = (args?: any): void => {
+            gridObj.cellEdit = null;
+            done();
+        };
+        gridObj.cellEdit = cellEdit;
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
+        gridObj.editModule.editCell(0, 'ShipCity');
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'chennai';
+        gridObj.editModule.editCell(0, 'ShipCountry');
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'india';
+    })
+    
+    it('Editing the second row', function (done) {
+        let batchAdd = (args?: any): void => {
+            gridObj.batchAdd = null;
+            done();
+        };
+        gridObj.batchAdd = batchAdd;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'secondupdated';
+        (gridObj.editModule as any).editModule.clickHandler({ target: gridObj.element.querySelectorAll('.e-row')[0].childNodes[2] });
+        expect(gridObj.element.querySelectorAll('.e-insertedrow')[0].querySelectorAll('td')[2].classList.contains('e-editedbatchcell')).toBeTruthy();
+    })
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

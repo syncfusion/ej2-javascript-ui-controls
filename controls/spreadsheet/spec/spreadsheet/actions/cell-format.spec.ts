@@ -668,7 +668,7 @@ describe('Cell Format ->', () => {
             });
         });		
     });
-    describe('EJ2-58338 ->', () => {
+    describe('EJ2-58338, EJ2-840548 ->', () => {
         beforeEach((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -691,6 +691,33 @@ describe('Cell Format ->', () => {
             expect(spreadsheet.sheets[0].rows[0].cells[1].value).toBeUndefined();
             expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBeUndefined();
             done();
+        });
+        it('Cell borders removed on undo action after copy/paste from external excel file', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setBorder({border: '1px dashed red' }, 'F1:F5');
+            spreadsheet.setBorder({border: '1px dashed red' }, 'G1:H1');
+            spreadsheet.setBorder({border: '1px solid #000000' }, 'J1:J5');
+            spreadsheet.setBorder({borderRight: '1px dashed red' }, 'G2');
+            spreadsheet.setBorder({borderRight: '1px dashed red' }, 'G3');
+            spreadsheet.setBorder({borderRight: '1px dashed red' }, 'G4');
+            spreadsheet.setBorder({borderRight: '1px dashed red' }, 'G5');
+            spreadsheet.setBorder({borderRight: '1px dashed red', borderBottom: '1px dashed red' }, 'G2:H2');
+            spreadsheet.setBorder({borderRight: '1px dashed red', borderBottom: '1px dashed red' }, 'G3:H3');
+            spreadsheet.setBorder({borderRight: '1px dashed red', borderBottom: '1px dashed red' }, 'G4:H4');
+            spreadsheet.setBorder({borderRight: '1px dashed red', borderBottom: '1px dashed red' }, 'G5:H5');
+            helper.invoke('copy', ['J1:J5']).then(() => {
+                helper.invoke('paste', ['H1']);
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(spreadsheet.sheets[0].rows[0].cells[7].style.borderBottom).toBe('1px dashed red');
+                expect(helper.invoke('getCell', [0, 7]).style.borderBottom).toBe('1px dashed red');
+                expect(spreadsheet.sheets[0].rows[1].cells[6].style.borderBottom).toBe('1px dashed red');
+                expect(helper.invoke('getCell', [1, 6]).style.borderBottom).toBe('1px dashed red');
+                expect(spreadsheet.sheets[0].rows[3].cells[7].style.borderBottom).toBe('1px dashed red');
+                expect(helper.invoke('getCell', [3, 7]).style.borderBottom).toBe('1px dashed red');
+                expect(spreadsheet.sheets[0].rows[4].cells[6].style.borderBottom).toBe('1px dashed red');
+                expect(helper.invoke('getCell', [4, 6]).style.borderBottom).toBe('1px dashed red');
+                done();
+            });
         });
     });
 });

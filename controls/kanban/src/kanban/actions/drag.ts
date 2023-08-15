@@ -152,8 +152,13 @@ export class DragAndDrop {
             cardElement = (e.target as HTMLElement).previousElementSibling.querySelector('.e-target-dropped-clone').nextElementSibling as HTMLElement;
         }
         let targetEle: HTMLElement = e.target as HTMLElement;
-        if ((e.target as HTMLElement).nodeName === 'SPAN' && (e.target as HTMLElement).classList.contains('e-empty-card')) {
-            targetEle = (e.target as HTMLElement).parentElement;
+        if (!isNoU((e.target as HTMLElement).parentElement)) {
+            if ((e.target as HTMLElement).nodeName === 'SPAN' && (e.target as HTMLElement).classList.contains('e-empty-card')) {
+                targetEle = (e.target as HTMLElement).parentElement;
+            }
+            else if ((e.target as HTMLElement).nodeName === 'DIV' && (e.target as HTMLElement).classList.contains('e-kanban-border')) {
+                targetEle = (e.target as HTMLElement).parentElement;
+            }
         }
         const target: HTMLElement = cardElement || targetEle;
         const selector: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + ') .' + cls.CONTENT_CELLS_CLASS
@@ -205,7 +210,8 @@ export class DragAndDrop {
                     } else {
                         target.querySelector('.' + cls.CARD_WRAPPER_CLASS).appendChild(this.dragObj.targetClone);
                     }
-                } else if (target.classList.contains(cls.CARD_WRAPPER_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
+                } else if ((target.classList.contains(cls.CARD_WRAPPER_CLASS) || target.classList.contains(cls.CARD_VIRTUAL_WRAPPER_CLASS)) &&
+                    !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
                     && contentCell.querySelectorAll('.' + cls.CARD_CLASS).length === 0) {
                     target.appendChild(this.dragObj.targetClone);
                 } else if (target.classList.contains(cls.BORDER_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)

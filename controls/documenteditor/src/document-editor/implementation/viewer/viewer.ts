@@ -1071,7 +1071,7 @@ export class DocumentHelper {
         if (addToCollection) {
             if (image.isMetaFile) {
                 base64ImageString.push(image.metaFileImageString);
-                base64ImageString.push(image.imageString);
+                base64ImageString.push(image.imageString === "" ? image.metaFileImageString : image.imageString);
             } else {
                 base64ImageString.push(image.imageString);
             }

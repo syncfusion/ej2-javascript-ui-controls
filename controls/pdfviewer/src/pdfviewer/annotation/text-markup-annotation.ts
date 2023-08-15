@@ -1380,7 +1380,7 @@ export class TextMarkupAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any, measureShapeData: any, stickyData: any): string {
+    public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any, measureShapeData: any, stickyData: any, freeTextData: any): string {
         const canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex }) as HTMLCanvasElement;
         canvas.style.width = 816 + 'px';
         canvas.style.height = 1056 + 'px';
@@ -1403,7 +1403,7 @@ export class TextMarkupAnnotation {
         if (stampAnnotation || shapeAnnotation || stickyNoteAnnotation || measureShapeAnnotation) {
             this.pdfViewer.renderDrawing(canvas, pageIndex);
         } else {
-            this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, measureShapeData, null, canvas);
+            this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, measureShapeData, null, canvas, null, null, freeTextData);
             this.pdfViewer.annotation.stampAnnotationModule.renderStampAnnotations(stampData, pageIndex, canvas);
             this.pdfViewer.annotation.stickyNotesAnnotationModule.renderStickyNotesAnnotations(stickyData, pageIndex, canvas);
         }

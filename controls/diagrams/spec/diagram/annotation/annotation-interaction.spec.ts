@@ -2045,6 +2045,59 @@ describe('Hyperlink Link target',()=>{
     });
 });
 
+describe('Double click on node annotation will open the edit of invisible annotation', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement; let left: number; let top: number;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'DoubleClick' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [{
+            id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [
+                {
+                    content: '65465465451654 1651651651',
+                    style: {
+                        fill: 'none',
+                        strokeColor: 'none',
+                        textWrapping: 'Wrap',
+                        fontSize: 10,
+                    },
+                    visibility: false,
+                }]
+        }];
+        diagram = new Diagram({
+            width: 800, height: 500, nodes: nodes,
+        });
+        diagram.appendTo('#DoubleClick');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 1, 1);
+        left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Double Click node', (done: Function) => {
+      //  let node: NodeModel = (diagram.nodes[0] as NodeModel);
+        mouseEvents.dblclickEvent(diagramCanvas, 100, 100);
+        expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(false);
+        diagram.nodes[0].annotations = [{content : 'node2', visibility : true}];
+        mouseEvents.dblclickEvent(diagramCanvas, 100, 100);
+        expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
+        done();
+    });
+});
+
+
 describe('Bezier annotation alignment is not working properly',()=>{
     let diagram: Diagram;
     let ele: HTMLElement;

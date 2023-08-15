@@ -49,7 +49,7 @@ export class QuickPopups {
     }
 
     private renderQuickPopup(): void {
-        const quickPopupWrapper: HTMLElement = createElement('div', { className: cls.POPUP_WRAPPER_CLASS + ' e-popup-close' });
+        const quickPopupWrapper: HTMLElement = createElement('div', { className: cls.POPUP_WRAPPER_CLASS + ' e-popup-close', attrs: { role: 'dialog' } });
         if (this.parent.isAdaptive) {
             document.body.appendChild(quickPopupWrapper);
             addClass([quickPopupWrapper], cls.DEVICE_CLASS);
@@ -473,6 +473,7 @@ export class QuickPopups {
         quickCellPopup.appendChild(this.getPopupHeader('Cell', temp));
         quickCellPopup.appendChild(this.getPopupContent('Cell', args, temp));
         quickCellPopup.appendChild(this.getPopupFooter('Cell', temp));
+        this.quickPopup.element.setAttribute('aria-label', this.l10n.getConstant('newEvent'));
         const subjectElement: HTMLInputElement = quickCellPopup.querySelector('.' + cls.SUBJECT_CLASS) as HTMLInputElement;
         if (subjectElement) {
             Input.createInput({ element: subjectElement, properties: { placeholder: this.l10n.getConstant('addTitle') } });
@@ -541,6 +542,7 @@ export class QuickPopups {
             quickEventPopup.appendChild(this.getPopupHeader('Event', eventData));
             quickEventPopup.appendChild(this.getPopupContent('Event', events, eventData));
             quickEventPopup.appendChild(this.getPopupFooter('Event', eventData));
+            this.quickPopup.element.setAttribute('aria-label', this.l10n.getConstant('editEvent'));
             const readonly: boolean = this.parent.activeViewOptions.readonly || eventData[this.parent.eventFields.isReadonly] as boolean;
             const editAction: boolean = !this.parent.eventSettings.allowEditing || readonly;
             const deleteAction: boolean = !this.parent.eventSettings.allowDeleting || readonly;

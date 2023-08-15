@@ -428,7 +428,8 @@ export class ComboBox extends DropDownList {
 
     protected setSearchBox(): InputObject {
         this.filterInput = this.inputElement;
-        return (this.isFiltering() ? this.inputWrapper : inputObject);
+        let searchBoxContainer = (this.isFiltering() || ((this as any).isReact && this.getModuleName() === 'combobox'))? this.inputWrapper : inputObject;
+        return searchBoxContainer;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -327,6 +327,10 @@ export class Editor {
      * @returns {void}
      */
     public insertField(code: string, result?: string): void {
+        code = HelperMethods.sanitizeString(code);
+        if(!isNullOrUndefined(result)) {
+            result = HelperMethods.sanitizeString(result)
+        }
         this.isInsertField = true;
         let fieldCode: string = code;
         fieldCode = HelperMethods.trimStart(fieldCode);
@@ -2090,6 +2094,7 @@ export class Editor {
             || this.documentHelper.protectionType === 'CommentsOnly') {
             return;
         }
+        text = HelperMethods.sanitizeString(text);
         this.insertTextInternal(text, false);
     }
     /**
@@ -4523,7 +4528,7 @@ export class Editor {
                 rtfContent = clipbordData.getData('Text/Rtf');
                 htmlContent = clipbordData.getData('Text/Html');
             }
-            this.copiedTextContent = textContent = clipbordData.getData('Text');
+            this.copiedTextContent = textContent = HelperMethods.sanitizeString(clipbordData.getData('Text'));
 
             this.previousCharFormat = new WCharacterFormat();
             this.previousCharFormat.copyFormat(this.selection.start.paragraph.characterFormat);
@@ -4655,7 +4660,7 @@ export class Editor {
      */
     public paste(sfdt?: string, defaultPasteOption?: PasteOptions): void {
         if (isNullOrUndefined(sfdt)) {
-            sfdt = this.owner.enableLocalPaste ? this.copiedData : undefined;
+            sfdt = this.owner.enableLocalPaste ? HelperMethods.sanitizeString(this.copiedData) : undefined;
         }
         if (!isNullOrUndefined(defaultPasteOption)) {
             this.currentPasteOptions = defaultPasteOption;

@@ -649,8 +649,13 @@ export class Timeline {
             this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
             tier = 'bottomTier';
             tr = null;
-
-
+        }
+        if (this.parent.height === "Auto" || this.parent.timelineModule.isSingleTier) {
+            var timelineContainer = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
+            this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+            if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
+                this.parent.treeGrid.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+            }
         }
     }
 
@@ -1147,7 +1152,7 @@ export class Timeline {
         // PDf export collection
         timelineCell.value = value;
         timelineCell.isWeekend = isWeekendCell;
-        timelineCell.width = cellWidth;
+        timelineCell.width = thWidth;
         return parentTr;
     }
 

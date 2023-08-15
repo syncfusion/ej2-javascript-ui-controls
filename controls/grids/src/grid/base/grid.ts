@@ -3425,8 +3425,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     public removeMaskRow(): void {
-        const gridContent: Element = this.getContent().firstChild as Element;
-        EventHandler.remove(gridContent, 'scroll', this.translateMaskRow);
+        if (!isNullOrUndefined(this.contentModule)) {
+            const gridContent: Element = this.getContent().firstChild as Element;
+            EventHandler.remove(gridContent, 'scroll', this.translateMaskRow);
+        }
         const maskTables: Element[] = [this.headerMaskTable, this.movableHeaderMaskTable, this.rightHeaderMaskTable,
             this.contentMaskTable, this.movableContentMaskTable, this.rightContentMaskTable, this.footerContentMaskTable,
             this.movableFooterContentMaskTable, this.rightFooterContentMaskTable];

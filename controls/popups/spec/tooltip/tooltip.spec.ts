@@ -561,6 +561,20 @@ describe('Tooltip Control', () => {
             triggerMouseEvent(document.getElementById("name"), 'mousedown');
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
         });
+        it('click event with scaling testing', () => {
+            document.body.style.transform = "scale(0.8)";
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                opensOn: 'Click', target: '.formctrl'
+            }, '#tstooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(document.getElementById("name"), 'mousedown');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            triggerMouseEvent(document.getElementById("name"), 'mousedown');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            document.body.style.transform = "";
+        });
         it('click event testing for Sticky mode', () => {
             tooltip = new Tooltip({
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } }, isSticky: true,

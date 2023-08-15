@@ -198,6 +198,9 @@ export class FocusStrategy {
                 this.active.matrix.current = [0, 0];
             }
             this.focus();
+            if (this.currentInfo.element.classList.contains('e-rowcell')) {
+                addClass([this.currentInfo.element], ['e-focused', 'e-focus']);
+            }
         }
     }
 

@@ -53,6 +53,14 @@ export class InsertHtml {
                                            (range.startContainer as HTMLElement).children[0], 0, 0);
             range = nodeSelection.getRange(docElement);
         }
+        if (range.startContainer === editNode && range.startContainer === range.endContainer && range.startOffset === 0 &&
+            range.startOffset === range.endOffset && editNode.textContent.trim().length > 0) {
+            const focusNode: Node | null = this.findFirstTextNode(range.startContainer);
+            if (!isNOU(focusNode)) {
+                nodeSelection.setSelectionText(docElement, focusNode, focusNode, 0, 0);
+                range = nodeSelection.getRange(docElement);
+            }
+        }
         if (range.startContainer.nodeName === 'BR' && range.startOffset === 0 && range.startOffset === range.endOffset &&
         range.startContainer === range.endContainer) {
             const currentIndex: number = Array.prototype.slice.call(range.startContainer.parentElement.childNodes).indexOf(
@@ -170,6 +178,19 @@ export class InsertHtml {
             }
         }
     }
+
+    private static findFirstTextNode(node: Node | null): Node | null {
+        if (node.nodeType === Node.TEXT_NODE) {
+          return node;
+        }
+        for (let i: number = 0; i < node.childNodes.length; i++) {
+          const textNode: Node = this.findFirstTextNode(node.childNodes[i as number]);
+          if (!isNOU(textNode)) {
+            return textNode;
+          }
+        }
+        return null;
+      }
 
     private static pasteInsertHTML(
         nodes: Node[], node: Node, range: Range,

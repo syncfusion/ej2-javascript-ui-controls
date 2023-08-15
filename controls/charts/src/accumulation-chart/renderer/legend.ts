@@ -165,7 +165,7 @@ export class AccumulationLegend extends BaseLegend {
                 this.getLegendHeight(legendOption, legend, legendBounds, rowWidth, this.maxItemHeight, padding);
                 if (this.isVertical) {
                     columnHeight += legendOption.textSize.height + ((i === 0) ? padding : this.itemPadding);
-                    if (columnHeight + this.itemPadding + arrowHeight > (legendBounds.height)) {
+                    if (columnHeight + this.itemPadding + (arrowHeight / this.pageButtonSize) > (legendBounds.height)) {
                         //columnHeight = Math.max(columnHeight, (rowCount * (this.maxItemHeight + padding)) + padding + arrowHeight);
                         rowWidth = rowWidth + maximumWidth;
                         pageRowWidth = this.getPageWidth(pageWidth);
@@ -331,6 +331,8 @@ export class AccumulationLegend extends BaseLegend {
     private getAvailWidth(tx: number, width: number): number {
         if (this.isVertical) {
             width = this.maxWidth;
+        } else if (!this.isVertical && this.isPaging && !this.legend.enablePages) {
+            return width - tx - this.fivePixel;
         }
         return width - ((this.legend.padding * 2) + this.legend.shapeWidth + this.legend.shapePadding);
     }

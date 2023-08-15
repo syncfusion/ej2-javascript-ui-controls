@@ -814,10 +814,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {BorderType} type - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
      * @returns {void} - To Sets the border to specified range of cells.
      */
-    public setBorder(style: CellStyleModel, range?: string, type?: BorderType): void {
+    public setBorder(style: CellStyleModel, range?: string, type?: BorderType, isUndoRedo?: boolean): void {
         this.notify(setCellFormat, <SetCellFormatArgs>{
             style: style, borderType: type, range:
-                range || this.getActiveSheet().selectedRange
+                range || this.getActiveSheet().selectedRange, isUndoRedo: isUndoRedo
         });
     }
 

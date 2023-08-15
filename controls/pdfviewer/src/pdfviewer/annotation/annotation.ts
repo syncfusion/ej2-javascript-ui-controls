@@ -3926,7 +3926,7 @@ export class Annotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderAnnotations(pageNumber: number, shapeAnnotation: any, measureShapeAnnotation: any, textMarkupAnnotation: any, canvas?: any, isImportAnnotations?: boolean, isAnnotOrderAction?: boolean): void {
+    public renderAnnotations(pageNumber: number, shapeAnnotation: any, measureShapeAnnotation: any, textMarkupAnnotation: any, canvas?: any, isImportAnnotations?: boolean, isAnnotOrderAction?: boolean, freeTextAnnotation?: any): void {
         this.clearAnnotationCanvas(pageNumber);
         if (this.shapeAnnotationModule) {
             if (isImportAnnotations) {
@@ -3940,6 +3940,14 @@ export class Annotation {
                 this.measureAnnotationModule.renderMeasureShapeAnnotations(measureShapeAnnotation, pageNumber, true);
             } else {
                 this.measureAnnotationModule.renderMeasureShapeAnnotations(measureShapeAnnotation, pageNumber, null, isAnnotOrderAction);
+            }
+        }
+        if (this.freeTextAnnotationModule) {
+            if (isImportAnnotations) {
+                this.freeTextAnnotationModule.renderFreeTextAnnotations(freeTextAnnotation, pageNumber, true);
+            }
+            else {
+                this.freeTextAnnotationModule.renderFreeTextAnnotations(freeTextAnnotation, pageNumber, null, isAnnotOrderAction);
             }
         }
         if (canvas !== null && canvas !== undefined) {

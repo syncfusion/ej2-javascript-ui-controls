@@ -2093,8 +2093,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('ABS Formula with cell having no values->', (done: Function) => {
             helper.edit('K2', '=ABS(P10)');
-            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#NAME?');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":"#NAME?","formula":"=ABS(P10)"}');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":0,"formula":"=ABS(P10)"}');
             done();
         });
         it('ABS Formula with more than 1 inputs->', (done: Function) => {
@@ -2107,6 +2107,60 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('K4', '=FIND(S,"A2")');
             expect(helper.getInstance().sheets[0].rows[3].cells[10].formula).toBe('=FIND(S,"A2")');
             expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#NAME?');
+            done();
+        });
+    });
+
+    describe('ABS Formula - Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('ABS formula with negative value ', (done: Function) => {
+            helper.edit('I1', '=ABS(-10);');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('10');
+            helper.edit('I2', '=ABS(-4.5);');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('4.5');
+            helper.edit('I3', '=ABS(6-12);');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('6');
+            done();
+        });
+
+        it('ABS formula with negative value as cell reference', (done: Function) => {
+            helper.edit('I4', '-6');
+            helper.edit('I5', '=ABS(I4);');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('6');
+            helper.edit('I6', '12');
+            helper.edit('I7', '30');
+            helper.edit('I8', '=ABS(I6-I7);');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('18');
+            done();
+        });
+
+        it('ABS formula with boolean value', (done: Function) => {
+            helper.edit('I9', '=ABS(TRUE);');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('1');
+            helper.edit('I10', '=ABS(FALSE);');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('0');
+            helper.edit('I11', '=ABS("TRUE");');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I12', '=ABS("FALSE");');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#VALUE!');
+            done();
+        });
+
+        it('ABS formula with string argument', (done: Function) => {
+            helper.edit('I13', '=ABS("");');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I14', '=ABS("32");');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('32');
+            helper.edit('I15', '"32");');
+            helper.edit('J1', '=ABS(I15);');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=ABS(J3);');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0');
             done();
         });
     });
@@ -5930,6 +5984,66 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.getInstance().sheets[0].rows[4].cells[3].value).toEqual("65");
                 done();
             });
+        });
+    });
+
+    describe('I488682 - Checking boolean value with arithmetic operations ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Boolean value with multiplication ', (done: Function) => {
+            helper.edit('I1', 'TRUE');
+            helper.edit('I2', 'FALSE');
+            helper.edit('I3', '2');
+            helper.edit('I4', '4');
+            helper.edit('I5', '=I1*I2');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('0');
+            helper.edit('I6', '=I3*I2');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('0');
+            helper.edit('I7', '=I1*I4');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('4');
+            helper.edit('I8', '=3*TRUE');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('3');
+            done();
+        });
+
+        it('Boolean value with subtraction', (done: Function) => {
+            helper.edit('I9', '=I1-I2');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('1');
+            helper.edit('I10', '=I3-I2');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('2');
+            helper.edit('I11', '=I1-I4');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('-3');
+            helper.edit('I12', '=3-TRUE');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('2');
+            done();
+        });
+
+        it('Boolean value with addition', (done: Function) => {
+            helper.edit('I13', '=I1+I2;');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('1');
+            helper.edit('I14', '=I3+I2');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('2');
+            helper.edit('J1', '=I1+I4');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('5');
+            helper.edit('J2', '=3+TRUE');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('4');
+            done();
+        });
+
+        it('Boolean value with division', (done: Function) => {
+            helper.edit('J3', '=I1/I2;');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('#DIV/0!');
+            helper.edit('J4', '=I3/I2');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#DIV/0!');
+            helper.edit('J5', '=I1/I4');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('0.25');
+            helper.edit('J6', '=3/TRUE');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('3');
+            done();
         });
     });
 });

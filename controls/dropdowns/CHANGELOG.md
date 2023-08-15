@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-## 22.2.8 (2023-08-08)
+## 22.2.9 (2023-08-15)
 
 ### ComboBox
 
 #### Bug Fixes
 
 - `#483288` - Fixed a script error that occurred when opening the combobox popup in the Internet Explorer browser.
+
+### DropDown List
+
+#### Bug Fixes
+
+- `#I477135` - Fixed a memory leak issue in the Dropdownlist Component.
+
+- `#I486973` - Fixed an issue where the last selected item in the DropDownList would be retained in the list of items when the data source was changed.
+
+## 22.2.8 (2023-08-08)
 
 ### DropDown List
 

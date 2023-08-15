@@ -1832,3 +1832,83 @@ describe('Orthogonal connector segment routing issue', () => {
     });
 
 });
+
+describe('Orthogonal connector segment routing issue-1', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let diagramCanvas: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramOrtho_seg' });
+        document.body.appendChild(ele);
+
+        let connector: ConnectorModel = {
+            id: 'connector1', sourceID:'node1', targetID:'node2',type:'Orthogonal',
+            constraints:ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb,allowNodeOverlap:true,
+            sourcePortID:'bottom',targetPortID:'top', segments: [
+                {
+                  type: 'Orthogonal',
+                  length: 50,
+                  direction: 'Bottom',
+                  allowDrag: false,
+                },
+                {
+                  type: 'Orthogonal',
+                  length: 500,
+                  direction: 'Left',
+                  allowDrag: true,
+                },
+                {
+                  type: 'Orthogonal',
+                  length: 50,
+                  direction: 'Bottom',
+                  allowDrag: false,
+                },
+              ],
+        };
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 50, offsetX: 600, offsetY: 100, annotations: [ { content: 'Node1'}],ports:getPorts()
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 50, offsetX: 100, offsetY: 250, annotations: [ { content: 'Node2'}],ports:getPorts()
+        };
+        diagram = new Diagram({
+            width: '1500px', height: '700px', nodes: [node, node2,], connectors: [connector],
+        });
+        diagram.appendTo('#diagramOrtho_seg');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content'); 
+
+        function getPorts():any{
+            let ports = [
+                { id: 'left', shape: 'Circle', offset: { x: 0, y: 0.5 } },
+                { id: 'bottom', shape: 'Circle', offset: { x: 0.5, y: 1 } },
+                { id: 'right', shape: 'Circle', offset: { x: 1, y: 0.5 } },
+                { id: 'top', shape: 'Circle', offset: { x: 0.5, y: 0 } },
+            ];
+            return ports;
+        }
+        
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking the connector segment routing after dragging node and segment -1', function (done) {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let firstPoint = (diagram.connectors[0].segments[2] as OrthogonalSegment).points.length;
+        mouseEvents.mouseDownEvent(diagramCanvas, 600, 150);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 600, 200);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 600, 300);
+        mouseEvents.mouseUpEvent(diagramCanvas, 600, 300);
+        diagram.select([diagram.nodes[0]]);
+        let prevPoint = (diagram.connectors[0].segments[2] as OrthogonalSegment).points.length;
+        mouseEvents.mouseDownEvent(diagramCanvas, 600, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 600, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 600, 500);
+        mouseEvents.mouseUpEvent(diagramCanvas, 600, 500);
+        let curPoint = (diagram.connectors[0].segments[2] as OrthogonalSegment).points.length;
+        expect(curPoint !== prevPoint && prevPoint === 4 && curPoint === 2 && firstPoint === 2).toBe(true);
+        done();
+    });
+
+});

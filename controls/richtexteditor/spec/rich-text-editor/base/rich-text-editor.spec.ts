@@ -179,6 +179,27 @@ describe('832431: Entire line gets removed while pressing enter key after pressi
     });
 });
 
+describe('840133: Backspace key not working properly when placed cursor in the element with br inside the 2 text nodes', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('The backspace not working properly on the line break text', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>This is the first line</p><p>This is the secod line</p><p class='focusNode'>This is the thirdline<br>This is also the third line</p>`,
+        });
+        let node: any = rteObj.inputElement.querySelector('.focusNode');
+        setCursorPoint(document, node.childNodes[2], 0);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p>This is the first line</p><p>This is the secod line</p><p class="focusNode">This is the thirdline<br>This is also the third line</p>`);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
@@ -2149,10 +2170,10 @@ describe('RTE base module', () => {
             rteObj.onPaste(keyBoardEvent);
             setTimeout(() => {
             let allElem: any = (rteObj as any).inputElement.firstElementChild;
-            expect(allElem.children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
-            expect(allElem.children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+            expect(allElem.children[0].childNodes[0].childNodes[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
+            expect(allElem.children[0].childNodes[0].childNodes[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
             let expected: boolean = false;
-            let expectedElem: string = `<span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here with another URL <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>text after second URL</span>`;
+            let expectedElem: string = `<ol><li class="first-p"><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank">https://ej2.syncfusion.com </a>is here with another URL <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank">https://ej2.syncfusion.com </a>text after second URL</span>First p node-0</li></ol><p class="second-p">First p node-1</p>`;
             if (allElem.innerHTML === expectedElem) {
                 expected = true;
             }

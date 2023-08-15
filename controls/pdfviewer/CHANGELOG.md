@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I487346` - The free text annotation is now visible during printing when the free text annotation settings is customised.
+- `#I489176` - Now, the line type annotations are drawn properly on mobile devices after zooming.
+
 ## 22.2.8 (2023-08-08)
 
 ### PDF Viewer

@@ -1252,7 +1252,7 @@ export class ChartRows extends DateProcessor {
                     this.parent.dataOperation.getTaskLeft(ganttProp.autoEndDate, ganttProp.isMilestone);
                 width = endLeft - left;
             } else {
-                left = ganttProp.left < ganttProp.autoLeft ? ganttProp.left : ganttProp.autoLeft;
+                left = ganttProp.left < ganttProp.autoLeft ? ganttProp.autoLeft : ganttProp.left;
                 width = ganttProp.autoWidth;
             }
             return left + width;
