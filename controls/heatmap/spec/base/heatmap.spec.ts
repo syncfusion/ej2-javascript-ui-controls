@@ -1,7 +1,7 @@
 import { createElement, L10n, remove, EmitType } from '@syncfusion/ej2-base';
 import { HeatMap } from '../../src/heatmap/heatmap';
 import { Title } from '../../src/heatmap/model/base';
-import { ILoadedEventArgs } from '../../src/heatmap/model/interface'
+import { ILoadedEventArgs, ISelectedEventArgs } from '../../src/heatmap/model/interface'
 import { Adaptor } from '../../src/heatmap/index';
 import { Legend } from '../../src/heatmap/index';
 import { Tooltip } from '../../src/heatmap/index';
@@ -561,7 +561,27 @@ describe('Heatmap Control', () => {
             expect(element == null).toBe(true);
             done();
         });
-
+		it('Check cellSelected client side event', (done: Function) => {
+            heatmap.renderingMode = "SVG";
+            heatmap.dataSource = [
+                [1, 2, 3],
+                [4, 5, 6, 7],
+                [8, 9],
+            ];
+            heatmap.cellClick = function (args) {
+                expect(args.value == 7).toBe(true);
+                done();
+            }
+            heatmap.cellSelected = function (args) {
+                args.cancel = true;
+                expect(element.getAttribute('opacity')).toBe("1");
+                done();
+            };
+            heatmap.refresh();
+            let element: Element = document.getElementById("container_HeatMapRect_1");
+            let region: ClientRect = element.getBoundingClientRect();
+            trigger.clickEvent(element, 0, 0, region.left + 10, region.top + 10);
+        });
         it('Check axis label tool tip', (done: Function) => {
             heatmap.dataSource = [
                 [1, 2, 3],

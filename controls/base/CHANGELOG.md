@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.10 (2023-08-22)
+
+### Common
+
+#### Bug Fixes
+
+- `#492390` - Resolved the issue with Bold fonts are not included in material theme
+
 ## 22.2.9 (2023-08-15)
 
 ### Common

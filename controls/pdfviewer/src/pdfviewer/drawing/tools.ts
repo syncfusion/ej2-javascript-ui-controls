@@ -1702,10 +1702,12 @@ export class NodeDrawingTool extends ToolBase {
                 (this.drawingObject as any).pageNumber = this.pdfViewerBase.getActivePage(true);
                 // eslint-disable-next-line
                 const bounds: any = this.commandHandler.formDesignerModule.updateFormFieldInitialSize(this.drawingObject.wrapper.children[0], this.drawingObject.formFieldAnnotationType);
-                const pageWidth: number = this.pdfViewerBase.pageContainer.firstElementChild.clientWidth - bounds.width;
-                const pageHeight: number = this.pdfViewerBase.pageContainer.firstElementChild.clientHeight - bounds.height;
-                // eslint-disable-next-line
-                let left: number = (this.pdfViewerBase.pageContainer.firstElementChild as any).offsetLeft;
+                let pageIndex: any = this.drawingObject.pageIndex;
+                let page: any = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex);
+                const pageWidth: number = page.clientWidth - bounds.width;
+                const pageHeight: number = page.clientHeight - bounds.height;
+                 // eslint-disable-next-line
+                let left: any = page.offsetLeft;
                 let offsetX: number;
                 // eslint-disable-next-line
                 if (this.currentPosition.y >= pageHeight && event.target && (event.target as any).parentElement && (event.target as any).parentElement.classList.contains('foreign-object')) {

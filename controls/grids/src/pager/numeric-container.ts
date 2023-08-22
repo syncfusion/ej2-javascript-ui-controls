@@ -74,7 +74,7 @@ export class NumericContainer implements IRender {
         for (let i: number = 1; i <= pagerObj.pageCount; i++) {
             link = createElement('a', {
                 className: 'e-link e-numericitem e-spacing e-pager-default',
-                attrs: { role: 'link', tabindex: '-1', 'aria-label': pagerObj.getLocalizedLabel('Page') + i + pagerObj.getLocalizedLabel('Of') +
+                attrs: { tabindex: '-1', 'aria-label': pagerObj.getLocalizedLabel('Page') + i + pagerObj.getLocalizedLabel('Of') +
                     pagerObj.totalPages + pagerObj.getLocalizedLabel('Pages'), href: '#' , name: 'Goto page' + i }
             });
             if (pagerObj.currentPage === i) {
@@ -170,7 +170,7 @@ export class NumericContainer implements IRender {
             'a', {
                 className: 'e-link e-pp e-spacing', innerHTML: '...',
                 attrs: {
-                    title: this.pagerModule.getLocalizedLabel('previousPagerTooltip'), role: 'link',
+                    title: this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                     'aria-label': this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                     tabindex: '-1',
                     name: this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
@@ -187,7 +187,7 @@ export class NumericContainer implements IRender {
             'a', {
                 className: 'e-link e-np e-spacing',
                 innerHTML: '...', attrs: {
-                    title: this.pagerModule.getLocalizedLabel('nextPagerTooltip'), role: 'link',
+                    title: this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                     'aria-label': this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                     tabindex: '-1',
                     name: this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
@@ -338,7 +338,6 @@ export class NumericContainer implements IRender {
             }
             classList(this.links[parseInt(i.toString(), 10)], [], ['e-currentitem', 'e-active']);
             this.links[parseInt(i.toString(), 10)].removeAttribute('aria-current');
-            this.links[parseInt(i.toString(), 10)].setAttribute('role', 'link');
         }
         attributes(this.first, {
             'index': '1',
@@ -412,7 +411,6 @@ export class NumericContainer implements IRender {
                 : ((this.pagerModule.currentPage - 1) % this.pagerModule.pageCount);
             classList(this.links[parseInt(currentPage.toString(), 10)], ['e-currentitem', 'e-active'], []);
             this.links[parseInt(currentPage.toString(), 10)].setAttribute('aria-current', 'page');
-            this.links[parseInt(currentPage.toString(), 10)].removeAttribute('role');
         }
     }
 

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 22.2.10 (2023-08-22)
+
+### Pivot Table
+
+#### Bug fixes
+
+- The issue with server side rendering in next.js has been resolved.
+
+## 22.2.9 (2023-08-15)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `I489341` - The toolbar menu items will now be properly displayed in the pivot table with the material dark theme.
+
 ## 22.2.8 (2023-08-08)
 
 ### Pivot Table

@@ -2796,8 +2796,10 @@ export class Selection {
                         parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
                             isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                     } else if (parent.activeObj.shape === 'text') {
-                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
-                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                        if (parent.textArea.style.display === 'none') {
+                            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
+                                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                        }
                     } else if (this.isFhdEditing) {
                         parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
                             isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
@@ -2810,7 +2812,7 @@ export class Selection {
                     if ((parent.activeObj.shape === 'rectangle') || (parent.activeObj.shape === 'ellipse')
                     || (parent.activeObj.shape === 'line' || parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path')) {
                         parent.updateToolbar(parent.element, parent.activeObj.shape);
-                    } else if (parent.activeObj.shape === 'text') {
+                    } else if (parent.activeObj.shape === 'text' && parent.textArea.style.display === 'none') {
                         parent.updateToolbar(parent.element, 'text');
                     }
                 }
@@ -3107,25 +3109,26 @@ export class Selection {
             parent.activeObj = extend({}, activeObj, null, true) as SelectionPoint;
             parent.textArea.value = obj.keyHistory;
             parent.textArea.style.display = 'block';
-            let strokeColor: string = obj.strokeSettings.strokeColor.split('(')[0] === 'rgb' ?
+            let strokeColor: string = obj.strokeSettings && obj.strokeSettings.strokeColor ? obj.strokeSettings.strokeColor.split('(')[0] === 'rgb' ?
                 this.rgbToHex(parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[0]),
                               parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[1]),
                               parseFloat(obj.strokeSettings.strokeColor.split('(')[1].split(',')[2])) :
-                obj.strokeSettings.strokeColor;
-            if (strokeColor === '#ffffff') {
+                obj.strokeSettings.strokeColor : null;
+            if (strokeColor && strokeColor === '#ffffff') {
                 strokeColor = '#fff';
             }
-            if (this.tempActiveObj.strokeSettings.strokeColor === '#ffffff') {
+            if (this.tempActiveObj.strokeSettings && this.tempActiveObj.strokeSettings.strokeColor &&
+                this.tempActiveObj.strokeSettings.strokeColor === '#ffffff') {
                 this.tempActiveObj.strokeSettings.strokeColor = '#fff';
             }
             if (obj.keyHistory !== this.tempActiveObj.keyHistory ||
-                strokeColor !== this.tempActiveObj.strokeSettings.strokeColor ||
-                obj.textSettings.fontFamily !== this.tempActiveObj.textSettings.fontFamily ||
-                Math.round(obj.textSettings.fontSize) !== Math.round(this.tempActiveObj.textSettings.fontSize) ||
-                Math.round(obj.textSettings.fontRatio) !== Math.round(this.tempActiveObj.textSettings.fontRatio) ||
-                obj.textSettings.bold !== this.tempActiveObj.textSettings.bold ||
-                obj.textSettings.italic !== this.tempActiveObj.textSettings.italic ||
-                obj.textSettings.underline !== this.tempActiveObj.textSettings.underline) {
+                (strokeColor && (strokeColor !== this.tempActiveObj.strokeSettings.strokeColor)) ||
+                (obj.textSettings && obj.textSettings.fontFamily !== this.tempActiveObj.textSettings.fontFamily) ||
+                (obj.textSettings && Math.round(obj.textSettings.fontSize) !== Math.round(this.tempActiveObj.textSettings.fontSize)) ||
+                (obj.textSettings && Math.round(obj.textSettings.fontRatio) !== Math.round(this.tempActiveObj.textSettings.fontRatio)) ||
+                (obj.textSettings && obj.textSettings.bold !== this.tempActiveObj.textSettings.bold) ||
+                (obj.textSettings && obj.textSettings.italic !== this.tempActiveObj.textSettings.italic) ||
+                (obj.textSettings && obj.textSettings.underline !== this.tempActiveObj.textSettings.underline)) {
                 isApply = true;
             }
             if (this.isInitialTextEdited && !isApply) {
@@ -3811,6 +3814,8 @@ export class Selection {
                 this.dragElement === 's-resize' || this.dragElement === 'w-resize') {
                 isInside = true;
             }
+        } else if (parent.textArea.style.display === 'block') {
+            isInside = true;
         }
         if (!isInside) {
             if (isNullOrUndefined(parent.activeObj.currIndex)) {

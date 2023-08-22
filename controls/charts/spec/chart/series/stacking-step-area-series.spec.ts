@@ -498,7 +498,7 @@ describe('Chart Control', () => {
         it('Checking with log axis with dataTime axis', (done: Function) => {
             loaded = (args: Object): void => {
                 let axisLabelLast: Element = document.getElementById('container1_AxisLabel_3');
-                expect(axisLabelLast.textContent == '1000').toBe(true);
+                expect(axisLabelLast.textContent == '10000').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

@@ -119,7 +119,7 @@ export class HelperMethods {
             let str: string = new TextDecoder("utf-8").decode(value);
             json = JSON.parse(str);
         }
-        json = JSON.parse(this.sanitizeString(JSON.stringify(json)));
+        // json = JSON.parse(this.sanitizeString(JSON.stringify(json)));
         return json;
     }
     /* eslint-enable */

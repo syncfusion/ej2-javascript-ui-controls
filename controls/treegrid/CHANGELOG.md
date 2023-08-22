@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.9 (2023-08-15)
+
+### Tree Grid
+
+#### Bug fixes
+
+- `#I483217` -  Fixed an issue where the column template was not functioning correctly when the `getpersistdata` method was used.
+
 ## 22.1.39 (2023-07-18)
 
 ### Tree Grid

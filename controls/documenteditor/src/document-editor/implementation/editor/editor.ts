@@ -12267,7 +12267,7 @@ export class Editor {
             insertIndex = block.indexInOwner + 1;
             i--;
         }
-        if (this.documentHelper.headersFooters[bodyWidget.sectionIndex]) {
+        if (bodyWidget.sectionIndex > 0 && this.documentHelper.headersFooters[bodyWidget.sectionIndex]) {
             bodyWidget.removedHeaderFooters = [];
             let headerFooters: HeaderFooters = this.documentHelper.headersFooters.splice(bodyWidget.sectionIndex, 1)[0];
             let keys: string[] = Object.keys(headerFooters);
@@ -12286,9 +12286,13 @@ export class Editor {
         this.addRemovedNodes(bodyWidget);
         this.documentHelper.removeEmptyPages();
         if (this.editorHistory && this.editorHistory.isUndoing) {
-            nextSection.sectionFormat = section.sectionFormat;
-          
+            nextSection.sectionFormat = section.sectionFormat;   
         }
+        let page = nextSection.page;
+        do {
+            this.documentHelper.layout.layoutHeaderFooter(page.bodyWidgets[0], this.viewer as PageLayoutViewer, page); 
+            page = page.nextPage
+        } while(page)
         // }
     }
     /* eslint-disable max-len */
@@ -16541,6 +16545,9 @@ export class Editor {
         }
         let isListUpdated: boolean = false;
         do {
+            if(!currentBlock) {
+                break;
+            }
             let listSearchResultInfo: ListSearchResultInfo = null;
             if (isFindingListParagraph) {
                 listSearchResultInfo = { paragraph: null, listId: listID };

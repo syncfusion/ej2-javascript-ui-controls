@@ -318,8 +318,8 @@ export function measureText(
 /** @private */
 export function getDiagramElement(elementId: string, contentId?: string): HTMLElement {
     let diagramElement: HTMLElement; let element: HTMLElement;
-    if (contentId) { element = document.getElementById(contentId); }
-    diagramElement = (element) ? element.querySelector('#' + elementId) as HTMLElement : document.getElementById(elementId);
+    if (contentId && (typeof document !== 'undefined')) { element = document.getElementById(contentId); }
+    diagramElement = (element) ? element.querySelector('#' + elementId) as HTMLElement : (typeof document !== 'undefined') ? document.getElementById(elementId) : null;
     return diagramElement;
 }
 
@@ -376,23 +376,24 @@ export function createMeasureElements(): void {
         let imageElement: HTMLImageElement;
         imageElement = createHtmlElement('img', {}) as HTMLImageElement;
         divElement.appendChild(imageElement);
+        if (typeof document !== 'undefined') {
+            let svg: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
+            divElement.appendChild(svg);
 
-        let svg: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
-        divElement.appendChild(svg);
+            let element: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            svg.appendChild(element);
 
-        let element: SVGPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        svg.appendChild(element);
-
-        let data: Text = document.createTextNode('');
-        let tSpan: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        tSpan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
-        svg.appendChild(tSpan);
-        // eslint-disable-next-line
-        window[measureElement] = divElement;
-        // eslint-disable-next-line
-        window[measureElement].usageCount = 1;
-        document.body.appendChild(divElement);
+            let data: Text = document.createTextNode('');
+            let tSpan: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            tSpan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
+            svg.appendChild(tSpan);
+            // eslint-disable-next-line
+            window[measureElement] = divElement;
+            // eslint-disable-next-line
+            window[measureElement].usageCount = 1;
+            document.body.appendChild(divElement);
+        }
     } else {
         // eslint-disable-next-line
         window[measureElement].usageCount += 1;

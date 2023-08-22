@@ -2239,7 +2239,7 @@ export class Renderer {
         let lineWidth: number = 0;
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth()); //Renders the cell left border.
-        this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
+        this.renderCellBackground(height, cellWidget, cellLeftMargin, cellRightMargin, lineWidth);
         let leftBorderWidth: number = lineWidth;
         if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
             this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellWidget.margin.top, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth, border.lineStyle);
@@ -2260,7 +2260,7 @@ export class Renderer {
                 if (cell && cell.columnIndex + cell.cellFormat.columnSpan - 1 === tableCell.columnIndex - 1) {
                     let border: WBorder = !isBidiTable ? TableCellWidget.getCellRightBorder(cell) : TableCellWidget.getCellLeftBorder(cell);
                     let lineWidthInt: number = HelperMethods.convertPointToPixel(border.getLineWidth());
-                    cellLeftMargin = cell.margin.left - lineWidthInt;
+                    cellLeftMargin = tableCell.margin.left - lineWidthInt;
                     if (cell.y + cell.height < tableCell.y) {
                         continue;
                     } else if (cell.y < tableCell.y && cell.y + cell.height > tableCell.y) {
@@ -2381,14 +2381,14 @@ export class Renderer {
         }
         // }
     }
-    private renderCellBackground(height: number, cellWidget: TableCellWidget, leftMargin: number, lineWidth: number): void {
+    private renderCellBackground(height: number, cellWidget: TableCellWidget, leftMargin: number, rightMargin: number, lineWidth: number): void {
         let cellFormat: WCellFormat = cellWidget.cellFormat;
         let bgColor: string = cellFormat.shading.backgroundColor === '#ffffff' ?
             cellWidget.ownerTable.tableFormat.shading.backgroundColor : cellFormat.shading.backgroundColor;
         let left: number = cellWidget.x - leftMargin - lineWidth;
         let topMargin: number = (cellWidget.margin.top - (cellWidget.containerWidget as TableRowWidget).topBorderWidth);
         let top: number = cellWidget.y - topMargin;
-        let width: number = cellWidget.width + leftMargin + cellWidget.margin.right + lineWidth / 2;
+        let width: number = cellWidget.width + leftMargin + rightMargin + lineWidth / 2;
         if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
             let revision: Revision = cellWidget.ownerRow.rowFormat.revisions[cellWidget.ownerRow.rowFormat.revisions.length - 1];
             bgColor = (revision.revisionType === 'Insertion') ? '#e1f2fa' : '#fce6f4';

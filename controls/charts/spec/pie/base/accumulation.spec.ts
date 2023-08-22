@@ -612,7 +612,7 @@ describe('Checking RTL Behaviour for Title', () => {
     it('Cheking CenterLabel text', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
             let centerLabel: HTMLElement = document.getElementById('ej2-container_centerLabel');
-            expect(centerLabel.innerHTML === 'Syncfusion').toBe(true);
+            expect(centerLabel.children[0].innerHTML === 'Syncfusion').toBe(true);
             done();
         };
         accumulation.refresh();
@@ -622,7 +622,7 @@ describe('Checking RTL Behaviour for Title', () => {
             segement = getElement(sliceid + 0);
             trigger.mousemoveEvent(segement, 0, 0, 200, 200);
             let centerLabel: HTMLElement = document.getElementById('ej2-container_centerLabel');
-            expect(centerLabel.innerHTML === '1').toBe(true);
+            expect(centerLabel.children[0].innerHTML === '1').toBe(true);
             trigger.mouseleavetEvent(element, 1000, 1000);
             done();
         };

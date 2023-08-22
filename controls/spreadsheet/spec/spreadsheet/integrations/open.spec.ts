@@ -251,3 +251,23 @@ describe('EJ2-832406', () => {
         })
     })
 })
+
+describe('EJ2-842068', () => {
+    const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    beforeAll((done: Function) => {
+        helper.initializeSpreadsheet({}, done);
+    });
+    afterAll(() => {
+        helper.invoke('destroy');
+    });
+    it('Spreadsheet throws console error using openFromJson method when sheet tab is hidden', (done: Function) => {
+        var spreadsheet = helper.getInstance();
+        var json = { Workbook: { sheets: [{ ranges: [{ dataSource: defaultData }] }], selectedRange: 'A2', showSheetTabs: false }};
+        expect(spreadsheet.showSheetTabs).toBeTruthy();
+        spreadsheet.openFromJson({ file: json });
+        setTimeout(function () {
+            expect(spreadsheet.showSheetTabs).toBeFalsy();
+            done();
+        });
+    });
+})

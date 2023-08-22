@@ -2253,6 +2253,9 @@ export class Gantt extends Component<HTMLElement>
             this.splitterModule.splitterPreviousPositionChart = pane2.scrollWidth + 1 + 'px';
             this.splitterModule.splitterObject.paneSettings[0].size = this.splitterModule['getSpliterPositionInPercentage'](this.splitterModule.splitterPreviousPositionGrid);
             this.splitterModule.splitterObject.paneSettings[1].size = this.splitterModule.splitterPreviousPositionChart;
+            if(this.timelineModule.isZoomToFit){
+                this.timelineModule.processZoomToFit();
+            }
         }
     }
     public keyActionHandler(e: KeyboardEventArgs): void {

@@ -475,7 +475,7 @@ export class Selection extends BaseSelection {
         const args: ISelectionCompleteEventArgs = {
             name: selectionComplete,
             selectedDataValues: selectedPointValues,
-            cancel: false
+            cancel: false,
         };
         chart.trigger(selectionComplete, args);
     }

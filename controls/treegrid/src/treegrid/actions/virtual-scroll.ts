@@ -90,7 +90,7 @@ export class VirtualScroll {
         const visualData: ITreeData[] = parents.filter((e: ITreeData) => {
             return getExpandStatus(this.parent, e, parents);
         });
-        this.visualData = visualData;        
+        this.visualData = visualData;
         pageingDetails.count = visualData.length;
         this.parent.grid.notify(events.dataListener, {data: visualData});
         const counts: { startIndex: number, endIndex: number, count: number, requestType: string } =

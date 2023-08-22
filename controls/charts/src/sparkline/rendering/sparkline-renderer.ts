@@ -263,6 +263,7 @@ export class SparklineRenderer {
         for (let i: number = 0, stDeg: number = 90, edDeg: number, flag: string; i < points.length; i++) {
             stDeg += deg;
             deg = points[i as number]['degree'];
+            deg = (deg === 360 ? deg - 0.001 : deg);
             edDeg = stDeg + deg;
             stRad = (stDeg - 90) * Math.PI / 180.0;
             edRad = (edDeg - 90) * Math.PI / 180.0;

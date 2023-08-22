@@ -747,7 +747,7 @@ export class DetailsView {
         const columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
         if (columnData[len - 1].field && (columnData[len - 1].field === 'filterPath')) {
             /* istanbul ignore next */
-            if (this.gridObj.sortSettings.columns[0].field === 'filterPath') {
+            if (!isNullOrUndefined(this.gridObj.sortSettings.columns[0]) && this.gridObj.sortSettings.columns[0].field === 'filterPath') {
                 if (this.parent.sortOrder !== 'None') {
                     this.gridObj.sortColumn('name', this.parent.sortOrder);
                 } else {

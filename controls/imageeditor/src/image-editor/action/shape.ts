@@ -616,6 +616,7 @@ export class Shape {
                     parent.textArea.style.transform = '';
                     parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
                 }
+                this.refreshActiveObj();
             } else {
                 this.applyActObj(isMouseDown);
             }

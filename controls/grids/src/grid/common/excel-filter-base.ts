@@ -373,6 +373,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             isModal: true,
             overlayClick: this.removeDialog.bind(this),
             showCloseIcon: true,
+            locale: this.parent.locale,
             closeOnEscape: false,
             target: document.body,
             // target: this.parent.element,

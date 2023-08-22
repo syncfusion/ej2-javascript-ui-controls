@@ -20,6 +20,7 @@ import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramC
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Annotation } from '../../../src/diagram/objects/annotation';
 import {  ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
+import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo, LineRouting);
 
@@ -10439,6 +10440,166 @@ describe('Swimlane - Enable Line Routing', () => {
         done();
         });
     });
+
+    describe('Swimlane Zindex issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramdraw' });
+            document.body.appendChild(ele);
+            let pathData: string = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+
+            let darkColor: string = '#C7D4DF';
+            let lightColor: string = '#f5f5f5';
+
+            let nodes: NodeModel[] = [
+                {
+                    //creating the swimlane and set its type as swimlane
+                    id: 'swimlane',
+                    shape: {
+                        orientation: 'Horizontal',
+                        type: 'SwimLane',
+                        //initialize swimlane header
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS' },
+                            height: 50, style: { fill: darkColor, fontSize: 11 },
+                        },
+                        lanes: [
+                            //initialize the lanes
+                            {
+                                id: 'stackCanvas1',
+                                //set the header properties
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fill: darkColor, fontSize: 11 }
+                                },
+                                style: { fill: lightColor },
+                                height: 120,
+                            },
+                        ],
+                        //creating the phases of the swimlane
+                        phases: [
+                            //set the properties of the phase
+                            {
+                                id: 'phase1', offset: 200,
+                                style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 350, offsetY: 300,
+                    height: 200, width: 300
+                },
+            ];
+            diagram = new Diagram({
+                width: '1500px', height: '1000px',
+                nodes: nodes,
+                contextMenuSettings: { show: true }, snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramdraw');
+        });
+
+        it('Render Context Menu', (done: Function) => {
+            expect((diagram.contextMenuModule as any).element).not.toBe(null);
+            expect((diagram.contextMenuModule as any).element.id).toBe(diagram.element.id + '_contextMenu');
+            expect(diagram.contextMenuModule.contextMenu.enableRtl).toBe(diagram.enableRtl);
+            expect(diagram.contextMenuModule.contextMenu.locale).toBe(diagram.locale);
+            expect(diagram.contextMenuModule.contextMenu.enablePersistence).toBe(diagram.enablePersistence);
+            expect(diagram.contextMenuModule.contextMenu.target).toBe('#' + diagram.element.id);
+            expect(diagram.contextMenuModule.contextMenu.cssClass).toBe('e-diagram-menu');
+            expect(diagram.contextMenuModule.contextMenu.items.length).toBe(8);
+            expect((diagram.contextMenuModule as any).getModuleName()).toBe('contextMenu');
+            done();
+        });
+
+        it('Context menu Before Open,Open,and Close', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 350, 110);
+            (diagram.contextMenuModule as any).eventArgs = { target: document.getElementById('NewIdea') };
+            let e = {
+                event: (diagram.contextMenuModule as any).eventArgs,
+                items: diagram.contextMenuModule.contextMenu.items,
+            };
+            (diagram.contextMenuModule as any).contextMenuBeforeOpen(e);
+            expect((diagram.contextMenuModule as any).getModuleName()).toBe('contextMenu');
+            expect((diagram.contextMenuModule as any).hiddenItems.length).toBe(6);
+            (diagram.contextMenuModule as any).contextMenuOpen();
+            (diagram.contextMenuModule as any).contextMenuOnClose(e);
+            diagram.clearSelection();
+            done();
+        });
+
+        it('Context menu - order commands', (done: Function) => {
+            (diagram.contextMenuModule as any).eventArgs = { target: document.getElementById('diagramdraw_diagramAdorner_svg') };
+            let e = {
+                event: (diagram.contextMenuModule as any).eventArgs,
+                items: (diagram.contextMenuModule.contextMenu.items[7] as MenuItemModel).items,
+            };
+            diagram.select([diagram.nodes[0]]);
+            for (let i of e.items) {
+                if (i.id ===
+                    diagram.contextMenuModule.contextMenu.element.id + '_' + 'moveForwardOrder') {
+                    (diagram.contextMenuModule as any).contextMenuBeforeOpen(e);
+                    (diagram.contextMenuModule as any).contextMenuOpen();
+                    (diagram.contextMenuModule as any).contextMenuItemClick({ item: i });
+                    (diagram.contextMenuModule as any).contextMenuOnClose(e);
+                    break;
+                }
+            }
+
+            for (let i of e.items) {
+                if (i.id ===
+                    diagram.contextMenuModule.contextMenu.element.id + '_' + 'bringToFrontOrder') {
+                    (diagram.contextMenuModule as any).contextMenuBeforeOpen(e);
+                    (diagram.contextMenuModule as any).contextMenuOpen();
+                    (diagram.contextMenuModule as any).contextMenuItemClick({ item: i });
+                    (diagram.contextMenuModule as any).contextMenuOnClose(e);
+                    break;
+                }
+            }
+
+            for (let i of e.items) {
+                if (i.id ===
+                    diagram.contextMenuModule.contextMenu.element.id + '_' + 'sendBackwardOrder') {
+                    (diagram.contextMenuModule as any).contextMenuBeforeOpen(e);
+                    (diagram.contextMenuModule as any).contextMenuOpen();
+                    (diagram.contextMenuModule as any).contextMenuItemClick({ item: i });
+                    (diagram.contextMenuModule as any).contextMenuOnClose(e);
+                    break;
+                }
+            }
+
+            for (let i of e.items) {
+                if (i.id ===
+                    diagram.contextMenuModule.contextMenu.element.id + '_' + 'sendToBackOrder') {
+                    (diagram.contextMenuModule as any).contextMenuBeforeOpen(e);
+                    (diagram.contextMenuModule as any).contextMenuOpen();
+                    (diagram.contextMenuModule as any).contextMenuItemClick({ item: i });
+                    (diagram.contextMenuModule as any).contextMenuOnClose(e);
+                    break;
+                }
+            }
+            done();
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+    });
+
     describe('Horizontal Swimlane', () => {
         let diagram: Diagram;
         let mouseEvents: MouseEvents = new MouseEvents();

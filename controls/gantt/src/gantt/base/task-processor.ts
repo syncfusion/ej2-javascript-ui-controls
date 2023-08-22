@@ -439,9 +439,9 @@ export class TaskProcessor extends DateProcessor {
             this.parent.setRecordValue('rowUniqueID', ganttProperties.taskId.toString(), ganttProperties, true);
         } else {
             let uniqueId: string = ganttData.uniqueID.replace(this.parent.element.id + '_data_', '');
-            if (this.parent.viewType === 'ResourceView' && typeof(ganttData.ganttProperties.taskId) === "string") {
-                uniqueId = ganttProperties.taskId.toString();
-            }
+            // if (this.parent.viewType === 'ResourceView' && typeof(ganttData.ganttProperties.taskId) === "string") {
+            //     uniqueId = ganttProperties.taskId.toString();
+            // }
             this.parent.setRecordValue('rowUniqueID', uniqueId, ganttData);
             this.parent.setRecordValue('rowUniqueID', uniqueId, ganttProperties, true);
             this.parent.setRecordValue('sharedTaskUniqueIds', [], ganttProperties, true);

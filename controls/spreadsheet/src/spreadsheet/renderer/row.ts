@@ -67,7 +67,7 @@ export class RowRenderer implements IRowRenderer {
                             <CellRenderArgs>{ colIdx: i, rowIdx: index, cell: getCell(index, i, sheet), address: getCellAddress(index, i),
                                 lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true, pRow: pRow, first:
                                 index === this.parent.viewport.topIndex && skipHiddenIdx(sheet, index, true) !==
-                                skipHiddenIdx(sheet, 0, true) ? 'Row' : '', skipFormatCheck: isImported(this.parent) });
+                                skipHiddenIdx(sheet, 0, true) ? 'Row' : '', skipFormatCheck: isImported(this.parent), checkCF: true });
                     }
                     i++;
                 }

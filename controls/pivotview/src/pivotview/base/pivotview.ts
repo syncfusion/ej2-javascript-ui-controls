@@ -735,7 +735,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private tooltipTemplateFn: Function;
     private pivotRefresh: Function = Component.prototype.refresh;
     private selectedRowIndex: number;
-    private request: XMLHttpRequest = new XMLHttpRequest();
+    private request: XMLHttpRequest;
     /** @hidden */
     public guid: string;
     /** @hidden */
@@ -2906,6 +2906,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             enableDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
         };
+        this. request = isNullOrUndefined(this.request) ? new XMLHttpRequest() : this.request;
         this.request.open('POST', this.dataSourceSettings.url, true);
         const params: BeforeServiceInvokeEventArgs = {
             request: this.request,

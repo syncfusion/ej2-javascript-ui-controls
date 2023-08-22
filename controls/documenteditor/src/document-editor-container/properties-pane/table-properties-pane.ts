@@ -184,7 +184,7 @@ export class TableProperties {
         });
     }
     private getBorder(border: BorderType): BorderSettings {
-        const lineWidth: number = (this.borderSize.content.indexOf('No Border') >= 0) ? 0 : parseInt(this.borderSize.content, 10);
+        const lineWidth: number = (this.borderSize.content.indexOf('No Border') >= 0) ? 0 : parseFloat(this.borderSize.content);
         const linestyle: LineStyle = (lineWidth === 0) ? 'Cleared' : 'Single';
         const borderSettings: BorderSettings = {
             type: border,

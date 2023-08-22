@@ -1423,6 +1423,9 @@ export class CommandHandler {
                 }
                 for (let j: number = 0; j < copiedItems.length; j++) {
                     const copy: NodeModel | ConnectorModel = copiedItems[parseInt(j.toString(), 10)];
+                    if((copy as Node).parentId){
+                        (copy as Node).parentId = "";
+                    }
                     if (getObjectType(copy) === Connector) {
                         const clonedObj: ConnectorModel = clone(copy);
                         let nodeId: string = clonedObj.sourceID;

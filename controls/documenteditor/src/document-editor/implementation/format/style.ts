@@ -128,7 +128,7 @@ export class WCharacterStyle extends WStyle {
  * @private
  */
 export class WStyles {
-    private collection: Object[] = [];
+    public collection: Object[] = [];
     public get length(): number {
         return this.collection.length;
     }

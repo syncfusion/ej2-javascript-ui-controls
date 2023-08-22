@@ -1971,12 +1971,22 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.element.id + '_centerLabel',
             (this.series[0].animation.enable && isanimate) ? this.pieSeriesModule.center.x - 1 : this.pieSeriesModule.center.x,
             ypos,
-            getAnchor, labelCollection, '', 'auto'
+            getAnchor, '', '', 'auto'
         );
         const element: Element = textElement(
             this.renderer, options, this.centerLabel.textStyle, this.centerLabel.textStyle.color ||
              this.themeStyle.chartTitleFont.color, this.svgObject, false, this.redraw, null, null, null, null, null, null, null, null, this.themeStyle.chartTitleFont
         );
+        for (let i: number = 0; i < labelCollection.length; i++) {
+            const tspanOption: Object = { x: options.x, y: options.y + (i * centerLabelSize.height), fill: '', };
+            const tspanElement: HTMLElement = <HTMLElement>(this.renderer as SvgRenderer).createTSpan(tspanOption, '');
+            tspanElement.style.fontFamily = 'inherit';
+            tspanElement.style.fontStyle = 'inherit';
+            tspanElement.style.fontSize = 'inherit';
+            tspanElement.style.fontWeight = (labelCollection[i as number].indexOf('<b>') > -1 || labelCollection[i as number].indexOf('</b>') > -1) ? 'bold' : 'inherit';
+            tspanElement.textContent = labelCollection[i as number].replace(/<\/?b>/g, '');
+            element.appendChild(tspanElement);
+        }
         if (isanimate && this.series[0].animation.enable && this.animateSeries) {
             this.centerLabelDelay(element);
         }
@@ -2075,6 +2085,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.element.classList.remove('e-accumulationchart-focused');
             let element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_accumulationchart_focus');
             if (element) { element.remove(); }
+            removeElement('chartmeasuretext');
             this.removeSvg();
             this.svgObject = null;
         }

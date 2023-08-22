@@ -2422,4 +2422,34 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
       remove(elem);
       jasmine.Ajax.uninstall();
   });
+
+  describe('Bug 839261: Column template is not working properly when using getPersistData method', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          pageSettings: { pageSizes: true, pageSize: 5, pageCount: 2 },
+            columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', template:"<span>test</span>", headerText: 'Task Name' },
+            { field: 'startDate', headerText: 'Start Date'},
+            { field: 'duration', headerText: 'duration' },
+            ]
+        },
+        done
+      );
+    });
+    it('column template is not visible',() => {
+      gridObj.getPersistData();
+      gridObj.collapseRow(gridObj.getRowByIndex(0) as HTMLTableRowElement);
+      expect(gridObj.getRows()[0].cells[1].classList.contains('e-templatecell')).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 });

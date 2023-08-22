@@ -853,7 +853,7 @@ export class Edit {
         && !isNullOrUndefined(this.parent.getSelectedRecords()[0])) {
             this.addRowRecord = this.parent.getSelectedRecords()[0];
         }
-        if (isNullOrUndefined(this.addRowRecord) && this.parent.getCurrentViewRecords().length > this.addRowIndex && 
+        if (isNullOrUndefined(this.addRowRecord) && this.parent.getCurrentViewRecords().length > this.addRowIndex &&
             args.requestType === 'save' && this.parent.getSelectedRecords().length !== 0)
         {
             this.addRowRecord = this.parent.getCurrentViewRecords()[this.addRowIndex];

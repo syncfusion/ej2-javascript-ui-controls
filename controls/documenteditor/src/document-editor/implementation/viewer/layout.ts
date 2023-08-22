@@ -6512,6 +6512,7 @@ export class Layout {
                     let rowToMove: TableRowWidget = row;
                     let keepNext: boolean = false;
                     let index: number = (row.ownerTable.containerWidget as BodyWidget).index;
+                    let isTableFirstRow: boolean = false;
                     let bodyWidget: BodyWidget;
                     let block: BlockWidget
                     if (moveRowToNextTable && tableWidgets.length === 1) {
@@ -6542,6 +6543,7 @@ export class Layout {
                                 removeTable = false;
                             }
                             if (previousRow instanceof TableRowWidget) {
+                                isTableFirstRow = previousRow.indexInOwner === 0;
                                 rowToMove = previousRow as TableRowWidget;
                                 if (!rowToMove.ownerTable.equals(row.ownerTable)) {
                                     block = rowToMove.ownerTable;
@@ -6552,7 +6554,7 @@ export class Layout {
                         }
                     }
                     bodyWidget = this.moveBlocksToNextPage(block instanceof ParagraphWidget ? block.previousWidget as BlockWidget : 
-                        keepNext ? !isNullOrUndefined(block.previousWidget) ? block.previousWidget as BlockWidget : block as BlockWidget : block as BlockWidget, keepNext);
+                        (keepNext && isTableFirstRow) ? !isNullOrUndefined(block.previousWidget) ? block.previousWidget as BlockWidget : block as BlockWidget : block as BlockWidget, keepNext);
 
                     let curretTable: TableWidget = tableWidgets[tableWidgets.length - 1];
                     //Move Next RowWidge to next page
@@ -6868,7 +6870,7 @@ export class Layout {
     /* eslint-disable-next-line max-len */
     private splitSpannedCellWidget(cellWidget: TableCellWidget, tableCollection: TableWidget[], rowCollection: TableRowWidget[], viewer: LayoutViewer): void {
         /* eslint-disable-next-line max-len */
-        const splittedCell: TableCellWidget = this.getSplittedWidget(viewer.clientArea.bottom, false, tableCollection, rowCollection, cellWidget, undefined);
+        const splittedCell: TableCellWidget = this.getSplittedWidget(viewer.clientArea.bottom, false, tableCollection, rowCollection, cellWidget, undefined, undefined, undefined, undefined, true);
         if (!isNullOrUndefined(splittedCell)) {
             //Adds the splitted contents of a vertical merged cell, in order preserve in next page.
             this.documentHelper.splittedCellWidgets.push(splittedCell);
@@ -7026,7 +7028,7 @@ export class Layout {
     }
 
     /* eslint-disable-next-line max-len */
-    private getSplittedWidget(bottom: number, splitMinimalWidget: boolean, tableCollection: TableWidget[], rowCollection: TableRowWidget[], cellWidget: TableCellWidget, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, isMultiColumnSplit?: boolean, nestedCount?: number): TableCellWidget {
+    private getSplittedWidget(bottom: number, splitMinimalWidget: boolean, tableCollection: TableWidget[], rowCollection: TableRowWidget[], cellWidget: TableCellWidget, footNoteCollection: FootnoteElementBox[], lineIndexInCell?: number, isMultiColumnSplit?: boolean, nestedCount?: number, splitSpannedCellWidget?: boolean): TableCellWidget {
         let splittedWidget: TableCellWidget = undefined;
         let footnoteHeight: number = 0;
         if (isMultiColumnSplit || cellWidget.y + cellWidget.height > bottom - this.footHeight - cellWidget.margin.bottom) {
@@ -7058,7 +7060,7 @@ export class Layout {
                         count = count + paragraphWidget.childWidgets.length;
                     }
                     if (!isNullOrUndefined(splittedPara)) {
-                        if (i === 0 && splittedPara === paragraphWidget) {
+                        if (i === 0 && splittedPara === paragraphWidget && !splitSpannedCellWidget) {
                             if (splitMinimalWidget && this.isRelayoutneed) {
                                 splittedWidget = this.createCellWidget(cellWidget);
                                 return splittedWidget;
@@ -7385,12 +7387,12 @@ export class Layout {
         table.width = widget.width;
     }
 
-    public updateChildLocationForTable(top: number, tableWidget: TableWidget): void {
+    public updateChildLocationForTable(top: number, tableWidget: TableWidget, bodyWidget?: BodyWidget, updatePosition?: boolean): void {
         for (let i: number = 0; i < tableWidget.childWidgets.length; i++) {
             const rowWidget: TableRowWidget = tableWidget.childWidgets[i] as TableRowWidget;
             //rowWidget.x = rowWidget.x;
             rowWidget.y = top;
-            this.updateChildLocationForRow(top, rowWidget);
+            this.updateChildLocationForRow(top, rowWidget, bodyWidget, updatePosition);
             top += rowWidget.height;
         }
     }
@@ -7422,13 +7424,20 @@ export class Layout {
                 skipHeight = true;
             }
             if (!isNullOrUndefined((container.childWidgets[i] as ParagraphWidget).floatingElements) && (container.childWidgets[i] as ParagraphWidget).floatingElements.length > 0 && updatePosition) {
-                this.viewer.cutFromTop(top);
+                this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.bottom - top;
+                this.viewer.clientActiveArea.y = top;
             }
             (container.childWidgets[i] as Widget).x = (container.childWidgets[i] as Widget).x;
             (container.childWidgets[i] as Widget).y = top;
             if (!isNullOrUndefined(bodyWidget) && widget instanceof TableCellWidget && container.childWidgets[i] instanceof ParagraphWidget) {
                 let paragraph: ParagraphWidget = container.childWidgets[i] as ParagraphWidget;
                 let prevBodyWidgetFloatingElements: (TableWidget | ShapeBase)[] = widget.ownerTable.bodyWidget.floatingElements;
+                let isRowMovedToNextTable: boolean = false;
+                if (widget.ownerTable.bodyWidget === bodyWidget && !isNullOrUndefined(widget.ownerTable.previousSplitWidget)) {
+                    prevBodyWidgetFloatingElements = (widget.ownerTable.previousSplitWidget as TableWidget).bodyWidget.floatingElements;
+                    isRowMovedToNextTable = true;
+                }
+                widget.ownerTable.bodyWidget.floatingElements;
                 if (paragraph.floatingElements.length > 0) {
                     for (let j = 0; j < paragraph.floatingElements.length; j++) {
                         let element: ShapeBase = paragraph.floatingElements[j];
@@ -7436,15 +7445,17 @@ export class Layout {
                         this.viewer.clientActiveArea.x = element.x;
                         this.layoutShape(element);
                         this.viewer.clientActiveArea.x = prevClientActiveAreaX;
-                        if (prevBodyWidgetFloatingElements.indexOf(element) > -1) {
-                            bodyWidget.floatingElements.push(element);
+                        if (prevBodyWidgetFloatingElements.indexOf(element) > -1 && element.textWrappingStyle !== 'Inline') {
+                            if (!isRowMovedToNextTable) {
+                                bodyWidget.floatingElements.push(element);
+                            }
                             prevBodyWidgetFloatingElements.splice(prevBodyWidgetFloatingElements.indexOf(element), 1)
                         }
                     }
                 }
             }
             if (container.childWidgets[i] instanceof TableWidget) {
-                this.updateChildLocationForTable(top, (container.childWidgets[i] as TableWidget));
+                this.updateChildLocationForTable(top, (container.childWidgets[i] as TableWidget), bodyWidget, updatePosition);
             }
             if (!skipHeight) {
                 top += (container.childWidgets[i] as Widget).height;

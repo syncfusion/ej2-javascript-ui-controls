@@ -446,5 +446,46 @@ describe('Hide & Show ->', () => {
                 });
             });
         });
+        describe('EJ2-842256 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        ranges: [{ dataSource: defaultData }],
+                        conditionalFormats: [
+                            { type: "GreaterThan", cFColor: "RedFT", value:'20', range: 'D2:D11' },
+                            { type: "GreaterThan", cFColor: "GreenFT", value:'10', range: 'D2:H2' }
+                        ],
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Conditional format gets removed when clearing the filter for cf rule applied values ->', (done: Function) => {
+                helper.getInstance().filterModule.getFilterOperator('Less');
+                helper.getInstance().applyFilter([{ field: 'D', predicate: 'or', operator: 'lessthan', value: '20' }]);
+                setTimeout(() => {
+                    helper.invoke('clearFilter', ['D']);
+                    expect(helper.invoke('getCell', [5, 3]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [10, 3]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [6, 3]).style.color).toBe('rgb(156, 0, 85)');
+                    expect(helper.invoke('getCell', [9, 3]).style.color).toBe('rgb(156, 0, 85)');
+                    helper.invoke('hideColumn', [4]);
+                    helper.invoke('selectRange', ['D1:F1']);
+                    let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[0];
+                    let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                    setTimeout(() => {
+                        helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').click();
+                        setTimeout(() => {
+                            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                            expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+                            expect(helper.invoke('getCell', [1, 4]).style.color).toBe('rgb(0, 97, 0)');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });

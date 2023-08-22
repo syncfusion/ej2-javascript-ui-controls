@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.10 (2023-08-22)
+
+### File Manager
+
+#### Bug fixes
+
+- `#I492594` - The issue related to the console error that occurred when moving between folders after performing a search operation within the File Manager component has been resolved.
+
 ## 22.1.39 (2023-07-18)
 
 ### File Manager

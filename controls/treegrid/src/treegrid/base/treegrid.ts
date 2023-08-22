@@ -3056,9 +3056,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private ignoreInColumn(ignoreOnColumn: string[], column: Column): void {
-        for (let i: number = 0; i < ignoreOnColumn.length; i++) {
-            delete column[ignoreOnColumn[parseInt(i.toString(), 10)]];
-            column.filter = {};
+        if (isNullOrUndefined(column.template)) {
+            for (let i: number = 0; i < ignoreOnColumn.length; i++) {
+                delete column[ignoreOnColumn[parseInt(i.toString(), 10)]];
+                column.filter = {};
+            }
         }
     }
     private mouseClickHandler(e: MouseEvent & TouchEvent): void {

@@ -563,49 +563,51 @@ export class StickyNotesAnnotation {
         // eslint-disable-next-line
         let pageCollections: any = [];
         let collection: any = pageAnnotations.annotationOrder;
-        for (let l = 0; l < collection.length; l++) {
-            let annotation: any = collection[parseInt(l.toString(), 10)];
-            let type = annotation.AnnotType ? annotation.AnnotType : annotation.AnnotationType;
-            if (this.pdfViewer.dateTimeFormat) {
-                annotation.ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(annotation.ModifiedDate);
-            }
-            pageCollections.push(annotation);
-            switch (type) {
-                case "textMarkup":
-                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule))) {
-                        this.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(annotation, pageNumber));
-                    }
-                    break;
-                case "shape_measure":
-                    if (!isNullOrUndefined(this.pdfViewer.annotationModule )&&(!isNullOrUndefined(this.pdfViewer.annotationModule.measureAnnotationModule))) {
-                        this.updateCollections(this.pdfViewer.annotationModule.measureAnnotationModule.updateMeasureAnnotationCollections(annotation, pageNumber));
-                    } 
-                    break;
-                case "shape":
-                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.shapeAnnotationModule))) {
-                        this.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(annotation, pageNumber));
-                    }
-                    break;
-                case "sticky":
-                    this.updateCollections(this.updateStickyNotesAnnotationCollections(annotation, pageNumber));
-                    break;
-                case "stamp":
-                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.stampAnnotationModule))) {
-                        this.updateCollections(this.pdfViewer.annotationModule.stampAnnotationModule.updateStampAnnotationCollections(annotation, pageNumber));
-                    }
-                    break;
-                case "Ink":
-                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.inkAnnotationModule))) {
-                        this.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(annotation, pageNumber));
-                    }
-                    break;
-                case "Text Box":
-                    if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.freeTextAnnotationModule))) {
-                        this.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(annotation, pageNumber));
-                    }
-                    break;
-                default:
-                    break;
+        if (!isNullOrUndefined(collection)) {
+            for (let l = 0; l < collection.length; l++) {
+                let annotation: any = collection[parseInt(l.toString(), 10)];
+                let type = annotation.AnnotType ? annotation.AnnotType : annotation.AnnotationType;
+                if (this.pdfViewer.dateTimeFormat) {
+                    annotation.ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(annotation.ModifiedDate);
+                }
+                pageCollections.push(annotation);
+                switch (type) {
+                    case "textMarkup":
+                        if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule))) {
+                            this.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(annotation, pageNumber));
+                        }
+                        break;
+                    case "shape_measure":
+                        if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.measureAnnotationModule))) {
+                            this.updateCollections(this.pdfViewer.annotationModule.measureAnnotationModule.updateMeasureAnnotationCollections(annotation, pageNumber));
+                        }
+                        break;
+                    case "shape":
+                        if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.shapeAnnotationModule))) {
+                            this.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(annotation, pageNumber));
+                        }
+                        break;
+                    case "sticky":
+                        this.updateCollections(this.updateStickyNotesAnnotationCollections(annotation, pageNumber));
+                        break;
+                    case "stamp":
+                        if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.stampAnnotationModule))) {
+                            this.updateCollections(this.pdfViewer.annotationModule.stampAnnotationModule.updateStampAnnotationCollections(annotation, pageNumber));
+                        }
+                        break;
+                    case "Ink":
+                        if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.inkAnnotationModule))) {
+                            this.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(annotation, pageNumber));
+                        }
+                        break;
+                    case "Text Box":
+                        if (!isNullOrUndefined(this.pdfViewer.annotationModule) && (!isNullOrUndefined(this.pdfViewer.annotationModule.freeTextAnnotationModule))) {
+                            this.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(annotation, pageNumber));
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         if (pageAnnotations.signatureAnnotation && pageAnnotations.signatureAnnotation.length !== 0) {

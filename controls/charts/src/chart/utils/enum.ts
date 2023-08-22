@@ -322,11 +322,11 @@ export type ValueType =
     'DateTimeCategory';
 /**
  * Defines the type of error bar. They are
- * * fixed -  Renders a fixed type error bar.
- * * percentage - Renders a percentage type error bar.
- * * standardDeviation - Renders a standard deviation type error bar.
- * * standardError -Renders a standard error type error bar.
- * * custom -Renders a custom type error bar.
+ * * fixed -  This type of error bar renders a fixed value type error bar. The error value is fixed and does not change.
+ * * percentage - This type of error bar renders a percentage value type error bar. The error value is calculated as a percentage of the data value.
+ * * standardDeviation - This type of error bar renders a standard deviation type error bar. The error value is based on the standard deviation of the data points.
+ * * standardError - This type of error bar renders a standard error type error bar. The error value is based on the standard error of the data points.
+ * * custom - Renders a custom type error bar. This type of error bar allows for custom calculations or representations of the error or uncertainty in the data.
  */
 export type ErrorBarType =
     /** Define the Fixed type. */
@@ -342,9 +342,9 @@ export type ErrorBarType =
 
 /**
  * Defines the direction of error bar. They are
- * * both -  Renders both direction of error bar.
- * * minus - Renders minus direction of error bar.
- * * plus - Renders plus direction error bar.
+ * * both -  This option renders error bars in both directions. It means that the error bars will extend in both the positive and negative directions from the data point.
+ * * minus - This option renders error bars in the minus direction only. It means that the error bars will extend in the negative direction from the data point.
+ * * plus - This option renders error bars in the plus direction only. It means that the error bars will extend in the positive direction from the data point.
  */
 export type ErrorBarDirection =
     /** Define the Both direction. */
@@ -356,9 +356,9 @@ export type ErrorBarDirection =
 
 /**
  * Defines the modes of error bar. They are
- * * vertical -  Renders a vertical error bar.
- * * horizontal - Renders a horizontal error bar.
- * * both - Renders both side error bar.
+ * * vertical -  This mode renders a vertical error bar for each data point. The vertical error bar extends from the top to the bottom of the data point.
+ * * horizontal - This mode renders a horizontal error bar for each data point. The horizontal error bar extends from the left to the right of the data point.
+ * * both - This mode renders both vertical and horizontal error bars for each data point. The error bars extend in both the vertical and horizontal directions.
  */
 export type ErrorBarMode =
     /** Define the Vertical mode. */

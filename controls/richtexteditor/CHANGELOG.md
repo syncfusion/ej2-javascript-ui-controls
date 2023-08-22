@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.10 (2023-08-22)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I488885` - Now, pressing `CTRL + Enter` does not trigger the enter action in the Rich Text Editor.
+
 ## 22.2.9 (2023-08-15)
 
 ### RichTextEditor

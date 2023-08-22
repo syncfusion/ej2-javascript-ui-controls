@@ -2054,8 +2054,9 @@ export class DiagramRenderer {
     public getBaseAttributes(element: DiagramElement, transform?: Transforms, isPreviewNode?: boolean): BaseAttributes {
         const options: BaseAttributes = {
             width: element.actualSize.width, height: element.actualSize.height,
-            x: element.offsetX - element.actualSize.width * element.pivot.x + 0.5,
-            y: element.offsetY - element.actualSize.height * element.pivot.y + 0.5,
+            //EJ2-840163-Draw highlighter not rendered properly while hovering ports
+            x: element.offsetX - element.actualSize.width * element.pivot.x,
+            y: element.offsetY - element.actualSize.height * element.pivot.y,
             fill: element.style.fill, stroke: element.style.strokeColor, angle: element.rotateAngle + element.parentTransform,
             pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: element.style.strokeWidth,
             dashArray: element.style.strokeDashArray || '', opacity: element.style.opacity, shadow: element.shadow,

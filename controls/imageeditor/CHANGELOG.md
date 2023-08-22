@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 22.2.10 (2023-08-22)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Script error thrown while editing multiple text area" has been resolved.
+
+## 22.2.9 (2023-08-15)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Script error thrown while applying text area changes to canvas" has been resolved.
+
 ## 22.2.5 (2023-07-27)
 
 ### Image Editor

@@ -825,7 +825,7 @@ export class SpellChecker {
 
     private lookThroughNextLine(currentText: string, prevText: string, elementBox: TextElementBox, underlineY: number, beforeIndex: number): boolean {
 
-        if (!isNullOrUndefined(elementBox) && elementBox.indexInOwner === elementBox.line.children.length - 1 && !isNullOrUndefined(elementBox.line.nextLine)) {
+        if (elementBox instanceof TextElementBox && !isNullOrUndefined(elementBox) && elementBox.indexInOwner === elementBox.line.children.length - 1 && !isNullOrUndefined(elementBox.line.nextLine)) {
             const nextLine: LineWidget = elementBox.line.nextLine;
             if (!isNullOrUndefined(nextLine.children[0]) && nextLine.children[0] instanceof TextElementBox) {
                 const firstElement: TextElementBox = nextLine.children[0] as TextElementBox;

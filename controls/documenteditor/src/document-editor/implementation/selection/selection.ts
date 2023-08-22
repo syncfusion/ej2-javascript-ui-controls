@@ -10280,7 +10280,11 @@ export class Selection {
     public shiftBlockOnHeaderFooterEnableDisable(): void {
         for (let i: number = 0; i < this.documentHelper.headersFooters.length; i++) {
             let headerFooter: HeaderFooters = this.documentHelper.headersFooters[i];
-            let sectionFormat: WSectionFormat = this.getBodyWidgetInternal(i, 0).sectionFormat;
+            let bodywidget = this.getBodyWidgetInternal(i, 0);
+            if(isNullOrUndefined(bodywidget)) {
+                continue;
+            }
+            let sectionFormat: WSectionFormat = bodywidget.sectionFormat;
             for (let key of Object.keys(headerFooter)) {
                 let widget: HeaderFooterWidget = headerFooter[key];
                 if (widget.isEmpty) {

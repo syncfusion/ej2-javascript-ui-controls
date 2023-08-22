@@ -2804,3 +2804,115 @@ describe('Bug-829910-Incorrect render of segments', () => {
     expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.segments[1].endDate,'M/dd/yyyy')).toEqual('2/28/2023');
     });
 });
+describe('Other instance of the taskbar not moved in the resource view issue', () => {
+    let ganttObj: Gantt;
+    let projectNewData: Object[] = [
+        {
+            Id: '7aa84bb0da79427390e16a683802e35c',
+            Name: 'Project initiation',
+        
+            Subtasks: [
+              {
+                Id: 'a01d9aa633904ee4bd7206282b65268b',
+                Name: 'Identify site location',
+                CreateDate: '2019-04-01T23:00:00.000Z',
+                Duration: 0,
+                Progress: 0,
+                resources: [1],
+                info: 'Measure the total property area alloted for construction',
+              },
+              {
+                Id: 'e68b6c03898d427f96687526969b888d',
+                Name: 'Perform Soil test',
+                CreateDate: '2019-04-01T23:00:00.000Z',
+                EndDate: '2019-04-07T23:00:00.000Z',
+                Dependency: '',
+                Progress: 0,
+                resources: [2, 3, 5],
+                info:
+                  'Obtain an engineered soil test of lot where construction is planned.' +
+                  'From an engineer or company specializing in soil testing',
+              },
+              {
+                Id: 'e68b6c03898d427f96687526969b888d',
+                Name: 'Soil test approval',
+                CreateDate: '2019-04-02T23:00:00.000Z',
+                Dependency: '',
+                Progress: 0,
+              },
+            ],
+          },
+        ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+            taskFields: {
+                id: 'Id',
+            name: 'Name',
+            startDate: 'CreateDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Dependency',
+            child: 'Subtasks',
+            resourceInfo: 'resources',
+            },
+            resourceFields:{
+                id: 'resourceId',
+                name: 'resourceName',
+            },
+            columns:[
+                {
+                    field: 'Name',
+                    headerText: 'Job Name',
+                    width: '250',
+                    clipMode: 'EllipsisWithTooltip',
+                },
+                { field: 'Id', width: 80, visible: false },
+                { field: 'CreateDate', visible: false },
+                { field: 'Duration', visible: false },
+                { field: 'Progress', visible: false },
+                { field: 'Dependency', visible: false },
+            ],
+            editSettings: {
+                allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true,
+            },
+            eventMarkers:[
+                { day: '4/17/2019', label: 'Project approval and kick-off' },
+            { day: '5/3/2019', label: 'Foundation inspection' },
+            { day: '6/7/2019', label: 'Site manager inspection' },
+            { day: '7/16/2019', label: 'Property handover and sign-off' },
+            ],
+            resources: editingResources,
+            splitterSettings:{
+                columnIndex: 2,
+            },
+            gridLines: "Both",
+            viewType: 'ResourceView',
+            height:'450px',
+            allowSelection:true,
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('Check start and end date after taskbar drag', () => {
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(6) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 200, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.startDate, 'M/dd/yyyy')).toBe('4/08/2019');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[8].ganttProperties.startDate, 'M/dd/yyyy')).toBe('4/08/2019');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/11/2019');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[8].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/11/2019');
+    });
+});

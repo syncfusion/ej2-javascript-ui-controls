@@ -2965,6 +2965,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         // eslint-disable-next-line
         const imgPadding: number = 12
         const imgResizeBorder: number = 2;
+        if (isNOU(this.contentModule) || isNOU(this.contentModule.getEditPanel())) {
+            EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, (this.imageModule as any).resizing);
+            return maxWidth;
+        }
         const editEle: HTMLElement = this.contentModule.getEditPanel() as HTMLElement;
         const eleStyle: CSSStyleDeclaration = window.getComputedStyle(editEle);
         const editEleMaxWidth: number = editEle.offsetWidth - (imgPadding + imgResizeBorder +

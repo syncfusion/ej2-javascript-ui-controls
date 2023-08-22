@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 22.2.10 (2023-08-22)
+
+### DropDown List
+
+#### Bug Fixes
+
+- `#I481443` - Resolved the issue where the "no records" template was not being displayed and a console error occurred.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I479749` - Resolved the issue of "Unable to retrieve preselected variable values that are not present in the data source".
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#F183599` - The issue duplicate child was rendered when using `expanded` field in Dropdown Tree component with Web API adaptor has been resolved.
+
 ## 22.2.9 (2023-08-15)
 
 ### ComboBox

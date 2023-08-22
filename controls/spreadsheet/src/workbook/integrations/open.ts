@@ -136,7 +136,7 @@ export class WorkbookOpen {
             {
                 'isProtected': workbookModel.isProtected || false,
                 'password': workbookModel.password || '',
-                'showSheetTabs': workbookModel.showSheetTabs || true,
+                'showSheetTabs': isNullOrUndefined(workbookModel.showSheetTabs) ? true : workbookModel.showSheetTabs,
                 'sheets': workbookModel.sheets,
                 'activeSheetIndex': workbookModel.activeSheetIndex,
                 'definedNames': workbookModel.definedNames || [],

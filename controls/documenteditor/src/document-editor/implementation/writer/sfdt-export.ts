@@ -528,6 +528,12 @@ export class SfdtExport {
             firstElement = child.children[2];
             secondElement = child.children[3];
         }
+        if(!isNullOrUndefined(widget.contentControlProperties)
+            && widget.containerWidget instanceof TableCellWidget
+            && !isNullOrUndefined(widget.containerWidget.containerWidget)
+            && !isNullOrUndefined((widget.containerWidget.containerWidget.containerWidget as TableWidget).contentControlProperties)) {
+                blocks = [];
+        }
         if (this.nestedBlockEnabled) {
             blocks = [];
         }

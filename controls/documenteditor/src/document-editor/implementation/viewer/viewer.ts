@@ -5233,7 +5233,7 @@ export class PageLayoutViewer extends LayoutViewer {
         let page: Page = section.page;
         if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || (isNullOrUndefined(page.previousPage) && page.sectionIndex !== page.previousPage.sectionIndex && page.previousPage.bodyWidgets[page.previousPage.bodyWidgets.length - 1].sectionIndex !== page.bodyWidgets[0].sectionIndex))) {
             type = isHeader ? 'FirstPageHeader' : 'FirstPageFooter';
-        } else if (section.sectionFormat.differentOddAndEvenPages && this.documentHelper.pages.length % 2 === 0) {
+        } else if (section.sectionFormat.differentOddAndEvenPages && (page.index + 1) % 2 === 0) {
             type = isHeader ? 'EvenHeader' : 'EvenFooter';
         }
         return type;

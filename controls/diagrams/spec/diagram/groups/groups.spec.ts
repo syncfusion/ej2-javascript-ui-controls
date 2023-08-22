@@ -2223,3 +2223,84 @@ describe('UnGroup Issue - EJ2-66928',()=>{
         })
     });
 });
+describe('Copy Paste the child node of group outside the group', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram3' });
+        document.body.appendChild(ele);
+        let port :any= [
+            {
+                id: 'port1',
+                offset: { x: 0, y: 0.5 },
+                visibility: PortVisibility.Visible,
+                constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+            {
+                id: 'port2',
+                offset: { x: 1, y: 0.5 },
+                visibility: PortVisibility.Visible,
+                constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+            {
+                id: 'port3',
+                offset: { x: 0.5, y: 0 },
+                visibility: PortVisibility.Visible,
+                constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+            {
+                id: 'port4',
+                offset: { x: 0.5, y: 1 },
+                visibility: PortVisibility.Visible,
+                constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+        ]
+        let node: any = [ {
+            id: 'node1',
+            offsetX: 150,
+            offsetY: 150,
+            width: 100,
+            height: 100,
+            ports: port,
+        },
+        {
+            id: 'node2',
+            offsetX: 550,
+            offsetY: 350,
+            width: 100,
+            height: 100,
+            ports: port,
+        },
+        {
+            id: 'group1',
+            children: ['node1', 'node2'],
+            padding: { left: 10, right: 10, top: 10, bottom: 10 },
+            ports: port,
+            style: { strokeColor: 'black' },
+        }];
+            diagram = new Diagram({
+            width: '500px', height: '600px', nodes:node,contextMenuSettings: { show: true }
+        });
+
+        diagram.appendTo('#diagram');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether the copied child node parentid is empty', (done: Function) => {
+        diagram.select([diagram.nodes[0]])
+        diagram.copy();
+        diagram.paste();
+        expect((diagram.selectedItems.nodes as any).parentId ==="").toBe(true); done();
+    });
+});

@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-## 22.2.5 (2023-07-27)
+## 22.2.9 (2023-08-15)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I488100` `#F45810`- Facing a console error when clicking in an empty ListView component has been resolved.
+
+## 22.2.8 (2023-08-08)
 
 ### ListBox
 
 #### Bug Fixes
 
 - `#F44817` - Issue with "Dragged item may be one that is adjacent to the item over which mouse down occurred in listbox." has been resolved.
+
+## 22.2.5 (2023-07-27)
 
 ### ListView
 

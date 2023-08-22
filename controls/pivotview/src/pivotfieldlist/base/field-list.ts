@@ -120,7 +120,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public enableValueSorting: boolean = false;
     /** @hidden */
     public guid: string;
-    private request: XMLHttpRequest = new XMLHttpRequest();
+    private request: XMLHttpRequest;
     private savedDataSourceSettings: DataSourceSettingsModel;
     private remoteData: string[][] | IDataSet[] = [];
     /** @hidden */
@@ -841,6 +841,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
         };
+        this. request = isNullOrUndefined(this.request) ? new XMLHttpRequest() : this.request;
         this.request.open('POST', this.dataSourceSettings.url, true);
         const params: BeforeServiceInvokeEventArgs = {
             request: this.request,

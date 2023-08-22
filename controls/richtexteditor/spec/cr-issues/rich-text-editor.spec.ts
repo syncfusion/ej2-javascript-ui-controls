@@ -2158,4 +2158,24 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+    describe('841892 - CTRL + Enter triggers the enter action in the Editor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+        it('Pressing Crt + enter key after ', (done: Function) => {
+            rteObj = renderRTE({
+                value: `<p>Testing</p>`,
+            });
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 4, 4);
+            (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+            keyBoardEvent.code = 'Enter';
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.which = 13;
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((rteObj as any).inputElement.innerHTML === `<p>Testing</p>`).toBe(true);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

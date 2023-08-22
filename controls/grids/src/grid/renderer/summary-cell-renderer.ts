@@ -77,7 +77,7 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
             const field: string = cell.column.columnName ? cell.column.columnName : null;
             const curCell: Cell<Column> = <Cell<Column>>(!isNullOrUndefined(field) ? args.cells.filter((cell: Cell<AggregateColumn>) =>
                 cell.column.columnName === field)[0] : null);
-            if (node.parentElement && node.parentElement.getAttribute('data-uid') === args.dataUid && field &&
+            if (node.parentElement && node.parentElement.getAttribute('data-uid') === args.dataUid && field && curCell &&
                 field === (<Cell<Column> & { column: AggregateColumn }>curCell).column.columnName) {
                 this.refreshTD(node, curCell, args.data);
             }

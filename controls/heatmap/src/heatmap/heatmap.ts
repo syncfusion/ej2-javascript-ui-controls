@@ -1166,13 +1166,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.touchInstance = new Touch(this.element, {
             tapHold: (e: TapEventArgs) => {
                 heatmap.isCellTapHold = true;
+                const selectedCellCollection: SelectedCellDetails[] = [];
+                for (let i: number = 0; i < this.multiCellCollection.length; i++) {
+                    selectedCellCollection.push(this.multiCellCollection[i as number]);
+                }
                 if (!e.originalEvent.ctrlKey || !this.enableMultiSelect) {
-                    this.removeSelectedCellsBorder();
+                    this.multiCellCollection = [];
                 }
                 heatmap.getDataCollection();
-                heatmap.currentRect.allowCollection = false;
-                heatmap.setCellOpacity();
-                heatmap.tooltipOnMouseMove(null, heatmap.currentRect, heatmap.isCellTapHold);
                 const argData: ISelectedEventArgs = {
                     heatmap: heatmap,
                     cancel: false,
@@ -1180,13 +1181,47 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     data: heatmap.multiCellCollection
                 };
                 heatmap.trigger('cellSelected', argData);
-            },
-            tap: () => {
-                let isCellTap: boolean = false;
-                if (!heatmap.isCellTapHold) {
-                    isCellTap = true;
+                if (!argData.cancel) {
+                    if ((e as any).ctrlKey === false || !this.enableMultiSelect) {
+                        this.removeSelectedCellsBorder(false);
+                    }
+                    heatmap.currentRect.allowCollection = false;
+                } else {
+                    this.multiCellCollection = selectedCellCollection;
+                    if (this.multiCellCollection.length > 0 || (e as any).ctrlKey === false || !this.enableMultiSelect) {
+                        this.removeSelectedCellsBorder(true);
+                    }
                 }
-                heatmap.tooltipOnMouseMove(null, heatmap.currentRect, isCellTap);
+                heatmap.setCellOpacity();
+                window.clearTimeout(this.tooltipTimer);
+                heatmap.tooltipOnMouseMove(null, heatmap.currentRect, heatmap.isCellTapHold);
+            },
+            tap: (e) => {
+                const targetId: string = (<Element>e.originalEvent.target).id;
+                if ((targetId.indexOf(this.element.id + '_HeatMapRect_') !== -1 || targetId.indexOf(this.element.id + '_HeatMapRectLabels_') !== -1 || targetId.indexOf(this.element.id + '_CellSelection_Container_') !== -1)) {
+                    let isCellTap: boolean = false;
+                    if (!heatmap.isCellTapHold) {
+                        isCellTap = true;
+                    }
+                    let pageX: number; let pageY: number;
+                    let touchArg: TouchEvent;
+                    const elementRect: ClientRect = this.element.getBoundingClientRect();
+                    if (e.originalEvent.type === 'touchend' || e.originalEvent.type === 'touchstart') {
+                        this.isTouch = true;
+                        touchArg = <TouchEvent & PointerEvent>e.originalEvent;
+                        pageX = touchArg.changedTouches[0].clientX;
+                        pageY = touchArg.changedTouches[0].clientY;
+                    } else {
+                        this.isTouch = false;
+                        pageX = e.originalEvent.clientX;
+                        pageY = e.originalEvent.clientY;
+                    }
+                    pageX -= elementRect.left;
+                    pageY -= elementRect.top;
+                    const currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(pageX, pageY);
+                    window.clearTimeout(this.tooltipTimer);
+                    heatmap.tooltipOnMouseMove(null, currentRect, isCellTap);
+                }
             }
         });
 
@@ -1689,7 +1724,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         const rect: Rect = new Rect(x - this.initialClipRect.x, y - this.initialClipRect.y,
                                     Math.abs(pageX - this.initialCellX), Math.abs(pageY - this.initialCellY));
         if (((rect.width > 0) && this.enableMultiSelect && e.ctrlKey === false)) {
-            this.removeSelectedCellsBorder();
+            this.removeSelectedCellsBorder(false);
             const tooltipElement: HTMLElement = document.getElementById(this.element.id + 'Celltooltipcontainer_svg');
             if (tooltipElement){
                 this.tooltipModule.tooltipObject = null;
@@ -1771,17 +1806,26 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * To remove the selection on mouse click without ctrl key.
      */
 
-    private removeSelectedCellsBorder(): void {
+    private removeSelectedCellsBorder(isSelectionCancel: boolean): void {
         if (!this.enableCanvasRendering) {
             const containerRect: HTMLElement = document.getElementById(this.element.id + '_Container_RectGroup');
             const containerText: HTMLElement = document.getElementById(this.element.id + '_Container_TextGroup');
             for (let i: number = 0; i < containerRect.childNodes.length; i++) {
                 const elementClassName: string = (containerRect.childNodes[i as number] as HTMLElement).getAttribute('class');
-                (containerRect.childNodes[i as number] as HTMLElement).setAttribute('opacity', '0.3');
-                if (this.cellSettings.showLabel && containerText.childNodes[i as number]) {
-                    (containerText.childNodes[i as number] as HTMLElement).setAttribute('opacity', '0.3');
-                    this.removeSvgClass(
-                        (containerRect.childNodes[i as number] as HTMLElement), elementClassName);
+                if (isSelectionCancel) {
+                    (containerRect.childNodes[i as number] as HTMLElement).setAttribute('opacity', '1');
+                    if (this.cellSettings.showLabel && containerText.childNodes[i as number]) {
+                        (containerText.childNodes[i as number] as HTMLElement).setAttribute('opacity', '1');
+                        this.removeSvgClass(
+                            (containerRect.childNodes[i as number] as HTMLElement), elementClassName);
+                    }
+                } else {
+                    (containerRect.childNodes[i as number] as HTMLElement).setAttribute('opacity', '0.3');
+                    if (this.cellSettings.showLabel && containerText.childNodes[i as number]) {
+                        (containerText.childNodes[i as number] as HTMLElement).setAttribute('opacity', '0.3');
+                        this.removeSvgClass(
+                            (containerRect.childNodes[i as number] as HTMLElement), elementClassName);
+                    }
                 }
             }
         } else {
@@ -1800,7 +1844,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-        this.multiCellCollection = [];
     }
 
     /**
@@ -2043,15 +2086,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                         if (!(rect.width > 0 && !this.enableMultiSelect)) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const selectedCellCollection: SelectedCellDetails[] = [];
+                            for (let i: number = 0; i < this.multiCellCollection.length; i++){
+                                selectedCellCollection.push(this.multiCellCollection[i as number]);
+                            }
                             if ((e as any).ctrlKey === false || !this.enableMultiSelect) {
-                                this.removeSelectedCellsBorder();
+                                this.multiCellCollection = [];
                             }
                             this.getDataCollection();
-                            this.currentRect.allowCollection = false;
-                            this.setCellOpacity();
-                            if (e.type === 'touchend') {
-                                this.tooltipOnMouseMove(null, this.currentRect, true);
-                            }
                             const argData: ISelectedEventArgs = {
                                 heatmap: this,
                                 cancel: false,
@@ -2059,6 +2101,23 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                                 data: this.multiCellCollection
                             };
                             this.trigger('cellSelected', argData);
+                            if (!argData.cancel) {
+                                if ((e as any).ctrlKey === false || !this.enableMultiSelect) {
+                                    this.removeSelectedCellsBorder(false);
+                                }
+                                this.currentRect.allowCollection = false;
+                            } else {
+                                this.multiCellCollection = selectedCellCollection;
+                                if (this.multiCellCollection.length > 0 || (e as any).ctrlKey === false || !this.enableMultiSelect)
+                                {
+                                    this.removeSelectedCellsBorder(true);
+                                }
+                            }
+                            this.setCellOpacity();
+                            if (e.type === 'touchend') {
+                                window.clearTimeout(this.tooltipTimer);
+                                this.tooltipOnMouseMove(null, this.currentRect, true);
+                            }
                         }
                     } else {
                         this.isCellTapHold = false;

@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, classList, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { DocumentEditor, WAbstractList, WListLevel } from '../../document-editor/index';
+import { DocumentEditor, HelperMethods, WAbstractList, WListLevel } from '../../document-editor/index';
 import { ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -503,22 +503,68 @@ export class Paragraph {
     private updateOptions(args: any): void {
         args.popup.element.getElementsByClassName('e-de-ctnr-dropdown-ftr')[0].addEventListener('click', this.createStyle.bind(this));
     }
+    // public updateStyleNames(): void {
+    //     this.styleName = !isNullOrUndefined((this.style as any).itemData) ? (this.style as any).itemData.StyleName : undefined;
+    //     let paraStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Paragraph");
+    //     let linkedStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Linked");
+    //     let charStyles: Object[] = this.documentEditor.getStyles('Character').filter(obj => (obj as any).type == "Character");
+    //     for (const linkedStyle of linkedStyles) {
+    //         for (const charStyle of charStyles) {
+    //             if (linkedStyle["name"] + " Char" === charStyle["name"]) {
+    //                 charStyles.splice(charStyles.indexOf(charStyle), 1);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     let styleData: Object[] = paraStyles.concat(linkedStyles, charStyles);
+    //     this.style.dataSource = this.constructStyleDropItems(styleData);
+    //     // this.style.dataBind();
+    //     this.onSelectionChange();
+    // }
     public updateStyleNames(): void {
         this.styleName = !isNullOrUndefined((this.style as any).itemData) ? (this.style as any).itemData.StyleName : undefined;
-        let paraStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Paragraph");
-        let linkedStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Linked");
-        let charStyles: Object[] = this.documentEditor.getStyles('Character').filter(obj => (obj as any).type == "Character");
-        for (const linkedStyle of linkedStyles) {
-            for (const charStyle of charStyles) {
-                if (linkedStyle["name"] + " Char" === charStyle["name"]) {
-                    charStyles.splice(charStyles.indexOf(charStyle), 1);
-                    break;
-                }
+        const styles: any = this.documentEditor.documentHelper.styles.collection;
+        let paraStyles: Object[] = [];
+        let linkedStyles: Object[] = [];
+        let charStyles: Object[] = [];
+        for (const style of styles) {
+          const returnStyle: any = {};
+          const returnStyleObject: any = {};
+          if (style.type == "Paragraph") {
+            returnStyleObject.paragraphFormat = {};
+            HelperMethods.writeParagraphFormat(
+              returnStyleObject.paragraphFormat,
+              true,
+              (style as any).paragraphFormat
+            );
+          }
+          returnStyleObject.characterFormat = {};
+          HelperMethods.writeCharacterFormat(
+            returnStyleObject.characterFormat,
+            true,
+            (style as any).characterFormat
+          );
+          returnStyle.name = style.name;
+          returnStyle.style = JSON.stringify(returnStyleObject);
+          if (!isNullOrUndefined(style.type)) {
+            returnStyle.type = style.type;
+            if (
+              returnStyle.type == "Paragraph" &&
+              !isNullOrUndefined(style.link)
+            ) {
+              returnStyle.type = "Linked";
             }
+          }
+          if (style.type == "Paragraph") {
+            paraStyles.push(returnStyle);
+          } else if (style.type == "Character") {
+            linkedStyles.push(returnStyle);
+          } else if(style.type == "Linked"){
+            charStyles.push(returnStyle);
+          }
         }
         let styleData: Object[] = paraStyles.concat(linkedStyles, charStyles);
         this.style.dataSource = this.constructStyleDropItems(styleData);
-        // this.style.dataBind();
         this.onSelectionChange();
     }
     private createStyle(): void {

@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';
@@ -362,14 +362,14 @@ export interface DataSourceChangedEventArgs {
     data: { [key: string]: Object }[];
     /**
      * Return the action which triggers the event
-     * 
+     *
      */
-     action: string;
-     /**
-      * Return the new node data of updated data source
-      * 
-      */
-     nodeData: { [key: string]: Object }[];
+    action: string;
+    /**
+     * Return the new node data of updated data source
+     *
+     */
+    nodeData: { [key: string]: Object }[];
 }
 
 interface ItemCreatedArgs {
@@ -550,7 +550,7 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
  * None :- The expand/collapse operation will not happen.
  * ```
  */
- export type ExpandOnSettings = 'Auto' | 'Click' | 'DblClick' | 'None';
+export type ExpandOnSettings = 'Auto' | 'Click' | 'DblClick' | 'None';
 
 /**
  * Defines the sorting order type for TreeView.
@@ -560,7 +560,7 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
  * Descending :- Indicates that the nodes are sorted in the descending order
  * ```
  */
- export type SortOrder = 'None' | 'Ascending' | 'Descending';
+export type SortOrder = 'None' | 'Ascending' | 'Descending';
 
 /**
  * Configures animation settings for the TreeView component.
@@ -1858,6 +1858,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         let eNodes: HTMLElement[] = selectAll('.' + EXPANDED, element);
+        if (!this.loadOnDemand) {
+            this.isInitalExpand = this.treeData.filter(e => e[this.fields.expanded] == true).length > 0 ? true : this.isInitalExpand;
+        }
         if (!this.isInitalExpand) {
             for (let i: number = 0; i < eNodes.length; i++) {
                 this.renderChildNodes(eNodes[i]);
@@ -2342,6 +2345,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private doExpandAction(): void {
         let eUids: string[] = this.expandedNodes;
+        if (!this.loadOnDemand) {
+            this.isInitalExpand = this.treeData.filter(e => e[this.fields.expanded] == true).length > 0 ? true : this.isInitalExpand;
+        }
         if (this.isInitalExpand && eUids.length > 0) {
             this.setProperties({ expandedNodes: [] }, true);
             /* eslint-disable */
@@ -2771,6 +2777,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             if (callback) {
                 callback();
+            }
+            if (expandChild) {
+                this.expandedNodes.push(parentLi.getAttribute('data-uid'));
             }
             if (this.treeList.length === 0 && !this.isLoaded) {
                 this.finalize();

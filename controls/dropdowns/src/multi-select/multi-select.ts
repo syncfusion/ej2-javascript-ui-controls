@@ -4443,6 +4443,11 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @returns {void}
      */
     public render(): void {
+        if(!isNullOrUndefined(this.value))
+        {
+            // eslint-disable-next-line
+            this.value = [...this.value as any];
+        }
         this.setDynValue = this.initStatus = false;
         this.isSelectAll = false;
         this.selectAllEventEle = [];

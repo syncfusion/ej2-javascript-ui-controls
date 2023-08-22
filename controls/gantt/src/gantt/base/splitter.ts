@@ -69,8 +69,12 @@ export class Splitter {
             },
             resizing: (args: ResizingEventArgs) => {
                 this.parent.trigger('splitterResizing', args);
+                if(this.parent.timelineModule.isZoomToFit){
+                    this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
+                }
             },
             resizeStop: (args: ISplitterResizedEventArgs) => {
+                this.parent['calculateDimensions']();
                 const leftPane: HTMLElement = args.pane[0];
                 this.splitterPreviousPositionGrid = leftPane.scrollWidth + 1 + 'px';
                 this.splitterObject.paneSettings[0].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionGrid);

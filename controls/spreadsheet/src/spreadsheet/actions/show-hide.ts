@@ -736,7 +736,7 @@ export class ShowHide {
                     rowIdx: startIdx, colIdx: idx, cell: getCell(startIdx, idx, sheet), row: row,
                     address: getCellAddress(startIdx, idx), lastCell: idx === len, isHeightCheckNeeded: true,
                     first: idx !== skipHiddenIdx(sheet, 0, true, 'columns') && idx === this.parent.viewport.leftIndex ? 'Column' : '',
-                    checkNextBorder: index === len ? 'Column' : ''
+                    checkNextBorder: index === len ? 'Column' : '', checkCF: true
                 };
                 if (refCell) {
                     cellArgs.refChild = refCell;

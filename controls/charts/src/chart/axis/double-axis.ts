@@ -29,6 +29,7 @@ export class Double {
     private interval: number;
     private paddingInterval: number;
     private isColumn: number = 0;
+    private isStacking: boolean = false;
     /**
      * Constructor for the dateTime module.
      *
@@ -85,7 +86,7 @@ export class Double {
             if ((axis.doubleRange.start - axis.actualRange.interval < 0 && axis.doubleRange.start > 0)) {
                 axis.actualRange.min = 0;
             } else {
-                axis.actualRange.min = axis.doubleRange.start - axis.actualRange.interval;
+                axis.actualRange.min = axis.doubleRange.start - (this.isStacking ? 0 : axis.actualRange.interval);
             }
         } else {
             axis.actualRange.interval = axis.interval || this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size);
@@ -174,7 +175,8 @@ export class Double {
                 }
                 // For yRange
                 if (axis.orientation === 'Vertical') {
-                    this.isColumn += (series.type === 'Column' || series.type === 'Bar' || series.drawType === 'Column') ? 1 : 0;
+                    this.isColumn += (series.type.indexOf('Column') !== -1 || series.type.indexOf('Bar') !== -1 || series.drawType === 'Column') ? 1 : 0;
+                    this.isStacking = series.type.indexOf('Stacking') !== -1;
                     if (this.chart.requireInvertedAxis) {
                         this.findMinMax(<number>series.xMin - this.paddingInterval, <number>series.xMax + this.paddingInterval);
                     } else {

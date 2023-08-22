@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.10 (2023-08-22)
+
+### HeatMap
+
+#### Bug fixes
+
+- `#I487030` - When the `cancel` property in the event argument of the `cellSelected` event is set to **true**, selection will now be prevented.
+
 ## 22.1.34 (2023-06-21)
 
 ### Heatmap

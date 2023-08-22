@@ -146,7 +146,7 @@ export class FocusStrategy {
             } else {
                 this.setActive(false);
             }
-            if (!isNullOrUndefined(this.active)) {
+            if (!isNullOrUndefined(this.active) && (isNullOrUndefined(this.active.target) || !this.active.target.classList.contains('e-columnmenu'))) {
                 let firstHeaderCellIndex: number[] = [0, 0];
                 if (this.active.matrix.matrix[firstHeaderCellIndex[0]][firstHeaderCellIndex[1]] === 0) {
                     firstHeaderCellIndex = findCellIndex(this.active.matrix.matrix, firstHeaderCellIndex, true);

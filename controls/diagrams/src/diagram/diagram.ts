@@ -6918,6 +6918,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 undefined, undefined, obj.wrapper.bounds);
             //EJ2-71853 - Need to improve performance of diagram while rendering large number of nodes and connectors.
             // Removed the for loop which is iterating through the zindex table and removing the object from the table as it is not covered in any scenario.
+            //EJ2-840575 - Order commands not working between Swimlane and other nodes while drag and drop from the palette
+            if((obj as NodeModel).shape.type == "SwimLane"){
+                for (let i: number = 0, a = Object.keys((layer as Layer).zIndexTable); i < a.length; i++) {
+                    if ((layer as Layer).zIndexTable[a[parseInt(i.toString(), 10)]] && (layer as Layer).zIndexTable[a[parseInt(i.toString(), 10)]] === (obj as NodeModel).id) {
+                        delete (layer as Layer).zIndexTable[a[parseInt(i.toString(), 10)]];
+                    }
+                }
+            }
             (layer as Layer).zIndexTable[(obj as Node).zIndex] = (obj as Node).id;
             if (!checkBoundaryConstraints) {
                 const node: (NodeModel | ConnectorModel)[] = obj instanceof Node ? this.nodes : this.connectors;

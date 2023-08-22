@@ -96,7 +96,6 @@ export class Magnification {
         this.pdfViewerBase = viewerBase;
         this.zoomLevel = 2;
         // eslint-disable-next-line max-len
-        this.isWebkitMobile = /Chrome/.test(navigator.userAgent) || /Google Inc/.test(navigator.vendor) || (navigator.userAgent.indexOf('Safari') !== -1);
     }
 
     /**
@@ -197,7 +196,7 @@ export class Magnification {
             this.isAutoZoom = false;
             this.onZoomChanged(zoomValue);
             if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-                if (this.isWebkitMobile) {
+                if (this.pdfViewerBase.isWebkitMobile) {
                     this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
                 } else {
                     this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
@@ -360,7 +359,7 @@ export class Magnification {
                 this.pdfViewerBase.isMinimumZoom = false;
             }
             if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-                if (this.isWebkitMobile) {
+                if (this.pdfViewerBase.isWebkitMobile) {
                     this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
                 } else {
                     this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';

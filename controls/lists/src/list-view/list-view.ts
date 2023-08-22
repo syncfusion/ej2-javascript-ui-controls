@@ -1014,6 +1014,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     targetElement: any;
     private clickHandler(e: MouseEvent): void {
+        if (Array.isArray(this.dataSource) &&  this.dataSource.length === 0){
+            return;
+        }
         const target: Element = <Element>e.target;
         this.targetElement = target;
         const classList: DOMTokenList = target.classList;

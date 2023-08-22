@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- `#I489450` - The issue with "Indeterminate state changed to unchecked while hovering the checkbox when Tristate is enabled" has been resolved.
+
+### Checkbox
+
+#### Bug Fixes
+
 - `#I488474` - The issue with "Hovering the checkbox checked items of checkbox is unchecked while using RTL mode" in Bigger mode has been resolved.
 
 ## 22.2.8 (2023-08-08)

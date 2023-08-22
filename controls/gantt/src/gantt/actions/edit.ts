@@ -1380,7 +1380,7 @@ export class Edit {
             this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args.action);
         }
         if (this.parent.viewType === 'ResourceView') {
-            if (args.action === 'TaskbarEditing') {
+            if (args.action === 'TaskbarEditing' || args.action === 'DrawConnectorLine') {
                 this.updateSharedTask(args.data);
             } else if (args.action === 'DialogEditing' || args.action === 'CellEditing'  || args.action === 'methodUpdate') {
                 if (this.parent.editModule.dialogModule.isResourceUpdate) {

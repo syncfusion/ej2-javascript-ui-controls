@@ -613,14 +613,68 @@ export class CriticalPath {
         let criticalPathIds: number[] = [];
         let index: number;
         let predecessorFrom: any;
-        for (let x: number = collection.length - 1; x >= 0; x--) {
+        const slackindexes: number[] = [];
+        const indexes: number[] = [];
+        for (let z: number = flatRecords.length - 1; z >= 0; z--) {
+            if (flatRecords[parseInt(z.toString(), 10)].slack === '0 day') {
+                const index1: number = flatRecords[parseInt(z.toString(), 10)].index;
+                slackindexes.push(index1);
+            }
+        }
+        const num: number = 0;
+        indexes.push(slackindexes[parseInt(num.toString(), 10)]);
+        for (let j: number = 0; j < indexes.length; j++) {
+            const i: any = flatRecords[indexes[parseInt(j.toString(), 10)]].ganttProperties.predecessor;
+            if (!isNullOrUndefined(i)) {
+                for (let f: number = i.length - 1; f >= 0; f--) {
+                    if (this.parent.viewType === 'ProjectView') {
+                        const q: number = modelRecordIds.indexOf(i[parseInt(f.toString(), 10)]['from']);
+                        for (let k: number = 0; k < indexes.length; k++) {
+                            const item: number = indexes[parseInt(j.toString(), 10)];
+                            if (item !== q) {
+                                indexes.push(q);
+                            }
+                            break;
+                        }
+                    }
+                    else {
+                        const q: number = this.resourceCollectionIds.indexOf(i[parseInt(f.toString(), 10)]['from']);
+                        for (let k: number = 0; k < indexes.length; k++) {
+                            const item: number = indexes[parseInt(j.toString(), 10)];
+                            if (item !== q) {
+                                indexes.push(q);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        for (let x: number = 0; x < indexes.length; x++) {
             if (this.parent.viewType === 'ProjectView') {
-                index = modelRecordIds.indexOf(collection[x as number]['taskid'].toString());
+                index = modelRecordIds.indexOf(flatRecords[indexes[parseInt(x.toString(), 10)]]['ganttProperties']['taskId'].toString());
             }
             else {
-                index = this.resourceCollectionIds.indexOf(collection[x as number]['taskid'].toString());
+                index = this.resourceCollectionIds.indexOf(flatRecords[indexes[parseInt(x.toString(), 10)]]['TaskID'].toString());
             }
             const predecessorLength: IPredecessor[] = flatRecords[index as number].ganttProperties.predecessor;
+            if(isNullOrUndefined(predecessorLength)){
+                if (taskBeyondEnddate.length > 0) {
+                    for (let i: number = 0; i < taskBeyondEnddate.length; i++) {
+                        if (this.parent.viewType === 'ProjectView') {
+                            index = modelRecordIds.indexOf(taskBeyondEnddate[i as number].toString());
+                        }
+                        else {
+                            index = this.resourceCollectionIds.indexOf(taskBeyondEnddate[i as number].toString());
+                        }
+                        if (index !== -1 && flatRecords[index as number].ganttProperties.progress < 100) {
+                            this.criticalTasks.push(flatRecords[index as number]);
+                            criticalPathIds = criticalPathIds.concat(taskBeyondEnddate[i as number]);
+                        }
+                    }
+                }
+                break;
+            }
             const noSlackValue: string = 0 + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
             for (let i: number = predecessorLength.length - 1; i >= 0; i--) {
                 let toID: number;
@@ -683,21 +737,8 @@ export class CriticalPath {
                     flatRecords[index as number].isCritical = true;
                     flatRecords[index as number].ganttProperties.isCritical = true;
                     this.criticalTasks.push(flatRecords[index as number]);
-                    criticalPathIds.push(collection[x as number]['taskid']);
-                }
-            }
-        }
-        if (taskBeyondEnddate.length > 0) {
-            for (let i: number = 0; i < taskBeyondEnddate.length; i++) {
-                if (this.parent.viewType === 'ProjectView') {
-                    index = modelRecordIds.indexOf(taskBeyondEnddate[i as number].toString());
-                }
-                else {
-                    index = this.resourceCollectionIds.indexOf(taskBeyondEnddate[i as number].toString());
-                }
-                if (index !== -1 && flatRecords[index as number].ganttProperties.progress < 100) {
-                    this.criticalTasks.push(flatRecords[index as number]);
-                    criticalPathIds = criticalPathIds.concat(taskBeyondEnddate[i as number]);
+                    const num : any = flatRecords[parseInt(index.toString(), 10)]['ganttProperties']['taskId'];
+                    criticalPathIds.push(num);
                 }
             }
         }

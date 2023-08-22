@@ -232,7 +232,9 @@ export class PieBase extends AccumulationBase {
                 this.accumulation.trigger(animationComplete, this.accumulation.isBlazor ? {} :
                     { series: series, accumulation: this.accumulation, chart: this.accumulation });
                 const datalabelGroup: Element = getElement(this.accumulation.element.id + '_datalabel_Series_' + series.index);
-                (datalabelGroup as HTMLElement).style.visibility = this.accumulation.isDestroyed ? 'hidden' : 'visible';
+                if (datalabelGroup) {
+                    (datalabelGroup as HTMLElement).style.visibility = this.accumulation.isDestroyed ? 'hidden' : 'visible';
+                }
             }
         });
     }

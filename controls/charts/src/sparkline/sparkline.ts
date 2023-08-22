@@ -594,6 +594,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
                 args.currentSize = this.availableSize;
                 this.trigger('resize', args);
                 this.render();
+                this.refreshing = false;
             },
             500);
         return false;
