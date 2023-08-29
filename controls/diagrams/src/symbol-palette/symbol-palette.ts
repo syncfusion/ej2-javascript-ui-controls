@@ -1409,10 +1409,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             if (canvas instanceof HTMLCanvasElement) {
                 style += 'transform:scale(.5,.5);';
             }
-            //EJ2-70280 - Text description in symbol palette for HTML nodes is not visible.
-            if(symbol.shape.type === 'HTML' ){
-                style += 'transform:scale(.5,.5);';
-            }
             applyStyleAgainstCsp(
                 ((div && (symbol.shape.type === 'HTML' || (symbol as NodeModel).children &&
                     (symbol as NodeModel).children.length > 0)) ? div : canvas),
@@ -1475,12 +1471,21 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
+        //EJ2-841339 - Html shapes in palette are not rendered properly
+        const actualWidth: number = symbol.wrapper.actualSize.width + symbol.style.strokeWidth;
+        const actualHeight: number = symbol.wrapper.actualSize.height + symbol.style.strokeWidth;
+        let style: string = 'pointer-events:none;transform-origin:0 0;overflow:hidden;';
+        style += 'margin-left:' +
+        Math.max(this.symbolMargin.left, ((width - actualWidth) / 2))
+        + 'px;margin-top:' + Math.max(this.symbolMargin.top, ((height - actualHeight) / 2))
+        + 'px;';
+        style += 'transform:scale(.5,.5);position:absolute';
         canvas = CanvasRenderer.createCanvas(
             symbol.id, Math.ceil((symbol.wrapper.actualSize.width + symbol.style.strokeWidth) * 2) + 1,
             Math.ceil((symbol.wrapper.actualSize.height + symbol.style.strokeWidth) * 2) + 1);
         container.appendChild(canvas);
         canvas.getContext('2d').setTransform(2, 0, 0, 2, 0, 0);
-        div.appendChild(canvas);
+        applyStyleAgainstCsp(canvas,style);
         container.appendChild(div);
         //EJ2-70280 - Text description in symbol palette for HTML nodes is not visible.
         if(isPreview){

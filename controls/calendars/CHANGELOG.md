@@ -2,7 +2,31 @@
 
 ## [Unreleased]
 
+## 22.2.11 (2023-08-29)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I492075` -  Fixed an issue where the popup in the DateRangePicker Component would not close when clicking outside the component while using the Preset Ranges feature.
+
 ## 22.2.10 (2023-08-22)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I489129` -  Fixed an issue where the Daterangepicker popup was not opening properly on iPad devices.
+
+## 22.2.9 (2023-08-15)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I486181` - Fixed an issue where the DateRangePicker popup was not opening when there was not enough space in the window.
+
+## 22.2.8 (2023-08-08)
 
 ### TimePicker
 

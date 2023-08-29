@@ -461,6 +461,7 @@ export class SfdtReader {
         if (!isNullOrUndefined(resetKeyIndex) && resetKeyIndex) {
             this.keywordIndex = keyIndex;
         }
+        this.documentHelper.addToStylesMap(wStyle);
     }
     private getStyle(name: string, data: any): any {
         for (let i: number = 0; i < data[stylesProperty[this.keywordIndex]].length; i++) {

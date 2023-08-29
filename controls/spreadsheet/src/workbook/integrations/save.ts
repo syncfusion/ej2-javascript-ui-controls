@@ -304,6 +304,12 @@ export class WorkbookSave extends SaveWorker {
                         }
                     }
                 }
+                if (value && value.properties && value.maxHgts) {
+                    value.properties = {
+                        ...value.properties,
+                        maxHgts: value.maxHgts
+                    };
+                }
                 // eslint-disable-next-line no-prototype-builtins
                 if (value && typeof value === 'object' && value.hasOwnProperty('properties')) {
                     return value.properties;

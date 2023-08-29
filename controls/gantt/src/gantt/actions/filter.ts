@@ -288,8 +288,13 @@ export class Filter {
                     break;
                 }
                 if (!isNullOrUndefined(this.parent.element.parentNode)) {
+                    if (parentNode.parentNode instanceof HTMLDocument) {
+                        break;
+                    }
                     parentNode = parentNode.parentNode;
-                    marginTop = parentNode.parentNode.style.marginTop;
+                    if (parentNode.parentNode && parentNode.parentNode.style) {
+                       marginTop = parentNode.parentNode.style.marginTop;
+                    }
                 }
                 parentNodeTop = parentNode.getBoundingClientRect().top;
             }

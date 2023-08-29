@@ -1558,6 +1558,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ value: new Date("12/12/2016 10:00") });
             timeObj.appendTo('#timepicker7');
             timeObj.element.focus();
+            timeObj.show();
             KeyboardEventArgs.action = 'down';
             KeyboardEventArgs.keyCode = 40;
             timeObj.inputHandler(KeyboardEventArgs);
@@ -1576,6 +1577,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ value: new Date("12/12/2016 10:00") });
             timeObj.appendTo('#timepicker7');
             timeObj.element.focus();
+            timeObj.show();
             KeyboardEventArgs.action = 'up';
             KeyboardEventArgs.keyCode = 38;
             timeObj.inputHandler(KeyboardEventArgs);
@@ -1586,6 +1588,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker();
             timeObj.appendTo('#timepicker7');
             timeObj.element.focus();
+            timeObj.show();
             KeyboardEventArgs.action = 'down';
             KeyboardEventArgs.keyCode = 40;
             timeObj.inputHandler(KeyboardEventArgs);
@@ -1596,6 +1599,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker();
             timeObj.appendTo('#timepicker7');
             timeObj.element.focus();
+            timeObj.show();
             KeyboardEventArgs.action = 'up';
             KeyboardEventArgs.keyCode = 38;
             timeObj.inputHandler(KeyboardEventArgs);
@@ -1606,6 +1610,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ value: new Date("12/12/2016 00:00") });
             timeObj.appendTo('#timepicker7');
             timeObj.element.focus();
+            timeObj.show();
             KeyboardEventArgs.action = 'up';
             KeyboardEventArgs.keyCode = 38;
             timeObj.inputHandler(KeyboardEventArgs);
@@ -1619,6 +1624,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ value: new Date("12/12/2016 23:30") });
             timeObj.appendTo('#timepicker7');
             timeObj.element.focus();
+            timeObj.show();
             KeyboardEventArgs.action = 'down';
             KeyboardEventArgs.keyCode = 40;
             timeObj.inputHandler(KeyboardEventArgs);
@@ -1632,6 +1638,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ value: new Date("12/12/2016 23:20") });
             timeObj.appendTo('#timepicker7');
             timeObj.element.focus();
+            timeObj.show();
             KeyboardEventArgs.action = 'up';
             KeyboardEventArgs.keyCode = 38;
             timeObj.inputHandler(KeyboardEventArgs);
@@ -1647,6 +1654,7 @@ describe('TimePicker', () => {
             timeObj.hide();
             setTimeout(function () {
                 timeObj.element.focus();
+                timeObj.show();
                 KeyboardEventArgs.action = 'up';
                 KeyboardEventArgs.keyCode = 38;
                 timeObj.inputHandler(KeyboardEventArgs);
@@ -1665,6 +1673,7 @@ describe('TimePicker', () => {
             timeObj.hide();
             setTimeout(function () {
                 timeObj.element.focus();
+                timeObj.show();
                 KeyboardEventArgs.action = 'down';
                 KeyboardEventArgs.keyCode = 40;
                 timeObj.inputHandler(KeyboardEventArgs);
@@ -1677,6 +1686,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ value: new Date("12/12/2016 23:30") });
             timeObj.appendTo('#timepicker7');
             timeObj.element.focus();
+            timeObj.show();
             KeyboardEventArgs.action = 'up';
             KeyboardEventArgs.keyCode = 38;
             timeObj.inputHandler(KeyboardEventArgs);
@@ -1692,6 +1702,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker();
             timeObj.appendTo('#timepicker7');
             timeObj.element.focus();
+            timeObj.show();
             KeyboardEventArgs.action = 'down';
             KeyboardEventArgs.keyCode = 40;
             timeObj.inputHandler(KeyboardEventArgs);
@@ -2863,6 +2874,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ step: 0.50 });
             timeObj.appendTo(element);
             timeObj.focusIn(e);
+            timeObj.show();
             KeyboardEventArgs.keyCode = 40;
             KeyboardEventArgs.action = 'down';
             timeObj.inputHandler(KeyboardEventArgs);
@@ -2879,6 +2891,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ step: 0.25 });
             timeObj.appendTo(element);
             timeObj.focusIn(e);
+            timeObj.show();
             KeyboardEventArgs.keyCode = 40;
             KeyboardEventArgs.action = 'down';
             timeObj.inputHandler(KeyboardEventArgs);
@@ -2913,6 +2926,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ step: 0.25 });
             timeObj.appendTo(element);
             timeObj.focusIn(e);
+            timeObj.show();
             KeyboardEventArgs.keyCode = 40;
             KeyboardEventArgs.action = 'down';
             timeObj.inputHandler(KeyboardEventArgs);
@@ -2942,6 +2956,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ step: 0.25 });
             timeObj.appendTo(element);
             timeObj.focusIn(e);
+            timeObj.show();
             KeyboardEventArgs.keyCode = 38;
             KeyboardEventArgs.action = 'up';
             timeObj.inputHandler(KeyboardEventArgs);
@@ -2987,6 +3002,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ value: new Date(), step: 0.25 });
             timeObj.appendTo(element);
             timeObj.focusIn(e);
+            timeObj.show();
             KeyboardEventArgs.keyCode = 36;
             KeyboardEventArgs.action = 'home';
             timeObj.inputHandler(KeyboardEventArgs);
@@ -3000,6 +3016,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({ value: new Date(), step: 0.25 });
             timeObj.appendTo(element);
             timeObj.focusIn(e);
+            timeObj.show();
             KeyboardEventArgs.keyCode = 35;
             KeyboardEventArgs.action = 'end';
             timeObj.inputHandler(KeyboardEventArgs);

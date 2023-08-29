@@ -417,10 +417,10 @@ describe('Scrollbar Chart', () => {
                 chartObj.loaded = null;
                 let mulitiLevelLabel: Element = document.getElementById('container1_Axis_MultiLevelLabel_Level_0_Text_0');
                 let border: string = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0_0').getAttribute('d').split('M')[1];
-                expect(mulitiLevelLabel.getAttribute('x') === '82.5' || mulitiLevelLabel.getAttribute('x') === '77.5').toBe(true);
+                expect(mulitiLevelLabel.getAttribute('x') === '93.5' || mulitiLevelLabel.getAttribute('x') === '77.5').toBe(true);
                 expect(mulitiLevelLabel.getAttribute('y') === '321.6769318181818' || mulitiLevelLabel.getAttribute('y') === '325.7464625').toBe(true);
                 expect(border === ' 57.5 293.7359090909091 L 107.5 293.7359090909091 ' ||
-                    border === ' 53.5 297.46145 L 101.5 297.46145 ').toBe(true)
+                    border === ' 69.5 297.46145 L 117.5 297.46145 ').toBe(true) 
                 done();
             };
             chartObj.primaryYAxis.labelPosition = 'Inside';

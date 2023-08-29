@@ -1,4 +1,4 @@
-import { createElement, L10n, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, select, Browser } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { Revision } from './track-changes';
@@ -101,7 +101,9 @@ export class TrackChangesPane {
         this.selectedType = this.locale.getConstant('All');
         this.initTrackChangePane();
         this.commentReviewPane.reviewTab.items[1].content = this.trackChangeDiv;
-        this.commentReviewPane.reviewTab.refresh();
+        if (!Browser.isIE) {
+            this.commentReviewPane.reviewTab.refresh();
+        }
         if (this.owner.enableRtl) {
             this.closeButton = createElement('button', {
                 className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',

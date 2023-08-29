@@ -159,7 +159,7 @@ export class FocusModule {
                } 
             else if (isNullOrUndefined(document.getElementById(this.parent.element.id + '_dialog'))) {
                 e.preventDefault();
-                ganttObj.addRecord(undefined, this.parent.editSettings.newRowPosition);
+                ganttObj.addRecord(undefined, this.parent.editSettings.newRowPosition, this.parent.selectedRowIndex);
                 const focussedElement: HTMLElement = <HTMLElement>ganttObj.element;
                 focussedElement.focus();
             }

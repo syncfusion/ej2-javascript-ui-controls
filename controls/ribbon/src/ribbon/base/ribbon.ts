@@ -1732,8 +1732,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
 
     private reRenderTabs(): void {
         this.destroyScroll();
-        this.destroyTabItems(this.tabsInternal);
         this.checkID(this.tabs, 'tab', this.element.id);
+        this.destroyTabItems(this.tabsInternal);
         this.tabsInternal = this.tabs.slice();
         this.validateItemSize();
         const tabItems: TabItemModel[] = this.createTabItems(this.tabs);

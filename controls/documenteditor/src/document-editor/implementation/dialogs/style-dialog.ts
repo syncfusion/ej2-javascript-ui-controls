@@ -717,6 +717,7 @@ export class StyleDialog {
                 tmpStyle.name = styleName;
                 tmpStyle.basedOn = basedOn;
                 this.documentHelper.styles.push(tmpStyle as any);
+                this.documentHelper.addToStylesMap(tmpStyle);
                 name = styleName;
                 this.documentHelper.owner.editorModule.applyStyle(name,true);
                 this.documentHelper.owner.notify(internalStyleCollectionChange, {});

@@ -2634,3 +2634,125 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
         })
     });
 });
+
+describe("Select values using the up key", () => { 
+    let keyObj: any;
+    let keyEle: HTMLInputElement = <HTMLInputElement>(createElement("input", { id: "keyInput" }));
+    let dataSource = ["Java", "JavaScript", "Python", "C#", "Ruby", "Perl"];
+    let e: any = { preventDefault: function () { }, target: null, type: null };
+    beforeAll(() => {
+        document.body.appendChild(keyEle);
+        keyObj = new AutoComplete({
+            dataSource: dataSource,
+            placeholder: "Select a Course",
+            autofill: true
+        });
+        keyObj.appendTo(keyEle);
+    });
+    afterAll(() => {
+        keyObj.destroy();
+        keyEle.remove();
+    });
+    it('select the value using Up key', (done) => {
+        keyObj.showPopup();
+        setTimeout(() => {
+            e.keyCode = 38;
+            e.type = 'keydown';
+            e.action = 'up';
+            keyObj.keyActionHandler(e);
+            e.action = 'enter';
+            keyObj.keyActionHandler(e);
+            expect(keyObj.value === 'Perl').toBe(true);
+            done();
+        }, 350);
+    });
+});
+describe("Select values using the page up", () => { 
+    let keyObj1: any;
+    let keyEle1: HTMLInputElement = <HTMLInputElement>(createElement("input", { id: "keyInput" }));
+    let dataSource = ["Java", "JavaScript", "Python", "C#", "Ruby", "Perl"];
+    let e: any = { preventDefault: function () { }, target: null, type: null };
+    beforeAll(() => {
+        document.body.appendChild(keyEle1);
+        keyObj1 = new AutoComplete({
+            dataSource: dataSource,
+            placeholder: "Select a Course",
+            autofill: true
+        });
+        keyObj1.appendTo(keyEle1);
+    });
+    afterAll(() => {
+        keyObj1.destroy();
+        keyEle1.remove();
+    });
+    it('select the value using Page Up key', (done) => {
+        keyObj1.showPopup();
+        setTimeout(() => {
+            e.keyCode = 33;
+            e.type = 'keydown';
+            e.action = 'pageUp';
+            keyObj1.keyActionHandler(e);
+            e.action = 'enter';
+            keyObj1.keyActionHandler(e);
+            expect(keyObj1.value === 'Java').toBe(true);
+            done();
+        }, 350);
+    });
+});
+describe("Select values using the page down", () => { 
+    let keyObj2: any;
+    let keyEle2: HTMLInputElement = <HTMLInputElement>(createElement("input", { id: "keyInput" }));
+    let dataSource = ["Java", "JavaScript", "Python", "C#", "Ruby", "Perl"];
+    let e: any = { preventDefault: function () { }, target: null, type: null };
+    beforeAll(() => {
+        document.body.appendChild(keyEle2);
+        keyObj2 = new AutoComplete({
+            dataSource: dataSource,
+            placeholder: "Select a Course",
+            autofill: true
+        });
+        keyObj2.appendTo(keyEle2);
+    });
+    afterAll(() => {
+        keyObj2.destroy();
+        keyEle2.remove();
+    });
+    it('select the value using Page down key', (done) => {
+        keyObj2.showPopup();
+        setTimeout(() => {
+            e.keyCode = 34;
+            e.type = 'keydown';
+            e.action = 'pageDown';
+            keyObj2.keyActionHandler(e);
+            e.action = 'enter';
+            keyObj2.keyActionHandler(e);
+            expect(keyObj2.value === 'Perl').toBe(true);
+            done();
+        }, 350);
+    });
+});
+describe("EJ2-842578 - Check that the aria-owns attribute does indeed contain the correct ID for its popup list element", () => {
+    let ariaObj: any;
+    let ariaEle: HTMLInputElement = <HTMLInputElement>(createElement("input", { id: "ariaInput" }));
+    let dataSource = ["Java", "JavaScript", "Python", "C#", "Ruby", "Perl", "PHP", "C++", "Swift", "Go", "Objective-C"];
+    beforeAll(() => {
+        document.body.appendChild(ariaEle);
+        ariaObj = new AutoComplete({
+        dataSource: dataSource,
+        placeholder: "Select a Course",
+        });
+        ariaObj.appendTo(ariaEle);
+    });
+    afterAll(() => {
+        ariaObj.destroy();
+        ariaEle.remove();
+    });
+    it("select the non-listed value with allowCustom as false", (done) => {
+        ariaObj.showPopup();
+        setTimeout(() => {
+            const element = document.querySelector('.e-control.e-autocomplete.e-input');
+            expect((element as any).getAttribute('aria-owns') === "ariaInput_options").toBe(true);
+        done();
+        }, 100);
+    });
+});

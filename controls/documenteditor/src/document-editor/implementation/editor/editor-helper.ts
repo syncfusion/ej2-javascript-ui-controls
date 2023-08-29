@@ -773,6 +773,9 @@ export class HelperMethods {
         if (this.startsWith(base64ImageString, 'data:image/svg+xml;base64,')) {
             extension = '.svg';
             formatClippedString = base64ImageString.replace('data:image/svg+xml;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/svg+xml;utf8,')) {
+            extension = '.svg';
+            formatClippedString = base64ImageString.replace('data:image/svg+xml;utf8,', '');
         } else if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
             extension = '.bmp';
             formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');

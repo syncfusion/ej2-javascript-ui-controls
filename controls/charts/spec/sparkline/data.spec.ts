@@ -91,7 +91,8 @@ describe('Sparkline data source combination spec', () => {
         d = ele.getAttribute('d').split(' ');
         expect(d.length).toBe(28);
         ele = getIdElement(id + '_sparkline_tooltip_div_text');
-        expect(ele.firstChild.textContent).toBe('Sat Feb 04 2017 : 3800');
+        expect(ele.firstChild.textContent).toBe('Sat Feb 04 2017 ');
+        expect(ele.lastChild.textContent).toBe(' 3800');
         ele = getIdElement(id);
         trigger.mouseLeaveEvent(ele);
     });
@@ -107,7 +108,8 @@ describe('Sparkline data source combination spec', () => {
         d = ele.getAttribute('d').split(' ');
         expect(d.length).toBe(28);
         ele = getIdElement(id + '_sparkline_tooltip_div_text');
-        expect(ele.firstChild.textContent).toBe('Yazuka : 3800');
+        expect(ele.firstChild.textContent).toBe('Yazuka ');
+        expect(ele.lastChild.textContent).toBe(' 3800');
         ele = getIdElement(id);
         trigger.mouseLeaveEvent(ele);
     });

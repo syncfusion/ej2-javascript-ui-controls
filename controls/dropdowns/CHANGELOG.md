@@ -8,6 +8,7 @@
 
 #### Bug Fixes
 
+- `#I490309` - The issue with the `aria-owns` attribute not having the correct `ID` of its popup list element has been fixed.
 - `#I481443` - Resolved the issue where the "no records" template was not being displayed and a console error occurred.
 
 ### MultiSelect

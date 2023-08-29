@@ -746,6 +746,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
+        if ((this as any).isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
+            this.renderReactTemplates(function () {
+                this.refreshActiveBorder();
+            });
+        }
     }
     private renderContainer(): void {
         const ele: HTEle = this.element;

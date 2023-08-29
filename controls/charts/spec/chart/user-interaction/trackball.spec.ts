@@ -158,7 +158,7 @@ describe('Chart Trackball', () => {
                 expect(path.localName == 'path').toBe(true);
                 expect(path.getAttribute('d') != '' || ' ').toBe(true);
                 expect(group.childNodes.length == 4).toBe(true);
-                expect(group.childNodes[1].childNodes.length == 9).toBe(true);
+                expect(group.childNodes[1].childNodes.length == 17).toBe(true);
 
                 expect(target.getAttribute('opacity') == '0.5').toBe(true);
                 expect(document.getElementById('container_Series_1_Point_2').getAttribute('opacity') == '0.5').toBe(true);
@@ -189,7 +189,7 @@ describe('Chart Trackball', () => {
                 expect(tooltip != null).toBe(true);
                 expect(tooltip.offsetLeft > x).toBe(true);
                 let group: HTMLElement = tooltip.childNodes[0].childNodes[0] as HTMLElement;
-                expect(group.childNodes[1].childNodes.length == 7).toBe(true);
+                expect(group.childNodes[1].childNodes.length == 13).toBe(true);
                 done();
             };
             chartObj.series[2].visible = false;
@@ -221,7 +221,7 @@ describe('Chart Trackball', () => {
 
                 let group: HTMLElement = tooltip.childNodes[0].childNodes[0] as HTMLElement;
                 expect(group.childNodes[3].childNodes.length == 2).toBe(true);
-                expect(group.childNodes[1].childNodes.length == 5).toBe(true);
+                expect(group.childNodes[1].childNodes.length == 9).toBe(true);
 
                 targetElement = chartObj.element.querySelector('#container_Series_0_Point_11_Symbol') as HTMLElement;
                 y = parseFloat(targetElement.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;

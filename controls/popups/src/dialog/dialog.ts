@@ -2001,6 +2001,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     public refreshPosition(): void {
         this.popupObj.refreshPosition();
+        if (this.element.classList.contains(MODAL_DLG)) {
+            this.positionChange();
+        }
     }
     /**
      * Returns the current width and height of the Dialog

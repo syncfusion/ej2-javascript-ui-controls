@@ -2126,7 +2126,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.unWireListEvents(); this.wireListEvents();
                 }
                 this.selectedElementID = this.selectedLI ? this.selectedLI.id : null;
-                attributes(this.targetElement(), { 'aria-expanded': 'true', 'aria-owns': this.inputElement.id + '_options' });
+                attributes(this.targetElement(), { 'aria-expanded': 'true', 'aria-owns': this.element.id + '_options' });
                 this.inputElement.setAttribute('aria-expanded', 'true');
                 const inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
                 addClass([inputParent], [dropDownListClasses.inputFocus]);
@@ -2872,8 +2872,10 @@ export class DropDownList extends DropDownBase implements IInput {
                     }
                     break;
                 case 'showClearButton':
-                    Input.setClearButton(newProp.showClearButton, this.inputElement, this.inputWrapper, null, this.createElement);
-                    this.bindClearEvent();
+                    if(!this.inputWrapper.clearButton){
+                        Input.setClearButton(newProp.showClearButton, this.inputElement, this.inputWrapper, null, this.createElement);
+                        this.bindClearEvent();
+                    }
                     break;
                 default: {
                     // eslint-disable-next-line max-len

@@ -1433,7 +1433,7 @@ export function arrangeChildInGrid(
                 (gridCell.children[0] as Container).children.push(child);
                 (changeCell.children[0] as Container).children.splice(j, 1);
                 j--;
-                diagram.deleteChild(childNode);
+                diagram.deleteChild(childNode,undefined,true);
                 if (!(childNode as Node).isLane) {
                     (childNode as Node).parentId = parentWrapper.id;
                 }
@@ -1730,6 +1730,7 @@ export function removeSwimLane(diagram: Diagram, obj: NodeModel): void {
                                 deleteNode(diagram, removeNode);
                             } else {
                                 diagram.removeDependentConnector(removeNode);
+                                diagram.diagramActions |= DiagramAction.PreventHistory;
                                 if ((removeNode.constraints & NodeConstraints.Delete)) {
                                     diagram.remove(removeNode);
                                 } else {

@@ -4590,7 +4590,7 @@ export class Editor {
         let image: HTMLImageElement = document.createElement('img');
         let editor: Editor = this;
         image.addEventListener('load', function (): void {
-            editor.insertImage(data, this.width, this.height,this.alt);
+            editor.insertImageInternal(data, true, this.width, this.height, this.alt);
         });
         image.src = data;
     }

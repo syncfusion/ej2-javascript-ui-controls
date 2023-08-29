@@ -253,7 +253,9 @@ export class FreehandDrawing {
         EventHandler.remove(canvas, 'mousemove touchmove', this.freehandMoveHandler);
         if (parent.points.length === 0) {
             if (e.type === 'mouseup') {this.processPoint(e.clientX - rect.left, e.clientY - rect.top, true, context); }
-            else {
+            else if (e.type === 'touchend' && e.changedTouches) {
+                this.processPoint(e.changedTouches[0].clientX - rect.left, e.changedTouches[0].clientY - rect.top, true, context);
+            } else {
                 if (!this.isFreehandPointMoved) {
                     this.processPoint(this.freehandDownPoint.x - rect.left, this.freehandDownPoint.y - rect.top, true, context);
                 }

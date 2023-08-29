@@ -52,6 +52,11 @@ require.config({
     main: 'ej2-navigations.umd.min.js'
   },
   {
+    name: '@syncfusion/ej2-excel-export',
+    location: 'node_modules/@syncfusion/ej2-excel-export/dist',
+    main: 'ej2-excel-export.umd.min.js'
+  },
+  {
     name: '@syncfusion/ej2-buttons',
     location: 'node_modules/@syncfusion/ej2-buttons/dist',
     main: 'ej2-buttons.umd.min.js'

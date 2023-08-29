@@ -5688,3 +5688,31 @@ describe('BUG 839515 - Selection moved to first row while addRecord( ) with inde
         gridObj = null;
     });
 });
+
+describe('BUG 842498 - In a checkbox with a specified field, if you click the intermediate checkbox, all checkboxes should be selected', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { type: 'checkbox', field: 'Verified', width: 120 },
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                ],
+            }, done);
+    });
+    it('Select selectAll checkbox', function (done) {
+        done();
+    });
+    it('Check selectAll checkbox', function () {
+        (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        expect((document.getElementsByClassName('e-checkselectall')[0] as HTMLElement)['checked']).toBeTruthy();
+    });
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

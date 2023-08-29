@@ -1,6 +1,6 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
-import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem} from '../../src/index';
+import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem, Toolbar, Filter} from '../../src/index';
 import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
@@ -764,7 +764,7 @@ describe('Context-', () => {
                 element: null,
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(milestone);
-            expect(ganttObj.currentViewData[4]['TaskID']).toBe(5);
+            expect(ganttObj.currentViewData[0]['TaskID']).toBe(5);
         });
     });
       describe('Context menu -', () => {
@@ -1674,6 +1674,151 @@ describe('Context-', () => {
             let ok: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog > div.e-footer-content > button');
             triggerMouseEvent(ok, 'click');
             expect(ganttObj.currentViewData.length).toBe(2);
+        });
+    });
+    describe('After multiple selection, adding milestone position wrong -', () => {
+        beforeAll((done: Function) => {
+            Gantt.Inject(Selection, Toolbar, Edit, Filter, RowDD,ContextMenu, Resize,Sort);
+            ganttObj = createGantt({
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'New Task 1',
+                        StartDate: new Date('05/22/2023'),
+                        EndDate: new Date('05/22/2023'),
+                        Progress: 59,
+                        Duration: 1,
+                    },
+                    {
+                        TaskID: 2,
+                        TaskName: 'New Task 2',
+                        StartDate: new Date('05/22/2023'),
+                        EndDate: new Date('05/22/2023'),
+                        Progress: 45,
+                        Duration: 1,
+                    },
+                    {
+                        TaskID: 3,
+                        TaskName: 'New Task 3',
+                        StartDate: new Date('05/23/2023'),
+                        EndDate: new Date('05/23/2023'),
+                        Duration: 0,
+                    },
+                    {
+                        TaskID: 4,
+                        TaskName: 'New Task 4',
+                        StartDate: new Date('05/22/2023'),
+                        EndDate: new Date('05/22/2023'),
+                        Progress: 38,
+                        Duration: 1,
+                    },
+                    {
+                        TaskID: 5,
+                        TaskName: 'New Task 5',
+                        StartDate: new Date('05/22/2023'),
+                        EndDate: new Date('05/22/2023'),
+                        Progress: 68,
+                        Duration: 1,
+                        Predecessor: 4,
+                    },
+                    {
+                        TaskID: 6,
+                        TaskName: 'New Task 6',
+                        StartDate: new Date('05/22/2023'),
+                        EndDate: new Date('05/22/2023'),
+                        Progress: 57,
+                        Duration: 1,
+                        Predecessor: 5,
+                    },
+                    {
+                        TaskID: 7,
+                        TaskName: 'New Task 7',
+                        StartDate: new Date('05/22/2023'),
+                        EndDate: new Date('05/22/2023'),
+                        Progress: 0,
+                        Duration: 1,
+                    },],
+                    allowSorting: true,
+                    allowFiltering: true,
+                    allowResizing: true,
+                    enableVirtualization: false,
+                    allowParentDependency: false,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        parentID: 'parentID',
+                    },
+                    splitterSettings: {
+                        columnIndex: 2
+                    },
+                    treeColumnIndex: 1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true,
+                        newRowPosition: 'Bottom',
+                    },
+                    toolbar: ['Add'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    enableContextMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    columns: [
+                        { field: "TaskID" },
+                        { field: "TaskName", headerText: "Task Name" },
+                        { field: "StartDate" },
+                        { field: "Duration" },
+                        { field: "Progress" },
+                    ],
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress',
+                    },
+                    selectionSettings: {
+                        enableToggle: true,
+                        mode: 'Row',
+                        type: 'Multiple',
+                    },
+                    height: '450px',
+                    allowRowDragAndDrop: true,
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            setTimeout(done, 500);
+        });
+        it('check position of milestone to be bottom', () => {
+            ganttObj.selectRow(1);
+            let milestone: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(milestone);
+            expect(ganttObj.currentViewData[7]['TaskID']).toBe(8);
         });
     });
 });

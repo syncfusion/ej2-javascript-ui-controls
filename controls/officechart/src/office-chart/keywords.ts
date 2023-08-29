@@ -16,6 +16,7 @@ export const errorBarProperty: string[] = ['errorBar','eb'];
 export const fillProperty: string[] = ['fill','f'];
 export const lineProperty: string[] = ['line','l'];
 export const rgbProperty: string[] = ['rgb','rgb'];
+export const idProperty: string[] = ['id', 'i'];
 export const foreColorProperty: string[] = ['foreColor','fc'];
 export const positionProperty: string[] = ['position','p'];
 export const typeProperty: string[] = ['type','t'];

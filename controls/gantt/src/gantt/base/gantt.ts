@@ -4685,8 +4685,8 @@ export class Gantt extends Component<HTMLElement>
                 if (!isNullOrUndefined(taskfields.dependency)) {
                     data[taskfields.dependency] = null;
                 }
-                const position: RowPosition = 'Below';
-                this.addRecord(data, position);
+                const position: RowPosition = this.editSettings.newRowPosition;
+                this.addRecord(data, position, this.selectedRowIndex);
             } else {
                 if (!rowData.hasChildRecords && !rowData.ganttProperties.isMilestone) {
                     this.updateRecordByID(data);

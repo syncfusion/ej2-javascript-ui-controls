@@ -1305,8 +1305,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 actionKey = this.highlightMode !== 'None' ? 'ArrowMove' : '';
             }
             else if (targetId.indexOf('_Point_') > -1) {
-                (e.target as HTMLElement).removeAttribute('tabindex');
-
+                (e.target as HTMLElement).setAttribute('tabindex', '-1');
                 this.currentPointIndex += (e.code === 'ArrowUp' || e.code === 'ArrowRight') ? + 1 : - 1;
                 let totalLength: number = 0;
                 for (let i: number = 0; i < e.target['parentElement'].children.length; i++) {

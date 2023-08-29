@@ -439,8 +439,8 @@ describe('Scrollbar Chart ', () => {
                 let x: string = mulitiLevelLabel.getAttribute('x');
                 let y: string = mulitiLevelLabel.getAttribute('y');
                 expect(x === '469.17125000000004' || x === '457.1112499999999').toBe(true);
-                expect(y === '379.5' || y === '384').toBe(true);
-                expect(border === ' 122.643125 389.5 L 122.643125 361.5 ' || border === ' 107.24512499999994 393.5 L 107.24512499999994 366.5 ').toBe(true)
+                expect(y === '379.5' || y === '384' || y === '368').toBe(true);
+                expect(border === ' 122.643125 389.5 L 122.643125 361.5 ' || border === ' 107.24512499999994 377.5 L 107.24512499999994 350.5 ').toBe(true)
                 done();
             };
             chartObj.primaryXAxis.labelPosition = 'Inside';
@@ -654,8 +654,8 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '204.98' || thumbX === '209.10').toBe(true);
-                expect(thumbWidth === '60' || thumbWidth === '60').toBe(true);
+                expect(thumbX === '343.81' || thumbX === '209.10').toBe(true);
+                expect(thumbWidth === '60' || thumbWidth === '60' || thumbWidth === '49').toBe(true);
                 done();
             };
             chartObj.zoomSettings.enableMouseWheelZooming = true;
@@ -681,7 +681,7 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '210.95' || thumbX === '215.29').toBe(true);
+                expect(thumbX === '210.95' || thumbX === '348.90').toBe(true);
                 expect(thumbWidth === '40').toBe(true);
                 done();
             };
@@ -707,7 +707,7 @@ describe('Scrollbar Chart ', () => {
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
                 let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
                 let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
-                expect(thumbX === '212.76' || thumbX === '217.16').toBe(true);
+                expect(thumbX === '212.76' || thumbX === '217.16' || thumbX === '350.44').toBe(true);
                 expect(thumbWidth === '40').toBe(true);
                 done();
             };

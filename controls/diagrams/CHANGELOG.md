@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 22.2.11 (2023-08-29)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I477867,#I486093` - Now, Html shapes in palette are rendered properly.
+- `#F183998` - Now, When Dragging Swimlane from Palette to Diagram and Exiting Without Dropping is working properly.
+- `#F184121` - Now, BPMN nodes styles are updated properly at runtime.
+
+## 22.2.10 (2023-08-22)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I484458` - Now, order commands for dropped swimlane is working properly
+- `#I485386` - Now, Copy and paste the child nodes from group is working properly.
+- `#F182827` - Now, Swimlane child nodes are positioned properly and the exception will no longer thrown while performing delete and undo.
+
 ## 22.2.9 (2023-08-15)
 
 ### Diagram

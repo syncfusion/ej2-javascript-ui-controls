@@ -882,10 +882,12 @@ export class ContextMenu {
         classList(deleteTable, ['e-blankicon'], []);
         classList(editField, ['e-blankicon'], []);
         classList(autoFitTable, ['e-blankicon'], []);
-        let getDialogBox: boolean = JSON.parse(localStorage.getItem("ej_de_hidePasteAlert"));
-        if (getDialogBox) {
-            let enablePaste: boolean = (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData));
-            classList(paste, enablePaste ? [] : ['e-disabled'], enablePaste ? ['e-disabled'] : []);
+        if(!Browser.isIE){
+            let getDialogBox: boolean = JSON.parse(localStorage.getItem("ej_de_hidePasteAlert"));
+            if (getDialogBox) {
+                let enablePaste: boolean = (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData));
+                classList(paste, enablePaste ? [] : ['e-disabled'], enablePaste ? ['e-disabled'] : []);
+            }
         }
         if (selection.contextType === 'TableOfContents') {
             updateField.style.display = 'block';

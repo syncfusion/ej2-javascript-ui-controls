@@ -2188,7 +2188,7 @@ export class WordExport {
         writer.writeEndElement(); // end of graphic
     }
     private getBase64ImageString(image: any): ImageStringInfo {
-        let base64ImageString: string[] = this.mImages.get(parseInt(image[imageStringProperty[this.keywordIndex]]));
+        let base64ImageString: string[] = !isNullOrUndefined(image[metaFileImageStringProperty[this.keywordIndex]]) ? this.mImages.get(parseInt(image[metaFileImageStringProperty[this.keywordIndex]])) : this.mImages.get(parseInt(image[imageStringProperty[this.keywordIndex]]));
         let imageString: string = base64ImageString[HelperMethods.parseBoolValue(image[isMetaFileProperty[this.keywordIndex]]) ? 1 : 0];
         let metaFileImageString: string = base64ImageString[0];
         return { imageString: imageString, metaFileImageString: metaFileImageString };
@@ -7024,7 +7024,12 @@ export class WordExport {
 
                     //if (m_archive.Find(imagePath.Replace('\\', '/')) === -1)
                     // {
-                    let imageBlob: Blob = new Blob([this.encodedString(formatClippedString)]);
+                    let imageBlob: Blob;
+                    if (this.startsWith(base64ImageString, 'data:image/svg+xml;utf8,')) {
+                        imageBlob = new Blob([formatClippedString]);
+                    } else {
+                        imageBlob = new Blob([this.encodedString(formatClippedString)]);
+                    }
 
                     let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(imageBlob, imagePath);
                     // let TestArchive = new ZipArchive();

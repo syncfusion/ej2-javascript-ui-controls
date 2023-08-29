@@ -1065,7 +1065,84 @@ describe('BPMN Flow connectors not changed properly at runtime ', () => {
     
 });
 
+describe('BPMN Shapes strokecolor changing', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
 
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+        let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
+        let nodes: NodeModel[] = [{
+            id: 'node', offsetX: 100, offsetY: 100,
+            style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, } as ShapeStyleModel,
+            shape: { type: 'Bpmn', shape: 'DataObject', dataObject: { type: 'Input', collection: true } } as BpmnShapeModel
+        }, {
+            id: 'node1', offsetX: 300, offsetY: 100,
+            style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, } as ShapeStyleModel,
+            shape: { type: 'Bpmn', shape: 'Event' } as BpmnShapeModel
+
+        }, {
+            id: 'node2', offsetX: 500, offsetY: 100,
+            shape: { type: 'Bpmn', shape: 'Gateway' }, shadow: shadow, constraints: NodeConstraints.Default & ~NodeConstraints.Shadow
+
+        }, {
+            id: 'node3', offsetX: 700, offsetY: 100,
+            style: { fill: '#FBF6E1', strokeColor: 'red', strokeWidth: 2 } as ShapeStyleModel,
+            shape: { type: 'Bpmn', shape: 'DataSource' } as BpmnShapeModel
+        },
+        {
+            id: 'node9', offsetX: 100, offsetY: 600, maxHeight: 40, maxWidth: 40,
+            style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, } as ShapeStyleModel,
+            shape: {
+                type: 'Bpmn', shape: 'Activity', activity: {
+                    activity: 'SubProcess',
+                    subProcess: { type: 'Transaction' }
+                }
+            } as BpmnShapeModel
+        }];
+        diagram = new Diagram({
+            width: 1000, height: 500, nodes: nodes
+        });
+        diagram.appendTo('#diagram');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('BPMN Shapes strokecolor changing at runtime', (done: Function) => {
+        let node = diagram.nodes[0];
+            node.style.strokeColor = 'green';
+            diagram.dataBind();
+            expect(diagram.nodes[0].style.strokeColor === 'green').toBe(true);
+            let node1 = diagram.nodes[1];
+            node1.style.strokeColor = 'green';
+            diagram.dataBind();
+            expect(diagram.nodes[1].style.strokeColor  === 'green').toBe(true);
+            let node2 = diagram.nodes[2];
+            node2.style.strokeColor = 'green';
+            diagram.dataBind();
+            expect(diagram.nodes[2].style.strokeColor === 'green').toBe(true);
+            let node3 = diagram.nodes[3];
+            node3.style.strokeColor = 'green';
+            diagram.dataBind();
+            expect(diagram.nodes[3].style.strokeColor === 'green').toBe(true);
+            let node4 = diagram.nodes[4];
+            node4.style.strokeColor = 'green';
+            diagram.dataBind();
+            expect(diagram.nodes[4].style.strokeColor === 'green').toBe(true);
+            done();
+    });
+
+});
 
 
 

@@ -213,8 +213,8 @@ export class BaseTooltip extends ChartData {
                             module.fadeOut(<PointData[]>module.previousPoints);
                         }
                     }
-                },
-                '#' + this.element.id + '_tooltip');
+                })
+            this.svgTooltip.appendTo(this.getElement(this.element.id + '_tooltip'));
         } else {
             if (this.svgTooltip) {
                 this.svgTooltip.location = location;

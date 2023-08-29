@@ -8881,6 +8881,17 @@ export class Layout {
         // if (viewer instanceof PageLayoutViewer) {
         this.documentHelper.removeEmptyPages();
         this.updateFieldElements();
+        const firstPage = this.documentHelper.pages[0]
+        if(firstPage.bodyWidgets[0].sectionIndex > 0) {
+            let page = firstPage;
+            do {
+                this.documentHelper.layout.layoutHeaderFooter(page.bodyWidgets[0], this.viewer as PageLayoutViewer, page); 
+                page = page.nextPage
+            } while(page)
+            while(firstPage.bodyWidgets[0].sectionIndex > 0) {
+                this.documentHelper.owner.editor.updateSectionIndex(undefined, firstPage.bodyWidgets[0], false);
+            }
+        }
         if ((!this.documentHelper.owner.enableLockAndEdit || !reLayout) && !this.isMultiColumnSplit) {
             viewer.updateScrollBars();
         }

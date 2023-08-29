@@ -1423,8 +1423,12 @@ export class CommandHandler {
                 }
                 for (let j: number = 0; j < copiedItems.length; j++) {
                     const copy: NodeModel | ConnectorModel = copiedItems[parseInt(j.toString(), 10)];
+                    //EJ2-841227-Copy paste of child node from group node
                     if((copy as Node).parentId){
-                        (copy as Node).parentId = "";
+                        let parentObj: NodeModel = this.diagram.getObject((copy as Node).parentId);
+                        if(parentObj.shape.type !== "SwimLane" && (copy as Node).parentId){
+                            (copy as Node).parentId = "";
+                        }
                     }
                     if (getObjectType(copy) === Connector) {
                         const clonedObj: ConnectorModel = clone(copy);

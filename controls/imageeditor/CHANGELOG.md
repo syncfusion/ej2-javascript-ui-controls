@@ -2,11 +2,21 @@
 
 ## [Unreleased]
 
+## 22.2.11 (2023-08-29)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I494726` - The issue with "Annotations pen drawing not working properly in ipad" has been resolved.
+
 ## 22.2.10 (2023-08-22)
 
 ### Image Editor
 
 #### Bug Fixes
+
+- Issue with "toolbar" property has been resolved.
 
 - Issue with "Script error thrown while editing multiple text area" has been resolved.
 

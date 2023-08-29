@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 22.2.11 (2023-08-29)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#I494139` - The tab index is now properly displayed in the accumulation chart.
+
+### Chart
+
+#### Bug Fixes
+
+- `#F46287` - Fixed an issue where the tooltip was not rendered when the chart id was a numeric value.
+- `#I478252` - The legend aria label has been changed based on the legend click.
+- `#I492750` - Fixed an issue where the zoom factor and zoom position were not applied after scrolling the chart.
+
 ## 22.2.10 (2023-08-22)
 
 ### Accumulation chart

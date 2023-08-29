@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, Property, Collection, append, extend, Event, EmitType, BaseEventArgs, EventHandler, closest, addClass, removeClass, detach, remove } from '@syncfusion/ej2-base';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, Property, Collection, append, extend, Event, EmitType, BaseEventArgs, EventHandler, closest, addClass, removeClass, detach, remove, initializeCSPTemplate, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
 import { Popup } from '@syncfusion/ej2-popups';
 import { BreadcrumbModel, BreadcrumbItemModel } from './breadcrumb-model';
@@ -469,7 +469,13 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 if (i % 2) {
                     // separator item
                     wrapDiv = this.createElement('div', { className: 'e-breadcrumb-item-wrapper' });
-                    listBaseOptions.template = this.separatorTemplate ? this.separatorTemplate as any : '/';
+                    if ((this.separatorTemplate && this.separatorTemplate === '/') || isNullOrUndefined(this.separatorTemplate)) {
+                        listBaseOptions.template = initializeCSPTemplate( function(): string {
+                            return '/';
+                        });
+                    } else {
+                        listBaseOptions.template = this.separatorTemplate as any;
+                    }
                     listBaseOptions.itemClass = 'e-breadcrumb-separator';
                     isSingleLevel = false;
                     item = [{ previousItem: items[j as number], nextItem: items[j + 1] }];

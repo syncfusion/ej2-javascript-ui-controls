@@ -25,6 +25,7 @@ module.exports = function (config) {
         { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },
         { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
         { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },
+        { pattern: "node_modules/@syncfusion/ej2-excel-export/**/*.js", included: false },
         { pattern: "node_modules/@syncfusion/ej2-buttons/**/*.js", included: false },
         { pattern: "node_modules/@syncfusion/ej2-data/**/*.js", included: false },
         { pattern: "node_modules/@syncfusion/ej2-popups/**/*.js", included: false },

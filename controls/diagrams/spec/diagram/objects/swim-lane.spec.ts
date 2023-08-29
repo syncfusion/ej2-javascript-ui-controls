@@ -12211,3 +12211,281 @@ describe('835465- child nodes not rendred while undo after deleting swimlane ', 
         done();
     });
 });
+
+describe('841849 - Swimlane child are not positioned properly and throw exception after deleting and then undoing', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwimlane-child' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                        orientation: 'Horizontal',
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Basic', shape: 'Rectangle'},
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'ONLINE' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'paymentondebitcreditcard',
+                                    annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            header: {
+                                annotation: { content: 'SHOP' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'getmaildetailaboutorder',
+                                    annotations: [{ content: 'Get mail detail\nabout order' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'pakingitem',
+                                    annotations: [{ content: 'Paking item' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas4',
+                            header: {
+                                annotation: { content: 'DELIVERY' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'sendcourieraboutaddress',
+                                    annotations: [{ content: 'Send Courier\n about Address' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'deliveryonthataddress',
+                                    annotations: [{ content: 'Delivery on that\n Address' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'getitItem',
+                                    shape: { type: 'Basic', shape: 'Rectangle'},
+                                    annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                    margin: { left: 500, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 170,
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                        {
+                            id: 'phase2', offset: 450,
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            nodes: nodes,
+        });
+        diagram.appendTo('#diagramSwimlane-child');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking swimlane after adding phase to swimlane then delete and undo', (done: Function) => {
+        let swimlane = diagram.getObject('swimlane');
+        let phase = [{id:'newPhase',offset: 300,
+        header: { annotation: { content: 'newPhase' }}}];
+        diagram.addPhases(swimlane,phase);
+        diagram.select([swimlane]);
+        diagram.remove();
+        diagram.undo();
+        let orderNode = diagram.getObject('Order');
+        expect((orderNode as Node).parentId === 'swimlanestackCanvas10').toBe(true); 
+    });
+});
+describe('841227- Copy paste of lane working properly', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+        let node: NodeModel[] = [
+            {
+                constraints: NodeConstraints.Default || NodeConstraints.AllowDrop,
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    //Intialize header to swimlane
+                    header: {
+                        annotation: { content: 'SwimLane Header', },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node1',
+                                    annotations: [
+                                        {
+                                            content: 'Consumer learns \n of product',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'PRODUCT' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node2',
+                                    annotations: [
+                                        {
+                                            content: 'product',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'SALES' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node3',
+                                    annotations: [
+                                        {
+                                            content: 'sales',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 120,
+                            // set the phase info
+                            addInfo: { name: 'phase1' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 300, offsetY: 250,
+                height: 200,
+                width: 350
+            },];
+
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            nodes: node,
+        });
+        diagram.appendTo('#diagram');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Copy and paste the lane', (done: Function) => {
+        let swimlane = diagram.nodes[0];
+        let laneId: string = (swimlane.shape as SwimLaneModel).lanes[0].id;
+        let targetElement = diagram.nameTable[swimlane.id + laneId + '0'];
+        diagram.select([targetElement]);
+        diagram.copy();
+        diagram.paste();
+        diagram.paste();
+        expect(diagram.nodes.length == 24).toBe(true);
+        done();
+    });
+});

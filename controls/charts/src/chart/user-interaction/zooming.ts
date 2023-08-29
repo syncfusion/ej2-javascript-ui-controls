@@ -82,7 +82,9 @@ export class Zoom {
         this.zoomAxes = [];
         this.zoomkitOpacity = 1;
         this.isIOS = Browser.isIos || Browser.isIos7;
-        this.isZoomed = this.performedUI = this.zooming.enablePan && this.zooming.enableSelectionZooming;
+        this.isZoomed = this.performedUI = (this.zooming.enablePan && this.zooming.enableSelectionZooming) ||
+            ((this.chart.primaryXAxis.zoomFactor < 1 && this.chart.primaryXAxis.zoomPosition > 0) ||
+                (this.chart.primaryYAxis.zoomFactor < 1 && this.chart.primaryYAxis.zoomPosition > 0) || this.isAxisZoomed(this.chart.axes));
         if (zooming.enableScrollbar) {
             chart.scrollElement = createElement(
                 'div', { id: chart.element.id + '_scrollElement' }

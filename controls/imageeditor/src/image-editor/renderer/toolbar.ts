@@ -733,27 +733,36 @@ export class ToolbarModule {
     }
 
     private renderAnnotationBtn(isContextualToolbar?: boolean): void {
-        const parent: ImageEditor = this.parent;
+        const parent: ImageEditor = this.parent; let isCustomized: boolean = false;
         const items: DropDownButtonItemModel[] = [];
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Pen') > -1)) {
+        const defItems: string[] = ['Ellipse', 'Arrow', 'Line', 'Rectangle', 'Pen', 'Path', 'Text'];
+        if (parent.toolbar) {
+            for (let i: number = 0; i < defItems.length; i++) {
+                if (parent.toolbar.indexOf(defItems[i as number]) !== -1) {
+                    isCustomized = true;
+                    break;
+                }
+            }
+        }
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Pen') > -1)) {
             items.push({ text: this.l10n.getConstant('Pen'), id: 'pen', iconCss: 'e-icons e-free-pen' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Line') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Line') > -1)) {
             items.push({ text: this.l10n.getConstant('Line'), id: 'line', iconCss: 'e-icons e-line' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Rectangle') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Rectangle') > -1)) {
             items.push({ text: this.l10n.getConstant('Rectangle'), id: 'rectangle', iconCss: 'e-icons e-rectangle' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Ellipse') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Ellipse') > -1)) {
             items.push({ text: this.l10n.getConstant('Ellipse'), id: 'ellipse', iconCss: 'e-icons e-circle' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Arrow') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Arrow') > -1)) {
             items.push({ text: this.l10n.getConstant('Arrow'), id: 'arrow', iconCss: 'e-icons e-arrow-right-up' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Path') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Path') > -1)) {
             items.push({ text: this.l10n.getConstant('Path'), id: 'path', iconCss: 'e-icons e-critical-path' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Text') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Text') > -1)) {
             items.push({ text: this.l10n.getConstant('Text'), id: 'text', iconCss: 'e-icons e-add-text' });
         }
         const obj: Object = {freehandDrawSelectedId: null };
@@ -852,17 +861,26 @@ export class ToolbarModule {
 
     private renderCropBtn(): void {
         const parent: ImageEditor = this.parent;
-        const items: DropDownButtonItemModel[] = [];
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('CustomSelection') > -1)) {
+        const items: DropDownButtonItemModel[] = []; let isCustomized: boolean = false;
+        const defItems: string[] = ['CustomSelection', 'CircleSelection', 'SquareSelection', 'RatioSelection'];
+        if (parent.toolbar) {
+            for (let i: number = 0; i < defItems.length; i++) {
+                if (parent.toolbar.indexOf(defItems[i as number]) !== -1) {
+                    isCustomized = true;
+                    break;
+                }
+            }
+        }
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('CustomSelection') > -1)) {
             items.push({ text: this.l10n.getConstant('Custom'), id: 'custom', iconCss: 'e-icons e-custom' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('CircleSelection') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('CircleSelection') > -1)) {
             items.push({ text: this.l10n.getConstant('Circle'), id: 'circle', iconCss: 'e-icons e-circle' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('SquareSelection') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('SquareSelection') > -1)) {
             items.push({ text: this.l10n.getConstant('Square'), id: 'square', iconCss: 'e-icons e-square' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('RatioSelection') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('RatioSelection') > -1)) {
             items.push({ text: '3:2', id: '3:2', iconCss: 'e-icons e-custom-a' });
             items.push({ text: '4:3', id: '4:3', iconCss: 'e-icons e-custom-b' });
             items.push({ text: '5:4', id: '5:4', iconCss: 'e-icons e-custom-c' });
@@ -877,8 +895,8 @@ export class ToolbarModule {
             iconCss = this.getCurrentShapeIcon(parent.currSelectionPoint.shape);
             shape = parent.currSelectionPoint.shape;
         } else {
-            iconCss = 'e-custom';
-            shape = 'custom';
+            iconCss = items[0].iconCss;
+            shape = items[0].id;
         }
         const drpDownBtn: DropDownButton = new DropDownButton({
             open: (args: OpenCloseMenuEventArgs) => {
@@ -963,15 +981,29 @@ export class ToolbarModule {
             template: '<button id="' + parent.element.id + '_cropBtn"></button>'
         });
         toolbarItems.push({ align: 'Center', type: 'Separator' });
-        toolbarItems.push({ id: parent.element.id + '_rotateLeft', prefixIcon: 'e-icons e-anti-clock-wise',
-            tooltipText: this.l10n.getConstant('RotateLeft'), align: 'Center' });
-        toolbarItems.push({ id: parent.element.id + '_rotateRight', prefixIcon: 'e-icons e-clock-wise',
-            tooltipText: this.l10n.getConstant('RotateRight'), align: 'Center' });
-        toolbarItems.push({ align: 'Center', type: 'Separator' });
-        toolbarItems.push({ id: parent.element.id + '_horizontalFlip', prefixIcon: 'e-icons e-horizontal-flip',
-            tooltipText: this.l10n.getConstant('HorizontalFlip'), align: 'Center' });
-        toolbarItems.push({ id: parent.element.id + '_verticalFlip', prefixIcon: 'e-icons e-vertical-flip',
-            tooltipText: this.l10n.getConstant('VerticalFlip'), align: 'Center' });
+        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 ||
+        parent.toolbar.indexOf('RotateLeft') > -1))) {
+            toolbarItems.push({ id: parent.element.id + '_rotateLeft', prefixIcon: 'e-icons e-anti-clock-wise',
+                tooltipText: this.l10n.getConstant('RotateLeft'), align: 'Center' });
+        }
+        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 ||
+        parent.toolbar.indexOf('RotateRight') > -1))) {
+            toolbarItems.push({ id: parent.element.id + '_rotateRight', prefixIcon: 'e-icons e-clock-wise',
+                tooltipText: this.l10n.getConstant('RotateRight'), align: 'Center' });
+        }
+        if (toolbarItems.length > 2) {
+            toolbarItems.push({ align: 'Center', type: 'Separator' });
+        }
+        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 ||
+        parent.toolbar.indexOf('HorizontalFlip') > -1))) {
+            toolbarItems.push({ id: parent.element.id + '_horizontalFlip', prefixIcon: 'e-icons e-horizontal-flip',
+                tooltipText: this.l10n.getConstant('HorizontalFlip'), align: 'Center' });
+        }
+        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 ||
+        parent.toolbar.indexOf('VerticalFlip') > -1))) {
+            toolbarItems.push({ id: parent.element.id + '_verticalFlip', prefixIcon: 'e-icons e-vertical-flip',
+                tooltipText: this.l10n.getConstant('VerticalFlip'), align: 'Center' });
+        }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: parent.element.id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
                 tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
@@ -1074,7 +1106,9 @@ export class ToolbarModule {
                         (toolbar as any).refreshOverflow();
                     }
                 }
-                parent.select('custom');
+                if (document.getElementById(parent.element.id + '_cropBtn')) {
+                    parent.select(document.getElementById(parent.element.id + '_cropBtn').textContent.toLowerCase());
+                }
             }
         });
         if (Browser.isDevice) {
@@ -1693,32 +1727,41 @@ export class ToolbarModule {
     }
 
     private getAdjustmentToolbarItem(): ItemModel[] {
-        const toolbarItems: ItemModel[] = []; const parent: ImageEditor = this.parent;
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Brightness') > -1)) {
+        const toolbarItems: ItemModel[] = []; const parent: ImageEditor = this.parent; let isCustomized: boolean = false;
+        const defItems: string[] = ['Brightness', 'Contrast', 'Hue', 'Saturation', 'Exposure', 'Opacity', 'Blur'];
+        if (parent.toolbar) {
+            for (let i: number = 0; i < defItems.length; i++) {
+                if (parent.toolbar.indexOf(defItems[i as number]) !== -1) {
+                    isCustomized = true;
+                    break;
+                }
+            }
+        }
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Brightness') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_brightness', prefixIcon: 'e-icons e-brightness', cssClass: 'top-icon e-brightness',
                 tooltipText: this.l10n.getConstant('Brightness'), align: 'Center' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Contrast') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Contrast') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_contrast', prefixIcon: 'e-icons e-contrast', cssClass: 'top-icon e-contrast',
                 tooltipText: this.l10n.getConstant('Contrast'), align: 'Center' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Hue') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Hue') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_hue', prefixIcon: 'e-icons e-fade', cssClass: 'top-icon e-fade',
                 tooltipText: this.l10n.getConstant('Hue'), align: 'Center' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Saturation') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Saturation') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_saturation', prefixIcon: 'e-icons e-saturation', cssClass: 'top-icon e-saturation',
                 tooltipText: this.l10n.getConstant('Saturation'), align: 'Center' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Exposure') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Exposure') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_exposure', prefixIcon: 'e-icons e-grain', cssClass: 'top-icon e-grain',
                 tooltipText: this.l10n.getConstant('Exposure'), align: 'Center' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Opacity') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Opacity') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_opacity', prefixIcon: 'e-icons e-opacity', cssClass: 'top-icon e-opacity',
                 tooltipText: this.l10n.getConstant('Opacity'), align: 'Center' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Blur') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Blur') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_blur', prefixIcon: 'e-icons e-tint', cssClass: 'top-icon e-tint',
                 tooltipText: this.l10n.getConstant('Blur'), align: 'Center' });
         }
@@ -1736,38 +1779,47 @@ export class ToolbarModule {
     }
 
     private getFilterToolbarItem(): ItemModel[] {
-        const toolbarItems: ItemModel[] = []; const parent: ImageEditor = this.parent;
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Default') > -1)) {
+        const toolbarItems: ItemModel[] = []; const parent: ImageEditor = this.parent; let isCustomized: boolean = false;
+        const defItems: string[] = ['Default', 'Chrome', 'Cold', 'Warm', 'Grayscale', 'Sepia', 'Invert'];
+        if (parent.toolbar) {
+            for (let i: number = 0; i < defItems.length; i++) {
+                if (parent.toolbar.indexOf(defItems[i as number]) !== -1) {
+                    isCustomized = true;
+                    break;
+                }
+            }
+        }
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Default') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_default', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Default'), align: 'Center',
                 template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + parent.element.id + '_defaultCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Default') + '</span></div></div>' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Chrome') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Chrome') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_chrome', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Chrome'), align: 'Center',
                 template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + parent.element.id + '_chromeCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Chrome') + '</span></div></div>' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Cold') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Cold') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_cold', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Cold'), align: 'Center',
                 template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + parent.element.id + '_coldCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Cold') + '</span></div></div>' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Warm') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Warm') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_warm', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Warm'), align: 'Center',
                 template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + parent.element.id + '_warmCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Warm') + '</span></div></div>' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Grayscale') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Grayscale') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_grayscale', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Grayscale'), align: 'Center',
                 template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + parent.element.id + '_grayscaleCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Grayscale') + '</span></div></div>' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Sepia') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Sepia') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_sepia', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Sepia'), align: 'Center',
                 template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + parent.element.id + '_sepiaCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Sepia') + '</span></div></div>' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Invert') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Invert') > -1)) {
             toolbarItems.push({ id: parent.element.id + '_invert', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Invert'), align: 'Center',
                 template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + parent.element.id + '_invertCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Invert') + '</span></div></div>' });
@@ -2034,7 +2086,9 @@ export class ToolbarModule {
                 if (hdrWrapper) {
                     hdrWrapper.style.display = 'none';
                 }
-                document.getElementById(parent.currentFilter + 'Canvas').parentElement.parentElement.classList.add('e-selected');
+                if (document.getElementById(parent.currentFilter + 'Canvas')) {
+                    document.getElementById(parent.currentFilter + 'Canvas').parentElement.parentElement.classList.add('e-selected');
+                }
                 this.enableDisableTbrBtn();
                 toolbar.refreshOverflow();
             }
@@ -2771,7 +2825,7 @@ export class ToolbarModule {
         ];
         for (const selector of selectors) {
             const element: HTMLElement = document.querySelector(selector);
-            if (element.classList.contains('e-selected-btn')) {
+            if (element && element.classList.contains('e-selected-btn')) {
                 element.classList.remove('e-selected-btn');
                 break;
             }

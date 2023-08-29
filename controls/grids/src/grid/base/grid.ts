@@ -6933,7 +6933,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 (ariaOwns)) !== (e.target as Element).getAttribute('aria-owns')))
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
             if (this.editSettings.mode === 'Batch' && !((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
-                parentsUntil(relatedTarget, 'e-input-group')) && !isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))) {
+                parentsUntil(relatedTarget, 'e-input-group')) && (parentsUntil(relatedTarget, 'e-uploader') || !isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group')))) {
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});
             }

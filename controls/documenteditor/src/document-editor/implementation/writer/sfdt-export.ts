@@ -59,6 +59,7 @@ export class SfdtExport {
     private contentInline: any = [];
     private isContentControl: boolean = false;
     private isBlockClosed: boolean = true;
+    private isWriteInlinesFootNote = false;
     /**
      * @private
      */
@@ -763,6 +764,9 @@ export class SfdtExport {
             if (element instanceof ContentControl || this.startContent || this.blockContent) {
                 this.writeInlinesContentControl(element, line, inlines, i);
             } else {
+                if(this.isWriteInlinesFootNote && i == 0) {
+                    (element as TextElementBox).text = "\u0002";
+                }
                 let inline: any = this.writeInline(element);
                 if (!isNullOrUndefined(inline)) {
                     inlines.push(inline);
@@ -780,6 +784,9 @@ export class SfdtExport {
         if (!isNullOrUndefined(inlines)) {
             if (this.nestedContent) {
                 inlines = inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]];
+                if(inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]]==undefined){
+                    inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]] = [];
+                }
                 inline = this.inlineContentControls(element, inlines[inlines.length - 1][inlinesProperty[this.keywordIndex]]);
                 let nestedContentinline: any = this.nestedContentProperty(nextElement, inlines[inlines.length - 1]);
                 if (!isNullOrUndefined(nestedContentinline)) {
@@ -1385,6 +1392,7 @@ export class SfdtExport {
         }
     }
     private writeInlinesFootNote(paragraph: any, element: any, line: any, inlines: any): any {
+        this.isWriteInlinesFootNote = true;
         let inline: any = {};
         inline[footnoteTypeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getFootnoteTypeEnumValue(element.footnoteType) : element.footnoteType;
         inline[characterFormatProperty[this.keywordIndex]] = {};
@@ -1397,6 +1405,7 @@ export class SfdtExport {
         inline[symbolFontNameProperty[this.keywordIndex]] = element.symbolFontName;
         inline[customMarkerProperty[this.keywordIndex]] = element.customMarker;
         this.writeInlineRevisions(inline, element);
+        this.isWriteInlinesFootNote = false;
         return inline;
     }
     private writeInlinesContentControl(element: ElementBox, lineWidget: LineWidget, inlines: any, i: number): any {

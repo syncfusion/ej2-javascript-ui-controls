@@ -33,6 +33,18 @@ export class ICalendarImport {
         const events: Record<string, any>[] = [];
         const uId: string = 'UID';
         const calArray: string[] = iCalString.replace(new RegExp('\\r', 'g'), '').split('\n');
+        const descriptionIndex: number = calArray.findIndex((line: string) => line.startsWith('DESCRIPTION:'));
+        if (descriptionIndex !== -1) {
+            let description: string = calArray[descriptionIndex as number].substring('DESCRIPTION:'.length);
+            for (let i: number = descriptionIndex + 1; i < calArray.length; i++) {
+                if (calArray[i as number].startsWith(' ') || !(/[A-Z]{3}:/.test(calArray[i as number]))) {
+                    description += calArray[i as number];
+                } else {
+                    calArray[descriptionIndex as number] = 'DESCRIPTION:' + description;
+                    break;
+                }
+            }
+        }
         let isEvent: boolean = false;
         let curEvent: Record<string, any>;
         // eslint-disable-next-line prefer-const
@@ -95,7 +107,10 @@ export class ICalendarImport {
                         curEvent[fields.location] = value;
                         break;
                     case 'DESCRIPTION':
-                        curEvent[fields.description] = value;
+                        if (!(curEvent[fields.description])) {
+                            curEvent[fields.description] = value.replace(/\\,/g, ',')
+                                .replace(/\\n/g, '\n');
+                        }
                         break;
                     case 'ISREADONLY':
                         curEvent[fields.isReadonly] = (value.indexOf('true') > -1);

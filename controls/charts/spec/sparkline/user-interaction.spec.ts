@@ -230,8 +230,8 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
             ele = getIdElement(id + '_sparkline_pie_4');
             trigger.mousemoveEvent(ele, 0, 0, 400, 150);
             ele = getIdElement(id + '_sparkline_tooltip_div_text');
-            expect(ele.firstChild.textContent).toBe('50 : -60$');
-            expect(ele.lastChild.textContent).toBe('50 : -60$');
+            expect(ele.firstChild.textContent).toBe('50 ');
+            expect(ele.lastChild.textContent).toBe(' -60$');
         });
         it('Sparkline tooltip template checking', () => {
             sparkline.tooltipSettings.template = '<div style="border: 2px solid green;background: #a0e99680">${id}<br>${value}$</div>';

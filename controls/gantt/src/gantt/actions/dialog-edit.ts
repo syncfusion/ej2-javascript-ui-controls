@@ -2121,7 +2121,7 @@ export class DialogEdit {
                     this.parent.editModule.addRecord(this.addedRecord, 'Bottom');
                 }
             } else {
-                this.parent.editModule.addRecord(this.addedRecord, this.parent.editSettings.newRowPosition);
+                this.parent.editModule.addRecord(this.addedRecord, this.parent.editSettings.newRowPosition, this.parent.selectedRowIndex);
             }
         }
         return true;

@@ -1433,6 +1433,14 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    private resizeHandler(): void {
+        if (this.itemsContainer && this.itemsContainer.firstElementChild) {
+            const numOfItems: number = this.getNumOfItems();
+            const slideWidth: number = this.itemsContainer.firstElementChild.clientWidth;
+            this.itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex + numOfItems);
+        }
+    }
+
     private wireEvents(): void {
         if (!(this.animationEffect === 'Custom')) {
             this.swipeModehandlers();
@@ -1441,6 +1449,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.add(this.element, 'mouseenter mouseleave', this.onHoverActions, this);
         EventHandler.add(this.element.firstElementChild, 'animationend', this.onTransitionEnd, this);
         EventHandler.add(this.element.firstElementChild, 'transitionend', this.onTransitionEnd, this);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler, this);
     }
 
     private unWireEvents(): void {
@@ -1460,6 +1469,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.remove(this.element.firstElementChild, 'transitionend', this.onTransitionEnd);
         EventHandler.clearEvents(this.element);
         EventHandler.clearEvents(this.itemsContainer);
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler);
     }
 
     /**

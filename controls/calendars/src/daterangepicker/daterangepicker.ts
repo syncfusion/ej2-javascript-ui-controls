@@ -789,7 +789,7 @@ export class DateRangePicker extends CalendarBase {
         /**
          * Mobile View
          */
-        this.isMobile = (Browser.isDevice && this.fullScreenMode) ? true : window.matchMedia('(max-width:550px)').matches;
+        this.isMobile = (Browser.isDevice) ? true : window.matchMedia('(max-width:550px)').matches;
         this.inputElement = <HTMLInputElement>this.element;
         this.angularTag = null;
         if (this.element.tagName === 'EJS-DATERANGEPICKER') {
@@ -1238,9 +1238,7 @@ export class DateRangePicker extends CalendarBase {
             this.show(null, e);
             if (!this.isMobile) {
                 if (!isNullOrUndefined(this.leftCalendar)) {
-                    this.isRangeIconClicked = false;
                     this.calendarFocus();
-                    this.isRangeIconClicked = true;
                 }
             }
             addClass([this.inputWrapper.container], [INPUTFOCUS]);
@@ -2366,15 +2364,11 @@ export class DateRangePicker extends CalendarBase {
         if (event) {
             leftCalendar = <HTMLElement>closest(<HTMLElement>event.target, '.' + LEFTCALENDER);
         }
-        if (!isNullOrUndefined(leftCalendar)) {
-            (<HTMLElement>this.leftCalendar.children[1].firstElementChild).focus();
-        } else {
-            if (event) {
-                rightCalendar = event && <HTMLElement>closest(<HTMLElement>event.target, '.' + RIGHTCALENDER);
-            }
-            if (!isNullOrUndefined(rightCalendar)) {
-                (<HTMLElement>this.rightCalendar.children[1].firstElementChild).focus();
-            }
+        if (event && isNullOrUndefined(leftCalendar)) {
+            rightCalendar = event && <HTMLElement>closest(<HTMLElement>event.target, '.' + RIGHTCALENDER);
+        }
+        if (!isNullOrUndefined(leftCalendar) || !isNullOrUndefined(rightCalendar)) {
+            (<HTMLElement>this.inputWrapper.container).focus();
         }
         addClass([ele], SELECTED);
         this.calendarIconEvent();

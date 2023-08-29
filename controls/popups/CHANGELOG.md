@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.11 (2023-08-29)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I482911` - Fixed an issue where the `refreshPosition` method did not correctly append the model dialog to the intended position.
+
 ## 22.2.9 (2023-08-15)
 
 ### Tooltip

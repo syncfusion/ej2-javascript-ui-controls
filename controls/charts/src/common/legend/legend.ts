@@ -813,7 +813,7 @@ export class BaseLegend {
                         id: this.legendID + this.generateId(legendOption, '_g_', legendIndex)});
                     if  (legendSeriesGroup) {
                         legendSeriesGroup.setAttribute('tabindex', i === 0 ? '0' : '');
-                        legendSeriesGroup.setAttribute('aria-label', legend.description || ('Show ' + legendOption.text));
+                        legendSeriesGroup.setAttribute('aria-label', legend.description || ((legendOption.visible ? 'Show ' : 'Hide ') + legendOption.text));
                         legendSeriesGroup.setAttribute('aria-pressed', legendOption.visible ? 'true' : 'false');
                     }
                     this.library.getRenderPoint(legendOption, start, textPadding, previousLegend, requireLegendBounds, count, firstLegend);

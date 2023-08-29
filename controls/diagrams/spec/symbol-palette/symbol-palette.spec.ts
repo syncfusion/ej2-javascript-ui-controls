@@ -2884,3 +2884,92 @@ describe('Checking description for HTML node',()=>{
     });
 
 });
+
+describe('Checking swimalne drag and without drop on canvas',()=>{
+    let diagram: Diagram;
+    let palette: SymbolPalette;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { styles: 'width:100%;height:500px;' });
+        ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
+        ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
+        document.body.appendChild(ele);
+ 
+        var palettes:PaletteModel[] = [
+            {
+                id: 'swimlaneShapes', expanded: true, symbols: [
+                    {
+                        id: 'stackCanvas2',
+                        shape: {
+                            type: 'SwimLane',
+                            lanes: [
+                                {
+                                    id: 'lane1',
+                                    style: { strokeColor: 'black' }, height: 150, width: 60,
+                                    header: { width: 50, height: 50, style: { strokeColor: 'black', fontSize: 11 } },
+                                }
+                            ],
+                            orientation: 'Vertical', isLane: true
+                        },
+                        height: 140,previewSize:{height:200,width:200},dragSize:{height:200,width:200} ,
+                        width: 60,
+                        // style: { fill: '#f5f5f5' },
+                        offsetX: 70,
+                        offsetY: 30,
+                    }
+                ], title: 'Swimlane shapes'
+            }
+        ];
+        
+        diagram = new Diagram({
+            width: '70%',height:1000,
+        });
+        diagram.appendTo('#diagram');
+
+        palette = new SymbolPalette({
+            width: '25%', height: '500px',
+            palettes: palettes,enableSearch: true,
+            symbolHeight: 50, symbolWidth: 50,
+            symbolPreview: { height: 100, width: 100 },
+            symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+           
+        });
+        palette.appendTo('#symbolpalette');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        palette.destroy();
+        ele.remove();
+    });
+    it('Checking swimalne drag and without drop on canvas', (done: Function) => {
+        palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+            let clonedElement: HTMLElement; let diagramElement: any;
+            let position: PointModel = palette['getMousePosition'](e.sender);
+            let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+            let symbols: IElement = palette.symbolTable[target['id']];
+            palette['selectedSymbols'] = symbols;
+            if (symbols !== undefined) {
+                clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                clonedElement.setAttribute('paletteId', palette.element.id);
+            }
+            return clonedElement;
+        };
+        diagram.dragEnter = (arg) => {
+            expect(arg.source instanceof SymbolPalette).toBe(true);
+            done();
+        }
+        let events: MouseEvents = new MouseEvents();
+        events.mouseDownEvent(palette.element, 75, 100, false, false);
+        events.mouseMoveEvent(palette.element, 100, 100, false, false);
+        events.mouseMoveEvent(palette.element, 200, 200, false, false);
+        expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+        events.mouseMoveEvent(diagram.element, 300, 300, false, false);
+        events.mouseMoveEvent(diagram.element, 400, 400, false, false);
+        events.mouseMoveEvent(diagram.element, 200, 200, false, false);
+        events.mouseMoveEvent(diagram.element, 75, 100, false, false);
+        events.mouseUpEvent(diagram.element, 75, 100, false, false);
+        expect(diagram.nodes.length).toBe(0);
+        done();
+    });
+
+});

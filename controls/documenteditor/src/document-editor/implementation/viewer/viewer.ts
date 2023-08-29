@@ -358,6 +358,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public stylesMap: Dictionary<string, any[]> = new Dictionary<string, any[]>();
+    /**
+     * @private
+     */
     public listParagraphs: ParagraphWidget[];
     /**
      * @private
@@ -832,6 +836,7 @@ export class DocumentHelper {
         this.renderedLevelOverrides = [];
         this.headersFooters = [];
         this.styles = new WStyles();
+        this.stylesMap = new Dictionary<string, any[]>();
         this.preDefinedStyles = new Dictionary<string, string>();
         this.initalizeStyles();
         this.bookmarks = new Dictionary<string, BookmarkElementBox>();
@@ -904,6 +909,7 @@ export class DocumentHelper {
         this.bookmarks.clear();
         this.endBookmarksUpdated = [];
         this.styles.clear();
+        this.stylesMap.clear();
         if (this.pages && this.pages.length > 0) {
             for (let i: number = 0; i < this.pages.length; i++) {
                 let page: Page = this.pages[i] as Page;
@@ -1947,6 +1953,10 @@ export class DocumentHelper {
                 this.tapCount++;
                 if (this.tapCount > 1) {
                     this.tapCount = 1;
+                }
+                if (!this.isScrollHandler && !isNullOrUndefined(this.owner) && this.owner.isSpellCheck) {
+                    this.isScrollToSpellCheck = true;
+                    this.owner.viewer.updateScrollBars();
                 }
             }, 100);
         }
@@ -3482,6 +3492,12 @@ export class DocumentHelper {
         if (isHandled) {
             event.preventDefault();
         }
+        this.timer = setTimeout((): void => {
+            if (!this.isScrollHandler && !isNullOrUndefined(this.owner) && this.owner.isSpellCheck) {
+                this.isScrollToSpellCheck = true;
+                this.owner.viewer.updateScrollBars();
+            }
+        }, 100);
     }
     /**
      * @private
@@ -3626,6 +3642,10 @@ export class DocumentHelper {
         if (this.styles) {
             this.styles.destroy();
             this.styles = undefined;
+        }
+        if (this.stylesMap) {
+            this.stylesMap.destroy();
+            this.stylesMap = undefined;
         }
         if (this.characterFormat) {
             this.characterFormat.destroy();
@@ -4258,6 +4278,93 @@ export class DocumentHelper {
             return this.getFirstParagraphBlock(lastBlock);
         }
         return undefined;
+    }
+    /**
+     * Add the given WStyle Object ot stylesMap Dictionary
+     *
+     * @private
+     */
+    /* eslint-disable  */
+    public addToStylesMap(style: WStyle): void {
+        const returnStyle: any = {};
+        const returnStyleObject: any = {};
+        const paraIcon: string = 'e-list-icon e-de-listview-icon e-de-e-paragraph-style-mark e-icons';
+        const charIcon: string = 'e-list-icon e-de-listview-icon e-de-e-character-style-mark e-icons';
+        const linkedIcon: string = 'e-list-icon e-de-listview-icon e-de-e-linked-style-mark e-icons';
+        // StyleName for the dropDownItem
+        returnStyle.StyleName =  style.name;
+        if (style.type == "Paragraph") {
+            returnStyleObject.paragraphFormat = {};
+            HelperMethods.writeParagraphFormat(returnStyleObject.paragraphFormat,true,(style as any).paragraphFormat);
+        }
+        returnStyleObject.characterFormat = {};
+        HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat,true,(style as any).characterFormat);
+        // CSS Style for dropDownItem
+        returnStyle.Style = this.parseStyle(JSON.stringify(returnStyleObject));
+        // Setting type for segregating and adding iconcss
+        if (!isNullOrUndefined(style.type)) {
+            returnStyle.type = style.type;
+            if (returnStyle.type == "Paragraph" && !isNullOrUndefined(style.link)) {
+                returnStyle.type = "Linked";
+            }
+        }
+        // Adding IconCss to the dropDownItem
+        if (returnStyle.type == "Paragraph") {
+            returnStyle.IconClass = paraIcon;
+        } else if (returnStyle.type == "Character") {
+            returnStyle.IconClass = charIcon;
+        } else {
+            returnStyle.IconClass = linkedIcon;
+        }
+        if(this.stylesMap.get(returnStyle.type)) {
+            this.stylesMap.get(returnStyle.type).push(returnStyle);
+        } else {
+            this.stylesMap.add(returnStyle.type, [returnStyle])
+        }
+    }
+    private parseStyle(style: string): string {
+        let domStyle: string = '';
+        const styleObj: any = JSON.parse(style);
+        let textDecoration: string = '';
+        if (!isNullOrUndefined(styleObj.characterFormat.baselineAlignment) && styleObj.characterFormat.baselineAlignment !== 'Normal') {
+            let vAlign: string = '';
+            switch (styleObj.characterFormat.baselineAlignment) {
+                case 'Superscript':
+                    vAlign = 'super';
+                    break;
+                case 'Subscript':
+                    vAlign = 'sub';
+                    break;
+            }
+            if (vAlign.length > 1) {
+                domStyle += 'vertical-align:' + vAlign + ';';
+            }
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.underline) && styleObj.characterFormat.underline !== 'None') {
+            textDecoration += 'underline ';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.strikethrough) && styleObj.characterFormat.strikethrough !== 'None') {
+            textDecoration += 'line-through ';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.fontSize)) {
+            domStyle += 'font-size:' + styleObj.characterFormat.fontSize + 'px;';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.fontFamily)) {
+            domStyle += 'font-family:' + styleObj.characterFormat.fontFamily + ';';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.bold) && styleObj.characterFormat.bold) {
+            domStyle += 'font-weight:bold;';
+        }
+        if (!isNullOrUndefined(styleObj.characterFormat.italic) && styleObj.characterFormat.italic) {
+            domStyle += 'font-style:italic;';
+        }
+        // if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
+        //     domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
+        // }
+        if (textDecoration.length > 1) {
+            domStyle += 'text-decoration:' + textDecoration + ';';
+        }
+        return domStyle;
     }
 }
 /**
@@ -5231,7 +5338,7 @@ export class PageLayoutViewer extends LayoutViewer {
         let type: HeaderFooterType;
         type = isHeader ? 'OddHeader' : 'OddFooter';
         let page: Page = section.page;
-        if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || (isNullOrUndefined(page.previousPage) && page.sectionIndex !== page.previousPage.sectionIndex && page.previousPage.bodyWidgets[page.previousPage.bodyWidgets.length - 1].sectionIndex !== page.bodyWidgets[0].sectionIndex))) {
+        if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || (!isNullOrUndefined(page.previousPage) && page.sectionIndex !== page.previousPage.sectionIndex && page.previousPage.bodyWidgets[page.previousPage.bodyWidgets.length - 1].sectionIndex !== page.bodyWidgets[0].sectionIndex))) {
             type = isHeader ? 'FirstPageHeader' : 'FirstPageFooter';
         } else if (section.sectionFormat.differentOddAndEvenPages && (page.index + 1) % 2 === 0) {
             type = isHeader ? 'EvenHeader' : 'EvenFooter';

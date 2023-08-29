@@ -4964,7 +4964,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.deleteGroup(obj as Node);
                     }
                     if ((obj as Node | Connector).parentId) {
-                        this.deleteChild(obj);
+                        this.deleteChild(obj, undefined, true);
                         if (this.nameTable[(obj as Node | Connector).parentId] && this.nameTable[(obj as Node | Connector).parentId].shape.type === 'UmlClassifier') {
                             this.updateDiagramObject(this.nameTable[(obj as Node | Connector).parentId]);
                             this.updateConnectorEdges(this.nameTable[(obj as Node | Connector).parentId]);
@@ -5177,7 +5177,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /** @private */
 
-    public deleteChild(node: NodeModel | ConnectorModel | string, parentNode?: NodeModel): void {
+    public deleteChild(node: NodeModel | ConnectorModel | string, parentNode?: NodeModel, allowChildInSwimlane?: boolean): void {
         let id: string;
         parentNode = parentNode ? this.nameTable[parentNode.id] : this.nameTable[(node as Node).parentId];
         if (typeof node === 'string') {
@@ -5194,16 +5194,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             parentNode.wrapper.children.splice(j, 1);
                         }
                     }
-                    // EJ2-57179 - Below lines added to remove the childs to swimlane after Redo.
-                    const swimlaneNode: NodeModel = this.getObject((parentNode as Node).parentId);
-                    if (swimlaneNode && (swimlaneNode as Node).shape instanceof SwimLane) {
-                        for (let h: number = 0; h < ((swimlaneNode as Node).shape as SwimLane).lanes.length; h++) {
-                            const laneId = (node as Node).parentId.split((swimlaneNode as Node).id);
-                            if (((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].id === laneId[1].slice(0, -1)) {
-                                for (let y: number = 0; y < ((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children.length; y++) {
-                                    if ((node as Node).id === ((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children[parseInt(y.toString(), 10)].id) {
-                                        ((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children.splice(y, 1);
-                                        break;
+                    // Bug 841849: Swimlane child are not positioned properly and throw exception after deleting and then undoing.
+                    // Added below condition to skip the child deletion inside swimlane when we add phase at runtime and delete swimlane.
+                    if(!allowChildInSwimlane){
+                        // EJ2-57179 - Below lines added to remove the childs to swimlane after Redo.
+                        const swimlaneNode: NodeModel = this.getObject((parentNode as Node).parentId);
+                        if (swimlaneNode && (swimlaneNode as Node).shape instanceof SwimLane) {
+                            for (let h: number = 0; h < ((swimlaneNode as Node).shape as SwimLane).lanes.length; h++) {
+                                const laneId = (node as Node).parentId.split((swimlaneNode as Node).id);
+                                if (((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].id === laneId[1].slice(0, -1)) {
+                                    for (let y: number = 0; y < ((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children.length; y++) {
+                                        if ((node as Node).id === ((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children[parseInt(y.toString(), 10)].id) {
+                                            ((swimlaneNode as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children.splice(y, 1);
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -11667,7 +11671,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.mode !== 'SVG') { this.refreshDiagramLayer(); } else {
                     this.removeElements(this.currentSymbol);
                     //EJ2-833020-To remove the child element from the group node while dragging the group node from palette
-                      if((this.currentSymbol as Node).children && (this.currentSymbol as Node).children.length > 0) {
+                    //EJ2-842739- Error When Dragging Swimlane from Palette to Diagram and Exiting Without Dropping
+                    if((this.currentSymbol as Node).shape.type != "SwimLane" && (this.currentSymbol as Node).children && (this.currentSymbol as Node).children.length > 0) {
                         for(let i:number = 0; i < (this.currentSymbol as Node).children.length; i++) {
                             let child :NodeModel= this.nameTable[(this.currentSymbol as Node).children[parseInt(i.toString(), 10)]];
                             this.removeElements(child);

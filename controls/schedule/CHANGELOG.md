@@ -2,9 +2,19 @@
 
 ## [Unreleased]
 
+## 22.2.11 (2023-08-29)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I488001` - An issue where the description field of an ICS file was not being parsed correctly upon import into the Schedule has been fixed.
+
 ## 22.2.5 (2023-07-27)
 
 ### Schedule
+
+#### Bug fixes
 
 - `#I480473` - An issue with "Role not inside the required context" accessibility issue in the Schedule component's recurrence editor has been fixed.
 - `#I474091` - The issue of duplicate events being created after changing the recurrence of certain events has been fixed.
@@ -13,6 +23,8 @@
 ## 22.1.38 (2023-07-11)
 
 ### Schedule
+
+#### Bug fixes
 
 - `#F182714` - An issue with Escape key will prevent the cell selection when `allowInline` property enabled has been fixed.
 

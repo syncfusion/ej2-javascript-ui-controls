@@ -82,7 +82,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     /** @hidden */
     public requestType: string;
     private editedRowIndex: number;
-    private requestTypes: string[] = ['beginEdit', 'cancel', 'delete', 'add', 'save'];
+    private requestTypes: string[] = ['beginEdit', 'cancel', 'delete', 'add', 'save', 'sorting'];
     private isNormaledit: boolean = this.parent.editSettings.mode === 'Normal';
     /** @hidden */
     public virtualData: Object = {};

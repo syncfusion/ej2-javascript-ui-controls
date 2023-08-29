@@ -572,7 +572,7 @@ export class WorkbookNumberFormat {
     private processText(format: string): string {
         let custFormat: string = format;
         if (custFormat.indexOf('"') > -1) {
-            custFormat = custFormat.split('"').join('');
+            custFormat = custFormat.split('"').join("'");
         } else if (custFormat.indexOf('\\') > -1) {
             custFormat = custFormat.split('\\').join('');
         }

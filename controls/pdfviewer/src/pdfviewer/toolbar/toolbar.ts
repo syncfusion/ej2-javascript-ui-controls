@@ -818,8 +818,10 @@ export class Toolbar {
             }
             if(this.toolbar){
                 this.toolbar.destroy();
-            } 
-            this.toolbarElement.parentElement.removeChild(this.toolbarElement);
+            }
+            if(this.toolbarElement){
+                this.toolbarElement.parentElement.removeChild(this.toolbarElement);
+            }
         }
     }
 

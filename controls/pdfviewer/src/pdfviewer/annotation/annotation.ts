@@ -864,7 +864,7 @@ export class Annotation {
             if (this.pdfViewerBase.importedAnnotation && this.pdfViewerBase.importedAnnotation[pageNumber]) {
                 // eslint-disable-next-line
                 let currentPageAnnotations: any = this.pdfViewerBase.importedAnnotation[pageNumber];
-                if (currentPageAnnotations[annotationType]) {
+                if (currentPageAnnotations[annotationType] && !isNullOrUndefined(this.pdfViewerBase.importedAnnotation[pageNumber].annotationOrder)) {
                     this.pdfViewerBase.importedAnnotation[pageNumber].annotationOrder = this.pdfViewerBase.importedAnnotation[pageNumber].annotationOrder.filter(
                         (currentAnnotation: any) => {
                             return !(annotation.annotName === currentAnnotation.AnnotName || annotation.annotName === currentAnnotation.annotName);

@@ -1500,7 +1500,7 @@ export class BatchEdit {
             const gObj: IGrid = this.parent;
             const btmIdx: number = this.getBottomIndex();
             const rowcell: Element = parentsUntil(e.target as Element, literals.rowCell);
-            if (this.addBatchRow || rowcell) {
+            if (this.addBatchRow || (rowcell && !this.parent.isReact)) {
                 const cell: Element = rowcell ? rowcell.querySelector('.e-field') : undefined;
                 if (this.addBatchRow || cell) {
                     const visibleColumns: Column[] = this.parent.getVisibleColumns();

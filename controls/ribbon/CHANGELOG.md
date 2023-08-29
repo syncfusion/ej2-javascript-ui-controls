@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.11 (2023-08-29)
+
+### Ribbon
+
+#### Bug Fixes
+
+- `I491455` - Now, the script issue raised when enable/disable the Ribbon items is resolved.
+
 ## 22.1.39 (2023-07-18)
 
 ### Ribbon

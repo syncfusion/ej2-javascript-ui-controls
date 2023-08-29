@@ -231,6 +231,10 @@
       padding-right: $grid-bigger-xlfl-dropdown-padding-right;
     }
 
+    &.e-rtl .e-xlfl-optr {
+      padding-right: 0;
+    }
+
     .e-xlfl-dlgfields {
       font-size: $grid-bigger-xlfl-dlgfields-font-size;
     }

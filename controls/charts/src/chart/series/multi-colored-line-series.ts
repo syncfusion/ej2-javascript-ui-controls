@@ -25,6 +25,7 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
         const options: PathOption[] = [];
         let direction: string = '';
         let lastPoint: Points;
+        let segmentPoint: Points = null;
         const segments : ChartSegmentModel[] = this.sortSegments(series, series.segments);
         for (const point of visiblePoints) {
             point.regions = [];
@@ -44,9 +45,15 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
                         startPoint = 'L';
                     }
                 } else {
-                    this.setPointColor(point, null, series, series.segmentAxis === 'X', segments);
+                    if (this.setPointColor(point, segmentPoint, series, series.segmentAxis === 'X', segments) && direction !== '') {
+                        options.push(new PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + segmentPoint.index,
+                            'none', series.width, series.setPointColor(segmentPoint, series.interior), series.opacity, series.dashArray, direction));
+                        startPoint = 'M';
+                        direction = '';
+                    }
                 }
-                previous = point;
+                previous = point; 
+                segmentPoint = point;
                 this.storePointLocation(point, series, isInverted, getPoint);
             } else {
                 previous = (series.emptyPointSettings.mode === 'Drop') ? previous : null;

@@ -2634,13 +2634,14 @@ export class Selection implements IAction {
     }
 
     private dataSuccess(res: Object[]): void {
-        for (let i: number = 0; i < res.length; i++) {
-            const pkValue: string = this.getPkValue(this.primaryKey, res[parseInt(i.toString(), 10)]);
-            if (isNullOrUndefined(this.selectedRowState[`${pkValue}`]) && res[parseInt(i.toString(), 10)][this.chkField]) {
-                this.selectedRowState[`${pkValue}`] = res[parseInt(i.toString(), 10)][this.chkField];
+        const data: Object[] = (this.parent.getDataModule().isRemote()) ? res['result'] : res;
+        for (let i: number = 0; i < data.length; i++) {
+            const pkValue: string = this.getPkValue(this.primaryKey, data[parseInt(i.toString(), 10)]);
+            if (isNullOrUndefined(this.selectedRowState[`${pkValue}`]) && data[parseInt(i.toString(), 10)][this.chkField]) {
+                this.selectedRowState[`${pkValue}`] = data[parseInt(i.toString(), 10)][this.chkField];
             }
         }
-        this.persistSelectedData = res;
+        this.persistSelectedData = data;
     }
 
     private setRowSelection(state: boolean): void {
@@ -2926,7 +2927,8 @@ export class Selection implements IAction {
         let state: boolean = stateStr === 'Check';
         this.isHeaderCheckboxClicked = true;
         if ((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
-         && (<{result: object[]}>this.parent.dataSource).result)) && (stateStr === 'Uncheck' || this.isCheckboxReset)) {
+            && (<{result: object[]}>this.parent.dataSource).result)) && ((stateStr === 'Uncheck' || this.isCheckboxReset) ||
+                (this.parent.getDataModule().isRemote() && stateStr === 'Intermediate' && this.parent.isPersistSelection))) {
             this.rmtHdrChkbxClicked = true;
         }
         else {
@@ -2937,10 +2939,19 @@ export class Selection implements IAction {
         }
         this.isCheckboxReset = false;
         if (stateStr === 'Intermediate') {
-            state = this.getCurrentBatchRecordChanges().some((data: Object) =>
-                this.getPkValue(this.primaryKey, data) in this.selectedRowState);
-            if (this.parent.enableVirtualization && this.parent.isPersistSelection) {
-                state = true;
+            if(!this.chkField && !this.parent.isPersistSelection) {
+                state = this.getCurrentBatchRecordChanges().some((data: Object) =>
+                    this.getPkValue(this.primaryKey, data) in this.selectedRowState);
+            }
+            if (this.parent.getDataModule().isRemote() && this.parent.isPersistSelection) {
+                for (let i: number = 0; i < this.getCurrentBatchRecordChanges().length; i++) {
+                    if ((Object.keys(this.selectedRowState) as any).includes((this.getPkValue(this.primaryKey, this.getCurrentBatchRecordChanges()[`${i}`])).toString())) {
+                        state = true;
+                    } else {
+                        state = false;
+                        break;
+                    }
+                }
             }
         }
         if (this.parent.isPersistSelection && this.parent.allowPaging) {
@@ -3145,7 +3156,8 @@ export class Selection implements IAction {
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
                         this.getData().length && checkedLen === this.getData().length) || ((this.parent.getDataModule().isRemote()
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
-                        !this.isPartialSelection && (checkedLen === this.parent.totalDataRecordsCount)) ||
+                        !this.isPartialSelection && ((checkedLen === this.parent.totalDataRecordsCount) || (this.isSelectAllRowCount(checkedLen) &&
+                        !this.parent.isPersistSelection))) ||
                         (this.isPartialSelection && (this.isHdrSelectAllClicked || this.isSelectAllRowCount(checkedLen)))))))) {
                     addClass([spanEle], ['e-check']);
                     setChecked(input, true);

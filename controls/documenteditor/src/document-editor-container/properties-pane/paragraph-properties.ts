@@ -503,68 +503,28 @@ export class Paragraph {
     private updateOptions(args: any): void {
         args.popup.element.getElementsByClassName('e-de-ctnr-dropdown-ftr')[0].addEventListener('click', this.createStyle.bind(this));
     }
-    // public updateStyleNames(): void {
-    //     this.styleName = !isNullOrUndefined((this.style as any).itemData) ? (this.style as any).itemData.StyleName : undefined;
-    //     let paraStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Paragraph");
-    //     let linkedStyles: Object[] = this.documentEditor.getStyles('Paragraph').filter(obj => (obj as any).type == "Linked");
-    //     let charStyles: Object[] = this.documentEditor.getStyles('Character').filter(obj => (obj as any).type == "Character");
-    //     for (const linkedStyle of linkedStyles) {
-    //         for (const charStyle of charStyles) {
-    //             if (linkedStyle["name"] + " Char" === charStyle["name"]) {
-    //                 charStyles.splice(charStyles.indexOf(charStyle), 1);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     let styleData: Object[] = paraStyles.concat(linkedStyles, charStyles);
-    //     this.style.dataSource = this.constructStyleDropItems(styleData);
-    //     // this.style.dataBind();
-    //     this.onSelectionChange();
-    // }
+    /* eslint-disable  */
     public updateStyleNames(): void {
         this.styleName = !isNullOrUndefined((this.style as any).itemData) ? (this.style as any).itemData.StyleName : undefined;
-        const styles: any = this.documentEditor.documentHelper.styles.collection;
-        let paraStyles: Object[] = [];
-        let linkedStyles: Object[] = [];
-        let charStyles: Object[] = [];
-        for (const style of styles) {
-          const returnStyle: any = {};
-          const returnStyleObject: any = {};
-          if (style.type == "Paragraph") {
-            returnStyleObject.paragraphFormat = {};
-            HelperMethods.writeParagraphFormat(
-              returnStyleObject.paragraphFormat,
-              true,
-              (style as any).paragraphFormat
-            );
-          }
-          returnStyleObject.characterFormat = {};
-          HelperMethods.writeCharacterFormat(
-            returnStyleObject.characterFormat,
-            true,
-            (style as any).characterFormat
-          );
-          returnStyle.name = style.name;
-          returnStyle.style = JSON.stringify(returnStyleObject);
-          if (!isNullOrUndefined(style.type)) {
-            returnStyle.type = style.type;
-            if (
-              returnStyle.type == "Paragraph" &&
-              !isNullOrUndefined(style.link)
-            ) {
-              returnStyle.type = "Linked";
-            }
-          }
-          if (style.type == "Paragraph") {
-            paraStyles.push(returnStyle);
-          } else if (style.type == "Character") {
-            linkedStyles.push(returnStyle);
-          } else if(style.type == "Linked"){
-            charStyles.push(returnStyle);
-          }
+        const stylesMap: any = this.documentEditor.documentHelper.stylesMap;
+        let paraStyles: any[] = stylesMap.get("Paragraph");
+        let linkedStyles;
+        if(stylesMap.get("Linked")) {
+            linkedStyles = stylesMap.get("Linked");
+        } else {
+            linkedStyles = [];
         }
-        let styleData: Object[] = paraStyles.concat(linkedStyles, charStyles);
-        this.style.dataSource = this.constructStyleDropItems(styleData);
+        let charStyles: any[] = stylesMap.get("Character");
+        for (const linkedStyle of linkedStyles) {
+            for (let i = 0; i < charStyles.length; i++) {
+                const charStyle = charStyles[i];
+                if (linkedStyle["StyleName"] + " Char" === charStyle["StyleName"]) {
+                    charStyles.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        this.style.dataSource = paraStyles.concat(linkedStyles, charStyles);
         this.onSelectionChange();
     }
     private createStyle(): void {
@@ -958,7 +918,7 @@ export class Paragraph {
             if (style) {
                 let localeValue: string = this.localObj.getConstant(style);
                 this.style.value = (isNullOrUndefined(localeValue) || localeValue == '') ? style : localeValue;
-                this.style.dataBind();
+                // this.style.dataBind();
             } else {
                 this.style.value = null;
             }

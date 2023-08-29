@@ -1070,7 +1070,7 @@ export class TextPosition {
                     if (!isNullOrUndefined(span.nextNode)) {
                         nextNodeText = (span.nextNode as TextElementBox).text;
                     }
-                    if (wordEndIndex < txt.length || (spaceCharacter.indexOf(txt[txt.length - 1]) !== -1 && !isNullOrUndefined(nextNodeText) && spaceCharacter.indexOf(nextNodeText[0]) === -1)) {
+                    if (wordEndIndex < txt.length || (!isNullOrUndefined(nextNodeText) && span.line == span.nextNode.line && spaceCharacter.indexOf(txt[txt.length - 1]) !== -1 &&  spaceCharacter.indexOf(nextNodeText[0]) === -1)) {
 
                         endPosition.setPositionParagraph(span.line, span.line.getOffset(span, wordEndIndex + indexInInline));
                     } else if (!isNullOrUndefined(span.nextNode)) {
@@ -1766,7 +1766,7 @@ export class TextPosition {
                 incrementValue = 2;
             }
         }
-        if (this.offset + incrementValue === endOffset || this.offset === endOffset + 1) {
+        if ((this.offset + incrementValue === endOffset || this.offset === endOffset + 1) && isNullOrUndefined(this.currentWidget.nextLine)) {
             if (this.offset === endOffset && type !== 0) {
                 this.setPositionParagraph(this.currentWidget, endOffset + 1);
             } else {

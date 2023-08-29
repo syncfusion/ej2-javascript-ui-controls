@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 22.2.10 (2023-08-22)
+## 22.2.11 (2023-08-29)
+
+### Office Chart
+
+#### Bug Fixes
+
+- `#I489638` - Resolved the Doughnut chart renders issue as black.
+
+## 22.1.34 (2023-06-21)
 
 ### Office Chart
 

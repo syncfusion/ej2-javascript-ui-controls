@@ -2276,6 +2276,29 @@ describe('Carousel Testing', () => {
         });
     });
 
+    describe('test case for dynamically changing window size', () => {
+        beforeEach((): void => {
+            const carouselElement: HTMLElement = document.createElement('div');
+            carouselElement.id = 'carousel';
+            document.body.appendChild(carouselElement);
+            jasmine.clock().install();
+        });
+        afterEach(() => {
+            carousel.destroy();
+            carousel.element.remove();
+            carousel = null;
+            jasmine.clock().uninstall();
+        });
+        it('test case for changing width', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({ items: items, animationEffect: 'Slide', autoPlay: false }, carouselElement);
+            expect(carousel.width).toEqual('100%');
+            carousel.width = '500px';
+            (carousel as any).resizeHandler();
+            expect(carousel.width).toEqual('500px');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -38,7 +38,7 @@ export class PieSeries extends PieBase {
         if (!redraw) {
             const element: Element = chart.renderer.drawPath(option);
             element.setAttribute('role', 'img');
-            element.setAttribute('tabindex',  point.index === 0 ? '0' : '');
+            element.setAttribute('tabindex', point.index === 0 ? '0' : '-1');
             element.setAttribute('aria-label', (point.x + ': ' + point.y + '%. ' + series.name));
             seriesGroup.appendChild(element);
             point.degree = degree;
@@ -46,7 +46,7 @@ export class PieSeries extends PieBase {
         } else {
             const element: Element = chart.renderer.drawPath(option);
             element.setAttribute('role', 'img');
-            element.setAttribute('tabindex',  point.index === 0 ? '0' : '');
+            element.setAttribute('tabindex', point.index === 0 ? '0' : '-1');
             element.setAttribute('aria-label', (point.x + ': ' + point.y + '%. ' + series.name));
             seriesGroup.appendChild(element);
             this.refresh(point, degree, start, chart, option);

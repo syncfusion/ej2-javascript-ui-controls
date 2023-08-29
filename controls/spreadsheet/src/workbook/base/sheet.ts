@@ -526,7 +526,7 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
         sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
         sheet.state = sheet.state || 'Visible';
-        sheet.maxHgts = [];
+        sheet.maxHgts = sheet.maxHgts || [];
         sheet.protectSettings = sheet.protectSettings || { selectCells: false, formatCells: false, formatRows: false, formatColumns: false,
             insertLink: false };
         sheet.isProtected = sheet.isProtected || false;

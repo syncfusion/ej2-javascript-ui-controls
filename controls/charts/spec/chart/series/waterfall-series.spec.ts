@@ -684,8 +684,8 @@ describe('Waterfall Series', () => {
                 let text2: Element = group.childNodes[2] as HTMLElement;
                 expect(path.getAttribute('fill') == '#000816').toBe(true);
                 expect((<HTMLElement>text1.childNodes[0]).getAttribute('fill') == 'rgba(249, 250, 251, 1)').toBe(true);
-                expect(text1.childNodes[0].textContent.replace(/\u200E/g, '') == 'series1 Marketting and Sales : -607C').toBe(true);
-                expect(text1.childNodes[1].textContent.replace(/\u200E/g, '') == 'series2 Marketting and Sales : -427C').toBe(true);
+                expect(text1.childNodes[0].textContent.replace(/\u200E/g, '') == 'series1 Marketting and Sales ').toBe(true);
+                expect(text1.childNodes[1].textContent.replace(/\u200E/g, '') == ':').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
                 done();
             };

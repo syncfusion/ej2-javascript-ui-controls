@@ -1520,7 +1520,8 @@ export class BpmnDiagrams {
                     elementWrapper.children[0] : elementWrapper);
 
             if (changedProp.style && changedProp.style.strokeColor) {
-                if ((elementWrapper as Container).children.length > 0) {
+                //EJ2-844052-BPMN nodes styles are not updated properly at runtime
+                if ((elementWrapper as Container) && (elementWrapper as Container).children != undefined && (elementWrapper as Container).children.length >0) {
                     if (((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Activity') ||
                         (isBlazor() && (actualObject.shape as DiagramShape).bpmnShape === 'Activity')) &&
                         (actualObject.shape as BpmnShape).activity.activity === 'SubProcess') {

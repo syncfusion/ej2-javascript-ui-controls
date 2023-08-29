@@ -11,7 +11,17 @@ import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 let datasource: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
 { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' }];
-
+let data: JSON[] = [
+    [{"EmployeeID":1,"FirstName":"Andrew Fuller","Designation":"Team Lead","Country":"England"},
+    {"EmployeeID":2,"FirstName":"Anne Dodsworth","Designation":"Developer","Country":"USA"},
+    {"EmployeeID":3,"FirstName":"Janet Leverling","Designation":"HR","Country":"USA"},
+    {"EmployeeID":4,"FirstName":"Laura Callahan","Designation":"Product Manager","Country":"USA"},
+    {"EmployeeID":5,"FirstName":"Margaret Peacock","Designation":"Developer","Country":"USA"},
+    {"EmployeeID":6,"FirstName":"Michael Suyama","Designation":"Team Lead","Country":"USA"},
+    {"EmployeeID":7,"FirstName":"Nancy Davolio","Designation":"Product Manager","Country":"USA"},
+    {"EmployeeID":8,"FirstName":"Robert King","Designation":"Developer ","Country":"England"},
+    {"EmployeeID":9,"FirstName":"Steven Buchanan","Designation":"CEO","Country":"England"}]
+  ] as Object as JSON[];
 let dataSource44: string[] = ['java', 'php', 'html', 'oracle', '.net', 'c++'];
 let datasource2: { [key: string]: Object }[] = [{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
 { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'Python' }, { id: 'list5', text: 'Oracle' }];
@@ -8749,7 +8759,7 @@ describe('MultiSelect', () => {
         let element: HTMLInputElement;
         let multiObj: any;
         let originalTimeout: number;
-        let remoteData : DataManager = new DataManager({ url: 'https://ej2services.syncfusion.com/js/development/api/Employees' });
+        let remoteData : DataManager = new DataManager(data as JSON[]);
         function customSearch(text: string) : void {
             mouseEventArgs.type = 'click';
             mouseEventArgs.target = element;
