@@ -11428,7 +11428,7 @@ export class Editor {
      */
     public layoutItemBlock(block: BlockWidget, shiftNextWidget: boolean): void {
         let section: Widget = undefined;
-        if (block.containerWidget instanceof BlockContainer) {
+        if (block.containerWidget instanceof BlockContainer || block.containerWidget instanceof TextFrame) {
             // let index: number = section.childWidgets.indexOf(block);
             if (!isNullOrUndefined(this.documentHelper.owner)
                 && this.documentHelper.owner.isLayoutEnabled) {
@@ -13880,6 +13880,7 @@ export class Editor {
             if (listLevelPattern === 'Bullet') {
                 listLevel.numberFormat = format;
                 listLevel.characterFormat.fontFamily = fontFamily;
+                listLevel.listLevelPattern = listLevelPattern;
             } else {
                 listLevel.listLevelPattern = listLevelPattern;
                 listLevel.characterFormat.fontFamily = fontFamily;

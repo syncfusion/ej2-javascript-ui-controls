@@ -50,6 +50,12 @@ export class MapsTooltip {
             clearTimeout(this.clearTimeout);
             this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
         }
+        if (target.id.indexOf(this.maps.element.id) === -1) {
+            const ancestor: Element = target.closest('.' + this.maps.element.id + '_marker_template_element');            
+            if (!isNullOrUndefined(ancestor) && ancestor.id.indexOf('_MarkerIndex_') > -1) {
+                target = ancestor;
+            } 
+        }
         let option: TooltipSettingsModel;
         let currentData: string = '';
         const targetId: string = target.id;

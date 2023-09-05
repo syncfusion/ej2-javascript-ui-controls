@@ -6046,4 +6046,36 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
     });
+    describe('EJ2-844967 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rows: [
+                { cells: [{ formula: '=true+true' }, { formula: '=true-true'}, { formula: '=true*true'},  { formula: '=true/true'}] },
+                { cells: [{ formula:'=true+false' }, { formula: '=true-false'}, { formula: '=true*false'},  { formula: '=true/false'}] },
+                { cells: [{ formula:'=false+false' }, { formula: '=false-false'}, { formula: '=false*false'},  { formula: '=false/false'}] },
+                { cells: [{ formula:'=false+true' }, { formula: '=false-true'}, { formula: '=false*true'},  { formula: '=false/true'}] }
+            ] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Arithmetic Operations with boolean values without cell reference throws #VALUE! error', (done: Function) => {
+            expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toEqual('2');
+            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toEqual('1');
+            expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toEqual('0');
+            expect(helper.getInstance().sheets[0].rows[3].cells[0].value).toEqual('1');
+            expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toEqual('0');
+            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toEqual('1');
+            expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toEqual('0');
+            expect(helper.getInstance().sheets[0].rows[3].cells[1].value).toEqual('-1');
+            expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toEqual('1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[2].value).toEqual('0');
+            expect(helper.getInstance().sheets[0].rows[2].cells[2].value).toEqual('0');
+            expect(helper.getInstance().sheets[0].rows[3].cells[2].value).toEqual('0');
+            expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toEqual('1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toEqual('#DIV/0!');
+            expect(helper.getInstance().sheets[0].rows[2].cells[3].value).toEqual('#DIV/0!');
+            expect(helper.getInstance().sheets[0].rows[3].cells[3].value).toEqual('0');
+            done();
+        });
+    });
 });

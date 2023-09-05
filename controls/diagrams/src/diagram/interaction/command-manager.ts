@@ -5479,7 +5479,7 @@ Remove terinal segment in initial
             this.state.backup.angle = obj.rotateAngle;
         }
         obj = renderContainerHelper(this.diagram, obj) || obj;
-        return this.diagram.rotate(obj, angle);
+        return this.diagram.rotate(obj, angle, undefined, true);
     }
     /** @private */
     public hasSelection(): boolean {

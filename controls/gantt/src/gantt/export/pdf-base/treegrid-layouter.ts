@@ -299,7 +299,10 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                         row.cells.getCell(i + j).isCellMergeContinue = true;
                     }
                 }
-                const size: SizeF = new SizeF(column.width, height);
+                let size: SizeF = new SizeF(column.width, height);
+                if (cell.columnSpan > 1) {
+                    size = new SizeF(cell.width, height);
+                }
                 if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
                     cell.style.format = column.format;
                 }

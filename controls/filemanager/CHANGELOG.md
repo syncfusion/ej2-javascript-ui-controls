@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 22.2.11 (2023-08-29)
+## 22.2.12 (2023-09-05)
+
+### File Manager
+
+#### Bug fixes
+
+- `#I492168` - The Scrollbar repositioning issue when opening context menu in the File Manager component has been resolved.
+
+## 22.2.10 (2023-08-22)
 
 ### File Manager
 

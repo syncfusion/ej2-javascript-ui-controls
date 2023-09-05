@@ -95,6 +95,7 @@ export class DatePicker extends Calendar implements IInput {
     protected touchStart: boolean;
     protected iconRight: boolean;
     protected isBlur: boolean = false;
+    private isKeyAction: boolean = false;
     /**
      * Specifies the width of the DatePicker component.
      *
@@ -773,6 +774,7 @@ export class DatePicker extends Calendar implements IInput {
         EventHandler.add(this.inputElement, 'mouseup', this.mouseUpHandler, this);
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        EventHandler.add(this.inputElement, 'keyup', this.keyupHandler, this);
         if (this.enableMask){
             EventHandler.add(this.inputElement, 'keydown', this.keydownHandler, this);
         }
@@ -832,6 +834,7 @@ export class DatePicker extends Calendar implements IInput {
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        EventHandler.remove(this.inputElement, 'keyup', this.keyupHandler);
         if (this.enableMask){
             EventHandler.remove(this.inputElement, 'keydown', this.keydownHandler);
         }
@@ -1523,13 +1526,17 @@ export class DatePicker extends Calendar implements IInput {
                 this.isInteracted = true;
             }
         }
+        this.isKeyAction = false;
     }
 
     protected navigatedEvent(): void {
         this.trigger('navigated', this.navigatedArgs);
     }
+    protected keyupHandler(e: KeyboardEventArgs): void {
+        this.isKeyAction = (this.inputElement.value !== this.previousElementValue) ? true : false;
+    }
     protected changeEvent(event?: MouseEvent | KeyboardEvent | Event): void {
-        if (!this.isIconClicked && !this.isBlur) {
+        if (!this.isIconClicked && !(this.isBlur || this.isKeyAction)) {
             this.selectCalendar(event);
         }
         if (((this.previousDate && this.previousDate.valueOf()) !== (this.value && this.value.valueOf()))) {
@@ -1549,6 +1556,7 @@ export class DatePicker extends Calendar implements IInput {
         else if (event) {
             this.hide(event);
         }
+        this.isKeyAction = false;
     }
 
     public requiredModules(): ModuleDeclaration[] {

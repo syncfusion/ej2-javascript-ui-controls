@@ -1,5 +1,5 @@
 import { Dialog } from '@syncfusion/ej2-popups';
-import { classList, createElement, isNullOrUndefined, L10n, Property } from '@syncfusion/ej2-base';
+import { classList, createElement, initializeCSPTemplate, isNullOrUndefined, L10n, Property } from '@syncfusion/ej2-base';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { WTableFormat, WBorder, WBorders, WShading, WCellFormat, WParagraphFormat } from '../format/index';
 import { LineStyle } from '../../base/types';
@@ -496,12 +496,15 @@ export class BordersAndShadingDialog {
             { "Svg": '<div class="e-de-svg-border-color"><svg style="width:98%;" height="10" viewBox="0 0 98 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 1.5H98" stroke-linejoin="round"/><path d="M0 8.5H98" stroke="#A0A0A0" stroke-linejoin="round"/></svg></div>', "LineStyle": "Inset" }
         ]
         widthNumeric.setAttribute('aria-labelledby', localeValue.getConstant('width'));
+        let itemTemplate: string | Function = initializeCSPTemplate(
+            function (data: any): string { return `<div>${data.Svg}</div>`; }
+        );
         this.borderStyle = new DropDownList({
             popupHeight: '150px', dataSource: empList,
             floatLabelType: 'Always',
             fields: { text: 'Svg', value: 'LineStyle' },
-            itemTemplate: '<div>${Svg}</div>',
-            valueTemplate: '<div>${Svg}</div>',
+            itemTemplate: itemTemplate,
+            valueTemplate: itemTemplate,
             placeholder: localeValue.getConstant('Style'),
             enableRtl: isRtl
         });

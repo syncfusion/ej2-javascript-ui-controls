@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 22.2.12 (2023-09-05)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I483661` - Fixed the issue where the selected value was not displayed correctly when using a character inside the datasource.
+
+## 22.2.11 (2023-08-29)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I492834` - An issue with the `noRecordsTemplate` property of the React Dropdown Tree component has been resolved.
+
 ## 22.2.10 (2023-08-22)
 
 ### DropDown List

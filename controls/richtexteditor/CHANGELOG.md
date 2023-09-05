@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 22.2.11 (2023-08-29)
+## 22.2.12 (2023-09-05)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I183553` - Now, pressing the enter key after opening any dialog in the Rich Text Editor doesn't submit the form.
+
+## 22.2.10 (2023-08-22)
 
 ### RichTextEditor
 

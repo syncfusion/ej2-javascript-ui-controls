@@ -61,11 +61,11 @@ export class EventBase {
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID]) &&
                 !(this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction)) {
-                processed = processed.concat(this.generateOccurrence(event, null, oldTimezone, true));
+                processed = processed.concat(this.generateOccurrence(event, null, true));
             } else {
                 if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
                     if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
-                        const recurrenceEvent: Record<string, any>[] = this.generateOccurrence(event, null, oldTimezone, true);
+                        const recurrenceEvent: Record<string, any>[] = this.generateOccurrence(event, null, true);
                         for (const occurrence of recurrenceEvent) {
                             const app: Record<string, any>[] = this.parent.eventsProcessed.filter((data: Record<string, Date>) =>
                                 data[fields.startTime].getTime() - (<Date>occurrence[fields.startTime]).getTime() === 0 &&
@@ -858,7 +858,7 @@ export class EventBase {
         this.parent.activeEventData = { event: eventObject, element: target } as EventClickArgs;
     }
 
-    public generateOccurrence(event: Record<string, any>, viewDate?: Date, oldTimezone?: string, isMaxCount?: boolean): Record<string, any>[] {
+    public generateOccurrence(event: Record<string, any>, viewDate?: Date, isMaxCount?: boolean): Record<string, any>[] {
         const startDate: Date = event[this.parent.eventFields.startTime] as Date;
         const endDate: Date = event[this.parent.eventFields.endTime] as Date;
         const eventRule: string = event[this.parent.eventFields.recurrenceRule] as string;
@@ -874,7 +874,7 @@ export class EventBase {
         const firstDay: number = this.parent.activeViewOptions.firstDayOfWeek;
         const calendarMode: CalendarType = this.parent.calendarMode;
         const dates: number[] =
-            generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);
+            generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, newTimezone);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };

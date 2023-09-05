@@ -178,7 +178,7 @@ export class ContextMenu {
                 taskfields = this.parent.taskFields;
                 if (!isNullOrUndefined(taskfields.duration)) {
                     const ganttProp: ITaskData = this.rowData.ganttProperties;
-                    data[taskfields.duration] = '1 ' + ganttProp.durationUnit;
+                    data[taskfields.duration] = data[taskfields.duration] <= 0 ? 1 : data[taskfields.duration];
                 } else {
                     data[taskfields.startDate] = new Date(this.rowData.taskData[taskfields.startDate]);
                     const endDate: Date = new Date(this.rowData.taskData[taskfields.startDate]);
@@ -189,6 +189,9 @@ export class ContextMenu {
                     if (data[taskfields.milestone] === true) {
                         data[taskfields.milestone] = false;
                     }
+                }
+                if (data[taskfields.startDate]) {
+                    this.parent.setRecordValue(taskfields.startDate, this.rowData.ganttProperties.startDate, data, true);
                 }
                 this.parent.updateRecordByID(data);
             }

@@ -10489,7 +10489,7 @@ export class Selection {
                         bookmrkEnd = bookmrkElmnt;
                     }
                     let endoffset: number = bookmrkEnd.line.getOffset(bookmrkEnd, 1);
-                    if (bookmrkEnd instanceof BookmarkElementBox) {
+                    if (bookmrkEnd instanceof BookmarkElementBox && !excludeBookmarkStartEnd) {
                         if (!isNullOrUndefined(bookmrkEnd.properties)) {
                             if (bookmrkEnd.properties['isAfterParagraphMark']) {
                                 endoffset = bookmrkEnd.line.getOffset(bookmrkEnd, 2)

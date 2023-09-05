@@ -336,6 +336,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
 
     describe('CR Issues ->', () => {
         describe('I328870, fb24295, EJ2-50411, EJ2-52987, EJ2-50389, EJ2-50564,  ->', () => {
+            let spreadsheet: Spreadsheet;
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { }], activeSheetIndex: 1 }, done);
             });
@@ -343,18 +344,16 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                 helper.invoke('destroy');
             });
             it('Cannot hide sheet by using HIDE context menu option in Spreadsheet', (done: Function) => {
-                expect(helper.getInstance().activeSheetIndex).toBe(1);
-                expect(helper.getInstance().sheets.length).toBe(2);
-                var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                expect(spreadsheet.sheets.length).toBe(2);
+                var td = helper.getElement('.e-sheet-tab  .e-text-wrap');
                 var coords = td.getBoundingClientRect();
-                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
-                setTimeout(function () {
-                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                    helper.click('#' + helper.id + '_contextmenu li:nth-child(5)');
-                    setTimeout(() => {
-                        expect(helper.getInstance().activeSheetIndex).toBe(0);
-                        done();
-                    });
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(null, null, [5], null, null, null, true, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-item.e-active'));
+                setTimeout(() => {
+                    expect(spreadsheet.activeSheetIndex).toBe(0);
+                    done();
                 });
             });
             it('fb24295 - Count not getting displayed properly', (done: Function) => {
@@ -379,23 +378,41 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                 editorElem.click();
                 editorElem.value = '<TestSheet>';
                 helper.triggerKeyNativeEvent(13, false, false, editorElem);
-                expect(helper.getInstance().sheets[0].name.toString()).toBe('<TestSheet>');
+                expect(spreadsheet.sheets[0].name.toString()).toBe('<TestSheet>');
                 done();
             });
             it('EJ2-50389, EJ2-50564 - Cannot Rename the sheet by using RENAME context menu option in Spreadsheet', (done: Function) => {
                 helper.click('.e-add-sheet-tab');
-                expect(helper.getInstance().activeSheetIndex).toBe(1);
-                expect(helper.getInstance().sheets.length).toBe(3);
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                expect(spreadsheet.sheets.length).toBe(3);
                 setTimeout(() => {
                     helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
                     let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
                     editorElem.click();
                     editorElem.value = 'New Sheet';
                     helper.triggerKeyNativeEvent(13, false, false, editorElem);
-                    expect(helper.getInstance().sheets[1].name).toBe('New Sheet');
+                    expect(spreadsheet.sheets[1].name).toBe('New Sheet');
                     done();
                 });
-            }); 
+            });
+            it('SF-496196 - Sheet tabs hide/show by openFromJson action', (done: Function) => {
+                expect(helper.getElement(`#${helper.id}_sheet_tab_panel`).classList.contains('e-sheet-tab-panel')).toBeTruthy();
+                spreadsheet.openFromJson({ file: { 'Workbook': {'showSheetTabs': false, 'sheets': [{}] } } });
+                expect(spreadsheet.showSheetTabs).toBeFalsy();
+                expect(helper.getElement(`#${helper.id}_sheet_tab_panel`)).toBeNull();
+                spreadsheet.openFromJson({ file: { 'Workbook': {'showSheetTabs': null, 'sheets': [{}] } } });
+                expect(spreadsheet.showSheetTabs).toBeFalsy();
+                expect(helper.getElement(`#${helper.id}_sheet_tab_panel`)).toBeNull();
+                spreadsheet.openFromJson({ file: { 'Workbook': {'showSheetTabs': true, 'sheets': [{}] } } });
+                expect(spreadsheet.showSheetTabs).toBeTruthy();
+                expect(helper.getElement(`#${helper.id}_sheet_tab_panel`).classList.contains('e-sheet-tab-panel')).toBeTruthy();
+                spreadsheet.openFromJson({ file: { 'Workbook': { 'sheets': [{}] } } });
+                setTimeout(() => {
+                    expect(spreadsheet.showSheetTabs).toBeTruthy();
+                    expect(helper.getElement(`#${helper.id}_sheet_tab_panel`).classList.contains('e-sheet-tab-panel')).toBeTruthy();
+                    done();
+                });
+            });
         });
         describe('CR-Issues ->', () => {
             describe('EJ2-60868 ->', () => {

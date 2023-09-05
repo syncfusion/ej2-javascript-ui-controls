@@ -213,7 +213,7 @@ export class Renderer {
     private renderHeaderSeparator(page: Page, left: number, top: number, widget: HeaderFooterWidget): void {
         //Header Widget
         const topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
-        let y: number = this.getScaledValue(Math.max((widget.y + widget.height), topMargin));
+        let y: number = this.getScaledValue(Math.max((widget.y + widget.height), Math.abs(topMargin)));
         const pageWidth: number = this.getScaledValue(page.boundingRectangle.width);
         const ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
         ctx.save();
@@ -253,7 +253,7 @@ export class Renderer {
 
             let footerHeight: number = this.getScaledValue(page.boundingRectangle.height) -
                 /* eslint-disable-next-line max-len */
-                this.getScaledValue(Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin)));
+                this.getScaledValue(Math.max(page.footerWidgetIn.height + footerDistance, Math.abs(HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin))));
             //Maximum footer height limit
             footerHeight = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
             this.renderDashLine(ctx, left, top + footerHeight, pageWidth, '#000000', false);

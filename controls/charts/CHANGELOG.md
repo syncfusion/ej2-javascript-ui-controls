@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.12 (2023-09-05)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F184251` - Fixed an issue in axis label position when label position set to inside for bar series.
+
 ## 22.2.11 (2023-08-29)
 
 ### Accumulation chart

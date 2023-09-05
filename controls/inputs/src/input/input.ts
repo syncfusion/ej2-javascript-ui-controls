@@ -117,10 +117,22 @@ export namespace Input {
     }
     function checkInputValue(floatLabelType: string, inputElement: HTMLInputElement): void {
         const inputValue: string = inputElement.value;
-        if (inputValue !== '' && !isNullOrUndefined(inputValue) && inputElement.parentElement) {
-            inputElement.parentElement.classList.add('e-valid-input');
-        } else if (floatLabelType !== 'Always' && inputElement.parentElement) {
-            inputElement.parentElement.classList.remove('e-valid-input');
+        const inputParent = inputElement.parentElement;
+        const grandParent = inputParent.parentElement;
+        if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
+            if (inputParent && inputParent.classList.contains('e-input-group')) {
+                inputParent.classList.add('e-valid-input');
+            }
+            else if (grandParent && grandParent.classList.contains('e-input-group')) {
+                grandParent.classList.add('e-valid-input');
+            }
+        } else if (floatLabelType !== 'Always') {
+            if (inputParent && inputParent.classList.contains('e-input-group')) {
+                inputParent.classList.remove('e-valid-input');
+            }
+            else if (grandParent && grandParent.classList.contains('e-input-group')) {
+                grandParent.classList.remove('e-valid-input');
+            }
         }
     }
 
@@ -844,7 +856,11 @@ export namespace Input {
             const result: NodeListOf<Element> = container.querySelectorAll(inputElement.tagName + ' ~ *');
             innerWrapper.appendChild(inputElement);
             for (let i: number = 0; i < result.length; i++) {
-                innerWrapper.appendChild(result[parseInt(i.toString())]);
+                const element = result[parseInt(i.toString())];
+                const parentElement = innerWrapper.parentElement;
+                if (!(element.classList.contains('e-float-line')) || (!(parentElement && parentElement.classList.contains('e-filled')) && parentElement)) {
+                    innerWrapper.appendChild(element);
+                }
             }
         }
         innerWrapper.parentNode.insertBefore(button, innerWrapper);

@@ -368,46 +368,50 @@ DTEND;TZID=America/New_York:20230801T140000
 SUMMARY:Andrew Knackstedt's Zoom Meeting
 UID:20230801T163218Z-000000@fe80:0:0:0:874:7bff:fe39:a3cdens5
 TZID:America/New_York
-DESCRIPTION:Hi there, \n\nAndrew Knackstedt is inviting you to a schedul
- ed Zoom meeting. \n\nJoin from PC, Mac, Linux, iOS or Android: https://dynatrace.zoom.us/j/000000?pwd=000000M0pPUjB3dz09\n
-     Password: 000000\n\nOr iPhone one-tap :\n    US: +13017158592,987
- 34717848#  or +13052241968,000000# \nOr Telephone：\n    Dial(for
-  higher quality, dial a number based on your current location)：\n      
+DESCRIPTION:Hi there, \\n\\nAndrew Knackstedt is inviting you to a schedul
+ ed Zoom meeting. \\n\\nJoin from PC\\, Mac\\, Linux\\, iOS or Android: https:
+ //dynatrace.zoom.us/j/000000?pwd=000000M0pPUjB3dz09\n
+     Password: 000000\\n\\nOr iPhone one-tap :\\n    US: +13017158592\\,\\,987
+ 34717848#  or +13052241968\\,\\,000000# \\nOr Telephone：\\n    Dial(for
+  higher quality\\, dial a number based on your current location)：\\n      
    US: +1 301 715 8592  or +1 305 224 1968  or +1 309 205 3325  or +1 312
   626 6799  or +1 646 558 8656  or +1 646 931 3860  or +1 360 209 5623  o
  r +1 386 347 5053  or +1 507 473 4847  or +1 564 217 2000  or +1 669 444
   9171  or +1 669 900 6833  or +1 689 278 1000  or +1 719 359 4580  or +1
   253 205 0468  or +1 253 215 8782  or +1 346 248 7799  or 833 548 0276 (
  Toll Free) or 833 548 0282 (Toll Free) or 877 853 5247 (Toll Free) or 88
- 8 788 0099 (Toll Free)\n        Austria: +43 12 535 502  or +43 670 309 
+ 8 788 0099 (Toll Free)\\n        Austria: +43 12 535 502  or +43 670 309 
  0165  or +43 72 011 5988  or +43 120 609 3072  or +43 12 535 501  or 0 8
  00 102 309 (Toll Free) or 0 800 104 430 (Toll Free) or 0 800 909 577 (To
- ll Free)\n        Poland: +48 22 306 5342  or +48 22 307 3488  or +48 22
+ ll Free)\\n        Poland: +48 22 306 5342  or +48 22 307 3488  or +48 22
   398 7356  or 00 800 012 087 (Toll Free) or 00 800 112 5171 (Toll Free) 
- or 00 800 321 1464 (Toll Free)\n        United Kingdom: +44 203 901 7895
+ or 00 800 321 1464 (Toll Free)\\n        United Kingdom: +44 203 901 7895
    or +44 208 080 6591  or +44 208 080 6592  or +44 330 088 5830  or +44 
  131 460 1196  or +44 203 481 5237  or +44 203 481 5240  or 0 800 031 571
  7 (Toll Free) or 0 800 260 5801 (Toll Free) or 0 800 358 2817 (Toll Free
- ) or 0 800 456 1369 (Toll Free)\n    Meeting ID: 987 3471 7848\n    Inte
- rnational numbers available: https://dynatrace.zoom.us/u/aEgNo7tcH\n\nOr
-  an Polycomm/Cisco/Tanberg (H.323/SIP) room system:\n    H.323: \n      
-   162.255.37.11 (US West)\n        162.255.36.11 (US East)\n        221.
- 122.88.195 (China)\n        115.114.131.7 (India Mumbai)\n        115.11
- 4.115.7 (India Hyderabad)\n        213.19.144.110 (Amsterdam Netherlands
- )\n        213.244.140.110 (Germany)\n        103.122.166.55 (Australia 
- Sydney)\n        103.122.167.55 (Australia Melbourne)\n        209.9.211
- .110 (Hong Kong SAR)\n        64.211.144.160 (Brazil)\n        69.174.57
- .160 (Canada Toronto)\n        65.39.152.160 (Canada Vancouver)\n       
-  207.226.132.110 (Japan Tokyo)\n        149.137.24.110 (Japan Osaka)\n  
-   Meeting ID: 987 3471 7848\n    Password: 000000\n\n    SIP: 98734717848@zoomcrc.com\n    Password: 000000\n\n
+ ) or 0 800 456 1369 (Toll Free)\\n    Meeting ID: 987 3471 7848\\n    Inte
+ rnational numbers available: https://dynatrace.zoom.us/u/aEgNo7tcH\\n\\nOr
+  an Polycomm/Cisco/Tanberg (H.323/SIP) room system:\\n    H.323: \\n      
+   162.255.37.11 (US West)\\n        162.255.36.11 (US East)\n        221.
+ 122.88.195 (China)\\n        115.114.131.7 (India Mumbai)\\n        115.11
+ 4.115.7 (India Hyderabad)\\n        213.19.144.110 (Amsterdam Netherlands
+ )\\n        213.244.140.110 (Germany)\\n        103.122.166.55 (Australia 
+ Sydney)\\n        103.122.167.55 (Australia Melbourne)\\n        209.9.211
+ .110 (Hong Kong SAR)\\n        64.211.144.160 (Brazil)\\n        69.174.57
+ .160 (Canada Toronto)\\n        65.39.152.160 (Canada Vancouver)\\n       
+  207.226.132.110 (Japan Tokyo)\\n        149.137.24.110 (Japan Osaka)\\n  
+   Meeting ID: 987 3471 7848\\n    Password: 000000\\n\\n    SIP: 9873471784
+ 8@zoomcrc.com\\n    Password: 000000\\n\\n
 LOCATION:https://dynatrace.zoom.us/j/000000?pwd=000000
  M0pPUjB3dz09
 BEGIN:VALARM
 TRIGGER:-PT10M
 ACTION:DISPLAY
+DESCRIPTION:Reminder
 END:VALARM
 END:VEVENT
-END:VCALENDAR`;
+END:VCALENDAR
+`;
 
 describe('ICS calendar import', () => {
     beforeAll(() => {
@@ -457,7 +461,7 @@ describe('ICS calendar import', () => {
         });
     });
 
-    describe('Import checking in description', () => {
+    describe('Import checking in description with multi lines', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const events: Record<string, any>[] = [ {
@@ -481,7 +485,7 @@ describe('ICS calendar import', () => {
         it('Import checking with description parsing', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(3);
-                expect(schObj.eventsData[2].Description).toEqual('Hi there, Andrew Knackstedt is inviting you to a schedul ed Zoom meeting. Join from PC, Mac, Linux, iOS or Android: https://dynatrace.zoom.us/j/000000?pwd=000000M0pPUjB3dz09     Password: 000000Or iPhone one-tap :    US: +13017158592,987 34717848#  or +13052241968,000000# Or Telephone：    Dial(for  higher quality, dial a number based on your current location)：         US: +1 301 715 8592  or +1 305 224 1968  or +1 309 205 3325  or +1 312  626 6799  or +1 646 558 8656  or +1 646 931 3860  or +1 360 209 5623  o r +1 386 347 5053  or +1 507 473 4847  or +1 564 217 2000  or +1 669 444  9171  or +1 669 900 6833  or +1 689 278 1000  or +1 719 359 4580  or +1  253 205 0468  or +1 253 215 8782  or +1 346 248 7799  or 833 548 0276 ( Toll Free) or 833 548 0282 (Toll Free) or 877 853 5247 (Toll Free) or 88 8 788 0099 (Toll Free)        Austria: +43 12 535 502  or +43 670 309  0165  or +43 72 011 5988  or +43 120 609 3072  or +43 12 535 501  or 0 8 00 102 309 (Toll Free) or 0 800 104 430 (Toll Free) or 0 800 909 577 (To ll Free)        Poland: +48 22 306 5342  or +48 22 307 3488  or +48 22  398 7356  or 00 800 012 087 (Toll Free) or 00 800 112 5171 (Toll Free)  or 00 800 321 1464 (Toll Free)        United Kingdom: +44 203 901 7895   or +44 208 080 6591  or +44 208 080 6592  or +44 330 088 5830  or +44  131 460 1196  or +44 203 481 5237  or +44 203 481 5240  or 0 800 031 571 7 (Toll Free) or 0 800 260 5801 (Toll Free) or 0 800 358 2817 (Toll Free ) or 0 800 456 1369 (Toll Free)    Meeting ID: 987 3471 7848    Inte rnational numbers available: https://dynatrace.zoom.us/u/aEgNo7tcHOr  an Polycomm/Cisco/Tanberg (H.323/SIP) room system:    H.323:          162.255.37.11 (US West)        162.255.36.11 (US East)        221. 122.88.195 (China)        115.114.131.7 (India Mumbai)        115.11 4.115.7 (India Hyderabad)        213.19.144.110 (Amsterdam Netherlands )        213.244.140.110 (Germany)        103.122.166.55 (Australia  Sydney)        103.122.167.55 (Australia Melbourne)        209.9.211 .110 (Hong Kong SAR)        64.211.144.160 (Brazil)        69.174.57 .160 (Canada Toronto)        65.39.152.160 (Canada Vancouver)         207.226.132.110 (Japan Tokyo)        149.137.24.110 (Japan Osaka)     Meeting ID: 987 3471 7848    Password: 000000    SIP: 98734717848@zoomcrc.com    Password: 000000');
+                expect(schObj.eventsData[2].Description).toEqual('Hi there, \n\nAndrew Knackstedt is inviting you to a scheduled Zoom meeting. \n\nJoin from PC, Mac, Linux, iOS or Android: https://dynatrace.zoom.us/j/000000?pwd=000000M0pPUjB3dz09    Password: 000000\n\nOr iPhone one-tap :\n    US: +13017158592,,98734717848#  or +13052241968,,000000# \nOr Telephone：\n    Dial(for higher quality, dial a number based on your current location)：\n        US: +1 301 715 8592  or +1 305 224 1968  or +1 309 205 3325  or +1 312 626 6799  or +1 646 558 8656  or +1 646 931 3860  or +1 360 209 5623  or +1 386 347 5053  or +1 507 473 4847  or +1 564 217 2000  or +1 669 444 9171  or +1 669 900 6833  or +1 689 278 1000  or +1 719 359 4580  or +1 253 205 0468  or +1 253 215 8782  or +1 346 248 7799  or 833 548 0276 (Toll Free) or 833 548 0282 (Toll Free) or 877 853 5247 (Toll Free) or 888 788 0099 (Toll Free)\n        Austria: +43 12 535 502  or +43 670 309 0165  or +43 72 011 5988  or +43 120 609 3072  or +43 12 535 501  or 0 800 102 309 (Toll Free) or 0 800 104 430 (Toll Free) or 0 800 909 577 (Toll Free)\n        Poland: +48 22 306 5342  or +48 22 307 3488  or +48 22 398 7356  or 00 800 012 087 (Toll Free) or 00 800 112 5171 (Toll Free) or 00 800 321 1464 (Toll Free)\n        United Kingdom: +44 203 901 7895  or +44 208 080 6591  or +44 208 080 6592  or +44 330 088 5830  or +44 131 460 1196  or +44 203 481 5237  or +44 203 481 5240  or 0 800 031 5717 (Toll Free) or 0 800 260 5801 (Toll Free) or 0 800 358 2817 (Toll Free) or 0 800 456 1369 (Toll Free)\n    Meeting ID: 987 3471 7848\n    International numbers available: https://dynatrace.zoom.us/u/aEgNo7tcH\n\nOr an Polycomm/Cisco/Tanberg (H.323/SIP) room system:\n    H.323: \n        162.255.37.11 (US West)\n        162.255.36.11 (US East)       221.122.88.195 (China)\n        115.114.131.7 (India Mumbai)\n        115.114.115.7 (India Hyderabad)\n        213.19.144.110 (Amsterdam Netherlands)\n        213.244.140.110 (Germany)\n        103.122.166.55 (Australia Sydney)\n        103.122.167.55 (Australia Melbourne)\n        209.9.211.110 (Hong Kong SAR)\n        64.211.144.160 (Brazil)\n        69.174.57.160 (Canada Toronto)\n        65.39.152.160 (Canada Vancouver)\n        207.226.132.110 (Japan Tokyo)\n        149.137.24.110 (Japan Osaka)\n    Meeting ID: 987 3471 7848\n    Password: 000000\n\n    SIP: 98734717848@zoomcrc.com\n    Password: 000000\n\n\r\nReminder');
                 done();
             };
             expect(schObj.eventsData.length).toEqual(2);

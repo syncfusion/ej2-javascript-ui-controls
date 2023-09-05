@@ -170,13 +170,13 @@ export class WorkbookSave extends SaveWorker {
         if (!args.cancel) {
             if (this.isFullPost) {
                 this.initiateFullPostSave();
+                this.saveJSON = {};
             } else {
                 executeTaskAsync(
                     this, { 'workerTask': this.processSave },
                     this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams, this.pdfLayoutSettings], true);
             }
         }
-        this.saveJSON = {};
     }
 
     /**
@@ -187,6 +187,11 @@ export class WorkbookSave extends SaveWorker {
      * @returns {void} - Update final save data.
      */
     private updateSaveResult(result: { [key: string]: Object } | Blob): void {
+        if ((<{ [key: string]: Object }>result).isFormDataError) {
+            this.processSave(this.saveJSON, this.saveSettings, this.customParams, this.pdfLayoutSettings, this.updateSaveResult);
+            return;
+        }
+        this.saveJSON = {};
         const args: SaveCompleteEventArgs = {
             status: 'Success',
             message: '',

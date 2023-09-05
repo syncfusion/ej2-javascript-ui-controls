@@ -1056,10 +1056,8 @@ export class MeasureAnnotation {
         else{
             this.pdfViewer.annotationModule.isFormFieldShape = false;
         }
-        if (!isNewlyAdded) {
-            this.pdfViewerBase.updateDocumentEditedProperty(true);
-        }
         let currentAnnotObject: IMeasureShapeAnnotation = null;
+        let isEdited: boolean = false;
         const pageAnnotations: IMeasureShapeAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
@@ -1107,6 +1105,7 @@ export class MeasureAnnotation {
                     } else if (property === 'notes') {
                         pageAnnotations[i].note = annotationBase.notes;
                         if (pageAnnotations[i].enableShapeLabel === true) {
+                            isEdited = true;
                             pageAnnotations[i].labelContent = annotationBase.notes;
                         }
                     } else if (property === 'delete') {
@@ -1127,6 +1126,9 @@ export class MeasureAnnotation {
                 }
             }
             this.manageAnnotations(pageAnnotations, pageNumber);
+        }
+        if (!isNewlyAdded && isEdited) {
+            this.pdfViewerBase.updateDocumentEditedProperty(true);
         }
         return currentAnnotObject;
     }

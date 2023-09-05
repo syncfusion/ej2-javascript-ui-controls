@@ -670,8 +670,10 @@ export class UndoRedo {
             }
         }
         this.getProperty(diagram as Object, (isRedo ? redoObject : undoObject) as Object);
+        (diagram as any).fromUndo = true;
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         isRedo ? diagram.onPropertyChanged(redoObject, undoObject) : diagram.onPropertyChanged(undoObject, redoObject);
+        (diagram as any).fromUndo = false;
         diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
     }
     private recordOrderCommandChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {

@@ -2455,7 +2455,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public open(sfdtText: string): void {
-        sfdtText = HelperMethods.sanitizeString(sfdtText);
+        // sfdtText = HelperMethods.sanitizeString(sfdtText);
         if (!isNullOrUndefined(this.viewer)) {
             this.clearPreservedCollectionsInViewer();
             this.documentHelper.userCollection.push('Everyone');

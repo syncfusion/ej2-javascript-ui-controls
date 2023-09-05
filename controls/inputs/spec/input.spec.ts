@@ -2009,4 +2009,35 @@ describe('Input Groups - Enable/Disable', () => {
             element.remove();
         });
     });
+    describe('check valid input class', () => {
+        let inputObj: InputObject;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'textbox', attrs: { type: 'text '} });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            inputObj = Input.createInput({
+                element: element,
+                floatLabelType: "Auto",
+                properties: {
+                    placeholder: 'Enter the value',
+                    cssClass: 'e-outline',
+                },
+            });
+        });
+        it('class name of valid input contains in outline textobx', () => {
+            Input.setValue('Hello',element,"Auto",true);
+            expect(inputObj.container.classList.contains('e-valid-input')).toBe(true);
+            Input.setValue(null,element,"Auto",true);
+            expect(inputObj.container.classList.contains('e-valid-input')).toBe(false);
+        });
+        it('class name of valid input contains in outline textobx with icon', () => {
+            Input.addIcon("prepend", 'e-date-icon', inputObj.container, element);
+            Input.setValue('Hello',element,"Auto",true);
+            expect(inputObj.container.classList.contains('e-valid-input')).toBe(true);
+            Input.setValue(null,element,"Auto",true);
+            expect(inputObj.container.classList.contains('e-valid-input')).toBe(false);
+        });
+        afterAll(() => {
+            element.remove();
+        });
+    });
 });

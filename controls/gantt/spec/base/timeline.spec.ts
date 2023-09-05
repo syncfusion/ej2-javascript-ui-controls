@@ -1876,6 +1876,7 @@ describe('Render top Tier alone in Zoom to fit', () => {
                     endDate: 'EndDate',
                     segments: 'Segments'
                 },
+                dateFormat: "yyyy-MM-dd",
                 splitterSettings: {
                     columnIndex: 3
                 },

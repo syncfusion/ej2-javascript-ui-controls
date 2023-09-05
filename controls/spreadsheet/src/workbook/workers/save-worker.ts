@@ -45,12 +45,13 @@ export class SaveWorker {
      * @param {SaveOptions | Object} saveSettings - specify the saveSettings
      * @param {Object} customParams - specify the customParams
      * @param {Object} pdfLayoutSettings - specify the pdfLayoutSettings
+     * @param {Function} successCallBack - specify the success callback function while invoking this method without worker.
      * @returns {void} - Process save action.
      * @hidden
      */
     protected processSave(
         saveJSON: Object, saveSettings: SaveOptions | { [key: string]: string },
-        customParams: Object, pdfLayoutSettings: pdfLayoutSettings): void {
+        customParams: Object, pdfLayoutSettings: pdfLayoutSettings, successCallBack?: Function): void {
         const formData: FormData = new FormData();
         let i: number;
         let keys: string[] = Object.keys(saveSettings);
@@ -79,7 +80,9 @@ export class SaveWorker {
                     const reader: FileReader = new FileReader();
                     reader.onload = () => {
                         let result: string = reader.result.toString();
-                        if (result.indexOf('data:text/plain;base64,') > -1 || result.indexOf('data:text/html;base64,') > -1 ||
+                        const saveAsHtml: boolean = customParams['customParams'] && typeof customParams['customParams'] === 'string' &&
+                            customParams['customParams'].toLowerCase() === 'saveashtml';
+                        if (result.indexOf('data:text/plain;base64,') > -1 || (!saveAsHtml && result.indexOf('data:text/html;base64,') > -1) ||
                             result.indexOf('data:application/json;base64,') > -1) {
                             let str: string[];
                             result = result.replace('data:text/plain;base64,', ''); result = result.replace('data:text/html;base64,', '');
@@ -91,10 +94,18 @@ export class SaveWorker {
                             }
                             if (str.length) {
                                 const text: string = str[0].length > 1 && str[0][0] === '"' ? str[0].split('"')[1] + '.' : str[0];
-                                (postMessage as Function)({ dialog: text });
+                                if (successCallBack) {
+                                    successCallBack.apply(this, [{ dialog: text }]);
+                                } else {
+                                    (postMessage as Function)({ dialog: text });
+                                }
                             }
                         } else {
-                            (postMessage as Function)(data);
+                            if (successCallBack) {
+                                successCallBack.apply(this, [data]);
+                            } else {
+                                (postMessage as Function)(data);
+                            }
                         }
                         resolve(reader.result);
                     };
@@ -102,7 +113,11 @@ export class SaveWorker {
                 });
             })
             .catch((error: Error) => {
-                (postMessage as Function)({ error: error.message });
+                if (successCallBack) {
+                    successCallBack.apply(this, [{ error: error.message }]);
+                } else {
+                    (postMessage as Function)({ error: error.message });
+                }
             });
 
         // try {

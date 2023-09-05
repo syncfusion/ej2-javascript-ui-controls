@@ -507,14 +507,9 @@ export class Paragraph {
     public updateStyleNames(): void {
         this.styleName = !isNullOrUndefined((this.style as any).itemData) ? (this.style as any).itemData.StyleName : undefined;
         const stylesMap: any = this.documentEditor.documentHelper.stylesMap;
-        let paraStyles: any[] = stylesMap.get("Paragraph");
-        let linkedStyles;
-        if(stylesMap.get("Linked")) {
-            linkedStyles = stylesMap.get("Linked");
-        } else {
-            linkedStyles = [];
-        }
-        let charStyles: any[] = stylesMap.get("Character");
+        let paraStyles: any[] = stylesMap.get("Paragraph") ? stylesMap.get("Paragraph") : [];
+        let linkedStyles: any[] = stylesMap.get("Linked") ? stylesMap.get("Linked") : [];
+        let charStyles: any[] = stylesMap.get("Character") ? stylesMap.get("Character") : [];
         for (const linkedStyle of linkedStyles) {
             for (let i = 0; i < charStyles.length; i++) {
                 const charStyle = charStyles[i];

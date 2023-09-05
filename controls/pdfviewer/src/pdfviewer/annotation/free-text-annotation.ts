@@ -562,10 +562,8 @@ export class FreeTextAnnotation {
         else {
             this.pdfViewer.annotationModule.isFormFieldShape = false;
         }
-        if (!isNewAdded) {
-            this.pdfViewerBase.updateDocumentEditedProperty(true);
-        }
         let currentAnnotObject: IFreeTextAnnotation = null;
+        let isEdited: boolean = false;
         const pageAnnotations: IFreeTextAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
@@ -589,6 +587,7 @@ export class FreeTextAnnotation {
                     } else if (property === 'dynamicText') {
                         if (pageAnnotations[i].dynamicText !== annotationBase.dynamicText) {
                             this.pdfViewer.fireCommentEdit(pageAnnotations[i].annotName, annotationBase.dynamicText, pageAnnotations[i]);
+                            isEdited = true;
                         }
                         pageAnnotations[i].dynamicText = annotationBase.dynamicText;
                     } else if (property === 'fontColor') {
@@ -609,6 +608,9 @@ export class FreeTextAnnotation {
                 }
             }
             this.manageAnnotations(pageAnnotations, pageNumber);
+        }
+        if (!isNewAdded && isEdited) {
+            this.pdfViewerBase.updateDocumentEditedProperty(true);
         }
         return currentAnnotObject;
     }

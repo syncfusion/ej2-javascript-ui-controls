@@ -2443,6 +2443,9 @@ export class Selection implements IAction {
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
+        EventHandler.remove(document, 'mouseup', this.mouseUpHandler);
+        EventHandler.remove(this.parent.getContent(), 'mousedown', this.mouseDownHandler);
+        EventHandler.remove(this.parent.getHeaderContent(), 'mousedown', this.mouseDownHandler);
         addRemoveEventListener(this.parent, this.evtHandlers, false);
         this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);

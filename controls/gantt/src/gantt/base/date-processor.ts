@@ -1284,8 +1284,9 @@ export class DateProcessor {
 
         if (!editArgs) {
             this.prevProjectStartDate = this.parent.cloneProjectStartDate;
-            this.parent.cloneProjectStartDate = minStartDate ? minStartDate : new Date(projectStartDate.getTime());
-            this.parent.cloneProjectEndDate = maxEndDate ? maxEndDate : new Date(projectEndDate.getTime());
+            this.parent.cloneProjectStartDate = minStartDate ? (!this.parent.timelineModule.isZoomToFit) ? (!isNullOrUndefined(projectStartDate)) ? new Date(projectStartDate.getTime()) : minStartDate : minStartDate : new Date(projectStartDate.getTime());
+            this.parent.cloneProjectEndDate = maxEndDate ? (!this.parent.timelineModule.isZoomToFit) ? (!isNullOrUndefined(projectEndDate)) ? new Date(projectEndDate.getTime()) : maxEndDate : maxEndDate : new Date(projectEndDate.getTime());
+
         } else {
             setValue('minStartDate', minStartDate, editArgs);
             setValue('maxEndDate', maxEndDate, editArgs);

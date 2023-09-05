@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 22.2.12 (2023-09-05)
+
+### PivotTable
+
+#### Bug Fixes
+
+- `#F183246` - An issue with adding multiple classes using the `cssClass` property has been fixed.
+- `#F183955` - An issue with the pivot table not displaying with the selected display view options from the loaded report while using the toolbar has been fixed.
+
 ## 22.2.11 (2023-08-29)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `F183271` - The pivot table can now be properly displayed while adding the field at runtime with data compression.
+
+## 22.2.10 (2023-08-22)
 
 ### Pivot Table
 

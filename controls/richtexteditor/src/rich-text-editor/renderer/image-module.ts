@@ -135,6 +135,7 @@ export class Image {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
                 EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
                 EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
+                EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
             }
         }
     }

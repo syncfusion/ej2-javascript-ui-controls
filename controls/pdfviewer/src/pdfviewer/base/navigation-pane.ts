@@ -468,7 +468,8 @@ export class NavigationPane {
                             let annotationData: any =  atob(importFile);
                             if (annotationData) {
                                 // eslint-disable-next-line
-                                annotationData = this.pdfViewerBase.getSanitizedString(annotationData);
+                                // Encountering a script error while attempting to import annotations from the older version JSON document. As a result, the below line has been commented: Task ID: 842694
+                                // annotationData = this.pdfViewerBase.getSanitizedString(annotationData);
                                 let jsonData = JSON.parse(annotationData);
                                 let firstAnnotation: any = jsonData.pdfAnnotation[Object.keys(jsonData.pdfAnnotation)[0]];
                                 if ((Object.keys(jsonData.pdfAnnotation).length >= 1) && (firstAnnotation.textMarkupAnnotation || firstAnnotation.measureShapeAnnotation || firstAnnotation.freeTextAnnotation || firstAnnotation.stampAnnotations || firstAnnotation.signatureInkAnnotation || (firstAnnotation.shapeAnnotation && firstAnnotation.shapeAnnotation[0].Bounds))) {

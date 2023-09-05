@@ -4,7 +4,7 @@ import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import {
     LineWidget, ElementBox, TextElementBox, ParagraphWidget,
-    BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget, HeaderFooters
+    BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget, HeaderFooters, ShapeElementBox, TextFrame
 } from '../viewer/page';
 import { ElementInfo, TextInLineInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
@@ -92,7 +92,7 @@ export class TextSearch {
         return undefined;
     }
 
-    public getElementInfo(inlineElement: ElementBox, indexInInline: number, includeNextLine?: boolean): TextInLineInfo {
+    public getElementInfo(inlineElement: ElementBox, indexInInline: number, includeNextLine?: boolean, pattern?: RegExp, findOption?: FindOption, isFirstMatch?: boolean, results?: TextSearchResults, selectionEnd?: TextPosition): TextInLineInfo {
         const inlines: ElementBox = inlineElement;
         let stringBuilder: string = '';
         const spans: Dictionary<TextElementBox, number> = new Dictionary<TextElementBox, number>();
@@ -112,6 +112,8 @@ export class TextSearch {
                     /* eslint-disable-next-line max-len */
                     inlineElement = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd as FieldElementBox : fieldBegin.fieldSeparator as FieldElementBox;
                 }
+            } else if (inlineElement instanceof ShapeElementBox && !isNullOrUndefined(inlineElement.textFrame) && (inlineElement.textFrame as TextFrame).childWidgets.length > 0) {
+                this.findInlineText(inlineElement.textFrame, pattern, findOption, isFirstMatch, results, selectionEnd);
             }
             if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {
                 break;
@@ -294,7 +296,7 @@ export class TextSearch {
     /* eslint-disable-next-line max-len */
     private findInline(inlineElement: ElementBox, pattern: RegExp, option: FindOption, indexInInline: number, isFirstMatch: boolean, results: TextSearchResults, selectionEnd: TextPosition): ParagraphWidget {
         const inlines: ElementBox = inlineElement;
-        const textInfo: TextInLineInfo = this.getElementInfo(inlineElement, indexInInline);
+        const textInfo: TextInLineInfo = this.getElementInfo(inlineElement, indexInInline, undefined, pattern, option, isFirstMatch, results, selectionEnd);
         const text: string = textInfo.fullText;
         const matches: RegExpExecArray[] = [];
         const spans: Dictionary<TextElementBox, number> = textInfo.elementsWithOffset;

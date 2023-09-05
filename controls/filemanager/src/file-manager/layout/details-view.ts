@@ -1200,11 +1200,7 @@ export class DetailsView {
         }
         this.parent.visitedItem = <Element>args.row;
         if ((!this.parent.enableVirtualization) || (!args.isHeaderCheckboxClicked)) {
-        if (this.parent.allowMultiSelection && !isNOU(item) && !isNOU(item.querySelector('.e-checkselect'))) {
-            const checkItem: HTMLElement = <HTMLElement>item.querySelector('.e-checkselect');
-            checkItem.focus();
-        }
-        this.addFocus(this.gridObj.selectedRowIndex);
+            this.addFocus(this.gridObj.selectedRowIndex);
         }
         if (!this.parent.isLayoutChange) {
             this.isInteracted = true;

@@ -6,6 +6,7 @@ import { ShadowModel, RadialGradientModel, StopModel } from '../../../src/diagra
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { BpmnShape, Container } from '../../../src';
 Diagram.Inject(BpmnDiagrams);
 
 /**
@@ -200,7 +201,63 @@ describe('Diagram Control', () => {
         })
     });
 });
+describe('BPMN dataobject node visibility issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
 
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        ele = createElement('div', { id: 'diagram1' });
+        document.body.appendChild(ele);
+         
+        let nodes: NodeModel[] = [
+            {
+                id: 'subProcess', width: 520, height: 250, offsetX: 300, offsetY: 100,
+                shape: { type: 'Bpmn', shape: 'DataObject'}
+            }  ,
+          
+        ];
+           diagram = new Diagram({
+            width: '74%', height: '600px', nodes: nodes,
+         });
+        diagram.appendTo('#diagram1');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('BPMN dataObject after visibility true and false', (done: Function) => { 
+       diagram.nodes[0].visible = false;
+       diagram.dataBind();
+       diagram.nodes[0].visible = true;
+       diagram.dataBind();
+        expect((diagram.nodes[0].wrapper.children[0] as Container).children[2].visible === false).toBe(true);
+        expect((diagram.nodes[0].wrapper.children[0] as Container).children[1].visible === false).toBe(true);
+        (diagram.nodes[0].shape as BpmnShape).dataObject = { type : 'Input', collection : false};
+        diagram.dataBind();
+        diagram.nodes[0].visible = false;
+        diagram.dataBind();
+        diagram.nodes[0].visible = true;
+        diagram.dataBind();
+        expect((diagram.nodes[0].wrapper.children[0] as Container).children[2].visible === false).toBe(true);
+        (diagram.nodes[0].shape as BpmnShape).dataObject = { type : 'None', collection : true};
+        diagram.dataBind();
+        diagram.nodes[0].visible = false;
+        diagram.dataBind();
+        diagram.nodes[0].visible = true;
+        diagram.dataBind();
+        expect((diagram.nodes[0].wrapper.children[0] as Container).children[1].visible === false).toBe(true);
+        done();
+    });
+    
+});
 describe('BPMN shapes', () => {
     describe('Changing of BPMN Shapes from one to another', () => {
         let diagram: Diagram;

@@ -1,5 +1,5 @@
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
-import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { IRichTextEditor } from '../base/interface';
 import * as events from '../base/constant';
 /**
@@ -7,6 +7,7 @@ import * as events from '../base/constant';
  */
 export class DialogRenderer {
     public dialogObj: Dialog;
+    private dialogEle: Element;
     private parent: IRichTextEditor;
     public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
@@ -48,7 +49,20 @@ export class DialogRenderer {
         return dlgObj;
     }
     private beforeOpen(args: BeforeOpenEventArgs): void {
+        if(args.element.classList.contains('e-dialog')) {
+            const formEle = closest(args.target as HTMLElement,'form');
+            if(!isNOU(formEle)) {
+                this.dialogEle = args.element;
+                this.dialogEle.addEventListener('keydown',this.handleEnterKeyDown)
+            }
+        }
         this.parent.trigger(events.beforeDialogOpen, args, this.beforeOpenCallback.bind(this, args));
+    }
+    private handleEnterKeyDown(args: any) {
+        if (args.code === "Enter") {
+            args.preventDefault();
+        }
+
     }
     private beforeOpenCallback(args: BeforeOpenEventArgs): void {
         if (args.cancel) {
@@ -59,6 +73,9 @@ export class DialogRenderer {
         this.parent.trigger(events.dialogOpen, args);
     }
     private beforeClose(args: BeforeCloseEventArgs): void {
+        if (this.dialogEle) {
+            this.dialogEle.removeEventListener('keydown', this.handleEnterKeyDown);
+        }
         this.parent.trigger(events.beforeDialogClose, args, (closeArgs: BeforeCloseEventArgs) => {
             if (!closeArgs.cancel) {
                 if (closeArgs.container.classList.contains('e-popup-close')) {

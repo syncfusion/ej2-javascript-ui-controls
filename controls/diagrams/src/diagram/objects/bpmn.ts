@@ -2164,6 +2164,20 @@ export class BpmnDiagrams {
                 && (node.shape as BpmnShape).activity.subProcess.loop === 'None') {
                 ((node.wrapper.children[0] as Container).children[0] as Container).children[3].visible = false;
             }
+            //(EJ2-843861) - BPMN node subtype visibles whiles changing the node visibility
+            if((node.shape as BpmnShape).shape === "DataObject"){
+                if((node.shape as BpmnShape).dataObject.collection === false && (node.shape as BpmnShape).dataObject.type === 'None'){
+                    for(let i = (node.wrapper.children[0] as Container).children.length-1; i >0; i--){
+                        (node.wrapper.children[0] as Container).children[parseInt(i.toString(), 10)].visible = false;
+                    }
+                }
+                else if((node.shape as BpmnShape).dataObject.collection === true && (node.shape as BpmnShape).dataObject.type === 'None'){
+                    (node.wrapper.children[0] as Container).children[1].visible = false;
+                }
+                else if((node.shape as BpmnShape).dataObject.collection === false && ((node.shape as BpmnShape).dataObject.type === 'Input' || (node.shape as BpmnShape).dataObject.type === 'Output')){
+                    (node.wrapper.children[0] as Container).children[2].visible = false;
+                }
+            }
         }
     }
     /** @private */

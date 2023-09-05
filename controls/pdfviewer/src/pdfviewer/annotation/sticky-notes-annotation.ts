@@ -2474,7 +2474,7 @@ export class StickyNotesAnnotation {
                             // eslint-disable-next-line
                             let clonedObject: any = cloneObject(pageAnnotations[i]);
                             if (text !== null) {
-                                if (pageAnnotations[i].note !== text) {
+                                if (pageAnnotations[i].note !== text && (clonedObject.notes !== pageAnnotations[i].notes)) {
                                     // eslint-disable-next-line max-len
                                     this.pdfViewer.annotation.addAction(pageIndex, i, pageAnnotations[i], 'Text Property Added', '', clonedObject, pageAnnotations[i]);
                                     currentAnnotation = pageAnnotations[i];

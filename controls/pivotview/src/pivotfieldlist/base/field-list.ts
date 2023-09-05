@@ -766,6 +766,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         const isDrillThrough: boolean = this.pivotGridModule ?
             (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
         const enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
+        const allowDataCompression: boolean = this.pivotGridModule && this.pivotGridModule.allowDataCompression ?
+            this.pivotGridModule.allowDataCompression : false;
         let customProperties: ICustomProperties | IOlapCustomProperties;
         if (this.dataType === 'olap') {
             customProperties = {
@@ -776,7 +778,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
                 localeObj: localeObj,
-                enableVirtualization: isVirtualization
+                enableVirtualization: isVirtualization,
+                allowDataCompression: allowDataCompression
             };
         } else {
             customProperties = {
@@ -791,7 +794,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 currenyCode: this.currencyCode,
                 enablePaging: isPaging,
                 enableVirtualization: isVirtualization,
-                enableHtmlSanitizer: enableHtmlSanitizer
+                enableHtmlSanitizer: enableHtmlSanitizer,
+                allowDataCompression: allowDataCompression
             };
         }
         return customProperties;
@@ -1010,7 +1014,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 removeClass([this.element], cls.DEVICE);
             }
             if (this.cssClass) {
-                addClass([this.element], this.cssClass);
+                addClass([this.element], this.cssClass.split(' '));
             }
             this.notify(events.initialLoad, {});
         });

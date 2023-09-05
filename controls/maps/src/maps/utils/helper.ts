@@ -768,7 +768,7 @@ export function renderTextElement(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function convertElement(element: HTMLCollection, markerId: string, data: any, index: number, mapObj: Maps): HTMLElement {
     const childElement: HTMLElement = createElement('div', {
-        id: markerId
+        id: markerId, className: mapObj.element.id + '_marker_template_element'
     });
     childElement.style.cssText = 'position: absolute;pointer-events: auto;';
     let elementLength: number = element.length;

@@ -859,6 +859,10 @@ export class MoveTool extends ToolBase {
 
     private source: NodeModel | PortModel;
 
+    private intialValue:SelectorModel;
+
+    private isStartAction:boolean = false;
+
     private canCancel: boolean = false;
     private tempArgs: IDraggingEventArgs | IBlazorDraggingEventArgs;
     private canTrigger: boolean = false;
@@ -976,12 +980,12 @@ export class MoveTool extends ToolBase {
                         oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                     }
                     let arg: IDraggingEventArgs | IBlazorDraggingEventArgs = {
-                        source: args.source, state: 'Completed', oldValue: oldValues, newValue: newValues,
+                        source: args.source, state: 'Completed', oldValue: this.intialValue, newValue: newValues,
                         target: this.currentTarget, targetPosition: this.currentPosition, allowDrop: true, cancel: false
                     };
                     arg = {
                         source: cloneBlazorObject(args.source), state: 'Completed',
-                        oldValue: cloneBlazorObject(oldValues), newValue: cloneBlazorObject(newValues),
+                        oldValue: cloneBlazorObject(this.intialValue), newValue: cloneBlazorObject(newValues),
                         target: cloneBlazorObject(this.currentTarget), targetPosition: cloneBlazorObject(this.currentPosition),
                         allowDrop: arg.allowDrop, cancel: arg.cancel
                     };
@@ -1181,9 +1185,14 @@ export class MoveTool extends ToolBase {
             newValue: cloneBlazorObject(oldValues),
             target: args.target, targetPosition: args.position, allowDrop: arg.allowDrop, cancel: arg.cancel
         };
+          //(EJ2-277624)-In the positionChange event, during the completed state, old and new values remain identical.
+          if(!this.isStartAction){
+            this.intialValue= { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY}
+        }
         if (isSame && !isBlazor()) {
             this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
             this.connectorEndPointChangeEvent(arg);
+            this.isStartAction = true;
         }
         this.currentPosition = args.position;
         if (this.objectType !== 'Port') {

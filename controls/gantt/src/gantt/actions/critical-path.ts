@@ -796,6 +796,8 @@ export class CriticalPath {
                 }
                 if (element.getElementsByClassName('e-gantt-child-taskbar-inner-div').length > 0) {
                     addClass(element.querySelectorAll('.e-gantt-child-taskbar-inner-div'), cls.criticalChildTaskBarInnerDiv);
+                    const innerDivs = document.querySelector('.e-gantt-child-taskbar-inner-div') as HTMLElement;
+                    innerDivs.style.outlineColor="";
                 }
                 if (element.getElementsByClassName('e-gantt-child-progressbar-inner-div').length > 0) {
                     addClass(element.querySelectorAll('.e-gantt-child-progressbar-inner-div'), taskClass);

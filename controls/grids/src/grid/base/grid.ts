@@ -4724,6 +4724,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.trigger(events.queryCellInfo, {
                     cell: td, column: col, data: selectedRow[`${rowData}`]
                 });
+                if ((<{ isReact?: boolean }>this).isReact && td.getAttribute('tabindex') === '0' && td.classList.contains('e-focused')) {
+                    (td as HTMLElement).focus();
+                }
             }
         } else {
             return;

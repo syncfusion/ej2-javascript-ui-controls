@@ -26,7 +26,7 @@
       background-color: $grid-table-background-color;
     }
 
-    .e-focused:not(.e-menu-item) {
+    .e-focused:not(.e-menu-item):not(.e-editedbatchcell) {
       box-shadow: $grid-cell-focus-shadow;
     }
 
@@ -611,6 +611,10 @@
       @if $grid-skin == 'material3' {
         padding-top: 6px;
         padding-bottom: 6px;
+      }
+
+      &.e-focused {
+        box-shadow: none;
       }
     }
 

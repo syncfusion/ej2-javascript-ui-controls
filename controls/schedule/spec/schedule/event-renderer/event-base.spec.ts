@@ -894,6 +894,31 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('ES-843662 - Checking the Recurrence exception with timezone', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Customer',
+            StartTime: "2023-08-14T19:00:00.000Z",
+            EndTime: "2023-08-14T19:30:00.000Z",
+            RecurrenceRule: "FREQ=DAILY;",
+            RecurrenceException: "20230814T190000Z,"
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { selectedDate: new Date(2023, 7, 18), timezone: 'America/New_York', width: '100%',
+            height: '550px', };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking the recurrence exception on initial loading', () => {
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(app.length).toEqual(5);
+            expect((app[0].querySelector('.e-time') as HTMLElement).innerText).toEqual('3:00 PM - 3:30 PM');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

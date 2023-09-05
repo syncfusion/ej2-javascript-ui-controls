@@ -1233,5 +1233,5 @@ export type RepeatType = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
 * until :- Denotes that the recurrence ends on a specified date.
 * count :- Denotes that the recurrence ends after a specified number of occurrences.
 * ```
-*/
+ */
 export type EndType = 'never' | 'until' | 'count';

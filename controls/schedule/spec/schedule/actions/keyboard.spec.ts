@@ -3901,6 +3901,51 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('ES-845365 - Checking showQuickinfoOnSelectionEnd property', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                currentView: 'TimelineDay',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2023, 8, 1),
+                quickInfoOnSelectionEnd: true,
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms',
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners',
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(schOptions, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking on unselected Resource cell', () => {
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            util.triggerMouseEvent(workCells[68], 'mousedown');
+            util.triggerMouseEvent(workCells[72], 'mousemove');
+            util.triggerMouseEvent(workCells[120], 'mousemove');
+            util.triggerMouseEvent(workCells[120], 'mouseup');
+            const quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper');
+            expect(quickPopup.classList).toContain('e-popup-open');
+            expect((quickPopup.querySelector('.e-resource-details') as HTMLElement).innerText).toBe('Nancy');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

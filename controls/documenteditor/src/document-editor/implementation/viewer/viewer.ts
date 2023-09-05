@@ -7,7 +7,7 @@ import { WLevelOverride } from '../list/level-override';
 import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles, WStyle, WColumnFormat, WBorder } from '../format/index';
 import { Layout } from './layout';
 import { Renderer } from './render';
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, L10n } from '@syncfusion/ej2-base';
 import {
     Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
     CommentElementBox, CommentCharacterElementBox, Padding, DropDownFormField, TextFormField, CheckBoxFormField, ShapeElementBox,
@@ -597,6 +597,10 @@ export class DocumentHelper {
      * @private
      */
     public dragEndParaInfo: ParagraphInfo;
+    /**
+     * @private
+     */
+    public L10n: L10n;
 
     private isAutoResizeCanStart: boolean = false;
 
@@ -837,6 +841,10 @@ export class DocumentHelper {
         this.headersFooters = [];
         this.styles = new WStyles();
         this.stylesMap = new Dictionary<string, any[]>();
+        if(this.owner) {
+            this.L10n = new L10n('documenteditor', this.owner.defaultLocale);
+            this.L10n.setLocale(this.owner.locale);
+        }
         this.preDefinedStyles = new Dictionary<string, string>();
         this.initalizeStyles();
         this.bookmarks = new Dictionary<string, BookmarkElementBox>();
@@ -3679,6 +3687,7 @@ export class DocumentHelper {
             this.formFillPopup.destroy();
             this.formFillPopup = undefined;
         }
+        this.L10n = undefined;
         this.currentPage = undefined;
         this.selectionStartPageIn = undefined;
         this.selectionEndPageIn = undefined;
@@ -4292,7 +4301,8 @@ export class DocumentHelper {
         const charIcon: string = 'e-list-icon e-de-listview-icon e-de-e-character-style-mark e-icons';
         const linkedIcon: string = 'e-list-icon e-de-listview-icon e-de-e-linked-style-mark e-icons';
         // StyleName for the dropDownItem
-        returnStyle.StyleName =  style.name;
+        const styleName: string = this.owner ? this.L10n.getConstant(style.name) : style.name;
+        returnStyle.StyleName = (styleName === '') ? style.name : styleName;
         if (style.type == "Paragraph") {
             returnStyleObject.paragraphFormat = {};
             HelperMethods.writeParagraphFormat(returnStyleObject.paragraphFormat,true,(style as any).paragraphFormat);
@@ -4477,8 +4487,12 @@ export abstract class LayoutViewer {
                 isEmptyWidget = page.footerWidget.isEmpty;
                 let footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;
                 footnoteHeight = Math.min(footnoteHeight, ((pageHeight - top - bottom) / 100 * 90));
-                if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                    bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+                if (bottom >= 0) {
+                    if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                        bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+                    }
+                } else {
+                    bottom = Math.abs(bottom);
                 }
                 bottom += footnoteHeight;
             }
@@ -4562,7 +4576,7 @@ export abstract class LayoutViewer {
     }
 
     public updateClientAreaForTextBoxShape(textBox: ShapeElementBox, beforeLayout: boolean): void {
-        if (textBox.textWrappingStyle === 'Inline') {
+        if (textBox.textWrappingStyle === 'Inline' && this.documentHelper.layout.isInitialLoad) {
             textBox.y = this.clientActiveArea.y;
             textBox.x = this.clientActiveArea.x;
         }

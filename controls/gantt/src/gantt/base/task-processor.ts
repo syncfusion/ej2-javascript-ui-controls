@@ -1492,17 +1492,15 @@ export class TaskProcessor extends DateProcessor {
         } else {
             hierarchicalData = this.parent.dataSource;
         }
-        this.parent.flatData.map((data) => {
-            hierarchicalData.map((record: any) => {
-                if (data.ganttProperties.taskId === record[this.parent.taskFields.id as string]) {
-                      if(!isNullOrUndefined( this.parent.taskFields.startDate)){
-                        task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
-                      }
-                      if(!isNullOrUndefined(this.parent.taskFields.endDate)){
-                        task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
-                      }
+        hierarchicalData.map((record: any) => {
+            if (task.ganttProperties.taskId === record[this.parent.taskFields.id as string]) {
+                if (!isNullOrUndefined(this.parent.taskFields.startDate)) {
+                    task[this.parent.taskFields.startDate as string] = record[this.parent.taskFields.startDate as string];
                 }
-            })
+                if (!isNullOrUndefined(this.parent.taskFields.endDate)) {
+                    task[this.parent.taskFields.endDate as string] = record[this.parent.taskFields.endDate as string];
+                }
+            }
         })
     }
     private getWorkInHour(work: number, workUnit: string): number {
@@ -1542,7 +1540,9 @@ export class TaskProcessor extends DateProcessor {
                 this.setRecordDate(ganttData, ganttProperties.endDate, dataMapping.endDate);
             }
             if (dataMapping.duration) {
-                this.setRecordDuration(ganttData, dataMapping.duration);
+                if(!isNullOrUndefined(dataMapping.milestone) && !ganttData.taskData[dataMapping.milestone]) {
+                    this.setRecordDuration(ganttData, dataMapping.duration);
+                }
             }
             if (dataMapping.durationUnit) {
                 data[dataMapping.durationUnit] = ganttProperties.durationUnit;

@@ -96,7 +96,11 @@ class WorkerHelper {
      */
     private onError(args: ErrorEvent): void {
         this.terminate();
-        throw args.message || args;
+        if (args.message && args.message.includes('FormData')) {
+            this.defaultListener.apply(this.context, [{ isFormDataError: true }]);
+        } else {
+            throw args.message || args;
+        }
     }
 
     /**

@@ -299,7 +299,7 @@ export class Tooltip extends BaseTooltip {
             const point: Points[] = [];
             for (let i: number = 0; i < data.length; i++) {
                 point[i as number] = extend({}, data[i as number].point) as Points;
-                point[i as number].x = this.formatPointValue(data[1].point, data[1].series.xAxis, 'x', true, false);
+                point[i as number].x = this.formatPointValue(data[i as number].point, data[i as number].series.xAxis, 'x', true, false);
                 if ((data[i as number].series.seriesType === 'XY')) {
                     point[i as number].y = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'y', false, true);
                 } else {

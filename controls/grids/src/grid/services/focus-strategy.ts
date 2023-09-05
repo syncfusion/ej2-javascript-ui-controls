@@ -812,6 +812,9 @@ export class FocusStrategy {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected removeFocus(e?: FocusEvent): void {
         if (!this.currentInfo.element) { return; }
+        if (this.parent.isReact && this.currentInfo.element.classList.contains('e-rowcell') && !this.currentInfo.element.parentElement) {
+            this.currentInfo.element = this.parent.getCellFromIndex(this.prevIndexes.rowIndex, this.prevIndexes.cellIndex) as HTMLElement;
+        }
         removeClass([this.currentInfo.element, this.currentInfo.elementToFocus], ['e-focused', 'e-focus']);
         this.currentInfo.element.tabIndex = -1;
     }

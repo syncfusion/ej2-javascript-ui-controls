@@ -324,6 +324,7 @@ export function getScrollBarWidth(): number {
  * Method to reset scrollbar width
  *
  * @private
+ * @returns {void}
  */
 export function resetScrollbarWidth(): void {
     const zoomPixelRatio: number = window.devicePixelRatio || window.screen.availWidth / document.documentElement.clientWidth;

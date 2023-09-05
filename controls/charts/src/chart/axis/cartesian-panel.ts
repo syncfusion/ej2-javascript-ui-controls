@@ -873,7 +873,7 @@ export class CartesianAxisLayoutPanel {
             pointY = (valueToCoefficient(axis.visibleLabels[i as number].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
             textHeight = ((elementSize.height / 8) * axis.visibleLabels[i as number].text.length / 2);
-            textPadding = ((elementSize.height / 4) * 3) + 3;
+            textPadding = chart.requireInvertedAxis ? 0 : ((elementSize.height / 4) * 3) + 3;
             intervalLength = rect.height / axis.visibleLabels.length;
             labelHeight = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle !== 0 &&
                 elementSize.width > intervalLength) ? intervalLength : elementSize.width;
@@ -881,7 +881,7 @@ export class CartesianAxisLayoutPanel {
                 : (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? pointY + textPadding :  pointY));
             if (axis.labelPosition === 'Inside' && ((i === 0 && !axis.isInversed) || (i === len - 1 && axis.isInversed))) {
                 if (chart.stockChart) { pointY -= (textPadding); }
-                else { pointY -= (textPadding - (axis.opposedPosition ? -padding : padding)); }
+                else { pointY -= (textPadding - (chart.requireInvertedAxis ? 0 : (axis.opposedPosition ? -padding : padding))); }
             }
             if (axis.majorGridLines.width > axis.majorTickLines.width) {
                 maxLineWidth = axis.majorGridLines.width;

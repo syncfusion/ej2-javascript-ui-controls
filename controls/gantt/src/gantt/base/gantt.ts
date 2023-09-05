@@ -2191,7 +2191,9 @@ export class Gantt extends Component<HTMLElement>
             this.wireEvents();
             this.notify('initPredessorDialog', {});
         }
-        this.splitterModule.updateSplitterPosition();
+        if (!this.isFromOnPropertyChange) {
+            this.splitterModule.updateSplitterPosition();
+        }
         // if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
         //     this.renderChartVerticalLines();
         // }
@@ -2203,6 +2205,8 @@ export class Gantt extends Component<HTMLElement>
         removeClass(ganttChartElement.querySelectorAll('.e-critical-milestone'), cls.criticalMilestone);
         removeClass(this.element.querySelectorAll('.e-connector-line'), cls.criticalConnectorLineSVG);
         removeClass(this.element.querySelectorAll('.e-connector-line-arrow'), cls.criticalConnectorArrowSVG);
+        const innerDivs = document.querySelector('.e-gantt-child-taskbar-inner-div') as HTMLElement;
+        innerDivs.style.outlineColor = "";
     }
     private wireEvents(): void {
         if (this.allowKeyboard) {
@@ -2903,6 +2907,7 @@ export class Gantt extends Component<HTMLElement>
                 break;
             case 'projectStartDate':
             case 'projectEndDate':
+                this.timelineModule.isZoomToFit = false;
                 this.dataOperation.calculateProjectDates();
                 this.updateProjectDates(
                     this.cloneProjectStartDate, this.cloneProjectEndDate, this.isTimelineRoundOff);
@@ -4039,9 +4044,12 @@ export class Gantt extends Component<HTMLElement>
                 this.editModule.addRowIndex = null;
             } else {
                 this.editModule.addRecord(data, rowPosition, rowIndex);
-                if(rowPosition === 'Above' ||  rowPosition === 'Below' ||  rowPosition === 'Child' ){
-                    this.currentSelection = data;
-                    }
+                if (rowPosition === 'Bottom') {
+                    this.selectedRowIndex = rowIndex;
+                }
+                if (rowPosition === 'Above' || rowPosition === 'Below' || rowPosition === 'Child') {
+                    this.currentSelection = !isNullOrUndefined(data) ? data : this.currentSelection;
+                }
             }
         }
     }

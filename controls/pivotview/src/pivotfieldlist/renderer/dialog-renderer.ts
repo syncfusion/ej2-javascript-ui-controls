@@ -59,7 +59,7 @@ export class DialogRenderer {
             removeClass([fieldListWrappper], cls.RTL);
         }
         if (this.parent.cssClass) {
-            addClass([fieldListWrappper], this.parent.cssClass);
+            addClass([fieldListWrappper], this.parent.cssClass.split(' '));
         }
         if (this.parent.enableFieldSearching) {
             addClass([fieldListWrappper], cls.FIELD_LIST_SEARCH_MODE_CLASS);

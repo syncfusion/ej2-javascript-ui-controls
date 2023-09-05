@@ -10169,7 +10169,7 @@ export class Layout {
             foot = paragraph.bodyWidget.page.footnoteWidget;
             this.layoutfootNote(foot);
         }
-        if (this.viewer.owner.editorHistory.isRedoing && !isNullOrUndefined(newBodyWidget.page.endnoteWidget)) {
+        if (!isNullOrUndefined(this.viewer.owner.editorHistory) && this.viewer.owner.editorHistory.isRedoing && !isNullOrUndefined(newBodyWidget.page.endnoteWidget)) {
             this.isEndnoteContentChanged = true;
         }
         if ((this.documentHelper.owner.editor.isEndnoteElementRemoved || this.isEndnoteContentChanged)
@@ -10188,7 +10188,7 @@ export class Layout {
             this.viewer.clientActiveArea = clientActiveArea;
             //this.viewer.updateClientAreaForBlock(foot.block, false);
         }
-        if (this.viewer.owner.editorHistory.isRedoing) {
+        if (!isNullOrUndefined(this.viewer.owner.editorHistory) && this.viewer.owner.editorHistory.isRedoing) {
             this.isEndnoteContentChanged = false;
         }
     }

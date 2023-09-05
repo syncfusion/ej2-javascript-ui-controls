@@ -105,11 +105,10 @@ function getMonthSummary(ruleObject: RecRule, cldrObj: string[], localeObj: L10n
  * @param {number} maximumCount Accepts the maximum number count to generate date collections
  * @param {Date} viewDate Accepts the current date instead of start date
  * @param {CalendarType} calendarMode Accepts the calendar type
- * @param {string} oldTimezone Accepts the timezone name
  * @param {string} newTimezone Accepts the timezone name
  * @returns {number[]} Returns the collection of dates
  */
-export function generate(startDate: Date, rule: string, excludeDate: string, startDayOfWeek: number, maximumCount: number = MAXOCCURRENCE, viewDate: Date = null, calendarMode: CalendarType = 'Gregorian', oldTimezone: string = null, newTimezone: string = null): number[] {
+export function generate(startDate: Date, rule: string, excludeDate: string, startDayOfWeek: number, maximumCount: number = MAXOCCURRENCE, viewDate: Date = null, calendarMode: CalendarType = 'Gregorian', newTimezone: string = null): number[] {
     const ruleObject: RecRule = extractObjectFromRule(rule);
     let cacheDate: Date; calendarUtil = getCalendarUtil(calendarMode);
     const data: number[] = [];
@@ -119,8 +118,8 @@ export function generate(startDate: Date, rule: string, excludeDate: string, sta
     const tz: Timezone = new Timezone();
     tempDate.forEach((content: string) => {
         let parsedDate: Date = getDateFromRecurrenceDateString(content);
-        if (oldTimezone && newTimezone) {
-            parsedDate = tz.convert(new Date(parsedDate.getTime()), oldTimezone, newTimezone);
+        if (newTimezone) {
+            parsedDate = tz.add(new Date(parsedDate.getTime()), newTimezone);
         }
         tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
     });

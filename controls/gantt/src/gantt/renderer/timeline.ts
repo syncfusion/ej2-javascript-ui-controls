@@ -1464,11 +1464,14 @@ export class Timeline {
             this.parent.updateProjectDates(args.projectStartDate, args.ProjectEndDate, args.isTimelineRoundOff, isFrom);
             if (type === 'prevTimeSpan' && isFrom === 'publicMethod') {
                 this.parent.ganttChartModule.updateScrollLeft(0);
+                this.parent.timelineModule.isZoomToFit = false;
             } else if (type === 'nextTimeSpan' && isFrom === 'publicMethod') {
                 this.parent.ganttChartModule.updateScrollLeft(this.parent.timelineModule.totalTimelineWidth);
+                this.parent.timelineModule.isZoomToFit = false;
             } else if (type === 'nextTimeSpan' && isFrom === 'TaskbarEditing') {
                 let currentScrollLeft: number = document.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollLeft;
                 this.parent.element.querySelector('.e-timeline-header-container').scrollLeft = currentScrollLeft;
+                this.parent.timelineModule.isZoomToFit = false;
             }
             this.parent.timelineModule.timeSpanActionEvent('actionComplete', type, isFrom);
         } else {

@@ -3321,18 +3321,16 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             if (tempArr) {
                 tempArr = Array.prototype.slice.call(tempArr);
                 append(tempArr, this.noRecord);
-                addClass([this.noRecord], NODATACONTAINER);
-                prepend([this.noRecord], this.popupDiv);
             }
         } else {
             // eslint-disable-next-line
             const l10nLocale: Object = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed'};
             this.l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             this.noRecord.innerHTML = actionFailure ?
-                this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
-                addClass([this.noRecord], NODATACONTAINER);
-                prepend([this.noRecord], this.popupDiv);
+            this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
+        addClass([this.noRecord], NODATACONTAINER);
+        prepend([this.noRecord], this.popupDiv);
     }
 
     private updateRecordTemplate(action?: boolean): void {

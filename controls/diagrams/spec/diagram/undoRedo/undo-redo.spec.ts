@@ -3342,4 +3342,81 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('Check undo and redo with group node with two connector', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_GroupRotate_undo' });
+            document.body.appendChild(ele);
+            let diagram: Diagram;
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1',
+                    offsetX: 625,
+                    offsetY: 125,
+                  },
+                  {
+                    id : 'node2',
+                    offsetX: 775,
+                    offsetY: 175,
+                  },
+                { id:'group1', children: ['node1', 'node2'],annotations:[{content:"Label"}]},
+                { id: 'group2', children: ['connector1', 'connector2'],annotations:[{content:"Label"}] },
+            ];
+
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1',
+                    sourcePoint: {
+                      x: 100,
+                      y: 100,
+                    },
+                    targetPoint: {
+                      x: 300,
+                      y: 100,
+                    },
+                  },
+                  {
+                    id: 'connector2',
+                    sourcePoint: {
+                      x: 100,
+                      y: 200,
+                    },
+                    targetPoint: {
+                      x: 300,
+                      y: 200,
+                    },
+                  },
+            ];
+            diagram = new Diagram(
+                {
+                    width: '1050px', height: '500px', nodes: nodes,
+                    connectors: connectors,
+                });
+
+            diagram.appendTo('#diagram_GroupRotate_undo');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+       it('Checking undo functionality of group node with two connector', (done: Function) => {
+        let groupNode = diagram.nameTable['group2'];
+        diagram.select([groupNode]);
+        let prevAngle = diagram.selectedItems.nodes[0].rotateAngle;
+        let prevWidth = diagram.selectedItems.nodes[0].width;
+        let prevHeight = diagram.selectedItems.nodes[0].height;
+        diagram.rotate(diagram.selectedItems, -90);
+        diagram.rotate(diagram.selectedItems, -90);
+        diagram.undo();
+        diagram.undo();
+        let undoAngle = diagram.selectedItems.nodes[0].rotateAngle;
+        let undoWidth = diagram.selectedItems.nodes[0].width;
+        let undoHeight = diagram.selectedItems.nodes[0].height;
+        expect(prevAngle === undoAngle && prevWidth === undoWidth && prevHeight === undoHeight).toBe(true);
+        done();
+       });
+    });
 });

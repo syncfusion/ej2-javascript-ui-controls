@@ -201,7 +201,7 @@ export class FormFieldPopUp {
                     const formFieldType: TextFormFieldType = formFieldData.type;
                     let inputElement: HTMLInputElement;
                     resultText = resultText ? resultText : '';
-                    if (formFieldType === 'Text') {
+                    if (formFieldType === 'Text' || formFieldType === 'Calculation') {
                         classList(this.target, ['e-de-txt-form'], []);
                         inputElement = this.textBoxInput;
                         this.textBoxInstance.value = resultText;

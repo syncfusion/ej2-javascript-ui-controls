@@ -32,7 +32,7 @@ export class RowRenderer implements IRowRenderer {
         const rowHeight: number = getRowHeight(sheet, index, true);
         row.style.height = `${rowHeight}px`;
         if (rowHeight < 20 ) {
-            row.style.lineHeight =  rowHeight > 0 ? (rowHeight - 1) + 'px' : '0px';
+            row.style.lineHeight =  rowHeight > 1 ? (rowHeight - 1) + 'px' : rowHeight + 'px';
         }
         if (isRowHeader && !preventHiddenCls) {
             if ( rowHeight < 20 ) {

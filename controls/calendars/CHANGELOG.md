@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 22.2.12 (2023-09-05)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I491906` - Fixed an issue where the values were not being cleared or changed while the popup was open and the user focus out.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I491906` - Fixed an issue where the values were not being cleared or changed while the popup was open and the user focus out.
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I491906` - Fixed an issue where the values were not being cleared or changed while the popup was open and the user focus out.
+
 ## 22.2.11 (2023-08-29)
 
 ### DateRangePicker

@@ -2050,8 +2050,12 @@ export class PdfViewerBase {
         }
         this.unWireEvents();
         this.clear(false);
-        this.pageContainer.parentNode ? this.pageContainer.parentNode.removeChild(this.pageContainer) : null;
-        this.viewerContainer.parentNode ? this.viewerContainer.parentNode.removeChild(this.viewerContainer) : null;
+        if(this.pageContainer){
+            this.pageContainer.parentNode ? this.pageContainer.parentNode.removeChild(this.pageContainer) : null;
+        }
+        if(this.viewerContainer){
+            this.viewerContainer.parentNode ? this.viewerContainer.parentNode.removeChild(this.viewerContainer) : null;
+        }
         if (this.contextMenuModule) {
             let contextMenuElement: any = this.contextMenuModule.contextMenuElement;
             contextMenuElement && contextMenuElement.ej2_instances && contextMenuElement.ej2_instances.length > 0 ? this.contextMenuModule.destroy() : null;
@@ -2591,50 +2595,52 @@ export class PdfViewerBase {
     }
 
     private unWireEvents(): void {
-        this.viewerContainer.removeEventListener('scroll', this.viewerContainerOnScroll, true);
-        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            this.viewerContainer.removeEventListener('touchmove', this.viewerContainerOnScroll, true);
-        }
-        this.viewerContainer.removeEventListener('mousedown', this.viewerContainerOnMousedown);
-        this.viewerContainer.removeEventListener('mouseup', this.viewerContainerOnMouseup);
-        this.viewerContainer.removeEventListener("wheel", this.detectTouchPad, false);
-        this.viewerContainer.removeEventListener('wheel', this.viewerContainerOnMouseWheel);
-        if (this.isMacSafari) {
-            window.removeEventListener('gesturestart', e => e.preventDefault());
-            window.removeEventListener('gesturechange', e => e.preventDefault());
-            window.removeEventListener('gestureend', e => e.preventDefault());
-            this.viewerContainer.removeEventListener('gesturestart', this.handleMacGestureStart, false);
-            this.viewerContainer.removeEventListener('gesturechange', this.handleMacGestureChange, false);
-            this.viewerContainer.removeEventListener('gestureend', this.handleMacGestureEnd, false);
-        }
-        this.viewerContainer.removeEventListener('mousemove', this.viewerContainerOnMousemove);
-        this.viewerContainer.removeEventListener('mouseleave', this.viewerContainerOnMouseLeave);
-        this.viewerContainer.removeEventListener('mouseenter', this.viewerContainerOnMouseEnter);
-        this.viewerContainer.removeEventListener('mouseover', this.viewerContainerOnMouseOver);
-        this.viewerContainer.removeEventListener('click', this.viewerContainerOnClick);
-        this.viewerContainer.removeEventListener('dragstart', this.viewerContainerOnDragStart);
-        this.viewerContainer.removeEventListener('contextmenu', this.viewerContainerOnContextMenuClick);
-        this.pdfViewer.element.removeEventListener('keydown', this.viewerContainerOnKeyDown);
-        window.addEventListener('keydown', this.onWindowKeyDown);
-        window.removeEventListener('mouseup', this.onWindowMouseUp);
-        window.removeEventListener('unload', this.unload);
-        window.removeEventListener('resize', this.onWindowResize);
-        // eslint-disable-next-line max-len
-        if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
-            this.viewerContainer.removeEventListener('pointerdown', this.viewerContainerOnPointerDown);
-            this.viewerContainer.removeEventListener('pointermove', this.viewerContainerOnPointerMove);
-            this.viewerContainer.removeEventListener('pointerup', this.viewerContainerOnPointerEnd);
-            this.viewerContainer.removeEventListener('pointerleave', this.viewerContainerOnPointerEnd);
-        } else {
-            this.viewerContainer.removeEventListener('touchstart', this.viewerContainerOnTouchStart);
-            if (this.isWebkitMobile && this.isDeviceiOS) {
-                // eslint-disable-next-line max-len
-                this.viewerContainer.removeEventListener("touchmove", (e) => { if (!isNullOrUndefined((e as any).scale) && ((e as any).scale !== 1)) { e.preventDefault(); } }, false);
+        if(this.viewerContainer){
+            this.viewerContainer.removeEventListener('scroll', this.viewerContainerOnScroll, true);
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                this.viewerContainer.removeEventListener('touchmove', this.viewerContainerOnScroll, true);
             }
-            this.viewerContainer.removeEventListener('touchmove', this.viewerContainerOnTouchMove);
-            this.viewerContainer.removeEventListener('touchend', this.viewerContainerOnTouchEnd);
-            this.viewerContainer.removeEventListener('touchleave', this.viewerContainerOnTouchEnd);
-            this.viewerContainer.removeEventListener('touchcancel', this.viewerContainerOnTouchEnd);
+            this.viewerContainer.removeEventListener('mousedown', this.viewerContainerOnMousedown);
+            this.viewerContainer.removeEventListener('mouseup', this.viewerContainerOnMouseup);
+            this.viewerContainer.removeEventListener("wheel", this.detectTouchPad, false);
+            this.viewerContainer.removeEventListener('wheel', this.viewerContainerOnMouseWheel);
+            if (this.isMacSafari) {
+                window.removeEventListener('gesturestart', e => e.preventDefault());
+                window.removeEventListener('gesturechange', e => e.preventDefault());
+                window.removeEventListener('gestureend', e => e.preventDefault());
+                this.viewerContainer.removeEventListener('gesturestart', this.handleMacGestureStart, false);
+                this.viewerContainer.removeEventListener('gesturechange', this.handleMacGestureChange, false);
+                this.viewerContainer.removeEventListener('gestureend', this.handleMacGestureEnd, false);
+            }
+            this.viewerContainer.removeEventListener('mousemove', this.viewerContainerOnMousemove);
+            this.viewerContainer.removeEventListener('mouseleave', this.viewerContainerOnMouseLeave);
+            this.viewerContainer.removeEventListener('mouseenter', this.viewerContainerOnMouseEnter);
+            this.viewerContainer.removeEventListener('mouseover', this.viewerContainerOnMouseOver);
+            this.viewerContainer.removeEventListener('click', this.viewerContainerOnClick);
+            this.viewerContainer.removeEventListener('dragstart', this.viewerContainerOnDragStart);
+            this.viewerContainer.removeEventListener('contextmenu', this.viewerContainerOnContextMenuClick);
+            this.pdfViewer.element.removeEventListener('keydown', this.viewerContainerOnKeyDown);
+            window.addEventListener('keydown', this.onWindowKeyDown);
+            window.removeEventListener('mouseup', this.onWindowMouseUp);
+            window.removeEventListener('unload', this.unload);
+            window.removeEventListener('resize', this.onWindowResize);
+            // eslint-disable-next-line max-len
+            if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Edge') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
+                this.viewerContainer.removeEventListener('pointerdown', this.viewerContainerOnPointerDown);
+                this.viewerContainer.removeEventListener('pointermove', this.viewerContainerOnPointerMove);
+                this.viewerContainer.removeEventListener('pointerup', this.viewerContainerOnPointerEnd);
+                this.viewerContainer.removeEventListener('pointerleave', this.viewerContainerOnPointerEnd);
+            } else {
+                this.viewerContainer.removeEventListener('touchstart', this.viewerContainerOnTouchStart);
+                if (this.isWebkitMobile && this.isDeviceiOS) {
+                    // eslint-disable-next-line max-len
+                    this.viewerContainer.removeEventListener("touchmove", (e) => { if (!isNullOrUndefined((e as any).scale) && ((e as any).scale !== 1)) { e.preventDefault(); } }, false);
+                }
+                this.viewerContainer.removeEventListener('touchmove', this.viewerContainerOnTouchMove);
+                this.viewerContainer.removeEventListener('touchend', this.viewerContainerOnTouchEnd);
+                this.viewerContainer.removeEventListener('touchleave', this.viewerContainerOnTouchEnd);
+                this.viewerContainer.removeEventListener('touchcancel', this.viewerContainerOnTouchEnd);
+            }    
         }
     }
     /**
@@ -4769,7 +4775,7 @@ export class PdfViewerBase {
     };
 
     // eslint-disable-next-line
-    private initPageDiv(pageValues: { pageCount: any, pageSizes: any }): void {
+    private initPageDiv(pageValues: { pageCount: any, pageSizes: any, pageRotation: any }): void {
         if (!isBlazor()) {
             if (this.pdfViewer.toolbarModule) {
                 this.pdfViewer.toolbarModule.updateTotalPage();
@@ -4812,7 +4818,7 @@ export class PdfViewerBase {
                     } else {
                         topValue = this.pageGap;
                     }
-                    const size: ISize = { width: pageValues.pageSizes[parseInt(i.toString(), 10)].Width, height: pageValues.pageSizes[parseInt(i.toString(), 10)].Height, top: topValue };
+                    const size: ISize = { width: pageValues.pageSizes[parseInt(i.toString(), 10)].Width, height: pageValues.pageSizes[parseInt(i.toString(), 10)].Height, top: topValue, rotation: pageValues.pageRotation[parseInt(i.toString(), 10)] };
                     this.pageSize.push(size);
                 }
                 if (this.pageSize[parseInt(i.toString(), 10)].height > this.pageSize[parseInt(i.toString(), 10)].width) {
@@ -5054,6 +5060,10 @@ export class PdfViewerBase {
 
             let imageData: string = data['image'];
             let zoomFactor: number = this.retrieveCurrentZoomFactor();
+            const oldCanvases: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_tileimg_' + pageIndex + '_"]');
+            if (oldCanvases.length === 0) {
+                this.isReRenderRequired = true;
+            }
             if (this.isReRenderRequired) {
                 if (data.zoomFactor) {
                     zoomFactor = data.zoomFactor;
@@ -5133,7 +5143,6 @@ export class PdfViewerBase {
                     this.onPageRender(data, pageIndex, pageDiv);
                 }
             } else {
-                const oldCanvases: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_tileimg_' + pageIndex + '_"]');
                 for (let l: number = 0; l < oldCanvases.length; l++) {
                     let tileImgId: string[] = oldCanvases[parseInt(l.toString(), 10)].id.split('_');
                     let zoomFactor = proxy.retrieveCurrentZoomFactor();

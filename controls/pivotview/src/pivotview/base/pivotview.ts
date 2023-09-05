@@ -3117,6 +3117,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             chartSettings: pivotData.chartSettings,
             displayOption: pivotData.displayOption
         }, true);
+        if (pivotData.displayOption.primary === 'Chart') {
+            this.currentView = 'Chart';
+        } else {
+            this.currentView = 'Table';
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this as any).bulkChanges.pivotValues;
         this.allowServerDataBinding = true;
@@ -4737,7 +4742,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             removeClass([this.element], cls.DEVICE);
         }
         if (this.cssClass) {
-            addClass([this.element], this.cssClass);
+            addClass([this.element], this.cssClass.split(' '));
         }
     }
 

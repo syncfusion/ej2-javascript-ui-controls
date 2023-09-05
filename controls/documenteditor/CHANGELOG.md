@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 22.2.12 (2023-09-05)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I482661` - Auto fit table with preferred width table is layouted properly in Document editor
+- `#I458332` - Now, able to search a word & apply properties like alignment(left/right/center) inside shape.
+- `#I494044` - Resolved the exception issue while exporting a document in server side.
+- `#I485502` - Now, Date field opened properly in form filling mode.
+
 ## 22.2.11 (2023-08-29)
 
 ### Document Editor

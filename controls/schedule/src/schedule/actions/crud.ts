@@ -322,7 +322,8 @@ export class Crud {
         }
         const updateEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
         const args: ActionEventArgs = {
-            requestType: action === 'EditOccurrence' ? 'eventChange' : 'eventRemove', cancel: false,
+            requestType: action === 'EditOccurrence' ? 'eventChange' : 'eventRemove',
+            cancel: false,
             addedRecords: [], changedRecords: updateEvents, deletedRecords: []
         };
         args.data = occurrenceData;
@@ -606,6 +607,10 @@ export class Crud {
     }
 
     private excludeDateCheck(eventStartTime: Date, exceptionDateList: string): string {
+        const timezone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
+        if (timezone) {
+            eventStartTime = this.parent.tzModule.remove(new Date(+eventStartTime.getTime()), timezone);
+        }
         const exDate: string = getRecurrenceStringFromDate(eventStartTime);
         if (!isNullOrUndefined(exceptionDateList)) {
             if (exceptionDateList.indexOf(exDate) === -1) {

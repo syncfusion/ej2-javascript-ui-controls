@@ -1729,6 +1729,46 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let isPropertyChanged: boolean = true;
         let refreshLayout: boolean = false;
         let refereshColelction: boolean = false;
+        // Bug 842506: After multiple group node rotations, the undo functionality is not working.
+        // Below condition is used to remove width and height of nodes in props when we perform group node rotate using button.
+        if ((this as any).rotateUsingButton && !(this as any).fromUndo) {
+            if (newProp.nodes && Object.keys(newProp.nodes).length > 0) {
+                var nodeId = '';
+                for (var _k = 0, _l = Object.keys(newProp.nodes); _k < _l.length; _k++) {
+                    var key = _l[parseInt(_k.toString(), 10)];
+                    var nodeIndex = parseInt(key);
+                    nodeId = (this.nodes[parseInt(nodeIndex.toString(), 10)].id);
+                }
+                var nodeObj = this.nameTable[`${nodeId}`];
+                if (nodeObj.children && nodeObj.children.length > 0) {
+                    if ((this as any).rotateUsingButton) {
+                        var _l:string[];
+                        for (var _k = 0, _l = Object.keys(newProp.nodes); _k < _l.length; _k++) {
+                            var key = _l[parseInt(_k.toString(), 10)];
+                            var nodeIndex = parseInt(key);
+                           
+                                if (newProp.nodes[parseInt(nodeIndex.toString(), 10)].rotateAngle !== undefined) {
+                                    newProp.nodes[parseInt(nodeIndex.toString(), 10)] = { rotateAngle: newProp.nodes[parseInt(nodeIndex.toString(), 10)].rotateAngle };
+                                    oldProp.nodes[parseInt(nodeIndex.toString(), 10)] = { rotateAngle: newProp.nodes[parseInt(nodeIndex.toString(), 10)].rotateAngle - (this as any).buttonAngle };
+                                    newProp.selectedItems = { rotateAngle: newProp.selectedItems.rotateAngle };
+                                    oldProp.selectedItems = { rotateAngle: newProp.selectedItems.rotateAngle - (this as any).buttonAngle };
+                                    if((this as any).fromUndo === false && _k === _l.length - 1){
+                                        (this as any).buttonAngle = 1;
+                                    }
+                                }
+                                else if((this as any).buttonAngle || newProp.nodes[parseInt(nodeIndex.toString(), 10)].offsetX || newProp.nodes[parseInt(nodeIndex.toString(), 10)].offsetY) {
+                                    newProp = {};
+                                    oldProp = {};
+                                    (this as any).buttonAngle = null;
+                                }
+                        }
+                        if( _l.length > 1){
+                            (this as any).buttonAngle = null;
+                        }
+                    }
+                }
+            }
+        }
         if (this.diagramActions & DiagramAction.Render) {
             for (const prop of Object.keys(newProp)) {
                 switch (prop) {
@@ -3433,7 +3473,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {number} angle - Defines the angle by which the objects have to be rotated
      * @param {PointModel} pivot - Defines the reference point with reference to which the objects have to be rotated
      */
-    public rotate(obj: NodeModel | ConnectorModel | SelectorModel, angle: number, pivot?: PointModel): boolean {
+    public rotate(obj: NodeModel | ConnectorModel | SelectorModel, angle: number, pivot?: PointModel, rotateUsingHandle?: boolean): boolean {
+        // Bug 842506: After multiple group node rotations, the undo functionality is not working.
+        // Added below condition to change the negative angle to positive angle and assign button angle value if we rotate using button.
+        if(!rotateUsingHandle){
+            (this as any).buttonAngle = angle;
+            if(angle < 0){
+                angle = (angle + 360) % 360;
+            }
+        }
         this.insertBlazorDiagramObjects(obj);
         let checkBoundaryConstraints: boolean;
         if ((obj as NodeModel | ConnectorModel).id) {
@@ -3464,6 +3512,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
             this.commandHandler.getBlazorOldValues();
+        }
+        if(!rotateUsingHandle){
+            (this as any).rotateUsingButton = true;
         }
         return checkBoundaryConstraints;
     }

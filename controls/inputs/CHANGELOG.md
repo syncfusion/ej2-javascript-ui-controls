@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 22.2.11 (2023-08-29)
+## 22.2.12 (2023-09-05)
+
+### TextBox
+
+#### Bug Fixes
+
+- `I453508` - Fixed the issue where the e-outline breaks when an icon is prepended to the textbox.
+
+## 22.2.9 (2023-08-15)
 
 ### Slider
 

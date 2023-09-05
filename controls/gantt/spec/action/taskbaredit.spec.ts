@@ -3697,3 +3697,65 @@ describe('Milestone get disappeared when we indent the record issue', () => {
     
     });
 });
+describe('Bug-842430:Milestone is not converting back to taskbar when we change isMilestone property', () => {
+    let ganttObj: Gantt;
+    let newData1: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Identify site location',
+            StartDate: new Date('04/02/2019'),
+            Duration: 5,
+            Progress: 30,
+            isMileStone: true,
+        },
+        {
+            TaskID: 2,
+            TaskName: 'Soil test approval',
+            StartDate: new Date('04/02/2019'),
+            Duration: 10,
+            Progress: 30,
+            isMileStone: true,
+        },
+        {
+            TaskID: 3,
+            TaskName: 'New project approval',
+            StartDate: new Date('04/02/2019'),
+            Duration: 3,
+            Progress: 30
+        }
+        ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: newData1,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                milestone: 'isMilestone'
+            },
+            gridLines: "Both",
+            allowFiltering:true,
+            allowResizing:true,
+            highlightWeekends: true,
+            labelSettings: {
+                taskLabel: 'Progress'
+            },
+            splitterSettings:{
+                columnIndex: 2,
+            },
+            height: '550px',
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('check duration of taskbar when milestome property is mapped', () => {
+        expect(ganttObj.currentViewData[0].taskData['Duration']).toBe(5);
+        expect(ganttObj.currentViewData[1].taskData['Duration']).toBe(10);
+    });
+});

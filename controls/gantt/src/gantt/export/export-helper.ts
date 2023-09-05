@@ -433,7 +433,8 @@ export class ExportHelper {
         row.height = pixelToPoint(this.parent.rowHeight);
         this.copyStyles(this.ganttStyle.columnHeader, row.cells.getCell(0), row.isParentRow);
         const count: number = this.columns.length;
-        this.mergeCells(0, 0, count);
+        row.cells.getCell(0).value = this.parent.localeObj.getConstant('emptyRecord');
+        this.mergeCells(1, 0, count);
     }
     private mergeCells(rowIndex: number, colIndex: number, lastColIndex: number): void {
         this.gantt.rows.getRow(rowIndex).cells.getCell(colIndex).columnSpan = lastColIndex;

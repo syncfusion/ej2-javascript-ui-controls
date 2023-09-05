@@ -124,7 +124,7 @@ export class Toolbar {
      * @returns {void}
      */
     public initToolBar(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
-        items = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(items)));
+        // items = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(items)));
         this.toolbarItems = items;
         this.renderToolBar();
         this.wireEvent();
@@ -360,7 +360,7 @@ export class Toolbar {
      * @returns {void}
      */
     public reInitToolbarItems(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
-        items = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(items)));
+        // items = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(items)));
         for (let i: number = 0; i < items.length; i++) {
             switch (items[parseInt(i.toString(), 10)]) {
                 case 'RestrictEditing':

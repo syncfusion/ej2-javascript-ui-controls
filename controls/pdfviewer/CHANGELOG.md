@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 22.2.12 (2023-09-05)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I489522` - Now, when annotations are double-clicked, the `isDocumentEdited API` no longer switches to the TRUE state.
+- `#I492457` - Now, the page renders properly after zooming in and zooming out when the provided PDF document is loaded.
+- `#I488322` - Now, annotations that were exported from the older version are imported into the latest version.
+- `#I491908` - Now, the type handwritten signature in Arabic language is retained when downloading the document.
+- `#I490945` - Now, the rotation of the annotations is properly preserved when importing them before rendering the pages.
+
 ## 22.2.11 (2023-08-29)
 
 ### PDF Viewer

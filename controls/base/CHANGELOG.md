@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 22.2.12 (2023-09-05)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved the issue with offline material theme have google fonts.
+
 ## 22.2.10 (2023-08-22)
 
 ### Common

@@ -256,6 +256,7 @@ export class DateRangePicker extends CalendarBase {
     protected touchRangeModule: Touch;
     protected touchRangeStart: boolean;
     protected iconRangeRight: string;
+    private isKeyPressed: boolean = false;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -1060,6 +1061,7 @@ export class DateRangePicker extends CalendarBase {
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
         EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
+        EventHandler.add(this.inputElement, 'keyup', this.keyupHandler, this);
         if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
         }
@@ -1087,6 +1089,7 @@ export class DateRangePicker extends CalendarBase {
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        EventHandler.remove(this.inputElement, 'keyup', this.keyupHandler);
         if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
         }
@@ -3236,6 +3239,9 @@ export class DateRangePicker extends CalendarBase {
             this.startButton.element.classList.add(ACTIVE);
         }
     }
+    private keyupHandler(e: KeyboardEventArgs): void {
+        this.isKeyPressed = (this.inputElement.value !== this.previousEleValue) ? true : false;
+    }
     private applyFunction(eve?: MouseEvent | KeyboardEventArgs): void {
         let isValueChanged: boolean = false;
         if (eve.type !== 'touchstart') {
@@ -3261,7 +3267,10 @@ export class DateRangePicker extends CalendarBase {
             this.previousStartValue = new Date(+this.startValue);
             this.previousEndValue = new Date(+this.endValue);
             this.previousEleValue = this.inputElement.value;
-            Input.setValue(this.rangeArgs(eve).text, this.inputElement, this.floatLabelType, this.showClearButton);
+            if(!this.isKeyPressed){
+                Input.setValue(this.rangeArgs(eve).text, this.inputElement, this.floatLabelType, this.showClearButton);
+            }
+            this.isKeyPressed = false;
             if (+this.initStartDate !== +this.startValue || +this.initEndDate !== +this.endValue) {
                 isValueChanged = true;
             }

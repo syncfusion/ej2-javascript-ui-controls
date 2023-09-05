@@ -1422,7 +1422,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private inputHandler(event: KeyboardEventArgs): void {
         if (!this.readonly && this.enabled) {
-            if (!((event.action == 'right' || event.action == 'left' || event.action == 'tab') || ((event.action == 'home' || event.action == 'end') && !this.isPopupOpen()))) {
+            if (!((event.action == 'right' || event.action == 'left' || event.action == 'tab') || ((event.action == 'home' || event.action == 'end'  || event.action == 'up' || event.action == 'down') && !this.isPopupOpen() && !this.enableMask))) {
                 event.preventDefault();
             }
             switch (event.action) {
@@ -2212,7 +2212,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.isNavigate = true;
         this.setHover(this.selectedElement, NAVIGATION);
         this.setActiveDescendant();
-        this.selectInputText();
+        if (this.enableMask) {
+            this.selectInputText();
+        }
         if (this.isPopupOpen() && this.selectedElement !== null && (!event || event.type !== 'click')) { this.setScrollPosition(); }
     }
     protected getCultureTimeObject(ld: Object, c: string): Object {

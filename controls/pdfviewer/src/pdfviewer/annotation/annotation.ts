@@ -2303,7 +2303,9 @@ export class Annotation {
         // eslint-disable-next-line max-len
         this.popupNoteContent = createElement('div', { id: this.pdfViewer.element.id + '_annotation_note_content', className: 'e-pv-annotation-note-content' });
         this.popupNote.appendChild(this.popupNoteContent);
-        this.pdfViewerBase.mainContainer.appendChild(this.popupNote);
+        if(this.pdfViewerBase.mainContainer){
+            this.pdfViewerBase.mainContainer.appendChild(this.popupNote);
+        }
     }
 
     /**
@@ -2771,9 +2773,12 @@ export class Annotation {
             }
             this.pdfViewer.nodePropertyChange(currentAnnotation, { dynamicText: dynamicText });
             this.pdfViewer.renderSelector(currentAnnotation.pageIndex, currentAnnotation.annotationSelectorSettings);
-            // eslint-disable-next-line max-len
-            this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'dynamicText Change', '', clonedObject, redoClonedObject);
-            this.modifyInCollections(currentAnnotation, 'dynamicText');
+            if(clonedObject.dynamicText !== redoClonedObject.dynamicText)
+            {
+                // eslint-disable-next-line max-len
+                this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'dynamicText Change', '', clonedObject, redoClonedObject);
+                this.modifyInCollections(currentAnnotation, 'dynamicText');
+            }
             if (!isNullOrUndefined(this.freeTextAnnotationModule) && this.freeTextAnnotationModule.previousText !== 'Type Here' && this.freeTextAnnotationModule.previousText !== currentAnnotation.dynamicText) {
                 this.triggerAnnotationPropChange(currentAnnotation, false, false, false, false, false, false, false, true, this.freeTextAnnotationModule.previousText, currentAnnotation.dynamicText);
             }
@@ -3441,6 +3446,10 @@ export class Annotation {
     public onShapesMouseup(pdfAnnotationBase: PdfAnnotationBaseModel, event: any): void {
         // eslint-disable-next-line max-len
         pdfAnnotationBase = !isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0]) ? this.pdfViewer.selectedItems.annotations[0] : pdfAnnotationBase;
+        let isToolMoved: boolean = false;
+        if(this.pdfViewerBase.prevPosition.x !== this.pdfViewerBase.currentPosition.x || this.pdfViewerBase.prevPosition.y !== this.pdfViewerBase.currentPosition.y){
+            isToolMoved = true;
+        }
         if (pdfAnnotationBase) {
             if (this.textMarkupAnnotationModule && this.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                 this.textMarkupAnnotationModule.currentTextMarkupAnnotation = null;
@@ -3473,7 +3482,7 @@ export class Annotation {
                     }
                 }
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
-            } else if (this.pdfViewerBase.tool instanceof MoveTool || this.pdfViewerBase.tool instanceof ResizeTool) {
+            } else if ((this.pdfViewerBase.tool instanceof MoveTool || this.pdfViewerBase.tool instanceof ResizeTool) && isToolMoved) {
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
                 if (pdfAnnotationBase.measureType === '' || isNullOrUndefined(pdfAnnotationBase.measureType)) {
                     if (pdfAnnotationBase.shapeAnnotationType === 'FreeText') {
@@ -3508,7 +3517,7 @@ export class Annotation {
                         }
                     }
                 }
-            } else if (this.pdfViewerBase.tool instanceof ConnectTool) {
+            } else if ((this.pdfViewerBase.tool instanceof ConnectTool) && isToolMoved) {
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
                 if (pdfAnnotationBase.measureType === '' || isNullOrUndefined(pdfAnnotationBase.measureType)) {
                     // eslint-disable-next-line max-len

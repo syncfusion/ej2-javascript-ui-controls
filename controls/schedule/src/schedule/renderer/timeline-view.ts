@@ -147,8 +147,11 @@ export class TimelineViews extends VerticalView {
         let diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
         if (!isNullOrUndefined(currentDateIndex)) {
             if (currentDateIndex[0] !== 0) {
-                if (this.parent.activeView.colLevels[0] && this.parent.activeView.colLevels[0][0].colSpan) {
-                    diffInDates = currentDateIndex[0] * this.parent.activeView.colLevels[0][0].colSpan * this.getWorkCellWidth();
+                const index: number = this.parent.activeView.colLevels.findIndex((level: TdData[]) => level[0].type === 'dateHeader');
+                if (this.parent.activeView.colLevels[parseInt(index.toString(), 10)] &&
+                    this.parent.activeView.colLevels[parseInt(index.toString(), 10)][0].colSpan) {
+                    diffInDates = currentDateIndex[0] * this.parent.activeView.colLevels[parseInt(index.toString(), 10)][0].colSpan *
+                        this.getWorkCellWidth();
                 }
                 else {
                     const endHour: Date = this.getEndHour();

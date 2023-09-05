@@ -487,5 +487,30 @@ describe('Hide & Show ->', () => {
                 });
             });
         });
+        describe('EJ2-843853->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], frozenColumns: 4 }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Additional cell data are added and exists selection issue while hiding column before freeze pane applied area ->', (done: Function) => {
+                helper.invoke('hideColumn', [3]);
+                setTimeout(() => {
+                    helper.invoke('goTo', ['A50']);
+                    setTimeout((): void => {
+                        const rowHdrTableBody: HTMLTableElement = helper.invoke('getRowHeaderTable').tBodies[0];
+                        const contentTableBody: HTMLTableElement = helper.invoke('getContentTable').tBodies[0];
+                        expect(rowHdrTableBody.childElementCount).toEqual(contentTableBody.childElementCount);
+                        expect(rowHdrTableBody.lastElementChild.getAttribute('aria-rowindex')).toBe(contentTableBody.lastElementChild.getAttribute('aria-rowindex'));
+                        expect((rowHdrTableBody.lastChild as HTMLElement).childElementCount ).toEqual(4);
+                        expect((contentTableBody.lastChild as HTMLElement).childElementCount ).not.toEqual(0);
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

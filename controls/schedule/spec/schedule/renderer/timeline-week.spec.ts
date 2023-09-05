@@ -4426,6 +4426,27 @@ describe('Schedule Timeline Week view', () => {
         });
     });
 
+    describe('ES-844069 - Checking Current Time indicator', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                views: ['TimelineWeek'],
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('with header rows', () => {
+            const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            expect(contentWrap.querySelector('.e-current-timeline')).toBeDefined();
+            const timeIndicatorLeft: number = (contentWrap.querySelector('.e-current-timeline') as HTMLElement).offsetLeft;
+            const contentTableWidth: number = (schObj.element.querySelector('.e-content-table') as HTMLElement).offsetWidth;
+            expect(timeIndicatorLeft).toBeLessThanOrEqual(contentTableWidth);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

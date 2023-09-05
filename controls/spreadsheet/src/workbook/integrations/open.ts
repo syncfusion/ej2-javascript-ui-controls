@@ -136,7 +136,6 @@ export class WorkbookOpen {
             {
                 'isProtected': workbookModel.isProtected || false,
                 'password': workbookModel.password || '',
-                'showSheetTabs': isNullOrUndefined(workbookModel.showSheetTabs) ? true : workbookModel.showSheetTabs,
                 'sheets': workbookModel.sheets,
                 'activeSheetIndex': workbookModel.activeSheetIndex,
                 'definedNames': workbookModel.definedNames || [],
@@ -145,6 +144,9 @@ export class WorkbookOpen {
             },
             true
         );
+        if (!isNullOrUndefined(workbookModel.showSheetTabs)) {
+            this.parent.showSheetTabs = workbookModel.showSheetTabs;
+        }
         initSheet(this.parent);
         this.parent.notify(sheetCreated, null);
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });

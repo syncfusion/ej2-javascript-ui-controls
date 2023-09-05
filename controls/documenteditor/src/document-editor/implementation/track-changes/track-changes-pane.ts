@@ -459,6 +459,19 @@ export class TrackChangesPane {
                     let revision: Revision = this.owner.revisions.changes[i];
                     let ranges: object = this.owner.revisions.changes[i].range[0];
                     if (this.changes.containsKey(revision)) {
+                        let currentChangeView: ChangesSingleView = this.renderedChanges.get(revision);
+                        if (isNullOrUndefined(currentChangeView)) {
+                            continue;
+                        }
+                        if (!this.enableButtons) {
+                            if (!(currentChangeView.acceptButtonElement.classList.contains('e-de-overlay'))) {
+                                currentChangeView.acceptButtonElement.classList.add('e-de-overlay');
+                                currentChangeView.rejectButtonElement.classList.add('e-de-overlay');
+                            }
+                        } else if (currentChangeView.acceptButtonElement.classList.contains('e-de-overlay') && !this.owner.documentHelper.isTrackedOnlyMode) {
+                            currentChangeView.acceptButtonElement.classList.remove('e-de-overlay');
+                            currentChangeView.rejectButtonElement.classList.remove('e-de-overlay');
+                        }
                         continue;
                     }
                     if (ranges instanceof WRowFormat) {

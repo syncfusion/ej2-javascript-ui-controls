@@ -379,7 +379,7 @@ describe('Context-', () => {
               };
               (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
               expect(ganttObj.currentViewData[7].ganttProperties.isMilestone).toBeFalsy;
-              expect(ganttObj.currentViewData[7].ganttProperties.duration).toBe(1);
+              expect(ganttObj.currentViewData[7].ganttProperties.duration).toBe(3);
           });
           it('Delete Depedency', (done: Function) => {
               let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(2)') as HTMLElement;

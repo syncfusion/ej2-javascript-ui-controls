@@ -668,6 +668,7 @@ export class SheetRender implements IRenderer {
         this.parent.showSpinner(); const frozenCol: number = this.parent.frozenColCount(sheet);
         const frozenRow: number = this.parent.frozenRowCount(sheet); let firstRow: HTMLTableRowElement;
         const firstCol: number = skipHiddenIdx(sheet, args.indexes[1], true, 'columns');
+        const lastFrozenCol: number = skipHiddenIdx(sheet, frozenCol - 1, false, 'columns');
         this.clearCFResult(sheet);
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, cKey: string): void => {
             indexes = getRangeIndexes(cKey);
@@ -717,7 +718,7 @@ export class SheetRender implements IRenderer {
                         count + 1 : count]);
             }
             count++;
-            if (frozenCol && indexes[1] === frozenCol - 1) { row = null; firstRow = undefined; count = 0; }
+            if (frozenCol && indexes[1] === lastFrozenCol) { row = null; firstRow = undefined; count = 0; }
         });
         if (this.colGroupWidth !== colGroupWidth) {
             this.updateLeftColGroup(colGroupWidth);

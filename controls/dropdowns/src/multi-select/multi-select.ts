@@ -2547,6 +2547,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         return checkTemplate;
     }
+    private encodeHtmlEntities(input: string): string {
+        return input.replace(/[\u00A0-\u9999<>&]/g, function(match) {
+          return `&#${match.charCodeAt(0)};`;
+        });
+    }
     private getChip(
         data: string, value: string | number | boolean,
         e?: MouseEvent | KeyboardEventArgs): void {
@@ -2577,7 +2582,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else if (this.enableHtmlSanitizer) {
             chipContent.innerText = data;
         } else {
-            chipContent.innerHTML = data;
+            chipContent.innerHTML = this.encodeHtmlEntities(data);
         }
         chip.appendChild(chipContent);
         const eventArgs: { [key: string]: Object } = {
@@ -3597,9 +3602,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     protected updateWrapperText(wrapperType: HTMLElement , wrapperData: string): void {
         if (this.valueTemplate || !this.enableHtmlSanitizer) {
-            wrapperType.innerHTML = wrapperData;
+            wrapperType.innerHTML = this.encodeHtmlEntities(wrapperData);
         } else {
-            wrapperType.innerText = SanitizeHtmlHelper.sanitize(wrapperData);
+            wrapperType.innerText = wrapperData;
         }
     }
     private updateDelimView(): void {

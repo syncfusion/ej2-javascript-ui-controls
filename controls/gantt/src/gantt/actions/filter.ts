@@ -306,6 +306,9 @@ export class Filter {
                     break;
                 }
                 if (!isNullOrUndefined(this.parent.element.parentNode)) {
+                    if (parentNode.parentNode instanceof HTMLDocument) {
+                        break;
+                    }
                     parentNode = parentNode.parentNode;
                     marginLeft = parentNode.style.marginLeft;
                 }

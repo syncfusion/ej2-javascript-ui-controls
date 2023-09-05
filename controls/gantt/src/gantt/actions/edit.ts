@@ -438,6 +438,11 @@ export class Edit {
         const ganttPropByMapping: Object = getSwapKey(ganttObj.columnMapping);
         const scheduleFieldNames: string[] = [];
         let isScheduleValueUpdated: boolean = false;
+        if (!isNullOrUndefined(ganttData[tasks.milestone])) {
+            if (ganttData[tasks.milestone] === true) {
+                ganttData[tasks.milestone] = false;
+            }
+        }
         for (const key of Object.keys(data)) {
             if ([tasks.startDate, tasks.endDate, tasks.duration].indexOf(key) !== -1) {
                 if (isNullOrUndefined(data[`${key}`]) && !ganttObj.allowUnscheduledTasks) {
@@ -490,6 +495,20 @@ export class Edit {
                     ganttPropKey = 'taskName';
                 }else if (key === tasks.cssClass) {
                     ganttPropKey = 'cssClass'
+                }else if(key===tasks.milestone){
+                    ganttPropKey = 'isMilestone';
+                    if (!isNullOrUndefined(tasks.duration)) {
+                         const ganttProp: ITaskData = ganttData.ganttProperties;
+                        let durationValue: any = data[tasks.duration];
+                        if(value){
+                            durationValue = 0;
+                        } else {
+                           durationValue = durationValue <= 0 ?  1 : durationValue;
+                        }
+                        ganttObj.setRecordValue(tasks.duration, durationValue, ganttData, true);
+                        ganttObj.setRecordValue('duration', durationValue, ganttProp, true);
+                        ganttObj.setRecordValue('taskData.' + tasks.duration, durationValue, ganttData);                  
+                    }
                 }else if ((key === tasks.segments) && (!isNullOrUndefined(ganttData.ganttProperties.segments))) {
                     ganttPropKey = 'segments';
                     /* eslint-disable-next-line */
@@ -2884,6 +2903,58 @@ export class Edit {
     }
 
     /**
+     * Method to update the values to client side from server side.
+     *
+     * @param {Object} e - Defines the new modified data from the server.
+     * @param {ITaskAddedEventArgs} args - Defines the client side data.
+     * @returns {void} .
+     */
+    public updateClientDataFromServer(e: { addedRecords: Object[], changedRecords: Object[] }, args: ITaskAddedEventArgs): void {
+        const serverReturnedValue: Object = e.addedRecords[0];
+        const _aLength: number = Object.keys(serverReturnedValue).length;
+        for (let j: number = 0, _a = Object.keys(serverReturnedValue); j < _aLength; j++) {
+            let key: string = _a[parseInt(j.toString(), 10)];
+            (args.data as IGanttData)[`${key}`] = serverReturnedValue[`${key}`];
+        }
+        if (this.parent.taskFields.id !== null) {
+            (args.data as IGanttData).ganttProperties['taskId'] = serverReturnedValue[this.parent.taskFields.id];
+        }
+        if (this.parent.taskFields.name !== null) {
+            (args.data as IGanttData).ganttProperties['taskName'] = serverReturnedValue[this.parent.taskFields.name];
+        }
+        if (this.parent.taskFields.startDate !== null) {
+            (args.data as IGanttData).ganttProperties['startDate'] = serverReturnedValue[this.parent.taskFields.startDate];
+        }
+        if (this.parent.taskFields.endDate !== null) {
+            (args.data as IGanttData).ganttProperties['endDate'] = serverReturnedValue[this.parent.taskFields.endDate];
+        }
+        if (this.parent.taskFields.duration !== null) {
+            (args.data as IGanttData).ganttProperties['duration'] = parseInt(serverReturnedValue[this.parent.taskFields.duration]);
+        }
+        if (this.parent.taskFields.durationUnit !== null) {
+            (args.data as IGanttData).ganttProperties['durationUnit'] = serverReturnedValue[this.parent.taskFields.durationUnit];
+        }
+        if (this.parent.taskFields.progress !== null) {
+            (args.data as IGanttData).ganttProperties['progress'] = serverReturnedValue[this.parent.taskFields.progress];
+        }
+        if (this.parent.taskFields.dependency !== null) {
+            (args.data as IGanttData).ganttProperties['dependency'] = serverReturnedValue[this.parent.taskFields.dependency];
+        }
+        if (this.parent.taskFields.parentID !== null) {
+            (args.data as IGanttData).ganttProperties['parentID'] = serverReturnedValue[this.parent.taskFields.parentID];
+        }
+        if (this.parent.taskFields.baselineEndDate !== null) {
+            (args.data as IGanttData).ganttProperties['baselineEndDate'] = serverReturnedValue[this.parent.taskFields.baselineEndDate];
+        }
+        if (this.parent.taskFields.baselineStartDate !== null) {
+            (args.data as IGanttData).ganttProperties['baselineStartDate'] = serverReturnedValue[this.parent.taskFields.baselineStartDate];
+        }
+        if (this.parent.taskFields.resourceInfo !== null) {
+            (args.data as IGanttData).ganttProperties['resources'] = serverReturnedValue[this.parent.taskFields.resourceInfo];
+        }
+    }
+
+    /**
      * Method to add new record.
      *
      * @param {Object[] | Object} data - Defines the new data to add.
@@ -2941,8 +3012,9 @@ export class Edit {
                         const prevID: string = (args.data as IGanttData).ganttProperties.taskId.toString();
                         /* tslint:disable-next-line */
                         const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-                        const adaptor: AdaptorOptions = data.adaptor;
-                        if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor && adaptor instanceof ODataV4Adaptor) || data.dataSource.batchUrl) {
+                        const adaptor: any = data.adaptor;
+                        const moduleName: string = adaptor.getModuleName();
+                        if (!(moduleName == "WebApiAdaptor" || moduleName == "ODataAdaptor" || moduleName == "ODataV4Adaptor") || data.dataSource.batchUrl) {
                             /* tslint:disable-next-line */
                             const crud: Promise<Object> =
                                 data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
@@ -2958,6 +3030,7 @@ export class Edit {
                                     this.parent.setRecordValue(
                                         'rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(),
                                         (args.data as IGanttData).ganttProperties, true);
+                                    this.updateClientDataFromServer(e,args);    
                                     const idsIndex: number = this.parent.ids.indexOf(prevID);
                                     if (idsIndex !== -1) {
                                         this.parent.ids[idsIndex as number] = e.addedRecords[0][this.parent.taskFields.id].toString();

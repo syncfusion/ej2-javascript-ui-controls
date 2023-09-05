@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 22.2.12 (2023-09-05)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I492172` - An issue with recurrence exception not calculated based on scheduler timezone has been fixed.
+- `#I490434` - An issue with current time indicator positioned wrongly when header rows is applied in timeline views has been fixed.
+- `#I497178` - An issue with quick popup opens for unselected resource cells has been fixed.
+
 ## 22.2.11 (2023-08-29)
 
 ### Schedule

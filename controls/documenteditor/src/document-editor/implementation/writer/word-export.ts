@@ -346,6 +346,7 @@ export class WordExport {
     private keywordIndex: number = undefined;
     private isHeaderFooter: boolean = false;
     private isSerializeFootEndNote: string = undefined;
+    private containerWidth: number = 0;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -727,6 +728,7 @@ export class WordExport {
         for (let i: number = 0; i < count; i++) {
             this.section = this.document[sectionsProperty[this.keywordIndex]][parseInt(i.toString(), 10)];
             this.lastSection = i === count - 1;
+            this.containerWidth = this.section[sectionFormatProperty[this.keywordIndex]][pageWidthProperty[this.keywordIndex]] - (this.section[sectionFormatProperty[this.keywordIndex]][leftMarginProperty[this.keywordIndex]] + this.section[sectionFormatProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]]);
             this.serializeSection(writer, this.section, i === count - 1);
             this.section = undefined;
         }
@@ -4968,7 +4970,7 @@ export class WordExport {
     }
     // Serialize the table layout element
     private serializeTblLayout(writer: XmlWriter, format: any): void {
-        if (!HelperMethods.parseBoolValue(format[allowAutoFitProperty[this.keywordIndex]])) {
+        if (!HelperMethods.parseBoolValue(format[allowAutoFitProperty[this.keywordIndex]]) || format[preferredWidthProperty[this.keywordIndex]] > this.containerWidth) {
             writer.writeStartElement(undefined, 'tblLayout', this.wNamespace);
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'fixed');
             writer.writeEndElement();

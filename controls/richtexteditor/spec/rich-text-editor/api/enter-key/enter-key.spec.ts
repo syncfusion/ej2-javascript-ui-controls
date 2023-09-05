@@ -1,7 +1,7 @@
 /**
  * Enter Key spec
  */
-import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { EditorManager, RichTextEditor} from './../../../../src/index';
 import { renderRTE, destroy } from './../../render.spec';
 import { NodeSelection } from './../../../../src/selection/index';
@@ -20,6 +20,79 @@ let keyboardEventArgs = {
     action: 'enter',
     type: 'keydown'
 };
+describe('841897 - Enter key press submits the form when Rich Text Editor control is used inside the Form element', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+      };
+      let defaultString: string = `testing`;
+      let element: HTMLElement 
+    beforeAll((done: Function) => {
+        element = createElement('div', {
+            id: "from-wrapper", innerHTML:
+                ` <form method="post">
+                        <div id="defaultRTE">
+                        </div>
+                        <div id="submitbutton">
+                            <button id="submitButton" type="submit">Submit</button>
+                        </div>
+                    </form>
+                ` });
+        document.body.appendChild(element);
+        rteObj = new RichTextEditor({
+            enterKey:'DIV',
+            shiftEnterKey:'BR',
+            pasteCleanupSettings: {
+                prompt: true
+            },
+            toolbarSettings: {
+                items: [
+                "Undo",
+                "Redo",
+                "|",
+                "Bold",
+                "Italic",
+                "Underline",
+                "StrikeThrough"
+                ]
+            },
+            value: `<p class="focusNode"><br></p>`
+        });
+        rteObj.appendTo('#defaultRTE');
+        done();
+    });
+
+    it('Enter key press submits the form when Rich Text Editor control is used inside the Form element', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        keyBoardEvent.clipboardData = {
+            getData: () => {
+              return defaultString;
+            },
+            items: []
+          };
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode')
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        rteObj.onPaste(keyBoardEvent);
+        var enterKeyEvent = new KeyboardEvent("keydown", { key: "Enter" ,code:"Enter"});
+        var divElement = document.querySelector('.e-dialog');
+        divElement.dispatchEvent(enterKeyEvent);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<div><br></div><p class="focusNode"><br></p>`).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        detach(element);
+    });
+});
 
 describe('EJ2-59705 - Console error thrown when pressing enter key at firefox browser', () => {
     let defaultUserAgent= navigator.userAgent;
