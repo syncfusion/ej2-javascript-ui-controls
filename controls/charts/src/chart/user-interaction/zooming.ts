@@ -82,7 +82,7 @@ export class Zoom {
         this.zoomAxes = [];
         this.zoomkitOpacity = 1;
         this.isIOS = Browser.isIos || Browser.isIos7;
-        this.isZoomed = this.performedUI = (this.zooming.enablePan && this.zooming.enableSelectionZooming) ||
+        this.isZoomed = this.performedUI = this.zooming.enablePan ||
             ((this.chart.primaryXAxis.zoomFactor < 1 && this.chart.primaryXAxis.zoomPosition > 0) ||
                 (this.chart.primaryYAxis.zoomFactor < 1 && this.chart.primaryYAxis.zoomPosition > 0) || this.isAxisZoomed(this.chart.axes));
         if (zooming.enableScrollbar) {
@@ -379,6 +379,9 @@ export class Zoom {
                     argsData.currentZoomFactor = zoomFactor;
                     argsData.currentZoomPosition = zoomPosition;
                 }
+                if (argsData.currentZoomFactor === argsData.previousZoomFactor && argsData.currentZoomPosition === argsData.previousZoomPosition) {
+                    chart.disableTrackTooltip = false;
+                }
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
@@ -610,7 +613,7 @@ export class Zoom {
         });
         this.toolkitElements.appendChild(defElement);
         const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' : this.chart.theme === 'Fluent' ? '#F3F2F1' :
-            (this.chart.theme === 'FluentDark' ? '#252423' : this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Material3Dark' ? '#1C1B1F' : '#fafafa');
+            (this.chart.theme === 'Material3' ? '#FFFFFF' : this.chart.theme === 'Material3Dark' ? '#1C1B1F' : '#fafafa');
         this.toolkitElements.appendChild(render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
             1, new Rect(0, 0, width, (height + (spacing * 2))), 4, 4

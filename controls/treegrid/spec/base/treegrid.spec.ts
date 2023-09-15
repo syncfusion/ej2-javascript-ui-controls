@@ -2106,7 +2106,11 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
   let originalTimeout: number;
   beforeAll((done: Function) => {
       let dataBound: EmitType<Object> = () => { done(); };
-      jasmine.Ajax.install();
+      spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+        new Response(JSON.stringify({ d: data.filter((e: { [x: string]: Object; })=>{ return isNullOrUndefined(e['parentID']);}), __count: 15 }), {
+            status: 200,
+        })
+      ));
       originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
       jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
       dataManager = new DataManager({
@@ -2130,14 +2134,10 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
             ]
           });
       gridObj.appendTo('#Grid');
-      this.request = jasmine.Ajax.requests.mostRecent();
-      this.request.respondWith({
-          status: 200,
-          responseText: JSON.stringify({ d: data.filter((e: { [x: string]: Object; })=>{ return isNullOrUndefined(e['parentID']);}), __count: 15 })
-      });
+      this.request = window.fetch['calls'].mostRecent();
   });
 
-  it('checking script error', () => {
+  it('checking script error', (done: Function) => {
     let firstdata = { TaskID: 1, Duration: 2, TaskName: 'newChild', Progress: 45 };
     let lastdata = { TaskID: 3, Duration: 2, TaskName: 'newChild', Progress: 45 };
     gridObj.setRowData(firstdata.TaskID, firstdata as object)
@@ -2146,6 +2146,7 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
     expect(rows[0].cells[0].classList.contains('e-lastrowcell')).toBe(false);
     gridObj.setRowData(lastdata.TaskID, lastdata as object)
     expect(rows[lenValue].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+    done();
   });
 
   describe('keyBoard Interaction for expand/collapse child row', () => {

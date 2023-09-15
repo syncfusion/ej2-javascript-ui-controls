@@ -1,0 +1,12 @@
+$de-ctnr-tlbr-width: calc(100% - 75px);
+$de-ctnr-status-bar-hgt: 36px;
+$de-ctnr-tlbr-height: 86px;
+$de-tlbr-btn-height: calc(100% - 10px) !default;
+
+// Subtract toolbar height
+$de-tool-ctnr-editor-height: calc(100% - 86px);
+$de-ctrnr-tblr-item-padding: 0;
+$de-ctrnr-tblr-item-margin: 0 6.5px;
+$de-ctrnr-tblr-separator-margin: 0 5.5px;
+$de-prpty-btn-bg-clr: $default-bg-color;
+$de-bullet-icon-font-size: 29px;

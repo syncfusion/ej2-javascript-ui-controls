@@ -2,6 +2,7 @@
 import { Query, DataManager, Predicate } from '@syncfusion/ej2-data';
 import { Schedule } from '../base/schedule';
 import { EventFieldsMapping } from '../base/interface';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * data module is used to generate query and data source.
@@ -50,13 +51,37 @@ export class Data {
      */
     public generateQuery(startDate?: Date, endDate?: Date): Query {
         const query: Query = this.query.clone();
-        if (this.parent && this.parent.eventSettings.includeFiltersInQuery && startDate && endDate) {
-            const dateQuery: Predicate = this.getStartEndQuery(startDate, endDate);
-            const recurrenceQuery: Predicate = new Predicate(this.parent.eventFields.recurrenceRule, 'notequal', null).and(new Predicate(this.parent.eventFields.recurrenceRule, 'notequal', ''));
-            return query.where(dateQuery.or(recurrenceQuery));
+        if (this.parent && startDate && endDate) {
+            if (this.parent.activeViewOptions && this.parent.activeViewOptions.enableLazyLoading &&
+                !isNullOrUndefined(this.parent.activeViewOptions.group.resources) &&
+                this.parent.activeViewOptions.group.resources.length > 0 && this.parent.resourceBase &&
+                this.parent.resourceBase.resourceCollection.length > 0 && this.parent.resourceBase.renderedResources.length > 0) {
+                const resIdCollection: string[][] = [];
+                this.parent.resourceBase.resourceCollection.forEach(() => resIdCollection.push([]));
+                this.parent.resourceBase.renderedResources.forEach((resource: Record<string, any>) => {
+                    resIdCollection.forEach((resId: string[], index: number) => {
+                        const groupId: string = resource.groupOrder[parseInt(index.toString(), 10)];
+                        if (groupId && resId.indexOf(groupId) < 0) {
+                            resId.push(groupId);
+                        }
+                    });
+                });
+                this.parent.resourceBase.resourceCollection.forEach((resource: Record<string, any>, index: number) => {
+                    query.addParams(resource.field, resIdCollection[parseInt(index.toString(), 10)].toString());
+                });
+            }
+            if (this.parent.timezone) {
+                startDate = this.parent.tzModule.remove(new Date(+startDate.getTime()), this.parent.timezone);
+                endDate = this.parent.tzModule.remove(new Date(+endDate.getTime()), this.parent.timezone);
+            }
+            if (this.parent.eventSettings.includeFiltersInQuery) {
+                const dateQuery: Predicate = this.getStartEndQuery(startDate, endDate);
+                const recurrenceQuery: Predicate = new Predicate(this.parent.eventFields.recurrenceRule, 'notequal', null).and(new Predicate(this.parent.eventFields.recurrenceRule, 'notequal', ''));
+                return query.where(dateQuery.or(recurrenceQuery));
+            }
+            query.addParams('StartDate', startDate.toISOString());
+            query.addParams('EndDate', endDate.toISOString());
         }
-        if (startDate) { query.addParams('StartDate', startDate.toISOString()); }
-        if (endDate) { query.addParams('EndDate', endDate.toISOString()); }
         return query;
     }
 

@@ -107,7 +107,7 @@ export class InfiniteScroll {
             const updateIndex: string = 'updateIndex';
             this.parent.editModule[`${updateIndex}`](this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
             if (this.parent.getFrozenColumns()) {
-                this.parent.editModule[`${updateIndex}`](this.parent.grid.dataSource, this.parent.getMovableDataRows(),
+                this.parent.editModule[`${updateIndex}`](this.parent.grid.dataSource, this.parent.getDataRows(),
                                                          this.parent.getCurrentViewRecords());
             }
         }
@@ -230,8 +230,8 @@ export class InfiniteScroll {
             const keyField: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
             this.removeRows(rowElms, rows, data, keyField, true);
             if (this.parent.getFrozenColumns() > 0) {
-                const mRows: Row<Column>[] = this.parent.grid.getMovableRowsObject();
-                const mRowElms: Element[] = this.parent.grid.getMovableRows();
+                const mRows: Row<Column>[] = this.parent.grid.getRowsObject();
+                const mRowElms: Element[] = this.parent.grid.getRows();
                 this.removeRows(mRowElms, mRows, data, keyField);
             }
         }
@@ -282,22 +282,22 @@ export class InfiniteScroll {
         const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(serviceLocator, null, this.parent.grid);
         let tbody: HTMLElement;
         const currentData: ITreeData[] = this.parent.getCurrentViewRecords();
-        const currentRows: HTMLTableRowElement[] = eventArgs.isMovable ? <HTMLTableRowElement[]>this.parent.grid.getMovableRows()
+        const currentRows: HTMLTableRowElement[] = eventArgs.isMovable ? <HTMLTableRowElement[]>this.parent.grid.getRows()
             : <HTMLTableRowElement[]>this.parent.grid.getDataRows();
         if (eventArgs.isFrozenRight) {
             tbody = this.parent.element.querySelector('.e-frozen-right-content').querySelector('tbody');
         } else {
             tbody = !this.parent.grid.isFrozenGrid() ? this.parent.getContent().querySelector('tbody') : eventArgs.isMovable
-                ? this.parent.grid.getMovableVirtualContent().querySelector('tbody')
-                : this.parent.grid.getFrozenVirtualContent().querySelector('tbody');
+                ? this.parent.grid.getContent().querySelector('tbody')
+                : this.parent.grid.getContent().querySelector('tbody');
         }
         if (this.parent.frozenRows) {
             tbody = eventArgs.isFrozenRows && this.parent.grid.infiniteScrollModule.requestType !== 'add'
               || !eventArgs.isFrozenRows && this.parent.grid.infiniteScrollModule.requestType === 'add'
                 ? !this.parent.grid.isFrozenGrid() ? this.parent.getHeaderContent().querySelector('tbody')
-                    : eventArgs.isMovable ? this.parent.grid.getMovableVirtualHeader().querySelector('tbody')
+                    : eventArgs.isMovable ? this.parent.grid.getHeaderContent().querySelector('tbody')
                         : eventArgs.isFrozenRight ? this.parent.element.querySelector('.e-frozen-right-header').querySelector('tbody')
-                            : this.parent.grid.getFrozenVirtualHeader().querySelector('tbody') : tbody;
+                            : this.parent.grid.getHeaderContent().querySelector('tbody') : tbody;
         }
         let position: string;
         const addRowIndex: string = 'addRowIndex';

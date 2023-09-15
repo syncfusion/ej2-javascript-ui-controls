@@ -98,9 +98,9 @@ export class Tooltip {
                     if (taskbarTemplateNode) {
                         append(taskbarTemplateNode, tooltipTemplate);
                     }
-                    argsData.content = this.toolTipObj.content = taskbarTemplateNode ? (tooltipTemplate as HTMLElement) :
+                    argsData.content = this.toolTipObj.content = taskbarTemplateNode ? (tooltipTemplate as HTMLElement) : data ?
                         parent.tooltipModule.getTooltipContent(
-                            (data.ganttProperties.isMilestone ? 'milestone' : 'taskbar'), data, parent, args) as any;
+                            (data.ganttProperties.isMilestone ? 'milestone' : 'taskbar'), data, parent, args) as any : "";
                 } else if (args.target.classList.contains('e-baseline-bar') ||
                            args.target.classList.contains('e-baseline-gantt-milestone')) {
                     let baseLineTemplateNode: NodeList;
@@ -112,9 +112,9 @@ export class Tooltip {
                     if (baseLineTemplateNode) {
                         append(baseLineTemplateNode, baselineTemplate);
                     }
-                    argsData.content = this.toolTipObj.content = baseLineTemplateNode ? (baselineTemplate as HTMLElement) :
+                    argsData.content = this.toolTipObj.content = baseLineTemplateNode ? (baselineTemplate as HTMLElement) : data ? 
                         parent.tooltipModule.getTooltipContent(
-                            (data.ganttProperties.isMilestone ? 'milestone' : 'baseline'), data, parent, args) as any;
+                            (data.ganttProperties.isMilestone ? 'milestone' : 'baseline'), data, parent, args) as any : "";
                 } else if (args.target.classList.contains('e-event-markers')) {
                     argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('marker', data, parent, args) as any;
                 } else if (args.target.classList.contains('e-connector-line-container')) {
@@ -179,7 +179,7 @@ export class Tooltip {
     // eslint-disable-next-line
     private tooltipCloseHandler(args: TooltipEventArgs): void {
         this.tooltipMouseEvent = null;
-        if (!this.parent.isAdaptive) {
+        if (!this.parent.isAdaptive && !isNullOrUndefined(this.currentTarget)) {
             EventHandler.remove(this.currentTarget, 'mousemove', this.mouseMoveHandler);
         }
         this.currentTarget = null;
@@ -227,6 +227,7 @@ export class Tooltip {
             }
             args.element.style.top = tooltipPositionY + 'px';
         }
+
     }
     /**
      * Method to get mouse pointor position

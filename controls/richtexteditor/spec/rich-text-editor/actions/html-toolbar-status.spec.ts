@@ -5,7 +5,7 @@ import { detach } from '@syncfusion/ej2-base';
 import { IToolbarStatus } from '../../../src';
 import { RichTextEditor, dispatchEvent, ToolbarStatusEventArgs } from "../../../src/rich-text-editor/index";
 import { NodeSelection } from '../../../src/selection/selection';
-import { renderRTE, destroy } from "./../render.spec";
+import { renderRTE, destroy, setCursorPoint } from "./../render.spec";
 
 describe(' HTML editor update toolbar ', () => {
     let rteObj: RichTextEditor;
@@ -478,6 +478,29 @@ describe(' HTML editor update toolbar ', () => {
         afterAll(() => {
             detach(button);
             destroy(rteObj);
+        });
+    });
+    describe('The readOnly is true in the Rich Text Editor', function () {
+        var rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                height: 400,
+                readonly: true,
+                value: "<div id='tdElement'>Rich Text Editor</div>"
+            });
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('The readOnly is true in the Rich Text Editor', function (done) {
+            rteObj.focusIn();
+            var tdElement = rteObj.contentModule.getDocument().querySelector("#tdElement");
+            setCursorPoint(tdElement, 0);
+            var keyBoardEvent = { type: 'keydown', preventDefault: function () { }, key: 'Backspace', keyCode: 8, stopPropagation: function () { }, shiftKey: false, which: 8 };
+            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(rteObj.readonly).toBe(true);
+            done();
         });
     });
 });

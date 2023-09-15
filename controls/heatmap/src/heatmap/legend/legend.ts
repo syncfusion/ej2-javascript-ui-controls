@@ -399,13 +399,16 @@ export class Legend {
             const title: TitleModel = heatMap.legendSettings.title;
             const titleSize: Size = measureText(title.text, title.textStyle);
             let padding: number = !heatMap.legendSettings.showLabel ? heatMap.horizontalGradient ? 10 : 6 : this.labelPadding;
-            let y: number; const anchor: string = 'start';
+            let y: number; let anchor: string = 'start';
             let maxWidth: number; let dominantBaseline: string;
             let text: string = title.text;
+            const textAlignment: string = title.textStyle.textAlignment;
             let options: TextOption;
             let yValue: number;
             if (heatMap.legendSettings.title.textStyle.textOverflow === 'Trim') {
-                maxWidth = this.width - 10;
+                // TO DO: When the legend title is large and legend position is left or right,
+                // the HeatMap is not rendered. The below line trimmed the large title text alone.
+                maxWidth = heatMap.horizontalGradient ? rect.width - 10 : this.width - 10;
                 text = textTrim(maxWidth, text, title.textStyle);
             }
             if (!heatMap.horizontalGradient) {
@@ -433,10 +436,17 @@ export class Legend {
                         new Rect(rect.x, yValue, maxWidth, titleSize.height)));
                 }
                 titleSize.width = rect.width < titleSize.width ? rect.width : titleSize.width;
+                let rectValue = rect.x;
+                if (text.indexOf('...') !== -1 && textAlignment === 'Far') {
+                    rectValue = (rectValue + (rect.width / 2) - (titleSize.width / 2));
+                } else {
+                    rectValue = textAlignment === 'Near' ? rectValue : textAlignment === 'Far' ? rect.width + rectValue :
+                        (rectValue + (rect.width / 2) - (titleSize.width / 2));
+                }
+                anchor = textAlignment === 'Far' && text.indexOf('...') === -1 ? 'end' : 'start';
                 options = new TextOption(
                     heatMap.element.id + '_legendTitle',
-                    new TextBasic(
-                        rect.x + (rect.width / 2) - (titleSize.width / 2), y + padding, anchor, text, 0, 'translate(0,0)', dominantBaseline),
+                    new TextBasic(rectValue, y + padding, anchor, text, 0, 'translate(0,0)', dominantBaseline),
                     title.textStyle, title.textStyle.color || heatMap.themeStyle.heatMapTitle);
             }
             this.drawSvgCanvas.createText(options, this.legend, text);
@@ -1473,7 +1483,7 @@ export class Legend {
         const element: Element = <HTMLElement>createElement('div', {
             id: this.heatMap.element.id + 'legendLabelTooltipContainer'
         });
-        (element as HTMLElement).style.position = 'absolute';
+        (element as HTMLElement).style.cssText = 'position: absolute; pointer-events: none;'
         this.heatMap.element.appendChild(element);
     }
 

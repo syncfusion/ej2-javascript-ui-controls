@@ -68,7 +68,7 @@ export class Tooltip extends BaseTooltip {
         this.removeTooltip(this.chart.tooltip.fadeOutDuration);
     }
 
-    private mouseMoveHandler(): void {
+    public mouseMoveHandler(): void {
         const chart: Chart = this.chart;
         chart.mouseX = chart.mouseX / chart.scaleX;
         chart.mouseY = chart.mouseY / chart.scaleY;
@@ -107,6 +107,7 @@ export class Tooltip extends BaseTooltip {
         const chart: Chart = this.chart;
         if (chart.crosshair.enable && withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)) {
             this.tooltip();
+            chart.markerRender.markerMove(false);
         }
         return false;
     }
@@ -343,7 +344,7 @@ export class Tooltip extends BaseTooltip {
 
     private renderGroupedTooltip(chart: Chart, isFirst: boolean, tooltipDiv: Element): void {
         let data: PointData;
-        const dataCollection: PointData[] = [];
+        let dataCollection: PointData[] = [];
         let lastData: PointData;
         const pointData: PointData = chart.chartAreaType === 'PolarRadar' ? this.getData() : null;
         this.stopAnimation();
@@ -384,10 +385,8 @@ export class Tooltip extends BaseTooltip {
             // if (data && this.header !== '' && this.currentPoints.length === 0) {
             //     headerContent = this.findHeader(data);
             // }
-            let showNearest: boolean = true;
             if (chart.tooltip.showNearestPoint && !data) {
                 data = this.getClosestX(chart, series, this.commonXValue([series]));
-                showNearest = false;
             }
             if (data) {
                 argument.data.push({ pointX: data.point.x , pointY: data.point.y, seriesIndex: data.series.index,
@@ -405,9 +404,7 @@ export class Tooltip extends BaseTooltip {
                     closetYValue = data.point.symbolLocations[0].y;
                     tempData = data;
                 }
-                if (showNearest) {
-                    lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : tempData || data;
-                }
+                lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : tempData || data;
                 dataCollection.push(data);
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
@@ -418,6 +415,27 @@ export class Tooltip extends BaseTooltip {
             //     extraPoints.push(data);
             // }
             i++;
+        }
+        if (!chart.tooltip.showNearestPoint) {
+            const collection: PointData[] = [];
+            this.currentPoints = []; argument.point = [];
+            argument.series = []; argument.data = [];
+            argument.text = [];
+            for (const data of dataCollection) {
+                if (data.point.symbolLocations[0].x === lastData.point.symbolLocations[0].x) {
+                    argument.point.push(data.point);
+                    argument.series.push(data.series);
+                    argument.text.push(this.getTooltipText(data));
+                    argument.headerText = this.findHeader(data);
+                    collection.push(data);
+                    argument.data.push({
+                        pointX: data.point.x, pointY: data.point.y, seriesIndex: data.series.index,
+                        seriesName: data.series.name, pointIndex: data.point.index, pointText: data.point.text
+                    });
+                }
+            }
+            dataCollection = collection;
+            this.currentPoints = collection;
         }
         if (dataCollection.length > 0 && this.currentPoints.length > 0) { // To avoid console error when we have empty chart with shared tooltip.
             this.triggerSharedTooltip(argument, lastData, extraPoints, chart, isFirst, dataCollection);
@@ -501,7 +519,7 @@ export class Tooltip extends BaseTooltip {
     }
 
     private getBoxLocation(data: PointData): ChartLocation {
-        const location: ChartLocation = this.lierIndex > 3 ? data.point.symbolLocations[this.lierIndex - 4] :
+        const location: ChartLocation = this.lierIndex > 3 ? (data.point.outliers.length > 0 ? data.point.symbolLocations[this.lierIndex - 4] : null) :
             {
                 x: data.point.regions[0].x + (data.point.regions[0].width / 2),
                 y: data.point.regions[0].y + (data.point.regions[0].height / 2)

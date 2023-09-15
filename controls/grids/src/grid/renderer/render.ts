@@ -127,7 +127,7 @@ export class Render {
                 const count: number = gObj.pageSettings.totalRecordsCount - dataLength;
                 const currentViewData: number = gObj.getCurrentViewRecords().length;
                 // eslint-disable-next-line max-len
-                if (!(currentViewData - dataLength) && count && ((gObj.pageSettings.currentPage - 1) * gObj.pageSettings.pageSize) === count) {
+                if ((!(currentViewData - dataLength) && count && ((gObj.pageSettings.currentPage - 1) * gObj.pageSettings.pageSize) === count) || (count && count <= dataLength)) {
                     gObj.prevPageMoving = true;
                     gObj.setProperties({
                         pageSettings: {
@@ -236,6 +236,12 @@ export class Render {
             dataManager = this.getFData(deffered, args);
         }
         if (!dataManager) {
+            if (gObj.allowPaging && args.requestType !== 'paging' && !gObj.getDataModule().dataManager.dataSource.offline
+                && ((gObj.editSettings.mode !== 'Batch' && args.action !== 'add') || (gObj.editSettings.mode === 'Batch'
+                && args.requestType !== 'batchsave')) && gObj.pageSettings && gObj.pageSettings.pageSizes
+                && gObj.pagerModule && gObj.pagerModule.pagerObj && gObj.pagerModule.pagerObj.isAllPage) {
+                gObj.pagerModule.pagerObj.isAllPage = undefined;
+            }
             dataManager = this.data.getData(args as NotifyArgs, this.data.generateQuery().requiresCount());
         } else {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -341,10 +347,18 @@ export class Render {
             ++spanCount;
         }
         const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow' });
-        tr.appendChild(this.parent.createElement('td', {
+        const td: HTMLElement = this.parent.createElement('td', {
             innerHTML: this.l10n.getConstant('EmptyRecord'),
             attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + gObj.groupSettings.columns.length).toString() }
-        }));
+        });
+        if (gObj.isFrozenGrid()) {
+            td.classList.add('e-leftfreeze');
+            (td as HTMLElement).style.left = 0 + 'px';
+        }
+        if (gObj.frozenRows && gObj.element.querySelector('.e-frozenrow-border')) {
+            this.parent.element.querySelector('.e-frozenrow-border').classList.add('e-frozenrow-empty');
+        }
+        tr.appendChild(td);
         tbody.appendChild(tr);
         this.contentRenderer.renderEmpty(<HTMLElement>tbody);
         if (isTrigger) {
@@ -531,7 +545,7 @@ export class Render {
                     if (args.requestType === 'batchsave') {
                         args.cancel = false;
                         args.rows = [];
-                        args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
+                        args.isFrozen = !args.isFrozen;
                         this.parent.trigger(events.actionComplete, args);
                     }
                 }
@@ -587,10 +601,15 @@ export class Render {
 
     private updatesOnInitialRender(e: { result: Object, count: number }): void {
         this.isLayoutRendered = true;
+        let isEmptyCol: boolean = false;
         if (this.parent.columns.length < 1) {
             this.buildColumns(e.result[0]);
+            isEmptyCol = true;
         }
         prepareColumns(this.parent.columns, null, this.parent);
+        if (isEmptyCol) {
+            this.parent.notify(events.refreshSplitFrozenColumn, {});
+        }
         this.headerRenderer.renderTable();
         this.contentRenderer.renderTable();
         this.parent.isAutoGen = true;

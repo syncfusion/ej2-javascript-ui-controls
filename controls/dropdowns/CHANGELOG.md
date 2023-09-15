@@ -2,88 +2,11 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I483661` - Fixed the issue where the selected value was not displayed correctly when using a character inside the datasource.
-
-## 22.2.11 (2023-08-29)
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#I492834` - An issue with the `noRecordsTemplate` property of the React Dropdown Tree component has been resolved.
-
-## 22.2.10 (2023-08-22)
-
-### DropDown List
-
-#### Bug Fixes
-
-- `#I490309` - The issue with the `aria-owns` attribute not having the correct `ID` of its popup list element has been fixed.
-- `#I481443` - Resolved the issue where the "no records" template was not being displayed and a console error occurred.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I479749` - Resolved the issue of "Unable to retrieve preselected variable values that are not present in the data source".
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#F183599` - The issue duplicate child was rendered when using `expanded` field in Dropdown Tree component with Web API adaptor has been resolved.
-
-## 22.2.9 (2023-08-15)
-
-### ComboBox
-
-#### Bug Fixes
-
-- `#483288` - Fixed a script error that occurred when opening the combobox popup in the Internet Explorer browser.
-
-### DropDown List
-
-#### Bug Fixes
-
-- `#I477135` - Fixed a memory leak issue in the Dropdownlist Component.
-
-- `#I486973` - Fixed an issue where the last selected item in the DropDownList would be retained in the list of items when the data source was changed.
-
-## 22.2.8 (2023-08-08)
-
-### DropDown List
-
-#### Bug Fixes
-
-- `#I474541` - Fixed an issue where the position of the popup was incorrect when enabling RTL mode.
-
 ### ListBox
 
 #### Bug Fixes
 
-- `#I485947` - Issue with "Script error thrown While Drag and Drop in dual ListBox with filtering option in blazor" has been resolved.
-
-## 22.2.5 (2023-07-27)
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#I481958` - The issue with "Child nodes are not rendering while mapping id with object value" has been resolved.
-
-## 22.1.39 (2023-07-18)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I473804` - Issue with "Scroll goes down while dragging the list item when we placed the listbox within popup" has been resolved.
+- `#I462373` - Issue with "Double quotes value not submitted while using the listbox component within the form" has been resolved.
 
 ### MultiSelect
 
@@ -91,66 +14,17 @@
 
 - `#I480443` - Fixed console error that occurred when opening the multiselect in mobile mode
 
-## 22.1.37 (2023-07-04)
-
 ### DropdownList
 
 #### Bug Fixes
 
 - `#I472623` - Resolved an issue when the window is resizing the popup position is misaligned
 
-- `#I467885` - Resolved an issue where the change event was not triggered for dynamically created TextBox after dropdown component was destroyed.
-
-## 22.1.36 (2023-06-28)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I473804` - Issue with "Scroll goes down while dragging the list item when we placed the listbox within popup" has been resolved.
-
-## 21.2.10 (2023-06-13)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I467539` - Issue with "AddItems method not working when we use itemTemplate(element type) in listbox" has been resolved.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I467953` - Issue with "Query construct incorrectly when preselect the value second time beyond the data source value" has been resolved.
-
-### DropDownList
-
-#### Bug Fixes
-
-- `I469452` - Issue with "A console error is thrown when the datasource value field has a null value in the dropdown list" has been resolved.
-
 ### ListBox
 
 #### Bug Fixes
 
 - `#F43705` - Issue with "Dropping selected items does not work correctly while enabling the checkbox in listbox component." has been resolved.
-- `#I462373` - Issue with "Double quotes value not submitted while using the listbox component within the form." has been resolved.
-
-## 21.2.8 (2023-05-30)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I462373` - Issue with "Double quotes value not submitted while using the listbox component within the form." has been resolved.
-
-### AutoComplete
-
-#### Bug Fixes
-
-- `#I460876` - Issue with "The header and footer template are not working" has been resolved.
-
-## 21.2.6 (2023-05-23)
 
 ### MultiSelect
 
@@ -158,103 +32,20 @@
 
 - `#I451885` - Resolved the performance issue when multiselect component is rendered with large number of data.
 
-### DropDownList
-
-#### Bug Fixes
-
-- `I460077` - Issue with "The popup is not closing properly when the focus is moved between two dropdowns" has been resolved.
-
 ## 21.2.5 (2023-05-16)
 
 ### ListBox
 
 #### Bug Fixes
 
-- `#I461307` - Issue with "No Records Template not renders properly when we set the default string in listbox" has been resolved.
-
-### ComboBox
-
-#### Bug Fixes
-
-- `#I452948` - "The memory leak issue detected in the combobox component within the detach element tab of the Edge browser" has been resolved.
-
-## 21.2.4 (2023-05-09)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I453746` - Issue with "Selected items not focusing properly in listbox while using selectItems method" has been resolved.
-- `#I461307` - Issue with "No Records Template not renders properly when we set the default string in listbox" has been resolved.
-
-## 21.2.3 (2023-05-03)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I453746` - Issue with "selectItems doesn't remove the existing selections in the listbox" has been resolved.
-
-## 21.1.41 (2023-04-18)
-
-### ListBox
-
-#### Bug Fixes
-
 - `#F181311` - Issue with "Scrolling is not working while drag and drop the list box with item Template in angular platform" has been resolved.
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#I451965` - While performing filtering multiple times, the checked node state is cleared in the Dropdown Tree component has been resolved.
-
-## 21.1.39 (2023-04-11)
-
-### ListBox
-
-#### Bug Fixes
-
 - `#F181131` - Issue with "No Record Found text disappears while hovering the drag item on list box without drop" has been resolved.
 - `#F181311` - Issue with "Scrolling is not working while drag and drop the list box with item Template" has been resolved.
-
-## 21.1.38 (2023-04-04)
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#I450984` - Resolved issue, when manually select the all items then `SelectAll` state not updated for the Dropdown Tree component.
-
-## 21.1.37 (2023-03-29)
-
-### Mention
-
-#### Bug Fixes
-
-- `#I449973` - Resolved issue where the Mention character would still display after selecting a name from the suggestion list.
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I442262` - Issue with "Script error thrown while using destroy method in change event of list box" has been resolved.
 - `#I445397` - Issue with "Script error thrown when navigate the listbox item in grouping listbox through keyboard navigation" has been resolved.
-
-## 21.1.35 (2023-03-23)
-
-### ListBox
-
-#### Bug Fixes
-
+- `#I442262` - Issue with "Script error thrown while using destroy method in change event of list box" has been resolved.
 - `#F38636` - Issue with "`selectItems` function doesn't work in listbox when values contain backslashes" has been resolved.
 - `#F424252` - Issue with "Data source not update properly when we filtering and clicking move All button in listbox toolbar sample" has been resolved.
 - `#I423072` - Issue with "`actionBegin` event argument not passes the filtered item properly while filtering and clicking move All button in listbox toolbar sample" has been resolved.
-
-### ListBox
-
-#### Bug Fixes
-
 - `#F37860` - Issue with "Command button not working properly for multiselect in ListBox in Mac" has been resolved.
 
 ### DropDownList
@@ -262,12 +53,6 @@
 #### Bug Fixes
 
 - `#I397894` - The issue "aria-label added on input element instead of wrapper element while adding the aria-label by using Html Attribute property" has been resolved.
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I409839` - Issue with "Script error thrown while drag and drop after removed the item from listbox using removeItem method" has been resolved.
 
 ## 20.3.47 (2022-09-29)
 

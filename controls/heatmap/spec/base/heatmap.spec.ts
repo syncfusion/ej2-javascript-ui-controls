@@ -132,7 +132,6 @@ describe('Heatmap Control', () => {
             let region: ClientRect = element.getBoundingClientRect();
             trigger.clickEvent(element, 0, 0, region.left + 10, region.top + 10);
         });
-
         it('Check cellClick client side event', (done: Function) => {
             heatmap.dataSource = [
                 [1, 2, 3],
@@ -561,7 +560,7 @@ describe('Heatmap Control', () => {
             expect(element == null).toBe(true);
             done();
         });
-		it('Check cellSelected client side event', (done: Function) => {
+        it('Check cellSelected client side event', (done: Function) => {
             heatmap.renderingMode = "SVG";
             heatmap.dataSource = [
                 [1, 2, 3],
@@ -582,6 +581,7 @@ describe('Heatmap Control', () => {
             let region: ClientRect = element.getBoundingClientRect();
             trigger.clickEvent(element, 0, 0, region.left + 10, region.top + 10);
         });
+
         it('Check axis label tool tip', (done: Function) => {
             heatmap.dataSource = [
                 [1, 2, 3],

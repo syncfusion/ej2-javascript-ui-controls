@@ -317,6 +317,9 @@ export class Toolkit {
                 zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
                 axisRange: axis.visibleRange
             });
+            if (chart.zoomModule.isDevice && !this.chart.isBlazor) {
+                chart.trigger(zoomComplete, argsData);
+            }
         }
         zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!zoomingEventArgs.cancel && this.chart.isBlazor) {

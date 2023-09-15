@@ -401,6 +401,9 @@ export class OptionsPane {
      */
     public onKeyDownInternal(): void {
         let inputElement: HTMLInputElement = document.getElementById(this.documentHelper.owner.containerId + '_option_search_text_box') as HTMLInputElement;
+        if (isNullOrUndefined(inputElement)) {
+            return;
+        }
         inputElement.blur();
         let text: string = inputElement.value;
         if (text === '') {
@@ -1046,7 +1049,9 @@ export class OptionsPane {
             } else {
                 if (!isNullOrUndefined(this.optionsPane)) {
                     this.clearSearchResultItems();
-                    this.documentHelper.owner.searchModule.clearSearchHighlight();
+                    if (!isNullOrUndefined(this.documentHelper.owner.searchModule)) {
+                        this.documentHelper.owner.searchModule.clearSearchHighlight();
+                    }
                     this.isOptionsPaneShow = false;
                     let resultListBox: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_list_box_container');
                     let message: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_search_status');

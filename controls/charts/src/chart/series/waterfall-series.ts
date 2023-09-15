@@ -8,6 +8,7 @@ import { Series, Points } from './chart-series';
 import { DoubleRange } from '../utils/double-range';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
+import { animationMode } from '@syncfusion/ej2-base';
 
 /**
  * `WaterfallSeries` module is used to render the waterfall series.
@@ -115,7 +116,7 @@ export class WaterfallSeries extends ColumnBase {
         }
         const element: HTMLElement = <HTMLElement>(redrawElement(redraw, options.id, options, series.chart.renderer) ||
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])));
-        element.style.visibility = (!series.chart.enableCanvas) ? ((series.animation.enable && series.chart.animateSeries) ?
+            element.style.visibility = (!series.chart.enableCanvas) ? ((((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && series.chart.animateSeries) ?
             'hidden' : 'visible') : null;
         appendChildElement(series.chart.enableCanvas, series.seriesElement, element, redraw, true, null, null, null, direction);
         this.renderMarker(series);

@@ -14,6 +14,8 @@ import { RibbonSplitButtonSettings } from './ribbon-splitbutton-settings';
 import { RibbonSplitButtonSettingsModel } from './ribbon-splitbutton-settings-model';
 import { RibbonTooltip } from './ribbon-tooltip';
 import { RibbonTooltipModel } from './ribbon-tooltip-model';
+import { RibbonGroupButtonSettingsModel } from './ribbon-group-button-settings-model';
+import { RibbonGroupButtonSettings } from './ribbon-group-button-settings';
 
 /**
  * Defines the ribbon item.
@@ -66,6 +68,9 @@ export class RibbonItem extends ChildProperty<RibbonItem>  {
      * `ActiveSize` property is passed as string in template context.
      *
      * @default ''
+     * @angularType string | object | HTMLElement
+     * @reactType string | function | JSX.Element | HTMLElement
+     * @vueType string | function | HTMLElement
      * @aspType string
      */
     @Property('')
@@ -145,6 +150,14 @@ export class RibbonItem extends ChildProperty<RibbonItem>  {
      */
     @Complex<RibbonSplitButtonSettingsModel>({}, RibbonSplitButtonSettings)
     public splitButtonSettings: RibbonSplitButtonSettingsModel;
+
+    /**
+     * Defines the properties for group button in Ribbon
+     *
+     * @default {}
+     */
+    @Complex<RibbonGroupButtonSettingsModel>({}, RibbonGroupButtonSettings)
+    public groupButtonSettings: RibbonGroupButtonSettingsModel;
 
     /**
      * @param {Object} prop - Gets the property of item.

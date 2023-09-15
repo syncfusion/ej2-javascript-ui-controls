@@ -2,54 +2,6 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
-### Splitter
-
-#### Bug Fixes
-
-- `#I483293` -  Fixed memory leak issue in Splitter component.
-
-## 22.1.37 (2023-07-04)
-
-### Splitter
-
-#### Bug Fixes
-
-- `#I466016` -  The issue with "The Horizontal pane does not retain its size when the window is resized" has been resolved.
-
-- `#I466016` -  The issue with "When including pane background colour, the Splitter resize button disappears" has been resolved.
-
-## 22.1.36 (2023-06-28)
-
-### Dashboard Layout
-
-#### Bug Fixes
-
-- `#I474181` - The issue with Dashboard Layout component while setting panels in row 1 and none at row 0 has been resolved.
-
-## 21.2.9 (2023-06-06)
-
-### Dashboard Layout
-
-#### Bug Fixes
-
-- `#F182339` - Resolved the panel overlapping issue, when resize it after continuously performing drag and drop actions in Dashboard Layout component.
-
-### Splitter
-
-#### Bug Fixes
-
-- `#I463883` -  The issue of "updating the pane setting dynamically with the same value despite manually resizing the pane" has been resolved.
-
-## 21.2.6 (2023-05-23)
-
-### Splitter
-
-#### Bug Fixes
-
-- `#I451526` -  The issue with the "Pane resizing would not works properly" has been resolved.
-
 ## 20.4.48 (2023-02-01)
 
 ### Splitter

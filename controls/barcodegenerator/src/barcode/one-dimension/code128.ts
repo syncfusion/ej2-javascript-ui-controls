@@ -84,6 +84,7 @@ export class Code128 extends OneDimension {
         if (untilC) {
             return untilC[1] + String.fromCharCode(204) + this.clipC(value.substring(untilC[1].length));
         }
+        // eslint-disable-next-line
         const chars: string = value.match(new RegExp('^' + ranges + '+'))[0];
 
         if (chars.length === value.length) {

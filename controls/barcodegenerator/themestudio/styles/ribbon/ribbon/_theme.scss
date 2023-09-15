@@ -6,11 +6,17 @@
         border-color: $ribbon-border-color;
 
         .e-toolbar-item {
-          .e-tab-text {
-            color: $ribbon-text-color;
+          .e-tab-wrap {
+            .e-tab-text {
+              color: $ribbon-text-color;
+            }
+
+            &:hover .e-tab-text {
+              color: $ribbon-tab-text-hover-color;
+            }
           }
 
-          &.e-active .e-tab-text {
+          &.e-active .e-tab-wrap .e-tab-text {
             color: $ribbon-active-tab-color;
           }
         }
@@ -56,7 +62,8 @@
         }
       }
 
-      .e-ribbon-file-menu {
+      .e-ribbon-file-menu,
+      .e-ribbon-backstage {
         color: $ribbon-text-color;
         background: $ribbon-items-background-color;
         border-color: $ribbon-border-color;
@@ -65,6 +72,14 @@
           color: $ribbon-active-file-menu-color;
           background: $ribbon-active-file-menu-background;
         }
+
+        &:hover:not(.e-active) {
+          color: $ribbon-tab-text-hover-color;
+        }
+
+        &:focus-visible {
+          color: $ribbon-tab-text-focus-color;
+        }
       }
 
       .e-ribbon-help-template {
@@ -72,9 +87,124 @@
       }
     }
 
+    .e-ribbon-tab.e-focused .e-tab-header {
+      .e-tab-wrap:focus {
+        .e-tab-text {
+          color: $ribbon-tab-text-focus-color;
+        }
+      }
+    }
+
     .e-ribbon-collapse-btn {
       color: $ribbon-items-icon-color;
       background: $ribbon-collapse-btn-background;
+      border-color: transparent;
+
+      &:hover,
+      &:focus-visible {
+        background: $ribbon-items-focus-background-color;
+        color: $ribbon-items-focus-color;
+        border-color: $ribbon-items-focus-border-color;
+      }
+    }
+  }
+
+  .e-ribbon-backstage-popup {
+    box-shadow: $ribbon-overflow-box-shadow;
+
+    .e-ribbon-backstage-wrapper {
+      background: $ribbon-backstage-menu-bg-color;
+    }
+
+    .e-btn {
+      background: $ribbon-backstage-btn-bg-color;
+      color: $ribbon-backstage-btn-color;
+      font-weight: $ribbon-backstage-close-btn-font-weight;
+      @if ($skin-name == 'material') {
+        text-transform: none;
+      }
+
+      &:focus {
+        background: $ribbon-backstage-btn-focus-bg-color;
+        color: $ribbon-backstage-btn-focus-color;
+        border-color: $ribbon-backstage-btn-focus-border-color;
+      }
+
+      &:hover {
+        background: $ribbon-backstage-btn-hover-bg-color;
+        color: $ribbon-backstage-btn-hover-color;
+        border-color: $ribbon-backstage-btn-hover-border-color;
+      }
+
+      &:hover:focus {
+        background: $ribbon-backstage-btn-focus-bg-color;
+        color: $ribbon-backstage-btn-focus-color;
+        border-color: $ribbon-backstage-btn-focus-border-color;
+      }
+    }
+
+    .e-ribbon-backstage-menu {
+
+      &.e-menu-wrapper,
+      &.e-menu-container {
+        &:not(.e-menu-popup) {
+          background: $ribbon-backstage-menu-bg-color;
+        }
+      }
+
+      &.e-menu-wrapper ul.e-vertical,
+      &.e-menu-wrapper ul.e-ul {
+        &.e-menu {
+          background: $ribbon-backstage-menu-items-bg-color;
+        }
+
+        .e-menu-item {
+          color: $ribbon-backstage-items-color;
+
+          .e-menu-icon {
+            color: $ribbon-backstage-menu-icon-color;
+          }
+
+          &.e-separator {
+            background: $ribbon-backstage-separator-color;
+          }
+
+          &:focus {
+            background: $ribbon-backstage-menu-hover-bg-color;
+            border-color: $ribbon-backstage-menu-hover-border-color;
+            color: $ribbon-backstage-menu-items-hover-color;
+
+            .e-menu-icon {
+              color: $ribbon-backstage-menu-icon-hover-color;
+            }
+          }
+
+          &.e-selected,
+          &:hover {
+            background: $ribbon-backstage-menu-active-bg-color;
+            border-color: $ribbon-backstage-menu-active-border-color;
+            color: $ribbon-backstage-menu-items-active-color;
+
+            .e-menu-icon {
+              color: $ribbon-backstage-menu-icon-active-color;
+            }
+          }
+          &.e-selected:focus {
+            background: $ribbon-backstage-menu-hover-bg-color;
+            border-color: $ribbon-backstage-menu-hover-border-color;
+            color: $ribbon-backstage-menu-items-hover-color;
+
+            .e-menu-icon {
+              color: $ribbon-backstage-menu-icon-hover-color;
+            }
+          }
+        }
+      }
+    }
+
+    .e-ribbon-backstage-template,
+    .e-ribbon-backstage-content {
+      background: $ribbon-header-bg-color;
     }
   }
 
@@ -96,6 +226,7 @@
       }
 
       .e-colorpicker-wrapper {
+
         &.e-ribbon-hover,
         &.e-ribbon-open {
           border-color: $ribbon-items-hover-background-color;
@@ -103,15 +234,22 @@
       }
 
       .e-split-btn-wrapper {
+
         &.e-ribbon-hover,
         &.e-ribbon-open {
           border-color: $ribbon-items-hover-background-color;
         }
 
         &.e-vertical:hover .e-split-btn:not(:hover) {
-          @if ($skin-name =='highcontrast') {
-            border-color: transparent;
-          }
+          border-color: transparent;
+        }
+      }
+    }
+
+    .e-ribbon-item {
+      .e-split-btn-wrapper {
+        &.e-vertical:hover .e-split-btn:disabled {
+          border-color: transparent;
         }
       }
     }
@@ -120,7 +258,9 @@
     .e-ribbon-group-overflow,
     &.e-ribbon-overflow {
 
-      .e-btn,
+      .e-btn:not(.e-ribbon-file-menu),
+      .e-btn-group .e-btn.e-ribbon-group-button,
+      .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type),
       .e-ribbon-group-of-btn {
         color: $ribbon-text-color;
         background: $ribbon-items-background-color;
@@ -133,10 +273,7 @@
         &:hover {
           background: $ribbon-items-hover-background-color;
           color: $ribbon-items-hover-color;
-
-          @if ($skin-name =='highcontrast') {
-            border-color: $ribbon-items-hover-border-color;
-          }
+          border-color: $ribbon-items-hover-border-color;
 
           .e-btn-icon {
             color: $ribbon-items-hover-color;
@@ -153,13 +290,10 @@
           }
         }
 
-        &:focus {
+        &:focus-visible {
           background: $ribbon-items-focus-background-color;
           color: $ribbon-items-focus-color;
-
-          @if ($skin-name =='highcontrast') {
-            border-color: $ribbon-items-focus-border-color;
-          }
+          border-color: $ribbon-items-focus-border-color;
 
           .e-btn-icon {
             color: $ribbon-items-focus-color;
@@ -178,6 +312,17 @@
 
     .e-ribbon-group-header {
       color: $ribbon-text-color;
+    }
+
+    .e-ribbon-launcher-icon {
+      border-color: transparent;
+
+      &:hover,
+      &:focus-visible {
+        background: $ribbon-items-focus-background-color;
+        color: $ribbon-items-focus-color;
+        border-color: $ribbon-items-focus-border-color;
+      }
     }
 
     .e-input-group {
@@ -249,6 +394,47 @@
     &.e-dropdown-popup {
       background: $ribbon-header-bg-color;
       border-color: $ribbon-border-color;
+    }
+  }
+
+  .e-dropdown-popup.e-ribbon-dropdown-group-button {
+    background: $ribbon-group-button-dropdown-popup-background;
+    box-shadow: $ribbon-group-button-dropdown-popup-box-shadow;
+    border-color: $ribbon-group-button-dropdown-popup-border-color;
+    .e-btn-icon {
+      color: $ribbon-items-icon-color;
+    }
+    .e-btn.e-ribbon-group-button {
+      color: $ribbon-text-color;
+      background: $ribbon-group-button-dropdown-popup-background;
+      &.e-icon-btn:hover,
+      &.e-icon-btn:focus {
+        background: $ribbon-group-button-hover-background;
+        .e-btn-icon {
+          color: $ribbon-group-button-icon-hover-color;
+        }
+      }
+      &:hover,
+      &:focus {
+        background: $ribbon-group-button-hover-background;
+        color: $ribbon-group-button-text-hover-color;
+        .e-btn-icon {
+          color: $ribbon-group-button-icon-hover-color;
+        }
+      }
+      &.e-icon-btn.e-active {
+        background: $ribbon-group-button-active-background;
+        .e-btn-icon {
+          color: $ribbon-items-active-color;
+        }
+      }
+      &.e-active {
+        background: $ribbon-group-button-selected-background;
+        color: $ribbon-group-button-text-active-color;
+        .e-btn-icon {
+          color: $ribbon-items-active-color;
+        }
+      }
     }
   }
 

@@ -43,7 +43,11 @@ describe("Quick Toolbar - Actions Module", () => {
         let QTBarModule: IRenderer;
 
         beforeAll((done: Function) => {
-            rteObj = renderRTE({ });
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    text: ['Cut', 'Copy', 'Paste']
+                }
+            });
             rteEle = rteObj.element;
             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
@@ -88,9 +92,9 @@ describe("Quick Toolbar - Actions Module", () => {
             let textTBItems: NodeList = textPop.querySelectorAll('.e-toolbar-item');
             expect(textPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect(textTBItems.length).toBe(3);
-            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Cut (Ctrl + X)');
-            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Copy (Ctrl + C)');
-            expect((<HTMLElement>textTBItems.item(2)).title).toBe('Paste (Ctrl + V)');
+            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Cut (Ctrl+X)');
+            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Copy (Ctrl+C)');
+            expect((<HTMLElement>textTBItems.item(2)).title).toBe('Paste (Ctrl+V)');
         });
 
         it("Image quick popup - toolbar and default items testing", () => {
@@ -103,7 +107,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Image Caption');
             expect((<HTMLElement>imgTBItems.item(3)).title).toBe('Remove');
             expect((<HTMLElement>imgTBItems.item(4)).classList.contains("e-separator")).toBe(true);
-            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl + K)');
+            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl+K)');
             expect((<HTMLElement>imgTBItems.item(6)).title).toBe('Open Link');
             expect((<HTMLElement>imgTBItems.item(7)).title).toBe('Edit Link');
             expect((<HTMLElement>imgTBItems.item(8)).title).toBe('Remove Link');
@@ -121,7 +125,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Image Caption');
             expect((<HTMLElement>imgTBItems.item(3)).title).toBe('Remove');
             expect((<HTMLElement>imgTBItems.item(4)).classList.contains("e-separator")).toBe(true);
-            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl + K)');
+            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl+K)');
             expect((<HTMLElement>imgTBItems.item(6)).title).toBe('Open Link');
             expect((<HTMLElement>imgTBItems.item(7)).title).toBe('Edit Link');
             expect((<HTMLElement>imgTBItems.item(8)).title).toBe('Remove Link');
@@ -141,7 +145,10 @@ describe("Quick Toolbar - Actions Module", () => {
 
         beforeAll((done: Function) => {
             rteObj = renderRTE({
-                cssClass: 'customClass'
+                cssClass: 'customClass',
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                }
             });
             rteEle = rteObj.element;
             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
@@ -190,7 +197,11 @@ describe("Quick Toolbar - Actions Module", () => {
         let QTBarModule: IRenderer;
 
         beforeAll((done: Function) => {
-            rteObj = renderRTE({});
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                }
+            });
             rteEle = rteObj.element;
             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
@@ -268,8 +279,8 @@ describe("Quick Toolbar - Actions Module", () => {
             let textTBItems: NodeList = textPop.querySelectorAll('.e-toolbar-item');
             expect(textPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect(textTBItems.length).toBe(2);
-            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Copy (Ctrl + C)');
-            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Paste (Ctrl + V)');
+            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Copy (Ctrl+C)');
+            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Paste (Ctrl+V)');
         });
     });
 
@@ -331,8 +342,8 @@ describe("Quick Toolbar - Actions Module", () => {
             let textTBItems: NodeList = textPop.querySelectorAll('.e-toolbar-item');
             expect(textPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect(textTBItems.length).toBe(2);
-            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Copy (Ctrl + C)');
-            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Paste (Ctrl + V)');
+            expect((<HTMLElement>textTBItems.item(0)).title).toBe('Copy (Ctrl+C)');
+            expect((<HTMLElement>textTBItems.item(1)).title).toBe('Paste (Ctrl+V)');
         });
 
         it("Image quick popup - toolbar and items testing", () => {
@@ -340,7 +351,7 @@ describe("Quick Toolbar - Actions Module", () => {
             let imgTBItems: NodeList = imgPop.querySelectorAll('.e-toolbar-item');
             expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect(imgTBItems.length).toBe(2);
-            expect((<HTMLElement>imgTBItems.item(0)).title).toBe('Insert Link (Ctrl + K)');
+            expect((<HTMLElement>imgTBItems.item(0)).title).toBe('Insert Link (Ctrl+K)');
             expect((<HTMLElement>imgTBItems.item(1)).title).toBe('Remove');
         });
     });
@@ -459,7 +470,10 @@ describe("Quick Toolbar - Actions Module", () => {
 
         beforeAll((done: Function) => {
             rteObj = renderRTE({
-                value: htmlStr
+                value: htmlStr,
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                }
             });
             rteEle = rteObj.element;
             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
@@ -631,6 +645,9 @@ describe("Quick Toolbar - Actions Module", () => {
             rteObj = renderRTE({
                 iframeSettings: {
                     enable: true
+                },
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
                 },
                 value: htmlStr
             });
@@ -808,7 +825,10 @@ describe("Quick Toolbar - Actions Module", () => {
         beforeAll((done: Function) => {
             Browser.userAgent = mobileUA;
             rteObj = renderRTE({
-                value: htmlStr
+                value: htmlStr,
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                }
             });
             rteEle = rteObj.element;
             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
@@ -980,6 +1000,9 @@ describe("Quick Toolbar - Actions Module", () => {
             rteObj = renderRTE({
                 iframeSettings: {
                     enable: true
+                },
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
                 },
                 value: htmlStr
             });
@@ -2097,6 +2120,414 @@ describe("Quick Toolbar - Actions Module", () => {
                     done();
                 }, 400);
             }, 400);
+        });
+    });
+    describe("817012-text selection Quick toolbar", () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let trg: HTMLElement;
+        let originalTimeout: number;
+
+        beforeEach((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor']
+                },
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                },
+                value: "<div class='test'>Syncfusion</div>"
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+
+        afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            destroy(rteObj);
+        });
+
+        it('mouseUp handler testing', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('.test').childNodes[0], rteObj.element.querySelector('.test').childNodes[0], 0, 3);
+            trg = <HTMLElement>rteEle.querySelectorAll(".test")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+            expect(pop).not.toBe(undefined);
+            expect(pop.querySelectorAll('[title="Bold (Ctrl+B)"]')[0]).not.toBe(null);
+            rteObj.quickToolbarModule.hideQuickToolbars();
+            done();
+        });
+    });
+    describe("817012-text selection Quick toolbar", () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let trg: HTMLElement;
+        let originalTimeout: number;
+
+        beforeEach((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['FormatPainter','FontColor', 'BackgroundColor']
+                },
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                },
+                value: "<div class='test'>Syncfusion</div>"
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+
+        afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            destroy(rteObj);
+        });
+
+        it('check the inline mode is enabled', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('.test').childNodes[0], rteObj.element.querySelector('.test').childNodes[0], 0, 3);
+            trg = <HTMLElement>rteEle.querySelectorAll(".test")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0];
+            expect(pop).toBe(undefined);
+            rteObj.quickToolbarModule.hideQuickToolbars();
+            done();
+        });
+    });
+    describe("817012-text selection Quick toolbar", () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let trg: HTMLElement;
+        let originalTimeout: number;
+
+        beforeEach((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'Italic', 'Underline']
+                },
+                quickToolbarSettings: {
+                    text: ['CreateTable', 'CreateLink', 'Image','Audio','Video','SourceCode']
+                },
+                value: "<div class='test'>Syncfusion</div>"
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+
+        afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            destroy(rteObj);
+        });
+
+        it('Check text Quick toolbar hide while click Insert table', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('.test').childNodes[0], rteObj.element.querySelector('.test').childNodes[0], 0, 3);
+            trg = <HTMLElement>rteEle.querySelectorAll(".test")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0].querySelector('[title="Create Table (Ctrl+Shift+E)"]');
+            pop.click();
+            expect(<HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0]).toBe(undefined);
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+        it('Check text Quick toolbar hide while click Insert link', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('.test').childNodes[0], rteObj.element.querySelector('.test').childNodes[0], 0, 3);
+            trg = <HTMLElement>rteEle.querySelectorAll(".test")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0].querySelector('[title="Insert Link (Ctrl+K)"]');
+            pop.click();
+            expect(<HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0]).toBe(undefined);
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+        it('Check text Quick toolbar hide while click Insert image', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('.test').childNodes[0], rteObj.element.querySelector('.test').childNodes[0], 0, 3);
+            trg = <HTMLElement>rteEle.querySelectorAll(".test")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0].querySelector('[title="Insert Image (Ctrl+Shift+I)"]');
+            pop.click();
+            expect(<HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0]).toBe(undefined);
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+        it('Check text Quick toolbar hide while click Audio', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('.test').childNodes[0], rteObj.element.querySelector('.test').childNodes[0], 0, 3);
+            trg = <HTMLElement>rteEle.querySelectorAll(".test")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0].querySelector('[title="Insert Audio (Ctrl+Shift+A)"]');
+            pop.click();
+            expect(<HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0]).toBe(undefined);
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+        it('Check text Quick toolbar hide while click video', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('.test').childNodes[0], rteObj.element.querySelector('.test').childNodes[0], 0, 3);
+            trg = <HTMLElement>rteEle.querySelectorAll(".test")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0].querySelector('[title="Insert Video (Ctrl+Shift+V)"]');
+            pop.click();
+            expect(<HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0]).toBe(undefined);
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+    });
+    describe('817012-text selection Quick toolbar' , () => {
+        let rteObject : any ;
+        let toolbarELem: HTMLElement;
+        let rteEle: HTMLElement;
+        let trg;
+        const htmlToolbarClickArgs: any = {
+            item: {
+                subCommand: 'FormatPainter',
+                command: 'FormatPainter'
+            },
+            originalEvent: {
+                detail: 1,
+                target: null
+            },
+            name: 'html-toolbar-click'
+        };
+        const editAreaClickArgs: any = {
+            args: {
+                which: 1,
+                target: null
+            },
+            name: 'editAreaClick',
+            member: 'editAreaClick'
+        };
+        beforeEach( (done: Function) => {
+            rteObject = renderRTE({
+                quickToolbarSettings: {
+                    text: ['CreateTable', 'CreateLink', 'Image', 'Audio', 'Video', 'SourceCode','FormatPainter']
+                },
+                toolbarSettings : { items: ['FormatPainter', 'ClearFormat', 'Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|',
+                    'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                    'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                } , value: "<div class='test'>Syncfusion</div>"
+            });
+            rteEle = rteObject.element;
+            trg = rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            toolbarELem = document.body.querySelector('.e-rte-format-painter');
+            editAreaClickArgs.args.target = rteObject.element.querySelector('.e-content');
+            done();
+        });
+        afterEach( () => {
+            destroy(rteObject);
+        });
+        it('Check text Quick toolbar hide while click format painter', (done: Function) => {
+            rteObject.formatter.editorManager.nodeSelection.setSelectionText(document, rteObject.element.querySelector('.test').childNodes[0], rteObject.element.querySelector('.test').childNodes[0], 0, 3);
+            trg = <HTMLElement>rteEle.querySelectorAll(".test")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObject.mouseUp(clickEvent);
+            htmlToolbarClickArgs.originalEvent.target = toolbarELem;
+            rteObject.notify('html-toolbar-click', htmlToolbarClickArgs);
+            setTimeout(() => {
+                expect(<HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0]).toBe(undefined);
+                done();
+            }, 1000);
+        });
+    });
+    describe("817012-text selection Quick toolbar ", () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let trg: HTMLElement;
+        let originalTimeout: number;
+
+        beforeEach((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor']
+                },
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                },
+                value: `<p><b>testing<a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" title="http://dggsjs" target="_blank">link<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize" alt="RTE-IMG.png" width="auto" height="auto" style="min-width: 0px; max-width: 1456px; min-height: 0px;"></a></b></p>`
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+
+        afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            destroy(rteObj);
+        });
+
+        it('check the text quick toolbar with link', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.children[0].childNodes[0].childNodes[0], rteObj.inputElement.children[0].childNodes[0].childNodes[1].childNodes[0], 4, 3);
+            trg = <HTMLElement>rteObj.inputElement.children[0].childNodes[0].childNodes[1];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0];
+            expect(pop).not.toBe(undefined);
+            rteObj.quickToolbarModule.hideQuickToolbars();
+            done();
+        });
+    });
+    describe("817012-text selection Quick toolbar ", () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let trg: HTMLElement;
+        let originalTimeout: number;
+
+        beforeEach((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor']
+                },
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                },
+                value: `<p><b>testing<a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" title="http://dggsjs" target="_blank">link</a><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize" alt="RTE-IMG.png" width="auto" height="auto" style="min-width: 0px; max-width: 1456px; min-height: 0px;"></b></p>`
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+
+        afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            destroy(rteObj);
+        });
+
+        it('check the text quick toolbar with image', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.children[0].childNodes[0].childNodes[0], rteObj.inputElement.children[0].childNodes[0], 4, 3);
+            trg = <HTMLElement>rteObj.inputElement.children[0].childNodes[0].childNodes[1];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0];
+            expect(pop).not.toBe(undefined);
+            rteObj.quickToolbarModule.hideQuickToolbars();
+            done();
+        });
+    });
+    describe("817012-text selection Quick toolbar ", () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let trg: HTMLElement;
+        let originalTimeout: number;
+
+        beforeEach((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor']
+                },
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                },
+                value: `<p>test<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span>test</p>`
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            done();
+        });
+
+        afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            destroy(rteObj);
+        });
+
+        it('check the text quick toolbar with video', (done: Function) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.children[0].childNodes[0], rteObj.inputElement.children[0].childNodes[2], 2, 3);
+            trg = <HTMLElement>rteObj.inputElement.children[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", true, true);
+            trg.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0];
+            expect(pop).not.toBe(undefined);
+            rteObj.quickToolbarModule.hideQuickToolbars();
+            done();
         });
     });
 });

@@ -407,7 +407,15 @@ export class Toolbar {
         let disableItems: string[] = [];
         const edit: EditSettingsModel = gObj.editSettings;
         const gID: string = this.id;
-        const ind: number = gObj.selectedRowIndex;
+        let ind: number = gObj.selectedRowIndex;
+        if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+            for (let i: number = 0; i < gObj.updatedRecords.length; i++) {
+                if (gObj.updatedRecords[i as number].index === ind) {
+                    ind = i;
+                    break;
+                }
+            }
+        }
         let previousGanttRecord: IGanttData;
         const isSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
             gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;

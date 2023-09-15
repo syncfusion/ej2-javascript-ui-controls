@@ -255,21 +255,21 @@ export function calculateShapes(location: TooltipLocation, size: Size, shape: st
         path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
             'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' +
             (locY + (-height / 2));
-        merge(options, { 'd': path });
+        merge(options, { 'd': path, stroke : options.fill });
         break;
     case 'Cross':
         path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
             'M' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' +
             (locY + (-height / 2));
-        merge(options, { 'd': path });
+        merge(options, { 'd': path, stroke : options.fill });
         break;
     case 'HorizontalLine':
         path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY;
-        merge(options, { 'd': path });
+        merge(options, { 'd': path, stroke : options.fill });
         break;
     case 'VerticalLine':
         path = 'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' + (locY + (-height / 2));
-        merge(options, { 'd': path });
+        merge(options, { 'd': path, stroke : options.fill });
         break;
     case 'Diamond':
         path = 'M' + ' ' + x + ' ' + locY + ' ' +
@@ -367,7 +367,9 @@ export function textElement(
     };
     const text: string = typeof options.text === 'string' ? options.text : options.text[0];
     const htmlObject: HTMLElement = renderer.createText(renderOptions, text) as HTMLElement;
-    parent.appendChild(htmlObject);
+    if (parent) {
+        parent.appendChild(htmlObject);
+    }
     return htmlObject;
 }
 export class TooltipLocation {

@@ -263,6 +263,10 @@ export class ChartData {
         const closest: number = this.getClosest(series, value, xvalues);
         const point: Points = ((closest || closest === 0) && series.points.length > 0) ? this.binarySearch(closest, sort(series.points, ['xValue']) as Points[]) : null;
         if (point && point.visible) {
+            if (!(this.chart.chartAreaType === 'Cartesian' && ((series.category == 'Indicator' && series.name == 'Histogram') ||
+                (point.symbolLocations && point.symbolLocations.length > 0 && point.symbolLocations[0].x >= 0 && point.symbolLocations[0].x <= rect.width)))) {
+                return null;
+            }
             return new PointData(point, series);
         }
         return null;

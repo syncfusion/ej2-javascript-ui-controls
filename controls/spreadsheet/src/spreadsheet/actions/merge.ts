@@ -1,11 +1,8 @@
 import { Spreadsheet } from '../base/index';
 import { applyMerge, activeCellMergedRange, MergeArgs, skipHiddenIdx } from '../../workbook/common/index';
-import { ICellRenderer, hiddenMerge, dialog, locale, CellRenderArgs, focus, isImported } from '../common/index';
-import { checkPrevMerge, checkMerge, DialogBeforeOpenEventArgs } from '../common/index';
-import { Dialog } from '../services/index';
+import { ICellRenderer, hiddenMerge, CellRenderArgs, isImported } from '../common/index';
+import { checkPrevMerge, checkMerge } from '../common/index';
 import { CellModel, getCell, SheetModel, isHiddenCol, isHiddenRow } from '../../workbook/index';
-import { L10n } from '@syncfusion/ej2-base';
-import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
  * The `Merge` module is used to to merge the range of cells.
@@ -22,26 +19,7 @@ export class Merge {
         this.parent = parent;
         this.addEventListener();
     }
-    private merge(
-        args: { rowIdx?: number, colIdx?: number, showDialog?: boolean, lastCell?: boolean, element?: Element, mergeCel?: boolean }): void {
-        if (args.showDialog) {
-            (this.parent.serviceLocator.getService(dialog) as Dialog).show({
-                height: 180, width: 400, isModal: true, showCloseIcon: true,
-                content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('PasteMergeAlert'),
-                beforeOpen: (args: BeforeOpenEventArgs): void => {
-                    const dlgArgs: DialogBeforeOpenEventArgs = {
-                        dialogName: 'MergeDialog',
-                        element: args.element, target: args.target, cancel: args.cancel
-                    };
-                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
-                    if (dlgArgs.cancel) {
-                        args.cancel = true;
-                    }
-                    focus(this.parent.element);
-                }
-            });
-            return;
-        }
+    private merge(args: { rowIdx?: number, colIdx?: number, lastCell?: boolean, element?: Element, mergeCel?: boolean }): void {
         (this.parent.serviceLocator.getService('cell') as ICellRenderer).refresh(
             args.rowIdx, args.colIdx, args.lastCell, args.element, false, false, isImported(this.parent));
     }

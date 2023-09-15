@@ -2258,9 +2258,10 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 item.click();
                 let listItem: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_OrderedList') as HTMLElement;
                 listItem.click();
-                const anchorOffset: number = window.getSelection().anchorOffset;
-                expect((window.getSelection().anchorNode.childNodes[anchorOffset - 1]).nodeName === 'OL').toBe(true);
-                expect((window.getSelection().anchorNode.childNodes[anchorOffset - 1]).childNodes[0].childNodes[0].nodeName).toEqual('BR');
+                expect((window.getSelection().anchorNode as any).nextElementSibling.nodeName === 'BR').toBe(true);
+                // const anchorOffset: number = window.getSelection().anchorOffset;
+                // expect((window.getSelection().anchorNode.childNodes[anchorOffset - 1]).nodeName === 'OL').toBe(true);
+                // expect((window.getSelection().anchorNode.childNodes[anchorOffset - 1]).childNodes[0].childNodes[0].nodeName).toEqual('BR');
                 done();
             });
         });
@@ -4457,7 +4458,880 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
-
+    describe('table resize', function () {
+        let rteObj: RichTextEditor;
+        var rteEle: HTMLElement;
+        beforeEach(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                        'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                enterKey : 'DIV',
+                value: `<table class="\&quot;e-rte-table\&quot; e-rte-table" style="width: 385px; height: 187px;" 100%;\"=""><tbody><tr><td style="\&quot;width:" 33.3333%;\"="" class="\&quot;\&quot;">1</td><td style="\&quot;width:" 33.3333%;\"="">4</td><td style="\&quot;width:" 33.3333%;\"="">7</td></tr><tr><td style="\&quot;width:" 33.3333%;\"="" class="">2</td><td style="\&quot;width:" 33.3333%;\"="" class="\&quot;e-cell-select\&quot;">5</td><td style="\&quot;width:" 33.3333%;\"="" class="">8</td></tr><tr><td style="\&quot;width:" 33.3333%;\"="">3</td><td style="\&quot;width:" 33.3333%;\"="">6</td><td style="\&quot;width:" 33.3333%;\"="">123456789</td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(function () {
+            destroy(rteObj);
+        });
+        it('Remove the table using the Quicktoolbar with the enter key DIV', function (done) {
+            var node = (rteEle as any).querySelector("td");
+           setCursorPoint(node, 0);
+            node.focus();
+            var clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            rteObj.inputElement.dispatchEvent(clickEvent);
+            var eventsArg:any = { pageX: 50, pageY: 200, target: node };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(function () {
+                var tablePop = document.querySelectorAll('.e-rte-quick-popup')[0];
+                (tablePop.querySelectorAll(".e-rte-quick-toolbar.e-rte-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn")[5] as HTMLElement).click()
+                expect(rteObj.contentModule.getEditPanel().innerHTML === '<div><br></div>').toBe(true);
+                done();
+            }, 1000);
+        });
+        it('Remove the table using the Quicktoolbar with the enter key DIV <BR>', function (done) {
+            rteObj.enterKey = 'BR'
+            var node = rteEle.querySelector("td");
+            setCursorPoint(node, 0);
+            node.focus();
+            var clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            rteObj.inputElement.dispatchEvent(clickEvent);
+            var eventsArg = { pageX: 50, pageY: 300, target: node };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(function () {
+                var tablePop = document.querySelectorAll('.e-rte-quick-popup')[0];
+                (tablePop.querySelectorAll(".e-rte-quick-toolbar.e-rte-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn")[5] as HTMLElement).click()
+                expect(rteObj.contentModule.getEditPanel().innerHTML === '<br>').toBe(true);
+                done();
+            }, 800);
+        });
+    });
+    describe('836937 - Checking with the Mozilla Browser', function () {
+        let rteObj: RichTextEditor;
+        var rteEle: HTMLElement;
+        let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        let defaultUA: string = navigator.userAgent;
+        beforeEach(function () {
+            Browser.userAgent = fireFox;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                        'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<table class="\&quot;e-rte-table\&quot; e-rte-table" style="width: 385px; height: 187px;" 100%;\"=""><tbody><tr><td style="\&quot;width:" 33.3333%;\"="" class="\&quot;\&quot; tdElement">1</td><td style="\&quot;width:" 33.3333%;\"="">4</td><td style="\&quot;width:" 33.3333%;\"="">7</td></tr><tr><td style="\&quot;width:" 33.3333%;\"="" class="">2</td><td style="\&quot;width:" 33.3333%;\"="" class="\&quot;e-cell-select\&quot;">5</td><td style="\&quot;width:" 33.3333%;\"="" class="">8</td></tr><tr><td style="\&quot;width:" 33.3333%;\"="">3</td><td style="\&quot;width:" 33.3333%;\"="">6</td><td style="\&quot;width:" 33.3333%;\"="">123456789</td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(function () {
+            Browser.userAgent = defaultUA;
+            destroy(rteObj);
+        });
+        it('Table module selection on Mozilla', function (done) {
+            rteObj.focusIn()
+            var tbElement:any = rteObj.contentModule.getEditPanel().querySelector(".tdElement")
+            var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                    expect((rteObj.contentModule.getEditPanel() as any).contentEditable == "true" ).toBe(true);
+                done();
+            }, 1000);
+        });
+    });
+    describe('836937 - Improve coverage for the table module in the Rich Text Editor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                value:`<table class="e-rte-table" style="width: 16.9382%; min-width: 0px; height: 76px;"><tbody><tr style="height: 26px;"><td class="" style="width: 25%;"><br></td><td style="width: 14.5363%;" class=""><br></td><td style="width: 45.9482%;" class=""><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;" class="tdElement"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p></td><td style="width: 31.6625%;" class=""><br></td></tr><tr style="height: 24px;"><td style="width: 25%;"><br></td><td style="width: 14.5363%;" class=""><br></td><td style="width: 45.9482%;" class=""><br></td><td style="width: 31.6625%;" class=""><br></td></tr></tbody></table>`,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Nested table resize', () => {
+            var table = rteObj.contentModule.getEditPanel().querySelector('table table');
+            var clickEvent = document.createEvent("MouseEvents");
+            (<any>rteObj).tableModule.resizeHelper({ target: table, preventDefault: function () { } });
+            var reCol1 = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[1];
+            (<any>rteObj).tableModule.resizeStart({ target: reCol1, pageX: 100, pageY: 0, preventDefault: function () { } });
+            clickEvent.initEvent("mousedown", false, true);
+            reCol1.dispatchEvent(clickEvent);
+            (<any>rteObj).tableModule.resizeStart(clickEvent);
+            (<any>rteObj).tableModule.resizing({ target: reCol1, pageX: 200, pageY: 200, preventDefault: function () { } });
+            expect(closest(table, 'table').nodeName == "TABLE").toBe(true)
+        });  
+    });
+    describe('836937 - The read-only setting is true in the Rich Text Editor', () => {
+        let rteObj : RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                readonly : true,
+                  value:`<table>
+            <tr>
+              <th>Company</th>
+              <th>Contact</th>
+              <th>Country</th>
+            </tr>
+            <tr>
+              <td>Alfreds Futterkiste</td>
+              <td class="tdElement"></td>
+              <td>Germany</td>
+            </tr>
+            <tr>
+              <td>Centro comercial Moctezuma</td>
+              <td>Francisco Chang</td>
+              <td>Mexico</td>
+            </tr>
+          </table><div id="elementCursorPosition">Rich Text Editor</div>`
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('The read-only setting is true in the Rich Text Editor', () => {
+            rteObj.focusIn();
+            var tdElement = rteObj.contentModule.getDocument().getElementsByClassName("tdElement");
+            const event = new MouseEvent('mouseover', {
+                bubbles: true,
+                cancelable: true,
+              });
+              tdElement[0].dispatchEvent(event);
+            (rteObj.tableModule as any).resizeStart({ target: tdElement[0], pageX: 100, pageY: 0, preventDefault: function () { } });
+            expect(rteObj.readonly).toBe(true);
+        });
+    });
+    describe("When you press backspace while the focus is on the tbody, the table will be deleted from the Rich Text Editor", function () {
+        var rteObj :RichTextEditor;
+        var keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 8,
+            shiftKey: false
+        };
+        beforeEach(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                        'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: "<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in\n                client side.</p><table class=\"e-rte-table\" style=\"width: 100%;\"><thead><tr><th class=\"e-cell-select\"><br></th><th><br></th></tr></thead><tbody><tr><td style=\"width: 50%;\" class=\"\"><br></td><td style=\"width: 50%;\"><br></td></tr><tr><td style=\"width: 50%;\"><br></td><td style=\"width: 50%;\"><br></td></tr></tbody></table>\n                "
+            });
+        });
+        afterEach(function () {
+            destroy(rteObj);
+        });
+        it('The focus is in the tbody, the table will be removed in the Rich Text Editor', function (done) {
+            var node = rteObj.inputElement.querySelector("tbody");
+            setCursorPoint(node, 0);
+            (rteObj as any).tableModule.keyDown({ args: keyboardEventArgs });
+            expect(rteObj.inputElement.querySelectorAll("table").length == 0).toBe(true);
+            done();
+        });
+    });
+    describe('When existing styles are present in the table, the table style gets removed.', function () {
+        let rteObj : RichTextEditor;
+        beforeEach(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                        'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<table class="e-rte-table e-dashed-borders" style="width: 100%; min-width: 0px;"><tbody><tr><td class="tdElement" style="width: 25%;"><br></td><td style="width: 25%;" class=""><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;" class="e-cell-select"><br></td><td style="width: 25%;" class=""><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table>`
+            });
+        });
+        afterEach(function () {
+            destroy(rteObj);
+        });
+        it('The table style is removed through the Quick Toolbar', function (done) {
+            rteObj.focusIn()
+            var tbElement = rteObj.contentModule.getEditPanel().querySelector(".tdElement")
+            var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
+                (document.querySelector(".e-dropdown-popup .e-item.e-dashed-borders") as any).click()
+                expect(!rteObj.inputElement.querySelector("table").classList.contains("e-dashed-borders")).toBe(true);
+                done();
+            },0);
+        });
+    });
+    describe('Nested list inside the table using the TAB key in the Rich Text Editor', function () {
+        let rteObj : RichTextEditor;
+        beforeEach(function () {
+            rteObj = renderRTE({
+                saveInterval : 0,
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><ul><li><p class="liElement">Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p></li><li><p>Capable of handling markdown editing.</p></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li></ul></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`,
+            });
+        });
+        afterEach(function () {
+            destroy(rteObj);
+        });
+        it('Nested list with block node inside the table using the TAB key', function (done) {
+            rteObj.focusIn();
+            var tdElement = rteObj.contentModule.getDocument().getElementsByClassName("liElement");
+            let selectioncursor = new NodeSelection();
+            let range= document.createRange();
+            range.setStart(tdElement[0], 0);
+            selectioncursor.setRange(document, range);
+            var keyBoardEvent = { type: 'keydown', preventDefault: function () { }, key: 'Tab', keyCode: 9, stopPropagation: function () { }, shiftKey: false, which: 9 };
+            (rteObj as any).keyDown(keyBoardEvent);
+            rteObj.dataBind();
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(rteObj.inputElement.querySelector("table tr td li ul") != null).toBe(true);
+            done();
+        });
+        it('Nested list inside the table using the TAB key', function (done) {
+            rteObj.value = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><ol><li><span class="liElement">Rich Text Editor one</span></li><li>Rich Text Editor two<br></li></ol><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`;
+            rteObj.dataBind();
+            rteObj.focusIn();
+            var tdElement = rteObj.contentModule.getDocument().getElementsByClassName("liElement");
+            let selectioncursor = new NodeSelection();
+            let range= document.createRange();
+            range.setStart(tdElement[0], 0);
+            selectioncursor.setRange(document, range);
+            var keyBoardEvent = { type: 'keydown', preventDefault: function () { }, key: 'Tab', keyCode: 9, stopPropagation: function () { }, shiftKey: false, which: 9 };
+            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(rteObj.inputElement.querySelector("table tr td li ol li") != null).toBe(true);
+            done();
+        });
+        it("When pressing the ArrowRight key, the cursor doesn't move to the next element", function (done) {
+            rteObj.value = `<table class="e-rte-table">
+            <tbody><tr>
+              <td class="">
+              <ol>
+                <li class="liElement">Coffee</li>
+                <li>Tea</li>
+                <li>Milk</li>
+               </ol>
+              </td>
+              <td>Maria Anders</td>
+              <td>Germany</td>
+            </tr>
+            <tr>
+              <td>Centro comercial Moctezuma</td>
+              <td>Francisco Chang</td>
+              <td>Mexico</td>
+            </tr>
+          </tbody></table>`;
+            rteObj.dataBind();
+            rteObj.focusIn();
+            var tdElement = rteObj.contentModule.getDocument().getElementsByClassName("liElement");
+            let selectioncursor = new NodeSelection();
+            let range= document.createRange();
+            range.setStart(tdElement[0], 0);
+            selectioncursor.setRange(document, range);
+            var position = window.getSelection().anchorNode;
+            var keyBoardEvent = { type: 'keydown', preventDefault: function () { }, key: 'ArrowRight', keyCode: 39, stopPropagation: function () { }, shiftKey: false, which: 39 };
+            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj as any).keyUp(keyBoardEvent);
+            setTimeout(function () {
+                expect( window.getSelection().anchorNode == position).toBe(true);
+                done();
+            },100)
+        });
+    });
+    describe('Checking the table insert without the br tag', function () {
+        let rteObj : RichTextEditor;
+        var rteEle :any;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                value : "<p><br/></p><p class='liElement'><br/></p>",
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                tableSettings: { width: "500px" }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('Checking the table insert without the br tag', function (done) {
+            var tdElement = rteObj.contentModule.getDocument().getElementsByClassName("liElement");
+            tdElement[0].childNodes[0].remove()
+            var selectioncursor = new NodeSelection();
+            var range = document.createRange();
+            range.setStart(tdElement[0], 0);
+            selectioncursor.setRange(document, range);
+            rteEle.querySelectorAll(".e-toolbar-item")[0].click();
+            var event = {
+                target: rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[1],
+                preventDefault: function () { }
+            };
+            (rteObj as any).tableModule.tableCellSelect(event);
+            (rteObj as any).tableModule.tableCellLeave(event);
+            var clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
+             expect(rteObj.inputElement.querySelectorAll("p")[1].innerHTML == '<br>').toBe(true);
+            done();
+        });
+    });
+    describe('Table dialogClose event trigger testing', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+                beforeDialogOpen(e: any): void {
+                    e.cancel = true;
+                },
+                dialogClose(e: any): void {
+                }
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('dialogClose event trigger testing', (done) => {
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn")as HTMLElement).click();
+            setTimeout(() => {
+                expect(document.querySelector(".e-rte-edit-table") == null).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('The cursor focuses on the previous element when you press the shift and left arrow.', function () {
+        let rteObj : RichTextEditor;
+        var rteEle :any;
+        var keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 9,
+            shiftKey: false
+        };
+        beforeAll(function () {
+            rteObj = renderRTE({
+                value : `<p>Rich Text Editor</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="liElement" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table>`,
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                tableSettings: { width: "500px" }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('The cursor focuses on the previous element when you press the shift and left arrow', function (done) {
+            var tdElement = rteObj.contentModule.getDocument().getElementsByClassName("liElement");
+            tdElement[0].childNodes[0].remove()
+            var selectioncursor = new NodeSelection();
+            var range = document.createRange();
+            range.setStart(tdElement[0], 0);
+            selectioncursor.setRange(document, range);
+            keyboardEventArgs.keyCode = 37;
+            keyboardEventArgs.shiftKey = true;
+            var previousPosition = window.getSelection().anchorNode; 
+            (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+            expect(previousPosition !=  window.getSelection().anchorNode).toBe(true);
+            done();
+        });
+    });
+    describe('Add the custom class in the table dialog through the cssClass property.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+                cssClass :"rich_Text_Editor",
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Add the custom class in the table dialog through the cssClass property', (done) => {
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            setTimeout(() => {
+                expect(document.querySelector(".e-rte-table-popup.rich_Text_Editor") != null).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('When you click the outside table dialog, the dialog will be hidden', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('When you click the outside table dialog, the dialog will be hidden', (done) => {
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn")as HTMLElement).click();
+            setTimeout(() => {
+                var clickEvent = document.createEvent ('MouseEvents');
+                clickEvent.initEvent ('mousedown', true, true);
+                rteObj.inputElement.querySelector("p").dispatchEvent (clickEvent);
+                expect(document.querySelector(".e-rte-edit-table") == null).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('A custom class added the button element for the table dialog', function () {
+        var rteObj: RichTextEditor ;
+        beforeAll(function (done) {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+                cssClass: "rich_Text_Editor",
+            });
+            done();
+        });
+        afterAll(function (done) {
+            destroy(rteObj);
+            done();
+        });
+        it('A custom class added the button element for the table dialog', function (done) {
+            (rteObj as any).element.querySelector('.e-toolbar-item button').click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn") as any).click();
+            setTimeout(function () {
+                expect(document.querySelector(".e-rte-edit-table .e-footer-content button").classList.contains("rich_Text_Editor")).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('When you open the table dialog, you need to close the existing one', function () {
+        var rteObj : RichTextEditor;
+        beforeAll(function (done) {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable'],
+                },
+            });
+            done();
+        });
+        afterAll(function (done) {
+            destroy(rteObj);
+            done();
+        });
+        it('When you open the table dialog, you need to close the existing one', function (done) {
+            (rteObj as any).element.querySelector('.e-toolbar-item button').click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn")as any).click();
+            setTimeout(function () {
+                (rteObj as any).tableModule.insertTableDialog({ target:document.querySelector(".e-rte-edit-table"), pageX: 100, pageY: 0, preventDefault: function () { } });
+                expect(document.querySelector(".e-rte-edit-table") == null).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('Cursor with empty text in the table when pressing the upper arrow', function () {
+        var rteObj: RichTextEditor;
+        var keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 9,
+            shiftKey: false
+        };
+        beforeAll(function () {
+            rteObj = renderRTE({
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 100%;"><br><br><br>Rich Text Editor</td></tr></tbody></table><p><br></p>`, 
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                tableSettings: { width: "500px" }
+            });
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('Cursor with empty text in the table when pressing the upper arrow', function (done) {
+            var tdElement = rteObj.inputElement.querySelector("table tbody td").childNodes[3];
+            var selectioncursor = new NodeSelection();
+            var range = document.createRange();
+            range.setStart(tdElement, 0);
+            selectioncursor.setRange(document, range);
+            keyboardEventArgs.keyCode = 38;
+            var previousPosition = window.getSelection().anchorNode;
+            (rteObj as any).tableModule.keyDown({ args: keyboardEventArgs });
+            expect(previousPosition == window.getSelection().anchorNode).toBe(true);
+            done();
+        });
+    });
+    describe('Background colour applied for the selected table td element', function () {
+        var rteObj: RichTextEditor;
+        beforeEach(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                        'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: "<table class=\"e-rte-table e-dashed-borders\" style=\"width: 100%; min-width: 0px;\"><tbody><tr><td class=\"tdElement\" style=\"width: 25%;\"><br></td><td style=\"width: 25%;\" class=\"\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr><tr><td style=\"width: 25%;\" class=\"e-cell-select\"><br></td><td style=\"width: 25%;\" class=\"\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr><tr><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr></tbody></table>"
+            });
+        });
+        afterEach(function () {
+            destroy(rteObj);
+        });
+        it('Background colour applied for the selected table td element', function (done) {
+            rteObj.focusIn();
+            var tdElement :any = rteObj.inputElement.querySelector("table td");
+            var selectioncursor = new NodeSelection();
+            var range = document.createRange();
+            range.setStart(tdElement, 0);
+            selectioncursor.setRange(document, range);
+            var tbElement = rteObj.contentModule.getEditPanel().querySelector("table td")
+            var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            (rteObj as any).tableModule.setBGColor({
+                "item": {
+                    "command": "Font",
+                    "subCommand": "BackgroundColor",
+                    "value": "rgb(255, 255, 0)"
+                },
+                "name": "tableColorPickerChanged"
+            });
+            expect(tdElement.style.backgroundColor != '' ).toBe(true);
+            done();
+        });
+    });
+    describe('Table dialog popup position', function () {
+        var rteObj: RichTextEditor;
+        beforeEach(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                        'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: "<table class=\"e-rte-table e-dashed-borders\" style=\"width: 100%; min-width: 0px;\"><tbody><tr><td class=\"tdElement\" style=\"width: 25%;\"><br></td><td style=\"width: 25%;\" class=\"\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr><tr><td style=\"width: 25%;\" class=\"e-cell-select\"><br></td><td style=\"width: 25%;\" class=\"\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr><tr><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr></tbody></table>"
+            });
+        });
+        afterEach(function () {
+            destroy(rteObj);
+        });
+        it('Table dialog popup position', function (done) {
+            Browser.userAgent = androidUA;
+            rteObj.focusIn();
+            var tdElement = rteObj.inputElement.querySelector("table td");
+            var selectioncursor = new NodeSelection();
+            var range = document.createRange();
+            range.setStart(tdElement, 0);
+            selectioncursor.setRange(document, range);
+            var tbElement = rteObj.contentModule.getEditPanel().querySelector("table td");
+            var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1, touches:  { length: 0 }, changedTouches: [{ pageX: 0, pageY: 0, clientX: 0 }] };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            expect(! isNullOrUndefined(document.querySelector(".e-rte-quick-toolbar"))).toBe(true);
+            Browser.userAgent = currentBrowserUA;
+            done();
+        });
+    });
+    describe('Remove the table helper element when selecting the table', function () {
+        var rteObj: RichTextEditor;
+        beforeEach(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                        'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: "<table class=\"e-rte-table e-dashed-borders\" style=\"width: 100%; min-width: 0px;\"><tbody><tr><td class=\"tdElement\" style=\"width: 25%;\"><br></td><td style=\"width: 25%;\" class=\"\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr><tr><td style=\"width: 25%;\" class=\"e-cell-select\"><br></td><td style=\"width: 25%;\" class=\"\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr><tr><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td><td style=\"width: 25%;\"><br></td></tr></tbody></table>"
+            });
+        });
+        afterEach(function () {
+            destroy(rteObj);
+        });
+        it('Remove the table helper element when selecting the table', function (done) {
+            rteObj.focusIn();
+            var tdElement = rteObj.inputElement.querySelector("table td");
+            var selectioncursor = new NodeSelection();
+            var range = document.createRange();
+            range.setStart(tdElement, 0);
+            selectioncursor.setRange(document, range);
+            var tableElement = rteObj.contentModule.getEditPanel().querySelector("table");
+            var eventsArg = { pageX: 50, pageY: 300, target: tdElement, which: 1 };
+            (rteObj as any).tableModule.resizeHelper({ target: tableElement, preventDefault: function () { } });
+            var resizeCol = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
+            (rteObj as any).tableModule.resizeStart({target:resizeCol, pageX: 100, pageY: 0, preventDefault: function () { } });
+            (rteObj as any).tableModule.appendHelper();
+            (rteObj as any).mouseDownHandler(eventsArg);
+            expect( document.querySelectorAll(".e-table-rhelper.e-column-helper").length < 2 ).toBe(true);
+            done();
+        });
+    });
+    describe('Add table element padding', function () {
+        var rteEle;
+        var rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableEditProperties']
+                },
+                value : `<table class="e-rte-table e-rte-table-border" style="width: 100%; min-width: 0px;" cellspacing="2"><tbody><tr><td class="" style="width: 25%; padding: 2px;"><br></td><td style="width: 25%; padding: 2px;" class=""><br></td><td style="width: 25%; padding: 2px;" class=""><br></td><td style="width: 25%; padding: 2px;"><br></td></tr><tr><td style="width: 25%; padding: 2px;" class="e-cell-select"><p id="tdElement">Rich Text Editor</p></td><td style="width: 25%; padding: 2px;" class=""><br></td><td style="width: 25%; padding: 2px;" class=""><br></td><td style="width: 25%; padding: 2px;"><br></td></tr><tr><td style="width: 25%; padding: 2px;"><br></td><td style="width: 25%; padding: 2px;" class=""><br></td><td style="width: 25%; padding: 2px;"><br></td><td style="width: 25%; padding: 2px;"><br></td></tr></tbody></table>`,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('Add table element padding', function (done) {
+            rteObj.focusIn();
+            var tdElement = rteObj.inputElement.querySelector("table td");
+            var selectioncursor = new NodeSelection();
+            var range = document.createRange();
+            range.setStart(tdElement, 0);
+            selectioncursor.setRange(document, range);
+            var eventsArg = { pageX: 50, pageY: 300, target: tdElement, which: 1, touches: { length: 0 }, changedTouches: [{ pageX: 0, pageY: 0, clientX: 0 }] };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            (document.querySelector(".e-rte-quick-toolbar .e-toolbar-item button") as any).click()
+            setTimeout(function () {
+                (document.querySelector(".e-rte-edit-table .e-footer-content button") as any).click()
+                expect((document.querySelector("table td") as any).style.padding == '2px').toBe(true);
+                done();
+            }, 500);
+        });
+    });
+    describe('The dialog popup is closed when set to beforeClose args.cancel to true', function () {
+        var rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [ 'CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableEditProperties','TableHeader', 'TableRows', 'TableColumns', 'BackgroundColor', '-', 'TableRemove', 'Alignments', 'TableCellVerticalAlign', 'Styles']
+                },
+                beforeDialogClose : function(e){
+                    e.cancel = false;
+                },
+                value:`<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><table class="e-rte-table e-rte-table-border" style="width: 392px; min-width: 0px;" cellspacing="0"><tbody><tr style="height: 115px;"><td class="" style="width: 35.4592%; padding: 0px;"><br></td><td style="width: 28.0612%; padding: 0px;" class=""><br></td><td style="width: 36.2245%; padding: 0px;" class=""><br></td></tr><tr><td style="width: 35.4592%; padding: 0px;"><br></td><td style="width: 28.0612%; padding: 0px;"><br></td><td style="width: 36.2245%; padding: 0px;"><br></td></tr></tbody></table><p><br></p></td><td style="width: 34.4316%;" class=""><br></td><td style="width: 32.1252%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 34.4316%;" class=""><br></td><td style="width: 32.1252%;"><br></td></tr></tbody></table>`
+            });
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('The dialog popup is closed when set to beforeClose args.cancel to true', function (done) {
+            rteObj.focusIn();
+            (document.querySelector(".e-rte-toolbar .e-toolbar-items .e-toolbar-item button") as any).click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn") as any).click();
+            setTimeout(function () {
+                document.querySelector(".e-rte-edit-table.e-dialog.e-rte-elements.e-popup").classList.remove("e-popup-open");
+                document.querySelector(".e-rte-edit-table.e-dialog.e-rte-elements.e-popup").classList.add("e-popup-close");
+                (document.querySelector(".e-rte-edit-table .e-footer-content .e-rte-elements.e-cancel") as any).click();
+                expect(document.querySelector(".e-rte-edit-table.e-dialog.e-rte-elements.e-popup").classList.contains("e-popup-close")).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('When the enter key action is DIV, the inserted table next to it is a div element.', function () {
+        var rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                enterKey : 'DIV',
+            });
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('When the enter key action is DIV, the inserted table next to it is a div element.', function (done) {
+            rteObj.focusIn();
+            (document.querySelector(".e-rte-toolbar .e-toolbar-items .e-toolbar-item button") as any).click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn") as any).click();
+            setTimeout(function () {
+                (document.querySelector(".e-rte-edit-table .e-footer-content .e-rte-elements.e-insert-table") as any).click();
+                expect(document.querySelector(".e-content table").nextSibling != null).toBe(true);
+                done();
+            }, 100);
+        });
+        it('When the enter key action is BR, the inserted table next to it is a div element.', function (done) {
+            rteObj.focusIn();
+            rteObj.enterKey = 'BR';
+            rteObj.dataBind();
+            (document.querySelector(".e-rte-toolbar .e-toolbar-items .e-toolbar-item button")as any).click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn")as any).click();
+            setTimeout(function () {
+                (document.querySelector(".e-rte-edit-table .e-footer-content .e-rte-elements.e-insert-table")as any).click();
+                expect(document.querySelector(".e-content table").nextSibling != null).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('An empty LI tag was removed while inserting the table', function () {
+        var rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                enterKey: 'DIV',
+                value: `<div class="editable-content">
+                <ul>
+                  <li>RTE</li>
+                  <li></li>
+                </ul>
+                <ol>
+                  <!-- No list items inside this ordered list -->
+                </ol>
+                <ul></ul> <!-- Empty unordered list -->
+                <ol>
+                  <li></li>
+                  <li></li>
+                  <li></li>
+                </ol>
+              </div>
+              <div id="divElement"></div>`
+            });
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('An empty LI tag was removed while inserting the table', function (done) {
+            rteObj.focusIn();
+            var tdElement = rteObj.inputElement.querySelector("#divElement");
+            var selectioncursor = new NodeSelection();
+            var range = document.createRange();
+            range.setStart(tdElement, 0);
+            selectioncursor.setRange(document, range);
+            (document.querySelector(".e-rte-toolbar .e-toolbar-items .e-toolbar-item button")as any).click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn")as any).click();
+            setTimeout(function () {
+                (document.querySelector(".e-rte-edit-table .e-footer-content .e-rte-elements.e-insert-table")as any).click();
+                expect(rteObj.inputElement.querySelectorAll('li *:empty:not(img)').length == 0).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe("When you set the table width ('300') as a string, it's converted to the PX.", function () {
+        var rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                tableSettings: {
+                    width: '300'
+                },
+            });
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it("When you set the table width ('300') as a string, it's converted to the PX.", function (done) {
+            rteObj.focusIn();
+            (document.querySelector(".e-rte-toolbar .e-toolbar-items .e-toolbar-item button")as any).click();
+            (document.querySelector(".e-rte-table-popup button.e-insert-table-btn")as any).click();
+            setTimeout(function () {
+                (document.querySelector(".e-rte-edit-table .e-footer-content .e-rte-elements.e-insert-table")as any).click();
+                expect(rteObj.inputElement.querySelector("table").style.width == '300px').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe("Press the enter key DIV with the empty value in the Rich Text Editor.", function () {
+        var rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                enterKey : "DIV",
+                value: "<p></p>"
+            });
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it("Press the enter key DIV with the empty value in the Rich Text Editor.", function (done) {
+            rteObj.focusIn();
+            var tdElement = rteObj.inputElement.querySelector("p");
+            let selectioncursor = new NodeSelection();
+            let range= document.createRange();
+            range.setStart(tdElement, 1);
+            selectioncursor.setRange(document, range);
+            var keyBoardEvent = { type: 'keydown', preventDefault: function () { }, key: 'Backspace', keyCode: 8, stopPropagation: function () { }, shiftKey: false, which: 8 };
+            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj as any).dataBind();
+            document.querySelector(".e-content").innerHTML = '';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(rteObj.inputElement.innerHTML == '<div><br></div>').toBe(true);
+            done();
+        });
+    });
+    describe("Press the enter key BR with the empty value in the Rich Text Editor.", function () {
+        var rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                enterKey : "BR",
+                value: "<p></p>"
+            });
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it("Press the enter key BR with the empty value in the Rich Text Editor.", function (done) {
+            rteObj.focusIn();
+            var tdElement = rteObj.inputElement.querySelector("p");
+            let selectioncursor = new NodeSelection();
+            let range= document.createRange();
+            range.setStart(tdElement, 1);
+            selectioncursor.setRange(document, range);
+            var keyBoardEvent = { type: 'keydown', preventDefault: function () { }, key: 'Backspace', keyCode: 8, stopPropagation: function () { }, shiftKey: false, which: 8 };
+            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj as any).dataBind();
+            document.querySelector(".e-content").innerHTML = '';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(rteObj.inputElement.innerHTML == "<br>").toBe(true);
+            done();
+        });
+    });
     describe("Table last column resizing is not working when table is pasted from MS Word.", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

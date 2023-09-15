@@ -520,7 +520,7 @@ export interface IThemeStyle {
     /**
      * Defines the opacity of tooltip text in the treemap, supporting the theme.
      */
-    tooltipTextOpacity?: number;    
+    tooltipTextOpacity?: number;
     /**
      * Defines the color of the legend title in the treemap, supporting the theme.
      */

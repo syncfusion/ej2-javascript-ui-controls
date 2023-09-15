@@ -1599,7 +1599,6 @@ describe('EJ2-62160-Feature Tool Tip For Ports', () => {
 
 
     it('checking port tooltip with relative mode Object position', (done: Function) => {
-        debugger
         expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         let node: HTMLElement = document.getElementById('node1_Port1');
@@ -1642,7 +1641,6 @@ describe('EJ2-62160-Feature Tool Tip For Ports', () => {
         done();
     });
     it('checking tooltip when mouse moved inside the Port in node', (done: Function) => {
-        debugger
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
         expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
@@ -1658,7 +1656,6 @@ describe('EJ2-62160-Feature Tool Tip For Ports', () => {
         done();
     });
     it('checking tooltip when port is inside the node', (done: Function) => {
-        debugger
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
         expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
@@ -1669,4 +1666,131 @@ describe('EJ2-62160-Feature Tool Tip For Ports', () => {
         expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
         done();
     });
+});
+
+describe('840454-IsSticky Tooltip', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'isSticky_tooltip' });
+        document.body.appendChild(ele);
+        let port1: PointPortModel[] = [{
+            offset:{x:0,y:0},
+            height:40,
+            width:40, 
+            id: 'Port1',
+            tooltip: {
+                content: 'port tootip', relativeMode: 'Object', height: 50, width: 50, position: 'TopRight', isSticky: true,
+            },
+            visibility: PortVisibility.Visible,
+            constraints:PortConstraints.Default | PortConstraints.ToolTip,
+        }];
+        
+        let node1: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,ports:port1,
+            tooltip: {
+                content: 'node1',
+                position: 'TopCenter',
+                relativeMode: 'Object',
+                isSticky: true
+            },
+            constraints: NodeConstraints.Default | NodeConstraints.Tooltip,
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
+            tooltip: {
+                content: 'a',
+                position: 'TopCenter',
+                height: 50, width: 50,
+                relativeMode: 'Object',
+            },
+            constraints: NodeConstraints.Default | NodeConstraints.Tooltip,
+        };
+       
+        let connectors: ConnectorModel[] = [{
+            id: 'connector1',
+            type: 'Straight',
+            sourcePoint: { x: 220, y: 100 },
+            targetPoint: { x: 220, y: 200 },
+            tooltip: {
+                content: 'connector', position: 'BottomRight', relativeMode: 'Object',
+                animation: { open: { effect: 'None', delay: 0 }, close: { effect: 'None', delay: 0 } },
+                isSticky: true
+            },
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.Tooltip,
+        },];
+        diagram = new Diagram({
+            width: '1000px', height: '500px',
+            nodes: [node1, node2],
+            connectors: connectors,
+            tooltip: {
+                content: 'Default Tooltip', position: 'TopLeft', height: 'auto', width: 'auto',
+                relativeMode: 'Object',
+                isSticky:true
+            },
+        });
+        diagram.appendTo('#isSticky_tooltip');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('checking tooltip holding after mouse leaving from Node as Diagram Tooltip', (done: Function) => {
+        diagram.constraints = DiagramConstraints.Default | DiagramConstraints.Tooltip;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 900, 100, false, false);
+        let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done();
+    });
+    it('checking tooltip holding after mouse leaving from Node', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 100, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done();
+    });
+    it('checking tooltip holding after mouse leaving from Port', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 50, 50, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done();
+    });
+    it('checking tooltip holding after mouse leaving from connector', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 210, 180, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 10, 10, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done();
+    });
+    
 });

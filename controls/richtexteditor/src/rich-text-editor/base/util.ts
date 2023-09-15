@@ -170,7 +170,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         removeClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]);
                     }
                 } else if ((typeof data[`${key}`] === 'string' || data[`${key}`] === null) &&
-                    getIndex(key, e.parent.toolbarSettings.items) > -1) {
+                    getIndex(key, e.parent.toolbarSettings.items) >= -1) {
                     const value: string = ((data[`${key}`]) ? data[`${key}`] : '') as string;
                     let result: string = '';
                     switch (key) {
@@ -232,6 +232,9 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             + getFormattedFontSize(result) + '</span></span>');
                         dropDown.fontSizeDropDown.dataBind();
                         break; }
+                    case 'bulletFormatList':
+                    case 'numberFormatList': {
+                        removeClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]); }
                     }
                 }
             }

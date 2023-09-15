@@ -652,30 +652,47 @@ export class Ribbon {
             ],
             orientation: 'Vertical',
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                let wrapperCls: string;
                 if (args.parentItem.text === l10n.getConstant('Column')) {
                     args.element.firstChild.appendChild(column);
-                    args.element.parentElement.classList.add('e-column-chart');
+                    wrapperCls = 'e-column-chart';
                 } else if (args.parentItem.text === l10n.getConstant('Bar')) {
                     args.element.firstChild.appendChild(bar);
-                    args.element.parentElement.classList.add('e-bar-chart');
+                    wrapperCls = 'e-bar-chart';
                 } else if (args.parentItem.text === l10n.getConstant('Area')) {
                     args.element.firstChild.appendChild(area);
-                    args.element.parentElement.classList.add('e-area-chart');
+                    wrapperCls = 'e-area-chart';
                 } else if (args.parentItem.text === l10n.getConstant('Line')) {
                     args.element.firstChild.appendChild(line);
-                    args.element.parentElement.classList.add('e-line-chart');
+                    wrapperCls = 'e-line-chart';
                 } else if (args.parentItem.text === l10n.getConstant('PieAndDoughnut')) {
                     args.element.firstChild.appendChild(pie);
-                    args.element.parentElement.classList.add('e-pie-doughnut-chart');
+                    wrapperCls = 'e-pie-doughnut-chart';
                 } else if (args.parentItem.text === l10n.getConstant('Radar')) {
                     args.element.firstChild.appendChild(radar);
-                    args.element.parentElement.classList.add('e-radar-chart');
+                    wrapperCls = 'e-radar-chart';
                 } else if (args.parentItem.text === l10n.getConstant('Scatter')) {
                     args.element.firstChild.appendChild(scatter);
-                    args.element.parentElement.classList.add('e-scatter-chart');
+                    wrapperCls = 'e-scatter-chart';
+                }
+                if (wrapperCls) {
+                    args.element.parentElement.classList.add(wrapperCls);
+                    EventHandler.add(args.element, 'keydown', this.menuIconKeyDown.bind(this, `${wrapperCls} .e-menu-icon`, 0));
                 }
             },
-            select: (args: MenuEventArgs): void => this.chartSelected(args, chartDdb)
+            select: (args: MenuEventArgs): void => this.chartSelected(args, chartDdb),
+            beforeItemRender: (args: MenuEventArgs): void => {
+                if (!args.item.text) {
+                    args.element.removeAttribute('tabindex');
+                }
+            },
+            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (args.event && (args.event as KeyboardEvent).keyCode === 37) {
+                    args.cancel = true;
+                } else {
+                    EventHandler.remove(args.element, 'keydown', this.menuIconKeyDown);
+                }
+            }
         });
         const column: HTMLElement = this.parent.createElement('div', { id: 'column_main', className: 'e-column-main' });
         const column1Text: HTMLElement = this.parent.createElement('div', { id: 'column1_text', className: 'e-column1-text' });
@@ -686,27 +703,24 @@ export class Ribbon {
         column.appendChild(column1Cont);
         //column.appendChild(column2Text);
         //column.appendChild(column2Cont);
-        const clusteredColumn: HTMLElement =
-            this.parent.createElement('span', { id: 'clusteredColumn', className: 'e-clusteredcolumn e-column-icon e-menu-icon e-icons' });
-        const stackedColumn: HTMLElement =
-            this.parent.createElement('span', {
-                id: 'stackedColumn', className: 'e-stackedcolumn e-column-icon e-menu-icon e-icons'
-            });
-        const stackedColumn100: HTMLElement =
-            this.parent.createElement('span', {
-                id: 'stackedColumn100', className: 'e-stackedcolumn100 e-column-icon e-menu-icon e-icons'
-            });
-        const clusteredColumn3D: HTMLElement =
-            this.parent.createElement('span', {
-                id: 'clusteredColumn3D', className: 'e-clusteredColumn3D e-column-icon'
-            });
+        let cultureText: string = l10n.getConstant('ClusteredColumn');
+        const clusteredColumn: HTMLElement = this.parent.createElement(
+            'span', { id: 'clusteredColumn', className: 'e-clusteredcolumn e-column-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedColumn');
+        const stackedColumn: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedColumn', className: 'e-stackedcolumn e-column-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedColumn100');
+        const stackedColumn100: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedColumn100', className: 'e-stackedcolumn100 e-column-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        const clusteredColumn3D: HTMLElement = this.parent.createElement(
+            'span', { id: 'clusteredColumn3D', className: 'e-clusteredColumn3D e-column-icon' });
         const stackedColumn3D: HTMLElement =
             this.parent.createElement('span', { id: 'stackedColumn3D', className: 'e-stackedColumn3D e-column-icon' });
         const stackedColumn1003D: HTMLElement =
             this.parent.createElement('span', { id: 'stackedColumn1003D', className: 'e-stackedColumn1003D e-column-icon' });
-        clusteredColumn.title = l10n.getConstant('ClusteredColumn'); stackedColumn.title = l10n.getConstant('StackedColumn');
-        stackedColumn100.title = l10n.getConstant('StackedColumn100'); stackedColumn1003D.title = l10n.getConstant('OrangeDataBar');
-        stackedColumn3D.title = l10n.getConstant('LightBlueDataBar'); clusteredColumn3D.title = l10n.getConstant('PurpleDataBar');
         column1Cont.appendChild(clusteredColumn); column1Cont.appendChild(stackedColumn); column1Cont.appendChild(stackedColumn100);
         column2Cont.appendChild(clusteredColumn3D); column2Cont.appendChild(stackedColumn3D); column2Cont.appendChild(stackedColumn1003D);
         const bar: HTMLElement = this.parent.createElement('div', { id: 'bar_main', className: 'e-bar-main' });
@@ -718,21 +732,24 @@ export class Ribbon {
         bar.appendChild(bar1Cont);
         //bar.appendChild(bar2Text);
         //bar.appendChild(bar2Cont);
-        const clusteredBar: HTMLElement =
-            this.parent.createElement('span', { id: 'clusteredBar', className: 'e-clusteredbar e-bar-icon e-menu-icon e-icons' });
-        const stackedBar: HTMLElement =
-            this.parent.createElement('span', { id: 'stackedBar', className: 'e-stackedbar e-bar-icon e-menu-icon e-icons' });
-        const stackedBar100: HTMLElement =
-            this.parent.createElement('span', { id: 'stackedBar100', className: 'e-stackedbar100 e-bar-icon e-menu-icon e-icons' });
+        cultureText = l10n.getConstant('ClusteredBar');
+        const clusteredBar: HTMLElement = this.parent.createElement(
+            'span', { id: 'clusteredBar', className: 'e-clusteredbar e-bar-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedBar');
+        const stackedBar: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedBar', className: 'e-stackedbar e-bar-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedBar100');
+        const stackedBar100: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedBar100', className: 'e-stackedbar100 e-bar-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         const clusteredBar3D: HTMLElement =
             this.parent.createElement('span', { id: 'clusteredBar3D', className: 'e-clusteredBar3D e-bar-icon' });
         const stackedBar3D: HTMLElement =
             this.parent.createElement('span', { id: 'stackedBar3D', className: 'e-stackedBar3D e-bar-icon' });
         const stackedBar1003D: HTMLElement =
             this.parent.createElement('span', { id: 'stackedBar1003D', className: 'e-stackedBar1003D e-bar-icon' });
-        clusteredBar.title = l10n.getConstant('ClusteredBar'); stackedBar.title = l10n.getConstant('StackedBar');
-        stackedBar100.title = l10n.getConstant('StackedBar100'); stackedBar1003D.title = l10n.getConstant('OrangeDataBar');
-        stackedBar3D.title = l10n.getConstant('LightBlueDataBar'); clusteredBar3D.title = l10n.getConstant('PurpleDataBar');
         bar1Cont.appendChild(clusteredBar); bar1Cont.appendChild(stackedBar); bar1Cont.appendChild(stackedBar100);
         bar2Cont.appendChild(clusteredBar3D); bar2Cont.appendChild(stackedBar3D); bar2Cont.appendChild(stackedBar1003D);
 
@@ -744,14 +761,18 @@ export class Ribbon {
             this.parent.createElement('div', { id: 'area_cont', className: 'e-area-cont' });
         area.appendChild(areaText);
         area.appendChild(areaCont);
-        const defArea: HTMLElement =
-            this.parent.createElement('span', { id: 'area', className: 'e-area e-area-icon e-menu-icon e-icons' });
-        const stackedArea: HTMLElement =
-            this.parent.createElement('span', { id: 'stackedArea', className: 'e-stackedarea e-area-icon e-menu-icon e-icons' });
-        const stackedArea100: HTMLElement =
-            this.parent.createElement('span', { id: 'stackedArea100', className: 'e-stackedarea100 e-area-icon e-menu-icon e-icons' });
-        defArea.title = l10n.getConstant('Area'); stackedArea.title = l10n.getConstant('StackedArea');
-        stackedArea100.title = l10n.getConstant('StackedArea100');
+        cultureText = l10n.getConstant('Area');
+        const defArea: HTMLElement = this.parent.createElement(
+            'span', { id: 'area', className: 'e-area e-area-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedArea');
+        const stackedArea: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedArea', className: 'e-stackedarea e-area-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedArea100');
+        const stackedArea100: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedArea100', className: 'e-stackedarea100 e-area-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         areaCont.appendChild(defArea); areaCont.appendChild(stackedArea); areaCont.appendChild(stackedArea100);
 
         const line: HTMLElement =
@@ -763,20 +784,30 @@ export class Ribbon {
         line.appendChild(lineText);
         line.appendChild(lineCont);
         line.appendChild(lineContMarker);
-        const defLine: HTMLElement = this.parent.createElement('span', { id: 'line', className: 'e-line e-line-icon e-menu-icon e-icons' });
-        const stackedLine: HTMLElement =
-            this.parent.createElement('span', { id: 'stackedLine', className: 'e-stackedline e-line-icon e-menu-icon e-icons' });
-        const stackedLine100: HTMLElement = this.parent.createElement('span', {
-            id: 'stackedLine100', className: 'e-stackedline100 e-line-icon e-menu-icon e-icons'
-        });
-        const defLineMarker: HTMLElement = this.parent.createElement('span', { id: 'lineMarker', className: 'e-line-marker e-line-icon e-menu-icon e-icons' });
-        const stackedLineMarker: HTMLElement = this.parent.createElement('span', { id: 'stackedLineMarker', className: 'e-stackedline-marker e-line-icon e-menu-icon e-icons' });
-        const stackedLine100Marker: HTMLElement = this.parent.createElement('span', { id: 'stackedLine100Marker', className: 'e-stackedline100-marker e-line-icon e-menu-icon e-icons'});
-        defLine.title = l10n.getConstant('Line'); stackedLine.title = l10n.getConstant('StackedLine');
-        stackedLine100.title = l10n.getConstant('StackedLine100');
-        defLineMarker.title = l10n.getConstant('LineMarker');
-        stackedLineMarker.title = l10n.getConstant('StackedLineMarker');
-        stackedLine100Marker.title = l10n.getConstant('StackedLine100Marker');
+        cultureText = l10n.getConstant('Line');
+        const defLine: HTMLElement = this.parent.createElement(
+            'span', { id: 'line', className: 'e-line e-line-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedLine');
+        const stackedLine: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedLine', className: 'e-stackedline e-line-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedLine100');
+        const stackedLine100: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedLine100', className: 'e-stackedline100 e-line-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('LineMarker');
+        const defLineMarker: HTMLElement = this.parent.createElement(
+            'span', { id: 'lineMarker', className: 'e-line-marker e-line-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedLineMarker');
+        const stackedLineMarker: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedLineMarker', className: 'e-stackedline-marker e-line-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('StackedLine100Marker');
+        const stackedLine100Marker: HTMLElement = this.parent.createElement(
+            'span', { id: 'stackedLine100Marker', className: 'e-stackedline100-marker e-line-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         lineCont.appendChild(defLine); lineCont.appendChild(stackedLine); lineCont.appendChild(stackedLine100);
         lineContMarker.appendChild(defLineMarker); lineContMarker.appendChild(stackedLineMarker); lineContMarker.appendChild(stackedLine100Marker);
         const pie: HTMLElement = this.parent.createElement('div', { id: 'pie_main', className: 'e-pie-main' });
@@ -785,10 +816,14 @@ export class Ribbon {
         const pieCont: HTMLElement = this.parent.createElement('div', { id: 'pie_cont', className: 'e-pie-cont' });
         pie.appendChild(pieText);
         pie.appendChild(pieCont);
-        const defPie: HTMLElement = this.parent.createElement('span', { id: 'pie', className: 'e-pie e-pie-icon e-menu-icon e-icons' });
-        const doughnut: HTMLElement =
-            this.parent.createElement('span', { id: 'doughnut', className: 'e-doughnut e-pie-icon e-menu-icon e-icons' });
-        defPie.title = l10n.getConstant('Pie'); doughnut.title = l10n.getConstant('Doughnut');
+        cultureText = l10n.getConstant('Pie');
+        const defPie: HTMLElement = this.parent.createElement(
+            'span', { id: 'pie', className: 'e-pie e-pie-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+        cultureText = l10n.getConstant('Doughnut');
+        const doughnut: HTMLElement = this.parent.createElement(
+            'span', { id: 'doughnut', className: 'e-doughnut e-pie-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         pieCont.appendChild(defPie); pieCont.appendChild(doughnut);
 
         const radar: HTMLElement = this.parent.createElement('div', { id: 'radar_main', className: 'e-radar-main' });
@@ -797,22 +832,23 @@ export class Ribbon {
         const radarCont: HTMLElement = this.parent.createElement('div', { id: 'radar_cont', className: 'e-radar-cont' });
         radar.appendChild(radarText);
         radar.appendChild(radarCont);
-        const defradar: HTMLElement =
-            this.parent.createElement('span', { id: 'radar', className: 'e-radar e-radar-icon e-menu-icon e-icons' });
-        const radarMarkers: HTMLElement =
-            this.parent.createElement('span', { id: 'radar_markers', className: 'e-radar-markers e-radar-icon e-menu-icon e-icons' });
+        const defradar: HTMLElement = this.parent.createElement(
+            'span', { id: 'radar', className: 'e-radar e-radar-icon e-menu-icon e-icons', attrs: { tabindex: '-1' } });
+        const radarMarkers: HTMLElement = this.parent.createElement(
+            'span', { id: 'radar_markers', className: 'e-radar-markers e-radar-icon e-menu-icon e-icons', attrs: { tabindex: '-1' } });
         defradar.title = l10n.getConstant('BlueDataBar'); radarMarkers.title = l10n.getConstant('GreenDataBar');
         radarCont.appendChild(defradar); radarCont.appendChild(radarMarkers);
 
         const scatter: HTMLElement = this.parent.createElement('div', { id: 'scatter_main', className: 'e-scatter-main' });
         const scatterText: HTMLElement = this.parent.createElement('div', { id: 'scatter_text', className: 'e-scatter-text' });
-        scatterText.innerText = l10n.getConstant('Scatter');
+        cultureText = l10n.getConstant('Scatter');
+        scatterText.innerText = cultureText;
         const scatterCont: HTMLElement = this.parent.createElement('div', { id: 'scatter_cont', className: 'e-scatter-cont' });
         scatter.appendChild(scatterText);
         scatter.appendChild(scatterCont);
-        const defscatter: HTMLElement =
-            this.parent.createElement('span', { id: 'scatter', className: 'e-scatter e-scatter-icon e-menu-icon e-icons' });
-        defscatter.title = l10n.getConstant('Scatter');
+        const defscatter: HTMLElement = this.parent.createElement(
+            'span', { id: 'scatter', className: 'e-scatter e-scatter-icon e-menu-icon e-icons',
+            attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
         scatterCont.appendChild(defscatter);
         chartMenu.createElement = this.parent.createElement;
         chartMenu.appendTo(ul);
@@ -991,10 +1027,12 @@ export class Ribbon {
     private createCFMenu(ul: HTMLElement): Menu {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const addIcons: Function = (icons: string[], category: string, appendTo: Element): void => {
+            let content: string;
             icons.forEach((icon: string): void => {
+                content = l10n.getConstant(icon + category);
                 appendTo.appendChild(
                     this.parent.createElement('span', { id: icon + category, className: `e-${icon.toLowerCase()} e-cf-icon`,
-                        attrs: { 'title': l10n.getConstant(icon + category) } }));
+                        attrs: { 'title': content, 'aria-label': content, tabindex: '-1' } }));
             });
         };
         const cfMenu: Menu = new Menu({
@@ -1033,169 +1071,135 @@ export class Ribbon {
                     args.element.parentElement.classList.add('e-databars');
                     addIcons(['Blue', 'Green', 'Red'], 'DataBar', args.element.firstChild);
                     addIcons(['Orange', 'LightBlue', 'Purple'], 'DataBar', args.element.lastChild);
+                    EventHandler.add(args.element, 'keydown', this.menuIconKeyDown.bind(this, 'e-cf-icon', 3));
                 } else if (args.parentItem.iconCss === 'e-icons e-colorscales') {
                     args.element.parentElement.classList.add('e-colorscales');
                     addIcons(['GYR', 'RYG', 'GWR', 'RWG'], 'ColorScale', args.element.firstChild);
                     addIcons(['BWR', 'RWB', 'WR', 'RW'], 'ColorScale', args.element.querySelector('#cs_icons2'));
                     addIcons(['GW', 'WG', 'GY', 'YG'], 'ColorScale', args.element.lastChild);
+                    EventHandler.add(args.element, 'keydown', this.menuIconKeyDown.bind(this, 'e-cf-icon', 4));
                 } else if (args.parentItem.iconCss === 'e-icons e-iconsets') {
                     args.element.parentElement.classList.add('e-iconsets');
-                    args.element.firstChild.appendChild(iconSets);
+                    args.element.firstChild.appendChild(iconSetGroup);
+                    EventHandler.add(args.element, 'keydown', this.menuIconKeyDown.bind(this, 'e-is-wrapper', 0));
                 }
             },
-            select: this.cfSelected.bind(this)
+            select: this.cfSelected.bind(this),
+            beforeItemRender: (args: MenuEventArgs): void => {
+                if (args.item.id.includes('db_icons') || args.item.id.includes('cs_icons') || args.item.id === 'is_icons') {
+                    args.element.removeAttribute('tabindex');
+                }
+            },
+            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
+                const cfIcons: boolean = ['e-icons e-databars', 'e-icons e-colorscales', 'e-icons e-iconsets'].indexOf(
+                    args.parentItem.iconCss) > -1;
+                args.cancel = args.event && (args.event as KeyboardEvent).keyCode === 37 && cfIcons;
+                if (cfIcons && !args.cancel) {
+                    EventHandler.remove(args.element, 'keydown', this.menuIconKeyDown);
+                }
+            }
         });
         cfMenu.createElement = this.parent.createElement;
-
-        const iconSets: HTMLElement = this.parent.createElement('div', { id: 'is', className: 'e-is' });
-        const is1: HTMLElement = this.parent.createElement('div', { id: 'is1', className: 'e-is1' });
-        is1.innerText = l10n.getConstant('Directional');
-        const is2: HTMLElement = this.parent.createElement('div', { id: 'is2', className: 'e-is2' });
-        const is3: HTMLElement = this.parent.createElement('div', { id: 'is3', className: 'e-is3' });
-        is3.innerText = l10n.getConstant('Shapes');
-        const is4: HTMLElement = this.parent.createElement('div', { id: 'is4', className: 'e-is4' });
-        const is5: HTMLElement = this.parent.createElement('div', { id: 'is5', className: 'e-is5' });
-        is5.innerText = l10n.getConstant('Indicators');
-        const is6: HTMLElement = this.parent.createElement('div', { id: 'is6', className: 'e-is6' });
-        const is7: HTMLElement = this.parent.createElement('div', { id: 'is7', className: 'e-is7' });
-        is7.innerText = l10n.getConstant('Ratings');
-        const is8: HTMLElement = this.parent.createElement('div', { id: 'is8', className: 'e-is8' });
-        is1.title = l10n.getConstant('GYColorScale'); is2.title = l10n.getConstant('YGColorScale');
-        is3.title = l10n.getConstant('GYColorScale'); is4.title = l10n.getConstant('YGColorScale');
-        is5.title = l10n.getConstant('GYColorScale'); is6.title = l10n.getConstant('YGColorScale');
-        is7.title = l10n.getConstant('GYColorScale'); is8.title = l10n.getConstant('YGColorScale');
-
-        iconSets.appendChild(is1); iconSets.appendChild(is2); iconSets.appendChild(is3); iconSets.appendChild(is4);
-        iconSets.appendChild(is5); iconSets.appendChild(is6); iconSets.appendChild(is7); iconSets.appendChild(is8);
-        const directional1: HTMLElement = this.parent.createElement('div', { id: 'ThreeArrows', className: 'e-3arrows e-is-wrapper' });
-        const directional2: HTMLElement =
-         this.parent.createElement('div', { id: 'ThreeArrowsGray', className: 'e-3arrowsgray e-is-wrapper' });
-        const directional3: HTMLElement = this.parent.createElement('div', { id: 'ThreeTriangles', className: 'e-3triangles e-is-wrapper' });
-        const directional4: HTMLElement = this.parent.createElement('div', { id: 'FourArrowsGray', className: 'e-4arrowsgray e-is-wrapper' });
-        const directional5: HTMLElement = this.parent.createElement('div', { id: 'FourArrows', className: 'e-4arrows e-is-wrapper' });
-        const directional6: HTMLElement = this.parent.createElement('div', { id: 'FiveArrowsGray', className: 'e-5arrowsgray e-is-wrapper' });
-        const directional7: HTMLElement = this.parent.createElement('div', { id: 'FiveArrows', className: 'e-5arrows e-is-wrapper' });
-        directional1.title = l10n.getConstant('ThreeArrowsColor'); directional2.title = l10n.getConstant('ThreeArrowsGray');
-        directional3.title = l10n.getConstant('ThreeTriangles'); directional4.title = l10n.getConstant('FourArrowsColor');
-        directional5.title = l10n.getConstant('FourArrowsGray'); directional6.title = l10n.getConstant('FiveArrowsColor');
-        directional7.title = l10n.getConstant('FiveArrowsGray');
-        is2.appendChild(directional1); is2.appendChild(directional2); is2.appendChild(directional3); is2.appendChild(directional4);
-        is2.appendChild(directional5);
-        is2.appendChild(directional6); is2.appendChild(directional7);
-        const shapes1: HTMLElement =
-         this.parent.createElement('div', { id: 'ThreeTrafficLights1', className: 'e-3trafficlights e-is-wrapper' });
-        const shapes2: HTMLElement =
-         this.parent.createElement('div', { id: 'ThreeTrafficLights2', className: 'e-3rafficlights2 e-is-wrapper' });
-        const shapes3: HTMLElement = this.parent.createElement('div', { id: 'ThreeSigns', className: 'e-3signs e-is-wrapper' });
-        const shapes4: HTMLElement =
-         this.parent.createElement('div', { id: 'FourTrafficLights', className: 'e-4trafficlights e-is-wrapper' });
-        const shapes5: HTMLElement = this.parent.createElement('div', { id: 'FourRedToBlack', className: 'e-4redtoblack e-is-wrapper' });
-        shapes1.title = l10n.getConstant('ThreeTrafficLights1'); shapes2.title = l10n.getConstant('ThreeTrafficLights2');
-        shapes3.title = l10n.getConstant('ThreeSigns'); shapes4.title = l10n.getConstant('FourTrafficLights');
-        shapes5.title = l10n.getConstant('RedToBlack');
-        is4.appendChild(shapes1); is4.appendChild(shapes2); is4.appendChild(shapes3); is4.appendChild(shapes4); is4.appendChild(shapes5);
-        const indicators1: HTMLElement = this.parent.createElement('div', { id: 'ThreeSymbols', className: 'e-3symbols e-is-wrapper' });
-        const indicators2: HTMLElement = this.parent.createElement('div', { id: 'ThreeSymbols2', className: 'e-3symbols2 e-is-wrapper' });
-        const indicators3: HTMLElement = this.parent.createElement('div', { id: 'ThreeFlags', className: 'e-3flags e-is-wrapper' });
-        indicators1.title = l10n.getConstant('ThreeSymbols1'); indicators2.title = l10n.getConstant('ThreeSymbols2');
-        indicators3.title = l10n.getConstant('ThreeFlags');
-        is6.appendChild(indicators1); is6.appendChild(indicators2); is6.appendChild(indicators3);
-        const ratings1: HTMLElement = this.parent.createElement('div', { id: 'ThreeStars', className: 'e-3stars e-is-wrapper' });
-        const ratings2: HTMLElement = this.parent.createElement('div', { id: 'FourRating', className: 'e-4rating e-is-wrapper' });
-        const ratings3: HTMLElement = this.parent.createElement('div', { id: 'FiveQuarters', className: 'e-5quarters e-is-wrapper' });
-        const ratings4: HTMLElement = this.parent.createElement('div', { id: 'FiveRating', className: 'e-5rating e-is-wrapper' });
-        const ratings5: HTMLElement = this.parent.createElement('div', { id: 'FiveBoxes', className: 'e-5boxes e-is-wrapper' });
-        ratings1.title = l10n.getConstant('ThreeStars'); ratings2.title = l10n.getConstant('FourRatings');
-        ratings3.title = l10n.getConstant('FiveQuarters'); ratings4.title = l10n.getConstant('FiveRatings');
-        ratings5.title = l10n.getConstant('FiveBoxes');
-        is8.appendChild(ratings1); is8.appendChild(ratings2); is8.appendChild(ratings3);
-        is8.appendChild(ratings4); is8.appendChild(ratings5);
-
-        directional1.appendChild(this.createElement('span', 'e-3arrows-1 e-iconsetspan'));
-        directional1.appendChild(this.createElement('span', 'e-3arrows-2 e-iconsetspan'));
-        directional1.appendChild(this.createElement('span', 'e-3arrows-3 e-iconsetspan'));
-        directional2.appendChild(this.createElement('span', 'e-3arrowsgray-1 e-iconsetspan'));
-        directional2.appendChild(this.createElement('span', 'e-3arrowsgray-2 e-iconsetspan'));
-        directional2.appendChild(this.createElement('span', 'e-3arrowsgray-3 e-iconsetspan'));
-        directional3.appendChild(this.createElement('span', 'e-3triangles-1 e-iconsetspan'));
-        directional3.appendChild(this.createElement('span', 'e-3triangles-2 e-iconsetspan'));
-        directional3.appendChild(this.createElement('span', 'e-3triangles-3 e-iconsetspan'));
-        directional4.appendChild(this.createElement('span', 'e-4arrowsgray-1 e-iconsetspan'));
-        directional4.appendChild(this.createElement('span', 'e-4arrowsgray-2 e-iconsetspan'));
-        directional4.appendChild(this.createElement('span', 'e-4arrowsgray-3 e-iconsetspan'));
-        directional4.appendChild(this.createElement('span', 'e-4arrowsgray-4 e-iconsetspan'));
-        directional5.appendChild(this.createElement('span', 'e-4arrows-1 e-iconsetspan'));
-        directional5.appendChild(this.createElement('span', 'e-4arrows-2 e-iconsetspan'));
-        directional5.appendChild(this.createElement('span', 'e-4arrows-3 e-iconsetspan'));
-        directional5.appendChild(this.createElement('span', 'e-4arrows-4 e-iconsetspan'));
-        directional6.appendChild(this.createElement('span', 'e-5arrowsgray-1 e-iconsetspan'));
-        directional6.appendChild(this.createElement('span', 'e-5arrowsgray-2 e-iconsetspan'));
-        directional6.appendChild(this.createElement('span', 'e-5arrowsgray-3 e-iconsetspan'));
-        directional6.appendChild(this.createElement('span', 'e-5arrowsgray-4 e-iconsetspan'));
-        directional6.appendChild(this.createElement('span', 'e-5arrowsgray-5 e-iconsetspan'));
-        directional7.appendChild(this.createElement('span', 'e-5arrows-1 e-iconsetspan'));
-        directional7.appendChild(this.createElement('span', 'e-5arrows-2 e-iconsetspan'));
-        directional7.appendChild(this.createElement('span', 'e-5arrows-3 e-iconsetspan'));
-        directional7.appendChild(this.createElement('span', 'e-5arrows-4 e-iconsetspan'));
-        directional7.appendChild(this.createElement('span', 'e-5arrows-5 e-iconsetspan'));
-
-        shapes1.appendChild(this.createElement('span', 'e-3trafficlights-1 e-iconsetspan'));
-        shapes1.appendChild(this.createElement('span', 'e-3trafficlights-2 e-iconsetspan'));
-        shapes1.appendChild(this.createElement('span', 'e-3trafficlights-3 e-iconsetspan'));
-        shapes2.appendChild(this.createElement('span', 'e-3rafficlights2-1 e-iconsetspan'));
-        shapes2.appendChild(this.createElement('span', 'e-3rafficlights2-2 e-iconsetspan'));
-        shapes2.appendChild(this.createElement('span', 'e-3rafficlights2-3 e-iconsetspan'));
-        shapes3.appendChild(this.createElement('span', 'e-3signs-1 e-iconsetspan'));
-        shapes3.appendChild(this.createElement('span', 'e-3signs-2 e-iconsetspan'));
-        shapes3.appendChild(this.createElement('span', 'e-3signs-3 e-iconsetspan'));
-        shapes4.appendChild(this.createElement('span', 'e-4trafficlights-1 e-iconsetspan'));
-        shapes4.appendChild(this.createElement('span', 'e-4trafficlights-2 e-iconsetspan'));
-        shapes4.appendChild(this.createElement('span', 'e-4trafficlights-3 e-iconsetspan'));
-        shapes4.appendChild(this.createElement('span', 'e-4trafficlights-4 e-iconsetspan'));
-        shapes5.appendChild(this.createElement('span', 'e-4redtoblack-1 e-iconsetspan'));
-        shapes5.appendChild(this.createElement('span', 'e-4redtoblack-2 e-iconsetspan'));
-        shapes5.appendChild(this.createElement('span', 'e-4redtoblack-3 e-iconsetspan'));
-        shapes5.appendChild(this.createElement('span', 'e-4redtoblack-4 e-iconsetspan'));
-        indicators1.appendChild(this.createElement('span', 'e-3symbols-1 e-iconsetspan'));
-        indicators1.appendChild(this.createElement('span', 'e-3symbols-2 e-iconsetspan'));
-        indicators1.appendChild(this.createElement('span', 'e-3symbols-3 e-iconsetspan'));
-        indicators2.appendChild(this.createElement('span', 'e-3symbols2-1 e-iconsetspan'));
-        indicators2.appendChild(this.createElement('span', 'e-3symbols2-2 e-iconsetspan'));
-        indicators2.appendChild(this.createElement('span', 'e-3symbols2-3 e-iconsetspan'));
-        indicators3.appendChild(this.createElement('span', 'e-3flags-1 e-iconsetspan'));
-        indicators3.appendChild(this.createElement('span', 'e-3flags-2 e-iconsetspan'));
-        indicators3.appendChild(this.createElement('span', 'e-3flags-3 e-iconsetspan'));
-
-        ratings1.appendChild(this.createElement('span', 'e-3stars-1 e-iconsetspan'));
-        ratings1.appendChild(this.createElement('span', 'e-3stars-2 e-iconsetspan'));
-        ratings1.appendChild(this.createElement('span', 'e-3stars-3 e-iconsetspan'));
-
-        ratings2.appendChild(this.createElement('span', 'e-4rating-1 e-iconsetspan'));
-        ratings2.appendChild(this.createElement('span', 'e-4rating-2 e-iconsetspan'));
-        ratings2.appendChild(this.createElement('span', 'e-4rating-3 e-iconsetspan'));
-        ratings2.appendChild(this.createElement('span', 'e-4rating-4 e-iconsetspan'));
-
-        ratings3.appendChild(this.createElement('span', 'e-5quarters-1 e-iconsetspan'));
-        ratings3.appendChild(this.createElement('span', 'e-5quarters-2 e-iconsetspan'));
-        ratings3.appendChild(this.createElement('span', 'e-5quarters-3 e-iconsetspan'));
-        ratings3.appendChild(this.createElement('span', 'e-5quarters-4 e-iconsetspan'));
-        ratings3.appendChild(this.createElement('span', 'e-5quarters-5 e-iconsetspan'));
-
-        ratings4.appendChild(this.createElement('span', 'e-5rating-1 e-iconsetspan'));
-        ratings4.appendChild(this.createElement('span', 'e-5rating-2 e-iconsetspan'));
-        ratings4.appendChild(this.createElement('span', 'e-5rating-3 e-iconsetspan'));
-        ratings4.appendChild(this.createElement('span', 'e-5rating-4 e-iconsetspan'));
-        ratings4.appendChild(this.createElement('span', 'e-5rating-5 e-iconsetspan'));
-
-        ratings5.appendChild(this.createElement('span', 'e-5boxes-1 e-iconsetspan'));
-        ratings5.appendChild(this.createElement('span', 'e-5boxes-2 e-iconsetspan'));
-        ratings5.appendChild(this.createElement('span', 'e-5boxes-3 e-iconsetspan'));
-        ratings5.appendChild(this.createElement('span', 'e-5boxes-4 e-iconsetspan'));
-        ratings5.appendChild(this.createElement('span', 'e-5boxes-5 e-iconsetspan'));
+        const iconSetGroup: HTMLElement = this.parent.createElement('div', { id: 'is', className: 'e-is' });
+        const iconSets: { hdr?: string, cont?: { key: string, cls: string, count: number, id?: string }[] }[] =  [{ hdr: 'Directional' },
+            { cont: [{ cls: '3arrows', key: 'ThreeArrowsColor', id: 'ThreeArrows', count: 3 }, { cls: '3arrowsgray', key: 'ThreeArrowsGray',
+                count: 3 }, { cls: '3triangles', key: 'ThreeTriangles', count: 3 }, { cls: '4arrowsgray', key: 'FourArrowsGray', count: 4 },
+            { cls: '4arrows', key: 'FourArrowsColor', id: 'FourArrows', count: 4 }, { cls: '5arrowsgray', key: 'FiveArrowsGray',
+                count: 5 }, { cls: '5arrows', key: 'FiveArrowsColor', id: 'FiveArrows', count: 5 }] }, { hdr: 'Shapes' },
+            { cont: [{ cls: '3trafficlights', key: 'ThreeTrafficLights1', count: 3 }, { cls: '3rafficlights2', key: 'ThreeTrafficLights2',
+                count: 3 }, { cls: '3signs', key: 'ThreeSigns', count: 3 }, { cls: '4trafficlights', key: 'FourTrafficLights',
+                count: 4 }, { cls: '4redtoblack', key: 'RedToBlack', id: 'FourRedToBlack', count: 4 }] }, { hdr: 'Indicators' },
+            { cont: [{ cls: '3symbols', key: 'ThreeSymbols1', id: 'ThreeSymbols', count: 3 }, { cls: '3symbols2', key: 'ThreeSymbols2',
+                count: 3 }, { cls: '3flags', key: 'ThreeFlags', count: 3 }] }, { hdr: 'Ratings' }, { cont: [{ cls: '3stars',
+                key: 'ThreeStars', count: 3 }, { cls: '4rating', key: 'FourRatings', id: 'FourRating', count: 4 },
+            { cls: '5quarters', key: 'FiveQuarters', count: 5 }, { cls: '5rating', key: 'FiveRatings', id: 'FiveRating', count: 5 },
+            { cls: '5boxes', key: 'FiveBoxes', count: 5 }] } ];
+        let iconSetEle: HTMLElement; let iconWrap: HTMLElement; let cultureText: string; let countIdx: number;
+        iconSets.forEach((iconSet: { hdr?: string, cont?: { key: string, cls: string, count: number }[] }, index: number): void => {
+            iconSetEle = this.parent.createElement('div', { id: `is${index + 1}`, className: `e-is${index + 1}` });
+            if (iconSet.hdr) {
+                iconSetEle.innerText = l10n.getConstant(iconSet.hdr);
+            } else {
+                iconSet.cont.forEach((icon: { key: string, cls: string, count: number, id?: string }): void => {
+                    cultureText = l10n.getConstant(icon.key);
+                    iconWrap = this.parent.createElement(
+                        'div', { id: icon.id || icon.key, className: `e-${icon.cls} e-is-wrapper`,
+                        attrs: { title: cultureText, 'aria-label': cultureText, tabindex: '-1' } });
+                    for (countIdx = 0; countIdx < icon.count; countIdx++) {
+                        iconWrap.appendChild(this.createElement('span', `e-${icon.cls}-${countIdx + 1} e-iconsetspan`));
+                    }
+                    iconSetEle.appendChild(iconWrap);
+                });
+            }
+            iconSetGroup.appendChild(iconSetEle);
+        });
         cfMenu.createElement = this.parent.createElement;
         cfMenu.appendTo(ul);
         ul.classList.add('e-ul');
         return cfMenu;
+    }
+
+    private menuIconKeyDown(iconCls: string, rowWiseCount?: number, e?: KeyboardEvent): void {
+        let index: number; let icons: HTMLElement[] = [];
+        if (!e) {
+            index = 0;
+            icons = [].slice.call(document.querySelectorAll(`.${iconCls}`));
+        } else if (e.keyCode === 40 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 37) {
+            e.preventDefault();
+            icons = [].slice.call(document.querySelectorAll(`.${iconCls}`));
+            index = icons.indexOf(e.target as HTMLElement);
+            if (index === -1) {
+                index = 0;
+            } else if (e.keyCode === 39) {
+                index++;
+                if (index === icons.length) {
+                    index = 0;
+                }
+            } else if (e.keyCode === 37) {
+                index--;
+                if (index === -1) {
+                    index = icons.length - 1;
+                }
+            } else if (!iconCls.includes('e-menu-icon')) {
+                let totalIcons: number = icons.length; let firstIndexes: number[]; let secIndexes: number[];
+                if (!rowWiseCount) {
+                    rowWiseCount = 2;
+                    if (e.keyCode === 40) {
+                        firstIndexes = [6, 11, 14, 19]; secIndexes = [5, 10, 13];
+                    } else {
+                        firstIndexes = [7, 12, 15]; secIndexes = [8, 13, 16];
+                    }
+                    totalIcons--;
+                }
+                if (e.keyCode === 40) {
+                    if (index === totalIcons - 1) {
+                        index = 0;
+                    } else {
+                        index += firstIndexes && firstIndexes.indexOf(index) > -1 ? 1 :
+                            (secIndexes && secIndexes.indexOf(index) > -1 ? 3 : rowWiseCount);
+                        if (firstIndexes) {
+                            totalIcons++;
+                        }
+                        if (index >= totalIcons) {
+                            index = (index - totalIcons) + 1;
+                        }
+                    }
+                } else {
+                    if (index === 0) {
+                        index = totalIcons - 1;
+                    } else {
+                        index -= firstIndexes && firstIndexes.indexOf(index) > -1 ? 1 :
+                            (secIndexes && secIndexes.indexOf(index) > -1 ? 3 : rowWiseCount);
+                        if (index < 0) {
+                            index = firstIndexes ? totalIcons : (totalIcons + index) - 1;
+                        }
+                    }
+                }
+            }
+        }
+        if (icons[index as number]) {
+            focus(icons[index as number]);
+        }
     }
 
     private createElement(tag: string, className: string ): HTMLElement {
@@ -2427,7 +2431,7 @@ export class Ribbon {
     }
 
     private toolbarClicked(args: ClickEventArgs): void {
-        if (!(args.item.id === 'spreadsheet_find')) {
+        if (args.item && !(args.item.id === 'spreadsheet_find')) {
             const parentId: string = this.parent.element.id;
             const sheet: SheetModel = this.parent.getActiveSheet();
             let evtHArgs: { isShow: boolean, sheetIdx: number, cancel: boolean };
@@ -2483,8 +2487,7 @@ export class Ribbon {
             case parentId + '_protectworkbook':
                 if (this.parent.password.length > 0) {
                     this.parent.notify(unProtectWorkbook, null);
-                }
-                else{
+                } else {
                     if (this.parent.isProtected) {
                         this.parent.isProtected = false;
                         if (this.parent.showSheetTabs) {
@@ -2492,7 +2495,7 @@ export class Ribbon {
                             this.parent.element.querySelector('.e-add-sheet-tab').classList.remove('e-disabled');
                         }
                         this.toggleRibbonItems({ props: 'Protectworkbook', activeTab: this.ribbon.selectedTab });
-
+                        this.parent.notify(completeAction, { action: 'protectWorkbook', eventArgs: { isProtected: false } });
                     }
                     else if (this.parent.element.querySelector('.e-add-sheet-tab').classList.contains('e-disabled')) {
                         this.toggleRibbonItems({ props: 'Protectworkbook', activeTab: this.ribbon.selectedTab });

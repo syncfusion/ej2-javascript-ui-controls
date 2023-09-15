@@ -3,6 +3,7 @@ import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, get
 import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress, workbookLocale } from './../common/index';
 import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel, isCustomDateTime } from './../index';
 import { updateCell, intToDate, dateToInt, applyCF, ApplyCFArgs, CellUpdateArgs, ConditionalFormat } from './../common/index';
+import { DateFormatCheckArgs, checkDateFormat } from '../common/index';
 
 /**
  * WorkbookAutoFill module allows to perform auto fill functionalities.
@@ -391,7 +392,7 @@ export class WorkbookAutoFill {
         const data: CellModel[] = this.getRangeData({ range: range, sheetIdx: this.parent.activeSheetIndex });
         const dlen: number = data.length; let isStartNum: boolean; let isDateStartsWithMonth: boolean;
         if (dlen) {
-            let count: number; let dataVal: string; let format: string;
+            let count: number; let dataVal: string; let format: string; let isNumVal: boolean;
             const minusOperator: Function = (data: string): string => {
                 return !isStartNum && data && data[data.length - 1] === '-' ? data.slice(0, data.length - 1) : data;
             };
@@ -405,11 +406,21 @@ export class WorkbookAutoFill {
                         val = isNullOrUndefined(data[i as number].value) ? '' : data[i as number].value;
                         const option: { type?: string } = {};
                         format = data[i as number].format;
+                        isNumVal = isNumber(val);
                         if (format && isCustomDateTime(format, true, option)) {
                             type = option.type;
+                            if (val && !isNumVal) {
+                                const dateEventArgs: DateFormatCheckArgs = { value: val, updatedVal: val, cell: data[i as number] };
+                                this.parent.notify(checkDateFormat, dateEventArgs);
+                                if (dateEventArgs.isDate || dateEventArgs.isTime) {
+                                    data[i as number].value = val = dateEventArgs.updatedVal;
+                                } else {
+                                    type = 'string';
+                                }
+                            }
                             isDateStartsWithMonth = type === 'date' && format.toLowerCase().startsWith('mmm');
                         } else {
-                            type = isNumber(val) ? 'number' : 'string';
+                            type = isNumVal ? 'number' : 'string';
                         }
                     }
                 } else {

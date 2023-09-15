@@ -16,9 +16,10 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { EJ2Intance } from '../../../src';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
+import { Aggregate } from '../../../src/grid/actions/aggregate';
 
-Grid.Inject(Sort, Page, Filter, DetailRow, Group, Selection, Edit,RowDD);
+Grid.Inject(Sort, Page, Filter, DetailRow, Group, Selection, Edit, RowDD, Toolbar, Aggregate);
 
 describe('Detail template module', () => {
 
@@ -863,4 +864,206 @@ describe('Detail template module', () => {
             destroy(gridObj);
         });
     });
+    describe('Code Coverage - Hierarchy Render testing', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0,3),
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple', mode: 'Row' },
+                    allowFiltering: true,
+                    height: 500,
+                    allowSorting: true,
+                    allowReordering: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                        { field: 'Title', headerText: 'Title', textAlign: 'Left', width: 120 },
+                        { field: 'City', headerText: 'City', textAlign: 'Left', width: 100 },
+                        { field: 'Country', headerText: 'Country', textAlign: 'Left', width: 100 }
+                    ],
+                    childGrid: {
+                        dataSource: filterData, queryString: 'EmployeeID',
+                        allowPaging: true,
+                        allowGrouping: true,
+                        selectionSettings: { type: 'Multiple', mode: 'Row' },
+                        pageSettings: { pageCount: 5, pageSize: 5 },
+                        allowFiltering: true,
+                        allowSorting: true,
+                        groupSettings: { showGroupedColumn: false },
+                        allowReordering: true,
+                        allowTextWrap: true,
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                            { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                            { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                            { field: 'Freight', headerText: 'Freight', textAlign: 'Left', width: 120 },
+                            { field: 'ShipName', headerText: 'Ship Name', textAlign: 'Left', width: 100 }
+                        ]
+                    },
+                }, done);
+        });
+
+        it('keypress testing', () => {
+            (gridObj.getDataRows()[0].querySelector('.e-rowcell') as HTMLElement).click();
+            let args: any = { action: 'enter' };
+            (gridObj.detailRowModule as any).keyPressHandler(args);
+        });
+        it('Hierarchy row expand testing', () => {
+            gridObj.childGrid.query = gridObj.query;
+            (gridObj as any).isPrinting = true;
+            (gridObj.getDataRows()[2].querySelector('.e-detailrowcollapse') as HTMLElement).click();
+            expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(1);
+        });
+
+        it('Detail collapse testing', () => {
+            (gridObj.getDataRows()[2].querySelector('.e-detailrowexpand') as HTMLElement).click();
+            expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(1);
+            (gridObj.detailRowModule as any).refreshColSpan();
+        });
+
+
+        afterAll(() => {
+            (gridObj.detailRowModule as any).destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Hierarchy Render testing', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0,3),
+                    allowPaging: true,
+                    allowFiltering: true,
+                    allowTextWrap: true,
+                    height: 'auto',
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                        { field: 'Title', headerText: 'Title', textAlign: 'Left', width: 120 },
+                        { field: 'City', headerText: 'City', textAlign: 'Left', width: 100 },
+                        { field: 'Country', headerText: 'Country', textAlign: 'Left', width: 100 }
+                    ],
+                    childGrid: {
+                        dataSource: filterData,
+                        queryString: 'EmployeeID',
+                        allowPaging: true,
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                            { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                            { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                            { field: 'Freight', headerText: 'Freight', textAlign: 'Left', width: 120 },
+                            { field: 'ShipName', headerText: 'Ship Name', textAlign: 'Left', width: 100 }
+                        ]
+                    },
+                }, done);
+        });
+
+
+        it('row expand testing - 1', () => {
+            (gridObj.getDataRows()[1].querySelector('.e-detailrowcollapse') as HTMLElement).click();
+        });
+
+        it('row expand empty cell testing ', () => {
+            (gridObj.getDataRows()[0].querySelector('.e-rowcell') as HTMLElement).click();
+        });
+
+        it('row expand testing - 2', () => {
+            (gridObj.getDataRows()[2].querySelector('.e-detailrowcollapse') as HTMLElement).click();
+            gridObj.isDestroyed = true;
+            gridObj.element.innerHTML = '';
+            (gridObj.detailRowModule as any).destroy();
+        });
+
+        it('check the addEventListener Binding', () => {
+            gridObj.isDestroyed = true;
+            gridObj.detailRowModule.addEventListener();
+            gridObj.isDestroyed = false;
+        });
+
+        afterAll(() => {
+            (gridObj.detailRowModule as any).destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('On property change detail template', () => {
+        let gridObj: Grid;
+        let dataBound: (e: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 5),
+                    allowPaging: true,
+                    width: 600,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', minWidth: 100, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150, showInColumnChooser: false },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ]
+                }, done);
+        });
+        it('Bind detail template', (done: Function) => {
+            dataBound = function (e: any) {
+                expect(gridObj.element.querySelector('.e-detailrowcollapse')).not.toBeNull();
+                gridObj.dataBound = null;
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.detailTemplate = "<div>Hello</div>";
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = dataBound = null;
+        });
+    });
+
+    describe('On property change child grid', () => {
+        let gridObj: Grid;
+        let dataBound: (e: any) => void;
+        let columns: string[];
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0, 2),
+                    allowPaging: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                        { field: 'Title', headerText: 'Title', textAlign: 'Left', width: 120 },
+                    ],
+                }, done);
+        });
+
+        it('Bind child grid', (done) => {
+            dataBound = function (e: any) {
+                expect(gridObj.element.querySelector('.e-detailrowcollapse')).not.toBeNull();
+                columns = gridObj.getColumnFieldNames();
+                gridObj.dataBound = null;
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.childGrid = {
+                dataSource: filterData,
+                queryString: 'EmployeeID',
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                    { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                ]
+            };
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = columns = dataBound = null;
+        });
+    });
+
 });

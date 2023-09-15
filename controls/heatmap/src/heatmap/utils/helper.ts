@@ -1,4 +1,4 @@
-import { remove, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { remove, createElement, isNullOrUndefined, compile as templateComplier} from '@syncfusion/ej2-base';
 import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel, PaletteCollectionModel } from '../model/base-model';
 import { HeatMap } from '../heatmap';
@@ -30,13 +30,23 @@ export function stringToNumber(value: string, containerSize: number): number {
  * @hidden
  */
 export function measureText(text: string, font: FontModel): Size {
+    const breakText: string = text || '';
     let htmlObject: HTMLElement = document.getElementById('heatmapmeasuretext');
     if (htmlObject === null) {
         htmlObject = createElement('text', { id: 'heatmapmeasuretext' });
         document.body.appendChild(htmlObject);
     }
+    if (typeof (text) === 'string' && (text.indexOf('<') > -1 || text.indexOf('>') > -1)) {
+        const textArray: string[] = text.split(' ');
+        for (let i: number = 0; i < textArray.length; i++) {
+            if (textArray[i as number].indexOf('<br/>') === -1) {
+                textArray[i as number] = textArray[i as number].replace(/[<>]/g, '&');
+            }
+        }
+        text = textArray.join(' ');
+    }
 
-    htmlObject.innerText = text;
+    htmlObject.innerText = (breakText.indexOf('<br>') > -1 || breakText.indexOf('<br/>') > -1) ? breakText : text;
     htmlObject.style.position = 'absolute';
     htmlObject.style.visibility = 'hidden';
     htmlObject.style.fontSize = (font.size).indexOf('px') !== -1 ? font.size : font.size + 'px';
@@ -102,6 +112,7 @@ export class Size {
      * Specifies the width of an element.
      */
     public width: number;
+    // eslint-disable-next-line valid-jsdoc
     /** @private */
     constructor(width: number, height: number) {
         this.width = width;
@@ -136,6 +147,97 @@ export class PathOption extends CustomizeOption {
         this['stroke-dasharray'] = dashArray;
         this.d = d;
     }
+}
+
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { string | Function } template - Specifies the template
+ * @param { HeatMap } heatMap - Specifies the heatmap
+ * @param { HTMLElement }  labelTemplate - Specifies the label template
+ * @param { any } rectPosition - Specifies the rect datas
+ * @param { any } xLabels - Specifies the xlabels
+ * @param { any } yLabels - Specifies the ylabels
+ * @param { number } index - Specifies the index
+ * @returns {any} templateFunction -  returns the size
+ * @private
+ */
+/* eslint-disable max-len */
+export function createLabelTemplate(template: string | Function, heatMap: HeatMap, labelTemplate: HTMLElement, rectPosition: any, xLabels: any, yLabels: any, index: number): HTMLElement {
+    const templateFunction: any = getTemplateFunction(template, heatMap);
+    let rectData = null;
+    const dataSource: object[][] = <object[][]>heatMap.dataSource;
+    if (heatMap.dataSourceSettings.isJsonData && (heatMap.dataSourceSettings.adaptorType === 'Cell' || heatMap.dataSourceSettings.adaptorType === 'Table')) {
+        const yLabelData = heatMap.yAxis.valueType === 'Numeric' ? heatMap.yAxis.labels : yLabels;
+        const xLabelData = heatMap.xAxis.valueType === 'Numeric' ? heatMap.xAxis.labels : xLabels;
+        dataSource.forEach((item) => {
+            const yDataMapping = heatMap.dataSourceSettings.adaptorType === 'Cell' ? Object.keys(item).some((key: string) => item[key as keyof typeof item] === yLabelData[rectPosition.yIndex]) : ((Object.prototype.hasOwnProperty as Function).call(item, yLabelData[rectPosition.yIndex]));
+            if (Object.keys(item).some((key: string) => item[key as keyof typeof item] === xLabelData[rectPosition.xIndex]) && yDataMapping) {
+                rectData = item;
+            }
+        });
+    }
+    else {
+        rectData = { value: rectPosition.value, xLabel: xLabels[rectPosition.xIndex], yLabel: yLabels[rectPosition.yIndex] };
+    }
+    if (!isNullOrUndefined(templateFunction)) {
+        const tempElement: HTMLCollection = templateFunction(rectData, heatMap, templateFunction, heatMap.element.id + '_Template' + index, false);
+        const templateElement: HTMLElement = <HTMLElement>convertElement(tempElement, heatMap.element.id + '_LabelTemplate_' + index);
+        templateElement.style.cssText = 'opacity: 1; display: flex; align-items: center; justify-content: center; z-index: 2; position: absolute;' + 'top:' + rectPosition.y + 'px;' + 'left:' + rectPosition.x + 'px;' + 'height:' + rectPosition.height + 'px;' + 'width:' + rectPosition.width + 'px;';
+        for (let i: number = 0; i < templateElement.children.length; i++) {
+            (<HTMLElement>templateElement.children[i as number]).style.pointerEvents = 'none';
+        }
+        labelTemplate.appendChild(templateElement);
+    }
+    return labelTemplate;
+}
+
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { string | Function } template - Specifies the template
+ * @param { HeatMap } heatMap - Specifies the heatmap
+ * @returns {any}  -  returns the size
+ * @private
+ */
+export function getTemplateFunction(template: string | Function, heatMap: HeatMap): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let templateFn: any = null;
+    try {
+        if (typeof template !== 'function' && document.querySelectorAll(template).length) {
+            templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } else if ((heatMap as any).isVue || (heatMap as any).isVue3) {
+            templateFn = templateComplier(template);
+        } else if (typeof template === 'function') {
+            templateFn = templateComplier(template);
+        }
+    } catch (e) {
+        templateFn = templateComplier(template);
+    }
+    return templateFn;
+}
+
+/**
+ * Function to check whether target object implement specific interface
+ *
+ * @param { HTMLCollection } element - Specifies the heatmap
+ * @param { string } elementId - Specifies the template
+ * @returns { HTMLElement }  -  returns the size
+ * @private
+ */
+
+export function convertElement(element: HTMLCollection, elementId: string): HTMLElement {
+    const childElement: HTMLElement = createElement('div', {
+        id: elementId
+    });
+    childElement.style.cssText = 'position: absolute;pointer-events: auto;';
+    let elementLength: number = element.length;
+    while (elementLength > 0) {
+        childElement.appendChild(element[0]);
+        elementLength--;
+    }
+    return childElement;
 }
 
 /**
@@ -210,6 +312,7 @@ export class SelectedCellDetails {
     public x: number;
     /** @private */
     public y: number;
+    // eslint-disable-next-line valid-jsdoc
     /**
      * @private
      */
@@ -513,10 +616,12 @@ export function titlePositionY(heatmapSize: Size, topPadding: number, bottomPadd
  * @returns {Size} returns the size
  * @private
  */
-export function rotateTextSize(font: FontModel, text: string, angle: number): Size {
+export function rotateTextSize(font: FontModel, text: string[], angle: number): Size {
 
     const renderer: SvgRenderer = new SvgRenderer('heatmapMeasureRotateText');
     const svgObject: Element = renderer.createSvg({ id: 'heatmapMeasureRotateText_svg', width: 100, height: 100 });
+    let height: number; let dy: number; let label: string;
+    let tspanElement: Element;
     const options : Object = {
         'font-size': font.size,
         'font-style': font.fontStyle.toLowerCase(),
@@ -525,7 +630,22 @@ export function rotateTextSize(font: FontModel, text: string, angle: number): Si
         'transform': 'rotate(' + angle + ', 0, 0)',
         'text-anchor': 'middle'
     };
-    const htmlObject : HTMLElement = renderer.createText(options, text) as HTMLElement;
+    const htmlObject : HTMLElement = renderer.createText(options, text[0]) as HTMLElement;
+    if (typeof text !== 'string' && text.length > 1) {
+        for (let i: number = 1, len: number = text.length; i < len; i++) {
+            height = (measureText(text[i as number], font).height);
+            dy = (0) + ((i * height));
+            label = text[i as number];
+            tspanElement = (renderer as SvgRenderer).createTSpan(
+                {
+                    'x': 0, 'id': 'heatmapMeasureRotateText_' + i,
+                    'y': dy
+                },
+                label
+            );
+            htmlObject.appendChild(tspanElement);
+        }
+    }
     svgObject.appendChild(htmlObject);
     document.body.appendChild(svgObject);
     const box : ClientRect = htmlObject.getBoundingClientRect();
@@ -646,7 +766,7 @@ export class DrawSvgCanvas {
     }
 
     //Canvas Text Part
-    public canvasDrawText(options: TextOption, label: string, translateX?: number, translateY?: number): void {
+    public canvasDrawText(options: TextOption, label: string, translateX?: number, translateY?: number, wrappedLabels?: string[], elementHeight?: number, isAxisLabel?: boolean): void {
         const ctx: CanvasRenderingContext2D = this.heatMap.canvasRenderer.ctx;
         if (!translateX) {
             translateX = options.x;
@@ -675,7 +795,15 @@ export class DrawSvgCanvas {
         }
         ctx.translate(translateX, translateY);
         ctx.rotate(options.labelRotation * Math.PI / 180);
-        ctx.fillText(label, options.x - translateX, options.y - translateY);
+        if (isAxisLabel) {
+            for (let i: number = 0; i < wrappedLabels.length; i++)
+            {
+                options.y = i !== 0 ? options.y + elementHeight : options.y;
+                ctx.fillText(wrappedLabels[i as number], options.x - translateX, options.y - translateY);
+            }
+        } else {
+            ctx.fillText(label, options.x - translateX, options.y - translateY);
+        }
         ctx.restore();
     }
     // method to get the attributes value
@@ -809,6 +937,27 @@ export function getTitle(title: string, style: FontModel, width: number): string
     }
     return titleCollection;
 }
+
+/**
+ * Function to check whether the line break character is in the string or not.
+ *
+ * @param {string[]} labels - Specifies the axis labels.
+ * @returns {boolean} returns whether the line break character is in the string or not.
+ * @private
+ */
+export function getIsLineBreakLabel(labels: string[]): boolean{
+    let isLineBreak: boolean = false;
+    for (let i: number = 0 ; i < labels.length; i++)
+    {
+        if (labels[i as number].indexOf('<br>') !== -1 || labels[i as number].indexOf('<br/>') !== -1)
+        {
+            isLineBreak = true;
+            break;
+        }
+    }
+    return isLineBreak;
+}
+
 /**
  * Function to check whether target object implement specific interface
  *
@@ -967,7 +1116,10 @@ export function showTooltip(
             (y - (size.height + 6) - 10).toString() + 'px' : tooltip.style.top; // 6 and 7 are padding and border width
     }
     if (isTouch) {
-        setTimeout(() => { removeElement(id); }, 1500);
+        if (this.tooltipTimer) {
+            window.clearTimeout(this.tooltipTimer);
+        }
+        this.tooltipTimer = setTimeout(() => { removeElement(id); }, 1500);
     }
 }
 
@@ -985,7 +1137,7 @@ export function removeElement(id: string): void {
         removeMeasureElement();
     }
 }
-
+// eslint-disable-next-line valid-jsdoc
 /**
  * @private
  */

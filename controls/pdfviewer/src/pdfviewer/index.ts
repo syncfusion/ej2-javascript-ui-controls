@@ -17,3 +17,5 @@ export * from './print/index';
 export * from './form-fields/index';
 export * from './form-designer/index';
 export * from './accessibility-tags/index';
+export * from './pdfium/index';
+export * from './pdf-base/index';

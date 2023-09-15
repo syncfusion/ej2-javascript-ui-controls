@@ -446,6 +446,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             case 'series':
             case 'legendSettings':
             case 'radius':
+            case 'enableRtl':
                 renderer = true;
                 break;
             case 'size':

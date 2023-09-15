@@ -38,11 +38,11 @@ export type TooltipDisplayMode =
     /** Tooltip will be shown only in mouse move */
     'OnDemand';
 /**
- * It defines the value Type for the axis used
- * * double
- * * category
- * * dateTime
- * * logarithmic
+ * Specifies the data types that the axis can handle:
+ * * Double: This type is used for rendering a numeric axis to accommodate numeric data.
+ * * DateTime: This type is utilized for rendering a date-time axis to manage date-time data.
+ * * Logarithmic: This type is applied for rendering a logarithmic axis to handle a wide range of values.
+ * * DateTimeCategory: This type is used to render a date time category axis for managing business days.
  *
  * @private
  */
@@ -52,7 +52,9 @@ export type RangeValueType =
     /** Datetime axis */
     'DateTime' |
     /** Logarithmic axis */
-    'Logarithmic';
+    'Logarithmic' |
+    /** Define the datetime category axis */
+    'DateTimeCategory';
 
 /**
  * Label alignment of the axis

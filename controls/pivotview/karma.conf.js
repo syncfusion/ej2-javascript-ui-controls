@@ -64,6 +64,7 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-grids/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-charts/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-notifications/**/*.js", included: false },
       { pattern: 'node_modules/es6-promise/dist/es6-promise.js', included: false }
       // Add dependent package's script files here              
     ],

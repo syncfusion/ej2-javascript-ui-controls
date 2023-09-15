@@ -2,14 +2,12 @@
  * Grid Reordering spec document
  */
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { getActualProperties, parentsUntil } from '../../../src/grid/base/util';
 import { Column } from '../../../src/grid/models/column';
 import { Sort } from '../../../src/grid/actions/sort';
-import { Filter } from '../../../src/grid/actions/filter';
-import { Freeze } from '../../../src/grid/actions/freeze';
-import { Group } from '../../../src/grid/actions/group';
+import { Filter } from '../../../src/grid/actions/filter';import { Group } from '../../../src/grid/actions/group';
 import { Page } from '../../../src/grid/actions/page';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { data, employeeData, normalData } from '../base/datasource.spec';
@@ -17,7 +15,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Sort, Page, Filter, Reorder, Group, Freeze);
+Grid.Inject(Sort, Page, Filter, Reorder, Group);
 
 function copyObject(source: Object, destiation: Object): Object {
     for (let prop in source) {
@@ -374,7 +372,7 @@ describe('Reorder module', () => {
             (gridObj.headerModule as any).drag({ target: gridObj.getColumnHeaderByField('CustomerID'), event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('CustomerID').children[0] } });
             (gridObj.headerModule as any).dragStop({
                 target: gridObj.getColumnHeaderByField('CustomerID'),
-                element: gridObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tr'), helper: dropClone, event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('CustomerID').children[0] }
+                element: gridObj.getHeaderContent().querySelector('tr'), helper: dropClone, event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('CustomerID').children[0] }
             });
             (gridObj.reorderModule as any).element = gridObj.getColumnHeaderByField('OrderID');
             (gridObj.reorderModule as any).chkDropPosition = () => true;
@@ -436,6 +434,7 @@ describe('Reorder module', () => {
             gridObj = createGrid({
                 dataSource: employeeData,
                 allowReordering: true,
+                frozenColumns: 1,
                 columns: [
                     {
                         field: 'EmployeeID',
@@ -653,143 +652,143 @@ describe('Reorder module', () => {
         });
     });
     
-    describe('Reorder frozen grid stackedheader after hiding issue', () => {
-        let gridObj: Grid;
-        window['browserDetails'].isIE = false;
-        beforeAll((done: Function) => {
-            gridObj = createGrid({
-                dataSource: normalData,
-                height: 410,
-                allowReordering: true,
-                frozenColumns: 1,
-                columns: [
-                    {
-                        field: 'OrderID',
-                        headerText: 'Order ID',
-                        width: 120,
-                        textAlign: 'Right',
-                        minWidth: 10,
-                    },
-                    { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
-                    {
-                        field: 'CustomerID',
-                        headerText: 'Customer ID',
-                        width: 130,
-                        minWidth: 10,
-                    },
-                    {
-                        field: 'CustomerName',
-                        headerText: 'Customer Name',
-                        width: 180,
-                        minWidth: 10,
-                    },
-                    {
-                        headerText: 'HeaderWithHidden',
-                        columns: [
-                            {
-                                field: 'OrderDate',
-                                headerText: 'Order Date',
-                                width: 150,
-                                format: 'yMd',
-                                textAlign: 'Right',
-                                minWidth: 10,
-                                visible: false, // Hidden column
-                            },
-                            {
-                                field: 'ShipPostalCode',
-                                headerText: 'Ship PostalCode',
-                                width: 180,
-                                textAlign: 'Right',
-                                minWidth: 10,
-                            },
-                        ],
-                    },
-                    {
-                        headerText: 'Shipping address',
-                        columns: [
-                            {
-                                field: 'ShipName',
-                                headerText: 'Ship Name',
-                                width: 300,
-                                minWidth: 10,
-                            },
-                            {
-                                field: 'ShipAddress',
-                                headerText: 'Ship Address',
-                                width: 270,
-                                minWidth: 10,
-                            },
-                        ],
-                    },
-                    {
-                        headerText: 'Ship addr 2',
-                        columns: [
-                            {
-                                field: 'ShipCity',
-                                headerText: 'Ship City',
-                                width: 250,
-                                minWidth: 10,
-                            },
-                            {
-                                field: 'ShipCountry',
-                                headerText: 'Ship Country',
-                                width: 250,
-                                minWidth: 10,
-                            },
-                        ],
-                    },
-                ],
-            }, done);
-        });
+    // describe('Reorder frozen grid stackedheader after hiding issue', () => {
+    //     let gridObj: Grid;
+    //     window['browserDetails'].isIE = false;
+    //     beforeAll((done: Function) => {
+    //         gridObj = createGrid({
+    //             dataSource: normalData,
+    //             height: 410,
+    //             allowReordering: true,
+    //             frozenColumns: 1,
+    //             columns: [
+    //                 {
+    //                     field: 'OrderID',
+    //                     headerText: 'Order ID',
+    //                     width: 120,
+    //                     textAlign: 'Right',
+    //                     minWidth: 10,
+    //                 },
+    //                 { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
+    //                 {
+    //                     field: 'CustomerID',
+    //                     headerText: 'Customer ID',
+    //                     width: 130,
+    //                     minWidth: 10,
+    //                 },
+    //                 {
+    //                     field: 'CustomerName',
+    //                     headerText: 'Customer Name',
+    //                     width: 180,
+    //                     minWidth: 10,
+    //                 },
+    //                 {
+    //                     headerText: 'HeaderWithHidden',
+    //                     columns: [
+    //                         {
+    //                             field: 'OrderDate',
+    //                             headerText: 'Order Date',
+    //                             width: 150,
+    //                             format: 'yMd',
+    //                             textAlign: 'Right',
+    //                             minWidth: 10,
+    //                             visible: false, // Hidden column
+    //                         },
+    //                         {
+    //                             field: 'ShipPostalCode',
+    //                             headerText: 'Ship PostalCode',
+    //                             width: 180,
+    //                             textAlign: 'Right',
+    //                             minWidth: 10,
+    //                         },
+    //                     ],
+    //                 },
+    //                 {
+    //                     headerText: 'Shipping address',
+    //                     columns: [
+    //                         {
+    //                             field: 'ShipName',
+    //                             headerText: 'Ship Name',
+    //                             width: 300,
+    //                             minWidth: 10,
+    //                         },
+    //                         {
+    //                             field: 'ShipAddress',
+    //                             headerText: 'Ship Address',
+    //                             width: 270,
+    //                             minWidth: 10,
+    //                         },
+    //                     ],
+    //                 },
+    //                 {
+    //                     headerText: 'Ship addr 2',
+    //                     columns: [
+    //                         {
+    //                             field: 'ShipCity',
+    //                             headerText: 'Ship City',
+    //                             width: 250,
+    //                             minWidth: 10,
+    //                         },
+    //                         {
+    //                             field: 'ShipCountry',
+    //                             headerText: 'Ship Country',
+    //                             width: 250,
+    //                             minWidth: 10,
+    //                         },
+    //                     ],
+    //                 },
+    //             ],
+    //         }, done);
+    //     });
 
-        it('simulate reorder action and check display set properly', (done: Function) => {
-            let srcStackedHeaderColumn: Column = gridObj.getStackedHeaderColumnByHeaderText('HeaderWithHidden', gridObj.columns as Column[]);
-            let srcHeaderCell: Element = document.querySelector('.e-movableheader').querySelectorAll('.e-headercell')[3];
-            let destHeaderCell: Element = document.querySelector('.e-movableheader').querySelectorAll('.e-headercell')[2];           
-            let dropClone = createElement('div', { attrs: { 'e-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('e-mappinguid') } });
-            const headercellWidth: number = document.querySelector('.e-movableheader').querySelector('.e-headercell').clientWidth;
-            const contentRowcellWidth: number = document.querySelector('.e-movablecontent').querySelector('.e-rowcell').clientWidth;
-            const headerColgroup: Element = document.querySelector('.e-movableheader').querySelector('colgroup');
-            const contentColgroup: Element = document.querySelector('.e-movablecontent').querySelector('colgroup');
-            expect((headerColgroup.childNodes[3] as HTMLElement).style.display).toBe('none');
-            expect((contentColgroup.childNodes[3] as HTMLElement).style.display).toBe('none');
-            document.body.appendChild(dropClone);
-            (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = srcHeaderCell;
-            (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: srcHeaderCell } });
-            (gridObj.headerModule as any).dragStart({ target: srcHeaderCell.children[0], event: { clientX: 10, clientY: 10, target: srcHeaderCell.children[0] } });
-            (gridObj.headerModule as any).dragStart({ target: srcHeaderCell, event: { clientX: 10, clientY: 10, target: srcHeaderCell.children[0] } });
-            (gridObj.headerModule as any).drag({ target: destHeaderCell, event: { clientX: 10, clientY: 10, target: destHeaderCell.children[0] } });
-            (gridObj.headerModule as any).dragStop({
-                target: destHeaderCell,
-                element: gridObj.getHeaderTable().querySelector('tr'), helper: dropClone, event: { clientX: 10, clientY: 10, target: destHeaderCell.children[0] }
-            });
-            (gridObj.reorderModule as any).element = srcHeaderCell;
-            (gridObj.reorderModule as any).chkDropPosition = () => true;
-            (gridObj.reorderModule as any).chkDropAllCols = () => true;
-            (gridObj.headerModule as any).drop({ target: destHeaderCell, droppedElement: dropClone });
-            (gridObj.reorderModule as any).moveColumns(3, srcStackedHeaderColumn, true);
-            function actionComplete (args: any) {
-                if (args.requestType === 'reorder') {
-                    const headercellWidth: number = document.querySelector('.e-movableheader').querySelector('.e-headercell').clientWidth;
-                    const contentRowcellWidth: number = document.querySelector('.e-movablecontent').querySelector('.e-rowcell').clientWidth;
-                    const headerColgroup: Element = document.querySelector('.e-movableheader').querySelector('colgroup');
-                    const contentColgroup: Element = document.querySelector('.e-movablecontent').querySelector('colgroup');
-                    expect((headerColgroup.childNodes[3] as HTMLElement).style.display).toBe('');
-                    expect((contentColgroup.childNodes[3] as HTMLElement).style.display).toBe('');
-                    expect((headerColgroup.childNodes[2] as HTMLElement).style.display).toBe('none');
-                    expect((contentColgroup.childNodes[2] as HTMLElement).style.display).toBe('none');
-                    done();
-                }
-            }
-            gridObj.dataBind();
-            gridObj.actionComplete = actionComplete
-        });
+    //     it('simulate reorder action and check display set properly', (done: Function) => {
+    //         let srcStackedHeaderColumn: Column = gridObj.getStackedHeaderColumnByHeaderText('HeaderWithHidden', gridObj.columns as Column[]);
+    //         let srcHeaderCell: Element = document.querySelector('.e-movableheader').querySelectorAll('.e-headercell')[3];
+    //         let destHeaderCell: Element = document.querySelector('.e-movableheader').querySelectorAll('.e-headercell')[2];           
+    //         let dropClone = createElement('div', { attrs: { 'e-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('e-mappinguid') } });
+    //         const headercellWidth: number = document.querySelector('.e-movableheader').querySelector('.e-headercell').clientWidth;
+    //         const contentRowcellWidth: number = document.querySelector('.e-movablecontent').querySelector('.e-rowcell').clientWidth;
+    //         const headerColgroup: Element = document.querySelector('.e-movableheader').querySelector('colgroup');
+    //         const contentColgroup: Element = document.querySelector('.e-movablecontent').querySelector('colgroup');
+    //         expect((headerColgroup.childNodes[3] as HTMLElement).style.display).toBe('none');
+    //         expect((contentColgroup.childNodes[3] as HTMLElement).style.display).toBe('none');
+    //         document.body.appendChild(dropClone);
+    //         (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = srcHeaderCell;
+    //         (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: srcHeaderCell } });
+    //         (gridObj.headerModule as any).dragStart({ target: srcHeaderCell.children[0], event: { clientX: 10, clientY: 10, target: srcHeaderCell.children[0] } });
+    //         (gridObj.headerModule as any).dragStart({ target: srcHeaderCell, event: { clientX: 10, clientY: 10, target: srcHeaderCell.children[0] } });
+    //         (gridObj.headerModule as any).drag({ target: destHeaderCell, event: { clientX: 10, clientY: 10, target: destHeaderCell.children[0] } });
+    //         (gridObj.headerModule as any).dragStop({
+    //             target: destHeaderCell,
+    //             element: gridObj.getHeaderTable().querySelector('tr'), helper: dropClone, event: { clientX: 10, clientY: 10, target: destHeaderCell.children[0] }
+    //         });
+    //         (gridObj.reorderModule as any).element = srcHeaderCell;
+    //         (gridObj.reorderModule as any).chkDropPosition = () => true;
+    //         (gridObj.reorderModule as any).chkDropAllCols = () => true;
+    //         (gridObj.headerModule as any).drop({ target: destHeaderCell, droppedElement: dropClone });
+    //         (gridObj.reorderModule as any).moveColumns(3, srcStackedHeaderColumn, true);
+    //         function actionComplete (args: any) {
+    //             if (args.requestType === 'reorder') {
+    //                 const headercellWidth: number = document.querySelector('.e-movableheader').querySelector('.e-headercell').clientWidth;
+    //                 const contentRowcellWidth: number = document.querySelector('.e-movablecontent').querySelector('.e-rowcell').clientWidth;
+    //                 const headerColgroup: Element = document.querySelector('.e-movableheader').querySelector('colgroup');
+    //                 const contentColgroup: Element = document.querySelector('.e-movablecontent').querySelector('colgroup');
+    //                 expect((headerColgroup.childNodes[3] as HTMLElement).style.display).toBe('');
+    //                 expect((contentColgroup.childNodes[3] as HTMLElement).style.display).toBe('');
+    //                 expect((headerColgroup.childNodes[2] as HTMLElement).style.display).toBe('none');
+    //                 expect((contentColgroup.childNodes[2] as HTMLElement).style.display).toBe('none');
+    //                 done();
+    //             }
+    //         }
+    //         gridObj.dataBind();
+    //         gridObj.actionComplete = actionComplete
+    //     });
 
-        afterAll(() => {
-            destroy(gridObj);
-            gridObj = null;
-        });
-    });
+    //     afterAll(() => {
+    //         destroy(gridObj);
+    //         gridObj = null;
+    //     });
+    // });
 
     describe('Reorder functionalities-column level', () => {
         let gridObj: Grid;

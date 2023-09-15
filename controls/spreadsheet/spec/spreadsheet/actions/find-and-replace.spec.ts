@@ -64,6 +64,17 @@ describe('Find & Replace ->', () => {
                 done();
             });
         });
+        it('Maintaining Focus inside the Find tool dialog on tab key', (done: Function) => {
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+            findTxtBox.focus();
+            expect(document.activeElement.classList.contains('e-text-findNext-short')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, findTxtBox);
+            expect(document.activeElement.classList.contains('e-tbar-btn')).toBeTruthy();
+            expect(document.activeElement.parentElement.classList.contains('e-findRib-close')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-findtool-dlg')).toBeTruthy();
+            done();
+        });
         it('Active Cell from after Used Range Column', (done: Function) => {
             helper.invoke('selectRange', ['I11']);
             const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;

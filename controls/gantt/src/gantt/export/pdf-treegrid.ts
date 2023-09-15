@@ -315,12 +315,15 @@ export class PdfTreeGrid extends PdfLayoutElement {
                         colSpan = cell.columnSpan;
                         currentCellIndex = j;
                         cell.isCellMergeStart = true;
+                        let totalColumnWidth: any = this.columns.columns[currentCellIndex as number].width;
                         //Set Column merges.
                         while (colSpan > 1) {
                             currentCellIndex++;
                             row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
                             colSpan--;
+                            totalColumnWidth += this.columns.columns[currentCellIndex as number].width;
                         }
+                        cell.width = totalColumnWidth;
                     } else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
                         rowSpan = cell.rowSpan;
                         currentRowIndex = i;
@@ -383,15 +386,12 @@ export class PdfTreeGrid extends PdfLayoutElement {
                         colSpan = cell.columnSpan;
                         currentCellIndex = j;
                         cell.isCellMergeStart = true;
-                        let totalColumnWidth: any = this.columns.columns[currentCellIndex as number].width;
                         //set Column merges.
                         while (colSpan > 1) {
                             currentCellIndex++;
                             row.cells.getCell(currentCellIndex).isCellMergeContinue = true;
                             colSpan--;
-                            totalColumnWidth += this.columns.columns[currentCellIndex as number].width;
                         }
-                        cell.width = totalColumnWidth;
                     } else if (cell.columnSpan === 1 && cell.rowSpan > 1) {
                         rowSpan = cell.rowSpan;
                         currentRowIndex = i;

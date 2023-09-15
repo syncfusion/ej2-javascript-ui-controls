@@ -3343,7 +3343,7 @@ describe('Diagram Control', () => {
         });
     });
 
-    describe('Check undo and redo with group node with two connector', () => {
+    describe('842506 - Check undo and redo with group node with two connector', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {

@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, Base } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
@@ -27,17 +27,17 @@ import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, Tabl
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
 import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel } from './document-editor-model';
-import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';
+import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';
 import { PasteOptions } from './index';
-import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';
+import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionData, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
-import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat } from './base';
+import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { FootNoteWidget } from './implementation/viewer/page';
-import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange } from './base/constants';
+import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges } from './base/constants';
 import { Optimized, Regular, HelperMethods } from './index';
 import { ColumnsDialog } from './implementation/dialogs/columns-dialog';
 import { DocumentCanvasElement } from './implementation/viewer/document-canvas';
@@ -253,6 +253,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public parser: SfdtReader = undefined;
     private isDocumentLoadedIn: boolean;
     private disableHistoryIn: boolean = false;
+
+    private documentSettingOps: Operation[] = [];
+    /**
+     * @private
+     */
+    public skipSettingsOps: boolean = false;
+    private isSettingOp: boolean = false;
     /**
      * @private
      */
@@ -397,6 +404,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public textMeasureHelper: Regular | Optimized
+    /**
+     * @private
+     */
+    public enableCollaborativeEditing: boolean = false;
     /**
      * Gets or sets the default Paste Formatting Options
      *
@@ -1254,9 +1265,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         for (const prop of Object.keys(model)) {
             switch (prop) {
             case 'enableTrackChanges':
-                 if (this.documentHelper.isTrackedOnlyMode && !model.enableTrackChanges){
-                     this.enableTrackChanges = true;
-             }
+                this.notify(trackChanges, model);
+                this.getSettingData('enableTrackChanges', model.enableTrackChanges);
+                if (this.documentHelper.isTrackedOnlyMode && !model.enableTrackChanges) {
+                    this.enableTrackChanges = true;
+                }
             break;
             case 'autoResizeOnVisibilityChange':
                 if (model.autoResizeOnVisibilityChange) {
@@ -1534,9 +1547,40 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.collaborativeEditingModule.saveContent();
         }
         const eventArgs: ContentChangeEventArgs = { source: this };
+        if (this.enableCollaborativeEditing) {
+            eventArgs.operations = [];
+            if (this.isSettingOp) {
+                eventArgs.operations = this.documentSettingOps;
+                this.documentSettingOps = [];
+                this.isSettingOp = false;
+            } else {
+                if (!isNullOrUndefined(this.editorHistory)) {
+                    if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) && this.editorHistory.currentHistoryInfo.action != 'ApplyStyle' && this.editorHistory.currentHistoryInfo.action != 'TableMarginsSelection' && this.editorHistory.currentHistoryInfo.action != 'CellMarginsSelection') {
+                        if (this.editorHistory.currentHistoryInfo.action === 'IMEInput') {
+                            eventArgs.operations = this.editorHistory.currentHistoryInfo.getActionInfo();
+                        }
+                    } else if (!isNullOrUndefined(this.editorHistory.lastOperation)) {
+                        let history: BaseHistoryInfo = this.editorHistory.lastOperation;
+                        if (history.action === 'IMEInput') {
+                            eventArgs.operations = history.getActionInfo(true);
+                        } else {
+                            eventArgs.operations = history.getActionInfo();
+                        }
+                    }
+                    if (this.enableTrackChanges && eventArgs.operations.length > 0) {
+                        for (let i: number = 0; i < eventArgs.operations.length; i++) {
+                            if (isNullOrUndefined(eventArgs.operations[i].markerData)) {
+                                eventArgs.operations[i].markerData = {};
+                            }
+                            eventArgs.operations[i].markerData.author = this.currentUser;
+                        }
+                    }
+                }
+            }
+        }
         this.trigger(contentChangeEvent, eventArgs);
     }
-    /**
+    /** 
      * @private
      * @returns {void}
      */
@@ -1990,6 +2034,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Cell': 'Cell',
         'Ok': 'OK',
         'Apply': 'Apply',
+        'Alt Text': 'Alt Text',
+        'Title': 'Title',
+        'Description': 'Description',
         'Cancel': 'Cancel',
         'Size': 'Size',
         'Preferred Width': 'Preferred width',
@@ -3096,6 +3143,34 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.findResultsList = undefined;
         this.documentHelper = undefined;
     }
+    /**
+     * @private
+     */
+    public updateStyle(styleInCollection: WStyle, style: WStyle): void {
+        if(!isNullOrUndefined(this.styleDialogModule)) {
+            let type: string = style.type == 'Paragraph' ? !isNullOrUndefined(style.link) ? 'Linked Style' : 'Paragraph' : 'Character';
+            styleInCollection.type = this.styleDialogModule.getTypeValue(type);
+            styleInCollection.basedOn = style.basedOn;
+    
+            if (type === 'Paragraph' || type === 'Linked Style') {
+                styleInCollection.next = style.next;
+                (styleInCollection as WParagraphStyle).characterFormat.copyFormat((style as WParagraphStyle).characterFormat);
+                let oldListId: number = (styleInCollection as WParagraphStyle).paragraphFormat.listFormat.listId;
+                (styleInCollection as WParagraphStyle).paragraphFormat.copyFormat((style as WParagraphStyle).paragraphFormat);
+                // this.updateList();
+                styleInCollection.link = style.link;
+                if (!isNullOrUndefined(oldListId) && oldListId > -1) {
+                    let list = this.documentHelper.getListById(oldListId);
+                    if (!isNullOrUndefined(list)) {
+                        this.documentHelper.lists.splice(this.documentHelper.lists.indexOf(list), 1);
+                    }
+                }
+            } else if (type === 'Character') {
+                (styleInCollection as WCharacterStyle).characterFormat.copyFormat((style as WCharacterStyle).characterFormat);
+            }
+            styleInCollection.name = style.name;
+        }    
+    }
     private createNewBodyWidget(): BodyWidget {
         const section: BodyWidget = new BodyWidget();
         section.index = 0;
@@ -3120,6 +3195,81 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.spellChecker.uniqueWordsCollection.clear();
             }
         }
+    }
+    /**
+     * @private
+     */
+    public getStyleData(name: string, listId?: number): void {
+        if(!this.enableCollaborativeEditing) {
+            return;
+        }
+        this.isSettingOp = true;
+        let operation: Operation;
+        if (!isNullOrUndefined(name) && !isNullOrUndefined(this.documentHelper.owner.sfdtExportModule)) {
+            let style = this.documentHelper.styles.findByName(name);
+            if (!isNullOrUndefined(style)) {
+                let keyIndex = this.documentHelper.owner.sfdtExportModule.keywordIndex;
+                this.documentHelper.owner.sfdtExportModule.keywordIndex = 1;
+                let styleData = this.documentHelper.owner.sfdtExportModule.writeStyle(style as WStyle);
+                let styleObject = {
+                    "optimizeSfdt": true,
+                    "sty": [styleData]
+                };
+                if (this.editor.isLinkedStyle((style as WStyle).name)) {
+                    let linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).name + ' Char') as WStyle;
+                    let linkedStyleData = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle);
+                    styleObject.sty.push(linkedStyleData);
+                }
+                if (!isNullOrUndefined(listId) && listId > -1) {
+                    let list: WList = this.documentHelper.getListById(listId);
+                    styleObject[listsProperty[1]] = [];
+                    styleObject[listsProperty[1]].push(this.sfdtExportModule.writeList(list));
+                    styleObject[abstractListsProperty[1]] = [];
+                    styleObject[abstractListsProperty[1]].push(this.sfdtExportModule.writeAbstractList(list.abstractList));
+                }
+                this.documentHelper.owner.sfdtExportModule.keywordIndex = keyIndex;
+                if (!isNullOrUndefined(style)) {
+                    operation = {
+                        action: 'Update',
+                        styleData: JSON.stringify(styleObject)
+                    };
+                    this.documentSettingOps.push(operation);
+                }
+            }
+        }
+        this.fireContentChange();
+    }
+    /**
+     * @private
+     */
+    public getSettingData(name: string, value: boolean, hashValue?: string, saltValue?: string, protectionType?: ProtectionType): void {
+        if(!this.enableCollaborativeEditing) {
+            return;
+        }
+        this.isSettingOp = true;
+        let protectionData: ProtectionData;
+        let operation: Operation;
+        if (name === 'protection') {
+            protectionData = {
+                saltValue: saltValue,
+                hashValue: hashValue,
+                protectionType: protectionType
+            }
+            operation = {
+                text: name,
+                protectionData: protectionData
+            }
+        } else {
+            operation = {
+                text: name,
+                enableTrackChanges: value
+            }
+        }
+        if (!this.skipSettingsOps) {
+            this.documentSettingOps.push(operation);
+            this.fireContentChange();
+        }
+        this.skipSettingsOps = false;
     }
     private destroyDependentModules(): void {
         if (this.printModule) {

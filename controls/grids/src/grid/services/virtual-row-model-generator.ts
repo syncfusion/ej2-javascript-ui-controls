@@ -21,8 +21,6 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     public parent: IGrid;
     public cOffsets: { [x: number]: number } = {};
     public cache: { [x: number]: Row<Column>[] } = {};
-    public movableCache: { [x: number]: Row<Column>[] } = {};
-    public frozenRightCache: { [x: number]: Row<Column>[] } = {};
     public rowCache: { [x: number]: Row<Column> } = {};
     public data: { [x: number]: Object[] } = {};
     public groups: { [x: number]: Object } = {};
@@ -37,7 +35,6 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     }
 
     public generateRows(data: Object[], e?: NotifyArgs): Row<Column>[] {
-        const isFrozen: boolean = this.parent.isFrozenGrid();
         let isManualRefresh: boolean = false;
         const info: VirtualInfo = e.virtualInfo = e.virtualInfo || this.getData();
         const xAxis: boolean = info.sentinelInfo && info.sentinelInfo.axis === 'X';
@@ -49,10 +46,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 : this.currentInfo.blockIndexes.slice(0, this.currentInfo.blockIndexes.length - 1);
             isManualRefresh = true;
         }
-        if ((isFrozen && (this.parent.getFrozenMode() !== literals.leftRight && !e.renderMovableContent)
-            || this.parent.getFrozenMode() === literals.leftRight && !e.renderMovableContent && !e.renderFrozenRightContent) || !isFrozen) {
-            this.checkAndResetCache(e.requestType);
-        }
+        this.checkAndResetCache(e.requestType);
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
             const dataRows: Row<Column>[] = this.parent.vcRows.filter((row: Row<Column>) => row.isDataRow);
             if ((this.parent.isManualRefresh && dataRows.length === data['records'].length) || !this.parent.isManualRefresh) {
@@ -64,13 +58,6 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 if (this.isBlockAvailable(info.blockIndexes[parseInt(i.toString(), 10)])) {
                     this.cache[info.blockIndexes[parseInt(i.toString(), 10)]] =
                         this.rowModelGenerator.refreshRows(this.cache[info.blockIndexes[parseInt(i.toString(), 10)]]);
-                }
-                if ((e.renderMovableContent && this.isMovableBlockAvailable(info.blockIndexes[parseInt(i.toString(), 10)]))
-                    || (e.renderFrozenRightContent && this.isFrozenRightBlockAvailable(info.blockIndexes[parseInt(i.toString(), 10)]))) {
-                    const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
-                        ? this.movableCache : this.frozenRightCache;
-                    cache[info.blockIndexes[parseInt(i.toString(), 10)]] =
-                        this.rowModelGenerator.refreshRows(cache[info.blockIndexes[parseInt(i.toString(), 10)]]);
                 }
             }
         }
@@ -109,37 +96,17 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 this.cache[values[parseInt(i.toString(), 10)]] =
                     this.updateGroupRow(this.cache[values[parseInt(i.toString(), 10)]], values[parseInt(i.toString(), 10)]);
             }
-            if ((e.renderMovableContent && !this.isMovableBlockAvailable(values[parseInt(i.toString(), 10)]))
-                || (e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(values[parseInt(i.toString(), 10)]))) {
-                const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
-                    ? this.movableCache : this.frozenRightCache;
-                const startIdx: number = !isNullOrUndefined(this.startIndex) ? this.startIndex :
-                    this.getStartIndex(values[parseInt(i.toString(), 10)], data);
-                const rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
-                    virtualInfo: info, startIndex: startIdx
-                });
-                if (isManualRefresh) {
-                    this.setBlockForManualRefresh(cache, indexes, rows);
-                } else {
-                    const median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
-                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[0]))
-                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[0]))) {
-                        cache[indexes[0]] = rows.slice(0, median);
-                    }
-                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[1]))
-                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[1]))) {
-                        cache[indexes[1]] = rows.slice(median);
-                    }
-                }
-            }
             if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[parseInt(i.toString(), 10)]]) {
-                result.push(...this.cache[values[parseInt(i.toString(), 10)]]);
-            } else {
-                const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
-                    ? this.movableCache : this.frozenRightCache;
-                if (cache[values[parseInt(i.toString(), 10)]]) {
-                    result.push(...cache[values[parseInt(i.toString(), 10)]]);
+                result.push.apply(result, this.cache[values[parseInt(i.toString(), 10)]]);
+                let DataRecord: any = [];
+                if (this.parent.enableVirtualization && this.parent.groupSettings.columns.length) {
+                    result.forEach((data) => {
+                        if (!DataRecord.includes(data)) {
+                            DataRecord.push(data);
+                        }
+                    });
                 }
+                result = DataRecord.length ? DataRecord : result;
             }
             if (this.isBlockAvailable(values[parseInt(i.toString(), 10)])) {
                 loadedBlocks.push(values[parseInt(i.toString(), 10)]);
@@ -149,11 +116,6 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         const grouping: string = 'records';
         if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
             this.parent.currentViewData[`${grouping}`] = result.map((m: Row<Column>) => m.data);
-        } else if (isFrozen) {
-            if ((e.renderMovableContent && (this.parent.getFrozenMode() === 'Left'
-                || this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenColumns())) || e.renderFrozenRightContent) {
-                this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
-            }
         } else {
             this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
         }
@@ -196,14 +158,6 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         return value in this.cache;
     }
 
-    public isMovableBlockAvailable(value: number): boolean {
-        return value in this.movableCache;
-    }
-
-    public isFrozenRightBlockAvailable(value: number): boolean {
-        return value in this.frozenRightCache;
-    }
-
     public getData(): VirtualInfo {
         return {
             page: this.model.currentPage,
@@ -221,43 +175,36 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public getColumnIndexes(content: HTMLElement =
     (<HTMLElement>this.parent.getHeaderContent().querySelector('.' + literals.headerContent))): number[] {
-        if (this.parent.isFrozenGrid()) {
-            content = content.querySelector('.' + literals.movableHeader);
-        }
         const indexes: number[] = []; let sLeft: number = content.scrollLeft | 0;
-        const keys: string[] = Object.keys(this.cOffsets); const cWidth: number = content.getBoundingClientRect().width;
+        let keys: string[] = Object.keys(this.cOffsets); const cWidth: number = content.getBoundingClientRect().width;
         sLeft = Math.min(this.cOffsets[keys.length - 1] - cWidth, sLeft);
         const calWidth: number = Browser.isDevice ? 2 * cWidth : cWidth / 2;
         const left: number = sLeft + cWidth + (sLeft === 0 ? calWidth : 0);
+        let frzLeftWidth: number = 0;
+        if (this.parent.isFrozenGrid()) {
+            frzLeftWidth = this.parent.leftrightColumnWidth('left');
+            if (this.parent.getFrozenMode() === literals.leftRight) {
+                const rightCol: number =  this.parent.getVisibleFrozenRightCount();
+                keys.splice((keys.length - 1) -  rightCol, rightCol);
+            }
+        }
         keys.some((offset: string) => {
             const iOffset: number = Number(offset); const offsetVal: number = this.cOffsets[`${offset}`];
-            const border: boolean = sLeft - calWidth <= offsetVal && left + calWidth >= offsetVal;
+            const border: boolean = ((sLeft - calWidth) + frzLeftWidth) <= offsetVal && (left + calWidth) >= offsetVal;
             if (border) {
                 indexes.push(iOffset);
             }
             return left + calWidth < offsetVal;
         });
-        this.addFrozenIndex(indexes);
         return indexes;
-    }
-
-    private addFrozenIndex(indexes: number[]): void {
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization && indexes[0] === 0) {
-            for (let i: number = 0; i < this.parent.getFrozenColumns(); i++) {
-                indexes.push(indexes[indexes.length - 1] + 1);
-            }
-        }
     }
 
     public checkAndResetCache(action: string): boolean {
         const actions: string[] = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
             'save', 'delete'];
-        if (this.parent.getFrozenColumns() && this.parent.frozenRows && this.parent.enableColumnVirtualization && action === 'reorder') {
-            actions.splice(actions.indexOf(action), 1);
-        }
         const clear: boolean = actions.some((value: string) => action === value);
         if (clear) {
-            this.cache = {}; this.data = {}; this.groups = {}; this.movableCache = {}; this.frozenRightCache = {};
+            this.cache = {}; this.data = {}; this.groups = {};
         }
         return clear;
     }

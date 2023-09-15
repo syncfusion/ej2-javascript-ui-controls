@@ -3,7 +3,7 @@
 /* eslint-disable jsdoc/require-returns */
 import { StockChart } from '../stock-chart';
 import { PeriodsModel, FontModel } from '../../common/model/base-model';
-import { titlePositionX, textElement, appendChildElement, getElement } from '../../common/utils/helper';
+import { titlePositionX, textElement, appendChildElement, getElement, RectOption } from '../../common/utils/helper';
 import { ExportType } from '../../common/utils/enum';
 import { TrendlineTypes, ChartSeriesType, TechnicalIndicators } from '../../chart/utils/enum';
 import { AxisModel, RowModel } from '../../chart/axis/axis-model';
@@ -321,6 +321,12 @@ export class ToolBarSelector {
                 const svgHeight: ClientRect = stockChart.svgObject.getBoundingClientRect();
                 this.stockChart.svgObject.insertAdjacentElement('afterbegin', this.addExportSettings(type === 'Print'));
                 additionalRect = stockChart.svgObject.firstElementChild.getBoundingClientRect();
+                const rect: RectOption = new RectOption(
+                    'additionalRect', 'transparent',
+                    { width: 0, color: 'transparent' }, 1,
+                    new Rect(0, 0, this.stockChart.availableSize.width, additionalRect.height)
+                );
+                stockChart.svgObject.firstElementChild.insertAdjacentElement('afterbegin', this.stockChart.renderer.drawRectangle(rect) as HTMLElement);
                 this.stockChart.svgObject.setAttribute('height', (svgHeight.height + additionalRect.height).toString());
                 (getElement(stockID + 'chart') as HTMLElement).style.transform = 'translateY(' + additionalRect.height + 'px)';
                 if (stockChart.enableSelector) {
@@ -337,7 +343,7 @@ export class ToolBarSelector {
                     stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
                 }
                 remove(getElement(this.stockChart.element.id + '_additionalExport'));
-                (getElement(stockID + 'chart') as HTMLElement).style.transform = 'translateY(0px)';
+                (getElement(stockID + 'chart') as HTMLElement).style.transform = '';
                 if (stockChart.enableSelector) {
                     (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
                         'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
@@ -353,7 +359,11 @@ export class ToolBarSelector {
     }
     public calculateAutoPeriods(): PeriodsModel[] {
         let defaultPeriods: PeriodsModel[] = [];
-        defaultPeriods = this.findRange(this.stockChart.seriesXMin, this.stockChart.seriesXMax);
+        const min: number = this.stockChart.isDateTimeCategory ? this.stockChart.sortedData[this.stockChart.seriesXMin] :
+            this.stockChart.seriesXMin;
+        const max: number = this.stockChart.isDateTimeCategory ? this.stockChart.sortedData[this.stockChart.seriesXMax] :
+            this.stockChart.seriesXMax;
+        defaultPeriods = this.findRange(min, max);
         defaultPeriods.push({ text: 'YTD', selected: true }, { text: 'All' });
         return defaultPeriods;
     }
@@ -412,14 +422,14 @@ export class ToolBarSelector {
         const y: number = titleHeight;
         this.textElementSpan(
             new TextOption(exportElement.id + '_Series', x, y, 'start', ['Series : ', this.selectedSeries], '', 'text-before-edge'), style,
-            'black', exportElement
+            this.stockChart.themeStyle.chartTitleFont.color, exportElement
         );
         x += measureText('Series: ' + this.selectedSeries + ' Z', style).width;
         if (this.selectedIndicator !== '') {
             this.textElementSpan(
                 new TextOption(exportElement.id + '_Indicator', x, y, 'start', ['Indicator :', this.selectedIndicator],
                                '', 'text-before-edge'),
-                style, 'black', exportElement
+                style, this.stockChart.themeStyle.chartTitleFont.color, exportElement
             );
             x += measureText('Indicator: ' + this.selectedIndicator +  ' Z', style).width;
         }
@@ -428,7 +438,7 @@ export class ToolBarSelector {
             this.textElementSpan(
                 new TextOption(exportElement.id + '_TrendLine', x, y, 'start', ['Trendline :' , this.selectedTrendLine],
                                '', 'text-before-edge'),
-                style, 'black', exportElement
+                style, this.stockChart.themeStyle.chartTitleFont.color, exportElement
             );
         }
         return exportElement;

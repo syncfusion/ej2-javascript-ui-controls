@@ -93,7 +93,7 @@ export class DiagramHtmlElement extends DiagramElement {
      *
      * @private
      */
-    public set content(value: string | HTMLElement | Function) {
+    public set content(value: string | HTMLElement | Function ) {
         this.data = value;
         if (!this.canReset) {
             this.canReset = true;

@@ -793,6 +793,86 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+    describe('Expand and collapse', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let hierarchicalTree: any = [
+            { id: 'parent', Label: 'StackPanel' },
+            { id: 3, Label: 'ListBox', parentId: 'parent' },
+            { id: 4, Label: 'StackPanel', parentId: 'parent', level : '1' },
+            { id: 6, Label: 'Border', parentId: 3 },
+            { id: 7, Label: 'Button', parentId: 4 },
+            { id: 9, Label: 'Text Block', parentId: 8 },
+            { id: 10, Label: 'ScrollViewer', parentId: 6 },
+            { id: 11, Label: 'Grid', parentId: 10 },
+            { id: 12, Label: 'Rectangle', parentId: 11 },
+            { id: 13, Label: 'ScrollContentPresenter', parentId: 11 },
+            { id: 14, Label: 'ScrollBar', parentId: 11 },
+            { id: 15, Label: 'ScrollBar', parentId: 11 },
+            { id: 26, Label: 'TextBlock', parentId: 20 },
+            { id: 27, Label: 'ButtonChrome', parentId: 7 },
+            { id: 28, Label: 'ContentPresenter', parentId: 27 },
+            { id: 29, Label: 'TextBlock', parentId: 28 }
+        ];
+
+        let data: Object = {
+            id: 'id', parentId: 'parentId',
+            dataSource: new DataManager(hierarchicalTree),
+        };
+        let snapSettings: SnapSettingsModel = { constraints: SnapConstraints.None };
+
+        let layout: Object = {
+            type: 'HierarchicalTree', verticalSpacing: 30, horizontalSpacing: 40,
+            enableAnimation: true
+        };
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '900px', height: '550px',
+                snapSettings: snapSettings,
+                layout: layout,
+                dataSourceSettings: data,
+                getNodeDefaults: (obj: Node) => {
+                       obj.shape = { type: 'Text',content: (obj.data as { Label: 'string' }).Label};
+                    obj.style = { fill: '#659be5', strokeColor: 'none', color: 'white', strokeWidth: 2 };
+                    obj.borderColor = '#3a6eb5';
+                    obj.backgroundColor = '#659be5';
+                    (obj.shape as TextModel).margin = { left: 5, right: 5, bottom: 5, top: 5 };
+                    obj.expandIcon = { height: 10, width: 10, shape: 'None', fill: 'lightgray', offset: { x: .5, y: 1 } };
+                    obj.expandIcon.verticalAlignment = 'Auto';
+                    obj.expandIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                    obj.collapseIcon.offset = { x: .5, y: 1 };
+                    obj.collapseIcon.verticalAlignment = 'Auto';
+                    obj.collapseIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                    obj.collapseIcon.height = 10;
+                    obj.collapseIcon.width = 10;
+                    obj.collapseIcon.padding.top = 5;
+                    obj.collapseIcon.shape = 'None';
+                    obj.collapseIcon.fill = 'lightgray';
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.type = 'Orthogonal';
+                    return connector;
+                }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Expand and collapse issue', (done: Function) => {
+            diagram.nodes[3].isExpanded = false;
+            diagram.dataBind();
+            diagram.nodes[3].isExpanded = true;
+            diagram.dataBind();
+            expect(diagram.nodes[3].isExpanded  === true).toBe(true);
+            done();
+        });
+
+    });
      describe('EJ2-46383 - nodes isExpanded property true at initial rendering unwanted scroll ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1267,7 +1347,45 @@ describe('Diagram Control', () => {
     });
 });
 
-
+describe('Complex Tree Layout with routing', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramComplexHierarchicalTreeUpdate' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: 1000, height: 1000,
+            nodes: [
+                {id: 'node1', width: 70, height: 70, annotations: [{ content: 'node1' }] },
+                { id: 'node2', width: 70, height: 70, annotations: [{ content: 'node2' }]},
+                {id: 'node3', width: 70, height: 70, annotations: [{ content: 'node3' }] },
+            ],
+            connectors: [{
+                id: 'connector1', sourceID: 'node1', targetID: 'node2'
+            },
+            {
+                id: 'connector12', sourceID: 'node2', targetID: 'node3'
+            },
+            {
+                id: 'connector3', sourceID: 'node1', targetID: 'node3' 
+            }
+            ],
+            layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 70, verticalSpacing: 70, orientation: 'LeftToRight',enableRouting:true,arrangement:ChildArrangement.Linear },
+        });
+        diagram.appendTo('#diagramComplexHierarchicalTreeUpdate');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking complex tree layout with enableRouting true', (done: Function) => {
+        diagram.doLayout();
+        expect(diagram.nodes[0].offsetX == 85 && diagram.nodes[1].offsetY == 473.625 && diagram.nodes[2].offsetX == 365).toBe(true);
+        expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 120 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 520.79).toBe(true);
+        done();
+    });
+});
 
 
 

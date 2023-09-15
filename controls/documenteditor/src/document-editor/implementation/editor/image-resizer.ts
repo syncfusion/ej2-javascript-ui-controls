@@ -10,6 +10,7 @@ import {
 import { Point, ImagePointInfo, HelperMethods } from './editor-helper';
 import { BaseHistoryInfo } from '../editor-history/base-history-info';
 import { DocumentHelper } from '../viewer';
+import { CONTROL_CHARACTERS } from '../../base/types';
 
 /**
  * Image resizer implementation.
@@ -1129,6 +1130,8 @@ export class ImageResizer {
                 this.baseHistoryInfo.modifiedProperties.pop();
             } else {
                 //Records the image size modifications
+                this.baseHistoryInfo.insertedText = CONTROL_CHARACTERS.Image;
+                this.baseHistoryInfo.insertedData = { width: HelperMethods.convertPixelToPoint(this.currentImageElementBox.width), height: HelperMethods.convertPixelToPoint(this.currentImageElementBox.height)};
                 this.owner.editorHistory.recordChanges(this.baseHistoryInfo);
             }
             //Fires the content changed event for the image size modifications

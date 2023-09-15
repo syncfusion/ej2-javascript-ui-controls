@@ -6,7 +6,7 @@ import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHe
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation, ColumnModel } from '../../workbook/index';
 import { getSheet, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, getSwapRange, setColumn } from '../../workbook/index';
 import { getIndexesFromAddress, getSheetNameFromAddress, updateSortedDataOnCell, getSheetIndexFromAddress } from '../../workbook/index';
-import { sortComplete, ConditionalFormatModel, ApplyCFArgs, getColumn } from '../../workbook/index';
+import { sortComplete, ConditionalFormatModel, ApplyCFArgs, getColumn, ImageModel } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, replaceAll, applyCellFormat, CellFormatArgs } from '../../workbook/index';
 import { addClass, extend, isNullOrUndefined, isObject, L10n, select } from '@syncfusion/ej2-base';
@@ -618,13 +618,8 @@ export class UndoRedo {
                 if (changedValue === 'none') { removeProp = true; }
                 (argsEventArgs.style as CellStyleModel).textDecoration = changedValue;
                 args.eventArgs = argsEventArgs as UndoRedoEventArgs;
-                this.parent.notify(setCellFormat, {
-                    style: { textDecoration: changedValue } , range: activeCellIndexes, refreshRibbon: true,
-                    onActionUpdate: true
-                });
                 for (let i: number = indexes[0]; i <= indexes[2]; i++) {
                     for (let j: number = indexes[1]; j <= indexes[3]; j++) {
-                        if (i === activeCellIndexes[0] && j === activeCellIndexes[1]) { continue; }
                         changedStyle = {};
                         cellValue = this.parent.getCellStyleValue(['textDecoration'], [i, j]).textDecoration;
                         if (cellValue === 'none') {
@@ -770,12 +765,20 @@ export class UndoRedo {
                         cells[i as number].colIndex, lastCell: true, isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: true });
                 }
             }
+            if (prevCell.image && args && args.action === 'clipboard') {
+                prevCell.image.forEach((image: ImageModel): void => {
+                    this.parent.notify(
+                        deleteImage, { id: image.id, sheet: sheet, preventEventTrigger: true, rowIdx: cells[i as number].rowIndex,
+                        colIdx: cells[i as number].colIndex });
+                });
+            }
             setCell(cells[i as number].rowIndex, cells[i as number].colIndex, sheet, {
                 value: (cells[i as number].formula && cells[i as number].formula.toUpperCase().includes('UNIQUE')) ? null :
                     cells[i as number].value, format: cells[i as number].format, isLocked: cells[i as number].isLocked,
                 style: cells[i as number].style && Object.assign({}, cells[i as number].style), formula: cells[i as number].formula,
                 wrap: cells[i as number].wrap, rowSpan: cells[i as number].rowSpan, colSpan: cells[i as number].colSpan,
-                hyperlink: cells[i as number].hyperlink, validation: cells[i as number] && cells[i as number].validation
+                hyperlink: cells[i as number].hyperlink, validation: cells[i as number] && cells[i as number].validation,
+                image: cells[i as number].image
             });
             evtArgs = { action: 'updateCellValue', address: [cells[i as number].rowIndex, cells[i as number].colIndex,
                 cells[i as number].rowIndex, cells[i as number].colIndex], value: cells[i as number].formula ? cells[i as number].formula :

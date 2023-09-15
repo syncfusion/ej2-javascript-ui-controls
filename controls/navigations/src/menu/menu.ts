@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/triple-slash-reference */
 /// <reference path='../common/menu-base-model.d.ts'/>
 import { attributes, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
-import { Browser, Complex, getUniqueID, SanitizeHtmlHelper, compile  } from '@syncfusion/ej2-base';
+import { Browser, Complex, getUniqueID, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { MenuBase, FieldSettings } from '../common/menu-base';
 import { MenuItemModel, FieldSettingsModel } from '../common/menu-base-model';
 import { MenuModel } from './menu-model';

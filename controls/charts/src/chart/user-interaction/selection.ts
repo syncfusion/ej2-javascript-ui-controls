@@ -440,20 +440,30 @@ export class Selection extends BaseSelection {
             if (chart.isMultiSelect) {
                 for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
                     seriesIndex = this.selectedDataIndexes[i as number].series;
+                    if (this.selectedDataIndexes.length > 0) {
+                        selectedPointValues.push({
+                            seriesIndex: seriesIndex
+                        });
+                    }
+                }
+            } else {
+                seriesIndex = (this.selectedDataIndexes.length > 0) ? this.selectedDataIndexes[0].series : (this.highlightDataIndexes && this.highlightDataIndexes.length > 0) ? this.highlightDataIndexes[0].series : 0;
+                if (this.selectedDataIndexes.length > 0 || (this.highlightDataIndexes && this.highlightDataIndexes.length > 0)) {
                     selectedPointValues.push({
                         seriesIndex: seriesIndex
                     });
                 }
-            } else {
-                seriesIndex = (this.selectedDataIndexes.length > 0) ? this.selectedDataIndexes[0].series : 0;
-                selectedPointValues.push({
-                    seriesIndex: seriesIndex
-                });
             }
         } else if (selectionMode === 'Point') {
-            for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
-                pointIndex = this.selectedDataIndexes[i as number].point;
-                seriesIndex = this.selectedDataIndexes[i as number].series;
+            let selectedData: Indexes[] = [];
+            if (this.styleId.indexOf('highlight') > -1) {
+                selectedData = this.highlightDataIndexes;
+            } else {
+                selectedData = this.selectedDataIndexes;
+            }
+            for (let i: number = 0; i < selectedData.length; i++) {
+                pointIndex = selectedData[i as number].point;
+                seriesIndex = selectedData[i as number].series;
                 const series: SeriesModel = chart.series[seriesIndex as number];
                 points = (<Series>series).points;
                 if (!isNaN(pointIndex)) {
@@ -476,6 +486,7 @@ export class Selection extends BaseSelection {
             name: selectionComplete,
             selectedDataValues: selectedPointValues,
             cancel: false,
+            chart:chart
         };
         chart.trigger(selectionComplete, args);
     }
@@ -717,9 +728,9 @@ export class Selection extends BaseSelection {
                 this.removeSvgClass(element, this.unselected);
                 if (this.chart.series[0].pointColorMapping === 'fill' || this.rangeColorMappingEnabled()) {
                     const className: string = this.getSelectionClass(element.id);
+                    const index: number = className.indexOf('highlight') > -1 ? parseInt(className.split(this.chart.element.id + '_ej2_chart_highlight_series_')[1], 10) : parseInt(className.split(this.chart.element.id + '_ej2_chart_selection_series_')[1], 10);
                     const patternName: string = this.styleId.indexOf('highlight') > 0 ? this.chart.highlightPattern : this.chart.selectionPattern;
                     let pattern: Element;
-                    const index: number = className.indexOf('highlight') > -1 ? parseInt(className.split(this.chart.element.id + '_ej2_chart_highlight_series_')[1], 10) : parseInt(className.split(this.chart.element.id + '_ej2_chart_selection_series_')[1], 10);
                     if (className.indexOf('highlight') > -1 || className.indexOf('selection') > -1) {
                         pattern = document.getElementById(this.chart.element.id + '_' + patternName + '_' + 'Selection' + '_' + index);
                     }

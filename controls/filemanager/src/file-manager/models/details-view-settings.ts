@@ -1,4 +1,4 @@
-import { Property, ChildProperty, initializeCSPTemplate  } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { ColumnModel } from './index';
 /**
  * Specifies the columns in the details view of the file manager.

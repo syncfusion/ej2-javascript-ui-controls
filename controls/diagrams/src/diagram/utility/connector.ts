@@ -1366,21 +1366,21 @@ function findIntermeditatePoints(
                     } else {
                         // EJ2-65063 - If point length is greater then 2 means then empty the last segment points and set it as two points instead of four points
                         if (j === point.length - 1 && point.length > 2 && ele.segments.length > 2) {
+                            let point2: PointModel;
                             // EJ2-69304 - Change the point calculation to work for all port combination
-                            const point2: PointModel = { x: point[parseInt(j.toString(), 10)].x, y: source.point.y };
+                            point2 = { x: point[parseInt(j.toString(), 10)].x, y: source.point.y };
                             // EJ2 - 65063 - Empty the segment points
                             seg.points = [];
                             // EJ2-69304 - Calculate the point for segment and manually push the point in segment point calculation
                             seg.points.push(point2);
                             seg.points.push(point[parseInt(j.toString(), 10)]);
                             const segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
-                             //EJ2 - Orthogonal connector gets broken when dragging segment thumb
-                             if(ele.segments.length < 4){
+                            //EJ2 - Orthogonal connector gets broken when dragging segment thumb
+                            if(ele.segments.length < 4){
                                 segment.points.pop();
                             }
                             // Bug 834713: Orthogonal connector routing is not proper, When allowNodeOverlap is Set to true.
                             segment.points = segment.points.concat(seg.points);
-
                         } else {
                             seg.points.push(point[parseInt(j.toString(), 10)]);
                         }

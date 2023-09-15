@@ -29,6 +29,14 @@ export class TaskFields extends ChildProperty<TaskFields> {
     public parentID: string;
 
     /**
+     * Gets or sets a field name of data object in data source that specifies whether the current record has child records.
+     *
+     * @default null
+     */
+    @Property(null)
+    public hasChildMapping: string;
+
+    /**
      * To map start date of task from data source.
      *
      * @default null

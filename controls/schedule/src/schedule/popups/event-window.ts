@@ -79,38 +79,54 @@ export class EventWindow {
         };
         if (this.parent.isAdaptive) {
             dialogModel.cssClass = cls.EVENT_WINDOW_DIALOG_CLASS + ' ' + cls.DEVICE_CLASS;
-            dialogModel.header = '<div class="e-title-header"><div class="e-back-icon e-icons"></div><div class="e-title-text">' +
-                this.l10n.getConstant('newEvent') + '</div><div class="e-save-icon e-icons"></div></div>';
+            if (!this.parent.editorHeaderTemplate) {
+                dialogModel.header = '<div class="e-title-header"><div class="e-back-icon e-icons"></div><div class="e-title-text">' +
+                    this.l10n.getConstant('newEvent') + '</div><div class="e-save-icon e-icons"></div></div>';
+            }
         } else {
-            dialogModel.buttons = [{
-                buttonModel: {
-                    content: this.l10n.getConstant('deleteButton'), cssClass: cls.DELETE_EVENT_CLASS,
-                    disabled: !this.parent.eventSettings.allowDeleting || this.parent.readonly
-                },
-                click: this.eventDelete.bind(this)
-            }, {
-                buttonModel: {
-                    content: this.l10n.getConstant('saveButton'), cssClass: 'e-primary ' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS,
-                    isPrimary: true, disabled: !this.parent.eventSettings.allowAdding || this.parent.readonly
-                },
-                click: this.eventSave.bind(this)
-            }, {
-                buttonModel: { cssClass: cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS, content: this.l10n.getConstant('cancelButton') },
-                click: this.dialogClose.bind(this)
-            }];
-            dialogModel.header = '<div class="e-title-text">' + this.l10n.getConstant('newEvent') + '</div>';
+            if (!this.parent.editorFooterTemplate) {
+                this.renderDialogButtons(dialogModel);
+            }
+            if (!this.parent.editorHeaderTemplate) {
+                dialogModel.header = '<div class="e-title-text">' + this.l10n.getConstant('newEvent') + '</div>';
+            }
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         if (this.dialogObject.element.querySelector('.e-dlg-closeicon-btn')) {
             this.dialogObject.element.querySelector('.e-dlg-closeicon-btn').setAttribute('title', this.l10n.getConstant('close'));
         }
+        this.addEventHandlers();
         addClass([this.element.parentElement], cls.EVENT_WINDOW_DIALOG_CLASS + '-container');
-        if (this.parent.isAdaptive) {
-            EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
-            EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_ICON_CLASS), 'click', this.eventSave, this);
-        }
         EventHandler.add(this.dialogObject.element, 'keydown', this.preventEventSave, this);
         this.applyFormValidation();
+    }
+
+    private renderDialogButtons(dialogButton: DialogModel | Dialog): void {
+        dialogButton.buttons = [{
+            buttonModel: {
+                content: this.l10n.getConstant('deleteButton'), cssClass: cls.DELETE_EVENT_CLASS,
+                disabled: !this.parent.eventSettings.allowDeleting || this.parent.readonly
+            },
+            click: this.eventDelete.bind(this)
+        }, {
+            buttonModel: {
+                content: this.l10n.getConstant('saveButton'), cssClass: 'e-primary ' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS,
+                isPrimary: true, disabled: !this.parent.eventSettings.allowAdding || this.parent.readonly
+            },
+            click: this.eventSave.bind(this)
+        }, {
+            buttonModel: { cssClass: cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS, content: this.l10n.getConstant('cancelButton') },
+            click: this.dialogClose.bind(this)
+        }];
+    }
+
+    private addEventHandlers(): void {
+        const backIcon: Element = this.element.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS);
+        const saveIcon: Element = this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_ICON_CLASS);
+        if (this.parent.isAdaptive && !isNullOrUndefined(backIcon) && !isNullOrUndefined(saveIcon)) {
+            EventHandler.add(backIcon, 'click', this.dialogClose, this);
+            EventHandler.add(saveIcon, 'click', this.eventSave, this);
+        }
     }
 
     public refresh(): void {
@@ -158,6 +174,22 @@ export class EventWindow {
             }
             data = eventObj;
         }
+        if (!isNullOrUndefined(this.parent.editorHeaderTemplate)) {
+            this.parent.resetTemplates(['editorHeaderTemplate']);
+            if (this.parent.isAdaptive && !this.parent.editorFooterTemplate) {
+                this.dialogObject.header = this.createAdaptiveHeaderElement(data);
+            } else {
+                this.dialogObject.header = this.getDialogHeader(data);
+            }
+        }
+        if (!isNullOrUndefined(this.parent.editorFooterTemplate)) {
+            this.parent.resetTemplates(['editorFooterTemplate']);
+            this.dialogObject.footerTemplate = this.getDialogFooter(data);
+        }
+        if (!isNullOrUndefined(this.parent.editorHeaderTemplate) || !isNullOrUndefined(this.parent.editorFooterTemplate)) {
+            this.dialogObject.dataBind();
+            this.addEventHandlers();
+        }
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
         }
@@ -188,6 +220,63 @@ export class EventWindow {
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
         this.applyFormValidation();
+    }
+    public setDialogHeader(): void {
+        if (!isNullOrUndefined(this.parent.editorHeaderTemplate)) {
+            this.parent.resetTemplates(['editorHeaderTemplate']);
+            if (this.parent.isAdaptive && !this.parent.editorFooterTemplate) {
+                this.dialogObject.header = this.createAdaptiveHeaderElement();
+            }
+            else {
+                this.dialogObject.header = this.getDialogHeader();
+            }
+        } else if (this.parent.isAdaptive) {
+            this.dialogObject.header = '<div class="e-title-header"><div class="e-back-icon e-icons"></div><div class="e-title-text">' +
+                this.l10n.getConstant('newEvent') + '</div><div class="e-save-icon e-icons"></div></div>';
+        } else {
+            this.dialogObject.header = '<div class="e-title-text">' + this.l10n.getConstant('newEvent') + '</div>';
+        }
+        this.dialogObject.dataBind();
+        this.addEventHandlers();
+    }
+    public setDialogFooter(): void {
+        if (!isNullOrUndefined(this.parent.editorFooterTemplate)) {
+            this.parent.resetTemplates(['editorFooterTemplate']);
+            this.dialogObject.footerTemplate = this.getDialogFooter();
+        } else if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorFooterTemplate)) {
+            this.renderDialogButtons(this.dialogObject);
+        } else if (this.parent.isAdaptive && isNullOrUndefined(this.parent.editorFooterTemplate)) {
+            this.dialogObject.footerTemplate = null;
+        }
+        this.dialogObject.dataBind();
+    }
+
+    private createAdaptiveHeaderElement(data?: Record<string, any>): HTMLElement {
+        const header: HTMLElement = createElement('div', { className: 'e-title-header' });
+        const headerBackIcon: HTMLElement = createElement('div', { className: 'e-back-icon e-icons' });
+        header.appendChild(headerBackIcon);
+        const headerTemplate: HTMLElement = this.getDialogHeader(data);
+        header.appendChild(headerTemplate);
+        const headerSaveIcon: HTMLElement = createElement('div', { className: 'e-save-icon e-icons' });
+        header.appendChild(headerSaveIcon);
+        return header;
+    }
+    private getDialogHeader(args?: Record<string, any>): HTMLElement {
+        let headerTemplate: Element[] = [];
+        const headerTemplateId: string = this.parent.element.id + '_editorHeaderTemplate';
+        const temHeaderDiv: HTMLElement = document.createElement('div');
+        headerTemplate = [].slice.call(this.parent.getEditorHeaderTemplate()(args || {}, this.parent, 'editorHeaderTemplate', headerTemplateId, false));
+        append(headerTemplate, temHeaderDiv);
+        return temHeaderDiv;
+    }
+
+    private getDialogFooter(args?: Record<string, any>): HTMLElement {
+        let footerTemplate: Element[] = [];
+        const footerTemplateId: string = this.parent.element.id + '_editorFooterTemplate';
+        const temFooterDiv: HTMLElement = document.createElement('div');
+        footerTemplate = [].slice.call(this.parent.getEditorFooterTemplate()(args || {}, this.parent, 'editorFooterTemplate', footerTemplateId, false));
+        append(footerTemplate, temFooterDiv);
+        return temFooterDiv;
     }
 
     private preventEventSave(e: KeyboardEventArgs): void {
@@ -468,11 +557,11 @@ export class EventWindow {
         const resourceDiv: HTMLElement = this.createDivElement(value + '-container' + ' ' + 'e-resources');
         const resourceInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
         resourceDiv.appendChild(resourceInput);
-        function resourceTemplate(data: any): string {
-            return  `<div class="e-resource-template"><div class="e-resource-color" style="background-color:${
+        const resourceTemplate: Function = function(data: any): string {
+            return `<div class="e-resource-template"><div class="e-resource-color" style="background-color:${
                 data[resourceData.colorField]}"></div><div class="e-resource-text">${
                 data[resourceData.textField]}</div></div>`;
-        }
+        };
         initializeCSPTemplate(resourceTemplate, resourceData);
         if (resourceData.allowMultiple) {
             const listObj: MultiSelect = new MultiSelect({
@@ -833,7 +922,9 @@ export class EventWindow {
             this.renderRepeatDialog();
         }
         this.element.querySelector('.' + cls.FORM_CLASS).removeAttribute('data-id');
-        this.element.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
+        if (isNullOrUndefined(this.parent.editorHeaderTemplate)) {
+            this.element.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
+        }
         eventObj.Timezone = false;
         this.repeatStartDate = <Date>eventObj[this.fields.startTime];
         this.repeatRule = '';
@@ -1065,10 +1156,12 @@ export class EventWindow {
         if (!this.parent.eventSettings.allowEditing) {
             return;
         }
-        if (!this.parent.isAdaptive) {
+        if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorFooterTemplate)) {
             removeClass([this.element.querySelector('.' + cls.DELETE_EVENT_CLASS)], cls.DISABLE_CLASS);
         }
-        this.element.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('editEvent');
+        if (isNullOrUndefined(this.parent.editorHeaderTemplate)) {
+            this.element.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('editEvent');
+        }
         this.element.querySelector('.' + cls.FORM_CLASS).setAttribute('data-id', eventObj[this.fields.id].toString());
         if (isNullOrUndefined(this.parent.editorTemplate)) {
             eventObj = <Record<string, any>>extend({}, eventObj, null, true);
@@ -1862,7 +1955,7 @@ export class EventWindow {
 
     public destroy(isIgnore?: boolean): void {
         if (this.parent && !this.parent.isDestroyed) {
-            this.parent.resetTemplates(['editorTemplate']);
+            this.parent.resetTemplates(['editorTemplate', 'editorHeaderTemplate', 'editorFooterTemplate']);
         }
         this.destroyComponents();
         if (this.recurrenceEditor) {

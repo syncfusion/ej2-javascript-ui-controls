@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { ShapeStyle, Margin } from '../core/appearance';import { ShapeStyleModel, MarginModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility } from '../enum/enum';import { DiagramTooltip } from './tooltip';import { DiagramTooltipModel } from './tooltip-model';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { ShapeStyle, Margin } from '../core/appearance';import { ShapeStyleModel, MarginModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility, PortAlignment } from '../enum/enum';import { DiagramTooltip } from './tooltip';import { DiagramTooltipModel } from './tooltip-model';
 
 /**
  * Interface for a class Port
@@ -164,5 +164,38 @@ export interface PointPortModel extends PortModel{
      * @blazorType NodePortOffset
      */
     offset?: PointModel;
+
+}
+
+/**
+ * Interface for a class PathPort
+ */
+export interface PathPortModel extends PortModel{
+
+    /**
+     * Sets the segment offset of port
+     *
+     * @default 0.5
+     */
+    offset?: number;
+
+    /**
+     * Sets the displacement of an ports from its actual position
+     *
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    displacement?: PointModel;
+
+    /**
+     * Sets the segment alignment of ports
+     *  * Center - Aligns the ports at the center of a connector segment
+     *  * Before - Aligns the ports before a connector segment
+     *  * After - Aligns the ports after a connector segment
+     *
+     * @default Center
+     */
+    alignment?: PortAlignment;
 
 }

@@ -16,9 +16,22 @@ export class WTableFormat {
     private static uniqueFormatType: number = 8;
     public borders: WBorders = new WBorders(this);
     public shading: WShading = new WShading(this);
+    private _title: string = undefined;
+    public _description: string = undefined;
     public ownerBase: TableWidget = undefined;
     private _styleName: string = undefined;
-
+    public get title(): string {
+        return this._title;
+    }
+    public set title(value: string) {
+        this._title = value;
+    }
+    public get description(): string {
+        return this._description;
+    }
+    public set description(value: string) {
+        this._description = value;
+    }
     public get allowAutoFit(): boolean {
         return this.getPropertyValue('allowAutoFit') as boolean;
     }
@@ -266,6 +279,8 @@ export class WTableFormat {
         tableFormat.bidi = this.bidi;
         tableFormat.allowAutoFit = this.allowAutoFit;
         tableFormat.styleName = this.styleName;
+        tableFormat.title = this.title;
+        tableFormat.description = this.description;
         return tableFormat;
     }
     public hasValue(property: string): boolean {
@@ -300,6 +315,12 @@ export class WTableFormat {
             if (!isNullOrUndefined(format.shading)) {
                 this.shading = new WShading(this);
                 (this.shading as WShading).copyFormat(format.shading);
+            }
+            if (!isNullOrUndefined(format.title)) {
+                this.title = format.title;
+            }
+            if (!isNullOrUndefined(format.description)) {
+                this.description = format.description;
             }
         }
     }

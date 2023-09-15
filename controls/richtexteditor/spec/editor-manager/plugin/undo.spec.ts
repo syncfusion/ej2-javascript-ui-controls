@@ -266,8 +266,8 @@ describe('Undo and Redo module', () => {
             });
         });
         it('check after custom tool click', () => {
-            var undoElement = document.querySelector('[title="Undo (Ctrl + Z)"]');
-            var redoElement = document.querySelector('[title="Redo (Ctrl + Y)"]');
+            var undoElement = document.querySelector('[title="Undo (Ctrl+Z)"]');
+            var redoElement = document.querySelector('[title="Redo (Ctrl+Y)"]');
             rteObj.value = 'Markdown content updated';
             rteObj.dataBind();
             rteObj.formatter.saveData();

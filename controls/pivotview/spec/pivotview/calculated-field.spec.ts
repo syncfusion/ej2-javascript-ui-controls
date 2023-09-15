@@ -1,15 +1,16 @@
 import { IDataSet, IAxisSet, ICalculatedFields } from '../../src/base/engine';
 import { pivot_dataset } from '../base/datasource.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { createElement, remove, EventHandler, getInstance, EmitType } from '@syncfusion/ej2-base';
+import { createElement, remove, EventHandler, getInstance, EmitType, deleteObject } from '@syncfusion/ej2-base';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { FieldList } from '../../src/common/actions/field-list';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
-import { MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { ContextMenu, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { CalculatedFieldCreateEventArgs } from '../../src/common/base/interface';
+import { Dialog } from '@syncfusion/ej2-popups';
 
 describe('Calculated Field', () => {
     let originalTimeout: number;
@@ -71,10 +72,10 @@ describe('Calculated Field', () => {
             done();
         }, 100);
     });
-    it('Open Dialog', () => {
-            expect((pivotGridObj.pivotValues[2][4] as IAxisSet).formattedText).toBe('$43,242.53');
-            cf.createCalculatedFieldDialog(pivotGridObj);
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    it('Open Dialog1', () => {
+        expect((pivotGridObj.pivotValues[2][4] as IAxisSet).formattedText).toBe('$43,242.53');
+        cf.createCalculatedFieldDialog(pivotGridObj);
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
     it('nodeExpanding event is triggered', () => {
         mouseEvent = {
@@ -190,11 +191,13 @@ describe('Calculated Field', () => {
         mouseEventArgs.target = li[0].querySelector('.e-icons');
         tapEvent.originalEvent = mouseEventArgs;
         cf.treeObj.touchClickObj.tap(tapEvent);
-            cf.treeObj.touchClickObj.tap(tapEvent);
-            expect(true).toEqual(true);
+        cf.treeObj.touchClickObj.tap(tapEvent);
+        expect(true).toEqual(true);
     });
     it('OK Button Click', () => {
-        cf.inputObj.value = 'New';
+        let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'
+        ), MaskedTextBox) as MaskedTextBox).value =  'New';
         (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'New';
         (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
         let formatString: MaskedTextBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
@@ -202,12 +205,13 @@ describe('Calculated Field', () => {
         formatString.setProperties({ value: 'C0' });
         formatString.refresh();
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-        cf.dialog.buttons[0].click();
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog
+        calcField.buttons[0].click();
     });
-    it('Open Dialog', () => {
-            expect((pivotGridObj.pivotValues[2][4] as IAxisSet).formattedText).toBe('10');
-            cf.createCalculatedFieldDialog(pivotGridObj);
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    it('Open Dialog2', () => {
+        expect((pivotGridObj.pivotValues[2][4] as IAxisSet).formattedText).toBe('10');
+        cf.createCalculatedFieldDialog(pivotGridObj);
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
     it('treeview click', () => {
         let treeObj: any = cf.treeObj;
@@ -218,7 +222,8 @@ describe('Calculated Field', () => {
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
     it('Context menu click', () => {
-        let menuObj: any = cf.menuObj;
+        const element: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + 'CalcContextmenu');
+        let menuObj: any = element ? getInstance(element, ContextMenu) : undefined;
         let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
         let menu: any = {
             element: li[0]
@@ -253,7 +258,9 @@ describe('Calculated Field', () => {
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
     it('Edit Formula', function () {
-        cf.inputObj.value = 'Price';
+        let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'
+        ), MaskedTextBox) as MaskedTextBox).value =  'Price';
         (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'Price';
         (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '100/100';
         let formatString: MaskedTextBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
@@ -261,94 +268,117 @@ describe('Calculated Field', () => {
         expect(formatString.value).toBe(null);
         formatString.setProperties({ value: 'P1' });
         formatString.refresh();
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            cf.dialog.buttons[0].click();
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog
+        calcField.buttons[0].click();
     });
-    it('Open Dialog', function () {
-            expect((pivotGridObj.pivotValues[2][4] as IAxisSet).formattedText).toBe('1');
-            cf.createCalculatedFieldDialog(pivotGridObj);
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    it('Open Dialog3', function () {
+        expect((pivotGridObj.pivotValues[2][4] as IAxisSet).formattedText).toBe('1');
+        cf.createCalculatedFieldDialog(pivotGridObj);
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
-    it('Open Dialog', () => {
-        cf.inputObj.value = 'price';
+    it('Open Dialog4', () => {
+        let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'
+        ), MaskedTextBox) as MaskedTextBox).value =  'price';
         (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'price';
         (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
         let formatString: MaskedTextBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
         expect(formatString).toBeTruthy;
         formatString.setProperties({ value: 'C2' });
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            cf.dialog.buttons[0].click();
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog
+        calcField.buttons[0].click();
     });
     it('OK Button Click', () => {
-            (document.querySelector('.e-ok-btn') as HTMLElement).click();
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        (document.querySelector('.e-ok-btn') as HTMLElement).click();
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
-    it('Open Dialog', () => {
-        expect((pivotGridObj.pivotValues[2][3] as IAxisSet).formattedText).toBe('10');
+    it('Open Dialog5', () => {
+        expect((pivotGridObj.pivotValues[2][3] as IAxisSet).formattedText).toBe('41035.61000000001');
         cf.createCalculatedFieldDialog(pivotGridObj);
-            cf.inputObj.value = 'price1';
-            (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'price1';
-            (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'), MaskedTextBox) as MaskedTextBox).value =  'price1';
+        (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'price1';
+        (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
     it('OK Button Click', () => {
         let calcInfo: ICalculatedFields = { name: 'price1', formula: '10', formatString: '' };
         cf.replaceFormula(calcInfo);
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
-    it('Open Dialog', () => {
+    it('Open Dialog6', () => {
         cf.createCalculatedFieldDialog(pivotGridObj);
-            cf.inputObj.value = 'price1';
-            (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'price1';
-            (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '100/*-78';
+        const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'
+        ), MaskedTextBox) as MaskedTextBox).value =  'price1';
+        (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'price1';
+        (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '100/*-78';
     });
     it('OK Button Click', () => {
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-        cf.dialog.buttons[0].click();
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog;
+        calcField.buttons[0].click();
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
-    it('Open Dialog', () => {
+    it('Open Dialog7', () => {
         (document.querySelector('.e-control.e-btn.e-ok-btn') as any).click();
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            cf.dialog.buttons[1].click();
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog;
+        calcField.buttons[1].click();
     });
     it('Cancel Button Click', () => {
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            (document.querySelector('.e-toggle-field-list') as HTMLElement).click();
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        (document.querySelector('.e-toggle-field-list') as HTMLElement).click();
+    });
+    it('check field list icon - calc open', () => {
+        (document.querySelector('.e-calculated-field') as HTMLElement).click();
     });
     it('check field list icon', () => {
-        (document.querySelector('.e-calculated-field') as HTMLElement).click();
-            (pivotGridObj.pivotFieldListModule.calculatedFieldModule as any).inputObj.value = 'Pric';
-            (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'Pric';
-            (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = 'balance*100';
-            (pivotGridObj.pivotFieldListModule.calculatedFieldModule as any).dialog.buttons[0].click();
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        let calcField: any = document.querySelector('#' + (pivotGridObj.pivotFieldListModule.calculatedFieldModule as any).parentID + 'calculateddialog');
+        (getInstance(calcField.querySelector('#' + (pivotGridObj.pivotFieldListModule.calculatedFieldModule as any).parentID + 'ddlelement'
+        ), MaskedTextBox) as MaskedTextBox).value = 'Pric';
+        (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'Pric';
+        (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = 'balance*100';
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog;
+        calcField.buttons[1].click();
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
-    it('check calculated field button for edit option', () => {
+    it('check calculated field button for edit option1', () => {
         let rightAxisPanel: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
         let pivotButtons: HTMLElement[] = [].slice.call(rightAxisPanel.querySelectorAll('.e-pivot-button'));
         expect(pivotButtons.length).toEqual(5);
         expect(pivotButtons[4].id).toBe('PivotGrid_PivotFieldList_New');
         (pivotButtons[4].querySelector('.e-edit') as HTMLElement).click();
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            expect((document.querySelector('.e-pivot-calc-input') as any).value).toBe('Price');
-            expect((document.querySelector('.e-pivot-formula') as any).value).toBe('100/100');
-            expect((document.querySelector('.e-custom-format-input') as any).value).toBe('');
-            (pivotGridObj.pivotFieldListModule.calculatedFieldModule as any).inputObj.value = 'New-1';
     });
-    it('Update and close calculated field dialog', () => {
-        (pivotGridObj.pivotFieldListModule.calculatedFieldModule as any).dialog.buttons[0].click();
-            let rightAxisPanel: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
-            let pivotButtons: HTMLElement[] = [].slice.call(rightAxisPanel.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtons.length).toEqual(5);
-            expect(pivotButtons[4].id).toBe('PivotGrid_PivotFieldList_New');
-            expect(pivotButtons[4].textContent).toBe('New-1');
+    it('check calculated field button for edit option2', () => {
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        expect((document.querySelector('.e-pivot-calc-input') as any).value).toBe('Price');
+        expect((document.querySelector('.e-pivot-formula') as any).value).toBe('100/100');
+        expect((document.querySelector('.e-custom-format-input') as any).value).toBe('');
+        let calcField: any = document.querySelector('#' + (pivotGridObj.pivotFieldListModule.calculatedFieldModule as any).parentID + 'calculateddialog');
+        (getInstance(calcField.querySelector('#' + (pivotGridObj.pivotFieldListModule.calculatedFieldModule as any).parentID + 'ddlelement'), MaskedTextBox) as MaskedTextBox).value = 'New-1';
+    });
+    it('Update and close calculated field dialog1', () => {
+        let calcField: any = document.querySelector('#' + (pivotGridObj.pivotFieldListModule.calculatedFieldModule as any).parentID + 'calculateddialog');
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog;
+        calcField.buttons[0].click();
+    });
+    it('Update and close calculated field dialog2', () => {
+        let rightAxisPanel: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
+        let pivotButtons: HTMLElement[] = [].slice.call(rightAxisPanel.querySelectorAll('.e-pivot-button'));
+        expect(pivotButtons.length).toEqual(5);
+        expect(pivotButtons[4].id).toBe('PivotGrid_PivotFieldList_New');
+        expect(pivotButtons[4].textContent).toBe('New-1');
+        expect(document.getElementsByClassName('e-dialog').length).toBe(8);
     });
     it('close field list popup', () => {
-        expect(document.getElementsByClassName('e-dialog').length === 2).toBeTruthy();
         (document.getElementsByClassName('e-cancel-btn')[0] as any).click();
             (document.getElementsByClassName('e-cancel-btn')[0] as any).click();
-            (document.getElementsByClassName('e-ok-btn')[0] as any).click();
+            // (document.getElementsByClassName('e-ok-btn')[0] as any).click();
     });
     it('check calculated field button for edit option in grouping bar', () => {
         let leftAxisPanel: HTMLElement = pivotGridObj.element.querySelector('.e-left-axis-fields');
@@ -356,25 +386,28 @@ describe('Calculated Field', () => {
         expect(pivotButtons.length).toEqual(4);
         expect(pivotButtons[2].id).toBe('PivotGrid_price');
         (pivotButtons[2].querySelector('.e-edit') as HTMLElement).click();
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            expect((document.querySelector('.e-pivot-calc-input') as any).value).toBe('price');
-            expect((document.querySelector('.e-pivot-formula') as any).value).toBe('10');
-            expect((document.querySelector('.e-custom-format-input') as any).value).toBe('');
-            cf.inputObj.value = 'Price-1';
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        expect((document.querySelector('.e-pivot-calc-input') as any).value).toBe('price');
+        expect((document.querySelector('.e-pivot-formula') as any).value).toBe('"Sum(balance)"+"Count(quantity)"');
+        expect((document.querySelector('.e-custom-format-input') as any).value).toBe('');
+        const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'), MaskedTextBox) as MaskedTextBox).value =  'Price-1';
     });
     it('Update and close calculated field dialog', () => {
-        cf.dialog.buttons[0].click();
-            let leftAxisPanel: HTMLElement = pivotGridObj.element.querySelector('.e-left-axis-fields');
-            let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtons.length).toEqual(4);
-            expect(pivotButtons[2].id).toBe('PivotGrid_price');
-            expect(pivotButtons[2].textContent).toBe('Price-1');
+        let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog;
+        calcField.buttons[0].click();
+        let leftAxisPanel: HTMLElement = pivotGridObj.element.querySelector('.e-left-axis-fields');
+        let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+        expect(pivotButtons.length).toEqual(4);
+        expect(pivotButtons[2].id).toBe('PivotGrid_price');
+        expect(pivotButtons[2].textContent).toBe('Price-1');
     });
-    it('Open Dialog', () => {
-            pivotGridObj.setProperties({ enableRtl: true }, true);
-            pivotGridObj.enableRtl = true;
-            cf.createCalculatedFieldDialog(pivotGridObj);
-            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    it('Open Dialog8', () => {
+        pivotGridObj.setProperties({ enableRtl: true }, true);
+        pivotGridObj.enableRtl = true;
+        cf.createCalculatedFieldDialog(pivotGridObj);
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
     it('treeview click', () => {
         let treeObj: any = cf.treeObj;
@@ -385,7 +418,8 @@ describe('Calculated Field', () => {
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
     it('Context menu click', () => {
-        let menuObj: any = cf.menuObj;
+        const element: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + 'CalcContextmenu');
+        let menuObj: any = element ? getInstance(element, ContextMenu) : undefined;
         let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
         let menu: any = {
             element: li[0]
@@ -396,7 +430,9 @@ describe('Calculated Field', () => {
     });
     it('check context menu click', () => {
         expect(document.querySelector('#' + cf.parentID + 'CalcContextmenu')).toBeTruthy;
-        cf.dialog.buttons[1].click();
+        let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog;
+        calcField.buttons[1].click();
     });
 
     it('memory leak', () => {

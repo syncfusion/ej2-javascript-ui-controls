@@ -1,0 +1,30 @@
+@include export-module('carousel-material3-icons') {
+  .e-carousel {
+
+    .e-previous-icon::before {
+      content: '\e765';
+    }
+
+    .e-next-icon::before {
+      content: '\e748';
+    }
+
+    .e-play-icon::before {
+      content: '\e70c';
+    }
+
+    .e-pause-icon::before {
+      content: '\e77b';
+    }
+
+    &.e-rtl {
+      .e-previous-icon::before {
+        content: '\e748';
+      }
+
+      .e-next-icon::before {
+        content: '\e765';
+      }
+    }
+  }
+}

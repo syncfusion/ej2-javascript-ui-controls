@@ -1,0 +1,33 @@
+@include export-module('context-menu-material3-icons') {
+
+  /*! contextmenu layout */
+  .e-contextmenu-wrapper,
+  .e-contextmenu-container {
+    @at-root {
+      & ul {
+        & .e-menu-item  {
+          & .e-previous {
+            &::before {
+              content: '\e773';
+            }
+          }
+
+          & .e-caret {
+            &::before {
+              content: '\e748';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-rtl.e-contextmenu-wrapper .e-menu-item,
+  .e-rtl.e-contextmenu-container .e-menu-item {
+    & .e-caret {
+      &::before {
+        content: '\e765';
+      }
+    }
+  }
+}

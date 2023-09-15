@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-charts",
-	"version": "22.2.11",
+	"version": "20.13.0",
 	"description": "Feature-rich chart control with built-in support for over 25 chart types, technical indictors, trendline, zooming, tooltip, selection, crosshair and trackball.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -9,6 +9,7 @@
 		"@syncfusion/ej2-calendars": "*",
 		"@syncfusion/ej2-compression": "*",
 		"@syncfusion/ej2-data": "*",
+		"@syncfusion/ej2-excel-export": "*",
 		"@syncfusion/ej2-file-utils": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-pdf-export": "*",

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { PdfViewer, PdfViewerBase, AjaxHandler } from '../index';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * The `ThumbnailView` module is used to handle thumbnail view navigation of PDF viewer.
@@ -103,54 +103,100 @@ export class ThumbnailView {
             // eslint-disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
-        this.thumbnailRequestHandler = new AjaxHandler(this.pdfViewer);
-        this.thumbnailRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
-        this.thumbnailRequestHandler.responseType = 'json';
-        this.thumbnailRequestHandler.send(jsonObject);
-        // eslint-disable-next-line
-        this.thumbnailRequestHandler.onSuccess = function (result: any) {
+        if (!this.pdfViewerBase.clientSideRendering) {
+            this.thumbnailRequestHandler = new AjaxHandler(this.pdfViewer);
+            this.thumbnailRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
+            this.thumbnailRequestHandler.responseType = 'json';
+            if(proxy.thumbnailLimit > 0 && !isNullOrUndefined(proxy.pdfViewerBase.hashId)){
+                this.thumbnailRequestHandler.send(jsonObject);
+            }
             // eslint-disable-next-line
-            let data: any = result.data;
-            let redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
-            if (!redirect) {
-                if (data) {
-                    if (typeof data !== 'object') {
-                        try {
-                            data = JSON.parse(data);
-                        } catch (error) {
-                            proxy.pdfViewerBase.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderThumbnail);
-                            data = null;
-                        }
-                    }
-                    if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
-                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderThumbnail, data);
-                        proxy.renderThumbnailImage(data);
-                        if (proxy.pdfViewer.isThumbnailViewOpen) {
-                            proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true;
-                            // eslint-disable-next-line max-len
-                            proxy.pdfViewerBase.navigationPane.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Page Thumbnails');
-                            document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
-                            let bookmarkContent: HTMLElement = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
-                            if (bookmarkContent) {
-                                bookmarkContent.style.display = 'none';
-                            }
-                            proxy.pdfViewerBase.navigationPane.setThumbnailSelectionIconTheme();
-                            proxy.pdfViewerBase.navigationPane.updateViewerContainerOnExpand();
-                            proxy.pdfViewerBase.navigationPane.isBookmarkOpen = false;
-                        }
-                    }
+            this.thumbnailRequestHandler.onSuccess = function (result: any) {
+                // eslint-disable-next-line
+                let data: any = result.data;
+                let redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
+                if (!redirect) {
+                    proxy.updateThumbnailCollection(data)
+                }
+            };
+            // eslint-disable-next-line
+            this.thumbnailRequestHandler.onFailure = function (result: any) {
+                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderThumbnail);
+            };
+            // eslint-disable-next-line
+            this.thumbnailRequestHandler.onError = function (result: any) {
+                proxy.pdfViewerBase.openNotificationPopup();
+                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderThumbnail);
+            };
+        } else {
+            for (let pageIndex = proxy.startIndex; pageIndex < proxy.thumbnailLimit; pageIndex++) {
+                this.pdfViewerBase.pdfViewerRunner.postMessage({
+                    pageIndex: pageIndex,
+                    message: 'renderThumbnail'
+                });
+            }
+        }
+    }
+
+    /**
+     * @private
+     */
+    public thumbnailOnMessage(event: any): void {
+        if (event.data.message === 'renderThumbnail') {
+            let canvas: HTMLCanvasElement = document.createElement('canvas');
+            let { value, width, height, pageIndex } = event.data;
+            canvas.width = width;
+            canvas.height = height;
+            const canvasContext = canvas.getContext('2d');
+            const imageData = canvasContext.createImageData(width, height);
+            imageData.data.set(value);
+            canvasContext.putImageData(imageData, 0, 0);
+            let imageUrl: string = canvas.toDataURL();
+            let data = ({
+                thumbnailImage: imageUrl,
+                startPage: this.startIndex,
+                endPage: this.thumbnailLimit,
+                uniqueId: this.pdfViewerBase.documentId,
+                pageIndex: pageIndex
+            });
+            this.updateThumbnailCollection(data)
+        }
+    }
+
+    /**
+   * @param jsonData
+   * @private
+   */
+    // eslint-disable-next-line
+    public updateThumbnailCollection(data: any): void {
+        if (data) {
+            const proxy: ThumbnailView = this;
+            if (typeof data !== 'object') {
+                try {
+                    data = JSON.parse(data);
+                } catch (error) {
+                    proxy.pdfViewerBase.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderThumbnail);
+                    data = null;
                 }
             }
-        };
-        // eslint-disable-next-line
-        this.thumbnailRequestHandler.onFailure = function (result: any) {
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderThumbnail);
-        };
-        // eslint-disable-next-line
-        this.thumbnailRequestHandler.onError = function (result: any) {
-            proxy.pdfViewerBase.openNotificationPopup();
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderThumbnail);
-        };
+            if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderThumbnail, data);
+                proxy.renderThumbnailImage(data);
+                if (proxy.pdfViewer.isThumbnailViewOpen) {
+                    proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true;
+                    // eslint-disable-next-line max-len
+                    proxy.pdfViewerBase.navigationPane.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Page Thumbnails');
+                    document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
+                    let bookmarkContent: HTMLElement = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
+                    if (bookmarkContent) {
+                        bookmarkContent.style.display = 'none';
+                    }
+                    proxy.pdfViewerBase.navigationPane.setThumbnailSelectionIconTheme();
+                    proxy.pdfViewerBase.navigationPane.updateViewerContainerOnExpand();
+                    proxy.pdfViewerBase.navigationPane.isBookmarkOpen = false;
+                }
+            }
+        }
     }
 
     /**
@@ -226,42 +272,7 @@ export class ThumbnailView {
     // eslint-disable-next-line
     private renderThumbnailImage(data: any): void {
         if (this.thumbnailView) {
-            const startPage: number = (data && isNaN(data.startPage)) ? data.startPage : this.startIndex;
-            const endPage: number = (data && isNaN(data.endPage)) ? data.endPage : this.thumbnailLimit;
-            for (let i: number = startPage; i < endPage; i++) {
-                // eslint-disable-next-line max-len
-                const pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + i, attrs: { 'aria-label': 'Thumbnail of Page' + (i + 1), 'tabindex': '-1', 'role': 'link' }, className: 'e-pv-thumbnail-anchor-node' }) as HTMLAnchorElement;
-                // eslint-disable-next-line max-len
-                const thumbnail: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_' + i, className: 'e-pv-thumbnail e-pv-thumbnail-column' });
-                // eslint-disable-next-line max-len
-                this.thumbnailSelectionRing = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + i, className: 'e-pv-thumbnail-selection-ring' });
-                thumbnail.appendChild(this.thumbnailSelectionRing);
-                // eslint-disable-next-line max-len
-                const thumbnailPageNumber: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_pagenumber_' + i, className: 'e-pv-thumbnail-number' });
-                thumbnailPageNumber.textContent = (i + 1).toString();
-                thumbnail.appendChild(thumbnailPageNumber);
-                // eslint-disable-next-line max-len
-                this.thumbnailImage = createElement('img', { id: this.pdfViewer.element.id + '_thumbnail_image_' + i, className: 'e-pv-thumbnail-image' }) as HTMLImageElement;
-                this.thumbnailImage.src = data.thumbnailImage[i];
-                this.thumbnailImage.alt = this.pdfViewer.element.id + '_thumbnail_page_' + i;
-                if (this.pdfViewerBase.pageSize[i] && (this.pdfViewerBase.pageSize[i].height < this.pdfViewerBase.pageSize[i].width)) {
-                    this.thumbnailImage.style.height = '86px';
-                    this.thumbnailImage.style.width = '126px';
-                    thumbnail.style.height = '100px';
-                    thumbnail.style.width = '140px';
-                    pageLink.style.left = '-25px';
-                    pageLink.style.position = 'relative';
-                    thumbnailPageNumber.style.left = '18px';
-                    thumbnailPageNumber.style.position = 'relative';
-                }
-                this.thumbnailSelectionRing.appendChild(this.thumbnailImage);
-                pageLink.appendChild(thumbnail);
-                this.thumbnailView.appendChild(pageLink);
-                this.wireUpEvents();
-                if (i === 0) {
-                    this.setMouseFocusToFirstPage();
-                }
-            }
+            this.pdfViewerBase.clientSideRendering ? this.renderClientThumbnailImage(data) : this.renderServerThumbnailImage(data);
         }
         this.pdfViewerBase.navigationPane.enableThumbnailButton();
         if (this.thumbnailLimit !== this.pdfViewerBase.pageCount && this.thumbnailView) {
@@ -272,6 +283,58 @@ export class ThumbnailView {
             } else {
                 this.createRequestForThumbnails();
             }
+        }
+    }
+
+    // eslint-disable-next-line
+    private renderServerThumbnailImage(data: any) {
+        const startPage: number = (data && isNaN(data.startPage)) ? data.startPage : this.startIndex;
+        const endPage: number = (data && isNaN(data.endPage)) ? data.endPage : this.thumbnailLimit;
+        for (let i: number = startPage; i < endPage; i++) {
+            this.thumbnailImageRender(i, data);
+        }
+    }
+
+    // eslint-disable-next-line
+    private renderClientThumbnailImage(data: any) {
+        const pageIndex: number = data.pageIndex;
+        this.thumbnailImageRender(pageIndex, data);
+    }
+
+    // eslint-disable-next-line
+    private thumbnailImageRender(pageIndex: number, data: any) {
+        // eslint-disable-next-line max-len
+        const pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + pageIndex, attrs: { 'aria-label': 'Thumbnail of Page' + (pageIndex + 1), 'tabindex': '-1', 'role': 'link' }, className: 'e-pv-thumbnail-anchor-node' }) as HTMLAnchorElement;
+        // eslint-disable-next-line max-len
+        const thumbnail: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_' + pageIndex, className: 'e-pv-thumbnail e-pv-thumbnail-column' });
+        // eslint-disable-next-line max-len
+        this.thumbnailSelectionRing = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageIndex, className: 'e-pv-thumbnail-selection-ring' });
+        thumbnail.appendChild(this.thumbnailSelectionRing);
+        // eslint-disable-next-line max-len
+        const thumbnailPageNumber: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_pagenumber_' + pageIndex, className: 'e-pv-thumbnail-number' });
+        thumbnailPageNumber.textContent = (pageIndex + 1).toString();
+        thumbnail.appendChild(thumbnailPageNumber);
+        // eslint-disable-next-line max-len
+        this.thumbnailImage = createElement('img', { id: this.pdfViewer.element.id + '_thumbnail_image_' + pageIndex, className: 'e-pv-thumbnail-image' }) as HTMLImageElement;
+        // eslint-disable-next-line max-len
+        this.thumbnailImage.src = this.pdfViewerBase.clientSideRendering || typeof data.thumbnailImage === 'string' || data.thumbnailImage instanceof String ? data.thumbnailImage : data.thumbnailImage[pageIndex];
+        this.thumbnailImage.alt = this.pdfViewer.element.id + '_thumbnail_page_' + pageIndex;
+        if (this.pdfViewerBase.pageSize[pageIndex] && (this.pdfViewerBase.pageSize[pageIndex].height < this.pdfViewerBase.pageSize[pageIndex].width)) {
+            this.thumbnailImage.style.height = '86px';
+            this.thumbnailImage.style.width = '126px';
+            thumbnail.style.height = '100px';
+            thumbnail.style.width = '140px';
+            pageLink.style.left = '-25px';
+            pageLink.style.position = 'relative';
+            thumbnailPageNumber.style.left = '18px';
+            thumbnailPageNumber.style.position = 'relative';
+        }
+        this.thumbnailSelectionRing.appendChild(this.thumbnailImage);
+        pageLink.appendChild(thumbnail);
+        this.thumbnailView.appendChild(pageLink);
+        this.wireUpEvents();
+        if (pageIndex === 0) {
+            this.setMouseFocusToFirstPage();
         }
     }
 

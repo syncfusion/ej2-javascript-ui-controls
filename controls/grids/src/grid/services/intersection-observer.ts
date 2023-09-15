@@ -10,7 +10,6 @@ export type ScrollDirection = 'up' | 'down' | 'right' | 'left';
  */
 export class InterSectionObserver {
     private containerRect: ClientRect;
-    private movableContainerRect: ClientRect;
     private element: HTMLElement;
     private movableEle: HTMLElement;
     private fromWheel: boolean = false;
@@ -36,10 +35,6 @@ export class InterSectionObserver {
         'right': {
             check: (rect: ClientRect, info: SentinelType) => {
                 const right: number = rect.right;
-                if (this.movableEle) {
-                    info.entered = right < this.movableContainerRect.right;
-                    return right - this.movableContainerRect.width <= this.movableContainerRect.right;
-                }
                 info.entered = right < this.containerRect.right;
                 return right - this.containerRect.width <= this.containerRect.right;
             }, axis: 'X'
@@ -48,9 +43,6 @@ export class InterSectionObserver {
             check: (rect: ClientRect, info: SentinelType) => {
                 const left: number = rect.left;
                 info.entered = left > 0;
-                if (this.movableEle) {
-                    return left + this.movableContainerRect.width >= this.movableContainerRect.left;
-                }
                 return left + this.containerRect.width >= this.containerRect.left;
             }, axis: 'X'
         }
@@ -65,18 +57,10 @@ export class InterSectionObserver {
         this.containerRect = this.options.container.getBoundingClientRect();
         EventHandler.add(this.options.container, 'wheel', () => this.fromWheel = true, this);
         EventHandler.add(this.options.container, 'scroll', this.virtualScrollHandler(callback, onEnterCallback), this);
-        if (this.options.movableContainer) {
-            this.movableContainerRect = this.options.movableContainer.getBoundingClientRect();
-            EventHandler.add(this.options.scrollbar, 'wheel', () => this.fromWheel = true, this);
-            EventHandler.add(this.options.scrollbar, 'scroll', this.virtualScrollHandler(callback, onEnterCallback), this);
-        }
     }
 
     public check(direction: ScrollDirection): boolean {
         const info: SentinelType = this.sentinelInfo[`${direction}`];
-        if (this.movableContainerRect && (direction === 'left' || direction === 'right')) {
-            return info.check(this.movableEle.getBoundingClientRect(), info);
-        }
         return info.check(this.element.getBoundingClientRect(), info);
     }
 
@@ -86,8 +70,8 @@ export class InterSectionObserver {
         const debounced50: Function = debounce(callback, 50);
         this.options.prevTop = this.options.prevLeft = 0;
         return (e: Event) => {
-            const top: number = this.options.movableContainer ? this.options.container.scrollTop : (<HTMLElement>e.target).scrollTop;
-            const left: number = this.options.movableContainer ? this.options.scrollbar.scrollLeft : (<HTMLElement>e.target).scrollLeft;
+            const top: number = (<HTMLElement>e.target).scrollTop;
+            const left: number = (<HTMLElement>e.target).scrollLeft;
             let direction: ScrollDirection = this.options.prevTop < top ? 'down' : 'up';
             direction = this.options.prevLeft === left ? direction : this.options.prevLeft < left ? 'right' : 'left';
             this.options.prevTop = top; this.options.prevLeft = left;
@@ -101,11 +85,7 @@ export class InterSectionObserver {
             this.containerRect = this.options.container.getBoundingClientRect();
             const check: boolean = this.check(direction);
             if (current.entered) {
-                if (this.movableEle && (direction === 'right' || direction === 'left')) {
-                    onEnterCallback(this.movableEle, current, direction, { top: top, left: left }, this.fromWheel, check);
-                } else {
-                    onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
-                }
+                onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
             }
 
             if (check) {

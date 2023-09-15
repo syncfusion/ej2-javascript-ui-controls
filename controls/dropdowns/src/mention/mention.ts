@@ -1065,7 +1065,9 @@ export class Mention extends DropDownBase {
                 this.trigger('opened', eventArgs, (eventArgs: PopupEventArgs) => {
                     if (!eventArgs.cancel) {
                         this.renderReactTemplates();
-                        this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.inputElement : null);
+                        if (this.popupObj) {
+                            this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.inputElement : null);
+                        }
                         if (isNullOrUndefined(this.getTriggerCharPosition())) { return; }
                         coordinates = this.getCoordinates(this.inputElement, this.getTriggerCharPosition());
                         if (!this.isCollided) {
@@ -1798,6 +1800,11 @@ export class Mention extends DropDownBase {
         if (this.inputElement && !this.inputElement.classList.contains('e-' + this.getModuleName())) {
             return;
         }
+        this.previousSelectedLI = null;
+        this.item = null;
+        this.selectedLI = null;
+        this.inputElement.innerText = null;
+        this.popupObj = null;
         super.destroy();
     }
 

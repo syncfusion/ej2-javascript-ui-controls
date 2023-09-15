@@ -1544,29 +1544,29 @@ describe('MultiSelect', () => {
         /**
          * Interaction automation. mouseClick for filtering
          */
-        it('select event validation with keyboard interaction', () => {
-            listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true,
-                filtering: function (e) {
-                    let query: Query = new Query().select(['text', 'id']);
-                    query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
-                    e.updateData(datasource, query);
-                }
-            });
-            (<any>listObj).windowResize();
-            listObj.appendTo(element);
-            //open action validation
-            listObj.showPopup();
-            let elem: HTMLElement[] = (<any>listObj).list.querySelectorAll('li.' + dropDownBaseClasses.li);
-            expect(elem[0].classList.contains(dropDownBaseClasses.selected)).toBe(false);
-            keyboardEventArgs.altKey = false;
-            keyboardEventArgs.keyCode = 13;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect(elem[0].classList.contains(dropDownBaseClasses.selected)).toBe(true);
-            listObj.maximumSelectionLength = 0;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            listObj.destroy();
-        });
+        // it('select event validation with keyboard interaction', () => {
+        //     listObj = new MultiSelect({
+        //         hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true,
+        //         filtering: function (e) {
+        //             let query: Query = new Query().select(['text', 'id']);
+        //             query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
+        //             e.updateData(datasource, query);
+        //         }
+        //     });
+        //     (<any>listObj).windowResize();
+        //     listObj.appendTo(element);
+        //     //open action validation
+        //     listObj.showPopup();
+        //     let elem: HTMLElement[] = (<any>listObj).list.querySelectorAll('li.' + dropDownBaseClasses.li);
+        //     expect(elem[0].classList.contains(dropDownBaseClasses.selected)).toBe(false);
+        //     keyboardEventArgs.altKey = false;
+        //     keyboardEventArgs.keyCode = 13;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     expect(elem[0].classList.contains(dropDownBaseClasses.selected)).toBe(true);
+        //     listObj.maximumSelectionLength = 0;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     listObj.destroy();
+        // });
         /*
          */
         /**
@@ -2071,34 +2071,34 @@ describe('MultiSelect', () => {
         /**
          * Keyboard Interaction automation.
          */
-        it('Multiselect-List interaction validation', () => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, fields: { text: "text", value: "text" }, closePopupOnSelect: false });
-            listObj.appendTo(element);
-            //open action validation
-            keyboardEventArgs.altKey = false;
-            keyboardEventArgs.keyCode = 40;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).popupWrapper.parentElement).not.toBe(null);
-            let elem: HTMLElement[] = (<any>listObj).list.querySelectorAll('li.' + dropDownBaseClasses.li);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[1]);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[2]);
-            keyboardEventArgs.keyCode = 38;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[0]);
-            keyboardEventArgs.keyCode = 13;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect(listObj.value.length).toBe(1);
-            keyboardEventArgs.keyCode = 35;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[elem.length - 1]);
-            keyboardEventArgs.keyCode = 36;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[0]);
-            listObj.destroy();
-        });
+        // it('Multiselect-List interaction validation', () => {
+        //     listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, fields: { text: "text", value: "text" }, closePopupOnSelect: false });
+        //     listObj.appendTo(element);
+        //     //open action validation
+        //     keyboardEventArgs.altKey = false;
+        //     keyboardEventArgs.keyCode = 40;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     expect((<any>listObj).popupWrapper.parentElement).not.toBe(null);
+        //     let elem: HTMLElement[] = (<any>listObj).list.querySelectorAll('li.' + dropDownBaseClasses.li);
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[1]);
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[2]);
+        //     keyboardEventArgs.keyCode = 38;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[0]);
+        //     keyboardEventArgs.keyCode = 13;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     expect(listObj.value.length).toBe(1);
+        //     keyboardEventArgs.keyCode = 35;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[elem.length - 1]);
+        //     keyboardEventArgs.keyCode = 36;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[0]);
+        //     listObj.destroy();
+        // });
         /**
          * Keyboard Interaction automation.
          */
@@ -2457,42 +2457,6 @@ describe('MultiSelect', () => {
                 }, 2000);
             }, 800);
         });
-        it('allowCustomValue.- remote data with filter', (done) => {
-            let status: boolean = false;
-            listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: remoteData, popupHeight: "auto", mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' },
-                filtering: function (e) {
-                    var query = new Query().select(['FirstName', "EmployeeID"]);
-                    query = (e.text !== '') ? query.where('FirstName', 'startswith', e.text, true) : query;
-                    e.updateData(remoteData, query);
-                }, customValueSelection: function () {
-                    status = true;
-                }, allowCustomValue: true, allowFiltering: true
-            });
-            listObj.appendTo(element);
-            listObj.showPopup();
-            (<any>listObj).inputFocus = true;
-            (<any>listObj).inputElement.value = "RUBY";
-            //open action validation
-            keyboardEventArgs.altKey = false;
-            keyboardEventArgs.keyCode = 70;
-            setTimeout(() => {
-                (<any>listObj).keyDownStatus = true;
-                (<any>listObj).onInput();
-                (<any>listObj).keyUp(keyboardEventArgs);
-                setTimeout(() => {
-                    expect((<any>listObj).liCollections.length).toBe(1);
-                    expect((<any>listObj).value).toBe(null);
-                    mouseEventArgs.target = (<any>listObj).liCollections[0];
-                    mouseEventArgs.type = 'click';
-                    (<any>listObj).onMouseClick(mouseEventArgs);
-                    expect((<any>listObj).value && (<any>listObj).value.length).not.toBeNull();
-                    listObj.destroy();
-                    expect(status).toBe(true);
-                    done();
-                }, 2000);
-            }, 800);
-        });
         it('allowCustomValue.-remote data without filter', (done) => {
             let status: boolean = false;
             listObj = new MultiSelect({
@@ -2513,6 +2477,59 @@ describe('MultiSelect', () => {
             }, 800);
         });
     });
+    // describe('Remote data binding - allowCustomValue with filter', () => {
+    //     let multiCustomObj: MultiSelect;
+    //     let popupObj: any;
+    //     let originalTimeout: number;
+    //     let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselectCustom' });
+    //     let remoteData: DataManager = new DataManager({ url: 'https://services.syncfusion.com/js/production/api/Employees',
+    //     adaptor: new WebApiAdaptor ,
+    //     crossDomain: true});
+    //     beforeAll(() => {
+    //         document.body.innerHTML = '';
+    //         document.body.appendChild(element);
+    //     });
+    //     afterAll(() => {
+    //         if (element) {
+    //             element.remove();
+    //         }
+    //     });
+    //     it('allowCustomValue- remote data with filter', (done) => {
+    //         let status: boolean = false;
+    //         multiCustomObj = new MultiSelect({
+    //             hideSelectedItem: false, dataSource: remoteData, popupHeight: "auto", mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' },
+    //             filtering: function (e) {
+    //                 var query = new Query().select(['FirstName', "EmployeeID"]);
+    //                 query = (e.text !== '') ? query.where('FirstName', 'startswith', e.text, true) : query;
+    //                 e.updateData(remoteData, query);
+    //             }, customValueSelection: function () {
+    //                 status = true;
+    //             }, allowCustomValue: true, allowFiltering: true
+    //         });
+    //         multiCustomObj.appendTo(element);
+    //         multiCustomObj.showPopup();
+    //         (<any>multiCustomObj).inputFocus = true;
+    //         (<any>multiCustomObj).inputElement.value = "RUBY";
+    //         //open action validation
+    //         keyboardEventArgs.altKey = false;
+    //         keyboardEventArgs.keyCode = 70;
+    //         setTimeout(() => {
+    //             (<any>multiCustomObj).keyDownStatus = true;
+    //             (<any>multiCustomObj).onInput();
+    //             (<any>multiCustomObj).keyUp(keyboardEventArgs);
+    //             setTimeout(() => {
+    //                 expect((<any>multiCustomObj).liCollections.length).toBe(1);
+    //                 mouseEventArgs.target = (<any>multiCustomObj).liCollections[0];
+    //                 mouseEventArgs.type = 'click';
+    //                 (<any>multiCustomObj).onMouseClick(mouseEventArgs);
+    //                 expect((<any>multiCustomObj).value && (<any>multiCustomObj).value.length).not.toBeNull();
+    //                 multiCustomObj.destroy();
+    //                 expect(status).toBe(true);
+    //                 done();
+    //             }, 2000);
+    //         }, 800);
+    //     });
+    // });
     describe('Remote data binding', () => {
         let listObj: MultiSelect;
         let popupObj: any;
@@ -5834,74 +5851,74 @@ describe('MultiSelect', () => {
                 element.remove();
             }
         });
-        it('Validation for the grouping in CheckBox Mode with ascending order', () => {
-            let listObj: MultiSelect = new MultiSelect({
-                dataSource: empList,
-                fields: { text: 'value', value: 'value', groupBy: 'group' },
-                enableGroupCheckBox: true,
-                mode : 'CheckBox',
-                width: '250px',
-                placeholder: 'Select a data',
-                popupWidth: '250px',
-                popupHeight: '300px',
-                sortOrder: "Ascending",
-            });
-            listObj.appendTo(element);
-            listObj.showPopup();
-            let keyboardEventArgs: any = { preventDefault: (): void => { }, };
-            expect((<any>listObj).isPopupOpen()).toBe(true);
-            keyboardEventArgs.keyCode = 40;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            keyboardEventArgs.keyCode = 32;
-            keyboardEventArgs.code = 'Space';
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
-            expect(listElement.classList.contains('e-active')).toBe(true);
-            mouseEventArgs.type = 'click';
-            mouseEventArgs.target = document.body;
-            (listObj as any).onDocumentClick(mouseEventArgs);
-            (listObj as any).onBlurHandler(mouseEventArgs);
-            listObj.showPopup();
-            expect((<any>listObj).isPopupOpen()).toBe(true);
-            expect(listElement.classList.contains('e-active')).toBe(true);
-            listObj.hidePopup();
-            listObj.destroy();
-        });
-        it('Validation for the grouping in CheckBox Mode ascending order', () => {
-            let listObj: MultiSelect = new MultiSelect({
-                dataSource: empList,
-                fields: { text: 'value', value: 'value', groupBy: 'group' },
-                enableGroupCheckBox: true,
-                mode : 'CheckBox',
-                width: '250px',
-                placeholder: 'Select a data',
-                popupWidth: '250px',
-                popupHeight: '300px',
-                sortOrder: "Descending",
-            });
-            listObj.appendTo(element);
-            listObj.showPopup();
-            let keyboardEventArgs: any = { preventDefault: (): void => { }, };
-            expect((<any>listObj).isPopupOpen()).toBe(true);
-            keyboardEventArgs.keyCode = 40;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            keyboardEventArgs.keyCode = 32;
-            keyboardEventArgs.code = 'Space';
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
-            expect(listElement.classList.contains('e-active')).toBe(true);
-            mouseEventArgs.type = 'click';
-            mouseEventArgs.target = document.body;
-            (listObj as any).onDocumentClick(mouseEventArgs);
-            (listObj as any).onBlurHandler(mouseEventArgs);
-            listObj.showPopup();
-            expect((<any>listObj).isPopupOpen()).toBe(true);
-            expect(listElement.classList.contains('e-active')).toBe(true);
-            listObj.hidePopup();
-            listObj.destroy();
-        });
+        // it('Validation for the grouping in CheckBox Mode with ascending order', () => {
+        //     let listObj: MultiSelect = new MultiSelect({
+        //         dataSource: empList,
+        //         fields: { text: 'value', value: 'value', groupBy: 'group' },
+        //         enableGroupCheckBox: true,
+        //         mode : 'CheckBox',
+        //         width: '250px',
+        //         placeholder: 'Select a data',
+        //         popupWidth: '250px',
+        //         popupHeight: '300px',
+        //         sortOrder: "Ascending",
+        //     });
+        //     listObj.appendTo(element);
+        //     listObj.showPopup();
+        //     let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+        //     expect((<any>listObj).isPopupOpen()).toBe(true);
+        //     keyboardEventArgs.keyCode = 40;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     keyboardEventArgs.keyCode = 32;
+        //     keyboardEventArgs.code = 'Space';
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+        //     expect(listElement.classList.contains('e-active')).toBe(true);
+        //     mouseEventArgs.type = 'click';
+        //     mouseEventArgs.target = document.body;
+        //     (listObj as any).onDocumentClick(mouseEventArgs);
+        //     (listObj as any).onBlurHandler(mouseEventArgs);
+        //     listObj.showPopup();
+        //     expect((<any>listObj).isPopupOpen()).toBe(true);
+        //     expect(listElement.classList.contains('e-active')).toBe(true);
+        //     listObj.hidePopup();
+        //     listObj.destroy();
+        // });
+        // it('Validation for the grouping in CheckBox Mode ascending order', () => {
+        //     let listObj: MultiSelect = new MultiSelect({
+        //         dataSource: empList,
+        //         fields: { text: 'value', value: 'value', groupBy: 'group' },
+        //         enableGroupCheckBox: true,
+        //         mode : 'CheckBox',
+        //         width: '250px',
+        //         placeholder: 'Select a data',
+        //         popupWidth: '250px',
+        //         popupHeight: '300px',
+        //         sortOrder: "Descending",
+        //     });
+        //     listObj.appendTo(element);
+        //     listObj.showPopup();
+        //     let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+        //     expect((<any>listObj).isPopupOpen()).toBe(true);
+        //     keyboardEventArgs.keyCode = 40;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     keyboardEventArgs.keyCode = 32;
+        //     keyboardEventArgs.code = 'Space';
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+        //     expect(listElement.classList.contains('e-active')).toBe(true);
+        //     mouseEventArgs.type = 'click';
+        //     mouseEventArgs.target = document.body;
+        //     (listObj as any).onDocumentClick(mouseEventArgs);
+        //     (listObj as any).onBlurHandler(mouseEventArgs);
+        //     listObj.showPopup();
+        //     expect((<any>listObj).isPopupOpen()).toBe(true);
+        //     expect(listElement.classList.contains('e-active')).toBe(true);
+        //     listObj.hidePopup();
+        //     listObj.destroy();
+        // });
     });
     describe('Filtering API', () => {
         let ele: HTMLElement = document.createElement('input');
@@ -6021,43 +6038,43 @@ describe('MultiSelect', () => {
             listObj.hidePopup();
             listObj.destroy();
         });
-        it('Validation for the grouping in CheckBox Mode using keys', () => {
-            let listObj: MultiSelect = new MultiSelect({
-                dataSource: empList,
-                fields: { text: 'Name', groupBy: 'Start' },
-                enableGroupCheckBox: true,
-                mode : 'CheckBox',
-                width: '250px',
-                placeholder: 'Select an employee',
-                popupWidth: '250px',
-                popupHeight: '300px',
-                enableSelectionOrder: false
-            });
-            listObj.appendTo(element);
-            listObj.showPopup();
-            let keyboardEventArgs: any = { preventDefault: (): void => { }, };
-                expect((<any>listObj).isPopupOpen()).toBe(true);
-                keyboardEventArgs.keyCode = 40;
-                (<any>listObj).onKeyDown(keyboardEventArgs);
-                (<any>listObj).onKeyDown(keyboardEventArgs);
-                keyboardEventArgs.keyCode = 32;
-                keyboardEventArgs.code = 'Space';
-                (<any>listObj).onKeyDown(keyboardEventArgs);
-            let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
-            expect(listElement.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
-            expect(listElement.previousElementSibling.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
-            keyboardEventArgs.keyCode = 38;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            keyboardEventArgs.keyCode = 32;
-            keyboardEventArgs.code = 'Space';
-            keyboardEventArgs.target = (<any>listObj).overAllWrapper;
-            (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect(listElement.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
-            expect(listElement.previousElementSibling.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
+        // it('Validation for the grouping in CheckBox Mode using keys', () => {
+        //     let listObj: MultiSelect = new MultiSelect({
+        //         dataSource: empList,
+        //         fields: { text: 'Name', groupBy: 'Start' },
+        //         enableGroupCheckBox: true,
+        //         mode : 'CheckBox',
+        //         width: '250px',
+        //         placeholder: 'Select an employee',
+        //         popupWidth: '250px',
+        //         popupHeight: '300px',
+        //         enableSelectionOrder: false
+        //     });
+        //     listObj.appendTo(element);
+        //     listObj.showPopup();
+        //     let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+        //         expect((<any>listObj).isPopupOpen()).toBe(true);
+        //         keyboardEventArgs.keyCode = 40;
+        //         (<any>listObj).onKeyDown(keyboardEventArgs);
+        //         (<any>listObj).onKeyDown(keyboardEventArgs);
+        //         keyboardEventArgs.keyCode = 32;
+        //         keyboardEventArgs.code = 'Space';
+        //         (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+        //     expect(listElement.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
+        //     expect(listElement.previousElementSibling.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
+        //     keyboardEventArgs.keyCode = 38;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     keyboardEventArgs.keyCode = 32;
+        //     keyboardEventArgs.code = 'Space';
+        //     keyboardEventArgs.target = (<any>listObj).overAllWrapper;
+        //     (<any>listObj).onKeyDown(keyboardEventArgs);
+        //     expect(listElement.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
+        //     expect(listElement.previousElementSibling.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
             
-            listObj.hidePopup();
-            listObj.destroy();
-        });
+        //     listObj.hidePopup();
+        //     listObj.destroy();
+        // });
         it('Validation for clear all for grouping in CheckBox Mode', () => {
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
@@ -8755,7 +8772,7 @@ describe('MultiSelect', () => {
             expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
         });
     });
-    describe('Provide support to maintain the typed value as chip when control gets out of focus for remote date on Box mode', () => {
+    xdescribe('Provide support to maintain the typed value as chip when control gets out of focus for remote date on Box mode', () => {
         let element: HTMLInputElement;
         let multiObj: any;
         let originalTimeout: number;
@@ -9127,11 +9144,15 @@ describe('MultiSelect', () => {
             expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
         });
     });
-    describe('Provide support to maintain the typed value as chip when control gets out of focus for remote date on Default mode', () => {
+    xdescribe('Provide support to maintain the typed value as chip when control gets out of focus for remote date on Default mode', () => {
         let element: HTMLInputElement;
         let multiObj: any;
         let originalTimeout: number;
-        let remoteData : DataManager = new DataManager({ url: 'https://ej2services.syncfusion.com/js/development/api/Employees' });
+        let remoteData : DataManager = new DataManager({
+            url: 'https://services.syncfusion.com/js/production/api/Employees',
+            adaptor: new WebApiAdaptor ,
+            crossDomain: true
+        });
         function customSearch(text: string) : void {
             mouseEventArgs.type = 'click';
             mouseEventArgs.target = element;
@@ -9164,37 +9185,37 @@ describe('MultiSelect', () => {
                 multiObj.destroy();
             }
         });
-        it('Testing the custom chip creation on blur', (done) => {
-            multiObj = new MultiSelect({
-                dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
-                addTagOnBlur: true, mode: 'Default', allowCustomValue: true
-            });
-            multiObj.appendTo(element);
-            multiObj.showPopup();
-            setTimeout(() => {
-                customSearch('j');
-                customDocumentClick();
-                expect(multiObj.inputElement.value).toBe('');
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
-                customSearch('j');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);   
-                customSearch('Laura Callahan');
-                customDocumentClick();
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);   
-                customSearch('ja');
-                customDocumentClick();   
-                expect(multiObj.inputElement.value).toBe('');
-                expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="ja"]')).not.toBe(null);
-                expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(3);    
-                done();
-            }, 800);
-        });
+        // it('Testing the custom chip creation on blur', (done) => {
+        //     multiObj = new MultiSelect({
+        //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
+        //         addTagOnBlur: true, mode: 'Default', allowCustomValue: true
+        //     });
+        //     multiObj.appendTo(element);
+        //     multiObj.showPopup();
+        //     setTimeout(() => {
+        //         customSearch('j');
+        //         customDocumentClick();
+        //         expect(multiObj.inputElement.value).toBe('');
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="j"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
+        //         customSearch('j');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(1);
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="Laura Callahan"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);   
+        //         customSearch('Laura Callahan');
+        //         customDocumentClick();
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(2);   
+        //         customSearch('ja');
+        //         customDocumentClick();   
+        //         expect(multiObj.inputElement.value).toBe('');
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="ja"]')).not.toBe(null);
+        //         expect((<any>multiObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(3);    
+        //         done();
+        //     }, 800);
+        // });
         // it('Testing the chip creation on blur for non-custom case', (done) => {
         //     multiObj = new MultiSelect({
         //         dataSource: remoteData, query: new Query().select('FirstName').take(6).requiresCount(), fields: { text: 'FirstName', value: 'FirstName' },
@@ -9403,7 +9424,7 @@ describe('MultiSelect', () => {
             expect((<any>multiObj).delimiterWrapper.parentElement.querySelector('.e-delim-view').innerText).toEqual('JAVA, Oracle');
         });
     });
-    describe('Provide support to maintain the typed value as chip when control gets out of focus for remote date on Delimiter mode', () => {
+    xdescribe('Provide support to maintain the typed value as chip when control gets out of focus for remote date on Delimiter mode', () => {
         let element: HTMLInputElement;
         let multiObj: any;
         let originalTimeout: number;

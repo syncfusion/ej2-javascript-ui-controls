@@ -16,6 +16,7 @@ export class Dependency {
     private parentRecord: IParent[] = [];
     private parentIds: string[] = [];
     private parentPredecessors: IGanttData[] = [];
+    private validatedParentIds: string[] = [];
     public isValidatedParentTaskID: string;
     constructor(gantt: Gantt) {
         this.parent = gantt;
@@ -624,13 +625,31 @@ export class Dependency {
      * @private
      */
     public createConnectorLinesCollection(records?: IGanttData[]): void {
-        const ganttRecords: IGanttData [] = records ? records : this.parent.currentViewData;
+        let ganttRecords: IGanttData [] = records ? records : this.parent.currentViewData;
+        if(this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings &&
+             this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth && this.parent.pdfExportModule.isPdfExport) {
+            ganttRecords = this.parent.pdfExportModule.helper.beforeSinglePageExport['cloneCurrentViewData'];
+        }
         const recordLength: number = ganttRecords.length;
         let count: number; let ganttRecord: IGanttData;
         let predecessorsCollection: object[];
-        this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
-            this.parent.updatedRecords : this.parent.getExpandedRecords(this.parent.updatedRecords);
+        if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth && this.parent.pdfExportModule.isPdfExport) {
+            this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+                this.parent.pdfExportModule.helper.beforeSinglePageExport['cloneFlatData'] : this.parent.getExpandedRecords(this.parent.pdfExportModule.helper.beforeSinglePageExport['cloneFlatData']);
+        }
+        else {
+            this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+                this.parent.updatedRecords : this.parent.getExpandedRecords(this.parent.updatedRecords);
+        }
         for (count = 0; count < recordLength; count++) {
+            if (this.parent.editModule && this.parent.editModule.deletedTaskDetails.length > 0) {
+                if (ganttRecords[count as number].parentItem) {
+                   const parentItem: IGanttData = this.parent.getRecordByID(ganttRecords[count as number].parentItem.taskId.toString());
+                   this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentItem), ganttRecords[count as number]);
+                }
+                ganttRecords[count as number].index = count;
+            }
             ganttRecord = ganttRecords[count as number];
             predecessorsCollection = ganttRecord.ganttProperties.predecessor;
             if (predecessorsCollection) {
@@ -765,35 +784,33 @@ export class Dependency {
                 }
                 if (record) { this.validatePredecessor(record, undefined, 'successor'); }
             }
-            if (record && record.ganttProperties.taskId !== this.isValidatedParentTaskID && ganttProp) {
-                let validUpdate: boolean = false;
-                let predecessorNames: number | string | object[] = ganttProp.ganttProperties.predecessorsName ?
-                    (ganttProp.ganttProperties.predecessorsName as string).split(',').length : ganttProp.ganttProperties.predecessorsName;
-                let predecessorLength: number | IPredecessor[] = ganttProp.ganttProperties.predecessor ?
-                    ganttProp.ganttProperties.predecessor.length : ganttProp.ganttProperties.predecessor;
-                if ((predecessorLength && predecessorNames !== predecessorLength)) {
-                    validUpdate = true;
-                }
-                else if (record.hasChildRecords && record.ganttProperties.predecessor.length > 0 && ganttProp.hasChildRecords && !ganttProp.ganttProperties.predecessor) {
-                    validUpdate = true;
-                }
-                if ((taskBarModule.taskBarEditAction !== 'ParentDrag' && taskBarModule.taskBarEditAction !== 'ChildDrag')) {
-                    if (!ganttProp.hasChildRecords && record.hasChildRecords) {
+            if (record && !record.hasChildRecords && record.parentItem && this.validatedParentIds.indexOf(record.parentItem.taskId) == -1) {
+                this.validatedParentIds.push(record.parentItem.taskId);
+            };
+            let validUpdate: boolean = true;
+            if (record && record.hasChildRecords && this.validatedParentIds.indexOf(record.ganttProperties.taskId.toString()) !== -1) {
+                validUpdate = false;
+            }
+            if (validUpdate) {
+                if (record && record.ganttProperties.taskId !== this.isValidatedParentTaskID && ganttProp) {
+                    if ((taskBarModule.taskBarEditAction !== 'ParentDrag' && taskBarModule.taskBarEditAction!== 'ChildDrag')) {
+                        if (!ganttProp.hasChildRecords && record.hasChildRecords) {
+                            this.parent.editModule['updateChildItems'](record);
+                            this.isValidatedParentTaskID = record.ganttProperties.taskId;
+                        }
+                    }
+                    else if ((!record.hasChildRecords && taskBarModule.taskBarEditAction == 'ChildDrag') ||
+                        (record.hasChildRecords && taskBarModule.taskBarEditAction == 'ParentDrag')) {
                         this.parent.editModule['updateChildItems'](record);
                         this.isValidatedParentTaskID = record.ganttProperties.taskId;
                     }
+                    if (!ganttProp.hasChildRecords) {
+                        this.parent.dataOperation.updateParentItems(record, true);
+                    }
                 }
-                else if ((record.hasChildRecords && taskBarModule.taskBarEditAction == 'ChildDrag') ||
-                       (validUpdate && taskBarModule.taskBarEditAction == 'ParentDrag')) {
-                        this.parent.editModule['updateChildItems'](record);
-                        this.isValidatedParentTaskID = record.ganttProperties.taskId;
-                }
-                if (!ganttProp.hasChildRecords) {
-                    this.parent.dataOperation.updateParentItems(record, true);
-                }
-            }
-            else if (record && record.hasChildRecords && !ganttProp) {
+                else if (record && record.hasChildRecords && !ganttProp) {
                     this.parent.editModule['updateChildItems'](record);
+                }
             }
         }
     }

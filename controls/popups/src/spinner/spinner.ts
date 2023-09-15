@@ -855,7 +855,6 @@ function showHideSpinner(container: HTMLElement, isHide: boolean): void {
             else {
                 spinnerWrap = Array.from(spinWrapCollection).find((wrap) => wrap.parentElement === container) || null;
             }
-
         }
     }
     if (container && spinnerWrap) {

@@ -455,6 +455,7 @@ export class BubbleTooltipData {
     public bubbleData: number;
     /** Defines the type of the bubble heatmap. */
     public valueType: string;
+    // eslint-disable-next-line valid-jsdoc
     /**
      * @private
      */

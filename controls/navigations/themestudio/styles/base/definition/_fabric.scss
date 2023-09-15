@@ -1,0 +1,153 @@
+$theme-primary: #0078d6 !default;
+$theme-dark-alt: darken($theme-primary, 3%) !default;
+$theme-dark: darken($theme-primary, 10%) !default;
+$theme-darker: darken($theme-primary, 18%) !default;
+$theme-secondary: lighten($theme-primary, 3%) !default;
+$theme-tertiary: lighten($theme-primary, 21%) !default;
+$theme-light: lighten($theme-primary, 44%) !default;
+$theme-lighter: lighten($theme-primary, 49%) !default;
+$theme-lighter-alt: lighten($theme-primary, 55%) !default;
+$neutral-white: #fff !default;
+$neutral-lighter-alt: #f8f8f8 !default;
+$neutral-lighter: #f4f4f4 !default;
+$neutral-light: #eaeaea !default;
+$neutral-quintenaryalt: #dadada !default;
+$neutral-quintenary: #d0d0d0 !default;
+$neutral-tertiary-alt: #c8c8c8 !default;
+$neutral-tertiary: #a6a6a6 !default;
+$neutral-secondary-alt: #767676 !default;
+$neutral-secondary: #666 !default;
+$neutral-primary: #333 !default;
+$neutral-dark: #212121 !default;
+$neutral-black: #000 !default;
+$alert-bg: #deecf9 !default;
+$error-bg: #fde7e9 !default;
+$success-bg: #dff6dd !default;
+$theme-dark-font: #fff !default;
+$theme-primary-font: #fff !default;
+$theme-light-font: #333 !default;
+$neutral-light-font: #333 !default;
+$neutral-light-fontalt: #000 !default;
+$grey-dark-font: #fff !default;
+$base-font: #333 !default;
+$message-font: #333 !default;
+$alert-font: #d83b01 !default;
+$error-font: #a80000 !default;
+$success-font: #107c10 !default;
+$shadow: #000 !default;
+$skin-name: 'fabric' !default;
+$theme-name: 'fabric' !default;
+
+//Message component
+
+//Message Default
+$msg-color: $theme-light-font !default;
+$msg-bg-color: $neutral-lighter !default;
+$msg-border-color: $neutral-lighter !default;
+$msg-color-alt1: $theme-light-font !default;
+$msg-bg-color-alt1: transparent !default;
+$msg-border-color-alt1: $neutral-quintenaryalt !default;
+$msg-color-alt2: $neutral-white !default;
+$msg-bg-color-alt2: $neutral-secondary-alt !default;
+$msg-border-color-alt2: $msg-bg-color-alt2 !default;
+
+$msg-icon-color: $theme-light-font !default;
+$msg-icon-color-alt1: $theme-light-font !default;
+$msg-icon-color-alt2: $neutral-white !default;
+
+$msg-close-icon-color: $neutral-secondary !default;
+$msg-close-icon-color-alt1: $neutral-secondary !default;
+$msg-close-icon-color-alt2: $neutral-white !default;
+
+//Message success
+$msg-success-color: $theme-light-font !default;
+$msg-success-bg-color:#dff6dd !default;
+$msg-success-border-color:#dff6dd !default;
+$msg-success-color-alt1: #107c10 !default;
+$msg-success-bg-color-alt1: transparent !default;
+$msg-success-border-color-alt1: $msg-success-color-alt1 !default;
+$msg-success-color-alt2: $neutral-white !default;
+$msg-success-bg-color-alt2: $msg-success-color-alt1 !default;
+$msg-success-border-color-alt2: $msg-success-color-alt1 !default;
+
+$msg-success-icon-color: #107c10 !default;
+$msg-success-icon-color-alt1: #107c10 !default;
+$msg-success-icon-color-alt2: $neutral-white !default;
+
+$msg-success-close-icon-color: $neutral-secondary !default;
+$msg-success-close-icon-color-alt1: $neutral-secondary !default;
+$msg-success-close-icon-color-alt2: $neutral-white !default;
+
+//Message warning
+$msg-warning-color: $theme-light-font !default;
+$msg-warning-bg-color: #fff4ce !default;
+$msg-warning-border-color: $msg-warning-bg-color !default;
+$msg-warning-color-alt1: darken($msg-warning-bg-color, 64%) !default;
+$msg-warning-bg-color-alt1: transparent !default;
+$msg-warning-border-color-alt1: darken($msg-warning-bg-color, 50%) !default;
+$msg-warning-color-alt2: $neutral-white !default;
+$msg-warning-bg-color-alt2: darken($msg-warning-bg-color, 64%) !default;
+$msg-warning-border-color-alt2: darken($msg-warning-bg-color, 64%) !default;
+
+$msg-warning-icon-color: darken($msg-warning-bg-color, 64%) !default;
+$msg-warning-icon-color-alt1: darken($msg-warning-bg-color, 64%) !default;
+$msg-warning-icon-color-alt2: $neutral-white !default;
+
+$msg-warning-close-icon-color: $neutral-secondary !default;
+$msg-warning-close-icon-color-alt1: $neutral-secondary !default;
+$msg-warning-close-icon-color-alt2: $neutral-white !default;
+
+//Message Danger
+$msg-danger-color: $theme-light-font !default;
+$msg-danger-bg-color: #fde7e9 !default;
+$msg-danger-border-color:$msg-danger-bg-color !default;
+$msg-danger-color-alt1: #a80000 !default;
+$msg-danger-bg-color-alt1: transparent !default;
+$msg-danger-border-color-alt1: #a80000 !default;
+$msg-danger-color-alt2: $neutral-white !default;
+$msg-danger-bg-color-alt2: #a80000 !default;
+$msg-danger-border-color-alt2: $msg-danger-bg-color-alt2 !default;
+
+$msg-danger-icon-color: #a80000 !default;
+$msg-danger-icon-color-alt1: #a80000 !default;
+$msg-danger-icon-color-alt2: $neutral-white !default;
+
+$msg-danger-close-icon-color: $neutral-secondary !default;
+$msg-danger-close-icon-color-alt1: $neutral-secondary !default;
+$msg-danger-close-icon-color-alt2: $neutral-white !default;
+
+//Message Info
+$msg-info-color: $theme-light-font !default;
+$msg-info-bg-color:#cdf4fc !default;
+$msg-info-border-color: $msg-info-bg-color !default;
+$msg-info-color-alt1: darken($msg-info-bg-color, 65%) !default;
+$msg-info-bg-color-alt1: transparent !default;
+$msg-info-border-color-alt1: darken($msg-info-bg-color, 65%) !default;
+$msg-info-color-alt2: $neutral-white !default;
+$msg-info-bg-color-alt2: darken($msg-info-bg-color, 65%) !default;
+$msg-info-border-color-alt2: darken($msg-info-bg-color, 65%) !default;
+
+$msg-info-icon-color: darken($msg-info-bg-color, 65%) !default;
+$msg-info-icon-color-alt1: darken($msg-info-bg-color, 65%) !default;
+$msg-info-icon-color-alt2: $neutral-white !default;
+
+$msg-info-close-icon-color: $neutral-secondary !default;
+$msg-info-close-icon-color-alt1: $neutral-secondary !default;
+$msg-info-close-icon-color-alt2: $neutral-white !default;
+
+//App bar
+//Light
+$appbar-bg-color-alt1: $neutral-lighter !default;
+$appbar-color-alt1: $neutral-primary !default;
+$appbar-border-color-alt1: $neutral-lighter !default;
+$appbar-hover-bg-color-alt1: rgba(transparent, .056) !default;
+
+//Dark
+$appbar-bg-color-alt2: $neutral-primary !default;
+$appbar-color-alt2: $neutral-lighter !default;
+$appbar-border-color-alt2: $neutral-primary !default;
+$appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08) !default;
+
+//shadow
+$appbar-bottom-shadow: none !default;
+$appbar-top-shadow: none !default;

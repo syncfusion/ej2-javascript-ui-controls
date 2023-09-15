@@ -755,7 +755,7 @@ describe('Frozen Columns With Editing', () => {
           'bubbles': true,
           'cancelable': true
         });
-        gridObj.getCellFromIndex(0, 2).dispatchEvent(event);
+        gridObj.getCellFromIndex(0, 1).dispatchEvent(event);
         gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
         expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
@@ -818,7 +818,7 @@ describe('Frozen Columns With Editing', () => {
           'bubbles': true,
           'cancelable': true
         });
-        gridObj.getCellFromIndex(0, 2).dispatchEvent(event);
+        gridObj.getCellFromIndex(0, 1).dispatchEvent(event);
         gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
         expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
@@ -828,8 +828,6 @@ describe('Frozen Columns With Editing', () => {
         destroy(gridObj);
       });
     });
-
-
 
     describe('FlatData Frozen - Batch Add', () => {
       let gridObj: TreeGrid;
@@ -1311,7 +1309,6 @@ describe('Frozen Columns With Editing', () => {
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
   });
 
-  
   describe('While add the record showing script error', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;

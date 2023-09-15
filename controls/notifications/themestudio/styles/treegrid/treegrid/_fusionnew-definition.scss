@@ -1,0 +1,28 @@
+// color
+$treegrid-right-arrow-icon-color: $icon-color !default;
+$treegrid-right-arrow-hover-color: $icon-color-hover !default;
+$childborder-color: $primary !default;
+$error-elem-color: $danger !default;
+
+// Layout
+
+$error-elem-content: '\e839' !default;
+$treegrid-right-arrow-icon-font-size: 18px !default;
+$treegrid-right-arrow-icon-padding: 0 !default;
+$treegrid-right-arrow-icon-vertical-align: unset;
+$treegrid-right-arrow-icon-height: 18px !default;
+$treegrid-right-arrow-icon-width: 16px !default;
+$treegrid-bigger-icon-size: 22px !default;
+$treegrid-smaller-icon-size: 16px !default;
+$treegrid-bigger-icon-font-size: 22px !default;
+$treegrid-frame-bigger-icon-height: 18px !default;
+$treegrid-frame-bigger-icon-width: 18px !default;
+$treegrid-frame-icon-height: 16px !default;
+$treegrid-frame-icon-width: 16px !default;
+$treegrid-content-right-padding: 21px !default;
+$treegrid-rowdrag-childborder-border: 2px solid #4f46e5;
+$treegrid-rowdd-topbottom-border: 2px solid #4f46e5 !default;
+$treegrid-rowdd-boxshadow: $primary !default;
+$treegrid-rowdd-childborder-width: 2px 0 0 !default;
+$treegrid-lastrowdd-childborder-width: 2px 0 !default;
+$treegrid-rtl-rowdd-childborder-width: 2px 0 2px 0 !default;

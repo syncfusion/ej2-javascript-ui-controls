@@ -29,6 +29,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * > Specify the `type` value as `custom` to use custom aggregation.
      *
      * @default null
+     * @aspType string
      */
     @Property()
     public type: AggregateType | AggregateType[] | string;

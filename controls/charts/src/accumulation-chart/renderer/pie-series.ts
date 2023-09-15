@@ -10,7 +10,7 @@ import { degreeToLocation, getElement, linear, stringToNumber, indexFinder } fro
 import { PieBase } from '../renderer/pie-base';
 import { AccumulationChart } from '../accumulation';
 import { AnimationModel } from '../../common/model/base-model';
-import { Animation, AnimationOptions, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, animationMode, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Index } from '../../common/model/base';
 /**
  * PieSeries module used to render `Pie` Series.
@@ -171,7 +171,7 @@ export class PieSeries extends PieBase {
      */
     public animateSeries(accumulation: AccumulationChart, option: AnimationModel, series: AccumulationSeries, slice: Element): void {
         const groupId: string = accumulation.element.id + 'SeriesGroup' + series.index;
-        if (series.animation.enable && accumulation.animateSeries) {
+        if (((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && accumulation.animateSeries) {
             const clippath: Element = accumulation.renderer.createClipPath({ id: groupId + '_clipPath' });
             const path: PathOption = new PathOption(groupId + '_slice', 'transparent', 1, 'transparent', 1, '', '');
             const clipslice: Element = accumulation.renderer.drawPath(path);

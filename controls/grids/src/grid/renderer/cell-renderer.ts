@@ -3,7 +3,7 @@ import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { ICellRenderer, IValueFormatter, ICellFormatter, IGrid, ICell } from '../base/interface';
-import { doesImplementInterface, setStyleAndAttributes, appendChildren, extendObjWithFn } from '../base/util';
+import { doesImplementInterface, setStyleAndAttributes, appendChildren, extendObjWithFn, addStickyColumnPosition } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { foreignKeyData } from '../base/constant';
@@ -65,7 +65,7 @@ export class CellRenderer implements ICellRenderer<Column> {
     public evaluate(node: Element, cell: Cell<Column>, data: Object, attributes?: Object, fData?: Object, isEdit?: boolean): boolean {
         let result: Element[];
         if (cell.column.template) {
-            const isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string'  && cell.column.template.prototype && !(cell.column.template.prototype).CSPTemplate;
+            const isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string' && cell.column.template.prototype && !(cell.column.template.prototype).CSPTemplate;
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             const literals: string[] = ['index'];
@@ -178,7 +178,7 @@ export class CellRenderer implements ICellRenderer<Column> {
 
     private refreshCell(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }, isEdit?: boolean): Element {
         const node: Element = this.element.cloneNode() as Element;
-        const column: Column = cell.column;
+        let column: Column = cell.column;
         let fData: Object;
         if (cell.isForeignKey) {
             fData = cell.foreignKeyData[0] || { [column.foreignKeyValue]: column.format ? null : '' };
@@ -241,6 +241,13 @@ export class CellRenderer implements ICellRenderer<Column> {
             }
             node.appendChild(checkWrap);
             node.setAttribute('aria-label', checked + this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
+        }
+        if (node.classList.contains('e-summarycell') && !(<{key?: string}>data).key) {
+            const uid: string = node.getAttribute('e-mappinguid');
+            column = this.parent.getColumnByUid(uid);
+        }
+        if (this.parent.isFrozenGrid() && (!data || (data && !(<{key?: string}>data).key))) {
+            addStickyColumnPosition(this.parent, column, node);
         }
 
         return node;

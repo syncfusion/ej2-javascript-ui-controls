@@ -9,13 +9,13 @@ import { Group } from '../../../src/grid/actions/group';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { ForeignKey } from '../../../src/grid/actions/foreign-key';
-import { data, employeeData, customerData } from '../base/datasource.spec';
+import { data, employeeData, customerData, image } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
 import { createGrid, destroy} from '../base/specutil.spec';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Workbook } from '@syncfusion/ej2-excel-export';
-import { ExcelRow, ExcelExportProperties } from '../../../src';
+import { ExcelRow, ExcelExportProperties, ExportDetailTemplateEventArgs } from '../../../src';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Page, Group, Selection, Toolbar, ExcelExport, DetailRow, ForeignKey);
@@ -400,6 +400,621 @@ describe('excel Export =>', () => {
                 done();
             });  
             gridObj.excelExport();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('Excel export cell customization', () => {
+        let gridObj: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    allowExcelExport: true,
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: '120px' },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '150'
+                        },
+                        { field: 'Freight', headerText: 'Freight', textAlign: 'Right', width: 120, format: 'C2' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                        { field: 'ShipRegion', width: 140 },
+                        { field: 'Verified', headerTextAlign: 'Justify', width: 140 },
+                    ],
+                }, done);
+        });
+
+        it('Customize cell using events', (done) => {
+            gridObj.excelHeaderQueryCellInfo = (args) => {
+                if (args.gridCell.column.field === 'OrderID') {
+                    args.image = {
+                        height: 70,
+                        base64: image,
+                        width: 70,
+                    };
+                }
+                if (args.gridCell.column.field === 'CustomerID') {
+                    args.hyperLink = {
+                        target: 'mailto:nancy@domain.com',
+                        displayText: 'CustomerID'
+                    };
+                }
+                if (args.gridCell.column.field === 'ShipCountry') {
+                    args.style = {
+                        rotation: 90
+                    };
+                }
+                if (args.gridCell.column.field === 'Verified') {
+                    args.style = {
+                        rotation: 270
+                    };
+                }
+                if (args.gridCell.column.field === 'ShipRegion') {
+                    args.style = {
+                        rotation: 180
+                    };
+                }
+            }
+            gridObj.excelQueryCellInfo = (args) => {
+                if (args.column.field === 'OrderID') {
+                    args.image = {
+                        height: 70,
+                        base64: image,
+                        width: 70,
+                    };
+
+                }
+                if (args.column.field === 'CustomerID') {
+                    args.hyperLink = {
+                        target: 'mailto:' + args.data['CustomerID'] + '@domain.com',
+                        displayText: args.data['CustomerID']
+                    };
+                }
+                if (args.column.field === 'ShipCountry') {
+                    args.colSpan = 2;
+                    args.style = {
+                        backColor: '#99ffcc',
+                        fontColor: '#C25050',
+                        hAlign: 'Left',
+                        vAlign: 'Top',
+                        italic: true,
+                        bold: true,
+                        underline: true,
+                        strikeThrough: true,
+                        border: { color: '#C25050' }
+                    };
+                }
+            }
+            gridObj.excelExport({}, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('Aggregate excel export', () => {
+        let gridObj: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    allowExcelExport: true,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['ShipRegion', 'ShipCountry'] },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: '120px' },
+                        {
+                            field: 'OrderDate', headerText: 'Order Date', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '15%', format: 'yMd'
+                        },
+                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                        { field: 'ShipRegion', width: 140 },
+                        { field: 'Verified', headerTextAlign: 'Justify', width: 140 },
+                    ],
+                    aggregates: [{
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                                footerTemplate: 'Sum: ${Sum}'
+                            },
+                            {
+                                type: 'Max',
+                                field: 'OrderDate',
+                                format: { type: 'date', skeleton: 'medium' },
+                                groupFooterTemplate: 'Max: ${Max}'
+                            },
+                            {
+                                type: 'Average',
+                                field: 'Freight',
+                                format: 'C2',
+                                groupCaptionTemplate: 'Max: ${Average}'
+                            },
+                            {
+                                type: 'Min',
+                                field: 'OrderDate',
+                                format: { type: 'date', skeleton: 'medium' },
+                                groupCaptionTemplate: 'Min: ${Min}'
+                            }
+                        ]
+                    },
+                    {
+                        columns: [
+                            {
+                                type: 'Count',
+                                field: 'Freight',
+                                format: 'C2',
+                            },
+                            {
+                                type: 'TrueCount',
+                                field: 'Verified',
+                            },
+                            {
+                                type: 'Max',
+                                field: 'OrderDate',
+                            },
+                        ]
+                    },
+                    {
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                            },
+                            {
+                                type: 'FalseCount',
+                                field: 'Verified',
+                            },
+                            {
+                                type: 'Min',
+                                field: 'OrderDate',
+                            },
+                        ]
+                    },
+                    {
+                        columns: [
+                            {
+                                type: 'Average',
+                                field: 'Freight',
+                            },
+                        ]
+                    }],
+                }, done);
+        });
+
+        it('export aggregate with groups', (done) => {
+            gridObj.excelExport({
+                exportType: 'CurrentPage',
+                theme: {
+                    header: {
+                        fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, bold: true, italic: true, underline: true, strikeThrough: true
+                    },
+                    record: {
+                        fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, bold: true
+                    },
+                    caption: {
+                        fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, bold: true
+                    }
+                },
+            }, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('export with custom columns', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    allowExcelExport: true,
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', textAlign: 'Right', width: 120 },
+                    ],
+                }, done);
+        });
+
+        it('export new columns', (done) => {
+            let newColumns: any = [
+                { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                { headerText: 'Ship Details', columns: { field: 'ShipRegion', width: 140 } }
+            ];
+            gridObj.excelExport({ columns: newColumns });
+            expect(1).toBe(1);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('Lazy load group excel export', () => {
+        let gridObj: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    allowExcelExport: true,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    groupSettings: { enableLazyLoading: true, columns: ['ShipRegion', 'ShipCountry'] },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: '120px' },
+                        {
+                            field: 'OrderDate', headerText: 'Order Date', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '15%', format: 'yMd'
+                        },
+                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                        { field: 'ShipRegion', width: 140 },
+                        { field: 'Verified', headerTextAlign: 'Justify', width: 140 },
+                    ],
+                    aggregates: [{
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                                footerTemplate: 'Sum: ${Sum}'
+                            },
+                            {
+                                type: 'Max',
+                                field: 'OrderDate',
+                                format: { type: 'date', skeleton: 'medium' },
+                                groupFooterTemplate: 'Max: ${Max}'
+                            },
+                            {
+                                type: 'Average',
+                                field: 'Freight',
+                                format: 'C2',
+                                groupCaptionTemplate: 'Max: ${Average}'
+                            }, {
+                                type: 'Min',
+                                field: 'OrderDate',
+                                format: { type: 'date', skeleton: 'medium' },
+                                groupCaptionTemplate: 'Min: ${Min}'
+                            }
+                        ]
+                    },
+                    {
+                        columns: [
+                            {
+                                type: 'Count',
+                                field: 'Freight',
+                                format: 'C2',
+                            },
+                            {
+                                type: 'TrueCount',
+                                field: 'Verified',
+                            },
+                            {
+                                type: 'Max',
+                                field: 'OrderDate',
+                            },
+                        ]
+                    },
+                    {
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                            },
+                            {
+                                type: 'FalseCount',
+                                field: 'Verified',
+                            },
+                            {
+                                type: 'Min',
+                                field: 'OrderDate',
+                            },
+                        ]
+                    },
+                    {
+                        columns: [
+                            {
+                                type: 'Average',
+                                field: 'Freight',
+                            },
+                        ]
+                    }],
+                }, done);
+        });
+
+        it('Hierarchy export all mode', (done) => {
+            gridObj.excelExport({ hierarchyExportMode: 'All', exportType: 'AllPages', }, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        it('Hierarchy export none mode', (done) => {
+            gridObj.excelExport({ hierarchyExportMode: 'None', exportType: 'CurrentPage',
+                header: {
+                    headerRows: 4,
+                    rows: [
+                        {
+                            index: 1,
+                            cells: [
+                                /* tslint:disable-next-line:max-line-length */
+                                { index: 1, colSpan: 5, value: 'INVOICE', style: { fontColor: '#C25050', fontSize: 25, bold: true } }
+                            ]
+                        },
+                        {
+                            index: 3,
+                            cells: [
+                                { index: 1, colSpan: 2, value: 'Adventure Traders', style: { fontColor: '#C67878', fontSize: 15, bold: true } },
+                                { index: 4, value: 'INVOICE NUMBER', style: { fontColor: '#C67878', bold: true } },
+                                { index: 5, value: 'DATE', style: { fontColor: '#C67878', bold: true } }
+                            ]
+                        },
+                    ]
+                },
+        
+                footer: {
+                    footerRows: 5,
+                    rows: [
+                        /* tslint:disable-next-line:max-line-length */
+                        { cells: [{ colSpan: 6, value: 'Thank you for your business!', style: { fontColor: '#C67878', hAlign: 'Center', bold: true } }] },
+                        { cells: [{ colSpan: 6, value: '!Visit Again!', style: { fontColor: '#C67878', hAlign: 'Center', bold: true } }] }
+                    ]
+                },
+                fileName: 'exceldocument.xlsx'
+             }, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        it('Hierarchy export expanded mode', (done) => {
+            gridObj.excelExport({ hierarchyExportMode: 'Expanded' }, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('multiple excel export', () => {
+        let gridObj: Grid;
+        let gridObj1: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0, 5),
+                    allowPaging: true,
+                    width: 600,
+                    allowExcelExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                }, done);
+
+            gridObj1 = createGrid(
+                {
+                    dataSource: employeeData.slice(5, 9),
+                    allowPaging: true,
+                    width: 600,
+                    allowExcelExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                }, done);
+        });
+
+        it('export same sheet', (done) => {
+            gridObj.exportGrids = [gridObj.element.id, gridObj1.element.id];
+            gridObj.excelExport({
+                header: {
+                    headerRows: 4,
+                    rows: [
+                        {
+                            index: 1,
+                            cells: [
+                                { index: 1, colSpan: 5, value: 'INVOICE', style: { fontColor: '#C25050', fontSize: 25, bold: true } }
+                            ]
+                        },
+                        {
+                            index: 3,
+                            cells: [
+                                { index: 1, colSpan: 2, value: 'Adventure Traders' },
+                            ]
+                        },
+                    ]
+                },
+                footer: {
+                    footerRows: 5,
+                    rows: [
+                        { cells: [{ colSpan: 6, value: 'Thank you', style: { fontColor: '#C67878', hAlign: 'Center', bold: true } }] },
+                    ]
+                },
+            }, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        it('Export new sheet', (done) => {
+            gridObj.excelExport({
+                multipleExport: { type: "NewSheet" },
+                header: {
+                    headerRows: 4,
+                    rows: [
+                        {
+                            index: 1,
+                            cells: [
+                                { index: 1, colSpan: 5, value: 'INVOICE' }
+                            ]
+                        },
+                        {
+                            index: 3,
+                            cells: [
+                                { index: 1, colSpan: 2, value: 'Adventure Traders' },
+                                { index: 4, value: 'INVOICE NUMBER' },
+                                { index: 5, value: 'DATE' }
+                            ]
+                        },
+                    ]
+                },
+                footer: {
+                    footerRows: 4,
+                    rows: [
+                        { cells: [{ colSpan: 6, value: 'Thank you' }] },
+                    ]
+                }
+            }, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            destroy(gridObj1);
+            gridObj = gridObj1 = null;
+        });
+    });
+
+    // used for code coverage
+    describe('Detail template Excel export => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0, 5),
+                    detailTemplate: `<div>Hello</div>`,
+                    allowExcelExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                }, done);
+        });
+        it('process detail template', (done) => {
+            gridObj.exportDetailTemplate = (args: ExportDetailTemplateEventArgs) => {
+                if (args.parentRow.data['EmployeeID'] === 1) {
+                    args.value = {
+                        image: {
+                            base64: image,
+                            height: 100, width: 200
+                        }
+                    }
+                } else if (args.parentRow.data['EmployeeID'] === 2) {
+                    args.value = {
+                        text: "custom text"
+                    }
+                } else if (args.parentRow.data['EmployeeID'] === 3) {
+                    args.value = {
+                        hyperLink: {
+                            target: 'mailto:' + args.parentRow.data['FirstName'] + '@domain.com',
+                            displayText: args.parentRow.data['FirstName']
+                        }
+                    }
+                } else if (args.parentRow.data['EmployeeID'] === 4) {
+                    args.value = {
+                        columnHeader: [
+                            { cells: [{ colSpan: 2, value: 'INVOICE' }] }
+                        ],
+                        rows: [
+                            {
+                                cells: [
+                                    {
+                                        rowSpan: 2, image: {
+                                            base64: image,
+                                            height: 70, width: 70
+                                        }
+                                    },
+                                    { value: "First Name: " + args.parentRow.data['FirstName'] },
+                                    {
+                                        value: "Postal Code: " + args.parentRow.data['PostalCode'],
+                                        style: {
+                                            backColor: '#99ffcc',
+                                            bold: true,
+                                            fontSize: 15,
+                                            indent: 1,
+                                            italic: true,
+                                            strikeThrough: true,
+                                            underline: true,
+                                            wrapText: true,
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                cells: [
+                                    {
+                                        index: 2, value: "City: " + args.parentRow.data['City'],
+                                        hyperLink: {
+                                            target: 'mailto:' + args.parentRow.data['FirstName'] + '@domain.com',
+                                            displayText: args.parentRow.data['FirstName']
+                                        },
+                                    },
+                                    {
+                                        index: 3, image: {
+                                            base64: image,
+                                            height: 70, width: 70
+                                        }
+                                    }
+                                ]
+                            },
+                        ],
+                    }
+                }
+            }
+            gridObj.excelExport({ hierarchyExportMode: 'All' }, true).then((Doc: Workbook) => {
+                expect(Doc).not.toBeUndefined();
+                done();
+            });
         });
 
         afterAll(() => {

@@ -1,6 +1,6 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
-import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem, Toolbar, Filter} from '../../src/index';
+import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem,  Toolbar, Filter} from '../../src/index';
 import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
@@ -388,7 +388,7 @@ describe('Context-', () => {
                   item: ganttObj.contextMenuModule.contextMenu.items[3].items[0],
               };
               (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-              expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toEqual('4FS,5FS');
+              expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toEqual('4FS+3 days,5FS');
               done();
           });
          it('Save & Cancel', (done: Function) => {
@@ -1676,7 +1676,7 @@ describe('Context-', () => {
             expect(ganttObj.currentViewData.length).toBe(2);
         });
     });
-    describe('After multiple selection, adding milestone position wrong -', () => {
+     describe('After multiple selection, adding milestone position wrong -', () => {
         beforeAll((done: Function) => {
             Gantt.Inject(Selection, Toolbar, Edit, Filter, RowDD,ContextMenu, Resize,Sort);
             ganttObj = createGantt({

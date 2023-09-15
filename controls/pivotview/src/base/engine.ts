@@ -1209,7 +1209,7 @@ export class PivotEngine {
     }
     private getMappingField(key: string, fieldMapping: IFieldOptions[]): IFieldOptions {
         let field: IFieldOptions = {};
-        if (fieldMapping.length > 0) {
+        if (fieldMapping && fieldMapping.length > 0) {
             for (let index: number = 0, cnt: number = fieldMapping.length; index < cnt; index++) {
                 if (fieldMapping[index as number].name === key) {
                     field = fieldMapping[index as number];
@@ -3274,8 +3274,8 @@ export class PivotEngine {
                         member.valueSort.axis + this.valueSortSettings.headerDelimiter + member.valueSort.levelName;
                     const isExpandMember: boolean = this.isExpandAll || (field && field.expandAll);
                     member.isDrilled = (valueFil && this.isValueFiltersAvail) ? true :
-                        (member.hasChild && this.fieldDrillCollection[memberString as string]) ? isExpandMember ?
-                            (!this.valueAxis && !this.isLastHeaderHasMeasures && (keysPos >= this.measureIndex) ?
+                        (member.hasChild && this.fieldDrillCollection[memberString as string]) ?
+                            isExpandMember ? (!this.valueAxis && !this.isLastHeaderHasMeasures && (keysPos >= this.measureIndex) ?
                                 true : false) : true : isExpandMember;
                     //if (!member.members) {
                     member.members = [];
@@ -5286,8 +5286,7 @@ export class PivotEngine {
             dateText: commonValue
         };
         if (this.formatFields[fieldName as string] && (this.formatFields[fieldName as string].format ||
-            this.formatFields[fieldName as string].skeleton) && !isNullOrUndefined(value)
-        ) {
+            this.formatFields[fieldName as string].skeleton) && !isNullOrUndefined(value)) {
             try {
                 const formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName as string]).properties ?
                     (<{ [key: string]: Object }>this.formatFields[fieldName as string]).properties :

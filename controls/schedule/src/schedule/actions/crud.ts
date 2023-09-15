@@ -68,7 +68,7 @@ export class Crud {
         this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
     }
 
-    public refreshProcessedData(isVirtualScrollAction: boolean = false): void {
+    public refreshProcessedData(isVirtualScrollAction: boolean = false, dynamicEvents?: Record<string, any>[]): void {
         if (this.parent.dragAndDropModule) {
             this.parent.dragAndDropModule.actionObj.action = '';
             removeClass([this.parent.element], 'e-event-action');
@@ -91,7 +91,7 @@ export class Crud {
             }
         }
         if (isVirtualScrollAction) {
-            this.parent.notify(events.dataReady, { processedData: this.parent.eventsProcessed });
+            this.parent.notify(events.dataReady, { processedData: dynamicEvents ? this.parent.eventBase.processData(dynamicEvents) : this.parent.eventsProcessed });
             return;
         }
         const eventsData: Record<string, any>[] = this.parent.eventsData || [];
@@ -242,6 +242,8 @@ export class Crud {
                             editParams.changedRecords.push(event);
                             promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery()) as Promise<any>;
                         }
+                        const cloneEvent: Record<string, any> = extend({}, saveArgs.changedRecords[saveArgs.changedRecords.length - 1], null, true) as Record<string, any>;
+                        this.parent.eventBase.selectWorkCellByTime([this.parent.eventBase.processTimezone(cloneEvent)]);
                         const crudArgs: CrudArgs = {
                             requestType: 'eventChanged', cancel: false,
                             data: saveArgs.changedRecords, promise: promise, editParams: editParams
@@ -367,7 +369,8 @@ export class Crud {
                     }
                 }
                 const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
-                this.parent.eventBase.selectWorkCellByTime(occurrenceArgs.changedRecords);
+                const cloneEvent: Record<string, any> = extend({}, occurrenceArgs.changedRecords[occurrenceArgs.changedRecords.length - 1], null, true) as Record<string, any>;
+                this.parent.eventBase.selectWorkCellByTime(action === 'EditOccurrence' ? [this.parent.eventBase.processTimezone(cloneEvent)] : [cloneEvent]);
                 const crudArgs: CrudArgs = {
                     requestType: action === 'EditOccurrence' ? 'eventChanged' : 'eventRemoved',
                     cancel: false, data: isDeletedRecords ? occurrenceArgs.deletedRecords : occurrenceArgs.changedRecords,
@@ -438,7 +441,8 @@ export class Crud {
                     }
                 }
                 const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
-                this.parent.eventBase.selectWorkCellByTime(followArgs.changedRecords);
+                const cloneEvent: Record<string, any> = extend({}, followArgs.changedRecords[followArgs.changedRecords.length - 1], null, true) as Record<string, any>;
+                this.parent.eventBase.selectWorkCellByTime(action === 'EditFollowingEvents' ? [this.parent.eventBase.processTimezone(cloneEvent)] : [cloneEvent]);
                 const crudArgs: CrudArgs = {
                     requestType: action === 'EditFollowingEvents' ? 'eventChanged' : 'eventRemoved',
                     cancel: false, data: followArgs.changedRecords, promise: promise, editParams: editParams
@@ -499,7 +503,8 @@ export class Crud {
                     }
                 }
                 const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
-                this.parent.eventBase.selectWorkCellByTime(seriesArgs.changedRecords);
+                const cloneEvent: Record<string, any> = extend({}, seriesArgs.changedRecords[seriesArgs.changedRecords.length - 1], null, true) as Record<string, any>;
+                this.parent.eventBase.selectWorkCellByTime(action === 'EditSeries' ? [this.parent.eventBase.processTimezone(cloneEvent)] : [cloneEvent]);
                 const crudArgs: CrudArgs = {
                     requestType: action === 'EditSeries' ? 'eventChanged' : 'eventRemoved',
                     cancel: false, data: isDeletedRecords ? seriesArgs.deletedRecords : seriesArgs.changedRecords,
@@ -553,6 +558,7 @@ export class Crud {
                     }
                 }
                 const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+                this.parent.eventBase.selectWorkCellByTime(deleteArgs.deletedRecords);
                 const crudArgs: CrudArgs = {
                     requestType: 'eventRemoved', cancel: false, data: deleteArgs.deletedRecords, promise: promise, editParams: editParams
                 };
@@ -592,6 +598,8 @@ export class Crud {
                     }
                 }
                 const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+                const cloneEvent: Record<string, any> = extend({}, editArgs.changedRecords[editArgs.changedRecords.length - 1], null, true) as Record<string, any>;
+                this.parent.eventBase.selectWorkCellByTime([this.parent.eventBase.processTimezone(cloneEvent)]);
                 const crudArgs: CrudArgs = { requestType: 'eventChanged', cancel: false, data: editArgs.changedRecords, promise: promise, editParams: editParams };
                 this.refreshData(crudArgs);
             }

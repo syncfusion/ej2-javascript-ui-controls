@@ -18,7 +18,12 @@
     "moduleResolution": "node",
 	"experimentalDecorators" : true,
 	"suppressImplicitAnyIndexErrors": true,	 
-    "types": ["jasmine","jasmine-ajax","requirejs","chai","es6-promise"]
+    "types": ["jasmine","jasmine-ajax","requirejs","chai","es6-promise"],
+    "lib": [
+        "es2015.collection",
+        "es5",
+        "dom"
+      ]
   },
   "exclude": [
     "node_modules",

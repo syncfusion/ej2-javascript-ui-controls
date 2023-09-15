@@ -58,7 +58,6 @@ export declare class Columns extends ChildProperty<Columns> {
      * Specifies the template for value field such as slider or any other widgets.
      *
      * @default null
-     * @aspType string
      */
     template: TemplateColumn | string | Function;
     /**

@@ -17,7 +17,8 @@
         min-width: $timepicker-normal-input-min-width;
       }
       @if $timepicker-skin-name == 'Material3' {
-        padding: $timepicker-icon-padding;
+        border-radius: $timepicker-normal-icon-border-radius;
+        margin: $timepicker-icon-margin;
       }
     }
 
@@ -98,6 +99,10 @@
         min-height: $timepicker-bigger-input-min-height;
         min-width: $timepicker-bigger-input-min-width;
       }
+      @if $timepicker-skin-name == 'Material3' {
+        border-radius: $timepicker-bigger-icon-border-radius;
+        margin: $timepicker-bigger-icon-margin;
+      }
     }
   }
 
@@ -135,6 +140,12 @@
 
     #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-small-font-size;
+      @if $timepicker-skin-name == 'Material3' {
+        min-height: $timepicker-small-input-min-height;
+        min-width: $timepicker-small-input-min-width;
+        border-radius: $timepicker-small-icon-border-radius;
+        margin: $timepicker-time-small-icon-margin;
+      }
     }
   }
 
@@ -158,6 +169,12 @@
 
     #{if(&, '&', '*')} .e-time-icon.e-icons {
       font-size: $timepicker-icon-bigger-small-font-size;
+      @if $timepicker-skin-name == 'Material3' {
+        min-height: $timepicker-bigger-small-input-min-height;
+        min-width: $timepicker-bigger-small-input-min-width;
+        border-radius: $timepicker-bigger-small-icon-border-radius;
+        margin: $timepicker-bigger-small-icon-margin;
+      }
     }
   }
 
@@ -199,4 +216,88 @@
   }
 }
 
+.e-timepicker-mob-popup-wrap .e-popup-expand.e-timepicker.e-popup,
+.e-datetimepicker.e-popup-expand.e-timepicker.e-popup,
+.e-timepicker-mob-popup-wrap .e-popup-expand.e-datetimepicker.e-popup,
+.e-datetimepicker.e-popup-expand.e-popup {
+  border-radius: 0;
+}
+
+.e-timepicker-mob-popup-wrap .e-popup-expand,
+.e-datetimepicker.e-popup-expand {
+
+    #{if(&, '&', '*')} .e-model-header {
+      height: $modal-header-height;
+      padding: $modal-header-padding;
+      display: $modal-header-display-style;
+      align-items: $modal-header-content-align;
+      font-size: $modal-header-portrait-font-size;
+      border-bottom: $modal-header-border-bottom;
+
+      #{if(&, '&', '*')} .e-popup-close {
+        float: $modal-close-icon-float;
+        padding: $modal-portrait-content-padding;
+      }
+
+      #{if(&, '&', '*')} .e-model-title {
+        padding: $modal-portrait-content-padding;
+        text-transform: $modal-header-title-transform;
+        font-weight: 500;
+      }
+
+      #{if(&, '&', '*')} .e-btn.e-popup-close {
+        font-size: $modal-header-portrait-font-size;
+      }
+    }
+
+    #{if(&, '&', '*')} .e-content {
+      height: $modal-content-height;
+      overflow: $modal-content-overflow;
+
+      #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
+        padding: $modal-list-item-padding;
+        line-height: $modal-list-line-height;
+
+        @media (max-device-width: 768px) {
+          font-size: $modal-mobile-font-size;
+        }
+
+        @media (min-device-width: 768px) {
+          font-size: $modal-tablet-font-size;
+        }
+      }
+    }
+}
+
+@media screen and (orientation: landscape) {
+  .e-timepicker-mob-popup-wrap .e-popup-expand,
+  .e-datetimepicker.e-popup-expand {
+  
+      #{if(&, '&', '*')} .e-model-header {
+        height: $modal-header-landscape-height;
+        font-size: $modal-header-landscape-font-size;
+  
+        #{if(&, '&', '*')} .e-popup-close {
+          padding: $modal-landscape-padding;
+        }
+  
+        #{if(&, '&', '*')} .e-model-title {
+          padding: $modal-landscape-padding;
+        }
+
+        #{if(&, '&', '*')} .e-btn.e-popup-close {
+          font-size: $modal-header-landscape-font-size;
+        }
+      }
+  
+      #{if(&, '&', '*')} .e-content {
+        height: $modal-content-landscape-height;
+  
+        #{if(&, '&', '*')} .e-list-parent.e-ul .e-list-item {
+          padding: $modal-list-item-padding;
+          line-height: $modal-landscape-list-line-height;
+        }
+      }
+    }
+}
 /* stylelint-enable */

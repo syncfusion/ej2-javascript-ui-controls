@@ -336,11 +336,11 @@ describe('insert Audio', () => {
             (<any>rteObj).audioModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).audioModule.dialogObj.element)).toBe(true);
  
-            eventsArgs = { target: document.querySelector('[title="Insert Audio"]'), preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Audio (Ctrl+Shift+A)"]'), preventDefault: function () { } };
             (<any>rteObj).audioModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).audioModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Audio"]').parentElement, preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Audio (Ctrl+Shift+A)"]').parentElement, preventDefault: function () { } };
             (<any>rteObj).audioModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).audioModule.dialogObj.element)).toBe(true);
         });
@@ -1682,5 +1682,482 @@ describe('insert Audio', () => {
             done();
         });
     });
+    describe('Undo the Audio after delete', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+        let innerHTML1: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3"></audio></span></span><br>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Undo the audio after delete action ', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].firstChild;
+            setCursorPoint(node, 7);
+            keyBoardEvent.keyCode = 46;
+            keyBoardEvent.code = 'Delete';
+            keyBoardEvent.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((<any>rteObj).inputElement.querySelector('.e-audio-wrap')).toBe(null);
+            keyBoardEvent.keyCode = 90;
+            (rteObj as any).keyDown(keyBoardEvent);
+            done();
+        });
+    });
+    describe('836851 - check the audio quick toolbar hide, while click the enterkey ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent = { 
+            type: 'keydown', 
+            preventDefault: function () { }, 
+            ctrlKey: false, 
+            key: 'enter', 
+            stopPropagation: function () { }, 
+            shiftKey: false, 
+            which: 13,
+            keyCode: 13,
+            action: 'enter'
+        };
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('check the audio quick toolbar hide, while click the enterkey', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-audio-wrap');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).audioModule.editAreaClickHandler({ args: clickEvent});
+            (<any>rteObj).keyDown(keyBoardEvent);
+            expect(document.querySelector('.e-rte-quick-popup')).toBe(null);
+            done();
+        });
+    });
+
+    describe('836851 - check auido remove', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent = { 
+            type: 'keydown', 
+            preventDefault: function () { }, 
+            ctrlKey: false, 
+            key: 'enter', 
+            stopPropagation: function () { }, 
+            shiftKey: false, 
+            which: 13,
+            keyCode: 13,
+            action: 'enter'
+        };
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Remove audio using quick toolbar', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-audio-wrap');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            let eventsArg = { target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).audioModule.editAreaClickHandler({ args: eventsArg });
+            expect(!isNullOrUndefined(document.querySelector('.e-audio-wrap')as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            let audioQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            (audioQTBarEle.querySelector("[title='Remove']")as HTMLElement).click();
+            expect(isNullOrUndefined(document.querySelector('.e-audio-wrap')as HTMLElement)).toBe(true);
+            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            done();
+        });
+    });
+    describe('836851 - check the audio quick toolbar hide', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Hide the audio quick toolbar', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-clickelem');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            let eventsArg = { target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).audioModule.onDocumentClick(clickEvent);
+            (<any>rteObj).audioModule.editAreaClickHandler({ args: eventsArg });
+            (<any>rteObj).audioModule.hideAudioQuickToolbar()
+            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            done();
+        });
+    });
+    describe('Audio dialog - Short cut key', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            action: 'escape',
+            key: 's'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('close audio dialog - escape', (done: Function) => {
+            keyboardEventArgs.action = 'escape';
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(isNullOrUndefined((<any>rteObj).audioModule.dialogObj)).toBe(false);
+            (<any>rteObj).audioModule.onKeyDown({ args: keyboardEventArgs });
+            expect(isNullOrUndefined((<any>rteObj).audioModule.dialogObj)).toBe(true);
+            done();
+        });
+    });
+    describe('836851 - iOS device interaction', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        beforeAll(() => {
+            Browser.userAgent = iPhoneUA;
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            Browser.userAgent = currentBrowserUA;
+            destroy(rteObj);
+        });
+        it('Remove the audio using quick toolbar ', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-audio-wrap');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).audioModule.editAreaClickHandler({args:clickEvent});
+            expect(!isNullOrUndefined(document.querySelector('.e-audio-wrap')as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            let audioQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            (audioQTBarEle.querySelector("[title='Remove']")as HTMLElement).click();
+            expect(isNullOrUndefined(document.querySelector('.e-audio-wrap')as HTMLElement)).toBe(true);
+            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            done();
+        });
+    });
+    describe('836851 - Remove the audio using audio quick toolbar ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                insertAudioSettings: {removeUrl:"https://ej2.syncfusion.com/services/api/uploadbox/Remove"},
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Remove the audio using  audio quick toolbar ', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-clickelem');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).audioModule.editAreaClickHandler({args:clickEvent});
+            expect(!isNullOrUndefined(rteEle.querySelector('.e-rte-audio')as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            let audioQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            (audioQTBarEle.querySelector("[title='Remove']")as HTMLElement).click();
+            expect(isNullOrUndefined(rteEle.querySelector('.e-rte-audio')as HTMLElement)).toBe(true);
+            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            done();
+        });
+    });
+    describe(' Mobile audio interaction', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
+        let defaultUA: string = navigator.userAgent;
+        let innerHTML: string = `<p>Testing<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        beforeAll(() => {
+            Browser.userAgent = mobileUA;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            Browser.userAgent = defaultUA;
+            destroy(rteObj);
+        });
+        it('check the audio click', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (rteObj.element.querySelector('.e-audio-wrap') as HTMLElement).click();
+            dispatchEvent((rteObj.element.querySelector('.e-clickelem') as HTMLElement), 'mouseup');
+            let eventsArgs: any = { target: (rteObj.element.querySelector('.e-clickelem') as HTMLElement), preventDefault: function () { } };
+            (<any>rteObj).audioModule.audioClick(eventsArgs);
+            expect(!isNullOrUndefined(rteObj.contentModule.getEditPanel().querySelector('.e-rte-audio'))).toBe(true);
+            done(); 
+        });
+    });
+    describe('836851 - Insert audio', function () {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let QTBarModule: IRenderer;
+        var innerHTML: string = "<p>Testing</p>";
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Close the dialog while audio insert', (done: Function) => {
+            (<any>rteEle).querySelectorAll(".e-toolbar-item")[0].click();
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-audio-dialog'))).toBe(true);
+            (<any>rteEle).querySelector('.e-cancel').click();
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-audio-dialog'))).toBe(false);
+            done();
+        });
+    });
+    describe('Insert audio dialog testing', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the dialog close using close icon', (done) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+                expect((<any>rteObj).audioModule.uploadObj.fileList.length).toEqual(1);
+                (document.getElementsByClassName('e-dlg-closeicon-btn')[0] as HTMLElement).click()
+                done();
+            }, 4500);
+        });
+    });
+    describe('836851 - Check the insert button - without input URL', function () {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let QTBarModule: IRenderer;
+        var innerHTML: string = "<p>Testing</p>";
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the insert button - without input URL', (done: Function) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.audioModule);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.audioUrl .e-input.e-audio-url')as HTMLElement).click();
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = '';
+            (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
+            (dialogEle.querySelector('.e-insertAudio')as HTMLElement).click();
+            expect(!isNullOrUndefined(document.querySelector('.e-audio-wrap'))).toBe(true);
+            done();
+        });
+    });
+    describe('836851 - insertAudioUrl', function () {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let QTBarModule: IRenderer;
+        var innerHTML: string = "<p>Testing</p>";
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the insertAudioUrl', (done: Function) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.audioModule);
+            (<any>rteObj).audioModule.uploadUrl = { url: "https://www.w3schools.com/html/mov_bbb.mp4" };
+            (rteEle.querySelectorAll('.e-toolbar-item')[0]as HTMLElement).click()
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.audioUrl .e-input.e-audio-url')as HTMLElement).click();
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
+            (document.querySelector('.e-insertAudio.e-primary')as HTMLElement).click();
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-audio'))).toBe(true)
+            done();
+        });
+    });
+    describe('836851 - Audio keyup', function () {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let innerHTML: string = `testing<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3"></audio></span></span><br>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML,
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check the audio keyup - backspace', function (done) {
+            let startContainer = rteObj.contentModule.getEditPanel().querySelector('p').childNodes[0];
+            let endContainer = rteObj.contentModule.getEditPanel().querySelector('p')
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText( document, startContainer, endContainer, 7, 2 )
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (<any>rteObj).keyDown(keyBoardEvent);
+            (<any>rteObj).audioModule.onKeyUp();
+            expect(!isNullOrUndefined(rteObj.element.querySelector('.e-audio-wrap'))).toBe(true)
+            done();
+        });
+    });
+    // describe('836851 - Check the audio quick toolbar render after the insert the audio', function () {
+    //     let rteObj: RichTextEditor;
+    //     beforeAll((done: Function) => {
+    //         rteObj = renderRTE({
+    //             height: 400,
+    //             toolbarSettings: {
+    //                 items: ['Audio', 'Bold']
+    //             },
+    //         });
+    //         done();
+    //     });
+    //     afterAll((done: Function) => {
+    //         destroy(rteObj);
+    //         done();
+    //     });
+    //     it('Check the audio quick toolbar render after the insert the audio', (done: Function) => {
+    //         (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //         (rteObj.element.querySelectorAll('.e-toolbar-item')[0]as HTMLElement).click()
+    //         expect(!isNullOrUndefined(rteObj.element.querySelector('.e-dialog'))).toBe(true);
+    //         let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+    //         (dialogEle.querySelector('.audioUrl .e-input.e-audio-url')as HTMLElement).click();
+    //         (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
+    //         (dialogEle.querySelector('.e-audio-url') as HTMLElement).dispatchEvent(new Event("input"));
+    //         (document.querySelector('.e-insertAudio.e-primary')as HTMLElement).click();
+    //         let target = (<any>rteObj).element.querySelectorAll(".e-content")[0];
+    //         let clickEvent = document.createEvent("MouseEvents");
+    //         clickEvent.initEvent("mousedown", false, true);
+    //         target.dispatchEvent(clickEvent);
+    //     });
+    // });
  });
  

@@ -3,7 +3,7 @@ import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
 import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, remove } from '@syncfusion/ej2-base';
 import { FilterEventArgs, SortEventArgs, FailureEventArgs } from '@syncfusion/ej2-grids';
 import { setValue, getElement } from '@syncfusion/ej2-base';
-import { Deferred, Query } from '@syncfusion/ej2-data';
+import { Deferred, Query, DataManager } from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
 import { ColumnModel as GanttColumnModel, Column as GanttColumn } from '../models/column';
 import { ITaskData, IGanttData } from './interface';
@@ -87,6 +87,11 @@ export class GanttTreeGrid {
     }
 
     private composeProperties(): void {
+	this.parent.treeGrid.hasChildMapping = this.parent.taskFields.hasChildMapping;
+        this.parent.treeGrid.loadChildOnDemand = this.parent.loadChildOnDemand;
+        this.parent.treeGrid['isFromGantt'] = true;
+        this.parent.treeGrid.parentIdMapping = this.parent.taskFields.parentID;
+        this.parent.treeGrid.idMapping = this.parent.taskFields.id
         this.parent.treeGrid.showColumnMenu = this.parent.showColumnMenu;
 	this.parent.treeGrid.enableCollapseAll = this.parent.collapseAllParentTasks;
         this.parent.treeGrid.columnMenuItems = this.parent.columnMenuItems;
@@ -102,8 +107,14 @@ export class GanttTreeGrid {
             const count: number = getValue('count', this.parent.dataSource);
             this.parent.treeGrid.dataSource = {result: this.parent.flatData, count: count};
         } else {
-            this.parent.treeGrid.hasChildMapping = null;
-            this.parent.treeGrid.dataSource = this.parent.flatData;
+            if (!this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+                this.parent.autoCalculateDateScheduling = false;
+                this.parent.treeGrid.dataSource = this.parent.dataSource;
+            }
+            else {
+                this.parent.treeGrid.hasChildMapping = null;
+                this.parent.treeGrid.dataSource = this.parent.flatData;
+            }
         }
         this.parent.treeGrid.expandStateMapping = this.parent.taskFields.expandState;
         const isGantt: string = 'isGantt';
@@ -218,7 +229,7 @@ export class GanttTreeGrid {
         const recordLength = (record as IGanttData[]).length;
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             if (!isNullOrUndefined(recordLength)) {
-                for (let i = 0; i < recordLength; i++) {
+                for (let i: number = 0; i < recordLength; i++) {
                     collapsingArgs = this.createExpandCollapseArgs(args, record[i as number]);
                     this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
                 }
@@ -239,7 +250,7 @@ export class GanttTreeGrid {
         const recordLength = (record as IGanttData[]).length;
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             if (!isNullOrUndefined(recordLength)) {
-                for (let i = 0; i < recordLength; i++) {
+                for (let i: number = 0; i < recordLength; i++) {
                     expandingArgs = this.createExpandCollapseArgs(args, record[i as number]);
                     this.parent.ganttChartModule.expandGanttRow(expandingArgs);
                 }
@@ -258,7 +269,7 @@ export class GanttTreeGrid {
             const record: IGanttData | [] = getValue('data', args);
             const recordLength = (record as IGanttData[]).length;
             if (!isNullOrUndefined(recordLength)) {
-                for (let i =0; i < recordLength; i++ ) {
+                for (let i: number = 0; i < recordLength; i++ ) {
                      collapsedArgs = this.createExpandCollapseArgs(args, record[i as number]);
                     this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
                 }
@@ -267,7 +278,7 @@ export class GanttTreeGrid {
                 collapsedArgs = this.createExpandCollapseArgs(args, null);
                 this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
             }
-            if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && collapsedArgs['gridRow']) {
+            if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && !this.parent.ganttChartModule.isCollapseAll && collapsedArgs['gridRow']) {
                collapsedArgs['gridRow'].style.height = collapsedArgs['chartRow'].style.height;
 	       this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                             this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
@@ -287,7 +298,7 @@ export class GanttTreeGrid {
             const record: IGanttData | [] = getValue('data', args);
             const recordLength = (record as IGanttData[]).length;
             if (!isNullOrUndefined(recordLength)) {
-                for (let i =0; i < recordLength; i++ ) {
+                for (let i: number = 0; i < recordLength; i++ ) {
                     expandedArgs = this.createExpandCollapseArgs(args, record[i as number]);
                     this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
                 }
@@ -296,7 +307,7 @@ export class GanttTreeGrid {
                 expandedArgs = this.createExpandCollapseArgs(args, null);
                 this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
             }
-            if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && args['row']) {
+            if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && !this.parent.ganttChartModule.isExpandAll && args['row']) {
                 args['row'].style.height = this.parent.rowHeight + 'px';
                 this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                                             this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
@@ -890,6 +901,9 @@ export class GanttTreeGrid {
         if (!isNullOrUndefined(ganttProp)) {
             return this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
         }
+	else if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+            return this.parent.dataOperation.getDurationString(parseInt(data[this.parent.taskFields.duration]), this.parent.durationUnit);
+        }
         return '';
     }// eslint-disable-next-line
     private resourceValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
@@ -928,12 +942,7 @@ export class GanttTreeGrid {
 
     private updateScrollTop(args: object): void {
 	let newScrollTop: number;
-        if (getValue('top', args) > (this.parent.flatData.length * this.parent.rowHeight)) {
-            newScrollTop = getValue('top', args) - document.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'];
-        }
-        else {
-            newScrollTop = getValue('top', args);
-        }
+        newScrollTop = getValue('top', args);
         this.treeGridElement.querySelector('.e-content').scrollTop = newScrollTop;
 	this.previousScroll.top = this.treeGridElement.querySelector('.e-content').scrollTop;
     }

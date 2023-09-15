@@ -62,7 +62,7 @@ describe('Pivot Grid - HyperLink', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(() => {
             expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
-            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-frozencontent td a')).toBeTruthy;
+            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-content td a')).toBeTruthy;
             done();
         }, 1000);
     });
@@ -79,7 +79,7 @@ describe('Pivot Grid - HyperLink', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(() => {
             expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
-            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-frozencontent td a')).toBeTruthy;
+            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-content td a')).toBeTruthy;
             done();
         }, 1000);
     });
@@ -113,7 +113,7 @@ describe('Pivot Grid - HyperLink', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(() => {
             expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
-            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent').querySelectorAll('.e-valuescontent a')[30]).toBeTruthy;
+            expect(pivotGridObj.element.querySelector('.e-content').querySelectorAll('.e-valuescontent a')[30]).toBeTruthy;
             done();
         }, 1000);
     });
@@ -130,7 +130,7 @@ describe('Pivot Grid - HyperLink', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(() => {
             expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
-            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent td a')).toBeTruthy;
+            expect(pivotGridObj.element.querySelector('.e-content tr').querySelectorAll('td a')[1]).toBeTruthy;
             done();
         }, 1000);
     });
@@ -159,7 +159,7 @@ describe('Pivot Grid - HyperLink', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(() => {
             expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
-            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent').querySelectorAll('.e-valuescontent a')[20]).toBeTruthy;
+            expect(pivotGridObj.element.querySelector('.e-content').querySelectorAll('.e-valuescontent a')[20]).toBeTruthy;
             done();
         }, 1000);
     });
@@ -176,7 +176,7 @@ describe('Pivot Grid - HyperLink', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(() => {
             expect(pivotGridObj.element.querySelectorAll('.e-gridheader,.e-gridcontent').length > 1).toBeTruthy();
-            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent td a')).toBeTruthy;
+            expect(pivotGridObj.element.querySelector('.e-content tr').querySelectorAll('td a')[1]).toBeTruthy;
             done();
         }, 1000);
     });
@@ -186,7 +186,7 @@ describe('Pivot Grid - HyperLink', () => {
         };
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         setTimeout(() => {
-            expect(pivotGridObj.element.querySelector('.e-gridcontent .e-movablecontent td a')).toBeTruthy;
+            expect(pivotGridObj.element.querySelector('.e-content tr').querySelectorAll('td a')[1]).toBeTruthy;
             done();
         }, 1000);
     });

@@ -65,18 +65,27 @@ export type Position =
 
 /**
  * Defines the export file format.
- * * PNG - export the image file format as png.
- * * JPEG - export the image file format as jpeg.
+ * * PNG - export the chart in PNG format.
+ * * JPEG - export the chart in JPEG format.
+ * * SVG - export the chart in SVG format.
+ * * PDF - export the chart in PDF format.
+ * * XLSX - export the chart data to XLSX.
+ * * CSV - export the chart to CSV.
+ * * Print – Prints the chart.
  */
 export type ExportType =
-    /** Used to export a image as png format */
+    /** Used to export the chart in PNG format */
     'PNG' |
-    /** Used to export a image as jpeg format */
+    /** Used to export the chart in JPEG format */
     'JPEG' |
-    /** Used to export a file as svg format */
+    /** Used to export the chart in SVG format */
     'SVG' |
-    /** Used to export a file as pdf format */
+    /** Used to export the chart in PDF format */
     'PDF' |
+    /** Used to export the chart data to XLSX */
+    'XLSX' |
+    /** Used to export the chart data to CSV */
+    'CSV' |
     /** Used to print the chart */
     'Print';
 

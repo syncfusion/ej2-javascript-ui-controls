@@ -8,6 +8,7 @@ import { DoubleRange } from '../utils/double-range';
 import { Series } from './chart-series';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
+import { CylinderSeriesOption } from './column-series';
 
 
 /**
@@ -21,25 +22,33 @@ export class StackingBarSeries extends ColumnBase {
      * @returns {void}
      * @private
      */
+    public rect: Rect;
     public render(series: Series): void {
         let sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
         let stackedValue: StackValues = series.stackedValues;
-        let rect: Rect;
         let argsData: IPointRenderEventArgs;
         for (let pointStack of series.points) {
             pointStack.symbolLocations = [];
             pointStack.regions = [];
             if (pointStack.visible &&
                 withInRange(series.points[pointStack.index - 1], pointStack, series.points[pointStack.index + 1], series)) {
-                rect = this.getRectangle(pointStack.xValue + sideBySideInfo.start, stackedValue.endValues[pointStack.index],
-                                         pointStack.xValue + sideBySideInfo.end, stackedValue.startValues[pointStack.index], series);
-                rect.height = series.columnWidthInPixel ? series.columnWidthInPixel : rect.height;
-                rect.y = series.columnWidthInPixel ? rect.y - (series.columnWidthInPixel / 2) : rect.y;
+                this.rect = this.getRectangle(pointStack.xValue + sideBySideInfo.start, stackedValue.endValues[pointStack.index],
+                                              pointStack.xValue + sideBySideInfo.end, stackedValue.startValues[pointStack.index], series);
+                this.rect.height = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.height;
+                this.rect.y = series.columnWidthInPixel ? this.rect.y - (series.columnWidthInPixel / 2) : this.rect.y;
                 argsData = this.triggerEvent(series, pointStack, series.interior,
                                              { width: series.border.width, color: series.border.color });
                 if (!argsData.cancel) {
-                    this.drawRectangle(series, pointStack, rect, argsData);
-                    this.updateSymbolLocation(pointStack, rect, series);
+                    this.drawRectangle(series, pointStack, this.rect, argsData);
+                    this.updateSymbolLocation(pointStack, this.rect, series);
+                    if (series.columnFacet === 'Cylinder') {
+                        const cylinderSeriesOption: CylinderSeriesOption = {
+                            'isColumn': false,
+                            'stacking': series.type === 'StackingBar100',
+                            'isLastSeries': true
+                        };
+                        this.drawCylinder(this.options, this.element, cylinderSeriesOption, this.rect, series);
+                    }
                 }
             }
         }

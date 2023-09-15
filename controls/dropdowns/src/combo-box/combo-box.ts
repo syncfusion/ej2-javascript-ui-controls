@@ -466,13 +466,17 @@ export class ComboBox extends DropDownList {
                 if (!isNaN(height) && this.getModuleName() !== 'autocomplete') {
                     this.removeFocus();
                     const fixedHead: number = this.fields.groupBy ? this.liCollections[0].offsetHeight : 0;
-                    this.list.scrollTop = count * height + fixedHead;
+                    if (!this.enableVirtualization) {
+                        this.list.scrollTop = count * height + fixedHead;
+                    }
                     addClass([activeElement], dropDownListClasses.focus);
                 }
             } else {
                 if (this.isSelectCustom && this.inputElement.value.trim() !== '') {
                     this.removeFocus();
-                    this.list.scrollTop = 0;
+                    if (!this.enableVirtualization) {
+                        this.list.scrollTop = 0;
+                    }
                 }
             }
             return activeElement;
@@ -609,7 +613,9 @@ export class ComboBox extends DropDownList {
         } else if (this.inputElement.value === '') {
             this.activeIndex = null;
             if (!isNullOrUndefined(this.list)) {
-                this.list.scrollTop = 0;
+                if (!this.enableVirtualization) {
+                    this.list.scrollTop = 0;
+                }
                 const focusItem: Element = this.list.querySelector('.' + dropDownListClasses.li);
                 this.setHoverList(focusItem);
             }

@@ -9,7 +9,6 @@ import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { Reorder } from '../../../src/grid/actions/reorder';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
 import { createGrid, destroy } from '../base/specutil.spec';
@@ -19,7 +18,7 @@ import { Logger, ItemDetails, detailLists } from '../../../src/grid/actions/logg
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Filter, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, Freeze, Logger, VirtualScroll);
+Grid.Inject(Filter, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, Logger, VirtualScroll);
 
 describe('Logger module', () => {
 

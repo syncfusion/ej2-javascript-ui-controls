@@ -53,6 +53,9 @@ export class FileMenuSettings extends ChildProperty<FileMenuSettings>  {
      * Specifies the template for file menu item.
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property('')
@@ -62,6 +65,9 @@ export class FileMenuSettings extends ChildProperty<FileMenuSettings>  {
      * Specifies the custom content for the file menu popup.
      *
      * @default ''
+     * @angularType string | HTMLElement
+     * @reactType string | HTMLElement | JSX.Element
+     * @vueType string | HTMLElement
      * @aspType string
      */
     @Property('')

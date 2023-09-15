@@ -73,7 +73,6 @@ export class Columns extends ChildProperty<Columns> {
      * Specifies the template for value field such as slider or any other widgets.
      *
      * @default null
-     * @aspType string
      */
     @Property(null)
     public template: TemplateColumn | string | Function;
@@ -627,7 +626,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.columnSort();
                 const columns: ColumnsModel[] = this.columns;
                 for (let i: number = 0, len: number = columns.length; i < len; i++) {
-                    this.updateCustomOperator(columns[i as number], "initial");
+                    this.updateCustomOperator(columns[i as number], 'initial');
                     if (!columns[i as number].type) {
                         if (columnKeys.indexOf(columns[i as number].field) > -1) {
                             value = this.dataColl[0][columns[i as number].field];
@@ -744,7 +743,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     private updateCustomOperator(column: ColumnsModel, from?: string): void {
         if (column.operators) {
-            if (!this.isLocale && from === "initial" && !isNullOrUndefined(this.isCustomOprCols)) {
+            if (!this.isLocale && from === 'initial' && !isNullOrUndefined(this.isCustomOprCols)) {
                 this.isCustomOprCols.push(column.field);
             }
             for (let j: number = 0; j < column.operators.length; j++) {
@@ -3947,6 +3946,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             ruleId = this.element.id + '_' + elem;
             ruleElem = document.getElementById(ruleId);
+        }
+        if (isNullOrUndefined(ruleElem)) {
+            return null;
         }
         const groupElem: Element = closest(ruleElem, '.e-group-container');
         const rule: RuleModel = this.getParentGroup(groupElem);

@@ -59,6 +59,12 @@ describe('PDF Export', () => {
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
+        it('For sample render', (done: Function) => {
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 500);
+        });
         it('- customization while export', (done: Function) => {
             setTimeout(() => {
                 let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
@@ -126,6 +132,12 @@ describe('PDF Export', () => {
                 },
             });
             pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('For sample render-2', (done: Function) => {
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 500);
         });
         it('- customization while export', (done: Function) => {
             setTimeout(() => {

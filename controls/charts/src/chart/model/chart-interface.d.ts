@@ -288,6 +288,7 @@ export interface ISelectionCompleteEventArgs extends IChartEventArgs {
         seriesIndex?: number;
         pointIndex?: number;
     }[];
+    chart: Chart;
 }
 export interface ILoadedEventArgs extends IChartEventArgs {
     /** Defines the current chart instance. */

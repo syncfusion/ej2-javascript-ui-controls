@@ -1,4 +1,4 @@
-import { addClass, append, Event, Collection, Complex, Component, EmitType, EventHandler, formatUnit, getInstance, getComponent, getUniqueID, closest, KeyboardEventArgs, KeyboardEvents } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, isNullOrUndefined, isUndefined, ModuleDeclaration, NotifyPropertyChanges, Property, remove, removeClass } from '@syncfusion/ej2-base';import { Tab, TabAnimationSettings, TabAnimationSettingsModel, TabItemModel, SelectEventArgs, SelectingEventArgs, HScroll, Toolbar } from '@syncfusion/ej2-navigations';import { RibbonTab, RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, FileMenuSettings, FileMenuSettingsModel, RibbonItem, RibbonCollection, RibbonGroup } from '../models/index';import { commonProperties, DisplayMode, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';import { ItemOrientation, RibbonItemSize, RibbonItemType } from './interface';import { RibbonButton, RibbonComboBox, RibbonCheckBox, RibbonDropDown, RibbonColorPicker, RibbonSplitButton } from '../items/index';import { destroyControl, getCollection, getGroup, getIndex, getItem, getItemElement, updateCommonProperty, updateControlDisabled, isTooltipPresent, getTemplateFunction, createTooltip, destroyTooltip, updateTooltipProp } from './utils';import * as constants from './constant';import { RibbonFileMenu } from '../modules/index';import { RibbonTooltipModel } from '../models/ribbon-tooltip-model';import { Popup } from '@syncfusion/ej2-popups';import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';import { CheckBox } from '@syncfusion/ej2-buttons';
+import { addClass, append, Event, Collection, Complex, Component, EmitType, EventHandler, formatUnit, getInstance, getComponent, getUniqueID, closest, KeyboardEventArgs, KeyboardEvents } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, isNullOrUndefined, isUndefined, ModuleDeclaration, NotifyPropertyChanges, Property, remove, removeClass } from '@syncfusion/ej2-base';import { Tab, TabAnimationSettings, TabAnimationSettingsModel, TabItemModel, SelectEventArgs, SelectingEventArgs, HScroll, Toolbar } from '@syncfusion/ej2-navigations';import { RibbonTab, RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, FileMenuSettings, FileMenuSettingsModel, BackStageMenu, BackStageMenuModel, RibbonItem, RibbonCollection, RibbonGroup } from '../models/index';import { commonProperties, DisplayMode, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';import { ItemOrientation, RibbonItemSize, RibbonItemType } from './interface';import { RibbonButton, RibbonComboBox, RibbonCheckBox, RibbonDropDown, RibbonColorPicker, RibbonSplitButton, RibbonGroupButton } from '../items/index';import { destroyControl, getCollection, getGroup, getIndex, getItem, getItemElement, updateCommonProperty, updateControlDisabled, isTooltipPresent, getTemplateFunction, createTooltip, destroyTooltip, updateTooltipProp } from './utils';import * as constants from './constant';import { RibbonFileMenu, RibbonBackstage } from '../modules/index';import { RibbonTooltipModel } from '../models/ribbon-tooltip-model';import { Popup } from '@syncfusion/ej2-popups';import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';import { CheckBox } from '@syncfusion/ej2-buttons';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -31,6 +31,13 @@ export interface RibbonModel extends ComponentModel{
      * @default {}
      */
     fileMenu?: FileMenuSettingsModel;
+
+    /**
+     * Defines the properties of ribbon backstage.
+     *
+     * @default {}
+     */
+    backStageMenu?: BackStageMenuModel;
 
     /**
      * Defines the icon CSS for the launcher icon button in group header.
@@ -87,9 +94,19 @@ export interface RibbonModel extends ComponentModel{
      * The help pane appears on the right side of the ribbon header row.
      *
      * @default ''
+     * @angularType string | object | HTMLElement
+     * @reactType string | function | JSX.Element | HTMLElement
+     * @vueType string | function | HTMLElement
      * @aspType string
      */
     helpPaneTemplate?: string | HTMLElement | Function;
+
+    /**
+     * Defines whether to show the layout switcher button or not.
+     *
+     * @default false
+     */
+    hideLayoutSwitcher?: boolean;
 
     /**
      * Event triggers before selecting the tab item.
@@ -125,5 +142,12 @@ export interface RibbonModel extends ComponentModel{
      * @event launcherIconClick
      */
     launcherIconClick?: EmitType<LauncherClickEventArgs>;
+
+    /**
+     * Event triggers once the Ribbon Component rendering is completed.
+     *
+     * @event created
+     */
+    created?: EmitType<Event>;
 
 }

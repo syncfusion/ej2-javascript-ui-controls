@@ -305,6 +305,17 @@ export type MultipleExportType =
     'NewSheet';
 
 /**
+ * Defines Multiple Export Type.
+ * ```
+ * * AppendToPage :- Multiple Grids are exported to same page.
+ * * NewPage :- Multiple Grids are exported to separate page.
+ * ```
+ */
+export type MultiplePdfExportType =
+    'AppendToPage' |
+    'NewPage';
+
+/**
  * Defines Predefined toolbar items.
  *
  * @hidden
@@ -788,11 +799,15 @@ export type ResizeMode =
  * ```props
  * * Left :- freeze the columns at left.
  * * Right :- freeze the columns at right.
+ * * Fixed :- freeze the columns at center.
+ * * None :- does not freeze any columns.
  * ```
  */
 export type freezeDirection =
     'Left' |
-    'Right';
+    'Right'|
+    'Fixed' |
+    'None';
 
 /**
  * Defines rendered part of the grid column

@@ -363,7 +363,7 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         }
         let movableRow: HTMLTableRowElement;
         if (control.frozenRows || control.getFrozenColumns()) {
-            movableRow = <HTMLTableRowElement>control.getMovableRowByIndex(index);
+            movableRow = <HTMLTableRowElement>control.getRowByIndex(index);
         }
         if (!control.enableVirtualization && !isNullOrUndefined(row) || !isNullOrUndefined(movableRow)) {
             let index: number = control.treeColumnIndex;

@@ -214,6 +214,7 @@ export class PdfGantt extends PdfTreeGrid {
         let pageData: PageDetail;
         this.headerDetails.forEach((detail: TimelineDetails, index: number): void => {
             const page: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
+            page['contentWidth'] = pointToPixel(this.headerDetails[index as number].endPoint - this.headerDetails[index as number].startPoint);
             this.chartHeader.drawTimeline(page, this.startPoint, detail);
             taskbarPoint.y = taskbarPoint.y + pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
             pageStartX = taskbarPoint.x;
@@ -224,6 +225,11 @@ export class PdfGantt extends PdfTreeGrid {
                 const task: PdfGanttTaskbarCollection = this.taskbarCollection[i as number];
                 const rowHeight: number = this.rows.getRow(i + 1).height;
                 const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
+                const graphics = pdfPage.graphics;
+                const pen = new PdfPen(new PdfColor(206, 206, 206));
+                if (page['contentWidth'] && (this.parent.gridLines == "Both" || this.parent.gridLines == "Horizontal")) {
+                    graphics.drawRectangle(pen, pageStartX, taskbarPoint.y, page['contentWidth'] + 0.5, rowHeight);
+                }
                 /* eslint-disable-next-line */
                 const isNextPage: boolean = task.drawTaskbar(pdfPage, taskbarPoint, detail, cumulativeWidth, rowHeight, this.taskbarCollection[i]);
                 if (isNextPage) {

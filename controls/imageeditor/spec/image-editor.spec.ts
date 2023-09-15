@@ -5332,11 +5332,11 @@ describe('ImageEditor', () => {
                 imageEditor.crop();
                 expect(imageEditor.currSelectionPoint.shape).toEqual('crop-3:2');
                 imageEditor.finetuneImage('Brightness', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.finetuneImage('Contrast', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.applyImageFilter('Invert');
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
                done();
            }, 100);
        });
@@ -5364,11 +5364,11 @@ describe('ImageEditor', () => {
                 imageEditor.crop();
                 expect(imageEditor.currSelectionPoint.shape).toEqual('crop-circle');
                 imageEditor.finetuneImage('Brightness', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.finetuneImage('Contrast', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.applyImageFilter('Invert');
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
                done();
            }, 100);
        });
@@ -5428,11 +5428,11 @@ describe('ImageEditor', () => {
                 expect(imageEditor.objColl[0].shape).toEqual('text');
                 expect(imageEditor.objColl[1].shape).toEqual('line');
                 imageEditor.finetuneImage('Brightness', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.finetuneImage('Contrast', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.applyImageFilter('Invert');
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
                done();
            }, 100);
        });
@@ -5501,11 +5501,11 @@ describe('ImageEditor', () => {
                 expect(imageEditor.objColl[0].shape).toEqual('text');
                 expect(imageEditor.objColl[1].shape).toEqual('line');
                 imageEditor.finetuneImage('Brightness', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.finetuneImage('Contrast', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.applyImageFilter('Invert');
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
                done();
            }, 100);
        });
@@ -5532,11 +5532,11 @@ describe('ImageEditor', () => {
                 expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                 expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
                 imageEditor.finetuneImage('Brightness', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.finetuneImage('Contrast', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.applyImageFilter('Invert');
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
                done();
            }, 100);
        });
@@ -5561,11 +5561,11 @@ describe('ImageEditor', () => {
                 imageEditor.notify('shape', { prop: 'applyActObj', value: {isMouseDown: null }});
                 expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                 imageEditor.finetuneImage('Brightness', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.finetuneImage('Contrast', 50);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.applyImageFilter('Invert');
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
                done();
            }, 100);
        });
@@ -5576,19 +5576,19 @@ describe('ImageEditor', () => {
            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
            setTimeout(() => {
                imageEditor.finetuneImage('Brightness', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Contrast', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Hue', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Saturation', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Exposure', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Opacity', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.3) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Blur', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.3) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
                done();
            }, 100);
        });
@@ -5622,33 +5622,33 @@ describe('ImageEditor', () => {
            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
            setTimeout(() => {
                imageEditor.finetuneImage('Brightness', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Contrast', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Hue', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Saturation', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Exposure', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Opacity', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.3) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.finetuneImage('Blur', 50);
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.3) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.applyImageFilter('Chrome');
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(210%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(210%) opacity(0.3) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.applyImageFilter('Cold');
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.125) contrast(187.5%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.125) contrast(187.5%) hue-rotate(150deg) saturate(150%) opacity(0.3) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.applyImageFilter('Warm');
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(210%) opacity(1) blur(3px) sepia(25%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(210%) opacity(0.3) blur(3px) sepia(25%) grayscale(0%) invert(0%)');
                imageEditor.applyImageFilter('Grayscale');
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(100%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.3) blur(3px) sepia(0%) grayscale(100%) invert(0%)');
                imageEditor.applyImageFilter('Sepia');
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(100%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.3) blur(3px) sepia(100%) grayscale(0%) invert(0%)');
                imageEditor.applyImageFilter('Invert');
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(100%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.3) blur(3px) sepia(0%) grayscale(0%) invert(100%)');
                imageEditor.applyImageFilter('Default');
-               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+               expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(0.3) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
                imageEditor.undo(); imageEditor.undo(); imageEditor.undo(); imageEditor.undo();
                imageEditor.undo(); imageEditor.undo(); imageEditor.undo();
                imageEditor.redo(); imageEditor.redo(); imageEditor.redo(); imageEditor.redo();
@@ -5692,7 +5692,7 @@ describe('ImageEditor', () => {
            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
            setTimeout(() => {
                 imageEditor.finetuneImage('Brightness', 100);
-                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                expect(imageEditor.lowerCanvas.getContext('2d').filter).toEqual('brightness(1.5) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(0.7) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
                 imageEditor.rotate(90);
                 expect(imageEditor.transform.degree).toEqual(90);
                 done();
@@ -5846,7 +5846,7 @@ describe('ImageEditor', () => {
                 expect(imageEditor.transform.degree).toEqual(-90);
                 imageEditor.rotate(-90);
                 expect(imageEditor.transform.degree).toEqual(-180);
-                expect(imageEditor.objColl[imageEditor.objColl.length - 1].textSettings.fontSize).toEqual(24.385964912280695);
+                expect(imageEditor.objColl[imageEditor.objColl.length - 1].textSettings.fontSize).toEqual(20.99999999999999);
                 done();
            }, 100);
        });
@@ -7355,6 +7355,157 @@ describe('ImageEditor', () => {
                 imageEditor.notify('selection', {prop: 'setResizedElement', onPropertyChange: false, value: {value: 's-resize' }});
                 imageEditor.notify('selection', {prop: 'getResizeDirection', onPropertyChange: false,
                     value: {rectangle: imageEditor.activeObj.activePoint, x: 400, y: 300, angle: 1.25 }});
+                done();
+            }, 100);
+        });
+        it('resize Image aspectratio', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.resize(450, 342, true);
+                expect(Math.round(imageEditor.img.destWidth)).toEqual(497);
+                expect(Math.round(imageEditor.img.destHeight)).toEqual(378);
+                imageEditor.reset();
+                imageEditor.resize(890, 593, true);
+                expect(Math.round(imageEditor.img.destWidth)).toEqual(497);
+                expect(Math.round(imageEditor.img.destHeight)).toEqual(378);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.transform.currFlipState).toEqual('horizontal');
+                done();
+            }, 100);
+        });
+        it('resize Image nonaspectratio', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.resize(248, 293);
+                expect(Math.round(imageEditor.img.destWidth)).toEqual(320);
+                expect(Math.round(imageEditor.img.destHeight)).toEqual(378);
+                imageEditor.reset();
+                imageEditor.resize(50, 34);
+                expect(Math.round(imageEditor.img.destWidth)).toEqual(497);
+                expect(Math.round(imageEditor.img.destHeight)).toEqual(378);
+                imageEditor.reset();
+                imageEditor.resize(415, 902);
+                expect(Math.round(imageEditor.img.destWidth)).toEqual(174);
+                expect(Math.round(imageEditor.img.destHeight)).toEqual(378);
+                imageEditor.reset();
+                imageEditor.resize(967, 129);
+                expect(Math.round(imageEditor.img.destWidth)).toEqual(497);
+                expect(Math.round(imageEditor.img.destHeight)).toEqual(378);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.transform.currFlipState).toEqual('horizontal');
+                imageEditor.reset();
+                done();
+            }, 100);
+        });
+        it('resize image using toolbar', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                setTimeout(function () { });
+                    const resizeBtn: any = document.querySelectorAll('#image-editor_resize')[0];
+                    resizeBtn.click();
+                    setTimeout(function () { });
+                    imageEditor.notify('transform', {prop: 'resize', value: {width: 400, height: 300, isAspectRatio: true }});
+                    expect(Math.round(imageEditor.img.destWidth)).toEqual(404);
+                    expect(Math.round(imageEditor.img.destHeight)).toEqual(307);
+                    const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                    okBtn.click();
+                    expect(Math.round(imageEditor.img.destWidth)).toEqual(497);
+                    expect(Math.round(imageEditor.img.destHeight)).toEqual(378);
+                    done();
+            }, 100);
+        });
+        it('resized Image rotation', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                const cropBtn: any = document.querySelectorAll('#image-editor_cropTransform')[0];
+                cropBtn.click();
+                setTimeout(() => {});
+                let transformBtn: any = document.querySelectorAll('#image-editor_rotateRight')[0];
+                transformBtn.click();
+                setTimeout(() => {});
+                expect(imageEditor.transform.degree).toEqual(90);
+                const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                setTimeout(() => {});
+                const resizeBtn: any = document.querySelectorAll('#image-editor_resize')[0];
+                resizeBtn.click();
+                setTimeout(function () { });
+                imageEditor.notify('transform', {prop: 'resize', value: {width: 400, height: 300, isAspectRatio: true }});
+                expect(imageEditor.transform.degree).toEqual(90);
+                expect(Math.round(imageEditor.img.destWidth)).toEqual(399);
+                expect(Math.round(imageEditor.img.destHeight)).toEqual(524);
+                done();
+            }, 100);
+        });
+        it('Image Annotation', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                setTimeout(function () {
+                    expect(Math.round(imageEditor.objColl[0].activePoint.width)).toEqual(200);
+                    expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(500);
+                    expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(100);
+                    expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(700);
+                    expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(252);
+                    expect(Math.round(imageEditor.objColl[0].shapeDegree)).toEqual(0);
+                    done();
+                }, 500);
+                imageEditor.drawImage('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', 500, 100, 200, 80, true, 90);
+            }, 100);
+        });
+        it('filter using Toolbar', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                const filterBtn: any = document.querySelectorAll('#image-editor_frame')[0];
+                filterBtn.click();
+                const matFrame: HTMLCanvasElement = document.querySelector('#image-editor_mat');
+                matFrame.click();
+                expect(imageEditor.frameObj.amount).toEqual(1);
+                expect(imageEditor.frameObj.type).toEqual('mat');
+                expect(imageEditor.frameObj.inset).toEqual(20);
+                expect(imageEditor.frameObj.offset).toEqual(20);
+                filterBtn.click();
+                const bevelFrame: HTMLCanvasElement = document.querySelector('#image-editor_bevel');
+                bevelFrame.click();
+                expect(imageEditor.frameObj.amount).toEqual(1);
+                expect(imageEditor.frameObj.type).toEqual('bevel');
+                expect(imageEditor.frameObj.inset).toEqual(20);
+                expect(imageEditor.frameObj.offset).toEqual(20);
+                const lineFrame: HTMLCanvasElement = document.querySelector('#image-editor_line');
+                lineFrame.click();
+                expect(imageEditor.frameObj.amount).toEqual(1);
+                expect(imageEditor.frameObj.type).toEqual('line');
+                expect(imageEditor.frameObj.inset).toEqual(20);
+                expect(imageEditor.frameObj.offset).toEqual(20);
+                const insetFrame: HTMLCanvasElement = document.querySelector('#image-editor_inset');
+                insetFrame.click();
+                expect(imageEditor.frameObj.amount).toEqual(1);
+                expect(imageEditor.frameObj.type).toEqual('inset');
+                expect(imageEditor.frameObj.inset).toEqual(20);
+                expect(imageEditor.frameObj.offset).toEqual(60);
+                const hookFrame: HTMLCanvasElement = document.querySelector('#image-editor_hook');
+                hookFrame.click();
+                expect(imageEditor.frameObj.amount).toEqual(1);
+                expect(imageEditor.frameObj.type).toEqual('hook');
+                expect(imageEditor.frameObj.inset).toEqual(20);
+                expect(imageEditor.frameObj.offset).toEqual(20);
                 done();
             }, 100);
         });

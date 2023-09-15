@@ -55,7 +55,7 @@ export class CellEdit {
             args.cancel = true;
             return;
         }
-        if (data.hasChildRecords && ((field === taskSettings.endDate && ((!isNullOrUndefined(data['isManual']) &&
+        if (data.hasChildRecords && !this.parent.allowParentDependency && ((field === taskSettings.endDate && ((!isNullOrUndefined(data['isManual']) &&
             data['isManual'] === false) || this.parent.taskMode === 'Auto')) || field === taskSettings.duration
             || field === taskSettings.dependency || field === taskSettings.progress || field === taskSettings.work || field === 'taskType')) {
             if ((field === taskSettings.dependency && !this.parent.allowParentDependency) || field !== taskSettings.dependency) {
@@ -355,6 +355,9 @@ export class CellEdit {
      * @returns {void} .
      */
     private durationEdited(args: ITaskbarEditedEventArgs): void {
+        if (parseInt(args.data[this.parent.taskFields.duration]) < 0) {
+            args.data[this.parent.taskFields.duration] = 0;
+        }
         const ganttProb: ITaskData = args.data.ganttProperties;
         const durationString: string = args.data[this.parent.taskFields.duration];
         this.parent.dataOperation.updateDurationValue(durationString, ganttProb);

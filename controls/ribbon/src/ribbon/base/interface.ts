@@ -1,5 +1,5 @@
 import { BaseEventArgs } from '@syncfusion/ej2-base';
-import { RibbonCollectionModel, RibbonGroupModel, RibbonItemModel, RibbonTooltipModel } from '../models';
+import { RibbonCollectionModel, RibbonGroupButtonItemModel, RibbonGroupModel, RibbonItemModel, RibbonTooltipModel } from '../models';
 
 /**
  * Defines the layout types of ribbon.
@@ -68,7 +68,7 @@ export enum DisplayMode {
      */
     Overflow = 1 << 0,
     /**
-      * The item appears in classic layout group, simplified layout group, and overflow popup based on ribbon overflow state.
+     * The item appears in classic layout group, simplified layout group, and overflow popup based on ribbon overflow state.
      */
     Auto = Classic | Simplified | Overflow,
 }
@@ -102,9 +102,27 @@ export enum RibbonItemType {
      */
     SplitButton = 'SplitButton',
     /**
+     * Renders the group button content as ribbon item.
+     */
+    GroupButton = 'GroupButton',
+    /**
      * Renders the template content as ribbon item.
      */
     Template = 'Template'
+}
+
+/**
+ * Defines the alignment of the items in the ribbon group.
+ */
+export enum RibbonGroupButtonSelection {
+    /**
+     * Allows selecting single button from button group.
+     */
+    Single = 'Single',
+    /**
+     * Allows selecting multiple buttons from button group.
+     */
+    Multiple = 'Multiple'
 }
 
 /**
@@ -163,6 +181,38 @@ export interface LauncherClickEventArgs extends BaseEventArgs {
     groupId: string;
 }
 
+/**
+ * Triggers before clicking the button from group button
+ */
+export interface BeforeClickGroupButtonEventArgs extends BaseEventArgs {
+    /**
+     *  Defines whether to cancel the event or not.
+     */
+    cancel: boolean;
+    /**
+     *  Defines the collection of previous selected group button item(s).
+     */
+    previousItems: RibbonGroupButtonItemModel[];
+    /**
+     *  Defines the collection of current selecting group button item(s).
+     */
+    selectingItems: RibbonGroupButtonItemModel[];
+}
+
+/**
+ * Triggers after clicking the button from group button.
+ */
+export interface ClickGroupButtonEventArgs extends BaseEventArgs {
+    /**
+     *  Defines the collection of previous selected group button item(s).
+     */
+    previousItems: RibbonGroupButtonItemModel[];
+    /**
+     *  Defines the collection of current selected group button item(s).
+     */
+    selectedItems: RibbonGroupButtonItemModel[];
+}
+
 /** @hidden */
 export interface itemProps {
     item?: RibbonItemModel;
@@ -206,3 +256,4 @@ export interface ribbonTooltipData {
     id: string,
     data: RibbonTooltipModel
 }
+

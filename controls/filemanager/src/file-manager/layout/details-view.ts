@@ -171,12 +171,17 @@ export class DetailsView {
 
     private reactTemplateRender(args: Object[]): void {
         (this.parent as any)[`portals`] = args;
+        if ((this.parent as any).portals && this.parent.toolbarModule && this.parent.toolbarModule.toolbarObj &&
+            (this.parent.toolbarModule.toolbarObj as any).portals) {
+            (this.parent as any)[`portals`] = (this.parent as any)[`portals`].concat((this.parent.toolbarModule.toolbarObj as any).portals);
+        }
         this.parent.notify('renderReactTemplate', (this.parent as any)[`portals`]);
         (this.parent as any)[`renderReactTemplates`]();
     }
 
     /**
      * Gets the grid height.
+     *
      * @returns The grid height.
      * @private
      */
@@ -243,7 +248,7 @@ export class DetailsView {
             }) as any, allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
             headerTemplate: initializeCSPTemplate(function() {
                 return `<span class="e-fe-icon e-fe-folder"></span>`;
-            }) as any,
+            }) as any
         };
         columns.unshift(icon);
         if (this.parent.showItemCheckBoxes) {
@@ -324,7 +329,7 @@ export class DetailsView {
                         break;
                     }
                 }
-                let value: string = intl.formatNumber((sizeValue / 1024), { format: sizeFormat });
+                const value: string = intl.formatNumber((sizeValue / 1024), { format: sizeFormat });
                 modifiedSize = value + ' ' + getLocaleText(this.parent, 'KB');
             }
             sizeEle.innerHTML = modifiedSize;
@@ -397,8 +402,8 @@ export class DetailsView {
     /* istanbul ignore next */
     private onDataBound(): void {
         this.createDragObj();
-        if ((this.parent.selectedItems.length !== 0 && !this.parent.enableVirtualization) || 
-                ((this.parent.selectedItems.length !== 0 && this.parent.enableVirtualization && 
+        if ((this.parent.selectedItems.length !== 0 && !this.parent.enableVirtualization) ||
+                ((this.parent.selectedItems.length !== 0 && this.parent.enableVirtualization &&
                 this.element.querySelector('.e-content').scrollTop == 0))) {
             this.selectRecords(this.parent.selectedItems);
         }
@@ -974,12 +979,12 @@ export class DetailsView {
         const dragLi: Element = dragTarget.closest('tr.e-row');
         if (!dragLi) { return null; }
         let name: string;
-        if(<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]){
-            name  = (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText
+        if (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]) {
+            name = (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText;
         }
-         else if(<HTMLElement>dragLi.getElementsByClassName("e-rowcell e-templatecell")[0].nextElementSibling){
-            name = (<HTMLElement>dragLi.getElementsByClassName("e-rowcell e-templatecell")[0].nextElementSibling).innerText;
-         }
+        else if (<HTMLElement>dragLi.getElementsByClassName('e-rowcell e-templatecell')[0].nextElementSibling) {
+            name = (<HTMLElement>dragLi.getElementsByClassName('e-rowcell e-templatecell')[0].nextElementSibling).innerText;
+        }
         if (dragLi && !dragLi.querySelector('.e-active')) {
             this.selectRecords([name]);
         }
@@ -1459,12 +1464,12 @@ export class DetailsView {
                     this.gridObj.selectRow(0);
                 } else if (this.gridObj.selectedRowIndex !== -1 && e.action === 'tab') {
                     return;
-                } 
-                else if(!this.actionDivert){
+                }
+                else if (!this.actionDivert) {
                     this.addHeaderFocus();
                     this.actionDivert = true;
                 }
-                 else {
+                else {
                     this.addFocus(0);
                     this.actionDivert = false;
                 }
@@ -1752,7 +1757,7 @@ export class DetailsView {
             removeClass([treeFocus], [CLS.FOCUS, CLS.FOCUSED]);
         }
     }
-    
+
     private getFocusedItem(): Element {
         return select('.' + CLS.FOCUSED, this.element);
     }

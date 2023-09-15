@@ -265,6 +265,22 @@ export interface DragEventArgs extends BaseEventArgs {
     navigation?: NavigateOptions;
 }
 
+/** An interface that holds options of virtual scroll action. */
+export interface ScrollEventArgs extends BaseEventArgs {
+    /** Returns the group index of last resource which is currently being rendered. */
+    endIndex: number;
+    /** Returns the end date from the active view of scheduler. */
+    endDate: Date;
+    /** Returns the group index of first resource which is currently being rendered. */
+    startIndex: number;
+    /** Returns the start date from the active view of scheduler. */
+    startDate: Date;
+    /** Returns the resource data collection which is currently rendered. */
+    resourceData: Record<string, any>[];
+    /** Allows to define the event data collection that needs to be rendered on every virtual scroll action only when enableLazyLoading property is enabled. */
+    eventData?: Record<string, any>[];
+}
+
 /** An interface that holds options to control the navigation, while performing drag action on appointments. */
 export interface NavigateOptions {
     /** Allows to enable or disable the auto navigation while performing drag action on appointments. */

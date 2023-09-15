@@ -1493,11 +1493,11 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).imageModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).imageModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Image (Ctrl + Shift + I)"]'), preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Image (Ctrl+Shift+I)"]'), preventDefault: function () { } };
             (<any>rteObj).imageModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).imageModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Image (Ctrl + Shift + I)"]').parentElement, preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Image (Ctrl+Shift+I)"]').parentElement, preventDefault: function () { } };
             (<any>rteObj).imageModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).imageModule.dialogObj.element)).toBe(true);
         });
@@ -4236,6 +4236,197 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>document.querySelectorAll(".e-rte-dropdown-btn")[1]).click();
             expect(document.querySelectorAll('li')[0].innerHTML === "Inline");
             expect(document.querySelectorAll('li')[1].innerHTML === "Break");
+        });
+    });
+    describe('EJ2-53661- Image is not deleted when press backspace and delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let innerHTML1: string = `testing
+        <span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize" style=""><span class="e-img-inner" contenteditable="true">image caption</span></span></span>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Image delete action checking using backspace key', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].lastChild;
+            setCursorPoint(node, 0);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((<any>rteObj).inputElement.querySelector('.e-img-caption')).toBe(null);
+            keyBoardEvent.keyCode = 90;
+            (rteObj as any).keyDown(keyBoardEvent);
+            done();
+        });
+    });
+    describe('836851 - check the image quick toolbar hide, while click the enterkey ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent = { 
+            type: 'keydown', 
+            preventDefault: function () { }, 
+            ctrlKey: false, 
+            key: 'enter', 
+            stopPropagation: function () { }, 
+            shiftKey: false, 
+            which: 13,
+            keyCode: 13,
+            action: 'enter'
+        };
+        let innerHTML1: string = ` 
+            <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>
+            `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('check the image quick toolbar hide, while click the enterkey', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('img');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+            (<any>rteObj).keyDown(keyBoardEvent);
+            expect(document.querySelector('.e-rte-quick-popup')).toBe(null);
+            done();
+        });
+    });
+    describe('836851 - Remove the image using image quick toolbar ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                insertImageSettings: {removeUrl:"https://ej2.syncfusion.com/services/api/uploadbox/Remove"},
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Remove the image using  image quick toolbar ', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-rte-image');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({args:clickEvent});
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-image')as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            let imageQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            (imageQTBarEle.querySelector("[title='Remove']")as HTMLElement).click();
+            expect(isNullOrUndefined(document.querySelector('.e-rte-image')as HTMLElement)).toBe(true);
+            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            done();
+        });
+    });
+    describe('836851 - iOS device interaction', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>`;
+        beforeAll(() => {
+            Browser.userAgent = iPhoneUA;
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                insertImageSettings: {removeUrl:"https://ej2.syncfusion.com/services/api/uploadbox/Remove"},
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            Browser.userAgent = currentBrowserUA;
+            destroy(rteObj);
+        });
+        it('Remove the image using quick toolbar ', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-rte-image');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({args:clickEvent});
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-image')as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            let imageQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            (imageQTBarEle.querySelector("[title='Remove']")as HTMLElement).click();
+            expect(isNullOrUndefined(document.querySelector('.e-rte-image')as HTMLElement)).toBe(true);
+            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            done();
+        });
+    });
+    describe('836851 - Insert image', function () {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let QTBarModule: IRenderer;
+        var innerHTML: string = "<p>Testing</p>";
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Close the dialog while image insert', (done: Function) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.imageModule);
+            (<any>rteObj).imageModule.uploadUrl = { url: "https://www.w3schools.com/html/mov_bbb.mp4" };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            (<any>rteObj).imageModule.onIframeMouseDown();
+            expect(!isNullOrUndefined(document.querySelector('.e-insertImage.e-primary') as HTMLElement)).toBe(false);
+            done();
         });
     });
 });

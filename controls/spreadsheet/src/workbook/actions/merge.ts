@@ -1,6 +1,6 @@
 import { Workbook, CellModel, getCell, SheetModel, setCell, getSheet } from '../base/index';
 import { setMerge, MergeArgs, getSwapRange, getRangeIndexes, mergedRange, applyMerge, activeCellMergedRange } from './../common/index';
-import { insertMerge, activeCellChanged, pasteMerge, getCellIndexes, checkIsFormula, applyCF, ApplyCFArgs } from './../common/index';
+import { insertMerge, activeCellChanged, checkIsFormula, applyCF, ApplyCFArgs } from './../common/index';
 import { getCellAddress, workbookFormulaOperation, refreshChart } from './../common/index';
 import { extend, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 
@@ -640,37 +640,11 @@ export class WorkbookMerge {
         args.preventRefresh = true; args.merge = true;
         this.mergeAll(args);
     }
-    private pasteHandler(args: { range: number[], prevSheet: SheetModel, cancel: boolean }): void {
-        const sheet: SheetModel = this.parent.getActiveSheet(); let cell: CellModel; let nextCell: CellModel;
-        let prevCell: CellModel; const activeCell: number[] = getCellIndexes(sheet.activeCell);
-        for (let i: number = args.range[0], l: number = 0; i <= args.range[2]; i++ , l++) {
-            for (let j: number = args.range[1], k: number = 0; j <= args.range[3]; j++ , k++) {
-                cell = getCell(i, j, args.prevSheet) || {};
-                if (cell.rowSpan > 1) {
-                    prevCell = getCell(activeCell[0] + (cell.rowSpan - 1), activeCell[1], sheet) || {};
-                    nextCell = getCell(activeCell[0] + 1, activeCell[1], sheet) || {};
-                    if ((prevCell.colSpan !== undefined && prevCell.colSpan < 0) || (nextCell.colSpan !== undefined &&
-                        nextCell.colSpan < 0)) {
-                        args.cancel = true; this.parent.notify(applyMerge, { showDialog: true }); return;
-                    }
-                }
-                if (cell.colSpan > 1) {
-                    prevCell = getCell(activeCell[0], activeCell[1] + (cell.colSpan - 1), sheet) || {};
-                    nextCell = getCell(activeCell[0], activeCell[1] + 1, sheet) || {};
-                    if ((prevCell.rowSpan !== undefined && prevCell.rowSpan < 0) || (nextCell.rowSpan !== undefined &&
-                        nextCell.rowSpan < 0)) {
-                        args.cancel = true; this.parent.notify(applyMerge, { showDialog: true }); return;
-                    }
-                }
-            }
-        }
-    }
     private addEventListener(): void {
         this.parent.on(setMerge, this.merge, this);
         this.parent.on(mergedRange, this.mergedRange, this);
         this.parent.on(activeCellMergedRange, this.activeCellRange, this);
         this.parent.on(insertMerge, this.insertHandler, this);
-        this.parent.on(pasteMerge, this.pasteHandler, this);
     }
     /**
      * Destroy workbook merge module.
@@ -687,7 +661,6 @@ export class WorkbookMerge {
             this.parent.off(mergedRange, this.mergedRange);
             this.parent.off(activeCellMergedRange, this.activeCellRange);
             this.parent.off(insertMerge, this.insertHandler);
-            this.parent.off(pasteMerge, this.pasteHandler);
         }
     }
     /**

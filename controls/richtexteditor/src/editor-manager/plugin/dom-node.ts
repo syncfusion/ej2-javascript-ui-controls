@@ -479,11 +479,12 @@ export class DOMNode {
         let startTextNode: Element;
         let endTextNode: Element;
         if (start.textContent === '' && isNOU(end) && action !== 'tab') {
-            if (isNOU(action) && save.range.startContainer.nodeType === 1 &&
-                (save.range.startContainer as HTMLElement).querySelectorAll('audio,video,image').length === 0)  {
-                start.innerHTML = '<br>';
-            }
-            else if (start.childNodes.length === 1 && start.childNodes[0].nodeName === 'BR') {
+            // To Do Apply Heading and Back space press in empty content.
+            // if (isNOU(action) && save.range.startContainer.nodeType === 1 &&
+            //     (save.range.startContainer as HTMLElement).querySelectorAll('audio,video,image').length === 0)  {
+            //     start.innerHTML = '<br>';
+            // }
+            if (start.childNodes.length === 1 && start.childNodes[0].nodeName === 'BR') {
                 start.innerHTML = '&#65279;&#65279;<br>';
             } else {
                 start.innerHTML = '&#65279;&#65279;';

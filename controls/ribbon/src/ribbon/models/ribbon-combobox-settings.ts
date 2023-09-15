@@ -90,6 +90,9 @@ export class RibbonComboBoxSettings extends ChildProperty<RibbonComboBoxSettings
      * Specifies the template content for the footer container of the popup list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property(null)
@@ -99,6 +102,9 @@ export class RibbonComboBoxSettings extends ChildProperty<RibbonComboBoxSettings
      * Specifies the template content for the group headers present in the popup list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property(null)
@@ -108,6 +114,9 @@ export class RibbonComboBoxSettings extends ChildProperty<RibbonComboBoxSettings
      * Specifies the template content for the header container of the popup list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property(null)
@@ -125,6 +134,9 @@ export class RibbonComboBoxSettings extends ChildProperty<RibbonComboBoxSettings
      * Specifies the template content for each list item present in the popup.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property(null)
@@ -133,6 +145,9 @@ export class RibbonComboBoxSettings extends ChildProperty<RibbonComboBoxSettings
      * Specifies the template content for the popup list of combobox when no data is available.
      *
      * @default 'No records found'
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property('No records found')

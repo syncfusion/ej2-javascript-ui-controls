@@ -10,12 +10,13 @@ import { PdfGantt } from './pdf-gantt';
 import {
     IGanttData, PdfExportProperties, PdfQueryCellInfoEventArgs,
     ITaskData, IGanttStyle, IConnectorLineObject, PdfGanttCellStyle, ITaskbarStyle, PdfColumnHeaderQueryCellInfoEventArgs,
-    PdfQueryTaskbarInfoEventArgs
+    PdfQueryTaskbarInfoEventArgs,
+    ZoomTimelineSettings
 } from './../base/interface';
 import { Gantt } from './../base/gantt';
 import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, extend } from '@syncfusion/ej2-base';
 import { getForeignData, ValueFormatter } from '@syncfusion/ej2-grids';
-import { pixelToPoint, isScheduledTask } from '../base/utils';
+import { pixelToPoint, isScheduledTask, pointToPixel } from '../base/utils';
 import { Timeline } from '../renderer/timeline';
 import { PdfGanttTaskbarCollection } from './pdf-taskbar';
 import { PdfGanttPredecessor } from './pdf-connector-line';
@@ -28,7 +29,7 @@ import { PdfGanttPredecessor } from './pdf-connector-line';
 export class ExportHelper {
     private parent: Gantt;
     private flatData: IGanttData[];
-    private exportProps: PdfExportProperties;
+    public exportProps: PdfExportProperties;
     private gantt: PdfGantt;
     private rowIndex: number;
     private colIndex: number;
@@ -37,9 +38,101 @@ export class ExportHelper {
     private ganttStyle: IGanttStyle;
     private pdfDoc: PdfDocument;
     private exportValueFormatter: ExportValueFormatter;
-    private totalColumnWidth: number;
+    private totalColumnWidth: number = 0;
+    public beforeSinglePageExport: Object = {};
+    public baselineHeight: number = 8;
+    public baselineTop: number;
     public constructor(parent: Gantt) {
         this.parent = parent;
+    }
+
+    public processToFit(): void {
+        this.beforeSinglePageExport['zoomingProjectStartDate'] = this.parent.zoomingProjectStartDate;
+        this.beforeSinglePageExport['zoomingProjectEndDate'] = this.parent.zoomingProjectEndDate;
+        this.beforeSinglePageExport['cloneProjectStartDate'] = this.parent.cloneProjectStartDate;
+        this.beforeSinglePageExport['cloneProjectEndDate'] = this.parent.cloneProjectEndDate;
+        this.beforeSinglePageExport['customTimelineSettings'] = extend({}, this.parent.timelineModule.customTimelineSettings, null, true);
+        this.beforeSinglePageExport['isTimelineRoundOff'] = this.parent.isTimelineRoundOff;
+        this.beforeSinglePageExport['topTier'] = this.parent.timelineModule.topTier;
+        this.beforeSinglePageExport['topTierCellWidth'] = this.parent.timelineModule.topTierCellWidth;
+        this.beforeSinglePageExport['topTierCollection'] = this.parent.timelineModule.topTierCollection;
+        this.beforeSinglePageExport['bottomTier'] = this.parent.timelineModule.bottomTier;
+        this.beforeSinglePageExport['bottomTierCellWidth'] = this.parent.timelineModule.bottomTierCellWidth;
+        this.beforeSinglePageExport['bottomTierCollection'] = this.parent.timelineModule.bottomTierCollection;
+        this.beforeSinglePageExport['totalTimelineWidth'] = this.parent.timelineModule.totalTimelineWidth;
+        this.beforeSinglePageExport['timelineStartDate'] = this.parent.timelineModule.timelineStartDate;
+        this.beforeSinglePageExport['timelineEndDate'] = this.parent.timelineModule.timelineEndDate;
+        this.beforeSinglePageExport['timelineRoundOffEndDate'] = this.parent.timelineModule.timelineRoundOffEndDate;
+        this.beforeSinglePageExport['perDayWidth'] = this.parent.perDayWidth;
+        this.beforeSinglePageExport['updatedConnectorLineCollection'] = extend([], this.parent.updatedConnectorLineCollection, null, true);
+        this.parent.timelineModule.isZoomToFit = true;
+        this.parent.timelineModule.isZooming = false;
+        if (!this.parent.zoomingProjectStartDate) {
+            this.parent.zoomingProjectStartDate = this.parent.cloneProjectStartDate;
+            this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;
+        }
+        if (this.parent.zoomingProjectStartDate > this.parent.cloneProjectStartDate){
+            this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ? this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
+        }
+        this.parent.dataOperation.calculateProjectDates();
+        const timeDifference: number = (this.parent.cloneProjectEndDate.getTime() - this.parent.cloneProjectStartDate.getTime());
+        const totalDays: number = (timeDifference / (1000 * 3600 * 24));
+        let chartsideWidth: number;
+        let gridWidth: number;
+            if (this.exportProps.fitToWidthSettings.gridWidth) {
+               gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0]);
+            }
+        if (this.exportProps.fitToWidthSettings.chartWidth) {
+            chartsideWidth = parseInt(this.exportProps.fitToWidthSettings.chartWidth.split('%')[0]);
+        }
+        else {
+            if (this.exportProps.fitToWidthSettings.gridWidth) {
+                chartsideWidth = 100 - gridWidth;
+            }
+            else {
+               chartsideWidth = 70;
+            }
+        }
+        const pdfwidth: number = (this.parent.pdfExportModule['pdfPageDimensions'].width * chartsideWidth)/100;
+        const chartWidth: number = pdfwidth;
+        const perDayWidth: number = chartWidth / totalDays;
+        let zoomingLevel: ZoomTimelineSettings;
+        let firstValue: ZoomTimelineSettings;
+        let secondValue: ZoomTimelineSettings;
+        const zoomingCollections: ZoomTimelineSettings[] = [...this.parent.zoomingLevels];
+        const sortedCollectons: ZoomTimelineSettings[] = zoomingCollections.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings) =>
+            (!a.perDayWidth && !b.perDayWidth ? 0 : (a.perDayWidth < b.perDayWidth) ? 1 : -1));
+        if (perDayWidth === 0) { // return when the Gantt chart is not in viewable state.
+            return;
+        }
+        for (let i: number = 0; i < sortedCollectons.length; i++) {
+            firstValue = sortedCollectons[i as number];
+            if (i === sortedCollectons.length - 1) {
+                zoomingLevel = sortedCollectons[i as number];
+                break;
+            } else {
+                secondValue = sortedCollectons[i + 1];
+            }
+            if (perDayWidth >= firstValue.perDayWidth) {
+                zoomingLevel = sortedCollectons[i as number];
+                break;
+            }
+            if (perDayWidth < firstValue.perDayWidth && perDayWidth > secondValue.perDayWidth) {
+                zoomingLevel = sortedCollectons[i + 1];
+                break;
+            }
+        }
+        const newTimeline: ZoomTimelineSettings = extend({}, {}, zoomingLevel, true);
+        this.parent.timelineModule['roundOffDateToZoom'](this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
+        this.parent.timelineModule['roundOffDateToZoom'](this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
+        const numberOfCells: number = this.parent.timelineModule['calculateNumberOfTimelineCells'](newTimeline);
+        const scrollHeight: number = this.parent.pdfExportModule['pdfPageDimensions'].height; //17 is horizontal scrollbar width
+        const contentHeight: number = this.parent.pdfExportModule['pdfPageDimensions'].height;
+        const emptySpace: number = contentHeight <= scrollHeight ? 0 : 17;
+        newTimeline.timelineUnitSize = Math.abs((chartWidth - emptySpace)) / numberOfCells;
+        this.parent.timelineModule['changeTimelineSettings'](newTimeline);
+        this.parent.timelineModule.isZoomToFit = false;
+        this.parent.timelineModule.isZooming = false;
     }
     /**
      * @param {IGanttData[]} data .
@@ -62,11 +155,16 @@ export class ExportHelper {
         this.gantt.style.cellPadding.right = 0;
         this.ganttStyle = this.gantt.ganttStyle;
         this.gantt.borderColor = this.ganttStyle.chartGridLineColor;
+        this.parent.pdfExportModule.isPdfExport = true;
+        if (this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth) {
+            this.processToFit();
+        }
         this.processHeaderContent();
         this.processGanttContent();
         this.processTimeline();
         this.processTaskbar();
         this.processPredecessor();
+        this.parent.pdfExportModule.isPdfExport = false;
     }
 
     private processHeaderContent(): void {
@@ -122,7 +220,9 @@ export class ExportHelper {
         if (this.flatData.length === 0) {
             this.renderEmptyGantt();
         } else {
-            this.flatData.forEach((data: IGanttData) => {
+            let flatData: IGanttData[];
+            flatData = this.flatData;
+            flatData.forEach((data: IGanttData) => {
                 this.row = this.gantt.rows.addRow();
                 if (data.hasChildRecords) {
                     this.gantt.rows.getRow(this.rowIndex).isParentRow = true;
@@ -130,6 +230,9 @@ export class ExportHelper {
                 } else {
                     this.processRecordRow(data);
                 }
+                if (this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth) {
+                    this.row.height = 33.33;
+                  }
                 this.rowIndex++;
             });
         }
@@ -180,7 +283,7 @@ export class ExportHelper {
                 else {
                     predecessor.connectorLineColor = this.ganttStyle.connectorLineColor;
                 }
-                predecessor.connectorLineColor = this.ganttStyle.connectorLineColor;
+                this.ganttStyle.connectorLineColor = predecessor.connectorLineColor;
                 this.gantt.predecessorCollection.push(predecessor);
             });
             this.parent.pdfExportModule.isPdfExport = false;
@@ -240,7 +343,9 @@ export class ExportHelper {
      * @returns {void} .
      */
     private processTaskbar(): void {
-        this.flatData.forEach((data: IGanttData) => {
+        let flatData: IGanttData[];
+        flatData = this.flatData;
+        flatData.forEach((data: IGanttData) => {
             const taskbar: PdfGanttTaskbarCollection = this.gantt.taskbar.add();
             const ganttProp: ITaskData = data.ganttProperties;
             taskbar.left = ganttProp.left;
@@ -268,7 +373,21 @@ export class ExportHelper {
             taskbar.startDate = ganttProp.startDate;
             taskbar.endDate = ganttProp.endDate;
             taskbar.height = this.parent.chartRowsModule.taskBarHeight;
+            if (this.parent.renderBaseline) {
+                let height: number;
+                if ((taskbar.height + this.baselineHeight) <= this.parent.rowHeight) {
+                    height = taskbar.height;
+                } else {
+                    height = taskbar.height - (this.baselineHeight + 1);
+                }
+                taskbar.height = height;
+            }
+            taskbar.baselineTop = this.parent.chartRowsModule.baselineTop;
             taskbar.isMilestone = ganttProp.isMilestone;
+            taskbar.baselineStartDate = ganttProp.baselineStartDate;
+            taskbar.baselineEndDate = ganttProp.baselineEndDate;
+            taskbar.baselineLeft = ganttProp.baselineLeft;
+            taskbar.baselineWidth = ganttProp.baselineWidth;
             taskbar.milestoneColor = new PdfColor(this.ganttStyle.taskbar.milestoneColor);
             taskbar.isParentTask = data.hasChildRecords;
             if (ganttProp.isMilestone) {
@@ -294,10 +413,11 @@ export class ExportHelper {
                 taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.parentTaskBorderColor);
                 taskbar.progressColor = new PdfColor(this.ganttStyle.taskbar.parentProgressColor);
             } else {
-                if(data.isCritical) {
+                if (data.isCritical) {
                     taskbar.taskColor = new PdfColor(this.ganttStyle.taskbar.criticalTaskColor);
                     taskbar.progressColor = new PdfColor(this.ganttStyle.taskbar.criticalProgressColor);
                     taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.criticalTaskBorderColor);
+                    taskbar.milestoneColor = new PdfColor(this.ganttStyle.taskbar.criticalTaskColor);
                 }
                 else {
                     taskbar.taskColor = new PdfColor(this.ganttStyle.taskbar.taskColor);
@@ -305,6 +425,8 @@ export class ExportHelper {
                     taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.taskBorderColor);
                 }
             }
+            taskbar.baselineColor = new PdfColor(this.ganttStyle.taskbar.baselineColor);
+            taskbar.baselineBorderColor = new PdfColor(this.ganttStyle.taskbar.baselineBorderColor);
             taskbar.gridLineColor = new PdfColor(this.ganttStyle.chartGridLineColor);
             this.gantt.taskbarCollection.push(taskbar);
             const taskStyle: ITaskbarStyle   = {};
@@ -313,6 +435,8 @@ export class ExportHelper {
             taskStyle.taskBorderColor = taskbar.taskBorderColor;
             taskStyle.progressColor = taskbar.progressColor;
             taskStyle.milestoneColor = taskbar.milestoneColor;
+            taskStyle.baselineColor = taskbar.baselineColor;
+            taskStyle.baselineBorderColor = taskbar.baselineBorderColor;
             const args: PdfQueryTaskbarInfoEventArgs = {
                 taskbar: taskStyle,
                 data: data
@@ -324,6 +448,8 @@ export class ExportHelper {
                 taskbar.taskBorderColor = args.taskbar.taskBorderColor;
                 taskbar.progressColor = args.taskbar.progressColor;
                 taskbar.milestoneColor = args.taskbar.milestoneColor;
+                taskbar.baselineColor = args.taskbar.baselineColor;
+                taskbar.baselineBorderColor = args.taskbar.baselineBorderColor;
             }
         });
     }
@@ -479,6 +605,26 @@ export class ExportHelper {
         const widths: number[] = [];
         const treeColumnIndex: number = 0;
         const tWidth: number = (this.pdfDoc.pageSettings.width - 82);
+        if(this.exportProps && this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth) {
+            let gridWidth: number;
+            if (this.exportProps.fitToWidthSettings.gridWidth) {
+               gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0]);
+            }
+            else {
+                if (this.exportProps.fitToWidthSettings.chartWidth) {
+                    let chartWidth: number = parseInt(this.exportProps.fitToWidthSettings.chartWidth.split('%')[0]);
+                    gridWidth = 100 - chartWidth;
+                }
+                else {
+                    gridWidth = 30;
+                }
+            }
+            const pdfwidth: number = (this.parent.pdfExportModule['pdfPageDimensions'].width * gridWidth)/100;
+            const perColumnWidth: number = pdfwidth / this.gantt.columns.columns.length;
+            for(let i: number=0;i<this.gantt.columns.columns.length;i++) {
+                this.gantt.columns.getColumn(i as number).width = perColumnWidth;
+            }
+        }
         if (this.totalColumnWidth > (this.pdfDoc.pageSettings.width - 82)) {
             this.gantt.style.allowHorizontalOverflow = true;
         } else if ((tWidth / this.columns.length) < widths[treeColumnIndex as number]) {

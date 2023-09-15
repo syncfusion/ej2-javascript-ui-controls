@@ -4,7 +4,7 @@ import { RectOption, ChartLocation, appendChildElement, getElement, appendClipEl
 import { findlElement, drawSymbol, markerAnimate, CircleOption } from '../../common/utils/helper';
 import { PathOption, Rect, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { animationMode, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BorderModel } from '../../common/model/base-model';
 import { MarkerSettingsModel } from '../series/chart-series-model';
 import { Series, Points } from './chart-series';
@@ -227,7 +227,7 @@ export class Marker extends MarkerExplode {
         if (!(series.type === 'Scatter' || series.type === 'Bubble' || series.type === 'Candle' || series.type === 'Hilo' ||
             series.type === 'HiloOpenClose' || (series.chart.chartAreaType === 'PolarRadar' && (series.drawType === 'Scatter')))) {
             const markerElements: NodeList = series.symbolElement.childNodes;
-            const delay: number = series.animation.delay + series.animation.duration;
+            const delay: number = series.animation.delay + (series.animation.duration === 0 && animationMode === 'Enable' ? 1000 : series.animation.duration);
             const duration: number = series.chart.animated ? series.chart.duration : 200;
             let j: number = 1;
             const incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.type === 'SplineRangeArea' || series.type === 'RangeStepArea') ? 2 : 1;

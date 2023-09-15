@@ -49,6 +49,7 @@ export enum Variant {
 const MSG_ICON: string = 'e-msg-icon';
 const MSG_CLOSE_ICON: string = 'e-msg-close-icon';
 const MSG_CONTENT: string = 'e-msg-content';
+const MSG_CONTENT_CENTER: string = 'e-content-center';
 const RTL: string = 'e-rtl';
 const SUCCESS: string = 'e-success';
 const WARNING: string = 'e-warning';
@@ -99,6 +100,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
     private initialRender: boolean = true;
     private l10n: L10n;
     private innerContent: HTMLElement | string;
+    private msgElement: HTMLElement;
 
     /**
      * Specifies the content to be displayed in the Message component. It can be a paragraph, a list, or any other HTML element.
@@ -238,6 +240,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
     public render(): void {
         this.innerContent = this.element.innerHTML;
         this.element.innerHTML = '';
+        this.msgElement = this.createElement('div', { className: 'e-msg-content-wrap' });
         this.initialize();
         this.wireEvents();
         this.renderComplete();
@@ -247,12 +250,12 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     private initialize(): void {
         this.element.setAttribute('role', 'alert');
+        this.setCssClass();
         this.setIcon();
         this.setContent();
         this.setCloseIcon();
         this.setSeverity();
         this.setVariant();
-        this.setCssClass();
         this.setVisible();
         if (this.enableRtl) {
             this.element.classList.add(RTL);
@@ -262,7 +265,11 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
     private setIcon(): void {
         if (this.showIcon) {
             this.iconElement = this.createElement('span', { className: MSG_ICON });
-            this.element.appendChild(this.iconElement);
+            if (this.element.classList.contains(MSG_CONTENT_CENTER)) {
+                this.msgElement.appendChild(this.iconElement);
+            } else {
+                this.element.appendChild(this.iconElement);
+            }
         }
     }
 
@@ -283,7 +290,12 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     private setContent(): void {
         this.txtElement = this.createElement('div', { className: MSG_CONTENT });
-        this.element.appendChild(this.txtElement);
+        if (this.element.classList.contains(MSG_CONTENT_CENTER)) {
+            this.msgElement.appendChild(this.txtElement);
+            this.element.appendChild(this.msgElement);
+        } else {
+            this.element.appendChild(this.txtElement);
+        }
         this.setTemplate();
     }
 

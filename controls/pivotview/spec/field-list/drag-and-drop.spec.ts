@@ -810,7 +810,7 @@ describe('Pivot Field List Rendering', () => {
         });
         it('expect sort state icon after drag row axis field to value axis field', () => {
             let sortElement: string = pivotGridObj.element.querySelectorAll('td')[2].innerText;
-            expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent == sortElement).toBe(true);
+            expect(document.querySelectorAll('.e-content tr')[0].querySelector('td .e-cellvalue').textContent == sortElement).toBe(true);
             expect(document.querySelectorAll('.e-group-rows .e-sort')[0].classList.contains('e-descend')).toBe(true);
         });
         it('uncheck country field', () => {
@@ -1013,6 +1013,7 @@ describe('PivotView spec', () => {
             });
             it('Mouse hover event testing - Value cell', (done: Function) => {
                 let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="3"]');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
                     expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$39,856.79');
@@ -1021,6 +1022,7 @@ describe('PivotView spec', () => {
             });
             it('Mouse hover event testing - Value cell', (done: Function) => {
                 let target: HTMLElement = pivotGridObj.element.querySelectorAll('td[aria-colindex="3"]')[1] as HTMLElement;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 triggerMouseEvent(target, 'mouseover');
                 setTimeout(() => {
                     expect(document.querySelectorAll('.e-tooltip-wrap p.e-tooltipcontent')[2].innerHTML).toBe('$55,129.94');

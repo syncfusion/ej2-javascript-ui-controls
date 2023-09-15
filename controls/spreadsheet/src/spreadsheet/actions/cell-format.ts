@@ -31,7 +31,7 @@ export class CellFormat {
         if (args.lastCell && getMaxHgt(sheet, args.rowIdx) <= 20 && !keys.length) {
             return;
         }
-        const cell: HTMLElement = args.cell || this.parent.getCell(args.rowIdx, args.colIdx);
+        const cell: HTMLElement = args.td || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cell) {
             this.updateMergeBorder(args, sheet);
             if (args.formatColor && cell.style.color === args.formatColor) {

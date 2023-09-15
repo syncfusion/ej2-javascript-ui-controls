@@ -161,7 +161,7 @@ export class ShowHide {
                                 this.parent.notify(applyCellFormat, <CellFormatArgs>{
                                     onActionUpdate: false, rowIdx: nextIdx, colIdx: j,
                                     style: { borderTop: borderTop }, row: row, pRow: <HTMLElement>row.previousElementSibling,
-                                    first: first, cell: cell
+                                    first: first, td: cell
                                 });
                             }
                         }
@@ -404,7 +404,7 @@ export class ShowHide {
                     if (borderTop !== '') {
                         this.parent.notify(applyCellFormat, <CellFormatArgs>{
                             onActionUpdate: false, rowIdx: nextIdx, colIdx: i, style: { borderTop: borderTop }, pRow: <HTMLElement>row,
-                            cell: content.rows[idx as number].cells[i as number], first: ''
+                            td: content.rows[idx as number].cells[i as number], first: ''
                         });
                         const prevIdx: number = skipHiddenIdx(sheet, startRow - 1, false);
                         if (prevIdx > -1) {

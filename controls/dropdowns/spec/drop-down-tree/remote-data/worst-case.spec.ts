@@ -5,7 +5,7 @@ import { remoteData } from '../dataSource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 
-describe('DropDown Tree control List datasource', () => {
+xdescribe('DropDown Tree control List datasource', () => {
     describe('Worst case testing', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => { },

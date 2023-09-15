@@ -1,0 +1,18 @@
+@include export-module('popup-layout') {
+
+  /*! popup layout */
+  .e-popup {
+    height: auto;
+    position: absolute;
+    width: auto;
+    z-index: 1000;
+  }
+
+  .e-popup.e-popup-open {
+    display: block;
+  }
+
+  .e-popup.e-popup-close {
+    display: none;
+  }
+}

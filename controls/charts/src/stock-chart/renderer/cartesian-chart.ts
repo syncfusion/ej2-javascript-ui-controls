@@ -16,6 +16,7 @@ import { getElement } from '../../common/utils/helper';
 import { MarginModel } from '../../common/model/base-model';
 import { BaseLegend } from '../../common/legend/legend';
 import { StockLegend } from '../legend/legend';
+import { DataUtil } from '@syncfusion/ej2-data';
 
 interface Range {
     start: number;
@@ -41,6 +42,8 @@ export class CartesianChart {
     public initializeChart(chartArgsData ?: object[]): void {
         const stockChart: StockChart = this.stockChart;
         const isProtect: string = 'isProtectedOnChange';
+        let startValue: number = null;
+        let endValue: number = null;
         stockChart[isProtect as string]  = true;
         if (!stockChart.chartObject) {
             stockChart.chartObject = stockChart.renderer.createGroup({
@@ -57,6 +60,22 @@ export class CartesianChart {
             }
         }
 
+        this.stockChart.isDateTimeCategory = this.stockChart.primaryXAxis.valueType === 'DateTimeCategory';
+        if (this.stockChart.isDateTimeCategory && !this.stockChart.sortedData.length) {
+            for (const series of this.stockChart.series) {
+                const dataSource: object[] = series.dataSource as object[];
+                const xName: string = series.xName;
+                for (const dataItem of dataSource) {
+                    const currentData: number = Date.parse(
+                        new Date(DataUtil.parse.parseJson({ val: dataItem[xName as string] }).val).toString()
+                    );
+                    if (this.stockChart.sortedData.indexOf(currentData) === -1) {
+                        this.stockChart.sortedData.push(currentData);
+                    }
+                }
+            }
+            this.stockChart.sortedData.sort((a: number, b: number) => a - b);
+        }
         this.cartesianChartSize = this.calculateChartSize();
         stockChart.chart = new Chart({
             chartArea : stockChart.chartArea,
@@ -73,12 +92,18 @@ export class CartesianChart {
                 this.stockChart.trigger('axisLabelRender', args);
             },
             seriesRender : (args : ISeriesRenderEventArgs) => {
-                if (args.data && this.stockChart.startValue && this.stockChart.endValue) {
+                startValue = (this.stockChart.startValue != null && this.stockChart.isDateTimeCategory) ?
+                    this.stockChart.sortedData[Math.floor(this.stockChart.startValue)] : this.stockChart.startValue;
+                endValue = (this.stockChart.endValue != null && this.stockChart.isDateTimeCategory) ?
+                    this.stockChart.sortedData[Math.floor(this.stockChart.endValue)] : this.stockChart.endValue;
+                if (args.data && startValue && endValue) {
                     args.data = (args.data as Object[])
                         .filter((data: Object) => {
                             return (
-                                new Date(Date.parse(data[args.series.xName])).getTime() >= this.stockChart.startValue &&
-                            new Date(Date.parse(data[args.series.xName])).getTime() <= this.stockChart.endValue
+                                new Date( DataUtil.parse.parseJson({ val: (data[args.series.xName]) }).val
+                                ).getTime() >= startValue &&
+                                new Date( DataUtil.parse.parseJson({ val: (data[args.series.xName]) }).val
+                                ).getTime() <= endValue
                             );
                         });
                 }
@@ -106,7 +131,7 @@ export class CartesianChart {
             theme: stockChart.theme,
             legendSettings: { visible: false},
             zoomComplete: (args: IZoomCompleteEventArgs) => {
-                if (args.axis.valueType === 'DateTime' && stockChart.rangeNavigator) {
+                if (args.axis.valueType.indexOf('DateTime') !== -1 && stockChart.rangeNavigator) {
                     this.stockChart.zoomChange = true;
                     const newRange: Range = this.calculateUpdatedRange(args.currentZoomFactor, args.currentZoomPosition, <Axis>args.axis);
                     stockChart.rangeSelector.sliderChange(newRange.start, newRange.end);
@@ -186,6 +211,10 @@ export class CartesianChart {
             end = start - (zoomFactor * chartRange.delta);
         }
         //}
+        if (this.stockChart.isDateTimeCategory) {
+            start = this.stockChart.sortedData.indexOf(parseInt(axis.labels[Math.floor(start)], 10));
+            end = this.stockChart.sortedData.indexOf(parseInt(axis.labels[Math.floor(end)], 10));
+        }
         const result: Range = { start: start, end: end };
         return result;
     }

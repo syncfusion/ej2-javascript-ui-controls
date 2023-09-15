@@ -43,7 +43,9 @@ export enum ShapeType {
     /** A text shape. */
     Text = 'Text',
     /** A freehand drawing shape. */
-    FreehandDraw = 'FreehandDraw'
+    FreehandDraw = 'FreehandDraw',
+    /** An Image shape. */
+    Image = 'Image'
 }
 
 /**
@@ -115,6 +117,7 @@ export enum ImageEditorCommand {
     Arrow = 'Arrow',
     Path = 'Path',
     Rectangle = 'Rectangle',
+    Image = 'Image',
     Ellipse = 'Ellipse',
     Text = 'Text',
     CustomSelection = 'CustomSelection',
@@ -194,4 +197,40 @@ export enum ArrowheadType {
     SolidSquare = 'SolidSquare',
     /** Indicates a bar shaped arrowhead should be drawn. */
     Bar = 'Bar'
+}
+
+/**
+ * An enumeration of available frame options.
+ *
+ * @remarks
+ * These options can be used with the `drawFrame` method of the image editor control to draw frames on an image.
+ */
+export enum FrameType {
+    /** Represents a no frame. */
+    None = 'None',
+    /** Represents a mat frame. */
+    Mat = 'Mat',
+    /** Represents a bevel frame. */
+    Bevel = 'Bevel',
+    /** Represents a line frame. */
+    Line = 'Line',
+    /** Represents an inset frame. */
+    Inset = 'Inset',
+    /** Represents a hook frame. */
+    Hook = 'Hook'
+}
+
+/**
+ * An enumeration of available line options.
+ *
+ * @remarks
+ * These options can be used with the `drawFrame` method of the image editor control to draw frames on an image.
+ */
+export enum FrameLineStyle {
+    /** Represents a solid line. */
+    Solid = 'Solid',
+    /** Represents a dashed line. */
+    Dashed = 'Dashed',
+    /** Represents a dotted line. */
+    Dotted = 'Dotted'
 }

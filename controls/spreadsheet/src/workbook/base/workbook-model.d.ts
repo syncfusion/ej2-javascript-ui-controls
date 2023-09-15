@@ -8,60 +8,28 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * Configures sheets and its options.
-     *  ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *      sheets: [{
-     *                  name: 'First Sheet',
-     *                  range: [{ dataSource: data }],
-     *                  rows: [{
-     *                          index: 5,
-     *                          cells: [{ index: 4, value: 'Total Amount:' },
-     *                                  { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } }]
-     *                  }]
-     *              }, {
-     *                  name: 'Second Sheet',
-     *                  columns: [{ width: 180 }, { index: 4, width: 130 }]
-     *              }]
-     * ...
-     *  }, '#Spreadsheet');
-     * ```
+     * 
+     * {% codeBlock src='spreadsheet/sheets/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
     sheets?: SheetModel[];
 
     /**
-     * Specifies active sheet index in workbook.
-     *  ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *      activeSheetIndex: 2
-     * ...
-     *  }, '#Spreadsheet');
-     * ```
+     * Specifies the active sheet index in the workbook.
+     *
+     * {% codeBlock src='spreadsheet/activeSheetIndex/index.md' %}{% endcodeBlock %}
      *
      * @default 0
      * @asptype int
      */
+
     activeSheetIndex?: number;
 
     /**
      * Defines the height of the Spreadsheet. It accepts height as pixels, number, and percentage.
      *
-     *  ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *      height: '550px'
-     * ...
-     *  }, '#Spreadsheet');
-     * ```
+     * {% codeBlock src='spreadsheet/height/index.md' %}{% endcodeBlock %}
      *
      * @default '100%'
      */
@@ -90,15 +58,8 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * Defines the width of the Spreadsheet. It accepts width as pixels, number, and percentage.
-     *  ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *      width: '550px'
-     * ...
-     *  }, '#Spreadsheet');
-     * ```
+     * 
+     * {% codeBlock src='spreadsheet/width/index.md' %}{% endcodeBlock %}
      *
      * @default '100%'
      */
@@ -183,14 +144,14 @@ export interface WorkbookModel extends ComponentModel{
     allowHyperlink?: boolean;
 
     /**
-     * It allows you to insert rows, columns and sheets in to the spreadsheet.
+     * It allows you to insert rows, columns, and sheets into the spreadsheet.
      *
      * @default true
      */
     allowInsert?: boolean;
 
     /**
-     * It allows you to delete rows, columns and sheets from spreadsheet.
+     * It allows you to delete rows, columns, and sheets from a spreadsheet.
      *
      * @default true
      */
@@ -204,21 +165,21 @@ export interface WorkbookModel extends ComponentModel{
     allowMerge?: boolean;
 
     /**
-     * It allows you to apply validation to the spreadsheet cells.
+     * It allows you to apply data validation to the spreadsheet cells.
      *
      * @default true
      */
     allowDataValidation?: boolean;
 
     /**
-     * It allows you to insert the image in spreadsheet.
+     * It allows you to insert the image in a spreadsheet.
      *
      * @default true
      */
     allowImage?: boolean;
 
     /**
-     * It allows you to insert the chart in spreadsheet.
+     * It allows you to insert the chart in a spreadsheet.
      *
      * @default true
      */
@@ -233,27 +194,18 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * Configures the auto fill settings.
-     * ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *      autoFillSettings: {
-     *          fillType: 'FillSeries',
-     *          showFillOptions: true
-     *      }
-     * ...
-     * }, '#Spreadsheet');
+     * 
+     * The autoFillSettings `fillType` property has FOUR types and it is described below:
      *
-     * The autoFillSettings `fillType` property has FOUR values and it is described below:
-     *
-     * * CopyCells: To update the copied cells of the selected range.
-     * * FillSeries: To update the filled series of the selected range.
+     * * CopyCells: To update the copied cells for the selected range.
+     * * FillSeries: To update the filled series for the selected range.
      * * FillFormattingOnly: To fill the formats only for the selected range.
-     * * FillWithoutFormatting: To fill without the format of the selected range.
-     *
-     * ```
-     *
+     * * FillWithoutFormatting: To fill without the format for the selected range.
+     * 
+     * {% codeBlock src='spreadsheet/autoFillSettings/index.md' %}{% endcodeBlock %}
+     * 
+     * > The `allowAutoFill` property should be `true`.
+     * 
      * @default { fillType: 'FillSeries', showFillOptions: true }
      */
 
@@ -268,19 +220,8 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * Specifies the cell style options.
-     *  ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *      ...
-     *          cellStyle: { fontWeight: 'bold', fontSize: 12,
-     *              fontStyle: 'italic', textIndent: '2pt'
-     *              backgroundColor: '#4b5366', color: '#ffffff'
-     *      },
-     *      ...
-     *  }, '#Spreadsheet');
-     * ```
+     * 
+     * {% codeBlock src='spreadsheet/cellStyle/index.md' %}{% endcodeBlock %}
      *
      * @default {}
      */
@@ -315,17 +256,9 @@ export interface WorkbookModel extends ComponentModel{
     isProtected?: boolean;
 
     /**
-     * Specifies the name for a range and uses it in formula for calculation.
-     *  ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *      ...
-     *      definedNames: [{ name: 'namedRange1', refersTo: 'Sheet1!A1:B5' }],
-     *      ...
-     *  }, '#Spreadsheet');
-     * ```
+     * Specifies the name of a range and uses it in a formula for calculation.
+     * 
+     * {% codeBlock src='spreadsheet/definedNames/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */

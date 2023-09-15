@@ -12,7 +12,7 @@ Spreadsheet.Inject(BasicModule);
  */
 
 describe('Spreadsheet formula bar module ->', () => {
-    let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     let model: SpreadsheetModel;
 
     describe('UI interaction checking ->', () => {
@@ -199,15 +199,14 @@ describe('Spreadsheet formula bar module ->', () => {
         });
         it('Close Formula Dialog by Cancel Button', (done: Function) => {
             helper.invoke('unprotectSheet', ['Sheet1']);
+            helper.click('.e-formula-bar-panel .e-insert-function');
             setTimeout(() => {
-                helper.click('.e-formula-bar-panel .e-insert-function');
-                setTimeout(() => {
-                    helper.setAnimationToNone('.e-spreadsheet-function-dlg.e-dialog');
-                    expect(helper.getElement('.e-spreadsheet-function-dlg.e-dialog')).not.toBeNull();
-                    helper.click('.e-spreadsheet-function-dlg .e-footer-content button:nth-child(2)');
-                    expect(helper.getElement('.e-spreadsheet-function-dlg.e-dialog')).toBeNull();
-                    done();
-                });
+                helper.setAnimationToNone('.e-spreadsheet-function-dlg.e-dialog');
+                expect(helper.getElement('.e-spreadsheet-function-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-spreadsheet-function-dlg .e-footer-content button:nth-child(2)');
+                expect(helper.getElement('.e-spreadsheet-function-dlg.e-dialog')).toBeNull();
+                expect(document.activeElement.classList.contains('e-spreadsheet')).toBeTruthy();
+                done();
             });
         });
         it('Click Ok Button in Formula Dialog with Editing', (done: Function) => {
@@ -217,6 +216,7 @@ describe('Spreadsheet formula bar module ->', () => {
             setTimeout(() => {
                 helper.setAnimationToNone('.e-spreadsheet-function-dlg.e-dialog');
                 helper.click('.e-spreadsheet-function-dlg .e-footer-content button:nth-child(1)');
+                expect(document.activeElement.classList.contains('e-spreadsheet-edit')).toBeTruthy();
                 helper.getElement('.e-spreadsheet-edit').textContent = '=ABS(F5);';
                 helper.triggerKeyNativeEvent(13);
                 expect(helper.invoke('getCell', [3, 8]).textContent).toBe('300');

@@ -1308,5 +1308,3 @@ interface IUndoOffsets {
     offsetX: number;
     offsetY: number;
   }
-  
-

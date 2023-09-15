@@ -20,7 +20,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Render } from '../../../src/grid/renderer/render';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Sort, Page, Filter, Group, Selection, Reorder, VirtualScroll);
+Grid.Inject(Sort, Page, Filter, Group, Selection, Reorder, VirtualScroll, Aggregate);
 
 
 function copyObject(source: Object, destiation: Object): Object {
@@ -425,6 +425,11 @@ describe('Grouping module => ', () => {
             expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(27);
             gridObj.groupModule.expandCollapseRows(expandElem[2]);
             expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(30);
+        });
+
+        // used for code coverage
+        it('clear grouping', () => {
+            gridObj.clearGrouping();
         });
 
         afterAll(() => {
@@ -958,8 +963,19 @@ describe('Grouping module => ', () => {
     describe('Grouping remote data => ', () => {
         let gridObj: Grid;
         let old: (e: ReturnType) => Promise<Object> = Render.prototype.validateGroupRecords;
-        beforeAll((done: Function) => {
-            jasmine.Ajax.install();
+        let fetchSpy: any;
+        beforeAll(async (done: Function) => {
+            fetchSpy = spyOn(window, 'fetch');
+            fetchSpy.and.returnValue(Promise.resolve({
+                status: 200,
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                json: function () {
+                    return Promise.resolve({ d: { results: filterData, __count: 100 } });
+                }
+            }));
+    
             gridObj = createGrid(
                 {
                     dataSource: new DataManager({ url: '/api/test' }),
@@ -973,31 +989,18 @@ describe('Grouping module => ', () => {
                     groupSettings: { disablePageWiseAggregates: true, columns: ['EmployeeID', 'CustomerID'] },
                     allowPaging: true
                 }, done);
-            let first: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
-            first.respondWith({
-                'status': 200,
-                'contentType': 'application/json',
-                'responseText': JSON.stringify({ d: { results: filterData, __count: 100 } })
-            });
-
-            Render.prototype.validateGroupRecords = (e: ReturnType) => {
-                let promise: Promise<Object> = old.call(gridObj.renderModule, e);
-                let first: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
-                first.respondWith({
-                    'status': 200,
-                    'contentType': 'application/json',
-                    'responseText': JSON.stringify({ d: { results: filterData, __count: 100 } })
-                });
-                return promise;
-            };
+    
+            done();
         });
+    
         it('check data', () => {
             expect(gridObj.groupSettings.columns.length).not.toBeNull();
         });
+    
         afterAll(() => {
+            fetchSpy.calls.reset();
             Render.prototype.validateGroupRecords = old;
             destroy(gridObj);
-            jasmine.Ajax.uninstall();
             gridObj = old = null;
         });
     });
@@ -1099,8 +1102,19 @@ describe('Grouping module => ', () => {
     describe('Grouping remote data for group by format => ', () => {
         let gridObj: Grid;
         let old: (e: ReturnType) => Promise<Object> = Render.prototype.validateGroupRecords;
+        let fetchSpy: any;
         beforeAll((done: Function) => {
-            jasmine.Ajax.install();
+            fetchSpy = spyOn(window, 'fetch');
+            fetchSpy.and.returnValue(Promise.resolve({
+                status: 200,
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                json: function () {
+                    return Promise.resolve({ d: { results: filterData, __count: 100 } });
+                }
+            }));
+    
             gridObj = createGrid(
                 {
                     dataSource: new DataManager({ url: '/api/test' }),
@@ -1114,34 +1128,20 @@ describe('Grouping module => ', () => {
                     groupSettings: { disablePageWiseAggregates: true, columns: ['OrderDate', 'CustomerID'] },
                     allowPaging: true
                 }, done);
-            let first: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
-            first.respondWith({
-                'status': 200,
-                'contentType': 'application/json',
-                'responseText': JSON.stringify({ d: { results: filterData, __count: 100 } })
-            });
-
-            Render.prototype.validateGroupRecords = (e: ReturnType) => {
-                let promise: Promise<Object> = old.call(gridObj.renderModule, e);
-                let first: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
-                first.respondWith({
-                    'status': 200,
-                    'contentType': 'application/json',
-                    'responseText': JSON.stringify({ d: { results: filterData, __count: 100 } })
-                });
-                return promise;
-            };
         });
+    
         it('check data', () => {
             expect(gridObj.groupSettings.columns.length).not.toBeNull();
         });
+    
         afterAll(() => {
+            fetchSpy.calls.reset();
             Render.prototype.validateGroupRecords = old;
             destroy(gridObj);
-            jasmine.Ajax.uninstall();
             gridObj = old = null;
         });
     });
+    
     describe('Grouping column by format at initial settings => ', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
@@ -1808,6 +1808,267 @@ describe('EJ2-67363 - Bottom borderline is not shown when collapsing the last gr
         expect((capElem[2].children[1]).classList.contains('e-lastrowcell')).toBeTruthy();
     });
     
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Code Coverage - group by drag and drop simulate => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowPaging:true,
+                allowSorting:true,
+                allowGrouping:true,
+                allowFiltering:true,
+                allowReordering: true,
+                groupSettings: { showToggleButton: true, allowReordering: true },
+                sortSettings:{columns:[{field:"Freight",direction:'Ascending'},{field:"CustomerID",direction:'Ascending'}]},
+                columns: [
+                    { field: 'CustomerID' ,width:120, headerText:"Customer ID"},
+                    { field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
+                    { field: 'OrderID' ,textAlign: 'Right',width:100,headerText:"Order ID"},
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'ShipCity', headerText: 'Ship City' },
+                    { field: 'ShipCountry',width:130, headerText:"Ship Country" }
+                ],
+            }, done);
+    });
+
+    it('for coverage - 1', () => {
+        const dragHeaderElem: Element = gridObj.getHeaderContent().querySelectorAll('.e-headercell')[0];
+        const dragColumn: any = gridObj.getColumnByIndex(0);
+        (gridObj.headerModule as any).draggable.currentStateTarget = dragHeaderElem;
+        (gridObj.headerModule as any).helper({
+            element: dragHeaderElem,
+            sender: { target: dragHeaderElem }
+        });
+        const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-headerclone');
+        (gridObj.groupModule as any).columnDragStart({
+            column: dragColumn,
+            target: dragHeaderElem,
+            event: { target: dragHeaderElem }
+        });
+        const dropArea: Element = gridObj.groupModule.element;
+        (gridObj.groupModule as any).columnDrag({
+            column: dragColumn,
+            target: dropArea,
+            event: { target: dropArea }
+        });
+        (gridObj.groupModule as any).drop({
+            droppedElement: dropClone,
+            target: dropArea,
+            event: { target: dropArea }
+        });
+    });
+
+    it('for coverage - 2', () => {
+        const dragHeaderElem: Element = gridObj.getHeaderContent().querySelectorAll('.e-headercell')[1];
+        const dragColumn: any = gridObj.getColumnByIndex(1);
+        (gridObj.headerModule as any).draggable.currentStateTarget = dragHeaderElem;
+        (gridObj.headerModule as any).helper({
+            element: dragHeaderElem,
+            sender: { target: dragHeaderElem }
+        });
+        const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-headerclone');
+        (gridObj.groupModule as any).columnDragStart({
+            column: dragColumn,
+            target: dragHeaderElem.children[0],
+            event: { target: dragHeaderElem.children[0] }
+        });
+        const dropArea: Element = gridObj.groupModule.element;
+        (gridObj.groupModule as any).columnDrag({
+            column: dragColumn,
+            target: gridObj.getContentTable(),// recent change => dropArea
+            event: { target: dropArea }
+        });
+        (gridObj.groupModule as any).drop({
+            droppedElement: dropClone,
+            target: dropArea,
+            event: { target: dropArea }
+        });
+    });
+
+    it('for coverage - 3', () => {
+        let dragGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0].querySelector('.e-drag');
+        let dropGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[1];
+        (gridObj.groupModule as any).helper({
+            element: dragGroupedElem,
+            sender: { target: dragGroupedElem }
+        });
+        const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-gdclone');
+        (gridObj.groupModule as any).dragStart({
+            dragElement: dropClone,
+            element: dragGroupedElem,
+            target: dragGroupedElem,
+            event: { target: dragGroupedElem }
+        });
+        (gridObj.groupModule as any).drag({
+            element: gridObj.groupModule.element,
+            target: dropGroupedElem,
+            event: { target: dropGroupedElem }
+        });
+        dragGroupedElem = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0];
+        dropGroupedElem = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[1];
+        (gridObj.groupModule as any).drag({
+            element: gridObj.groupModule.element,
+            target: dragGroupedElem,
+            event: { target: dragGroupedElem }
+        });
+        dragGroupedElem = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0];
+        dropGroupedElem = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[1];
+        (gridObj.groupModule as any).drag({
+            element: gridObj.groupModule.element,
+            target: dropGroupedElem,
+            event: { target: dropGroupedElem }
+        });
+        dragGroupedElem = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0];
+        dropGroupedElem = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[1];
+        (gridObj.groupModule as any).dragStop({
+            element: gridObj.groupModule.element,
+            helper: dropClone,
+            target: dropGroupedElem,
+            event: { target: dropGroupedElem }
+        });
+    });
+
+    it('for coverage - 4', () => {
+        const dragGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0].querySelector('.e-drag');
+        (gridObj.groupModule as any).helper({
+            element: dragGroupedElem,
+            sender: { target: dragGroupedElem }
+        });
+        const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-gdclone');
+        dropClone.setAttribute('action', 'grouping');
+        (gridObj.groupModule as any).dragStart({
+            dragElement: dropClone,
+            element: dragGroupedElem,
+            target: dragGroupedElem,
+            event: { target: dragGroupedElem }
+        });
+        (gridObj.groupModule as any).drag({
+            element: gridObj.groupModule.element,
+            target: gridObj.getHeaderContent().querySelectorAll('.e-headercell')[2],
+            event: { target: gridObj.getHeaderContent().querySelectorAll('.e-headercell')[2] }
+        });
+        (gridObj.groupModule as any).columnDrop({
+            droppedElement: dropClone,
+            target: gridObj.getHeaderContent().querySelectorAll('.e-headercell')[2]
+        });
+    });
+
+    it('for coverage - 5', () => {
+        const dragHeaderElem: Element = gridObj.getHeaderContent().querySelectorAll('.e-headercell')[3];
+        const dragColumn: any = gridObj.getColumnByIndex(3);
+        (gridObj.headerModule as any).draggable.currentStateTarget = dragHeaderElem;
+        (gridObj.headerModule as any).helper({
+            element: dragHeaderElem,
+            sender: { target: dragHeaderElem }
+        });
+        const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-headerclone');
+        (gridObj.groupModule as any).columnDragStart({
+            column: dragColumn,
+            target: dragHeaderElem,
+            event: { target: dragHeaderElem }
+        });
+        // for coverage
+        gridObj.groupSettings.allowReordering = false;
+        const dropArea: Element = gridObj.groupModule.element;
+        (gridObj.groupModule as any).columnDrag({
+            column: dragColumn,
+            target: gridObj.getContentTable(),
+            event: { target: dropArea }
+        });
+        (gridObj.groupModule as any).drop({
+            droppedElement: dropClone,
+            target: dropArea,
+            event: { target: dropArea }
+        });
+        gridObj.groupSettings.showGroupedColumn = true;
+        gridObj.groupSettings.enableLazyLoading = true;
+    });
+
+    it('for coverage - 6', () => {
+        let dragGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0];
+        (gridObj.groupModule as any).helper({
+            element: dragGroupedElem,
+            sender: { target: dragGroupedElem }
+        });
+        const dropClone: Element = document.querySelector('.e-cloneproperties.e-dragclone.e-gdclone');
+        (gridObj.groupModule as any).dragStart({
+            dragElement: dropClone,
+            element: dragGroupedElem,
+            target: dragGroupedElem,
+            event: { target: dragGroupedElem }
+        });
+        (gridObj.groupModule as any).drag({
+            element: gridObj.groupModule.element,
+            target: gridObj.groupModule.element,
+            event: { target: gridObj.groupModule.element }
+        });
+        (gridObj.groupModule as any).dragStop({
+            element: gridObj.groupModule.element,
+            helper: dropClone,
+            target: gridObj.groupModule.element,
+            event: { target: gridObj.groupModule.element }
+        });
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Code Coverage - show grouped column edit grouped row reorder and Key board interaction => ', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowPaging:true,
+                allowGrouping:true,
+                groupSettings: { showGroupedColumn: true, allowReordering: true, columns: ['CustomerID', 'OrderDate'] },
+                columns: [
+                    { field: 'OrderID' ,textAlign: 'Right',width:100,headerText:"Order ID"},
+                    { field: 'CustomerID' ,width:120, headerText:"Customer ID"},
+                    { field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'ShipCity', headerText: 'Ship City' },
+                    { field: 'ShipCountry',width:130, headerText:"Ship Country" }
+                ],
+            }, done);
+    });
+    it('for coverage - 1', () => {
+        const dragRowObject: any = gridObj.getRowObjectFromUID(gridObj.getRowByIndex(0).getAttribute('data-uid'));
+        const dropRowObject: any = gridObj.getRowObjectFromUID(gridObj.getRowByIndex(1).getAttribute('data-uid'));
+        gridObj.groupModule.groupedRowReorder(dragRowObject, dropRowObject);
+        gridObj.groupModule.updateExpand({ uid: gridObj.getRowByIndex(1).getAttribute('data-uid'), isExpand: true });
+    });
+
+    it('for coverage - 2', () => {
+        const target: HTMLElement = gridObj.groupModule.element;
+        const innerTarget: HTMLCollection = target.querySelectorAll('.e-groupheadercell')[0].children[0].children;
+        const expandCollapseTarget: Element = gridObj.getContentTable().querySelector('tr.e-groupcaptionrow td.e-recordplusexpand a');
+        const groupHeaderElem: Element = gridObj.getHeaderContent().querySelectorAll('.e-headercell')[2];
+        (<any>gridObj.groupModule).keyPressHandler(getKeyActionObj('tab', innerTarget[2]));
+        (<any>gridObj.groupModule).keyPressHandler(getKeyActionObj('shiftTab', innerTarget[3]));
+        (<any>gridObj.groupModule).keyPressHandler(getKeyActionObj('enter', innerTarget[2]));
+        (<any>gridObj.groupModule).keyPressHandler(getKeyActionObj('enter', innerTarget[3]));
+        (<any>gridObj.focusModule).currentInfo.elementToFocus = expandCollapseTarget;
+        (<any>gridObj.groupModule).keyPressHandler(getKeyActionObj('enter', expandCollapseTarget));
+        (<any>gridObj.groupModule).keyPressHandler(getKeyActionObj('enter', expandCollapseTarget));
+        (<any>gridObj.focusModule).currentInfo.element = groupHeaderElem;
+        (<any>gridObj.groupModule).keyPressHandler(getKeyActionObj('ctrlSpace', groupHeaderElem));
+        (<any>gridObj.groupModule).keyPressHandler(getKeyActionObj('ctrlSpace', groupHeaderElem));
+        (<any>gridObj.groupModule).clickHandler({ target: expandCollapseTarget, preventDefault });
+        (<any>gridObj.groupModule).clickHandler({ target: expandCollapseTarget, preventDefault });
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

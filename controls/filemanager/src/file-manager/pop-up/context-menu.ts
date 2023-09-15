@@ -400,7 +400,7 @@ export class ContextMenu {
                     if (this.parent.visitedItem && this.parent.activeModule !== 'navigationpane') {
                         this.parent.notify(events.openInit, { target: this.parent.visitedItem });
                     } else if (this.parent.activeModule === 'navigationpane') {
-                        if(this.parent.visitedItem){
+                        if (this.parent.visitedItem){
                             this.parent.notify(events.openInit, { target: this.parent.visitedItem });
                         }
                         this.parent.navigationpaneModule.openFileOnContextMenuClick(closest(this.targetNodeElement, 'li') as HTMLLIElement);

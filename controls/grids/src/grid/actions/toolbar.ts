@@ -146,7 +146,7 @@ export class Toolbar {
                     <input id="' + this.gridID + '_searchbar" class="e-input e-search" name="input" type="search" \
                     placeholder= "' + this.l10n.getConstant('Search') + '"/>\
                     <span id="' + this.gridID + '_clearbutton" class="e-input-group-icon e-icons e-sicon" \
-                    tabindex="-1" aria-label= "clear" role= "clear" style="cursor: default"></span>\
+                    tabindex="-1" aria-label= "clear" role= "button" style="cursor: default"></span>\
                     <span id="' + this.gridID + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
                     tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search" role= "search"></span> \
                     </div>';

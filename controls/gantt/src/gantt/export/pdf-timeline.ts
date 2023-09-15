@@ -7,7 +7,7 @@ import {
 } from '@syncfusion/ej2-pdf-export';
 import { TimelineDetails, TimelineFormat, IGanttStyle, PdfQueryTimelineCellInfoEventArgs } from '../base/interface';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { pixelToPoint } from '../base/utils';
+import { pixelToPoint, pointToPixel } from '../base/utils';
 import { Gantt } from '../base/gantt';
 import { PdfPaddings } from './pdf-base';
 
@@ -50,7 +50,7 @@ export class PdfTimeline {
      * @returns {void}
      */
     public drawTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails): void {
-        let remainWidth: number = Math.floor(detail.totalWidth);
+        let remainWidth: number = pointToPixel(Math.floor(detail.totalWidth));
         let renderWidth: number = 0;
         this.topTierPoint.x = startPoint.x;
         this.topTierPoint.y = startPoint.y;
@@ -77,7 +77,7 @@ export class PdfTimeline {
                 //Primary header Event Arguments
                 /* eslint-disable-next-line */
                 this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, renderWidth, pHeader.value, true);
-                this.topTierPoint.x += pixelToPoint(renderWidth);
+                this.topTierPoint.x += renderWidth;
                 remainWidth -= renderWidth;
                 if (isCompleted) {
                     this.topTierIndex++;
@@ -102,7 +102,7 @@ export class PdfTimeline {
                 //Secondary header Event Arguments
                 /* eslint-disable-next-line */
                 this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, width, secondHeader.value, false);
-                this.bottomTierPoint.x = this.bottomTierPoint.x + pixelToPoint(width);
+                this.bottomTierPoint.x = this.bottomTierPoint.x + width;
                 remainWidth -= width;
                 secondHeader.completedWidth = width;
                 if (isCompleted) {
@@ -133,7 +133,7 @@ export class PdfTimeline {
                     //Primary header Event Arguments
                     /* eslint-disable-next-line */
                     this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, pHeader.completedWidth, pHeader.value, true);
-                    this.topTierPoint.x += pixelToPoint(pHeader.completedWidth);
+                    this.topTierPoint.x += pHeader.completedWidth;
                 }
             }
         }
@@ -146,7 +146,7 @@ export class PdfTimeline {
                     //Secondary header Event Arguments
                     /* eslint-disable-next-line */
                     this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, secondHeader.width, secondHeader.value, false);
-                    this.bottomTierPoint.x = this.bottomTierPoint.x + pixelToPoint(secondHeader.width);
+                    this.bottomTierPoint.x = this.bottomTierPoint.x + secondHeader.width;
                 }
             }
         }
@@ -191,7 +191,10 @@ export class PdfTimeline {
         const e: PdfGanttCellStyle = eventArgs.timelineCell;
         const rectPen: PdfPen = new PdfPen(eventArgs.timelineCell.borderColor);
         const rectBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
-        graphics.drawRectangle(rectPen, rectBrush, x, y, pixelToPoint(width), pixelToPoint(height));
+        graphics.drawRectangle(rectPen, rectBrush, x, y, width, pixelToPoint(height));
+        if(!isTopTier && (this.parent.gridLines == "Both" || this.parent.gridLines == "Vertical") ){
+            graphics.drawRectangle(rectPen, rectBrush, x, y + pixelToPoint(height), width, page.getClientSize().height);
+        }
         let font: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
         if (ganttStyle.font) {
             font = ganttStyle.font;
@@ -199,6 +202,11 @@ export class PdfTimeline {
         const pLeft: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.left : 0;
         const pTop: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.top : 0;
         /* eslint-disable-next-line */
-        graphics.drawString(eventArgs.value, font, null, textBrush, x + pLeft, y + pTop, pixelToPoint(width), pixelToPoint(height), e.format);
+        if (isTopTier) {
+            x = x + pLeft + 4;
+        } else {
+            x = x + pLeft;
+        }
+        graphics.drawString(eventArgs.value, font, null, textBrush, x, y + pTop, pixelToPoint(width), pixelToPoint(height), e.format);
     }
 }

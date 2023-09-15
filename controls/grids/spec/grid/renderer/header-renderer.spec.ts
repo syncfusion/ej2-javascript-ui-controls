@@ -1,16 +1,19 @@
 /**
  * Header renderer spec
  */
-import { EmitType } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { CellType } from '../../../src/grid/base/enum';
 import { createGrid, destroy } from '../base/specutil.spec';
-import { HeaderCellRenderer } from '../../../src/grid/renderer/header-cell-renderer';
 import { data, customerData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Group } from '../../../src/grid/actions/group';
+import { Page } from '../../../src/grid/actions/page';
+import { ColumnMenu } from '../../../src/grid/actions/column-menu';
+
+Grid.Inject(ColumnMenu, Group, Page);
 
 describe('header renderer module', () => {
 

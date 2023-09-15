@@ -892,7 +892,7 @@ export class Renderer {
             let xLeft = firstLine.paragraph.x;
             let ytop = firstLine.paragraph.y;
             if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges){
-                let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                let highlighters = this.documentHelper.selection.editRegionHighlighters;
                 let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(firstLine) : [];
                 let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
                 this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(ytop, 2),this.getScaledValue(firstLine.height - firstLine.margin.bottom),0,color);
@@ -904,7 +904,7 @@ export class Renderer {
             let position: Point = this.documentHelper.selection.getEndPosition(lastPara);
             let xLeft = this.documentHelper.textHelper.getWidth(String.fromCharCode(164), lastLine.paragraph.characterFormat) + position.x;
             if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges){
-                let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                let highlighters = this.documentHelper.selection.editRegionHighlighters;
                 let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lastLine) : [];
                 let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
                 this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(position.y, 2),this.getScaledValue(lastLine.height - lastLine.margin.bottom),0,color);           
@@ -943,16 +943,16 @@ export class Renderer {
     }
     private renderEditRegionHighlight(page: Page, lineWidget: LineWidget, top: number): void {
         if (page.documentHelper.selection && !isNullOrUndefined(page.documentHelper.selection.editRegionHighlighters)) {
-            let renderHighlight: boolean = page.documentHelper.selection.editRegionHighlighters.containsKey(lineWidget);
+            let renderHighlight: boolean = this.documentHelper.selection.editRegionHighlighters.containsKey(lineWidget);
             if (!renderHighlight && lineWidget.paragraph.isInHeaderFooter) {
-                let keys: LineWidget[] = page.documentHelper.selection.editRegionHighlighters.keys;
+                let keys: LineWidget[] = this.documentHelper.selection.editRegionHighlighters.keys;
                 lineWidget = this.checkHeaderFooterLineWidget(lineWidget, keys) as LineWidget;
                 if (!isNullOrUndefined(lineWidget)) {
                     renderHighlight = true;
                 }
             }
             if (renderHighlight) {
-                let widgetInfo: SelectionWidgetInfo[] = page.documentHelper.selection.editRegionHighlighters.get(lineWidget);
+                let widgetInfo: SelectionWidgetInfo[] = this.documentHelper.selection.editRegionHighlighters.get(lineWidget);
                 for (let i: number = 0; i < widgetInfo.length; i++) {
                     this.pageContext.fillStyle = widgetInfo[i].color !== '' ? widgetInfo[i].color : '#add8e6';
                     this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(lineWidget.height));
@@ -1085,7 +1085,7 @@ export class Renderer {
                         var height = elementBox.line.height - elementBox.line.margin.bottom;
                         let xLeft = left;
                         let yTop = top;
-                        let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                        let highlighters = this.documentHelper.selection.editRegionHighlighters;
                         let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lineWidget) : [];
                         let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
                         this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(yTop, 2),this.getScaledValue(lineWidget.height - lineWidget.margin.bottom),0,color);
@@ -1140,7 +1140,7 @@ export class Renderer {
                     var height = elementBox.line.height - elementBox.line.margin.bottom;
                     let xLeft = left;
                     let yTop = top;
-                    let highlighters = page.documentHelper.selection.editRegionHighlighters;
+                    let highlighters = this.documentHelper.selection.editRegionHighlighters;
                     let widgetInfo : SelectionWidgetInfo[]= !isNullOrUndefined(highlighters)? highlighters.get(lineWidget) : [];
                     let color : string = !isNullOrUndefined(widgetInfo) && !isNullOrUndefined(widgetInfo[0])? widgetInfo[0].color  : "ffff00";
                     this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(yTop, 2),this.getScaledValue(lineWidget.height - lineWidget.margin.bottom),1,color);
@@ -1820,7 +1820,7 @@ export class Renderer {
                 }
             }
         }else if(element.paragraph.containerWidget instanceof TextFrame
-            && (element.paragraph.containerWidget.containerShape as ShapeElementBox).fillFormat.color  === '#000000FF'){
+            && !isNullOrUndefined(element.paragraph.containerWidget.containerShape as ShapeElementBox) && !isNullOrUndefined((element.paragraph.containerWidget.containerShape as ShapeElementBox).fillFormat) && (element.paragraph.containerWidget.containerShape as ShapeElementBox).fillFormat.color  === '#000000FF'){
                 return (element.paragraph.containerWidget.containerShape as ShapeElementBox).fillFormat.color;
         }
         return this.documentHelper.backgroundColor;

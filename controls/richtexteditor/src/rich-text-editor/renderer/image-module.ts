@@ -2,8 +2,7 @@ import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventA
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
-    ImageDropEventArgs, ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs, ImageUploadingEventArgs
-} from '../base/interface';
+    ImageDropEventArgs, ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs, ICssClassArgs } from '../base/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
@@ -1441,6 +1440,9 @@ export class Image {
             if (this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
                 this.quickToolObj.inlineQTBar.hidePopup();
             }
+            if (this.quickToolObj.textQTBar && this.parent.element.ownerDocument.body.contains(this.quickToolObj.textQTBar.element)) {
+                this.quickToolObj.textQTBar.hidePopup();
+            }
         }
     }
 
@@ -1714,10 +1716,8 @@ export class Image {
         });
         uploadParentEle.appendChild(uploadEle);
         let altText: string;
-        let rawFile: FileInfo[];
         let selectArgs: SelectedEventArgs;
         let filesData: FileInfo[];
-        let beforeUploadArgs: ImageUploadingEventArgs;
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, removeUrl: this.parent.insertImageSettings.removeUrl },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass,
@@ -1725,13 +1725,8 @@ export class Image {
             selected: (e: SelectedEventArgs) => {
                 proxy.isImgUploaded = true;
                 selectArgs = e;
+                // eslint-disable-next-line
                 filesData = e.filesData;
-                if (this.parent.isServerRendered) {
-                    selectArgs = JSON.parse(JSON.stringify(e));
-                    e.cancel = true;
-                    rawFile = e.filesData;
-                    selectArgs.filesData = rawFile;
-                }
                 this.parent.trigger(events.imageSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     if (!selectArgs.cancel) {
                         this.checkExtension(selectArgs.filesData[0]); altText = selectArgs.filesData[0].name;
@@ -1761,34 +1756,11 @@ export class Image {
                             });
                             reader.readAsDataURL(selectArgs.filesData[0].rawFile as Blob);
                         }
-                        if (this.parent.isServerRendered) {
-                            /* eslint-disable */
-                            (this.uploadObj as any)._internalRenderSelect(selectArgs, rawFile);
-                            /* eslint-enable */
-                        }
                     }
                 });
             },
             beforeUpload: (args: BeforeUploadEventArgs) => {
-                if (this.parent.isServerRendered) {
-                    beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                    beforeUploadArgs.filesData = filesData;
-                    args.cancel = true;
-                    this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
-                        if (beforeUploadArgs.cancel) {
-                            return;
-                        }
-                        /* eslint-disable */
-                        (this.uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
-                        beforeUploadArgs.currentRequest : (this.uploadObj as any).currentRequestHeader;
-                       (this.uploadObj as any).customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
-                       beforeUploadArgs.customFormData : (this.uploadObj as any).customFormDatas;
-                        (this.uploadObj as any).uploadFiles(rawFile, null);
-                        /* eslint-enable */
-                    });
-                } else {
-                    this.parent.trigger(events.beforeImageUpload, args);
-                }
+                this.parent.trigger(events.beforeImageUpload, args);
             },
             uploading: (e: UploadingEventArgs) => {
                 if (!this.parent.isServerRendered) {
@@ -2093,8 +2065,6 @@ export class Image {
         setTimeout(() => {
             proxy.refreshPopup(imageElement);
         }, timeOut);
-        let rawFile: FileInfo[];
-        let beforeUploadArgs: ImageUploadingEventArgs;
         this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
@@ -2120,32 +2090,9 @@ export class Image {
                 }, 900);
             },
             beforeUpload: (args: BeforeUploadEventArgs) => {
-                if (this.parent.isServerRendered) {
-                    beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                    beforeUploadArgs.filesData = rawFile;
-                    isUploading = true;
-                    args.cancel = true;
-                    this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
-                        if (beforeUploadArgs.cancel) {
-                            return;
-                        }
-                        if (!this.parent.inlineMode.enable) {
-                            this.parent.toolbarModule.baseToolbar.toolbarObj.disable(true);
-                        }
-                        /* eslint-disable */
-                        (this.uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
-                        beforeUploadArgs.currentRequest : (this.uploadObj as any).currentRequestHeader;
-                       (this.uploadObj as any).customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
-                       beforeUploadArgs.customFormData : (this.uploadObj as any).customFormDatas;
-                        (this.uploadObj as any).uploadFiles(rawFile, null);
-                        this.parent.inputElement.contentEditable = 'false';
-                        /* eslint-enable */
-                    });
-                } else {
-                    this.parent.trigger(events.beforeImageUpload, args);
-                    if (!this.parent.inlineMode.enable) {
-                        this.parent.toolbarModule.baseToolbar.toolbarObj.disable(true);
-                    }
+                this.parent.trigger(events.beforeImageUpload, args);
+                if (!this.parent.inlineMode.enable) {
+                    this.parent.toolbarModule.baseToolbar.toolbarObj.disable(true);
                 }
             },
             uploading: (e: UploadingEventArgs) => {
@@ -2168,9 +2115,6 @@ export class Image {
             selected: (e: SelectedEventArgs) => {
                 if (isUploading) {
                     e.cancel = true;
-                }
-                if (this.parent.isServerRendered) {
-                    rawFile = e.filesData;
                 }
             },
             failure: (e: Object) => {

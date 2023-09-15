@@ -153,6 +153,7 @@ export class FormDesigner {
         isVisibilityChanged: false,
         isPrintChanged: false,
         isCheckedChanged: false,
+        isValueChanged: false
     }
     private radioButtonFieldPropertyChanged: any = {
         isReadOnlyChanged: false,
@@ -165,6 +166,7 @@ export class FormDesigner {
         isVisibilityChanged: false,
         isPrintChanged: false,
         isSelectedChanged: false,
+        isValueChanged: false
     }
     private dropdownFieldPropertyChanged: any = {
         isReadOnlyChanged: false,
@@ -2785,7 +2787,7 @@ export class FormDesigner {
                     false, false, false, false, false, false, false, false, false, false, false, isToolTipChanged, oldValue, newValue);
             }
         }
-        if (formFieldObject.formFieldAnnotationType === 'Checkbox' && (!isNullOrUndefined((options as CheckBoxFieldSettings).isChecked)) || (options as CheckBoxFieldSettings).isChecked) {
+        if ((formFieldObject.formFieldAnnotationType === 'Checkbox') && ((!isNullOrUndefined((options as CheckBoxFieldSettings).isChecked)) || (options as CheckBoxFieldSettings).isChecked || (options as CheckBoxFieldSettings).value)) {
             if (formFieldObject.isChecked !== this.checkboxCheckedState) {
                 isValueChanged = true;
                 oldValue = formFieldObject.isChecked;
@@ -2795,12 +2797,21 @@ export class FormDesigner {
             (htmlElement as IElement).checked = (options as CheckBoxFieldSettings).isChecked;
             this.setCheckedValue(htmlElement, (options as CheckBoxFieldSettings).isChecked);
             (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isChecked = (options as CheckBoxFieldSettings).isChecked;
-            if (isValueChanged) {
-                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, isValueChanged, false, false,
-                    false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+            if ((options as CheckBoxFieldSettings).value) {
+                if (formFieldObject.value !== (options as CheckBoxFieldSettings).value) {
+                    isValueChanged = true;
+                    oldValue = formFieldObject.value;
+                    newValue = (options as CheckBoxFieldSettings).value;
+                }
+                formFieldObject.value = (options as CheckBoxFieldSettings).value;
+                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].value = (options as CheckBoxFieldSettings).value;
+                if (isValueChanged) {
+                    this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, isValueChanged, false, false,
+                        false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+                }
             }
         }
-        if (formFieldObject.formFieldAnnotationType === 'RadioButton' && (!isNullOrUndefined((options as RadioButtonFieldSettings).isSelected)) || (options as RadioButtonFieldSettings).isSelected) {
+        if (formFieldObject.formFieldAnnotationType === 'RadioButton' && ((!isNullOrUndefined((options as RadioButtonFieldSettings).isSelected)) || (options as RadioButtonFieldSettings).isSelected || (options as RadioButtonFieldSettings).value)) {
             if (formFieldObject.isSelected !== (options as RadioButtonFieldSettings).isSelected) {
                 isValueChanged = true;
                 oldValue = formFieldObject.isSelected;
@@ -2809,9 +2820,18 @@ export class FormDesigner {
             formFieldObject.isSelected = (options as RadioButtonFieldSettings).isSelected;
             (htmlElement as IElement).checked = (options as RadioButtonFieldSettings).isSelected;
             (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isSelected = (options as RadioButtonFieldSettings).isSelected;
-            if (isValueChanged) {
-                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, isValueChanged, false, false,
-                    false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+            if ((options as RadioButtonFieldSettings).value) {
+                if (formFieldObject.value !== (options as RadioButtonFieldSettings).value) {
+                    isValueChanged = true;
+                    oldValue = formFieldObject.value;
+                    newValue = (options as RadioButtonFieldSettings).value;
+                }
+                formFieldObject.value = (options as RadioButtonFieldSettings).value;
+                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].value = (options as RadioButtonFieldSettings).value;
+                if (isValueChanged) {
+                    this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, isValueChanged, false, false,
+                        false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+                }
             }
         }
         if (formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox') {
@@ -6561,6 +6581,9 @@ export class FormDesigner {
         if (!isNullOrUndefined(checkBoxFieldSettings.isRequired) && this.checkBoxFieldPropertyChanged.isRequiredChanged) {
             drawingObject.isRequired = checkBoxFieldSettings.isRequired;
         }
+        if (checkBoxFieldSettings.value && this.checkBoxFieldPropertyChanged.isValueChanged) {
+            drawingObject.value = checkBoxFieldSettings.value;
+        }
         if ((checkBoxFieldSettings.backgroundColor && checkBoxFieldSettings.backgroundColor !== 'white') && this.checkBoxFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = checkBoxFieldSettings.backgroundColor;
         }
@@ -6594,6 +6617,9 @@ export class FormDesigner {
         }
         if (!isNullOrUndefined(radioButtonFieldSettings.isRequired) && this.radioButtonFieldPropertyChanged.isRequiredChanged) {
             drawingObject.isRequired = radioButtonFieldSettings.isRequired;
+        }
+        if (radioButtonFieldSettings.value && this.radioButtonFieldPropertyChanged.isValueChanged) {
+            drawingObject.value = radioButtonFieldSettings.value;
         }
         if ((radioButtonFieldSettings.backgroundColor && radioButtonFieldSettings.backgroundColor !== 'white') && this.radioButtonFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = radioButtonFieldSettings.backgroundColor;
@@ -6845,6 +6871,7 @@ export class FormDesigner {
         this.checkBoxFieldPropertyChanged.isBackgroundColorChanged = !isNullOrUndefined(checkBoxFieldSettings.backgroundColor);
         this.checkBoxFieldPropertyChanged.isBorderColorChanged = !isNullOrUndefined(checkBoxFieldSettings.borderColor);
         this.checkBoxFieldPropertyChanged.isNameChanged = !isNullOrUndefined(checkBoxFieldSettings.name);
+        this.checkBoxFieldPropertyChanged.isValueChanged = !isNullOrUndefined(checkBoxFieldSettings.value);
         this.checkBoxFieldPropertyChanged.isToolTipChanged = !isNullOrUndefined(checkBoxFieldSettings.tooltip);
         this.checkBoxFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(checkBoxFieldSettings.thickness);
         this.checkBoxFieldPropertyChanged.isVisibilityChanged = !isNullOrUndefined(checkBoxFieldSettings.visibility);
@@ -6860,6 +6887,7 @@ export class FormDesigner {
         this.radioButtonFieldPropertyChanged.isBackgroundColorChanged = !isNullOrUndefined(radioButtonFieldSettings.backgroundColor);
         this.radioButtonFieldPropertyChanged.isBorderColorChanged = !isNullOrUndefined(radioButtonFieldSettings.borderColor);
         this.radioButtonFieldPropertyChanged.isNameChanged = !isNullOrUndefined(radioButtonFieldSettings.name);
+        this.radioButtonFieldPropertyChanged.isValueChanged = !isNullOrUndefined(radioButtonFieldSettings.value);
         this.radioButtonFieldPropertyChanged.isToolTipChanged = !isNullOrUndefined(radioButtonFieldSettings.tooltip);
         this.radioButtonFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(radioButtonFieldSettings.thickness);
         this.radioButtonFieldPropertyChanged.isVisibilityChanged = !isNullOrUndefined(radioButtonFieldSettings.visibility);

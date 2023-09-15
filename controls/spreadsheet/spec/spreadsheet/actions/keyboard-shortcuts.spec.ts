@@ -241,6 +241,12 @@ describe('Keyboard shortcuts module ->', () => {
     });
 
     describe('Keyboard Shortcuts in Ribbon->', () => {
+        let spreadsheet: any; let tbarEle: HTMLElement;
+        const triggerToolbarAction: Function = (keyCode: number, count: number, action: string = 'keyup', ele: HTMLElement = tbarEle): void => {
+            for (let i: number = 0; i < count; i++) {
+                helper.triggerKeyNativeEvent(keyCode, false, false, ele, action, false, <HTMLElement>document.activeElement);
+            }
+        };
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{ ranges: [{ dataSource: defaultData }] }]
@@ -251,118 +257,110 @@ describe('Keyboard shortcuts module ->', () => {
         });
 
         it('Insert Tab switching->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
+            spreadsheet = helper.getInstance();
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 78, altKey: true, preventDefault: (): void => {} });
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
             expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Insert');
             done();
         });
         it('Home Tab switch->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 72, altKey: true, preventDefault: (): void => {} });
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
             expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Home');
             done();
         });
         it('Data Tab switch->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 65, altKey: true, preventDefault: (): void => {} });
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
             expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Data');
             done();
         });
         it('View Tab switch->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 87, altKey: true, preventDefault: (): void => {} });
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
             expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('View');
             done();
         });
         it('Formulas Tab switch->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 77, altKey: true, preventDefault: (): void => {} });
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
             expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Formulas');
             done();
         });
-        it('Apply Tab Key in Home Tab->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
+        it('Tab and Shift + Tab key navigation in home tab->', (done: Function) => {
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 72, altKey: true, preventDefault: (): void => {} });
             helper.triggerKeyNativeEvent(9);
+            expect(document.activeElement.id).toBe('spreadsheet_cut');
             helper.triggerKeyNativeEvent(9);
-            setTimeout(() => {
-                expect(document.activeElement.getAttribute('aria-label')).toBe('Copy (Ctrl+C)');
-                done();
-            });
+            expect(document.activeElement.classList.contains('e-drop-icon')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9);
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true);
+            expect(document.activeElement.classList.contains('e-drop-icon')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true);
+            expect(document.activeElement.getAttribute('aria-label')).toBe('Cut (Ctrl+X)');
+            helper.triggerKeyNativeEvent(9, false, true);
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9);
+            expect(document.activeElement.id).toBe('spreadsheet_cut');
+            done();
         });
-        it('Apply Tab Key in Split Button in Home Tab->', (done: Function) => {
-            helper.triggerKeyNativeEvent(9); helper.triggerKeyNativeEvent(9);
-            helper.triggerKeyNativeEvent(9);helper.triggerKeyNativeEvent(9);
-            helper.triggerKeyNativeEvent(9);helper.triggerKeyNativeEvent(9);
-            helper.triggerKeyNativeEvent(9);helper.triggerKeyNativeEvent(9);
-            setTimeout(() => {
-                expect(document.activeElement.getAttribute('aria-label')).toBe('Text Color #000000');
-                done();
-            });
+        it('Toolbar Right and Left key navigation in Home Tab->', (done: Function) => {
+            tbarEle = helper.getElementFromSpreadsheet('.e-ribbon .e-content .e-toolbar');
+            triggerToolbarAction(39, 8);
+            expect(document.activeElement.getAttribute('aria-label')).toBe('Underline');
+            triggerToolbarAction(39, 10);
+            expect(document.activeElement.getAttribute('aria-label')).toBe('Find & Replace');
+            triggerToolbarAction(37, 3);
+            expect(document.activeElement.classList.contains('e-cf-ddb')).toBeTruthy();
+            done();
         });
-        it('Apply Tab Key in Find Button in Home Tab->', (done: Function) => {
-            helper.triggerKeyNativeEvent(9); helper.triggerKeyNativeEvent(9);
-            helper.triggerKeyNativeEvent(9);helper.triggerKeyNativeEvent(9);
-            helper.triggerKeyNativeEvent(9);helper.triggerKeyNativeEvent(9);
-            helper.triggerKeyNativeEvent(9);helper.triggerKeyNativeEvent(9);
+        it('Tab and Shift + Tab key navigation in Insert Tab->', (done: Function) => {
+            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 78, altKey: true, preventDefault: (): void => { } });
             helper.triggerKeyNativeEvent(9);
-            setTimeout(() => {
-                expect(document.activeElement.getAttribute('aria-label')).toBe('Find & Replace');
-                done();
-            });
+            expect(document.activeElement.id).toBe('spreadsheet_hyperlink');
+            triggerToolbarAction(39, 2);
+            expect(document.activeElement.textContent).toBe('Chart');
+            helper.triggerKeyNativeEvent(9);
+            expect(document.activeElement.classList.contains('e-drop-icon')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true);
+            expect(document.activeElement.id).toBe('spreadsheet_hyperlink');
+            done();
         });
-        it('Apply Tab Key in Chart Button in Insert Tab->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
-            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 78, altKey: true, preventDefault: (): void => {} });
-            helper.triggerKeyNativeEvent(9);
-            helper.triggerKeyNativeEvent(9);
-            helper.triggerKeyNativeEvent(9);
-            setTimeout(() => {
-                expect(document.activeElement.textContent).toBe('Chart');
-                done();
-            });
-        });
-        it('Apply Tab Key in Chart Element in Chart Design Tab->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
+        it('Toolbar key action in chart design tab->', (done: Function) => {
             helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 18, altKey: true, preventDefault: (): void => { } });
             helper.triggerKeyNativeEvent(9);
-            setTimeout(() => {
-                expect(document.activeElement.textContent).toBe('Add Chart Element');
-                done();
-            });
+            expect(document.activeElement.textContent).toBe('Add Chart Element');
+            triggerToolbarAction(39, 3);
+            expect(document.activeElement.textContent).toBe('Chart Type');
+            done();
         });
-        it('Apply Tab Key in Chart Type in Chart Design Tab->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
-            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 18, altKey: true, preventDefault: (): void => { } });
-            helper.triggerKeyNativeEvent(9); helper.triggerKeyNativeEvent(9); helper.triggerKeyNativeEvent(9);
-            setTimeout(() => {
-                expect(document.activeElement.textContent).toBe('Chart Type');
-                done();
-            });
-        });
-        it('Apply Tab Key in Formulas Tab->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
-            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 77, altKey: true, preventDefault: (): void => {} });
+        it('Tab and Shift + Tab key in Formulas tab->', (done: Function) => {
+            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 77, altKey: true, preventDefault: (): void => { } });
             helper.triggerKeyNativeEvent(9);
+            expect(document.activeElement.textContent).toBe('Insert Function');
             helper.triggerKeyNativeEvent(9);
-            setTimeout(() => {
-                expect(document.activeElement.textContent).toBe('Insert Function');
-                done();
-            });
+            expect(document.activeElement.classList.contains('e-drop-icon')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true);
+            expect(document.activeElement.textContent).toBe('Insert Function');
+            helper.triggerKeyNativeEvent(9, false, true);
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
+            done();
         });
-        it('Collapse Ribbon using Shortcut->', (done: Function) => {
+        it('Expand/Collapse ribbon using Ctrl + F8 and Enter key->', (done: Function) => {
+            const ribbon: HTMLElement = helper.getElement('.e-ribbon');
+            expect(ribbon.classList.contains('e-collapsed')).toBeFalsy();
             helper.triggerKeyNativeEvent(119, true);
-            setTimeout(() => {
-                var ribbon = helper.getElement('.e-ribbon');
-                expect(ribbon.classList.contains('e-collapsed')).toBeTruthy();
-                done();
-            });
+            expect(ribbon.classList.contains('e-collapsed')).toBeTruthy();
+            helper.triggerKeyNativeEvent(119, true);
+            expect(ribbon.classList.contains('e-collapsed')).toBeFalsy();
+            helper.triggerKeyNativeEvent(9, false, true);
+            triggerToolbarAction(13, 1, 'keydown', null);
+            expect(ribbon.classList.contains('e-collapsed')).toBeTruthy();
+            triggerToolbarAction(13, 1, 'keydown', null);
+            expect(ribbon.classList.contains('e-collapsed')).toBeFalsy();
+            done();
         });
     });
 
@@ -413,7 +411,7 @@ describe('Keyboard shortcuts module ->', () => {
             helper.invoke('copy', ['A2']).then(() => {
                 helper.invoke('selectRange', ['A3']);
                 helper.triggerKeyNativeEvent(86, true);
-                helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });        
+                helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('Casual Shoes');
                     done();
@@ -566,7 +564,7 @@ describe('Keyboard shortcuts module ->', () => {
         });
         it('List All Sheets using shortcut->', (done: Function) => {
             helper.invoke('selectRange', ['A1']);
-            helper.triggerKeyNativeEvent(75, false, true, undefined, undefined,true);
+            helper.triggerKeyNativeEvent(75, false, true, undefined, undefined, true);
             setTimeout(() => {
                 let popUpElem: HTMLElement = helper.getElement('.e-dropdown-popup.e-sheets-list')
                 expect(popUpElem.firstElementChild.childElementCount).toBe(2);
@@ -594,7 +592,7 @@ describe('Keyboard shortcuts module ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ rows: [{ index: 2, cells: [{ index: 2, value: 'Test' }] }] }]
-                },done);
+                }, done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
@@ -606,7 +604,7 @@ describe('Keyboard shortcuts module ->', () => {
                     helper.triggerKeyEvent('cut', 88, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
                     setTimeout(() => {
                         helper.invoke('selectRange', ['C5']);
-                        helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });            
+                        helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
                         setTimeout(() => {
                             expect(helper.getInstance().sheets[0].rows[4].cells[2].value.toString()).toEqual('Test');
                             helper.invoke('selectRange', ['D5']);
@@ -615,7 +613,7 @@ describe('Keyboard shortcuts module ->', () => {
                                 expect(helper.getInstance().sheets[0].rows[4].cells[3]).toBeNull;
                                 done();
                             });
-                        }); 
+                        });
                     });
                 });
             });
@@ -635,20 +633,20 @@ describe('Keyboard shortcuts module ->', () => {
                     helper.triggerKeyEvent('cut', 88, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
                     setTimeout(() => {
                         helper.invoke('selectRange', ['J3']);
-                        helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });            
+                        helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
                         expect(helper.getInstance().sheets[0].rows[2].cells[9].value.toString()).toEqual('50');
                         expect(helper.getInstance().sheets[0].rows[6].cells[9].value.toString()).toEqual('66');
                         setTimeout(() => {
-                            helper.triggerKeyNativeEvent(90, true);   
+                            helper.triggerKeyNativeEvent(90, true);
                             expect(helper.getInstance().sheets[0].rows[2].cells[9]).toBeNull;
-                            expect(helper.getInstance().sheets[0].rows[6].cells[9]).toBeNull;      
+                            expect(helper.getInstance().sheets[0].rows[6].cells[9]).toBeNull;
                             expect(helper.getInstance().sheets[0].rows[2].cells[7].value.toString()).toEqual('50');
                             expect(helper.getInstance().sheets[0].rows[6].cells[7].value.toString()).toEqual('66');
                             setTimeout(() => {
-                                helper.triggerKeyNativeEvent(89, true);  
+                                helper.triggerKeyNativeEvent(89, true);
                                 setTimeout(() => {
                                     expect(helper.getInstance().sheets[0].rows[2].cells[7]).toBeNull;
-                                    expect(helper.getInstance().sheets[0].rows[6].cells[7]).toBeNull;            
+                                    expect(helper.getInstance().sheets[0].rows[6].cells[7]).toBeNull;
                                     expect(helper.getInstance().sheets[0].rows[2].cells[9].value.toString()).toEqual('50');
                                     expect(helper.getInstance().sheets[0].rows[6].cells[9].value.toString()).toEqual('66');
                                     done();

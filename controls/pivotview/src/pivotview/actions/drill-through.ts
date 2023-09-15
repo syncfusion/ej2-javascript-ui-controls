@@ -67,8 +67,9 @@ export class DrillThrough {
             if (this.parent.allowDrillThrough && ele.classList.contains('e-valuescontent') || this.parent.editSettings.allowEditing) {
                 const colIndex: number = Number(ele.getAttribute('data-colindex'));
                 const rowIndex: number = Number(ele.getAttribute('index'));
-                this.executeDrillThrough(this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet, rowIndex,
-                                         colIndex, ele);
+                this.executeDrillThrough(
+                    this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet, rowIndex, colIndex, ele
+                );
             }
         }
     }

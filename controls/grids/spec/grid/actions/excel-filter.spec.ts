@@ -9,17 +9,16 @@ import { Group } from '../../../src/grid/actions/group';
 import { LazyLoadGroup } from '../../../src/grid/actions/lazy-load-group';
 import { Page } from '../../../src/grid/actions/page';
 import { Sort } from '../../../src/grid/actions/sort';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import { Selection } from '../../../src/grid/actions/selection';
-import { filterData } from '../base/datasource.spec';
+import { filterData, employeeData } from '../base/datasource.spec';
 import { performComplexDataOperation } from '../../../src/grid/base/util';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
 import * as events from '../../../src/grid/base/constant';
 
-Grid.Inject(Filter, Page, Selection, Group, LazyLoadGroup, Freeze, Sort);
+Grid.Inject(Filter, Page, Selection, Group, LazyLoadGroup, Sort);
 
 let getActualProperties: Function = (obj: any): any => {
     if (obj instanceof ChildProperty) {
@@ -456,33 +455,81 @@ describe('Excel Filter =>', () => {
         });
     });
 
-      describe('Customized the excel filter using filterTemplate => ', () => {
+    describe('Customized the excel filter using filterTemplate => ', () => {
         let gridObj: Grid;
-        let drpdwn: string ='<input id="dropdown" value="1" >'; 
+        let drpdwn: string = '<input id="dropdown" value="1" >';
+        let uiInfo: any;
+        let formFunc: any = (args?: any): void => {
+            expect(args.name).toBe('beforeCustomFilterOpen');
+            gridObj.off(events.beforeCustomFilterOpen, formFunc);
+        };
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: filterData,
+                    dataSource: employeeData,
                     allowFiltering: true,
                     allowPaging: false,
                     pageSettings: { currentPage: 1 },
-                    filterSettings: { type: 'Excel' },
+                    filterSettings: {
+                        type: 'Excel', columns: [
+                            { field: 'EmployeeID', matchCase: false, operator: 'greaterthan', predicate: 'and', value: 0 },
+                            { field: 'EmployeeID', matchCase: false, operator: 'lessthan', predicate: 'and', value: 8 }]
+                    },
+                    cssClass: 'report',
                     columns: [
-                        { field: 'OrderID', visible: true },
+                        { field: 'FirstName', visible: true },
                         {
                             field: 'EmployeeID', headerText: 'EmployeeID', filterTemplate: drpdwn
                         },
-                        {field:'Fright',headerText:'Frieght', width:130}
+                        { field: 'BirthDate', headerText: 'Birth Date', type: 'date', width: 130 },
+                        { field: 'HireDate', headerText: 'Hire Date', type: 'datetime', width: 130 }
                     ],
                 }, done);
         });
 
         it('compile filterTemplate in menu filter', () => {
-             (<any>gridObj).element.querySelector('.e-headercell:nth-child(2)').querySelector('.e-filtermenudiv').click();
+            (<any>gridObj).element.querySelector('.e-headercell:nth-child(2)').querySelector('.e-filtermenudiv').click();
             expect((<any>gridObj).columns[1].filterTemplateFn).not.toBe(undefined);
         });
 
-        it('memory leak', () => {     
+        it('BeforeCustomFilterOpen event Check with filterTemplate', (done: Function) => {
+            (gridObj.filterModule as any).filterModule.closeDialog();
+            gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
+            (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
+            (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
+            done();
+        });
+
+        it('Custom Filter Open on date type', (done: Function) => {
+            (<any>gridObj).element.querySelector('.e-headercell:nth-child(3)').querySelector('.e-filtermenudiv').click();
+            (gridObj.filterModule as any).filterModule.closeDialog();
+            gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
+            (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
+            (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
+            done();
+        });
+
+        it('Custom Filter Open on datetime type', (done: Function) => {
+            (<any>gridObj).element.querySelector('.e-headercell:nth-child(4)').querySelector('.e-filtermenudiv').click();
+            (gridObj.filterModule as any).filterModule.closeDialog();
+            gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
+            (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
+            (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
+            done();
+        });
+
+        it('Custom Filter Open on filtered column', (done: Function) => {
+            (gridObj.filterModule as any).filterModule.excelFilterBase.completeAction({result: ['a','b','b']});
+            (<any>gridObj).element.querySelector('.e-headercell:nth-child(1)').querySelector('.e-filtermenudiv').click();
+            (gridObj.filterModule as any).filterModule.closeDialog();
+            gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
+            (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
+            uiInfo = gridObj.getFilterUIInfo();
+            (document.getElementsByClassName('e-btn')[1] as HTMLElement).click();
+            done();
+        });
+
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -490,11 +537,65 @@ describe('Excel Filter =>', () => {
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        });    
-       
+        });
+
         afterAll(() => {
             destroy(gridObj);
-            gridObj = drpdwn = getActualProperties = getString = null;
+            gridObj = drpdwn = getActualProperties = getString = uiInfo = null;
+        });
+    });
+
+    // used for code coverage
+    describe('Excel filter with Rtl mode', () => {
+        let gridObj: Grid;
+        let dataBound: () => void;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    enableRtl: true,
+                    filterSettings: { type: 'Excel' },
+                    columns: [{ field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string', filter: { type: 'Excel' } },
+                    { field: 'Freight', format: 'C2', type: 'number' }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('open the filter dialog', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterafteropen') {
+                    expect(1).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('filter multiple values', (done: Function) => {
+            dataBound = (args?: any): void => {
+                    expect(1).toBe(1);
+                    gridObj.dataBound = null;
+                    done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.filterByColumn('OrderID','equal',[10248, 10249]);
+        });
+
+        it('Custom Filter Open on filtered column', (done: Function) => {
+            (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
+            (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = dataBound = null;
         });
     });
 

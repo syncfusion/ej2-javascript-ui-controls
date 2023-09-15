@@ -181,16 +181,16 @@ export class InsertHtml {
 
     private static findFirstTextNode(node: Node | null): Node | null {
         if (node.nodeType === Node.TEXT_NODE) {
-          return node;
+            return node;
         }
         for (let i: number = 0; i < node.childNodes.length; i++) {
-          const textNode: Node = this.findFirstTextNode(node.childNodes[i as number]);
-          if (!isNOU(textNode)) {
-            return textNode;
-          }
+            const textNode: Node = this.findFirstTextNode(node.childNodes[i as number]);
+            if (!isNOU(textNode)) {
+                return textNode;
+            }
         }
         return null;
-      }
+    }
 
     private static pasteInsertHTML(
         nodes: Node[], node: Node, range: Range,

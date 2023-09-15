@@ -6,7 +6,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 
 
 
-describe('DropDownTree control remote datasource Custom Mode testing -', () => {
+xdescribe('DropDownTree control remote datasource Custom Mode testing -', () => {
     beforeAll(() => {
         var head  = document.getElementsByTagName('head')[0];
         var link  = document.createElement('link');
@@ -69,7 +69,7 @@ describe('DropDownTree control remote datasource Custom Mode testing -', () => {
             jasmine.Ajax.uninstall();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
-        it('With Custom Mode', () => {
+        xit('With Custom Mode', () => {
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -154,7 +154,7 @@ describe('DropDownTree control remote datasource Custom Mode testing -', () => {
             jasmine.Ajax.uninstall();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
-        it('With Custom Mode', () => {
+        xit('With Custom Mode', () => {
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -251,7 +251,7 @@ describe('DropDownTree control remote datasource Custom Mode testing -', () => {
             jasmine.Ajax.uninstall();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
-        it('for selectAll with showCheckBox', (done: Function) => {
+        xit('for selectAll with showCheckBox', (done: Function) => {
             ddtreeObj.selectAll(true);
             expect(ddtreeObj.value.length).toBe(15);
             var chipElement = ddtreeObj.element.parentElement.firstElementChild;

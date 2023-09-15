@@ -2,7 +2,7 @@ import { PivotEngine, IAxisSet, IDataOptions, IField, IFormatSettings, IFieldLis
 import { IPivotRows, INumberIndex, IFieldOptions, IDrilledItem } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel, StackingLineSeries, ILegendClickEventArgs, IAxisMultiLabelRenderEventArgs } from '@syncfusion/ej2-charts';
+import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel, StackingLineSeries, ILegendClickEventArgs } from '@syncfusion/ej2-charts';
 import { AccumulationChart, PieSeries, FunnelSeries, PyramidSeries } from '@syncfusion/ej2-charts';
 import { SplineAreaSeries, MultiColoredLineSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries } from '@syncfusion/ej2-charts';
 import { MultiColoredAreaSeries, SplineSeries, StepLineSeries, AccumulationLegend, AccumulationTooltip } from '@syncfusion/ej2-charts';
@@ -17,7 +17,7 @@ import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview/base/pivotview';
 import {
     RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo,
-    DrillArgs, MultiLevelLabelClickEventArgs, EnginePopulatedEventArgs, EnginePopulatingEventArgs
+    DrillArgs, MultiLevelLabelClickEventArgs, EnginePopulatedEventArgs, EnginePopulatingEventArgs, MultiLevelLabelRenderEventArgs
 } from '../../common';
 import { DrillOptionsModel } from '../../model/datasourcesettings-model';
 import { PivotUtil } from '../../base/util';
@@ -44,7 +44,6 @@ export class PivotChart {
     private persistSettings: ChartSettingsModel;
     private selectedLegend: number = 0;
     private chartSeriesInfo: { [key: string]: { uniqueName?: string; caption?: string; colorIndex?: number[] } } = {};
-    private fieldPosition: string[] = [];
     private measurePos: number = -1;
     private measuresNames: { [key: string]: string } = {};
     private accumulationType: ChartSeriesType[] = ['Pie', 'Pyramid', 'Doughnut', 'Funnel'];
@@ -90,7 +89,7 @@ export class PivotChart {
                 parent.dataSourceSettings.url !== '' && parent.dataSourceSettings.values.length > 0 && !parent.engineModule.isEmptyData) :
                 (parent.dataSourceSettings.values.length > 0 && parent.dataSourceSettings.dataSource &&
                     ((parent.dataSourceSettings.dataSource as IDataSet[]).length > 0 ||
-                        (parent.dataSourceSettings.dataSource instanceof DataManager)) && !parent.engineModule.isEmptyData);
+                    (parent.dataSourceSettings.dataSource instanceof DataManager)) && !parent.engineModule.isEmptyData);
         if (isDataAvail) {
             if (!this.parent.chart && (this.parent.element.querySelector('.e-chart') || this.parent.element.querySelector('.e-accumulationchart'))) {
                 remove(select('#' + this.parent.element.id + '_chart', this.parent.element));
@@ -207,11 +206,12 @@ export class PivotChart {
             measureNames[field.caption ? field.caption : fieldName] = fieldName;
         }
         if (this.parent.dataType === 'olap') {
+            const fieldPosition: string[] = [];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            levelPos = this.groupHierarchyWithLevels(pivotValues as any);
-            lastHierarchy = this.fieldPosition[this.fieldPosition.length - 1];
-            lastDimension = (this.measurePos === (this.fieldPosition.length - 1) && this.fieldPosition.length > 1) ?
-                this.fieldPosition[this.fieldPosition.length - 2] : lastHierarchy;
+            levelPos = this.groupHierarchyWithLevels(pivotValues as any, fieldPosition);
+            lastHierarchy = fieldPosition[fieldPosition.length - 1];
+            lastDimension = (this.measurePos === (fieldPosition.length - 1) && fieldPosition.length > 1) ?
+                fieldPosition[fieldPosition.length - 2] : lastHierarchy;
             drillDimension = lastDimension;
         }
         for (const rKey of rKeys) {
@@ -361,6 +361,9 @@ export class PivotChart {
                                     && firstRowCell.isDrilled) || !measureAllow)) {
                                 break;
                             }
+                            if (this.parent.dataType === 'olap' && cell.isSum === true && this.parent.dataSourceSettings.valueAxis === 'row') {
+                                continue;
+                            }
                             const colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
                                 : cell.columnHeaders.toString().split(delimiter).join(' - ');
                             const rowHeaders: string = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
@@ -413,7 +416,8 @@ export class PivotChart {
         let prevColorIndex: number = 0;
         const chartSeriesInfo: { [key: string]: { name?: string, color?: string } } = {};
         const columnKeys: string[] = Object.keys(this.columnGroupObject);
-        this.persistSettings = JSON.parse(this.parent.getPersistData(true)).chartSettings;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.persistSettings = JSON.parse((this.parent as any).getChartSettings()).chartSettings;
         const seriesColors: string[] = this.persistSettings.palettes && this.persistSettings.palettes.length > 0
             ? this.persistSettings.palettes : getSeriesColor(this.chartSettings.theme);
         const delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
@@ -532,6 +536,7 @@ export class PivotChart {
         });
 
     }
+
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private frameObjectWithKeys(series: any): SeriesModel | AxisModel {
         const keys: string[] = Object.keys(series);
@@ -649,8 +654,9 @@ export class PivotChart {
                 LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries,
                 AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, StackingLineSeries, MultiColoredAreaSeries, ParetoSeries,
                 Legend, Tooltip, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair, Selection, StripLine, DataLabel);
-            AccumulationChart.Inject(PieSeries, FunnelSeries, PyramidSeries, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip,
-                                     Export);
+            AccumulationChart.Inject(
+                PieSeries, FunnelSeries, PyramidSeries, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, Export
+            );
             if (this.accumulationType.indexOf(type) > -1) {
                 this.parent.chart = new AccumulationChart(
                     {
@@ -1029,8 +1035,7 @@ export class PivotChart {
         return colIndexColl;
     }
 
-    private groupHierarchyWithLevels(pivotValues: IAxisSet[]): { [key: string]: { start: number; end: number } } {
-        this.fieldPosition = [];
+    private groupHierarchyWithLevels(pivotValues: IAxisSet[], fieldPosition: string[]): { [key: string]: { start: number; end: number }} {
         const group: { [key: string]: { [key: string]: string } } = {};
         let fieldCount: number = 0;
         const levelPos: { [key: string]: { start: number; end: number } } = {};
@@ -1041,13 +1046,13 @@ export class PivotChart {
                 if (isNullOrUndefined(group[cell.hierarchy])) {
                     if (cell.memberType === 3) {
                         if (fieldCount === this.measurePos) {
-                            this.fieldPosition[this.measurePos] = cell.hierarchy;
+                            fieldPosition[this.measurePos] = cell.hierarchy;
                             group[cell.hierarchy] = { [cell.levelUniqueName]: cell.levelUniqueName };
                         } else {
                             fieldCount--;
                         }
                     } else {
-                        this.fieldPosition[fieldCount as number] = cell.hierarchy;
+                        fieldPosition[fieldCount as number] = cell.hierarchy;
                         group[cell.hierarchy] = { [cell.levelUniqueName]: cell.levelUniqueName };
                     }
                     fieldCount++;
@@ -1057,13 +1062,13 @@ export class PivotChart {
             }
         }
         let lastEnd: number = -1;
-        for (let pos: number = 0; pos < this.fieldPosition.length; pos++) {
+        for (let pos: number = 0; pos < fieldPosition.length; pos++) {
             if (this.measurePos !== pos) {
-                levelPos[this.fieldPosition[pos as number]] = {
+                levelPos[fieldPosition[pos as number]] = {
                     start: (lastEnd + 1),
-                    end: (lastEnd + Object.keys(group[this.fieldPosition[pos as number]]).length)
+                    end: (lastEnd + Object.keys(group[fieldPosition[pos as number]]).length)
                 };
-                lastEnd = levelPos[this.fieldPosition[pos as number]].end;
+                lastEnd = levelPos[fieldPosition[pos as number]].end;
             }
         }
         return levelPos;
@@ -1326,7 +1331,9 @@ export class PivotChart {
             (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.width = width + 'px';
         }
         this.updateView();
-        this.parent.notify(events.contentReady, {});
+        if (this.parent.displayOption.primary === 'Chart' || this.parent.displayOption.view === 'Chart') {
+            this.parent.notify(events.contentReady, {});
+        }
         this.parent.trigger(events.chartLoaded, args);
         if ((this.parent.dataSourceSettings.mode === 'Server' && this.parent.isServerWaitingPopup) || this.parent.dataSourceSettings.mode === 'Local') {
             this.parent.hideWaitingPopup();
@@ -1515,8 +1522,9 @@ export class PivotChart {
                 this.onDrill({ customAttributes });
             }
         } else if (option === 'drillThrough') {
-            this.parent.drillThroughModule.executeDrillThrough(pivotValues[this.pivotIndex.rIndex][this.pivotIndex.cIndex] as IAxisSet,
-                                                               this.pivotIndex.rIndex, this.pivotIndex.rIndex);
+            this.parent.drillThroughModule.executeDrillThrough(
+                pivotValues[this.pivotIndex.rIndex][this.pivotIndex.cIndex] as IAxisSet, this.pivotIndex.rIndex, this.pivotIndex.rIndex
+            );
         } else if (option === 'exit') {
             this.accumulationMenu.close();
         }
@@ -1746,10 +1754,9 @@ export class PivotChart {
         this.parent.trigger(events.chartLoad, args);
     }
 
-    private multiLevelLabelRender(args: IAxisMultiLabelRenderEventArgs): void {
+    private multiLevelLabelRender(args: MultiLevelLabelRenderEventArgs): void {
         this.parent.trigger(events.multiLevelLabelRender, args);
     }
-
     private resized(args: IResizeEventArgs): void {
         if (this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0) {
             (args.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor)

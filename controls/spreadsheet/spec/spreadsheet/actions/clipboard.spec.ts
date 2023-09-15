@@ -561,7 +561,7 @@ describe('Clipboard ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('F163240, FB23869, EJ2-59226, EJ2-841268 ->', () => {
+        describe('F163240, FB23869, EJ2-59226 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [{ ranges: [{ dataSource: defaultData }] }],
@@ -625,31 +625,6 @@ describe('Clipboard ->', () => {
                     expect(helper.getInstance().sheets[0].rows[2].cells[7].value).not.toEqual('');
                     expect(helper.invoke('getCell', [2, 7]).textContent).not.toBe('');
                     done();
-                });
-            });
-
-            it('When pasting the long text into the cell it gets overlapped with other content', (done: Function) => {
-                helper.edit('G1', 'LIGHTING PLANS DO NOT MATCH SYMBOL PLANS. NOT ALL SYMBOLS ARE ON PLANS VERSES COUNTS GIVEN');
-                helper.triggerKeyNativeEvent(13);
-                setTimeout(() => {
-                    helper.invoke('selectRange', ['G1'])
-                    helper.invoke('startEdit');
-                    const coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
-                    helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
-                    helper.triggerKeyNativeEvent(65, true);
-                    helper.triggerKeyNativeEvent(67, true);
-                    helper.triggerKeyNativeEvent(13);
-                    setTimeout(() => {
-                        helper.invoke('selectRange', ['H1'])
-                        helper.invoke('startEdit');
-                        const coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
-                        helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
-                        expect(helper.getElement('.e-spreadsheet-edit').style.height).not.toBe('auto');
-                        helper.triggerKeyNativeEvent(86, true);
-                        expect(helper.getElement('.e-spreadsheet-edit').style.height).toBe('auto');
-                        helper.triggerKeyNativeEvent(13);
-                        done();
-                    });
                 });
             });
         });

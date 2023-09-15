@@ -314,7 +314,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Specify the value whether tooltip will be displayed for the Rich Text Editor toolbar.
      *
-     * @default false.
+     * @default true.
      */
     showTooltip?: boolean;
 
@@ -685,7 +685,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Set the cancel argument to true to cancel the command execution.
      *
      * @event 'actionBegin'
-     * @blazorProperty 'OnActionBegin'
      */
     actionBegin?: EmitType<ActionBeginEventArgs>;
 
@@ -693,7 +692,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers after command execution using toolbar items or executeCommand method.
      *
      * @event 'actionComplete'
-     * @blazorProperty 'OnActionComplete'
      */
     actionComplete?: EmitType<ActionCompleteEventArgs>;
 
@@ -703,8 +701,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Set the cancel argument to true to cancel the open of a dialog.
      *
      * @event 'beforeDialogOpen'
-     * @blazorProperty 'OnDialogOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
 
     beforeDialogOpen?: EmitType<BeforeOpenEventArgs>;
@@ -713,8 +709,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers when a dialog is opened.
      *
      * @event 'dialogOpen'
-     * @blazorProperty 'DialogOpened'
-     * @blazorType DialogOpenEventArgs
      */
     dialogOpen?: EmitType<Object>;
 
@@ -724,8 +718,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Set the cancel argument to true to prevent closing a dialog.
      *
      * @event 'beforeDialogClose'
-     * @blazorProperty 'OnDialogClose'
-     * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
     beforeDialogClose?: EmitType<BeforeCloseEventArgs>;
 
@@ -733,8 +725,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers after the dialog has been closed.
      *
      * @event 'dialogClose'
-     * @blazorProperty 'DialogClosed'
-     * @blazorType DialogCloseEventArgs
      */
     dialogClose?: EmitType<Object>;
 
@@ -742,7 +732,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers when the quick toolbar is being opened.
      *
      * @event 'beforeQuickToolbarOpen'
-     * @blazorProperty 'OnQuickToolbarOpen'
      */
     beforeQuickToolbarOpen?: EmitType<BeforeQuickToolbarOpenArgs>;
 
@@ -750,8 +739,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers when a quick toolbar is opened.
      *
      * @event 'quickToolbarOpen'
-     * @blazorProperty 'QuickToolbarOpened'
-     * @blazorType QuickToolbarEventArgs
      */
     quickToolbarOpen?: EmitType<Object>;
 
@@ -759,8 +746,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers after the quick toolbar has been closed.
      *
      * @event 'quickToolbarClose'
-     * @blazorProperty 'QuickToolbarClosed'
-     * @blazorType QuickToolbarEventArgs
      */
     quickToolbarClose?: EmitType<Object>;
 
@@ -776,7 +761,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers when the toolbar items status is updated.
      *
      * @event 'updatedToolbarStatus'
-     * @blazorType ToolbarUpdateEventArgs
      */
     updatedToolbarStatus?: EmitType<ToolbarStatusEventArgs>;
 
@@ -784,7 +768,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers when the image is selected or dragged into the insert image dialog.
      *
      * @event 'imageSelected'
-     * @blazorProperty 'OnImageSelected'
      */
     imageSelected?: EmitType<SelectedEventArgs>;
 
@@ -799,7 +782,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers when the selected image begins to upload in the insert image dialog.
      *
      * @event 'imageUploading'
-     * @blazorProperty 'OnImageUploading'
      */
     imageUploading?: EmitType<UploadingEventArgs>;
 
@@ -807,8 +789,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers when the image is successfully uploaded to the server side.
      *
      * @event 'imageUploadSuccess'
-     * @blazorProperty 'OnImageUploadSuccess'
-     * @blazorType ImageSuccessEventArgs
      */
     imageUploadSuccess?: EmitType<Object>;
 
@@ -816,8 +796,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers when there is an error in the image upload.
      *
      * @event 'imageUploadFailed'
-     * @blazorProperty 'OnImageUploadFailed'
-     * @blazorType ImageFailedEventArgs
      */
     imageUploadFailed?: EmitType<Object>;
 
@@ -825,7 +803,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers when the selected image is cleared from the insert image dialog.
      *
      * @event 'imageRemoving'
-     * @blazorProperty 'OnImageRemoving'
      */
     imageRemoving?: EmitType<RemovingEventArgs>;
 
@@ -833,7 +810,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers when the selected image is cleared from the Rich Text Editor Content.
      *
      * @event 'afterImageDelete'
-     * @blazorProperty 'OnImageDelete'
      */
     afterImageDelete?: EmitType<AfterImageDeleteEventArgs>;
 
@@ -890,7 +866,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers when the Rich Text Editor is rendered.
      *
      * @event 'created'
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -898,8 +873,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers when the Rich Text Editor is destroyed.
      *
      * @event 'destroyed'
-     * @blazorProperty 'Destroyed'
-     * @blazorType DestroyedEventArgs
      */
     destroyed?: EmitType<Object>;
 
@@ -907,7 +880,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
      *
      * @event 'beforeSanitizeHtml'
-     * @blazorProperty 'OnSanitizeHtml'
      */
     beforeSanitizeHtml?: EmitType<BeforeSanitizeHtmlArgs>;
 
@@ -915,7 +887,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers when Rich Text Editor is focused out.
      *
      * @event 'blur'
-     * @blazorType BlurEventArgs
      */
     blur?: EmitType<Object>;
 
@@ -923,8 +894,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers when Rich Text Editor Toolbar items is clicked.
      *
      * @event 'toolbarClick'
-     * @blazorProperty 'OnToolbarClick'
-     * @blazorType ToolbarClickEventArgs
      */
     toolbarClick?: EmitType<Object>;
 
@@ -932,7 +901,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers when Rich Text Editor is focused in
      *
      * @event 'focus'
-     * @blazorType FocusEventArgs
      */
     focus?: EmitType<Object>;
 
@@ -940,7 +908,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers only when Rich Text Editor is blurred and changes are done to the content.
      *
      * @event 'change'
-     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 
@@ -948,7 +915,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers only when resizing the image.
      *
      * @event 'resizing'
-     * @blazorProperty 'Resizing'
      */
     resizing?: EmitType<ResizeArgs>;
 
@@ -956,7 +922,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers only when start resize the image.
      *
      * @event 'resizeStart'
-     * @blazorProperty 'OnResizeStart'
      */
     resizeStart?: EmitType<ResizeArgs>;
 
@@ -964,7 +929,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers only when stop resize the image.
      *
      * @event 'resizeStop'
-     * @blazorProperty 'OnResizeStop'
      */
     resizeStop?: EmitType<ResizeArgs>;
 
@@ -986,7 +950,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * Triggers before drop the image.
      *
      * @event 'beforeImageDrop'
-     * @blazorProperty 'OnImageDrop'
      */
     beforeImageDrop?: EmitType<ImageDropEventArgs>;
 
@@ -996,7 +959,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * {% codeBlock src='rich-text-editor/formatter/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      */
     formatter?: IFormatter;
 

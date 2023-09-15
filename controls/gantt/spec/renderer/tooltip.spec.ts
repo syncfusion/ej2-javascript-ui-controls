@@ -3,7 +3,7 @@
  */
 import { Gantt } from '../../src/index';
 import { createElement, getValue } from '@syncfusion/ej2-base';
-import { resourceData, scheduleModeData,scheduleModeData1 } from '../base/data-source.spec';
+import { resourceCollection, resourceData, resourceViewData, scheduleModeData,scheduleModeData1 } from '../base/data-source.spec';
 import { destroyGantt, triggerMouseEvent, createGantt } from '../base/gantt-util.spec';
 
 describe('Gantt spec for tooltip', () => {
@@ -379,4 +379,77 @@ afterAll(() => {
     })
 })
 
+describe('Resource viewType parent tooltip', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            viewType: 'ResourceView',
+            dataSource:resourceViewData,
+            resources: resourceCollection,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resourceGroup', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            splitterSettings: {
+                columnIndex: 3
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '550px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019')
+        }, done);
+    });
 
+    it('EJ2-844114-Hide parent taskbar tooltip while dragging', () => {
+        let dragElement: HTMLElement = ganttObj.element.querySelector("#" + ganttObj.element.id + "GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div") as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', 150);
+        triggerMouseEvent(dragElement, 'mousemove', 200);
+        expect(ganttObj.element.querySelectorAll("#tooltip_44_content > div.e-tip-content").length).toBe(0)
+        triggerMouseEvent(dragElement, 'mouseup', 220);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+})

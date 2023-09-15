@@ -951,7 +951,7 @@ export class ChangesSingleView {
                     text = '';
                 }
                 let imageEle: HTMLImageElement = createElement('img') as HTMLImageElement;
-                imageEle.setAttribute('src', element.imageString);
+                imageEle.setAttribute('src', this.owner.documentHelper.getImageString(element));
                 imageEle.classList.add('e-de-tc-shrink-img');
                 changesText.appendChild(imageEle);
             } else if (element instanceof WRowFormat) {

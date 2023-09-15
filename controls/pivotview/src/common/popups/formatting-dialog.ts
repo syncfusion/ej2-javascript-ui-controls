@@ -1,6 +1,6 @@
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { createElement, remove, extend, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, select, SanitizeHtmlHelper, getInstance } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import { IAction, NumberFormattingEventArgs, PivotActionInfo } from '../base/interface';
 import * as events from '../../common/base/constant';
@@ -18,10 +18,6 @@ export class NumberFormatting implements IAction {
     public parent: PivotView;
     /** @hidden */
     public dialog: Dialog;
-    private valuesDropDown: DropDownList;
-    private formatDropDown: DropDownList;
-    private groupingDropDown: DropDownList;
-    private decimalDropDown: DropDownList;
     private customText: HTMLInputElement;
     private customLable: HTMLElement;
     private newFormat: IFormatSettings[];
@@ -211,6 +207,9 @@ export class NumberFormatting implements IAction {
     }
 
     private renderControls(): void {
+        let valuesDropDown: DropDownList;
+        let formatDropDown: DropDownList;
+        let groupingDropDown: DropDownList;
         if (select('#' + this.parent.element.id + '_FormatValueDrop', this.dialog.element)) {
             const valueFields: { [key: string]: Object }[] = [];
             valueFields.push({
@@ -225,13 +224,13 @@ export class NumberFormatting implements IAction {
                     field: this.parent.dataSourceSettings.values[i as number].name
                 });
             }
-            this.valuesDropDown = new DropDownList({
+            valuesDropDown = new DropDownList({
                 dataSource: valueFields, fields: { text: 'name', value: 'field' }, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 index: 0, cssClass: cls.FORMATTING_VALUE_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), change: this.valueChange.bind(this), width: '100%',
                 open: this.customUpdate.bind(this)
             });
-            this.valuesDropDown.isStringTemplate = true;
-            this.valuesDropDown.appendTo('#' + this.parent.element.id + '_FormatValueDrop');
+            valuesDropDown.isStringTemplate = true;
+            valuesDropDown.appendTo('#' + this.parent.element.id + '_FormatValueDrop');
         }
         if (select('#' + this.parent.element.id + '_FormatDrop', this.dialog.element)) {
             const fields: { [key: string]: Object }[] = [
@@ -240,26 +239,25 @@ export class NumberFormatting implements IAction {
                 { index: 2, name: this.parent.localeObj.getConstant('percentage') },
                 { index: 3, name: this.parent.localeObj.getConstant('Custom') }
             ];
-            this.formatDropDown = new DropDownList({
+            formatDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' },
                 index: 0, change: this.dropDownChange.bind(this), enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 cssClass: cls.FORMATTING_FORMAT_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%'
             });
-            this.formatDropDown.isStringTemplate = true;
-            this.formatDropDown.appendTo('#' + this.parent.element.id + '_FormatDrop');
+            formatDropDown.isStringTemplate = true;
+            formatDropDown.appendTo('#' + this.parent.element.id + '_FormatDrop');
         }
         if (select('#' + this.parent.element.id + '_GroupingDrop', this.dialog.element)) {
             const fields: { [key: string]: Object }[] = [
                 { index: 0, name: this.parent.localeObj.getConstant('true') },
                 { index: 1, name: this.parent.localeObj.getConstant('false') }
             ];
-
-            this.groupingDropDown = new DropDownList({
+            groupingDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 index: 0, cssClass: cls.FORMATTING_GROUPING_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%', change: this.groupingChange.bind(this)
             });
-            this.groupingDropDown.isStringTemplate = true;
-            this.groupingDropDown.appendTo('#' + this.parent.element.id + '_GroupingDrop');
+            groupingDropDown.isStringTemplate = true;
+            groupingDropDown.appendTo('#' + this.parent.element.id + '_GroupingDrop');
         }
         if (select('#' + this.parent.element.id + '_DecimalDrop', this.dialog.element)) {
             const fields: { [key: string]: Object }[] = [
@@ -275,18 +273,18 @@ export class NumberFormatting implements IAction {
                 { index: 9, name: 9 },
                 { index: 10, name: 10 }
             ];
-            this.decimalDropDown = new DropDownList({
+            const decimalDropDown: DropDownList = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 index: 0, cssClass: cls.FORMATTING_DECIMAL_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), popupHeight: 150, width: '100%', change: this.decimalChange.bind(this)
             });
-            this.decimalDropDown.isStringTemplate = true;
-            this.decimalDropDown.appendTo('#' + this.parent.element.id + '_DecimalDrop');
+            decimalDropDown.isStringTemplate = true;
+            decimalDropDown.appendTo('#' + this.parent.element.id + '_DecimalDrop');
         }
-        if (this.formatDropDown.value !== this.parent.localeObj.getConstant('Custom')) {
+        if (formatDropDown.value !== this.parent.localeObj.getConstant('Custom')) {
             this.customText.disabled = true;
         }
         if (this.lastFormattedValue.length !== 0) {
-            this.valuesDropDown.value = this.lastFormattedValue[0].name;
+            valuesDropDown.value = this.lastFormattedValue[0].name;
             const fString: string = this.lastFormattedValue[0].format;
             const first: string = fString === '' ? '' : fString.split('')[0].toLowerCase();
             const group: string = this.lastFormattedValue[0].useGrouping ? this.parent.localeObj.getConstant('true') :
@@ -310,27 +308,34 @@ export class NumberFormatting implements IAction {
             }
         }
         if (!isExist) {
-            this.formatDropDown.value = this.parent.localeObj.getConstant('number');
-            this.decimalDropDown.value = 0;
-            this.groupingDropDown.value = this.parent.localeObj.getConstant('true');
+            const formatDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_FormatDrop', this.parent.element), DropDownList) as DropDownList;
+            formatDropDown.value = this.parent.localeObj.getConstant('number');
+            const decimalDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_DecimalDrop', this.parent.element), DropDownList) as DropDownList;
+            decimalDropDown.value = 0;
+            const groupingDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_GroupingDrop', this.parent.element), DropDownList) as DropDownList;
+            groupingDropDown.value = this.parent.localeObj.getConstant('true');
         }
     }
 
     private updateFormattingDialog(fString: string, first: string, group: string): void {
+        const formatDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_FormatDrop', this.parent.element), DropDownList) as DropDownList;
         if (fString.length === 2 && ['n', 'p', 'c'].indexOf(first) > -1) {
-            this.formatDropDown.value = first === 'n' ? this.parent.localeObj.getConstant('number') : first === 'p' ?
+            formatDropDown.value = first === 'n' ? this.parent.localeObj.getConstant('number') : first === 'p' ?
                 this.parent.localeObj.getConstant('percentage') : first === 'c' ? this.parent.localeObj.getConstant('currency') :
                     this.parent.localeObj.getConstant('number');
-            this.decimalDropDown.value = Number(fString.split('')[1]);
-            this.groupingDropDown.value = group;
+            const decimalDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_DecimalDrop', this.parent.element), DropDownList) as DropDownList;
+            decimalDropDown.value = Number(fString.split('')[1]);
+            const groupingDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_GroupingDrop', this.parent.element), DropDownList) as DropDownList;
+            groupingDropDown.value = group;
         } else {
-            this.formatDropDown.value = this.parent.localeObj.getConstant('Custom');
+            formatDropDown.value = this.parent.localeObj.getConstant('Custom');
             this.customText.value = fString;
         }
     }
 
     private customUpdate(): void {
-        if (this.formatDropDown.value === this.parent.localeObj.getConstant('Custom')) {
+        const formatDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_FormatDrop', this.parent.element), DropDownList) as DropDownList;
+        if (formatDropDown.value === this.parent.localeObj.getConstant('Custom')) {
             const index: number = this.getIndexValue();
             this.newFormat[index as number].format = this.customText.value;
         }
@@ -338,24 +343,27 @@ export class NumberFormatting implements IAction {
 
     private dropDownChange(args: ChangeEventArgs): void {
         const index: number = this.getIndexValue();
+        const groupingDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_GroupingDrop', this.parent.element), DropDownList) as DropDownList;
+        const decimalDropDown: DropDownList =  getInstance(select('#' + this.parent.element.id + '_DecimalDrop', this.parent.element), DropDownList) as DropDownList;
         if (args.value === this.parent.localeObj.getConstant('Custom')) {
             this.customText.disabled = false;
-            this.groupingDropDown.enabled = false;
-            this.decimalDropDown.enabled = false;
+            groupingDropDown.enabled = false;
+            decimalDropDown.enabled = false;
             this.newFormat[index as number].format = this.customText.value;
         } else {
             const text: string = this.formattedText();
             this.newFormat[index as number].format = text;
             this.customText.disabled = true;
-            this.groupingDropDown.enabled = true;
-            this.decimalDropDown.enabled = true;
+            groupingDropDown.enabled = true;
+            decimalDropDown.enabled = true;
             this.customText.value = '';
         }
     }
 
     private groupingChange(): void {
         const index: number = this.getIndexValue();
-        this.newFormat[index as number].useGrouping = this.groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false;
+        const groupingDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_GroupingDrop', this.parent.element), DropDownList) as DropDownList;
+        this.newFormat[index as number].useGrouping = groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false;
     }
 
     private getIndexValue(): number {
@@ -363,7 +371,8 @@ export class NumberFormatting implements IAction {
         for (let i: number = 0; i < this.newFormat.length; i++) {
             format.push(this.newFormat[i as number].name);
         }
-        const index: number = format.indexOf(this.valuesDropDown.value.toString());
+        const valuesDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_FormatValueDrop', this.parent.element), DropDownList) as DropDownList;
+        const index: number = format.indexOf(valuesDropDown.value.toString());
         return index;
     }
 
@@ -375,12 +384,14 @@ export class NumberFormatting implements IAction {
 
     private formattedText(): string {
         let text: string;
-        if (this.formatDropDown.value === this.parent.localeObj.getConstant('number') ||
-            this.formatDropDown.value === this.parent.localeObj.getConstant('percentage') ||
-            this.formatDropDown.value === this.parent.localeObj.getConstant('currency')) {
-            text = this.formatDropDown.value === this.parent.localeObj.getConstant('number') ? 'N' :
-                this.formatDropDown.value === this.parent.localeObj.getConstant('currency') ? 'C' : 'P';
-            return text += this.decimalDropDown.value;
+        const formatDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_FormatDrop', this.parent.element), DropDownList) as DropDownList;
+        const decimalDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_DecimalDrop', this.parent.element), DropDownList) as DropDownList;
+        if (formatDropDown.value === this.parent.localeObj.getConstant('number') ||
+            formatDropDown.value === this.parent.localeObj.getConstant('percentage') ||
+            formatDropDown.value === this.parent.localeObj.getConstant('currency')) {
+            text = formatDropDown.value === this.parent.localeObj.getConstant('number') ? 'N' :
+                formatDropDown.value === this.parent.localeObj.getConstant('currency') ? 'C' : 'P';
+            return text += decimalDropDown.value;
         } else {
             return text = this.customText.value;
         }
@@ -404,16 +415,17 @@ export class NumberFormatting implements IAction {
         for (let i: number = 0; i < formatSettings.length; i++) {
             this.insertFormat(formatSettings[i as number].name, formatSettings[i as number].format, formatSettings[i as number].type);
         }
-        if (this.valuesDropDown.value === this.parent.localeObj.getConstant('AllValues')) {
+        const valuesDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_FormatValueDrop', this.parent.element), DropDownList) as DropDownList;
+        if (valuesDropDown.value === this.parent.localeObj.getConstant('AllValues')) {
             for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
                 this.insertFormat(this.parent.dataSourceSettings.values[i as number].name, text);
             }
         } else {
-            this.insertFormat(this.valuesDropDown.value.toString(), text);
+            this.insertFormat(valuesDropDown.value.toString(), text);
         }
         const eventArgs: NumberFormattingEventArgs = {
             formatSettings: PivotUtil.cloneFormatSettings(this.newFormat),
-            formatName: this.valuesDropDown.value.toString(),
+            formatName: valuesDropDown.value.toString(),
             cancel: false
         };
         this.parent.trigger(events.numberFormatting, eventArgs, (observedArgs: NumberFormattingEventArgs) => {
@@ -440,9 +452,10 @@ export class NumberFormatting implements IAction {
 
     private insertFormat(fieldName: string, text: string, formatType?: string): void {
         let isExist: boolean = false;
+        const groupingDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_GroupingDrop', this.parent.element), DropDownList) as DropDownList;
         const newFormat: FormatSettingsModel = {
             name: fieldName, format: text,
-            useGrouping: this.groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false,
+            useGrouping: groupingDropDown.value === this.parent.localeObj.getConstant('true') ? true : false,
             type: formatType
         };
         const format: FormatSettingsModel[] = this.newFormat;

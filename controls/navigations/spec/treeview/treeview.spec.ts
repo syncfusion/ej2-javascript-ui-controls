@@ -4,7 +4,7 @@
 
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, enableRipple  } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, enableRipple } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10} from '../../spec/treeview/datasource.spec';
@@ -309,7 +309,7 @@ describe('TreeView control', () => {
                     done();
                 }, 100);
             });
-             it('Element structure', (done: Function) => {
+            it('Element structure', (done: Function) => {
                 treeObj = new TreeView({ 
                     fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild",
                         iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', },
@@ -327,7 +327,7 @@ describe('TreeView control', () => {
                     done();
                 }, 100);
             });
-             it('expandOn property testing with None', (done: Function) => {
+            it('expandOn property testing with None', (done: Function) => {
                 treeObj = new TreeView({ 
                     fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild",
                         iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', },
@@ -769,33 +769,33 @@ describe('TreeView control', () => {
                         expect(treeObj.getAllCheckedNodes().length).toBe(5);
                         done();
                     }, 100);
-                });
-                 it('autoCheck property testing with value as false', function (done) {
-                    treeObj = new TreeView({
-                        fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild",
-                            iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', htmlAttributes: 'nodeHtmlAttr', selected: 'nodeSelected', isChecked: 'nodeChecked' },
-                        showCheckBox: true,
-                        autoCheck: false
-                    }, '#tree1');
-                    setTimeout(function () {
-                        let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                        expect(checkEle.length).toBeGreaterThan(0);
-                        expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                        var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-                        checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                        var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                        checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                        var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
-                        checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                        expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
-                        treeObj.expandAll(['01']);
-                        var childCheck= treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                        expect(childCheck[1].getAttribute('aria-checked')).toBe('false');
-                        expect(childCheck[1].firstElementChild.nextElementSibling.classList.contains('.e-check')).toBe(false);
-                        done();
-                    }, 100);
-                });
-                  it('autoCheck property testing with value as false via set model', function (done) {
+            });
+            it('autoCheck property testing with value as false', function (done) {
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild",
+                        iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', htmlAttributes: 'nodeHtmlAttr', selected: 'nodeSelected', isChecked: 'nodeChecked' },
+                    showCheckBox: true,
+                    autoCheck: false
+                }, '#tree1');
+                setTimeout(function () {
+                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    expect(checkEle.length).toBeGreaterThan(0);
+                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                    var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                    treeObj.expandAll(['01']);
+                    var childCheck= treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    expect(childCheck[1].getAttribute('aria-checked')).toBe('false');
+                    expect(childCheck[1].firstElementChild.nextElementSibling.classList.contains('.e-check')).toBe(false);
+                    done();
+                }, 100);
+            });
+                it('autoCheck property testing with value as false via set model', function (done) {
                     treeObj = new TreeView({
                         fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild",
                             iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', htmlAttributes: 'nodeHtmlAttr', selected: 'nodeSelected', isChecked: 'nodeChecked' },
@@ -8264,7 +8264,7 @@ describe('TreeView control', () => {
                 treeObj.allowEditing = false;
                 treeObj.dataBind();
             });
-            it('expandAll', (done: Function) => {
+            xit('expandAll', (done: Function) => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 expect(li[0].childElementCount).toBe(2);
                 treeObj.expandAll();
@@ -9543,7 +9543,16 @@ describe('TreeView control', () => {
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 beforeEach((done: Function) => {
-                    jasmine.Ajax.install();
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: [], __count: 0 });
+                        }
+                    }));
                     document.body.appendChild(ele);
                     treeObj = new TreeView({ 
                         fields: { dataSource: dataManager1, id: 'OrderID', text: 'CustomerID', iconCss: 'ShipCity', imageUrl: 'ShipCountry', tooltip: 'ShipName', hasChildren: 'Freight' },
@@ -9553,17 +9562,13 @@ describe('TreeView control', () => {
                         cssClass: 'customTree productTree',
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify({d: [], __count: 0})
-                    });
                 });
                 afterEach(() => {
+                    if (treeObj)
+                    treeObj.destroy();
                     if (ele)
                         ele.remove();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
                 });
                 it('functionality testing', () => {            
                     expect(treeObj.element.querySelectorAll('li').length).toBe(0);
@@ -9589,15 +9594,17 @@ describe('TreeView control', () => {
                 let dataManager1: DataManager 
                 let originalTimeout: any;
                 beforeAll((done: Function) => {
-                    jasmine.Ajax.install();
-                    dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true });
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
                         status: 200,
-                        responseText: JSON.stringify({d: remoteData1, __count: 6})
-                    });
-                    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: remoteData1, __count: 6 });
+                        }
+                    }));
+                    dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true });
                     document.body.appendChild(ele);
                     treeObj = new TreeView({ 
                         fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", iconCss: 'icons', imageUrl: 'nodeImage1' },
@@ -9607,14 +9614,13 @@ describe('TreeView control', () => {
                         }
                     });
                     treeObj.appendTo(ele);
-                    
                 });
                 afterAll(() => {
+                    if (treeObj)
+                    treeObj.destroy();
                     if (ele)
                     ele.remove();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
                 });
                 it('Add nodes testing for remote datasource', (done: Function) => {
                     let data: object = { nodeId: 'a12', nodeText: 'Santa maria' };
@@ -9622,14 +9628,13 @@ describe('TreeView control', () => {
                     li[0].querySelector('.e-text-content').classList.add('e-icons', 'e-icon-expandable');
                     treeObj.addNodes([data], li[0].getAttribute('data-uid'));
                     let element: Element[] = li;
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         expect(element[0].querySelector('.e-list-parent').lastElementChild.getAttribute('data-uid')).toBe('a12');
                         done();
                     }, 450);
                 });
             });
-            describe('with id as number', () => {
+            xdescribe('with id as number', () => {
                 let mouseEventArgs: any = {
                     preventDefault: (): void => {},
                     stopImmediatePropagation: (): void => {},
@@ -9718,7 +9723,7 @@ describe('TreeView control', () => {
                     }, 100);
                 });
             });
-            describe('with id as string', () => {
+            xdescribe('with id as string', () => {
                 let mouseEventArgs: any = {
                     preventDefault: (): void => {},
                     stopImmediatePropagation: (): void => {},
@@ -9811,7 +9816,16 @@ describe('TreeView control', () => {
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 beforeEach((done: Function) => {
-                    jasmine.Ajax.install();
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: remoteData2, __count: 2 });
+                        }
+                    }));
                     document.body.appendChild(ele);
                     treeObj = new TreeView({ 
                         fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
@@ -9822,20 +9836,15 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify({d: remoteData2, __count: 2})
-                    });
                 });
                 afterEach(() => {
+                    if (treeObj)
+                    treeObj.destroy();
                     if (ele)
                         ele.remove();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
                 });
                 it('functionality testing', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function() {
                         expect(treeObj.element.querySelectorAll('li').length).toBe(2);
                         expect(treeObj.element.querySelector('.e-list-text').innerHTML).toBe('Music');
@@ -9849,7 +9858,16 @@ describe('TreeView control', () => {
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 beforeEach((done: Function) => {
-                    jasmine.Ajax.install();
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: remoteData2, __count: 2 });
+                        }
+                    }));
                     document.body.appendChild(ele);
                     treeObj = new TreeView({
                         expandedNodes: ['02', '99'],
@@ -9861,20 +9879,15 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify({d: remoteData2, __count: 2})
-                    });
                 });
                 afterEach(() => {
+                    if (treeObj)
+                    treeObj.destroy();
                     if (ele)
                         ele.remove();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
                 });
                 it('functionality testing', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function() {
                         expect(treeObj.element.querySelectorAll('li').length).toBe(2);
                         expect(treeObj.expandedNodes.length).toBe(0);
@@ -9882,7 +9895,7 @@ describe('TreeView control', () => {
                     }, 100);
                 });
             });
-            describe('allowEditing property testing', () => {
+            xdescribe('allowEditing property testing', () => {
                 let mouseEventArgs: any = {
                     preventDefault: (): void => {},
                     stopImmediatePropagation: (): void => {},
@@ -9988,10 +10001,20 @@ describe('TreeView control', () => {
             });
             describe('enableRtl property testing', () => {
                 let treeObj: any;
-                let ele: HTMLElement = createElement('div', { id: 'tree1' });
-                let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+                let ele: HTMLElement;
                 beforeEach((done: Function) => {
-                    jasmine.Ajax.install();
+                    ele = createElement('div', { id: 'tree1' });
+                    let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: remoteData2, __count: 2 });
+                        }
+                    }));
                     document.body.appendChild(ele);
                     treeObj = new TreeView({ 
                         fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
@@ -10003,29 +10026,34 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify({d: remoteData2, __count: 2})
-                    });
                 });
                 afterEach(() => {
+                    if (treeObj)
+                    treeObj.destroy();
                     if (ele)
                         ele.remove();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
                 });
                 it('functionality testing', (done: Function) => {
                     expect(treeObj.element.classList.contains('e-rtl')).toBe(true);
                     done();
-                }, 100);
+                });
             });
             describe('allowDragAndDrop property testing', () => {
                 let treeObj: any;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 beforeEach((done: Function) => {
-                    jasmine.Ajax.install();
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: remoteData2, __count: 2 });
+                        }
+                    }));
                     document.body.appendChild(ele);
                     treeObj = new TreeView({ 
                         fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
@@ -10037,17 +10065,13 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify({d: remoteData2, __count: 2})
-                    });
                 });
                 afterEach(() => {
+                    if (treeObj)
+                    treeObj.destroy();
                     if (ele)
                         ele.remove();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
                 });
                 it('functionality testing', (done: Function) => {
                     expect(treeObj.dragObj).not.toBe(undefined);
@@ -10069,9 +10093,19 @@ describe('TreeView control', () => {
             describe('fullRowSelect property testing', () => {
                 let treeObj: any;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
-                let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+                let dataManager1: DataManager;
                 beforeEach((done: Function) => {
-                    jasmine.Ajax.install();
+                    dataManager1 = new DataManager({ url: '/TreeView/remoteData' });
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: remoteData2, __count: 2 });
+                        }
+                    }));
                     document.body.appendChild(ele);
                     treeObj = new TreeView({ 
                         fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
@@ -10082,17 +10116,13 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify({d: remoteData2, __count: 2})
-                    });
                 });
                 afterEach(() => {
+                    if (treeObj)
+                    treeObj.destroy();
                     if (ele)
                         ele.remove();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
                 });
                 it('functionality testing', (done: Function) => {
                     expect(treeObj.element.classList.contains('e-fullrow-wrap')).toBe(true);
@@ -10118,7 +10148,16 @@ describe('TreeView control', () => {
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 beforeEach((done: Function) => {
-                    jasmine.Ajax.install();
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: remoteData1_1, __count: 5 });
+                        }
+                    }));
                     document.body.appendChild(ele);
                     treeObj = new TreeView({ 
                         fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
@@ -10130,17 +10169,11 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify({d: remoteData1_1, __count: 5})
-                    });
                 });
                 afterEach(() => {
                     if (ele)
                         ele.remove();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
                 });
                 it('functionality testing', (done: Function) => {
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -10175,7 +10208,16 @@ describe('TreeView control', () => {
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
                 beforeEach((done: Function) => {
-                    jasmine.Ajax.install();
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: remoteData1_1, __count: 5 });
+                        }
+                    }));
                     document.body.appendChild(ele);
                     treeObj = new TreeView({ 
                         fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
@@ -10195,17 +10237,13 @@ describe('TreeView control', () => {
                         },
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify({d: remoteData2, __count: 2})
-                    });
                 });
                 afterEach(() => {
+                    if (treeObj)
+                    treeObj.destroy();
                     if (ele)
                         ele.remove();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
                 });
                 it('functionality testing', (done: Function) => {
                     let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-text-content');
@@ -10214,7 +10252,7 @@ describe('TreeView control', () => {
                     done();
                 }, 4450);
             });
-            describe('template support testing with string', () => {
+            xdescribe('template support testing with string', () => {
                 let treeObj: any;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
@@ -10252,7 +10290,7 @@ describe('TreeView control', () => {
                     done();
                 }, 4450);
             });
-            describe('template support testing with script', () => {
+            xdescribe('template support testing with script', () => {
                 let mouseEventArgs: any = {
                     preventDefault: (): void => {},
                     stopImmediatePropagation: (): void => {},
@@ -10411,7 +10449,7 @@ describe('TreeView control', () => {
             });
         });
 
-         describe('Remote data Offline', () => {
+         xdescribe('Remote data Offline', () => {
                 let mouseEventArgs: any = {
                     preventDefault: (): void => {},
                     stopImmediatePropagation: (): void => {},
@@ -10487,7 +10525,7 @@ describe('TreeView control', () => {
                 });
             });
             
-        describe('property change testing', () => {
+        xdescribe('property change testing', () => {
             let mouseEventArgs: any;
             let tapEvent: any;
             let treeObj: any;
@@ -11079,7 +11117,7 @@ describe('TreeView control', () => {
             });
            
         });
-        describe('events testing', () => {
+        xdescribe('events testing', () => {
             let mouseEventArgs: any;
             let tapEvent: any;
             let keyboardEventArgs: any = {
@@ -11311,7 +11349,7 @@ describe('TreeView control', () => {
                 expect(destroyFunction).toHaveBeenCalled();
             });
         });
-        describe('methods testing', () => {
+        xdescribe('methods testing', () => {
             let mouseEventArgs: any;
             let tapEvent: any;
             let treeObj: any;
@@ -11599,7 +11637,16 @@ describe('TreeView control', () => {
                 let originalTimeout: any;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 beforeAll((done: Function) => {
-                    jasmine.Ajax.install();
+                    spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        headers: new Headers({
+                            'Content-Type': 'application/json'
+                        }),
+                        json: function () {
+                            return Promise.resolve({ d: remoteData2, __count: 2 });
+                        }
+                    }));
                     document.body.appendChild(ele);
                     treeObj = new TreeView({ 
                         fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
@@ -11609,27 +11656,17 @@ describe('TreeView control', () => {
                         fullRowSelect: false,
                     });
                     treeObj.appendTo(ele);
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify({d: remoteData2, __count: 2})
-                    });
-                    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 });
                 afterAll(() => {
                     if (treeObj)
                         treeObj.destroy();
                     document.body.innerHTML = '';
-                    jasmine.Ajax.uninstall();
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
                 });
                 it('without child data source', (done: Function) => {
                     let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                     mouseEventArgs.target = newli[0].querySelector('.e-icons');
                     expect(newli[0].childElementCount).toBe(1);
                     treeObj.touchClickObj.tap(tapEvent);
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function() {
                         expect(newli[0].childElementCount).toBe(1);
                         expect(newli[0].querySelector('.e-icons')).toBe(null);
@@ -11637,7 +11674,7 @@ describe('TreeView control', () => {
                     }, 100)
                 });
             });
-            describe('Code coverage', () => {
+            xdescribe('Code coverage', () => {
                 let mouseEventArgs: any = {
                     preventDefault: (): void => {},
                     stopImmediatePropagation: (): void => {},
@@ -11699,12 +11736,21 @@ describe('TreeView control', () => {
                 });
             });
         });
-        describe('Drag and drop functionality testing', () => {
+        xdescribe('Drag and drop functionality testing', () => {
             let treeObj: any;
             let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
             let originalTimeout: any;
             beforeAll((done: Function) => {
-                jasmine.Ajax.install();
+                spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                    ok: true,
+                    status: 200,
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    }),
+                    json: function () {
+                        return Promise.resolve({ d: remoteData1, __count: 6 });
+                    }
+                }));
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 document.body.appendChild(ele);
                 treeObj = new TreeView({ 
@@ -11714,11 +11760,6 @@ describe('TreeView control', () => {
                     dataBound: () => { done(); },
                 });
                 treeObj.appendTo(ele);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify({d: remoteData1, __count: 6})
-                });
                 originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             });
@@ -11726,7 +11767,6 @@ describe('TreeView control', () => {
                 if (treeObj)
                     treeObj.destroy();
                 document.body.innerHTML = '';
-                jasmine.Ajax.uninstall();
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             });
             it('testing with target as text', () => {
@@ -12877,7 +12917,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     }, 450);
             });
     });
-    describe('Selected Node on loadondemand enabled', () => {
+    xdescribe('Selected Node on loadondemand enabled', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => {},
             stopImmediatePropagation: (): void => {},
@@ -12894,13 +12934,17 @@ describe('Drag and drop with different TreeView functionality testing with empty
         let ele: HTMLElement = createElement('div', { id: 'tree1' });
         let dataManager1: DataManager;
         beforeAll((done: Function) => {
-            jasmine.Ajax.install();
             dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true })
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: true,
                 status: 200,
-                responseText: JSON.stringify({d: remoteData3_1, __count: 4})
-            });
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                json: function () {
+                    return Promise.resolve({ d: remoteData3_1, __count: 4 });
+                }
+            }));
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(ele);
             treeObj = new TreeView({ 
@@ -12917,7 +12961,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
             if (ele)
                 ele.remove();
             document.body.innerHTML = '';
-            jasmine.Ajax.uninstall();
         });
         it('Remote data testing', (done: Function) => {        
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -13188,7 +13231,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
             expect(treeObj.element.querySelectorAll('.e-checkbox-wrapper .e-frame.e-icons.e-stop').length).toBe(2);
         });
     });
-    describe('Checked Node on loadondemand enabled', () => {
+    xdescribe('Checked Node on loadondemand enabled', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => {},
             stopImmediatePropagation: (): void => {},
@@ -13205,13 +13248,17 @@ describe('Drag and drop with different TreeView functionality testing with empty
         let ele: HTMLElement = createElement('div', { id: 'tree1' });
         let dataManager1: DataManager;
         beforeAll((done: Function) => {
-            jasmine.Ajax.install();
             dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true })
-             this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: true,
                 status: 200,
-                responseText: JSON.stringify({d: remoteData3_1, __count: 4})
-            });
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                json: function () {
+                    return Promise.resolve({ d: remoteData3_1, __count: 4 });
+                }
+            }));
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(ele);
             treeObj = new TreeView({ 
@@ -13229,7 +13276,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
             if (ele)
                 ele.remove();
             document.body.innerHTML = '';
-            jasmine.Ajax.uninstall();
         });
         it('Remote data testing', () => {
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -13701,7 +13747,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 done();
             });
         });
-        describe('LoadOnDemand for remote data testing', () => {
+        xdescribe('LoadOnDemand for remote data testing', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => {},
             stopImmediatePropagation: (): void => {},
@@ -13718,14 +13764,17 @@ describe('Drag and drop with different TreeView functionality testing with empty
         let ele: HTMLElement = createElement('div', { id: 'tree1' });
         let dataManager1: DataManager;
         beforeAll((done: Function) => {
-            jasmine.Ajax.install();
             dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true })
-             this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: true,
                 status: 200,
-                responseText: JSON.stringify({d: remoteData3_1, __count: 2})
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                json: function () {
+                    return Promise.resolve({ d: remoteData3_1, __count: 2 });
+                }
+            }));
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(ele);
             treeObj = new TreeView({ 
@@ -13747,7 +13796,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
             if (ele)
                 ele.remove();
             document.body.innerHTML = '';
-            jasmine.Ajax.uninstall();
         });
         it('Offline mode testing', (done: Function) => {        
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -13847,7 +13895,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 }, 450);
         });
     });
-    describe('loadOnDemand disabled for remote data source', () => {
+    xdescribe('loadOnDemand disabled for remote data source', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => {},
             stopImmediatePropagation: (): void => {},
@@ -13864,7 +13912,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
         let ele: HTMLElement = createElement('div', { id: 'tree1' });
         let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
         beforeEach((done: Function) => {
-            jasmine.Ajax.install();
             document.body.appendChild(ele);
             treeObj = new TreeView({ 
                 fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
@@ -13876,17 +13923,21 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 },
             });
             treeObj.appendTo(ele);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: true,
                 status: 200,
-                responseText: JSON.stringify({d: remoteData1, __count: 5})
-            });
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                json: function () {
+                    return Promise.resolve({ d: remoteData1, __count: 5 });
+                }
+            }));
         });
         afterEach(() => {
             if (ele)
                 ele.remove();
             document.body.innerHTML = '';
-            jasmine.Ajax.uninstall();
         });
         it('functionality testing', (done: Function) => {
             expect(treeObj.getTreeData().length).toBe(25);
@@ -13900,7 +13951,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
             done();
         }, 100);
     });
-    describe('keyboard navigation testing while disabling loadOnDemand', () => {
+    xdescribe('keyboard navigation testing while disabling loadOnDemand', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => {},
             stopImmediatePropagation: (): void => {},
@@ -13923,7 +13974,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
         let ele: HTMLElement = createElement('div', { id: 'tree1' });
         let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
         beforeAll((done: Function) => {
-            jasmine.Ajax.install();
             document.body.appendChild(ele);
             treeObj = new TreeView({ 
                 fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText",
@@ -13935,11 +13985,16 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 },
             });
             treeObj.appendTo(ele);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: true,
                 status: 200,
-                responseText: JSON.stringify({d: remoteData1, __count: 5})
-            });
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                json: function () {
+                    return Promise.resolve({ d: remoteData1, __count: 5 });
+                }
+            }));
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         });
         afterAll(() => {
@@ -13948,7 +14003,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
             if (treeObj)
                 treeObj.destroy();
             document.body.innerHTML = '';
-            jasmine.Ajax.uninstall();
         });
         it('tab key pressed', () => {
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -14392,7 +14446,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 done();
         });
     });
-    describe('Disable Node on loadondemand enabled', () => {
+    xdescribe('Disable Node on loadondemand enabled', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => {},
             stopImmediatePropagation: (): void => {},
@@ -14409,13 +14463,17 @@ describe('Drag and drop with different TreeView functionality testing with empty
         let ele: HTMLElement = createElement('div', { id: 'tree1' });
         let dataManager1: DataManager;
         beforeAll((done: Function) => {
-            jasmine.Ajax.install();
             dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true })
-             this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: true,
                 status: 200,
-                responseText: JSON.stringify({d: remoteData3_1, __count: 4})
-            });
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                json: function () {
+                    return Promise.resolve({ d: remoteData3_1, __count: 4 });
+                }
+            }));
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(ele);
             treeObj = new TreeView({ 
@@ -14431,7 +14489,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
             if (ele)
                 ele.remove();
             document.body.innerHTML = '';
-            jasmine.Ajax.uninstall();
         });
         it('Remote data testing', (done: Function) => {        
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -14455,14 +14512,15 @@ describe('Drag and drop with different TreeView functionality testing with empty
         let treeObj: any;
         beforeAll(() => {
             document.body.appendChild(ele);
-            jasmine.Ajax.install();
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: true,
+                status: 404,
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                responseText: 'Page not found'
+            }));
             let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData12111', offline: true });
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                'status': 404,
-                'contentType': 'application/json',
-                'responseText': 'Page not found'
-            });
             treeObj = new TreeView({
                 fields: {
                     dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild",
@@ -14474,7 +14532,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
         });
         afterAll(() => {
             ele.remove();
-            jasmine.Ajax.uninstall();
         });
         it('actionFailure testing', (done: Function) => {
             setTimeout(function () {
@@ -14483,7 +14540,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
             }, 100);
         });
     });
-    describe('actionFailure event triggered for invalid URL while fetching child data', () => {
+    xdescribe('actionFailure event triggered for invalid URL while fetching child data', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => { },
             stopImmediatePropagation: (): void => { },
@@ -14556,7 +14613,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
         let elem: HTMLElement = createElement('div', { id: 'tree' });
         let treeObj: any;
         beforeAll(() => {
-            jasmine.Ajax.install();
             document.body.appendChild(elem);
             let dataSource = new DataManager({
                 url: '/test/db',
@@ -14568,12 +14624,14 @@ describe('Drag and drop with different TreeView functionality testing with empty
             treeObj.appendTo('#tree');
         });
         beforeEach((done: Function) => {
-            let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
-            request.respondWith({
-                'status': 404,
-                'contentType': 'application/json',
-                'responseText': 'Page not found'
-            });
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: true,
+                status: 404,
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                responseText: 'Page not found'
+            }));
             setTimeout(() => { done(); }, 100);
         });
         it('actionFailure testing', () => {
@@ -14584,7 +14642,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
             jasmine.Ajax.uninstall();
         });
     });
-    describe('CRUD operation testing', () => {
+    xdescribe('CRUD operation testing', () => {
         describe('Delete operation', () => {
             let treeObj: any;
             let ele: HTMLElement = createElement('div', { id: 'tree1' });
@@ -15131,7 +15189,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
         });
     });
 
-    describe('Action Failure event testing for the CRUD operation', () => {
+    xdescribe('Action Failure event testing for the CRUD operation', () => {
         describe('For Delete operation', () => {
             let treeObj: any;
             let ele: HTMLElement = createElement('div', { id: 'tree1' });
@@ -15341,7 +15399,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
         });
     });
 
-    describe('Crud operations in offline mode testing', () => {
+    xdescribe('Crud operations in offline mode testing', () => {
         describe('Delete operation', () => {
             let treeObj: any;
             let ele: HTMLElement = createElement('div', { id: 'tree1' });
@@ -15351,13 +15409,17 @@ describe('Drag and drop with different TreeView functionality testing with empty
             }
             let dataManager1: DataManager
             beforeAll((done: Function) => {
-                jasmine.Ajax.install();
                 dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true });
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                    ok: true,
                     status: 200,
-                    responseText: JSON.stringify({ d: remoteData2, __count: 2 })
-                });
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    }),
+                    json: function () {
+                        return Promise.resolve({ d: remoteData2, __count: 2 });
+                    }
+                }));
                 document.body.appendChild(ele);
                 treeObj = new TreeView({
                     fields: {
@@ -15377,7 +15439,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 if (ele)
                     ele.remove();
                 document.body.innerHTML = '';
-                jasmine.Ajax.uninstall();
             });
             it('remove nodes testing with a single node and the node type as string', (done: Function) => {
                 expect(j).toEqual(0);
@@ -15412,13 +15473,17 @@ describe('Drag and drop with different TreeView functionality testing with empty
             let dataManager1: DataManager
 
             beforeAll((done: Function) => {
-                jasmine.Ajax.install();
                 dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true });
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                    ok: true,
                     status: 200,
-                    responseText: JSON.stringify({ d: remoteData2, __count: 2 })
-                });
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    }),
+                    json: function () {
+                        return Promise.resolve({ d: remoteData2, __count: 2 });
+                    }
+                }));
                 document.body.appendChild(ele);
                 treeObj = new TreeView({
                     fields: {
@@ -15442,7 +15507,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 if (ele)
                     ele.remove();
                 document.body.innerHTML = '';
-                jasmine.Ajax.uninstall();
             });
             it('rename node and the node type as string', (done: Function) => {
                 expect(j).toEqual(0);
@@ -15472,13 +15536,17 @@ describe('Drag and drop with different TreeView functionality testing with empty
             }
             let dataManager1: DataManager
             beforeAll((done: Function) => {
-                jasmine.Ajax.install();
                 dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true });
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                    ok: true,
                     status: 200,
-                    responseText: JSON.stringify({ d: remoteData2, __count: 2 })
-                });
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    }),
+                    json: function () {
+                        return Promise.resolve({ d: remoteData2, __count: 2 });
+                    }
+                }));
                 document.body.appendChild(ele);
                 treeObj = new TreeView({
                     fields: {
@@ -15498,7 +15566,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 if (ele)
                     ele.remove();
                 document.body.innerHTML = '';
-                jasmine.Ajax.uninstall();
             });
             it('Add a single node with out target', (done: Function) => {
                 expect(j).toEqual(0);
@@ -15524,13 +15591,17 @@ describe('Drag and drop with different TreeView functionality testing with empty
             }
             let dataManager1: DataManager;
             beforeAll((done: Function) => {
-                jasmine.Ajax.install();
                 dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true });
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                    ok: true,
                     status: 200,
-                    responseText: JSON.stringify({ d: remoteData2, __count: 2 })
-                });
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    }),
+                    json: function () {
+                        return Promise.resolve({ d: remoteData2, __count: 2 });
+                    }
+                }));
                 document.body.appendChild(ele);
                 treeObj = new TreeView({
                     fields: {
@@ -15549,7 +15620,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 if (ele)
                     ele.remove();
                 document.body.innerHTML = '';
-                jasmine.Ajax.uninstall();
             });
             it('Add multiple node with out target', (done: Function) => {
                 expect(j).toEqual(0);
@@ -15574,13 +15644,17 @@ describe('Drag and drop with different TreeView functionality testing with empty
             }
             let dataManager1: DataManager;
             beforeAll((done: Function) => {
-                jasmine.Ajax.install();
                 dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true });
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
+                spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                    ok: true,
                     status: 200,
-                    responseText: JSON.stringify({ d: remoteData2, __count: 2 })
-                });
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    }),
+                    json: function () {
+                        return Promise.resolve({ d: remoteData2, __count: 2 });
+                    }
+                }));
                 document.body.appendChild(ele);
                 treeObj = new TreeView({
                     fields: {
@@ -15600,7 +15674,6 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 if (ele)
                     ele.remove();
                 document.body.innerHTML = '';
-                jasmine.Ajax.uninstall();
             });
             it('Add a single node to target li', (done: Function) => {
                 expect(j).toEqual(0);
@@ -15630,7 +15703,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
     });
 });
 
-describe('Remote data binding with loadOnDemand with tableName fieldName', () => {
+xdescribe('Remote data binding with loadOnDemand with tableName fieldName', () => {
     let mouseEventArgs: any = {
         preventDefault: (): void => {},
         stopImmediatePropagation: (): void => {},

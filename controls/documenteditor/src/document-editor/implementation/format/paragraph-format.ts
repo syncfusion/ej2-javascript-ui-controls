@@ -484,8 +484,11 @@ export class WParagraphFormat {
             WParagraphFormat.uniqueParagraphFormats.remove(this.uniqueParagraphFormat);
         }
         this.uniqueParagraphFormat = undefined;
-        this.baseStyle = undefined;
+        if(!isNullOrUndefined(this.getDocumentHelperObject())) {
+            this.baseStyle = this.getDocumentHelperObject().styles.findByName('Normal') as WParagraphStyle;
+        }
     }
+
     public destroy(): void {
         if (!isNullOrUndefined(this.uniqueParagraphFormat)) {
             WParagraphFormat.uniqueParagraphFormats.remove(this.uniqueParagraphFormat);
@@ -561,7 +564,11 @@ export class WParagraphFormat {
         format.borders = isNullOrUndefined(this.borders) ? undefined : this.borders.cloneFormat();
         return format;
     }
-    private hasValue(property: string): boolean {
+    /**
+     *
+     * @private
+     */
+    public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueParagraphFormat) && !isNullOrUndefined(this.uniqueParagraphFormat.propertiesHash)) {
             const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueParagraphFormat.uniqueFormatType, property);
             return this.uniqueParagraphFormat.propertiesHash.containsKey(propertyType);

@@ -19,6 +19,7 @@ export class Reorder implements IAction {
     private timer: number;
     private destElement: Element;
     private fromCol: string;
+    private idx: number = 0;
 
     //Module declarations
     private parent: IGrid;
@@ -87,25 +88,21 @@ export class Reorder implements IAction {
     private getColumnsModel(cols: Column[], isNotStackedHeader?: boolean): Column[] {
         let columnModel: Column[] = [];
         let subCols: Column[] = [];
-        if (!this.parent.getFrozenColumns() && this.parent.isFrozenGrid()) {
-            return this.parent.getColumns();
-        } else {
-            for (let i: number = 0, len: number = cols.length; i < len; i++) {
-                if (!isNullOrUndefined(cols[parseInt(i.toString(), 10)])) {
-                    if (cols[parseInt(i.toString(), 10)].visible) {
-                        columnModel.push(cols[parseInt(i.toString(), 10)]);
-                    }
-                    else if (isNotStackedHeader) {
-                        columnModel.push(cols[parseInt(i.toString(), 10)]);
-                    }
-                    if (cols[parseInt(i.toString(), 10)].columns) {
-                        subCols = subCols.concat(cols[parseInt(i.toString(), 10)].columns as Column[]);
-                    }
+        for (let i: number = 0, len: number = cols.length; i < len; i++) {
+            if (!isNullOrUndefined(cols[parseInt(i.toString(), 10)])) {
+                if (cols[parseInt(i.toString(), 10)].visible) {
+                    columnModel.push(cols[parseInt(i.toString(), 10)]);
+                }
+                else if (isNotStackedHeader) {
+                    columnModel.push(cols[parseInt(i.toString(), 10)]);
+                }
+                if (cols[parseInt(i.toString(), 10)].columns) {
+                    subCols = subCols.concat(cols[parseInt(i.toString(), 10)].columns as Column[]);
                 }
             }
-            if (subCols.length) {
-                columnModel = columnModel.concat(this.getColumnsModel(subCols as Column[]));
-            }
+        }
+        if (subCols.length) {
+            columnModel = columnModel.concat(this.getColumnsModel(subCols as Column[]));
         }
         return columnModel;
     }
@@ -174,11 +171,10 @@ export class Reorder implements IAction {
             gObj.notify(events.preventBatch, { instance: this, handler: this.moveColumns, arg1: destIndex, arg2: column });
             return;
         }
-        const isFrozen: boolean = !gObj.getFrozenColumns() && gObj.isFrozenGrid();
         const parent: Column = this.getColParent(column, this.parent.columns as Column[]);
-        const cols: Column[] = parent ? parent.columns as Column[] : isFrozen ? this.parent.getColumns() : this.parent.columns as Column[];
+        const cols: Column[] = parent ? parent.columns as Column[] : this.parent.columns as Column[];
         let srcIdx: number = inArray(column, cols);
-        if (((this.parent.isFrozenGrid() && parent) || this.parent.lockcolPositionCount) && !reorderByColumn &&
+        if ((parent || this.parent.lockcolPositionCount) && !reorderByColumn &&
             !this.parent.enableColumnVirtualization) {
             for (let i: number = 0; i < cols.length; i++) {
                 if (cols[parseInt(i.toString(), 10)].field === column.field) {
@@ -210,6 +206,23 @@ export class Reorder implements IAction {
         const args: FrozenReorderArgs = { column: column, destIndex: destIndex, columns: cols, parent: parent, cancel: false };
         gObj.notify(events.refreshFrozenColumns, args);
         if (args.cancel) { return; }
+        if (this.parent.isFrozenGrid()) {
+            if (this.parent.frozenColumns) {
+                for (let i: number = 0; i < cols.length; i++) {
+                    if (cols[parseInt(i.toString(), 10)].freeze === 'Left') {
+                        cols[parseInt(i.toString(), 10)].freeze = undefined;
+                    }
+                }
+            } else {
+                if (this.parent.getFrozenLeftCount() > destIndex) {
+                    column.freeze = 'Left';
+                } else if ((cols.length - this.parent.getFrozenRightColumnsCount()) <= destIndex) {
+                    column.freeze = 'Right';
+                } else {
+                    column.freeze = column.freeze === 'Fixed' ? 'Fixed' : undefined;
+                }
+            }
+        }
         gObj.getColumns(true);
         gObj.notify(events.columnPositionChanged, { fromIndex: destIndex, toIndex: srcIdx });
         if (preventRefresh !== false) {
@@ -217,11 +230,26 @@ export class Reorder implements IAction {
                 type: events.actionBegin, requestType: 'reorder', fromIndex: destIndex, toIndex: srcIdx, toColumnUid: column.uid
             });
         }
+        if (this.parent.isFrozenGrid()) {
+            const cols: Column[] = this.parent.columns as Column[];
+            this.idx = 0;
+            this.refreshColumnIndex(cols);
+            this.parent.notify(events.refreshFrozenPosition, { });
+        }
+    }
+
+    private refreshColumnIndex(cols?: Column[]): void {
+        for (let i: number = 0; i < cols.length; i++) {
+            cols[parseInt(i.toString(), 10)].index = this.idx;
+            this.idx++;
+            if (cols[parseInt(i.toString(), 10)].columns && cols[parseInt(i.toString(), 10)].columns.length) {
+                this.refreshColumnIndex(cols[parseInt(i.toString(), 10)].columns as Column[]);
+            }
+        }
     }
 
     private targetParentContainerIndex(srcElem: Element, destElem: Element): number {
-        let cols: Column[] = !this.parent.getFrozenColumns() && this.parent.isFrozenGrid() ? this.parent.getColumns() :
-            this.parent.columns as Column[];
+        let cols: Column[] = this.parent.columns as Column[];
         const headers: Element[] = this.getHeaderCells();
         const stackedHdrColumn: Column[] = this.parent.getStackedColumns(cols);
         let stackedCols: Column[] = [];
@@ -252,65 +280,7 @@ export class Reorder implements IAction {
     }
 
     private getHeaderCells(): Element[] {
-        const frozenColumns: number = this.parent.getFrozenColumns();
-        if (frozenColumns || this.parent.isFrozenGrid() || this.parent.lockcolPositionCount) {
-            let fTh: HTMLElement[];
-            let mTh: HTMLElement[];
-            let fHeaders: Element[] = [];
-            const fRows: Element[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-columnheader'));
-            if (frozenColumns || this.parent.isFrozenGrid()) {
-                const mRows: Element[] = [].slice.call(this.parent.getHeaderContent()
-                    .querySelector('.' + literals.movableHeader).getElementsByClassName('e-columnheader'));
-                for (let i: number = 0; i < fRows.length; i++) {
-                    fTh = [].slice.call(fRows[parseInt(i.toString(), 10)].getElementsByClassName('e-headercell'));
-                    mTh = [].slice.call(mRows[parseInt(i.toString(), 10)].getElementsByClassName('e-headercell'));
-                    let isAvail: boolean;
-                    for (let k: number = 0; k < fTh.length; k++) {
-                        for (let j: number = 0; j < mTh.length; j++) {
-                            if (mTh[parseInt(j.toString(), 10)].innerText === fTh[parseInt(k.toString(), 10)].innerText && parseInt(mTh[parseInt(j.toString(), 10)].getAttribute('data-colindex'), 10) ===
-                                parseInt(fTh[parseInt(k.toString(), 10)].getAttribute('data-colindex'), 10)) {
-                                isAvail = true;
-                                break;
-                            }
-                        }
-                        if (!isAvail) {
-                            fHeaders = fHeaders.concat([fTh[parseInt(k.toString(), 10)]]);
-                        }
-                    }
-                    for (let j: number = 0; j < mTh.length; j++) {
-                        fHeaders.push(mTh[parseInt(j.toString(), 10)]);
-                    }
-                }
-                if (this.parent.getFrozenRightColumnsCount()) {
-                    const frRows: Element[] = [].slice.call(this.parent.getHeaderContent().querySelector('.e-frozen-right-header')
-                        .getElementsByClassName('e-columnheader'));
-                    const frTh: HTMLElement[] = [].slice.call(frRows[0].getElementsByClassName('e-headercell'));
-                    for (let i: number = 0; i < frTh.length; i++) {
-                        fHeaders.push(frTh[parseInt(i.toString(), 10)]);
-                    }
-                }
-            } else {
-                for (let i: number = 0; i < fRows.length; i++) {
-                    mTh = [].slice.call(fRows[parseInt(i.toString(), 10)].getElementsByClassName('e-headercell'));
-                    for (let k: number = 0; k < mTh.length; k++) {
-                        let isAvail: boolean;
-                        for (let j: number = k + 1; j < mTh.length; j++) {
-                            if (mTh[parseInt(j.toString(), 10)].innerText === mTh[parseInt(k.toString(), 10)].innerText && parseInt(mTh[parseInt(j.toString(), 10)].getAttribute('data-colindex'), 10) ===
-                                parseInt(mTh[parseInt(k.toString(), 10)].getAttribute('data-colindex'), 10)) {
-                                isAvail = true;
-                                break;
-                            }
-                        }
-                        if (!isAvail) {
-                            fHeaders = fHeaders.concat([mTh[parseInt(k.toString(), 10)]]);
-                        }
-                    }
-                }
-            }
-            return fHeaders;
-        } else {
-            return [].slice.call(this.parent.element.getElementsByClassName('e-headercell'));
-        }
+        return [].slice.call(this.parent.element.getElementsByClassName('e-headercell'));
     }
 
     private getColParent(column: Column, columns: Column[]): Column {
@@ -433,7 +403,7 @@ export class Reorder implements IAction {
     }
 
     private createReorderElement(e?: { args: { isFrozen?: boolean, isXaxis?: boolean } }): void {
-        if (e && e.args.isXaxis) {
+        if (e && e.args && e.args.isXaxis) {
             this.setDisplay('none');
         }
         const header: Element = (this.parent.element.querySelector('.' + literals.headerContent) as Element);
@@ -517,7 +487,7 @@ export class Reorder implements IAction {
         }
         const closest: Element = closestElement(target, '.e-headercell:not(.e-stackedHeaderCell)');
         const cloneElement: HTMLElement = gObj.element.querySelector('.e-cloneproperties') as HTMLElement;
-        const content: Element = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        const content: Element = gObj.getContent().firstElementChild;
         const isLeft: boolean = this.x > getPosition(e.event).x + content.scrollLeft;
         removeClass([].slice.call(gObj.getHeaderTable().getElementsByClassName('e-reorderindicate')), ['e-reorderindicate']);
         this.setDisplay('none');
@@ -541,28 +511,8 @@ export class Reorder implements IAction {
         const x: number = getPosition(e).x;
         const cliRect: ClientRect = this.parent.element.getBoundingClientRect();
         const cliRectBaseRight: number = cliRect.right;
-        if (this.parent.isFrozenGrid()) {
-            this.updateFrozenScrollPosition(x, cliRect);
-        } else {
-            const cliRectBaseLeft: number = cliRect.left;
-            const scrollElem: Element = this.parent.getContent().firstElementChild;
-            if (x > cliRectBaseLeft && x < cliRectBaseLeft + 35) {
-                this.timer = window.setInterval(
-                    () => { this.setScrollLeft(scrollElem, true); }, 50);
-            } else if (x < cliRectBaseRight && x > cliRectBaseRight - 35) {
-                this.timer = window.setInterval(
-                    () => { this.setScrollLeft(scrollElem, false); }, 50);
-            }
-        }
-    }
-
-    private updateFrozenScrollPosition(x: number, cliRect: ClientRect): void {
-        const scrollElem: Element = this.parent.getContent().querySelector('.' + literals.movableContent);
-        const mhdrCliRect: ClientRect = this.parent.element.querySelector('.' + literals.movableHeader).getBoundingClientRect();
-        const left: number = this.parent.getFrozenLeftCount();
-        const right: number = this.parent.getFrozenRightColumnsCount();
-        const cliRectBaseRight: number = right ? mhdrCliRect.right : cliRect.right;
-        const cliRectBaseLeft: number = left ? mhdrCliRect.left : cliRect.left;
+        const cliRectBaseLeft: number = cliRect.left;
+        const scrollElem: Element = this.parent.getContent().firstElementChild;
         if (x > cliRectBaseLeft && x < cliRectBaseLeft + 35) {
             this.timer = window.setInterval(
                 () => { this.setScrollLeft(scrollElem, true); }, 50);
@@ -590,25 +540,6 @@ export class Reorder implements IAction {
         if ((isLeft && cliRect.left < cliRectBase.left) || (!isLeft && cliRect.right > cliRectBase.right)) {
             return;
         }
-        if (this.parent.isFrozenGrid() && target.classList.contains('e-headercell')) {
-            const left: number = this.parent.getFrozenLeftCount();
-            const right: number = this.parent.getFrozenRightColumnsCount();
-            const dropEle: Element = this.element.querySelector('.e-headercelldiv');
-            const dropCol: Column = dropEle ? this.parent.getColumnByUid(dropEle.getAttribute('data-uid')) : null;
-            const col: Column = this.parent.getColumnByUid(target.firstElementChild.getAttribute('e-mappinguid'));
-            const fhdrWidth: number = Math.round(this.parent.getFrozenVirtualHeader().getBoundingClientRect().right);
-            const mhdrRight: number = Math.round(this.parent.getMovableVirtualHeader().getBoundingClientRect().right);
-            if (col) {
-                if (left && !right && this.parent.getNormalizedColumnIndex(col.uid) >= left
-                    && ((isLeft && Math.round(cliRect.left) < fhdrWidth) || (!isLeft && mhdrRight < cliRect.right))) {
-                    return;
-                }
-                if (!left && right && dropCol && dropCol.getFreezeTableName() !== col.getFreezeTableName()
-                    && (!isLeft && Math.round(cliRect.right) < fhdrWidth)) {
-                    return;
-                }
-            }
-        }
         const isSticky: boolean = this.parent.getHeaderContent().classList.contains('e-sticky');
         this.upArrow.style.top = isSticky ? cliRect.top + cliRect.height + 'px' : cliRect.top + cliRect.height - cliRectBase.top + 'px';
         this.downArrow.style.top = isSticky ? cliRect.top - 7 + 'px' : cliRect.top - cliRectBase.top - 7 + 'px';
@@ -625,7 +556,7 @@ export class Reorder implements IAction {
         if (!e.column.allowReordering || e.column.lockColumn) {
             return;
         }
-        const content: Element = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        const content: Element = gObj.getContent().firstElementChild;
         this.x = getPosition(e.event).x + content.scrollLeft;
         gObj.trigger(events.columnDragStart, {
             target: target, draggableType: 'headercell', column: e.column

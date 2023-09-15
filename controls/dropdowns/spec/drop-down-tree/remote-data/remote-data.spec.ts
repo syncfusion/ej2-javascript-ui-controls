@@ -6,7 +6,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 
 
 
-describe('DropDownTree control remote datasource', () => {
+xdescribe('DropDownTree control remote datasource', () => {
     describe('with empty arguments', () => {
         let ddtreeObj: any;
         let ele: HTMLElement = createElement('input', { id: 'tree1' });

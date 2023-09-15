@@ -825,7 +825,7 @@ export class DiagramScroller {
         this.zoom(1, -this.horizontalOffset - hoffset, -this.verticalOffset - voffset, null);
     }
 
-    private applyScrollLimit(hOffset: number, vOffset: number, isInteractiveZoomPan: boolean, isBringIntoView?: boolean, isTrackpadScroll?: boolean): PointModel {
+    private applyScrollLimit(hOffset: number, vOffset: number, isInteractiveZoomPan: boolean, isBringIntoView?: boolean, isTrackpadScroll?:boolean): PointModel {
         /**
          * EJ2-60980- ScrollOffset is not updated properly in runtime.
          * EJ2-62524 - panning is not working properly in diagram.
@@ -844,6 +844,7 @@ export class DiagramScroller {
                 bounds = new Rect(scrollableBounds.x, scrollableBounds.y, scrollableBounds.width, scrollableBounds.height);
             }
             // Bug 829925: Scroll bar flickers on scrolling the diagram using touchpad.
+            // Added below code to get the page bounds based on the scroll.
             bounds = bounds || isTrackpadScroll ? this.getPageBounds() : this.getPageBounds(true);
             bounds.x *= this.currentZoom;
             bounds.y *= this.currentZoom;

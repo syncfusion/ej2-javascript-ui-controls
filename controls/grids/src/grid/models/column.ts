@@ -459,8 +459,10 @@ export class Column {
      * The available built-in freeze directions are
      * * Left - Freeze the column at left side.
      * * Right - Freeze the column at right side.
+     * * Fixed - Freeze the column at Center.
+     * * None - Does not freeze the column.
      *
-     * @default null
+     * @default None
      */
     public freeze: freezeDirection;
 
@@ -1180,8 +1182,6 @@ export interface ColumnModel {
      * @hidden
      * Defines the commands column template as string or HTML element ID which is used to add
      * customized command buttons in each cells of the column.
-     * 
-     * @aspType string
      */
     commandsTemplate?: string | Function;
 
@@ -1276,8 +1276,10 @@ export interface ColumnModel {
      * The available built-in freeze directions are
      * * Left - Freeze the column at left side.
      * * Right - Freeze the column at right side.
+     * * Fixed - Freeze the column at Center.
+     * * None - Does not freeze the column.
      *
-     * @default null
+     * @default None
      */
     freeze?: freezeDirection;
 }

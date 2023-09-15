@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### TreeView
+
+#### Bug fixes
+
+- `#I496955` - The expanded state not maintained while check the child node has been resolved.
+- `#I488527` - The issue with when holding the mouse left click to select the TreeView nodes has been resolved.
+
 ## 22.2.11 (2023-08-29)
 
 ### Carousel

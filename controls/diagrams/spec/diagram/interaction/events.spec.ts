@@ -290,7 +290,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
-
+    
     describe('Rotation Change Event', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1140,54 +1140,6 @@ describe('Mouse Enter, Mouse Over event does not get triggered for selected item
          done();
      });
 });
-describe('positionChange event in completed state', () => {
-    let diagram: Diagram;
-    let ele: HTMLElement;
-    let getNewValue;
-    let getOldValue;
-    let mouseEvents: MouseEvents = new MouseEvents();
-    beforeAll((): void => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
-        ele = createElement('div', { id: 'positionChange' });
-        document.body.appendChild(ele);
-        let node: NodeModel = {
-            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
-            annotations: [{ content: 'Node1' }]
-        };
-        diagram = new Diagram({ width: '1000px', height: '1000px', nodes: [node] });
-        diagram.appendTo('#positionChange');
-    });
-
-    afterAll((): void => {
-        diagram.destroy();
-        ele.remove();
-    });
-
-    it('Checking diagram instance creation', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.clickEvent(diagramCanvas, 100, 100);
-        mouseEvents.mouseUpEvent(diagramCanvas, 100, 100);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 120, 100);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 140, 100);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 160, 100);
-        mouseEvents.mouseDownEvent(diagramCanvas, 160, 100);
-        diagram.positionChange = (args : IDraggingEventArgs) =>{
-           if(args.state === "Completed"){
-            expect(args.newValue.offsetX !== args.oldValue.offsetX).toBe(true);
-            expect(args.newValue.offsetY !== args.oldValue.offsetY).toBe(true);
-            expect(args.oldValue.offsetX == 100).toBe(true);
-            expect(args.oldValue.offsetY == 100).toBe(true);
-            expect(args.newValue.offsetX == 160).toBe(true);
-            expect(args.newValue.offsetY == 100).toBe(true);
-           }
-        };
-    });
-});
 describe('SourcePointChange and TargetPointChange Event on node dragging', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -1568,6 +1520,54 @@ describe('Segment change event', () => {
     });
 });
 
+describe('positionChange event in completed state', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let getNewValue;
+    let getOldValue;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'positionChange' });
+        document.body.appendChild(ele);
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+            annotations: [{ content: 'Node1' }]
+        };
+        diagram = new Diagram({ width: '1000px', height: '1000px', nodes: [node] });
+        diagram.appendTo('#positionChange');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking diagram instance creation', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 100, 100);
+        mouseEvents.mouseUpEvent(diagramCanvas, 100, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 120, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 140, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 160, 100);
+        mouseEvents.mouseDownEvent(diagramCanvas, 160, 100);
+        diagram.positionChange = (args : IDraggingEventArgs) =>{
+           if(args.state === "Completed"){
+            expect(args.newValue.offsetX !== args.oldValue.offsetX).toBe(true);
+            expect(args.newValue.offsetY !== args.oldValue.offsetY).toBe(true);
+            expect(args.oldValue.offsetX == 100).toBe(true);
+            expect(args.oldValue.offsetY == 100).toBe(true);
+            expect(args.newValue.offsetX == 160).toBe(true);
+            expect(args.newValue.offsetY == 100).toBe(true);
+           }
+        };
+    });
+});
 describe('Position change completed state is not triggered while Changing node width in progress state', () => {
     let diagram: Diagram;
     let ele: HTMLElement;

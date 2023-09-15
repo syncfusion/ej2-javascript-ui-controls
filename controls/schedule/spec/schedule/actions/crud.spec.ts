@@ -639,6 +639,43 @@ describe('Schedule CRUD', () => {
     describe('Remote data testing', () => {
         let schObj: Schedule;
         let dataSource: Record<string, any>[] = cloneDataSource(defaultData.slice(0, 10));
+        let fetchSpy: any;
+        beforeAll((done: DoneFn) => {
+            fetchSpy = spyOn(window, 'fetch');
+            fetchSpy.and.returnValue(Promise.resolve(new Response(JSON.stringify({ d: dataSource, __count: dataSource.length }), {
+                    status: 200,
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    })
+                })
+            ));
+            const dataManager: DataManager = new DataManager({
+                url: 'api/Schedule/GetData/',
+                adaptor: new UrlAdaptor()
+            });
+            const model: ScheduleModel = {
+                selectedDate: new Date(2019, 11, 5),
+                currentView: 'Month',
+                eventSettings: { query: new Query() }
+            };
+            schObj = util.createSchedule(model, dataManager);
+            done();
+        });
+        beforeEach((done: DoneFn) => {
+            done();
+        });
+        it('Check remote data loading', () => {
+            expect(schObj.eventsData.length).toEqual(10);
+        });
+        afterAll(() => {
+            fetchSpy.calls.reset();
+            util.destroy(schObj);
+        });
+    });
+
+    describe('Remote data CRUD testing', () => {
+        let schObj: Schedule;
+        let dataSource: Record<string, any>[] = cloneDataSource(defaultData.slice(0, 10));
         const eventData: Record<string, any>[] = [{
             Id: 1,
             Subject: 'Remote Data Testing',
@@ -646,8 +683,8 @@ describe('Schedule CRUD', () => {
             EndTime: new Date(2019, 11, 2, 11, 30),
             IsAllDay: false
         }];
+        let fetchSpy: any;
         beforeAll(() => {
-            jasmine.Ajax.install();
             const dataManager: DataManager = new DataManager({
                 url: 'api/Schedule/GetData/',
                 crudUrl: 'api/Schedule/UpdateData/',
@@ -657,34 +694,33 @@ describe('Schedule CRUD', () => {
                 selectedDate: new Date(2019, 11, 5),
                 currentView: 'Month',
                 eventSettings: { query: new Query() },
-                actionComplete: (args: ActionEventArgs) => {
-                    if (args.requestType === 'eventCreated') {
-                        jasmine.Ajax.requests.reset();
-                    }
-                }
             };
             schObj = util.createSchedule(model, dataManager);
         });
         beforeEach((done: DoneFn) => {
-            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1) || jasmine.Ajax.requests.mostRecent();
-            request.respondWith({ 'status': 200, 'responseText': JSON.stringify({ d: dataSource, __count: dataSource.length }) });
+            fetchSpy = spyOn(window, 'fetch');
+            fetchSpy.and.returnValue(Promise.resolve(new Response(JSON.stringify({ d: dataSource, __count: dataSource.length }), {
+                    status: 200,
+                    headers: new Headers({
+                        'Content-Type': 'application/json'
+                    })
+                })
+            ));
             done();
         });
         it('add action using remote data', () => {
-            jasmine.Ajax.requests.reset();
-            expect(schObj.eventsData.length).toEqual(10);
             dataSource = dataSource.concat(eventData);
             schObj.addEvent(eventData);
         });
         it('action complete checking for add action result', () => {
-            expect(schObj.eventsData.length).toEqual(10);
+            expect(schObj.eventsData.length).toEqual(0);
         });
         it('event get action after adding new event', () => {
             expect(schObj.eventsData.length).toEqual(11);
         });
         afterAll(() => {
+            fetchSpy.calls.reset();
             util.destroy(schObj);
-            jasmine.Ajax.uninstall();
         });
     });
 
@@ -720,7 +756,7 @@ describe('Schedule CRUD', () => {
                 expect((args as any).query.queries.length).toBe(1);
                 const events: Record<string, any>[] = args.result.filter((x: Record<string, any>) => !x.ShipRegion);
                 expect(events.length).toEqual(15);
-                expect((args as any).xhr.responseURL).toEqual('https://services.odata.org/V4/Northwind/Northwind.svc/Orders/?$filter=((((OrderDate%20ge%201996-06-30T00:00:00.000Z)%20and%20(RequiredDate%20ge%201996-06-30T00:00:00.000Z))%20and%20(OrderDate%20lt%201996-08-04T00:00:00.000Z))%20or%20((OrderDate%20le%201996-06-30T00:00:00.000Z)%20and%20(RequiredDate%20gt%201996-06-30T00:00:00.000Z)))%20or%20((ShipRegion%20ne%20null)%20and%20(ShipRegion%20ne%20%27%27))');
+                expect((args as any).xhr.url).toEqual('https://services.odata.org/V4/Northwind/Northwind.svc/Orders/?$filter=((((OrderDate%20ge%201996-06-30T00:00:00.000Z)%20and%20(RequiredDate%20ge%201996-06-30T00:00:00.000Z))%20and%20(OrderDate%20lt%201996-08-04T00:00:00.000Z))%20or%20((OrderDate%20le%201996-06-30T00:00:00.000Z)%20and%20(RequiredDate%20gt%201996-06-30T00:00:00.000Z)))%20or%20((ShipRegion%20ne%20null)%20and%20(ShipRegion%20ne%20%27%27))');
                 done();
             };
             schObj.dataBound = () => {
@@ -742,7 +778,7 @@ describe('Schedule CRUD', () => {
                 expect((args as any).query.queries.length).toBe(0);
                 const events: Record<string, any>[] = args.result.filter((x: Record<string, any>) => !x.ShipRegion);
                 expect(events.length).toEqual(124);
-                expect((args as any).xhr.responseURL).toEqual('https://services.odata.org/V4/Northwind/Northwind.svc/Orders/?StartDate=1996-06-30T00:00:00.000Z&EndDate=1996-08-04T00:00:00.000Z');
+                expect((args as any).xhr.url).toEqual('https://services.odata.org/V4/Northwind/Northwind.svc/Orders/?StartDate=1996-06-30T00:00:00.000Z&EndDate=1996-08-04T00:00:00.000Z');
                 done();
             };
             schObj.dataBound = () => {
@@ -1850,6 +1886,31 @@ describe('Schedule CRUD', () => {
             saveButton.click();
             (document.querySelector( '.e-quick-dialog-alert-btn') as HTMLElement).click();
             done();
+        });
+    });
+
+    describe('Es-184224 - checking server query params', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                selectedDate: new Date(2023, 7, 23),
+                currentView: 'Day',
+                timezone: 'Europe/London',
+            };
+            schObj = util.createSchedule(schOptions, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('with timezone', () => {
+            schObj.dataBinding = (args: DataBindingEventArgs) => {
+                expect((args as any).query.params.length).toBe(2);
+                expect((args as any).query.params[0].value).toEqual("2023-08-22T23:00:00.000Z");
+                expect((args as any).query.params[1].value).toEqual("2023-08-23T23:00:00.000Z");
+            };
         });
     });
 

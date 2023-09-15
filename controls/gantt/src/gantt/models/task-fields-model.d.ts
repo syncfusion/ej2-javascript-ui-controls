@@ -27,6 +27,13 @@ export interface TaskFieldsModel {
     parentID?: string;
 
     /**
+     * Gets or sets a field name of data object in data source that specifies whether the current record has child records.
+     *
+     * @default null
+     */
+    hasChildMapping?: string;
+
+    /**
      * To map start date of task from data source.
      *
      * @default null

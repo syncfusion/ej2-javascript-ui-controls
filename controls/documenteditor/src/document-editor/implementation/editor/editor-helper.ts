@@ -1,7 +1,7 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
-import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget } from '../viewer/page';
-import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
+import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget, TableRowWidget, TableCellWidget, TableWidget } from '../viewer/page';
+import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList } from '../index';
 import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
@@ -121,6 +121,41 @@ export class HelperMethods {
         }
         // json = JSON.parse(this.sanitizeString(JSON.stringify(json)));
         return json;
+    }
+    /**
+     * @private
+     * Generates a unique unique hexadecimal ID.
+     * @returns 
+     */
+    public static generateUniqueId(lists: WList[], abstractLists?: WAbstractList[]): number {
+        let isAbstractList: boolean = !isNullOrUndefined(abstractLists) ? true : false;
+        const randomNumber: number = Math.floor(Math.random() * 100000000);
+        if (isAbstractList) {
+            return this.isSameListIDExists(randomNumber, undefined, abstractLists, isAbstractList) ? this.generateUniqueId(undefined, abstractLists) : randomNumber;
+        } else {
+            return this.isSameListIDExists(randomNumber, lists) ? this.generateUniqueId(lists) : randomNumber;
+        }
+    }
+    /**
+     * @private
+     */
+    public static isSameListIDExists(nsid: number, lists: WList[], abstractLists?: WAbstractList[], isAbstractList?: boolean): boolean {
+        if (isAbstractList) {
+            for (let i = 0; i < abstractLists.length; i++) {
+                let abstractList: WAbstractList = abstractLists[parseInt(i.toString(), 10)];
+                if (nsid == abstractList.nsid) {
+                    return true;
+                }
+            }
+        } else {
+            for (let j = 0; j < lists.length; j++) {
+                let list: WList = lists[parseInt(j.toString(), 10)];
+                if (nsid == list.nsid) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     /* eslint-enable */
     /**
@@ -636,7 +671,7 @@ export class HelperMethods {
     }
 
     /* eslint-disable */
-    public static writeParagraphBorders(wBorders: WBorders, keywordIndex: number): any {
+    public static writeBorders(wBorders: WBorders, keywordIndex: number): any {
         let borders: any = {};
         borders[topProperty[keywordIndex]] = this.writeBorder(wBorders.getBorder('top'), keywordIndex);
         borders[leftProperty[keywordIndex]] = this.writeBorder(wBorders.getBorder('left'), keywordIndex);
@@ -650,7 +685,7 @@ export class HelperMethods {
     /* eslint-disable */
     public static writeParagraphFormat(paragraphFormat: WParagraphFormat, isInline: boolean, format: WParagraphFormat, keywordIndex?: number): void {
         keywordIndex = isNullOrUndefined(keywordIndex) ? 0 : keywordIndex;
-        paragraphFormat[bordersProperty[keywordIndex]] = this.writeParagraphBorders(format.borders, keywordIndex);
+        paragraphFormat[bordersProperty[keywordIndex]] = this.writeBorders(format.borders, keywordIndex);
         paragraphFormat[leftIndentProperty[keywordIndex]] = isInline ? format.leftIndent : format.getValue('leftIndent');
         paragraphFormat[rightIndentProperty[keywordIndex]] = isInline ? format.rightIndent : format.getValue('rightIndent');
         paragraphFormat[firstLineIndentProperty[keywordIndex]] = isInline ? format.firstLineIndent : format.getValue('firstLineIndent');
@@ -1606,6 +1641,46 @@ export interface FootNoteWidgetsInfo {
 export interface SelectedCommentInfo {
     commentStartInfo: CommentCharacterElementBox[]
     commentEndInfo: CommentCharacterElementBox[]
+}
+
+/**
+ * @private
+ */
+export interface AbsolutePositionInfo {
+    /**
+     * Selection position.
+     * @private
+     */
+    position?: number
+    /**
+     * Specifies whether the specfic element is reached or not.
+     * @private
+     */
+    done: boolean
+
+}
+/**
+ * @private
+ */
+export interface FieldResultInfo {
+    /**
+     * Specifies the field result length.
+     * @private
+     */
+    length: number;
+}
+
+/**
+ * @private
+ */
+export interface AbsoluteParagraphInfo {
+    offset: number,
+    currentLength: number,
+    paragraph: ParagraphWidget,
+    rowOrCellIndex?: number,
+    tableWidget?: TableWidget
+    rowWidget?: TableRowWidget,
+    cellWidget?: TableCellWidget
 }
 
 /**

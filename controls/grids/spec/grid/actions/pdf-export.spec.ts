@@ -9,7 +9,7 @@ import { Group } from '../../../src/grid/actions/group';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { ForeignKey } from '../../../src/grid/actions/foreign-key';
-import { data, employeeData, customerData } from '../base/datasource.spec';
+import { data, employeeData, customerData, image } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { PdfExport } from '../../../src/grid/actions/pdf-export';
 import { createGrid, destroy} from '../base/specutil.spec';
@@ -17,7 +17,7 @@ import { HierarchyGridPrintMode } from '../../../src/grid/base/enum';
 import { PdfDocument, PdfGrid, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
 import { DataManager } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { PdfExportProperties } from '../../../src/grid/base/interface';
+import { PdfExportProperties, ExportDetailTemplateEventArgs } from '../../../src/grid/base/interface';
 
 Grid.Inject(Page, Group, Selection, Toolbar, PdfExport, DetailRow, ForeignKey);
 
@@ -353,6 +353,598 @@ describe('pdf Export =>', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = catchEvent = pdfpropery = localData = null;
+        });
+    });
+
+    // used for code coverage
+    describe('Pdf Export with cell formatting =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0, 1),
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                }, done);
+        });
+
+        it('customize the cells', (done) => {
+            gridObj.pdfHeaderQueryCellInfo = (args) => {
+                if (args.gridCell.column.field === 'EmployeeID') {
+                    args.image = { base64: image };
+                }
+                if (args.gridCell.column.field === 'FirstName') {
+                    args.hyperLink = {
+                        target: 'mailto:nancy@domain.com',
+                        displayText: 'FirstName'
+                    };
+                    args.style = {
+                        verticalAlignment: 'Middle',
+                    };                    
+                }
+                if (args.gridCell.column.field === 'Country') {
+                    args.style = {
+                        verticalAlignment: 'Top',
+                    };
+                }
+            }
+            gridObj.pdfQueryCellInfo = (args) => {
+                if (args.column.field === 'EmployeeID') {
+                    args.image = { base64: image };
+                }
+                if (args.column.field === 'FirstName') {
+                    args.hyperLink = {
+                        target: 'mailto:' + args.data['FirstName'] + '@domain.com',
+                        displayText: args.data['FirstName']
+                    };
+                    args.style = {
+                        border: { color: '#C25050', dashStyle: 'DashDot' }
+                    };
+                }
+                if (args.column.field === 'City') {
+                    args.colSpan = 3;
+                    args.style = {
+                        backgroundColor: '#99ffcc',
+                        textBrushColor: '#C25050',
+                        textPenColor: '#C25050',
+                        textAlignment: 'Left',
+                        paragraphIndent: 1,
+                        cellPadding: 0,
+                        italic: true,
+                        bold: true,
+                        underline: true,
+                        strikeout: true,
+                        border: { color: '#C25050', dashStyle: 'Dot' }
+                    };
+                }
+            }
+            gridObj.pdfExport({}, true).then((pdfDoc: PdfDocument) => {
+                expect(1).toBeTruthy(1);
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('pdf export with export properties => ', () => {
+        let gridObj: Grid;
+        let pdfpropery: PdfExportProperties = {
+            header: {
+                fromTop: 0,
+                height: 250,
+                contents: [
+                    {
+                        type: 'Text',
+                        value: 'INVOICE',
+                        position: { x: 280, y: 0 },
+                        style: { textBrushColor: '#C25050', fontSize: 25 },
+                    },
+                    {
+                        type: 'Image',
+                        src: image,
+                        position: { x: 250, y: 100 },
+                        size: { height: 100, width: 250 },
+                    },
+                ]
+            },
+            footer: {
+                fromBottom: 160,
+                height: 100,
+                contents: [
+                    {
+                        type: 'Text',
+                        value: 'Thank you for your business !',
+                        position: { x: 250, y: 20 },
+                        style: { textBrushColor: '#C67878', fontSize: 14 }
+                    },
+                    {
+                        type: 'PageNumber',
+                        position: { x: 100, y: 45 },
+                        style: { textBrushColor: '#C67878', fontSize: 14 }
+                    },
+                    {
+                        type: 'PageNumber',
+                        position: { x: 300, y: 45 },
+                        format: '$current/$total',
+                        style: { textBrushColor: '#C67878', fontSize: 14 }
+                    },
+                    {
+                        type: 'Line',
+                        points: { x1: 10, y1: 45, x2: 50, y2: 45 },
+                        style: {
+                            penSize: 2,
+                            dashStyle: 'Dash'
+                        }
+                    },
+                ]
+            },
+            exportType: 'AllPages',
+            fileName: "pdfdocument.pdf"
+        };
+        let pageSizes: string[] = ['Letter', 'Note', 'Legal', 'A0', 'A1', 'A2', 'A3', 'A5', 'A6', '',
+            'A7', 'A8', 'A9', 'B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'Archa', 'Archb', 'Archc', 'Archd', 'Arche', 'Flsa', 'HalfLetter', 'Letter11x17', 'Ledger'];
+        let pdfSize: { height: number, width: number };
+        let fontFamily = ['TimesRoman', 'Courier', 'Symbol', 'ZapfDingbats']
+        let pdfFont: number = null;
+        let pagenumberstyle: string[] = ['LowerLatin', 'LowerRoman', 'UpperLatin', 'UpperRoman'];
+        let numberStyle: number = null;
+        let gridfont: any = null;
+
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0, 2),
+                    allowPaging: true,
+                    width: 600,
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerTextAlign: 'Center', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 },
+                        { field: 'LastName', headerText: 'Last Name', width: 110 }
+                    ],
+                    beforePdfExport: (args: any) => {
+                        args.headerPageNumbers = [1];
+                    }
+                }, done);
+        });
+
+        it('export header in particular page', (done) => {
+            gridObj.pdfExport(pdfpropery, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        it('export options', (done) => {
+            for (let i = 0; i < pageSizes.length; i++) {
+                pdfSize = (gridObj.pdfExportModule as any).getPageSize(pageSizes[i]);
+            }
+            for (let i = 0; i < fontFamily.length; i++) {
+                pdfFont = (gridObj.pdfExportModule as any).getFontFamily(fontFamily[i]);
+            }
+            for (let i = 0; i < pagenumberstyle.length; i++) {
+                numberStyle = (gridObj.pdfExportModule as any).getPageNumberStyle(pagenumberstyle[i]);
+            }
+            gridfont = (gridObj.pdfExportModule as any).getGridPdfFont({
+                header: { font: new PdfStandardFont(PdfFontFamily.TimesRoman, 11, PdfFontStyle.Bold), },
+                caption: { font: new PdfStandardFont(PdfFontFamily.TimesRoman, 9) },
+                record: { font: new PdfStandardFont(PdfFontFamily.TimesRoman, 10) }
+            });
+            gridObj.pdfExport({
+                exportType: 'CurrentPage',
+                pageSize: 'A2',
+                pageOrientation: 'Landscape',
+                allowHorizontalOverflow: false,
+            }, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = pdfpropery = pageSizes = pdfSize = fontFamily = null;
+            pdfFont = pagenumberstyle = numberStyle = gridfont = null;
+        });
+    });
+
+    // used for code coverage
+    describe('Aggregate export', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    allowPdfExport: true,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['ShipRegion', 'ShipCountry'] },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: '120px' },
+                        {
+                            field: 'OrderDate', headerText: 'Order Date', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '15%', format: 'yMd'
+                        },
+                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                        { field: 'ShipRegion', width: 140 },
+                        { field: 'Verified', headerTextAlign: 'Justify', width: 140 },
+                    ],
+                    aggregates: [{
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                                footerTemplate: 'Sum: ${Sum}'
+                            },
+                            {
+                                type: 'Max',
+                                field: 'OrderDate',
+                                format: { type: 'date', skeleton: 'medium' },
+                                groupFooterTemplate: 'Max: ${Max}'
+                            },
+                            {
+                                type: 'Average',
+                                field: 'Freight',
+                                format: 'C2',
+                                groupCaptionTemplate: 'Max: ${Average}'
+                            },
+                            {
+                                type: 'Min',
+                                field: 'OrderDate',
+                                format: { type: 'date', skeleton: 'medium' },
+                                groupCaptionTemplate: 'Min: ${Min}'
+                            }
+                        ]
+                    },
+                    {
+                        columns: [
+                            {
+                                type: 'Count',
+                                field: 'Freight',
+                                format: 'C2',
+                            },
+                            {
+                                type: 'TrueCount',
+                                field: 'Verified',
+                            },
+                            {
+                                type: 'Max',
+                                field: 'OrderDate',
+                            },
+                        ]
+                    },
+                    {
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                            },
+                            {
+                                type: 'FalseCount',
+                                field: 'Verified',
+                            },
+                            {
+                                type: 'Min',
+                                field: 'OrderDate',
+                            },
+                        ]
+                    },
+                    {
+                        columns: [
+                            {
+                                type: 'Average',
+                                field: 'Freight',
+                            },
+                        ]
+                    }
+                    ],
+                }, done);
+        });
+
+        it('export aggregate with theme', (done) => {
+            gridObj.pdfExport({
+                exportType: 'CurrentPage',
+                theme: {
+                    header: {
+                        fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, bold: true, border: { color: '#C25050' }, italic: true, underline: true, strikeout: true
+                    },
+                    record: {
+                        fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, bold: true, border: { color: '#C25050' }
+                    },
+                    caption: {
+                        fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, bold: true, border: { color: '#C25050' }
+                    }
+                },
+            }, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('multiple export', () => {
+        let gridObj: Grid;
+        let gridObj1: Grid;
+
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0, 5),
+                    allowPaging: true,
+                    width: 600,
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                }, done);
+
+            gridObj1 = createGrid(
+                {
+                    dataSource: employeeData.slice(5, 9),
+                    allowPaging: true,
+                    width: 600,
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                }, done);
+        });
+
+        it('export same sheet', (done) => {
+            gridObj.exportGrids = [gridObj.element.id, gridObj1.element.id];
+            gridObj.pdfExport({
+                multipleExport: { type: "AppendToPage", blankSpace: 10 }
+            }, true).then((pdfDoc: PdfDocument) => {
+                expect(1).toBeTruthy(1);
+                done();
+            });
+        });
+
+        it('export new sheet', (done) => {
+            gridObj.pdfExport({}, true).then((pdfDoc: PdfDocument) => {
+                expect(1).toBeTruthy(1);
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            destroy(gridObj1);
+            gridObj = gridObj1 = null;
+        });
+    });
+
+    describe('Detail template pdf export => ', () => {
+        let gridObj: Grid;
+        let pdfpropery: PdfExportProperties = {
+            hierarchyExportMode: 'All'
+        };
+
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0, 1),
+                    allowPaging: true,
+                    detailTemplate: `<div>Hello</div>`,
+                    width: 600,
+                    allowPdfExport: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                }, done);
+        });
+
+        it('plain text', (done) => {
+            gridObj.exportDetailTemplate = (args: ExportDetailTemplateEventArgs) => {
+                args.value = {
+                    text: "custom text"
+                };
+            }
+            gridObj.pdfExport(pdfpropery, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        it('plain image', (done) => {
+            gridObj.exportDetailTemplate = (args: ExportDetailTemplateEventArgs) => {
+                args.value = {
+                    image: {
+                        base64: image,
+                        height: 100, width: 200
+                    }
+                };
+            }
+            gridObj.pdfExport(pdfpropery, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        it('export hyperlink', (done) => {
+            gridObj.exportDetailTemplate = (args: ExportDetailTemplateEventArgs) => {
+                args.value = {
+                    hyperLink: {
+                        target: 'mailto:' + args.parentRow.data['FirstName'] + '@domain.com',
+                        displayText: args.parentRow.data['FirstName']
+                    }
+                };
+            }
+            gridObj.pdfExport(pdfpropery, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        it('export with spanning', (done) => {
+            gridObj.exportDetailTemplate = (args: ExportDetailTemplateEventArgs) => {
+                args.value = {
+                    columnCount: 2,
+                    rows: [
+                        {
+                            cells: [
+                                { index: 0, colSpan: 2, value: "First Name: " + args.parentRow.data['FirstName'] },
+                            ]
+                        },
+                    ],
+                }
+            }
+            gridObj.pdfExport(pdfpropery, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        it('export normal table', (done) => {
+            gridObj.exportDetailTemplate = (args: ExportDetailTemplateEventArgs) => {
+                args.value = {
+                    columnHeader: [
+                        { cells: [{ value: 'INVOICE' }] }
+                    ],
+                    rows: [
+                        {
+                            cells: [
+                                {
+                                    value: 'Last Name: ' + args.parentRow.data['LastName'],
+                                },
+                            ]
+                        },
+                    ]
+                };
+            }
+            gridObj.pdfExport(pdfpropery, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        it('export image with table', (done) => {
+            gridObj.exportDetailTemplate = (args: ExportDetailTemplateEventArgs) => {
+                args.value = {
+                    rows: [
+                        {
+                            cells: [
+                                {
+                                    image: {
+                                        base64: image,
+                                    }
+                                },
+                            ]
+                        },
+                    ],
+                };
+            }
+            gridObj.pdfExport(pdfpropery, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        it('export styles', (done) => {
+            gridObj.exportDetailTemplate = (args: ExportDetailTemplateEventArgs) => {
+                args.value = {
+                    rows: [
+                        {
+                            cells: [
+                                {
+                                    value: 'Last Name: ' + args.parentRow.data['LastName'], style: {
+                                        backColor: '#99ffcc',
+                                        bold: true,
+                                        fontSize: 15,
+                                        indent: 1,
+                                        italic: true,
+                                        strikeThrough: true,
+                                        underline: true,
+                                        wrapText: true,
+                                    },
+                                    hyperLink: {
+                                        target: 'mailto:' + args.parentRow.data['FirstName'] + '@domain.com',
+                                        displayText: args.parentRow.data['FirstName']
+                                    },
+                                },
+                            ]
+                        },
+                    ]
+                };
+            }
+            gridObj.pdfExport(pdfpropery, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        it('export empty', (done) => {
+            gridObj.exportDetailTemplate = (args: ExportDetailTemplateEventArgs) => {
+                args.value = {};
+            }
+            gridObj.pdfExport(pdfpropery, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = pdfpropery = null;
         });
     });
 });

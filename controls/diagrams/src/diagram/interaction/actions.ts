@@ -17,8 +17,8 @@ import { TextElement } from '../core/elements/text-element';
 import { PortConstraints, DiagramTools, PortVisibility, ThumbsConstraints } from '../enum/enum';
 import { Selector } from '../objects/node';
 import { SelectorModel } from '../objects/node-model';
-import { PointPortModel } from './../objects/port-model';
-import { PointPort } from './../objects/port';
+import { PointPortModel, PortModel } from './../objects/port-model';
+import { PathPort, PointPort } from './../objects/port';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
 import { checkParentAsContainer } from '../interaction/container-interaction';
@@ -44,7 +44,7 @@ import { checkParentAsContainer } from '../interaction/container-interaction';
 export function findToolToActivate(
     obj: Object, wrapper: DiagramElement, position: PointModel, diagram: Diagram,
     touchStart?: ITouches[] | TouchList, touchMove?: ITouches[] | TouchList,
-    target?: NodeModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel): Actions {
+    target?: NodeModel | ConnectorModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel): Actions {
     //let conn: Connector = diagram.selectedItems.connectors[0] as Connector;
 
     if (touchMove && touchMove.length > 1 && touchStart && touchStart.length > 1) { return 'PinchZoom'; }
@@ -127,7 +127,7 @@ export function findToolToActivate(
     //Panning
     if (canZoomPan(diagram) && !obj) { return 'Pan'; }
     //826364 - Drawing Tool is not activated on hovering the ports while both ZoomPan and single select constraints enabled
-      if ((target instanceof PointPort) && (!canZoomPan(diagram) || (canSingleSelect(diagram) || canMultiSelect(diagram)))) {
+      if ((target instanceof PointPort || target instanceof PathPort) && (!canZoomPan(diagram) || (canSingleSelect(diagram) || canMultiSelect(diagram)))) {
         const action: Actions = findPortToolToActivate(diagram, target);
         if (action !== 'None') { return action; }
     }
@@ -255,7 +255,7 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
  * @private
  */
 export function findPortToolToActivate(
-    diagram: Diagram, target?: NodeModel | PointPortModel,
+    diagram: Diagram, target?: NodeModel | PortModel |  PointPortModel,
     // eslint-disable-next-line
     touchStart?: ITouches[] | TouchList, touchMove?: ITouches[] | TouchList,
 ): Actions {

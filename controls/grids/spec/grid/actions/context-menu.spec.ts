@@ -20,11 +20,10 @@ import { PdfExport } from '../../../src/grid/actions/pdf-export';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
 import { Column } from '../../../src/grid/models/column';
 import { ContextMenuItemModel } from '../../../src/grid/base/interface';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Page, Selection, Reorder, CommandColumn, ContextMenu, Sort, Resize,
-    Group, Edit, PdfExport, ExcelExport, Freeze);
+    Group, Edit, PdfExport, ExcelExport);
 
 let targetAndIconCheck: Function = (menuItem: ContextMenuItemModel): void => {
     switch (menuItem.text) {
@@ -104,6 +103,58 @@ let targetAndIconCheck: Function = (menuItem: ContextMenuItemModel): void => {
     };
 }
 describe('context menu module', () => {
+    describe('coverage improvement - pdf and excel exports', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.map(data => data),
+                    allowGrouping: true,
+                    groupSettings: { showGroupedColumn: true, showToggleButton: true, showUngroupButton: true },
+                    allowResizing: true,
+                    allowSorting: true,
+                    editSettings: { allowDeleting: true, allowEditing: true },
+                    allowPaging: true,
+                    pageSettings: {
+                        pageSize: 10
+                    },
+                    contextMenuItems: ['AutoFitAll', 'AutoFit',
+                        'Group', 'Ungroup', 'Edit', 'Delete', 'Save', 'Cancel',
+                        'PdfExport', 'ExcelExport', 'CsvExport', 'SortAscending', 'SortDescending',
+                        'FirstPage', 'PrevPage', 'LastPage', 'NextPage', 'Copy'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 120 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 170 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150, textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+
+        it('build default item', () => {
+            (gridObj.contextMenuModule as any).targetColumn = gridObj.getColumnByField('EmployeeID');
+            (gridObj.contextMenuModule as any).eventArgs = { target: gridObj.getDataRows()[1].firstChild };
+            for (let item of gridObj.contextMenuItems) {
+                let itemModel = (gridObj.contextMenuModule as any).defaultItems[item as string];
+                if ((item as string).toLocaleLowerCase().indexOf('delete') !== -1) {
+                    (gridObj.contextMenuModule as any).selectRow({ target: gridObj.getDataRows()[1].firstChild });
+                }
+
+                targetAndIconCheck(itemModel);
+                expect(itemModel).not.toBe(null);
+                (gridObj.contextMenuModule as any).contextMenuItemClick({ item: itemModel });
+            }
+            if (select('#' + gridObj.element.id + 'EditAlert', gridObj.element).querySelector('button')) {
+                select('#' + gridObj.element.id + 'EditAlert', gridObj.element).querySelector('button').click();
+            }
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
     describe('default items', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
@@ -187,7 +238,122 @@ describe('context menu module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    describe('coverage - header default items', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.map(data => data),
+                    allowGrouping: true,
+                    groupSettings: { showGroupedColumn: true, showToggleButton: true, showUngroupButton: true },
+                    allowResizing: true,
+                    allowSorting: true,
+                    editSettings: { allowDeleting: true, allowEditing: true, mode: 'Batch' },
+                    allowPaging: true,
+                    pageSettings: {
+                        pageSize: 10
+                    },
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    contextMenuItems: ['AutoFitAll', 'AutoFit',
+                        'Group', 'Ungroup', 'Edit', 'Delete', 'Save', 'Cancel',
+                        'PdfExport', 'ExcelExport', 'CsvExport', 'SortAscending', 'SortDescending',
+                        'FirstPage', 'PrevPage', 'LastPage', 'NextPage', 'Copy'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 120 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 170 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150, textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+
+        it('select for code coverage', (done: Function) => {
+            gridObj.rowSelected = () => {
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.selectRow(3);
+        });
+
+        it('build default item', () => {
+            (gridObj.contextMenuModule as any).targetColumn = gridObj.getColumnByField('EmployeeID');
+            (gridObj.contextMenuModule as any).eventArgs = { target: gridObj.getDataRows()[1].firstChild };
+            (gridObj.contextMenuModule as any).row = gridObj.getDataRows()[1];
+            (gridObj.contextMenuModule as any).cell = gridObj.getDataRows()[1].firstChild;
+            for (let item of gridObj.contextMenuItems) {
+                let itemModel = (gridObj.contextMenuModule as any).defaultItems[item as string];
+                if ((item as string).toLocaleLowerCase().indexOf('export') !== -1) {
+                } else {
+                    if ((item as string).toLocaleLowerCase().indexOf('delete') !== -1) {
+                        (gridObj.contextMenuModule as any).selectRow({ target: gridObj.getDataRows()[1].firstChild });
+                    }
+
+                    targetAndIconCheck(itemModel);
+                    expect(itemModel).not.toBe(null);
+                    (gridObj.contextMenuModule as any).contextMenuItemClick({ item: itemModel });
+                }
+            }
+            if (select('#' + gridObj.element.id + 'EditAlert', gridObj.element).querySelector('button')) {
+                select('#' + gridObj.element.id + 'EditAlert', gridObj.element).querySelector('button').click();
+            }
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
             gridObj = targetAndIconCheck = null;
+        });
+    });
+    describe('coverage improvement- default items functionality', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.map(data => data),
+                    allowGrouping: true,
+                    groupSettings: { showGroupedColumn: true, showToggleButton: true, showUngroupButton: true },
+                    allowResizing: true,
+                    allowSorting: true,
+                    editSettings: { allowDeleting: true, allowEditing: true },
+                    allowPaging: true,
+                    frozenRows: 1,
+                    pageSettings: {
+                        pageSize: 5
+                    },
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    contextMenuItems: ['AutoFitAll', 'AutoFit',
+                        'Group', 'Ungroup', 'Edit', 'Delete', 'Save', 'Cancel',
+                        'PdfExport', 'ExcelExport', 'CsvExport', 'SortAscending', 'SortDescending',
+                        'FirstPage', 'PrevPage', 'LastPage', 'NextPage', 'Copy'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 120 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 170 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150, textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+        it('header with sort test', () => {
+            (gridObj.contextMenuModule as any).eventArgs = { target: gridObj.getHeaderTable().querySelector('th') };
+            let e = {
+                event: (gridObj.contextMenuModule as any).eventArgs,
+                items: gridObj.contextMenuModule.contextMenu.items,
+                parentItem: document.querySelector('tr.edoas')
+            };
+            (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
+            (gridObj.contextMenuModule as any).contextMenuOpen();
+            expect((gridObj.contextMenuModule as any).isOpen).toBe(true);
+            (gridObj.contextMenuModule as any).contextMenuOnClose(e);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('default items functionality', () => {
@@ -601,6 +767,18 @@ describe('context menu module', () => {
                 }, done);
         });
 
+        it('coverage - batch editing', () => {
+            let e: {};
+            (gridObj.contextMenuModule as any).eventArgs = { target: gridObj.getHeaderTable().querySelector('th') };
+            e = {
+                event: (gridObj.contextMenuModule as any).eventArgs,
+                items: gridObj.contextMenuModule.contextMenu.items
+            };
+            (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
+            (gridObj.contextMenuModule as any).contextMenuOpen();
+            (gridObj.contextMenuModule as any).contextMenuOnClose(e);
+        });
+
         it('batch editing', () => {
             let e: {};
             gridObj.editModule.editCell(1, 'CustomerID');
@@ -917,6 +1095,66 @@ describe('context menu module', () => {
             expect(gridObj.getContent().querySelectorAll('tr[aria-selected=true]').length).toBe(3);
             (gridObj.contextMenuModule as any).contextMenuOpen();
             (gridObj.contextMenuModule as any).contextMenuOnClose(e);
+        });
+
+        it('check the addEventListener Binding', () => {
+            gridObj.isDestroyed = true;
+            gridObj.contextMenuModule.addEventListener();
+            gridObj.isDestroyed = false;
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('coverage improment - 1', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSorting: true,
+                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true },
+                allowPaging: true,
+                cssClass: 'e-menu',
+                contextMenuItems: ['AutoFit', 'AutoFitAll', 'SortAscending', 'SortDescending',
+                    'Copy', 'Edit', 'Delete', 'Save', 'Cancel',
+                    'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
+                    'LastPage', 'NextPage'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true },
+                    { field: 'CustomerName', headerText: 'Customer Name', width: 160 },
+                    { field: 'Freight', format: 'C2', textAlign: 'Right', width: 120, editType: 'numericedit' },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 200 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150, editType: 'dropdownedit' },
+                ]
+            }, done);
+        });
+
+
+        it('keyDownHandler call', (done: Function) => {
+            let args: any = { code: 'Tab', which: 9 };
+            (gridObj.contextMenuModule as any).keyDownHandler(args);
+            args = { code: 'Escape' };
+            (gridObj.contextMenuModule as any).keyDownHandler(args);
+            gridObj.rowSelected = () => {
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.selectRow(3);
+        });
+
+        it('select row in context menu', () => {
+            let e: any = { target: gridObj.getHeaderContent().querySelector('th') };
+            (gridObj.contextMenuModule as any).selectRow(e);
+        });
+
+        it('destroy in context menu', () => {
+            gridObj.element.innerHTML = '';
+            (gridObj.contextMenuModule as any).destroy();
         });
 
         afterAll(() => {

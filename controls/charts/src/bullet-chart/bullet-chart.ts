@@ -1530,6 +1530,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     break;
                 case 'theme':
                     this.animateSeries = true; break;
+                case 'enableRtl':
                 case 'locale':
                 case 'currencyCode':
                     super.refresh(); break;

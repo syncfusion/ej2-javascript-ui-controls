@@ -61,7 +61,7 @@ const TOTAL_COUNT_WRAPPER: string = 'e-total-count';
 const REMAIN_COUNT: string = 'e-wrap-count';
 
 /**
- * Specifies the different ways to filter values
+ * Specifies the different ways to filter values.
  * ```props
  * StartsWith :- Checks whether a value begins with the specified value.
  * EndsWith :- Checks whether a value ends with the specified value.

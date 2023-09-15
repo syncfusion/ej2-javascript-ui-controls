@@ -213,7 +213,7 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
         style = {
             heatMapTitle: '#F3F2F1',
             axisTitle: '#F3F2F1',
-            axisLabel: '#201F1E',
+            axisLabel: '#F3F2F1',
             cellBorder: '#EDEBE9',
             background: 'transparent',
             cellTextColor: '#FFFFFF',

@@ -118,6 +118,7 @@ export class RibbonButton {
         const buttonEle: HTMLElement = getItemElement(this.parent, id, itemProp);
         if (!buttonEle) { return; }
         const buttonObj: Button = getComponent(buttonEle, Button);
+        if (prop.isToggle) { buttonEle.classList.add('e-active'); }
         if (prop.cssClass) { prop.cssClass = (ITEM_VERTICAL_CENTER + SPACE + RIBBON_CONTROL + SPACE + prop.cssClass).trim(); }
         if (prop.content) {
             prop.content = itemProp.item.activeSize === RibbonItemSize.Small ? '' : prop.content;

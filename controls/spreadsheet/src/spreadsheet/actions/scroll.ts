@@ -301,7 +301,7 @@ export class Scroll {
      *
      * @returns {void} - To Set padding
      */
-    public setPadding(): void {
+    public setPadding(isRtlChange?: boolean): void {
         this.parent.sheetModule.contentPanel.style.overflowY = 'scroll';
         const scrollWidth: number = getScrollBarWidth();
         if (scrollWidth > 0) {
@@ -310,6 +310,9 @@ export class Scroll {
                 : { margin: 'marginRight', border: 'borderRightWidth' };
             colHeader.parentElement.style[cssProps.margin] = scrollWidth + 'px';
             colHeader.style[cssProps.border] = '1px';
+        }
+        if (isRtlChange) {
+            this.initScrollValue = 0;
         }
     }
 

@@ -68,7 +68,7 @@ export interface ViewsModel {
     endHour?: string;
 
     /**
-     * It is used to allow or disallow the virtual scrolling functionality on Agenda View. This is applicable only on Agenda view.
+     * It is used to allow or disallow the virtual scrolling functionality.
      *
      * @default false
      */
@@ -316,5 +316,14 @@ export interface ViewsModel {
      * @default null
      */
     displayDate?: Date;
+
+    /**
+     * Enables the lazy loading of events for scrolling actions only when the resources grouping property is enabled.
+     * Lazy loading allows the scheduler to fetch the appointments dynamically during scroll actions for the currently rendered resource collection.
+     * New event data is fetched on-demand as the user scrolls through the schedule content.
+     *
+     * @default false
+     */
+    enableLazyLoading?: boolean;
 
 }

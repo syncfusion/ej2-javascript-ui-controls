@@ -964,7 +964,9 @@ export class SpellChecker {
                                 statusText: httpRequest.responseText,
                                 url: service
                             };
-                            spellchecker.documentHelper.owner.fireServiceFailure(result);
+                            if (!isNullOrUndefined(spellchecker.documentHelper)) {
+                                spellchecker.documentHelper.owner.fireServiceFailure(result);
+                            }
                             reject(httpRequest.response);
                         }
                     }

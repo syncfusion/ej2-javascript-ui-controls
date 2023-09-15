@@ -71,12 +71,12 @@ export function getSeriesColor(theme: SparklineTheme): string[] {
             '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
         break;
     case 'Bootstrap5':
-        palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
-            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
+        palette = ['#6355C7', '#FFB400', '#2196F5', '#F7523F', '#963C70',
+            '#4BE0BC', '#FD7400', '#C9E422', '#DE3D8A', '#162F88'];
         break;
     case 'Bootstrap5Dark':
-        palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
-            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
+        palette = ['#8F80F4', '#FFD46D', '#6CBDFF', '#FF7F71', '#FF6DB3',
+            '#63F5D2', '#FCAA65', '#ECFF77', '#EF8EFF', '#5F82FD'];
         break;
     case 'FluentDark':
         palette = ['#1AC9E6', '#DA4CB2', '#EDBB40', '#AF4BCF', '#FF7266',

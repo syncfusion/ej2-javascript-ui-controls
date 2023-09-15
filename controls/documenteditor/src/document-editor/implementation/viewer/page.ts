@@ -1184,6 +1184,18 @@ export class ParagraphWidget extends BlockWidget {
         }
         return length;
     }
+    /**
+     * Return the total length by considering splitted paragraph widgets.
+     * @private
+     */
+    public getTotalLength(): number {
+        let offset: number = 0;
+        let splittedWidget: ParagraphWidget[] = this.getSplitWidgets() as ParagraphWidget[];
+        for (let i: number = 0; i < splittedWidget.length; i++) {
+            offset += splittedWidget[i].getLength();
+        }
+        return offset;
+    }
     public getTableCellWidget(point: Point): TableCellWidget {
         return undefined;
     }
@@ -1823,14 +1835,6 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-    public description: string;
-    /**
-     * @private
-     */
-    public title: string;
-    /**
-     * @private
-     */
     public tableCellInfo: Dictionary<number, Dictionary<number, number>>;
     /**
      * @private
@@ -2271,6 +2275,7 @@ export class TableWidget extends BlockWidget {
         containerWidth = (this.tableFormat.preferredWidth > containerWidth) ? this.tableFormat.preferredWidth : containerWidth;
         let isZeroWidth: boolean = (isAutoWidth && this.tableFormat.preferredWidth === 0 && !isAutoFit);
         tableWidth = this.getTableClientWidth(containerWidth);
+        let pageContainerWidth = this.getContainerWidth();
         if (isZeroWidth && !this.isDefaultFormatUpdated && isAutoFit) {
             this.splitWidthToTableCells(tableWidth, isZeroWidth);
         }
@@ -2360,7 +2365,7 @@ export class TableWidget extends BlockWidget {
         this.tableHolder.validateColumnWidths();
         if (isAutoFit) {
             // Fits the column width automatically based on contents.
-            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, hasSpannedCells, this.leftIndent + this.rightIndent);
+            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, hasSpannedCells, this.leftIndent + this.rightIndent, pageContainerWidth);
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
             this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent);
@@ -2750,8 +2755,6 @@ export class TableWidget extends BlockWidget {
         this.rightMargin = undefined;
         this.bottomMargin = undefined;
         this.headerHeight = undefined;
-        this.description = undefined;
-        this.title = undefined;
         this.isDefaultFormatUpdated = undefined;
         super.destroy();
     }
@@ -2778,8 +2781,6 @@ export class TableWidget extends BlockWidget {
         this.rightMargin = undefined;
         this.bottomMargin = undefined;
         this.headerHeight = undefined;
-        this.description = undefined;
-        this.title = undefined;
         this.isDefaultFormatUpdated = undefined;
         super.componentDestroy();
     }
@@ -4784,6 +4785,12 @@ export abstract class ElementBox {
         } else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget
             && line.paragraph.nextRenderedWidget.childWidgets.length > 0) {
             this.linkFieldTraversingForward(line.paragraph.nextRenderedWidget.childWidgets[0] as LineWidget, fieldBegin, this);
+        } else if (line.paragraph.nextRenderedWidget instanceof TableWidget) {
+            var tableWidget: TableWidget = line.paragraph.nextRenderedWidget as TableWidget;
+            tableWidget = tableWidget.getSplitWidgets().pop() as TableWidget;
+            if (!isNullOrUndefined(tableWidget.nextRenderedWidget) && tableWidget.nextRenderedWidget instanceof ParagraphWidget && tableWidget.nextRenderedWidget.childWidgets.length > 0) {
+                this.linkFieldTraversingForward(tableWidget.nextRenderedWidget.childWidgets[0] as LineWidget, fieldBegin, this);
+            }
         }
         return true;
     }
@@ -9227,7 +9234,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, hasSpannedCells: boolean, indent?: number): void {
+    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, hasSpannedCells: boolean, indent?: number, pageContainerWidth?: number): void {
         // Cell's preferred width should be considered until the table width fits to the container width.
         let maxTotal: number = 0;
         let minTotal: number = 0;
@@ -9312,7 +9319,7 @@ export class WTableHolder {
                 //let totalMinimumWordWidth: number = this.getTotalWidth(1);
                 //if (preferredTableWidth > totalMinimumWordWidth && totalMinimumWordWidth < containerWidth) {
                 let considerMinAsTableWidth: boolean = false;
-                if (preferredTableWidth < minTotal && minTotal + (isNullOrUndefined(indent) ? 0 : indent) < containerWidth) {
+                if ((preferredTableWidth < minTotal && minTotal + (isNullOrUndefined(indent) ? 0 : indent) < containerWidth)) {
                     considerMinAsTableWidth = true;
                 }
                 this.fitColumns(containerWidth, considerMinAsTableWidth ? minTotal : preferredTableWidth, isAuto);
@@ -9578,6 +9585,19 @@ export class ColumnSizeInfo {
      * @private
      */
     public hasMaximumWordWidth: boolean = false;
+}
+/**
+ * @private
+ */
+export class CommentEditInfo {
+    /**
+     * @private
+     */
+    public commentId: string;
+    /**
+     * @private
+     */
+    public text: string;
 }
 /**
  * @private

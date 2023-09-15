@@ -946,4 +946,111 @@ describe('FileManager control single selection LargeIcons view', () => {
             }, 500);
         });
     });
+    describe('toolbar items testing', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                toolbarItems: [{ text: 'Create New Folder', name: 'NewFolder', prefixIcon: 'e-plus-small' },
+                    { id: 'fm_upload', text: 'File Upload', name: 'Upload', htmlAttributes: { 'class': 'e-tool' } },
+                    { text: 'SortBy', name: 'SortBy', cssClass: 'e-caret-hide', showTextOn: 'Toolbar' },
+                    { text: 'Cut', name: 'Cut', disabled: true },
+                    { text: 'Copy', name: 'Copy', align: 'Left', tooltipText: 'Copy Tooltip', showAlwaysInPopup: true },
+                    { text: 'Paste', name: 'Paste', tabIndex: 0 },
+                    { type: 'Separator', name: 'Separator1' },
+                    { text: 'Delete', name: 'Delete', overflow: 'Show', tabIndex: 1 },
+                    { text: 'Download', name: 'Download', width: '50px' },
+                    { text: 'Rename', name: 'Rename', visible: false },
+                    { text: 'Details View', name: 'Details', suffixIcon: 'e-tb-details', align:'Right' },
+                    { text: 'Start Refresh', name: 'Refresh', showTextOn: 'Both' },
+                    { template: '<div><input type=\'checkbox\' id=\'check1\' checked=\'\'>Select All</input></div>',  name: 'select'}],
+                showThumbnail: false,
+                showItemCheckBoxes: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            // eslint-disable-next-line @typescript-eslint/tslint/config
+            setTimeout(function () {
+                done();
+            }, 500);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) {feObj.destroy(); }
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('mouse click on refresh button', (done: Function) => {
+            let lgli: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            mouseEventArgs.target = lgli[1];
+            feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+            mouseEventArgs.ctrlKey = true;
+            mouseEventArgs.target = lgli[2];
+            feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+            document.getElementById('file_tree').querySelectorAll('li')[1].remove();
+            lgli[0].remove();
+            document.getElementsByClassName('e-addressbar-ul')[0].querySelector('li').remove();
+            let li: any = document.getElementById('file_tree').querySelectorAll('li');
+            let tr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            let ar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+            expect(li.length).toEqual(4);
+            expect(tr.length).toEqual(4);
+            expect(ar.length).toEqual(0);
+            expect(tr[0].classList.contains('e-active')).toBe(false);
+            expect(tr[0].querySelector('.e-frame')).toBe(null);
+            expect(tr[1].classList.contains('e-active')).toBe(true);
+            expect(tr[1].querySelector('.e-frame')).toBe(null);
+            let items: any = document.getElementsByClassName('e-fe-refresh');
+            items[0].click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(nli.length).toEqual(5);
+                expect(ntr.length).toEqual(5);
+                expect(nar.length).toEqual(1);
+                expect(ntr[1].classList.contains('e-active')).toBe(false);
+                expect(ntr[1].querySelector('.e-frame')).toBe(null);
+                expect(ntr[2].classList.contains('e-active')).toBe(true);
+                expect(ntr[2].querySelector('.e-frame')).toBe(null);
+                done();
+            }, 500);
+        });
+    });
 });

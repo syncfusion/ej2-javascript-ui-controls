@@ -98,6 +98,7 @@ export class VirtualScroll {
         this.parent.grid.notify(events.indexModifier, counts);
         let startIndex: number = counts.startIndex;
         let endIndex: number = counts.endIndex;
+        pageingDetails.count = visualData.length;
         if (startIndex === -1 && endIndex === -1) {
             let query: Query = new Query();
             const size: number = this.parent.grid.pageSettings.pageSize;
@@ -115,7 +116,7 @@ export class VirtualScroll {
                 (this.parent.grid.getContent() as HTMLElement).firstElementChild.scrollTop = 0;
                 this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
             }
-            if ((requestType === 'save' && (pageingDetails.actionArgs.index >= (counts.count - this.parent.grid.pageSettings.pageSize)) || (requestType === 'refresh' && this.parent['isGantt'] && this.parent['isAddedFromGantt']) && (counts.count === this.prevendIndex + 1))) {
+            if ((requestType === 'save' && pageingDetails.actionArgs.index >= (counts.count - this.parent.grid.pageSettings.pageSize)) || (requestType === 'refresh' && this.parent['isGantt'] && this.parent['isAddedFromGantt'])) {
                 startIndex = counts.startIndex + (counts.count - counts.endIndex);
                 endIndex = counts.count;
                 this.parent['isAddedFromGantt'] = false;
@@ -184,15 +185,12 @@ export class TreeVirtual extends GridVirtualScroll {
         const parentGrid: IGrid = getValue('parent', this);
         getValue('parent', this).log(['limitation', 'virtual_height'], 'virtualization');
         const renderer: Object = getValue('locator', this).getService('rendererFactory');
-        if (!parentGrid.isFrozenGrid()) {
-            if (parentGrid.enableColumnVirtualization) {
-                getValue('addRenderer', renderer)
-                    .apply(renderer, [RenderType.Header, new VirtualHeaderRenderer(getValue('parent', this), getValue('locator', this))]);
-            }
+        if (parentGrid.enableColumnVirtualization) {
             getValue('addRenderer', renderer)
-                .apply(renderer, [RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this))]);
+                .apply(renderer, [RenderType.Header, new VirtualHeaderRenderer(getValue('parent', this), getValue('locator', this))]);
         }
-        //renderer.addRenderer(RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this)));
+        getValue('addRenderer', renderer)
+            .apply(renderer, [RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this))]);
         this.ensurePageSize();
     }
     public ensurePageSize(): void {

@@ -8,7 +8,7 @@ import {
     IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, markerClusterClick, markerClusterMouseMove,
     MarkerSettingsModel, IMarkerDragEventArgs
 } from '../index';
-import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, animationMode } from '@syncfusion/ej2-base';
 import { Point, getTranslate, convertGeoToPoint, clusterTemplate, marker, markerTemplate, getZoomTranslate } from '../utils/helper';
 import {
     getElementByID, mergeSeparateCluster, clusterSeparate, removeElement, getElement,
@@ -83,7 +83,7 @@ export class Marker {
                         let location: Point = (maps.isTileMap) ? convertTileLatLongToPoint(
                             new MapLocation(lng, lat), factor, maps.tileTranslatePoint, true
                         ) : convertGeoToPoint(lat, lng, factor, currentLayer, maps);
-                        const animate: boolean = currentLayer.animationDuration !== 0 || isNullOrUndefined(maps.zoomModule);
+                        const animate: boolean = (currentLayer.animationDuration !== 0 || animationMode === 'Enable') || isNullOrUndefined(maps.zoomModule);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const translate: any = (maps.isTileMap) ? (currentLayer.type === 'SubLayer' && isNullOrUndefined(maps.zoomModule)) ? location = convertTileLatLongToPoint(
                             new MapLocation(lng, lat), maps.tileZoomLevel, maps.tileTranslatePoint, true

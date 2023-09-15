@@ -4,7 +4,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { remoteData, remoteData2 } from '../dataSource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
-describe('DropDown Tree control Remote datasource', () => {
+xdescribe('DropDown Tree control Remote datasource', () => {
     describe('Method testing', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => { },

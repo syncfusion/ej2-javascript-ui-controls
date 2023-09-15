@@ -1,0 +1,37 @@
+@include export-module('treegrid-fluent-icons') {
+  #{&}.e-treegrid,
+  .e-grid-menu {
+    .e-indent::before {
+      content: '\e810';
+    }
+
+    .e-outdent::before {
+      content: '\e72a';
+    }
+  }
+
+  .e-treegrid {
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      content: '\e75c';
+    }
+
+    .e-toolbar-item {
+      .e-expand::before {
+        content: '\e7c9';
+      }
+
+      .e-collapse::before {
+        content: '\e80f';
+      }
+
+      .e-indent::before {
+        content: '\e810';
+      }
+
+      .e-outdent::before {
+        content: '\e72a';
+      }
+    }
+  }
+}

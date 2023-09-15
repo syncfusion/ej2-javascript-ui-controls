@@ -5,7 +5,7 @@ import { WListLevel } from '../list/list-level';
 import { Selection } from '../index';
 import { TextPosition } from '../selection/selection-helper';
 import { DocumentEditor } from '../../document-editor';
-import { Action } from '../../index';
+import { Action, CONTROL_CHARACTERS } from '../../index';
 import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaseHistoryInfo } from './base-history-info';
@@ -26,7 +26,10 @@ export class EditorHistory {
     //Fields
     private undoStackIn: BaseHistoryInfo[] = [];
     private redoStackIn: BaseHistoryInfo[] = [];
-    private historyInfoStack: HistoryInfo[] = [];
+    /**
+     * @private
+     */
+    public historyInfoStack: HistoryInfo[] = [];
     private owner: DocumentEditor;
     /**
      * @private
@@ -67,6 +70,12 @@ export class EditorHistory {
      * @private
      */
     public documentHelper: DocumentHelper;
+
+    /**
+     * @private
+     */
+    public lastOperation: BaseHistoryInfo;
+
     //Properties
     /**
      * gets undo stack
@@ -178,6 +187,16 @@ export class EditorHistory {
         }
         this.currentBaseHistoryInfo = new BaseHistoryInfo(this.owner);
         this.currentBaseHistoryInfo.action = action;
+        switch (action) {
+            case 'SectionBreak':
+                this.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Section_Break;
+                this.currentBaseHistoryInfo.type = "NewPage";
+                break;
+            case 'SectionBreakContinuous':
+                this.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Section_Break;
+                this.currentBaseHistoryInfo.type = "Continuous";
+                break;
+        }
         this.currentBaseHistoryInfo.updateSelection();
     }
     /**
@@ -191,6 +210,16 @@ export class EditorHistory {
     public initComplexHistory(selection: Selection, action: Action): void {
         this.currentHistoryInfo = new HistoryInfo(selection.owner, !isNullOrUndefined(this.currentHistoryInfo));
         this.currentHistoryInfo.action = action;
+        switch (action) {
+            case 'PageBreak':
+                this.currentHistoryInfo.insertedText = CONTROL_CHARACTERS.PageBreak;
+                this.currentHistoryInfo.insertPosition = selection.startOffset;
+                break;
+            case 'ColumnBreak':
+                this.currentHistoryInfo.insertedText = CONTROL_CHARACTERS.ColumnBreak;
+                this.currentHistoryInfo.insertPosition = selection.startOffset;
+                break;
+        }
         this.currentHistoryInfo.updateSelection();
     }
     /**
@@ -235,6 +264,7 @@ export class EditorHistory {
                 } else {
                     rowHistoryFormat.displacement = HelperMethods.convertPixelToPoint(point.y - rowHistoryFormat.startingPoint.y);
                     this.recordChanges(this.currentBaseHistoryInfo);
+                    this.owner.fireContentChange();
                     this.currentBaseHistoryInfo = undefined;
                 }
             }
@@ -247,6 +277,7 @@ export class EditorHistory {
                     cellHistoryFormat.displacement = HelperMethods.convertPixelToPoint(point.x - cellHistoryFormat.startingPoint.x);
                     cellHistoryFormat.endIndex = tableResize.getCellReSizerPosition(point);
                     this.owner.editorHistory.recordChanges(this.currentBaseHistoryInfo);
+                    this.owner.fireContentChange();
                     this.currentBaseHistoryInfo = undefined;
                 }
             }
@@ -289,6 +320,7 @@ export class EditorHistory {
                 this.undoStackIn.push(baseHistoryInfo);
             }
         }
+        this.lastOperation = baseHistoryInfo;
     }
     /**
      * update EditorHistory
@@ -345,7 +377,7 @@ export class EditorHistory {
      */
     public updateComplexHistory(): void {
         const selection: Selection = this.documentHelper.selection;
-        if (this.currentHistoryInfo.hasAction) {
+        if (!isNullOrUndefined(this.currentHistoryInfo) && this.currentHistoryInfo.hasAction) {
             if (this.currentHistoryInfo.action === 'AutoFormatHyperlink' || this.currentHistoryInfo.action === 'SkipCommentInline'
             || this.currentHistoryInfo.action === 'DeleteCommentInline' || this.currentHistoryInfo.action === 'RemoveComment') {
                 // this.reLayoutParagraph(startPosition.paragraph, 0);
@@ -385,7 +417,7 @@ export class EditorHistory {
         selection.owner.isLayoutEnabled = true;
         // // selection.addMultipleSelectionRanges();
 
-        if (this.currentHistoryInfo.action === 'ApplyStyle') {
+        if (!isNullOrUndefined(this.currentHistoryInfo) && this.currentHistoryInfo.action === 'ApplyStyle') {
             this.owner.editor.getOffsetValue(selection);
         } else {
             selection.start.updatePhysicalPosition(true);
@@ -406,7 +438,9 @@ export class EditorHistory {
         }
         
         this.updateComplexHistoryInternal();
-        this.owner.editorModule.fireContentChange();
+        if (!this.owner.editorModule.isInsertingTOC) {
+            this.owner.editorModule.fireContentChange();
+        }
     }
     /**
      * @private

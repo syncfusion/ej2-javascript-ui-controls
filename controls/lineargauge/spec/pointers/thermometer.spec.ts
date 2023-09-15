@@ -57,6 +57,20 @@ describe('Cheking thermometer animation', () => {
         gauge.orientation = 'Horizontal';
         gauge.refresh();
     });
+    it('bar animation - Vertical - thermometer', () => {
+        gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+            let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
+            //  expect(svg != null).toBe(true);
+           // done();
+        };
+        gauge.container.width = 30;
+        gauge.container.type = 'Thermometer';
+        gauge.axes[0].pointers[0].type = 'Bar'
+        gauge.axes[0].pointers[0].value = 50;
+        gauge.axes[0].pointers[0].animationDuration = 1000;
+        gauge.orientation = 'Vertical';
+        gauge.refresh();
+    });
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

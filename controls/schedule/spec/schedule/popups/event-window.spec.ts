@@ -3593,6 +3593,434 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('Checking custom editor header and footer templates', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2023, 7, 17, 10, 0),
+            EndTime: new Date(2023, 7, 17, 11, 30),
+            IsAllDay: false,
+            Location: 'Paris'
+        }, {
+            Id: 2,
+            Subject: 'Meeting - 1',
+            StartTime: new Date(2023, 7, 18, 12, 0),
+            EndTime: new Date(2023, 7, 18, 12, 30),
+            IsAllDay: false,
+            Location: 'Chennai'
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                currentView: 'Week',
+                views: ['Week'],
+                eventSettings: {dataSource: data},
+                editorHeaderTemplate: '<div id="dlg-template" title="Edit">${Subject}</div>',
+                editorFooterTemplate: '<div id="location">${Location}</div>',
+                selectedDate: new Date(2023, 7, 16)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            remove(document.getElementById('eventEditor'));
+        });
+
+        it('Custom header and footer templates checking with string', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">undefined</div>');
+            expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div id="location">undefined</div>');
+            (dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+            expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(2);
+            (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement).click();
+            (schObj.element.querySelector('.e-edit') as HTMLElement).click();
+            expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">Meeting - 1</div>');
+            expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div id="location">Chennai</div>');
+            expect((dialogElement.querySelector('#dlg-template') as HTMLElement).innerText).toEqual('Meeting - 1');
+            expect((dialogElement.querySelector('#location') as HTMLElement).innerText).toEqual('Chennai');
+            (dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+        });
+        it('On property changed in custom editor header and footer template', () => {
+            schObj.editorHeaderTemplate = '<div id="dlg-template" title="Edit">EditAppointment</div>';
+            schObj.editorFooterTemplate = '<div><button id="Cancel" class="e-control e-btn e-primary" data-ripple="true">Cancel</button></div>';
+            schObj.dataBind();
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">EditAppointment</div>');
+            expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div><button id="Cancel" class="e-control e-btn e-primary" data-ripple="true">Cancel</button></div>');
+            (dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+        });
+        it('Setting a nullable value to verify the editor header and footer Template', () => {
+            schObj.editorHeaderTemplate = null;
+            schObj.editorFooterTemplate = null;
+            schObj.dataBind();
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(schObj.editorFooterTemplate).toEqual(null);
+            expect(schObj.editorHeaderTemplate).toEqual(null);
+            expect(dialogElement.querySelector('.e-event-cancel')).not.toEqual(null);
+            (dialogElement.querySelector('.e-event-cancel') as HTMLElement).click();
+        });
+    });
+
+    describe('Checking custom editor header and footer templates with function', () => {
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2023, 7, 17, 10, 0),
+            EndTime: new Date(2023, 7, 17, 11, 30),
+            IsAllDay: false,
+            Location: 'Paris'
+        }, {
+            Id: 2,
+            Subject: 'Meeting - 1',
+            StartTime: new Date(2023, 7, 18, 12, 0),
+            EndTime: new Date(2023, 7, 18, 12, 30),
+            IsAllDay: false,
+            Location: 'Chennai'
+        }];
+        const customHeaderTemplate: string = '<div id="dlg-template" title="Edit">${Subject}</div>';
+        const customFooterTemplate: string = '<div id="location">${Location}</div>';
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                currentView: 'Week',
+                views: ['Week'],
+                eventSettings: {dataSource: data},
+                editorHeaderTemplate: customHeaderTemplate,
+                editorFooterTemplate: customFooterTemplate,
+                selectedDate: new Date(2023, 7, 16)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Custom editor header and footer Templates', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">undefined</div>');
+            expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div id="location">undefined</div>');
+            (dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+            expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(2);
+            (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement).click();
+            (schObj.element.querySelector('.e-edit') as HTMLElement).click();
+            expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">Meeting - 1</div>');
+            expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div id="location">Chennai</div>');
+            expect((dialogElement.querySelector('#dlg-template') as HTMLElement).innerText).toEqual('Meeting - 1');
+            expect((dialogElement.querySelector('#location') as HTMLElement).innerText).toEqual('Chennai');
+            (dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+        });
+    });
+
+
+
+    describe('Checking the custom editor header and footer template in script', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2023, 7, 17, 10, 0),
+            EndTime: new Date(2023, 7, 17, 11, 30),
+            IsAllDay: false,
+            Location: 'Paris'
+        }, {
+            Id: 2,
+            Subject: 'Meeting - 1',
+            StartTime: new Date(2023, 7, 18, 12, 0),
+            EndTime: new Date(2023, 7, 18, 12, 30),
+            IsAllDay: false,
+            Location: 'Chennai'
+        }];
+        beforeAll((done: DoneFn) => {
+            const templateHeader: string = '<div id="dlg-template" title="Edit">${Subject}</div>';
+            const scriptEleHead: HTMLScriptElement = document.createElement('script');
+            scriptEleHead.type = 'text/x-template';
+            scriptEleHead.id = 'custom-header';
+            scriptEleHead.appendChild(document.createTextNode(templateHeader));
+            document.getElementsByTagName('head')[0].appendChild(scriptEleHead);
+            const templateFooter: string = '<div id="location">${Location}</div>';
+            const scriptEleFooter: HTMLScriptElement = document.createElement('script');
+            scriptEleFooter.type = 'text/x-template';
+            scriptEleFooter.id = 'custom-footer';
+            scriptEleFooter.appendChild(document.createTextNode(templateFooter));
+            document.getElementsByTagName('head')[0].appendChild(scriptEleFooter);
+            const model: ScheduleModel = {
+                editorHeaderTemplate: '#custom-header', editorFooterTemplate: '#custom-footer', height: '500px',
+                eventSettings: { dataSource: data }, currentView: 'Month', views: ['Month'], selectedDate: new Date(2023, 7, 16)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            remove(document.getElementById('custom-header'));
+            remove(document.getElementById('custom-footer'));
+        });
+
+        it('Custom editor header and footer template checking with script', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">undefined</div>');
+            expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div id="location">undefined</div>');
+            (dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+            expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(2);
+            (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement).click();
+            (schObj.element.querySelector('.e-edit') as HTMLElement).click();
+            expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">Meeting - 1</div>');
+            expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div id="location">Chennai</div>');
+            expect((dialogElement.querySelector('#dlg-template') as HTMLElement).innerText).toEqual('Meeting - 1');
+            expect((dialogElement.querySelector('#location') as HTMLElement).innerText).toEqual('Chennai');
+            (dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+        });
+    });
+
+
+    describe('Checking custom editor header and footer template in mobile view', () => {
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2023, 7, 17, 10, 0),
+            EndTime: new Date(2023, 7, 17, 11, 30),
+            IsAllDay: false,
+            Location: 'Paris'
+        }, {
+            Id: 2,
+            Subject: 'Meeting - 1',
+            StartTime: new Date(2023, 7, 18, 12, 0),
+            EndTime: new Date(2023, 7, 18, 12, 30),
+            IsAllDay: false,
+            Location: 'Chennai'
+        }];
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+
+        beforeAll(() => {
+            Browser.userAgent = androidUserAgent;
+        });
+        afterAll(() => {
+            Browser.userAgent = uA;
+        });
+
+        describe('Checking custom editor header and footer template in moble view', () => {
+            let schObj: Schedule;
+            beforeEach((done: DoneFn): void => {
+                schObj = undefined;
+                const model: ScheduleModel = {
+                    height: '500px',
+                    currentView: 'Week',
+                    views: ['Week'],
+                    eventSettings: { dataSource: data },
+                    selectedDate: new Date(2023, 7, 16),
+                    editorHeaderTemplate: '<div id="dlg-template" title="Edit">${Subject}</div>',
+                    editorFooterTemplate: '<div id="location">${Location}</div>'
+                };
+                schObj = util.createSchedule(model, [], done);
+            });
+            afterEach((): void => {
+                util.destroy(schObj);
+            });
+
+            it('Custom editor header and footer template checking with string', () => {
+                const firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+                firstWorkCell.click();
+                (schObj.element.querySelectorAll('.e-new-event')[0] as HTMLElement).click();
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">undefined</div>');
+                expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div id="location">undefined</div>');
+                schObj.closeEditor();
+                expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(2);
+                (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement).click();
+                const eventPopup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup).toBeTruthy();
+                (eventPopup.querySelector('.e-edit') as HTMLElement).click();
+                expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">Meeting - 1</div>');
+                expect((dialogElement.querySelectorAll('.e-footer-content')[1] as HTMLElement).firstElementChild.innerHTML).toEqual('<div id="location">Chennai</div>');
+                expect((dialogElement.querySelector('#dlg-template') as HTMLElement).innerText).toEqual('Meeting - 1');
+                expect((dialogElement.querySelector('#location') as HTMLElement).innerText).toEqual('Chennai');
+                schObj.closeEditor();
+            });
+
+            it('On property changed in custom editor header and footer template ', () => {
+                schObj.editorHeaderTemplate = '<div id="dlg-template" title="Edit">EditAppointment</div>';
+                schObj.editorFooterTemplate = '<div><button id="delete" class="e-control e-btn e-primary" data-ripple="true">Delete</button></div>';
+                schObj.dataBind();
+                const firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+                firstWorkCell.click();
+                (schObj.element.querySelectorAll('.e-new-event')[0] as HTMLElement).click();
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                (dialogElement.querySelector('#Subject') as HTMLInputElement).value = 'add';
+                expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">EditAppointment</div>');
+                expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div><button id="delete" class="e-control e-btn e-primary" data-ripple="true">Delete</button></div>');
+                schObj.closeEditor();
+            });
+            it('Setting a nullable value to verify the editor header and footer Template', () => {
+                schObj.editorHeaderTemplate = null;
+                schObj.editorFooterTemplate = null;
+                schObj.dataBind();
+                const firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+                firstWorkCell.click();
+                (schObj.element.querySelectorAll('.e-new-event')[0] as HTMLElement).click();
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                (dialogElement.querySelector('#Subject') as HTMLInputElement).value = 'add';
+                expect(schObj.editorHeaderTemplate).toEqual(null);
+                expect(schObj.editorFooterTemplate).toEqual(null);
+                expect((dialogElement.querySelector('.e-dlg-header').querySelector('.e-back-icon') as HTMLElement)).not.toEqual(null);
+                (dialogElement.querySelector('.e-dlg-header').querySelector('.e-back-icon') as HTMLElement).click();
+            });
+        });
+
+        describe('Custom editor heder and footer Template checking with function template in mobile view', () => {
+            let schObj: Schedule;
+            const customHeaderTemplate: string = '<div id="dlg-template" title="Edit">${Subject}</div>';
+            const customFooterTemplate: string = '<div id="location">${Location}</div>';
+            beforeEach((done: DoneFn): void => {
+                schObj = undefined;
+                const model: ScheduleModel = {
+                    height: '500px',
+                    currentView: 'Week',
+                    eventSettings: { dataSource: data },
+                    views: ['Week'],
+                    selectedDate: new Date(2023, 7, 16),
+                    editorHeaderTemplate: customHeaderTemplate,
+                    editorFooterTemplate: customFooterTemplate
+                };
+                schObj = util.createSchedule(model, [], done);
+            });
+            afterEach((): void => {
+                util.destroy(schObj);
+            });
+
+            it('Custom editor heder Template checking with function', () => {
+                const firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+                firstWorkCell.click();
+                (schObj.element.querySelectorAll('.e-new-event')[0] as HTMLElement).click();
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">undefined</div>');
+                expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div id="location">undefined</div>');
+                schObj.closeEditor();
+                expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(2);
+                (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement).click();
+                const eventPopup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup).toBeTruthy();
+                (eventPopup.querySelector('.e-edit') as HTMLElement).click();
+                expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">Meeting - 1</div>');
+                expect((dialogElement.querySelectorAll('.e-footer-content')[1] as HTMLElement).firstElementChild.innerHTML).toEqual('<div id="location">Chennai</div>');
+                expect((dialogElement.querySelector('#dlg-template') as HTMLElement).innerText).toEqual('Meeting - 1');
+                expect((dialogElement.querySelector('#location') as HTMLElement).innerText).toEqual('Chennai');
+                schObj.closeEditor();
+            });
+
+        });
+
+        describe('Checking the custom editor header template in script in mobile view', () => {
+            let schObj: Schedule;
+            beforeAll((done: DoneFn) => {
+                const templateHeader: string = '<div id="dlg-template" title="Edit">${Subject}</div>';
+                const scriptEleHead: HTMLScriptElement = document.createElement('script');
+                scriptEleHead.type = 'text/x-template';
+                scriptEleHead.id = 'custom-header';
+                scriptEleHead.appendChild(document.createTextNode(templateHeader));
+                document.getElementsByTagName('head')[0].appendChild(scriptEleHead);
+                const templateFooter: string = '<div id="location">${Location}</div>';
+                const scriptEleFooter: HTMLScriptElement = document.createElement('script');
+                scriptEleFooter.type = 'text/x-template';
+                scriptEleFooter.id = 'custom-footer';
+                scriptEleFooter.appendChild(document.createTextNode(templateFooter));
+                document.getElementsByTagName('head')[0].appendChild(scriptEleFooter);
+                const model: ScheduleModel = {
+                    editorHeaderTemplate: '#custom-header', eventSettings: { dataSource: data }, editorFooterTemplate: '#custom-footer',
+                    height: '500px', currentView: 'Month', views: ['Month'], selectedDate: new Date(2023, 7, 16)
+                };
+                schObj = util.createSchedule(model, [], done);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+                remove(document.getElementById('custom-header'));
+                remove(document.getElementById('custom-footer'));
+            });
+
+            it('Custom header and footer template checking with script', () => {
+                const firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+                firstWorkCell.click();
+                (schObj.element.querySelectorAll('.e-new-event')[0] as HTMLElement).click();
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                (dialogElement.querySelector('#Subject') as HTMLInputElement).value = 'add';
+                expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">undefined</div>');
+                expect(dialogElement.querySelector('.e-footer-content').firstElementChild.innerHTML).toEqual('<div id="location">undefined</div>');
+                schObj.closeEditor();
+                expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(2);
+                (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement).click();
+                const eventPopup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup).toBeTruthy();
+                (eventPopup.querySelector('.e-edit') as HTMLElement).click();
+                expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div id="dlg-template" title="Edit">Meeting - 1</div>');
+                expect((dialogElement.querySelectorAll('.e-footer-content')[1] as HTMLElement).firstElementChild.innerHTML).toEqual('<div id="location">Chennai</div>');
+                expect((dialogElement.querySelector('#dlg-template') as HTMLElement).innerText).toEqual('Meeting - 1');
+                expect((dialogElement.querySelector('#location') as HTMLElement).innerText).toEqual('Chennai');
+                schObj.closeEditor();
+            });
+        });
+        describe('Checking the custom editor header template in script without footer template in mobile view', () => {
+            let schObj: Schedule;
+            beforeAll((done: DoneFn) => {
+                const templateHeader: string = '<div id="dlg-template" title="Edit">${Subject}</div>';
+                const scriptEleHead: HTMLScriptElement = document.createElement('script');
+                scriptEleHead.type = 'text/x-template';
+                scriptEleHead.id = 'custom-header';
+                scriptEleHead.appendChild(document.createTextNode(templateHeader));
+                document.getElementsByTagName('head')[0].appendChild(scriptEleHead);
+                const model: ScheduleModel = {
+                    editorHeaderTemplate: '#custom-header', eventSettings: { dataSource: data },
+                    height: '500px', currentView: 'Month', views: ['Month'], selectedDate: new Date(2023, 7, 16)
+                };
+                schObj = util.createSchedule(model, [], done);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+                remove(document.getElementById('custom-header'));
+            });
+
+            it('Custom header and with out footer template checking with script', () => {
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                expect(([].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[]).length).toEqual(2);
+                (schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement).click();
+                const eventPopup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup).toBeTruthy();
+                (eventPopup.querySelector('.e-edit') as HTMLElement).click();
+                expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div class="e-back-icon e-icons"></div><div><div id="dlg-template" title="Edit">Meeting - 1</div></div><div class="e-save-icon e-icons"></div>');
+                expect((dialogElement.querySelector('#dlg-template') as HTMLElement).innerText).toEqual('Meeting - 1');
+                expect (dialogElement.querySelector('.e-back-icon')).not.toEqual(null);
+                expect (dialogElement.querySelector('.e-save-icon')).not.toEqual(null);
+                (dialogElement.querySelector('.e-back-icon') as HTMLElement).click();
+                expect(dialogElement.querySelector('.e-popup-close')).not.toEqual(null);
+            });
+            it('Custom header and without footer template checking onproperty changed', () => {
+                schObj.editorHeaderTemplate = '<div id="dlg-template" title="Edit">EditAppointment</div>';
+                schObj.dataBind();
+                const firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+                firstWorkCell.click();
+                (schObj.element.querySelectorAll('.e-new-event')[0] as HTMLElement).click();
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                expect(dialogElement.querySelector('.e-dlg-header').firstElementChild.innerHTML).toEqual('<div class="e-back-icon e-icons"></div><div><div id="dlg-template" title="Edit">EditAppointment</div></div><div class="e-save-icon e-icons"></div>');
+                expect (dialogElement.querySelector('.e-back-icon')).not.toEqual(null);
+                expect (dialogElement.querySelector('.e-save-icon')).not.toEqual(null);
+                (dialogElement.querySelector('.e-back-icon') as HTMLElement).click();
+                expect(dialogElement.querySelector('.e-popup-close')).not.toEqual(null);
+            });
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

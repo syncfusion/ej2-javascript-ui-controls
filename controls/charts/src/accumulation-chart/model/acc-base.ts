@@ -3,7 +3,7 @@
 /**
  * AccumulationChart base file
  */
-import { Property, ChildProperty, Complex, createElement, Browser } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex, createElement, Browser, animationMode } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Border, Font, Animation, EmptyPointSettings, Connector } from '../../common/model/base';
@@ -936,7 +936,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             datalabelGroup = accumulation.renderer.createGroup({ id: accumulation.element.id + '_datalabel_Series_' + this.index });
 
             (datalabelGroup as HTMLElement).style.visibility =
-                (this.animation.enable && accumulation.animateSeries && this.type === 'Pie') ? 'hidden' : 'visible';
+            (((this.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && accumulation.animateSeries && this.type === 'Pie') ? 'hidden' : 'visible';
 
             this.renderDataLabel(accumulation, datalabelGroup, redraw);
         }

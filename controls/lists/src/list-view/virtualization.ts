@@ -42,6 +42,9 @@ export class Virtualization {
     private uiIndices: { [key: string]: number[] };
     private listDiff: number;
     private elementDifference: number = 0;
+    private templateFunction: Function;
+    private groupTemplateFunction: Function;
+    private commonTemplate: string;
 
     /**
      * For internal use only.
@@ -70,6 +73,10 @@ export class Virtualization {
      */
 
     public uiVirtualization(): void {
+        this.commonTemplate = '<div class="e-text-content" role="presentation"> ' +
+            '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
+        this.templateFunction = compile(this.listViewInstance.template || this.commonTemplate, this.listViewInstance);
+        this.groupTemplateFunction =  compile(this.listViewInstance.groupTemplate || this.commonTemplate, this.listViewInstance);
         this.wireScrollEvent(false);
         const curViewDS: { [key: string]: object; }[] = this.listViewInstance.curViewDS as { [key: string]: object; }[];
         const firstDs: { [key: string]: object }[] = curViewDS.slice(0, 1);
@@ -824,12 +831,11 @@ export class Virtualization {
     }
 
     public createUIItem(args: ItemCreatedArgs): void {
-        const virtualTemplate: string = this.listViewInstance.template;
-        const template: HTMLElement = this.listViewInstance.createElement('div');
-        let commonTemplate: string = '<div class="e-text-content" role="presentation"> ' +
-            '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
+        const template: HTMLElement = document.createElement('div');
+        this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: any[]; }).items[0] as DataSource :
+            args.curData;
         if (this.listViewInstance.isReact) {
-            commonTemplate = null;
+            this.commonTemplate = null;
         }
         if (this.listViewInstance.showCheckBox) {
             // eslint-disable-next-line
@@ -837,7 +843,13 @@ export class Virtualization {
             if ((!isNullOrUndefined(this.listViewInstance.virtualCheckBox)) &&
                 (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML))) {
                 const div: HTMLElement = document.createElement('div');
-                div.innerHTML = this.listViewInstance.template || commonTemplate;
+                const nodes: NodeList = this.templateFunction(this.templateData, this.listViewInstance);
+                if (this.listViewInstance.template && this.listViewInstance.isReact) {
+                    this.listViewInstance.renderReactTemplates();
+                }
+                [].slice.call(nodes).forEach((ele: HTMLElement): void => {
+                    div.appendChild(ele);
+                });
                 if (div.children && div.children[0]) {
                     div.children[0].classList.add('e-checkbox');
                     if (this.listViewInstance.checkBoxPosition === 'Left') {
@@ -851,53 +863,105 @@ export class Virtualization {
                     } else {
                         div.children[0].appendChild(this.listViewInstance.virtualCheckBox);
                     }
-                    this.listViewInstance.template = div.innerHTML;
+                    template.innerHTML = div.innerHTML;
                 }
             }
-            if (this.isVueFunctionTemplate()) return;
-            template.innerHTML = this.listViewInstance.template;
-            this.listViewInstance.template = virtualTemplate;
+            else {
+                let div: HTMLElement = document.createElement('div');
+                const nodes: NodeList = this.templateFunction(this.templateData, this.listViewInstance);
+                if (this.listViewInstance.template && this.listViewInstance.isReact) {
+                    this.listViewInstance.renderReactTemplates();
+                }
+                [].slice.call(nodes).forEach((ele: HTMLElement) => {
+                    div.appendChild(ele);
+                });
+                template.innerHTML = div.innerHTML;
+            }
         } else {
-            if (this.isVueFunctionTemplate()) return;
-            template.innerHTML = this.listViewInstance.template || commonTemplate;
+            const nodes: NodeList = this.templateFunction(this.templateData, this.listViewInstance);
+            if (this.listViewInstance.template && this.listViewInstance.isReact) {
+                this.listViewInstance.renderReactTemplates();
+            }
+            [].slice.call(nodes).forEach((ele: HTMLElement) => {
+                template.appendChild(ele);
+            });
         }
-        // eslint-disable-next-line
-        const templateElements: any = template.getElementsByTagName('*');
-        const groupTemplate: HTMLElement = this.listViewInstance.createElement('div');
-        if (this.listViewInstance.fields.groupBy) {
-            groupTemplate.innerHTML = this.listViewInstance.groupTemplate || commonTemplate;
-        }
-        // eslint-disable-next-line
-        let groupTemplateElements: any = groupTemplate.getElementsByTagName('*');
         if (args.curData.isHeader) {
             this.headerData = args.curData;
         }
-        this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: any[]; }).items[0] as DataSource :
-            args.curData;
-        if (!this.listViewInstance.isReact || (typeof this.listViewInstance.template == "string" && !args.item.classList.contains("e-list-group-item")) ||
-            (typeof this.listViewInstance.groupTemplate == "string" && args.item.classList.contains("e-list-group-item"))) {
+        const groupTemplate: HTMLElement = this.listViewInstance.createElement('div');
+        if (this.listViewInstance.fields.groupBy) {
+            const nodes: NodeList = this.groupTemplateFunction(this.headerData, this.listViewInstance);
+            if (this.listViewInstance.template && this.listViewInstance.isReact) {
+                this.listViewInstance.renderReactTemplates();
+            }
+            [].slice.call(nodes).forEach((ele: HTMLElement) => {
+                groupTemplate.appendChild(ele);
+            });
+        }
+        
+        if ((!this.listViewInstance.isReact || (typeof this.listViewInstance.template == "string" && !args.item.classList.contains("e-list-group-item")) ||
+            (typeof this.listViewInstance.groupTemplate == "string" && args.item.classList.contains("e-list-group-item"))) && !this.listViewInstance.isVue) {
             args.item.innerHTML = '';
         }
         (<ElementContext>args.item).context = { data: args.curData, nodes: { flatTemplateNodes: [], groupTemplateNodes: [] } };
-        for (let i: number = 0; i < templateElements.length; i++) {
-            this.compileTemplate(templateElements[i as number] as HTMLElement, args.item, false);
+        for (let i: number = 0; i < template.children.length; i++) {
+            this.compileTemplate(template.children[i as number] as HTMLElement, args.item, false);
         }
-        for (let i: number = 0; i < groupTemplateElements.length; i++) {
-            this.compileTemplate(groupTemplateElements[i as number] as HTMLElement, args.item, true);
+        for (let i: number = 0; i < groupTemplate.children.length; i++) {
+            this.compileTemplate(groupTemplate.children[i as number] as HTMLElement, args.item, true);
         }
         (<ElementContext>args.item).context.template = args.curData.isHeader ? template.firstElementChild :
             groupTemplate.firstElementChild;
         (<ElementContext>args.item).context.type = args.curData.isHeader ? 'flatList' : 'groupList';
         const element: HTMLElement = args.curData.isHeader ? groupTemplate : template;
-        if (element.firstElementChild) {
+        if (element.firstElementChild && !this.listViewInstance.isReact && !this.listViewInstance.isVue) {
             args.item.insertBefore(element.firstElementChild, null);
         }
     }
 
     private compileTemplate(element: HTMLElement, item: HTMLElement, isHeader: boolean): void {
-        this.textProperty(element, item, isHeader);
-        this.classProperty(element, item, isHeader);
-        this.attributeProperty(element, item, isHeader);
+        const subNode: { [key: string]: string | Function } = {};
+        subNode.onChange = (value: DataSource) => {
+            let groupTemplateElements: NodeList;
+            let templateElements: NodeList
+            if (this.listViewInstance.isVue) {
+                groupTemplateElements = this.groupTemplateFunction(value);
+                templateElements = this.templateFunction(value);
+            } else {
+                groupTemplateElements = this.groupTemplateFunction(value, this.listViewInstance);
+                templateElements = this.templateFunction(value, this.listViewInstance);
+            }
+            if (this.listViewInstance.template && this.listViewInstance.isReact) {
+                this.listViewInstance.renderReactTemplates();
+            }
+            let currentTemplate: NodeList = templateElements;
+            if (value.isHeader) {
+                currentTemplate = groupTemplateElements;
+            }
+            [].slice.call(currentTemplate).forEach(function (currentElement: HTMLElement) {
+                let RemovableClass: string = element.classList.value.replace('e-checkbox', '');
+                RemovableClass = RemovableClass.replace('e-checkbox-left', '');
+                RemovableClass = RemovableClass.replace('e-checkbox-right', '');
+                removeClass([element], RemovableClass.split(' ').filter(function (css) { return css; }))
+                addClass([element], Array.from(currentElement.classList));
+                for (let i: number = 0; i < element.attributes.length; i++) {
+                    if (element.attributes[i as number].name != 'class') {
+                        const newData: string = currentElement.getAttribute(element.attributes[i as number].name)
+                        element.setAttribute(element.attributes[i as number].name, newData);
+                    }
+                }
+                [].slice.call(element.children).forEach(function (ele: HTMLElement) {
+                    if (!ele.classList.contains('e-listview-checkbox') && !(ele.classList.contains('e-checkbox-left') || ele.classList.contains('e-checkbox-right'))) {
+                        ele.remove();
+                    }
+                });
+                [].slice.call(currentElement.children).forEach(function (ele: HTMLElement) {
+                    element.appendChild(ele);
+                });
+            });
+        };
+        this.updateContextData(item, subNode, isHeader);
     }
 
     private onChange(newData: DataSource, listElement: HTMLElement): void {
@@ -947,165 +1011,6 @@ export class Virtualization {
             ((<ElementContext>listElement).context.nodes as { [key: string]: object[] }).groupTemplateNodes.push(node);
         } else {
             ((<ElementContext>listElement).context.nodes as { [key: string]: object[] }).flatTemplateNodes.push(node);
-        }
-    }
-    private classProperty(element: HTMLElement, listElement: HTMLElement, isHeader: boolean): void {
-        const regex: RegExp = new RegExp('\\${([^}]*)}', 'g');
-        const resultantOutput: RegExpExecArray[] = [];
-        let regexMatch: RegExpExecArray;
-        while (regexMatch !== null) {
-            const match: RegExpExecArray = regex.exec(element.className);
-            resultantOutput.push(match);
-            regexMatch = match;
-            if (regexMatch === null) {
-                resultantOutput.pop();
-            }
-        }
-        if (resultantOutput && resultantOutput.length) {
-            for (let i: number = 0; i < resultantOutput.length; i++) {
-                const classNameMatch: RegExpExecArray = resultantOutput[i as number];
-                // eslint-disable-next-line
-                let classFunction: Function;
-                if (classNameMatch[1].indexOf('?') !== -1 && classNameMatch[1].indexOf(':') !== -1) {
-                    // tslint:disable-next-line:no-function-constructor-with-string-args
-                    classFunction = new Function('data', 'return ' + classNameMatch[1].replace(/\$/g, 'data.'));
-                } else {
-                    // tslint:disable-next-line:no-function-constructor-with-string-args
-                    classFunction = new Function('data', 'return ' + 'data.' + classNameMatch[1]);
-                }
-                // eslint-disable-next-line
-                const subNode: { [key: string]: string | Function } = {};
-                if (isHeader) {
-                    subNode.bindedvalue = classFunction(this.headerData);
-                } else {
-                    subNode.bindedvalue = classFunction(this.templateData);
-                }
-                subNode.onChange = (value: DataSource) => {
-                    if (subNode.bindedvalue) {
-                        removeClass([element], (subNode.bindedvalue as string).split(' ').filter((css: string) => css));
-                    }
-                    const newCss: string = classFunction(value) as string;
-                    if (newCss) {
-                        addClass([element], (newCss).split(' ').filter((css: string) => css));
-                    }
-                    subNode.bindedvalue = newCss;
-                };
-                const className: string[] = classNameMatch[0].split(' ');
-                for (let i: number = 0; i < className.length; i++) { element.classList.remove(className[i as number]); }
-                if (subNode.bindedvalue) {
-                    addClass([element], (subNode.bindedvalue as string).split(' ').filter((css: string) => css));
-                }
-                this.updateContextData(listElement, subNode, isHeader);
-            }
-        }
-    }
-    private attributeProperty(element: HTMLElement, listElement: HTMLElement, isHeader: boolean): void {
-        const attributeNames: string[] = [];
-        for (let i: number = 0; i < element.attributes.length; i++) {
-            attributeNames.push(element.attributes[i as number].nodeName);
-        }
-        if (attributeNames.indexOf('class') !== -1) {
-            attributeNames.splice(attributeNames.indexOf('class'), 1);
-        }
-        for (let i: number = 0; i < attributeNames.length; i++) {
-            const attributeName: string = attributeNames[i as number];
-            const attrNameMatch: RegExpExecArray | string[] = new RegExp('\\${([^}]*)}', 'g').exec(attributeName) || [];
-            const attrValueMatch: RegExpExecArray | string[] = new RegExp('\\${([^}]*)}', 'g').exec(element.getAttribute(attributeName))
-                || [];
-            // eslint-disable-next-line
-            let attributeNameFunction: Function;
-            // eslint-disable-next-line
-            let attributeValueFunction: Function;
-            if (attrNameMatch.length || attrValueMatch.length) {
-                if (attrNameMatch[1]) {
-                    // tslint:disable-next-line:no-function-constructor-with-string-args
-                    attributeNameFunction = new Function('data', 'return ' + 'data.' + attrNameMatch[1]);
-                }
-                if (attrValueMatch[1]) {
-                    if (attrValueMatch[1].indexOf('?') !== -1 && attrValueMatch[1].indexOf(':') !== -1) {
-                        // tslint:disable-next-line:no-function-constructor-with-string-args
-                        attributeValueFunction = new Function('data', 'return ' + attrValueMatch[1].replace(/\$/g, 'data.'));
-                    } else {
-                        // tslint:disable-next-line:no-function-constructor-with-string-args
-                        attributeValueFunction = new Function('data', 'return ' + 'data.' + attrValueMatch[1]);
-                    }
-                }
-                // eslint-disable-next-line @typescript-eslint/ban-types
-                const subNode: { [key: string]: string[] | Function | string } = {};
-                if (isHeader) {
-                    subNode.bindedvalue = [attrNameMatch[1] === undefined ? undefined : attributeNameFunction(this.headerData),
-                    attrValueMatch[1] === undefined ? undefined : attributeValueFunction(this.headerData)];
-                } else {
-                    subNode.bindedvalue = [attrNameMatch[1] === undefined ? undefined : attributeNameFunction(this.templateData),
-                    attrValueMatch[1] === undefined ? undefined : attributeValueFunction(this.templateData)];
-                }
-                subNode.attrName = (subNode.bindedvalue as string[])[0] === undefined ?
-                    attributeName : (subNode.bindedvalue as string[])[0];
-                subNode.onChange = (value: DataSource) => {
-                    const bindedvalue: string = (subNode.bindedvalue as string[])[1] === undefined ?
-                        element.getAttribute(subNode.attrName as string) : attributeValueFunction(value);
-                    element.removeAttribute(subNode.attrName as string);
-                    subNode.attrName = (subNode.bindedvalue as string[])[0] === undefined ? subNode.attrName : attributeNameFunction(value);
-                    element.setAttribute(subNode.attrName as string, bindedvalue);
-                    subNode.bindedvalue = [(subNode.bindedvalue as string[])[0] === undefined ? undefined : attributeNameFunction(value),
-                    (subNode.bindedvalue as string[])[1] === undefined ? undefined : attributeValueFunction(value)];
-                };
-                const attributeValue: string = (subNode.bindedvalue as string[])[1] === undefined ? element.getAttribute(attributeName) :
-                    (subNode.bindedvalue as string[])[1];
-                element.removeAttribute(attributeName as string);
-                element.setAttribute(subNode.attrName as string, attributeValue as string);
-                this.updateContextData(listElement, subNode, isHeader);
-            }
-        }
-
-    }
-
-    private textProperty(element: HTMLElement, listElement: HTMLElement, isHeader: boolean): void {
-        const regex: RegExp = new RegExp('\\${([^}]*)}', 'g');
-        const resultantOutput: RegExpExecArray[] = [];
-        let regexMatch: RegExpExecArray;
-        while (regexMatch !== null) {
-            const match: RegExpExecArray = regex.exec(element.innerText);
-            resultantOutput.push(match);
-            regexMatch = match;
-            if (regexMatch === null) {
-                resultantOutput.pop();
-            }
-        }
-        const isChildHasTextContent: boolean = Array.prototype.some.call(element.children, (element: HTMLElement) => {
-            if (new RegExp('\\${([^}]*)}', 'g').exec(element.innerText)) {
-                return true;
-
-            } else {
-                return false;
-            }
-        });
-        if (resultantOutput && resultantOutput.length && !isChildHasTextContent) {
-            for (let i: number = 0; i < resultantOutput.length; i++) {
-                const textPropertyMatch: RegExpExecArray = resultantOutput[i as number];
-                // eslint-disable-next-line
-                const subNode: { [key: string]: string | Function } = {};
-                // eslint-disable-next-line
-                let textFunction: Function;
-                if (textPropertyMatch[1].indexOf('?') !== -1 && textPropertyMatch[1].indexOf(':') !== -1) {
-                    // tslint:disable-next-line:no-function-constructor-with-string-args
-                    textFunction = new Function('data', 'return ' + textPropertyMatch[1].replace(/\$/g, 'data.'));
-                } else {
-                    // tslint:disable-next-line:no-function-constructor-with-string-args
-                    textFunction = new Function('data', 'return ' + 'data.' + textPropertyMatch[1]);
-                }
-                if (isHeader) {
-                    subNode.bindedvalue = textFunction(this.headerData);
-                } else {
-                    subNode.bindedvalue = textFunction(this.templateData);
-                }
-                subNode.onChange = (value: DataSource) => {
-                    element.innerText = element.innerText.replace(subNode.bindedvalue as string, textFunction(value));
-                    subNode.bindedvalue = textFunction(value);
-                };
-                element.innerText = element.innerText.replace(textPropertyMatch[0], subNode.bindedvalue as string);
-                this.updateContextData(listElement, subNode, isHeader);
-            }
         }
     }
 
@@ -1184,4 +1089,3 @@ export class Virtualization {
 interface DataSource {
     [key: string]: object;
 }
-

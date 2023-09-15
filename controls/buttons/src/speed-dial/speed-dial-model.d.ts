@@ -1,4 +1,4 @@
-import { BaseEventArgs, EmitType, Event, ChildProperty, Collection, Complex, Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, getUniqueID, EventHandler, isRippleEnabled, removeClass, addClass, attributes } from '@syncfusion/ej2-base';import { select, extend, deleteObject, KeyboardEvents, append, rippleEffect, remove, closest, selectAll, KeyboardEventArgs, isNullOrUndefined, compile, formatUnit, Animation, AnimationModel, Effect as baseEffect } from '@syncfusion/ej2-base';import { Fab, FabPosition } from './../floating-action-button/index';import { IconPosition } from './../button/index';
+import { BaseEventArgs, EmitType, Event, ChildProperty, Collection, Complex, Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, getUniqueID, EventHandler, isRippleEnabled, removeClass, addClass, attributes, animationMode } from '@syncfusion/ej2-base';import { select, extend, deleteObject, KeyboardEvents, append, rippleEffect, remove, closest, selectAll, KeyboardEventArgs, isNullOrUndefined, compile, formatUnit, Animation, AnimationModel, Effect as baseEffect } from '@syncfusion/ej2-base';import { Fab, FabPosition } from './../floating-action-button/index';import { IconPosition } from './../button/index';
 import {SpeedDialAnimationEffect,RadialDirection,LinearDirection,SpeedDialMode,SpeedDialBeforeOpenCloseEventArgs,SpeedDialItemEventArgs,SpeedDialOpenCloseEventArgs} from "./speed-dial";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -204,6 +204,9 @@ export interface SpeedDialModel extends ComponentModel{
      * {% codeBlock src='speeddial/itemTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     itemTemplate?: string | Function;
@@ -272,6 +275,9 @@ export interface SpeedDialModel extends ComponentModel{
      * Defines a template content for popup of SpeedDial.
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     popupTemplate?: string | Function;

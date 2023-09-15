@@ -88,7 +88,8 @@ export class Scroll implements IAction {
         let mHdrHeight: number = 0;
         const content: HTMLElement = (<HTMLElement>this.parent.getContent().querySelector('.' + literals.content));
         let height: string | number = this.parent.height as string;
-        if (this.parent.isFrozenGrid() && this.parent.height !== 'auto' && this.parent.height.toString().indexOf('%') < 0) {
+        if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid() && this.parent.height !== 'auto'
+            && this.parent.height.toString().indexOf('%') < 0) {
             height = parseInt(height, 10) - Scroll.getScrollBarWidth();
         }
         if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto') {
@@ -121,8 +122,7 @@ export class Scroll implements IAction {
         const content: HTMLElement = <HTMLElement>this.parent.getHeaderContent();
         const scrollWidth: number = Scroll.getScrollBarWidth() - this.getThreshold();
         const cssProps: ScrollCss = this.getCssProperties();
-        const padding: string = this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenMode() === literals.leftRight ? '0.5px' : '1px';
-        (<HTMLElement>content.querySelector('.' + literals.headerContent)).style[cssProps.border] = scrollWidth > 0 ? padding : '0px';
+        (<HTMLElement>content.querySelector('.' + literals.headerContent)).style[cssProps.border] = scrollWidth > 0 ? '1px' : '0px';
         content.style[cssProps.padding] = scrollWidth > 0 ? scrollWidth + 'px' : '0px';
     }
 
@@ -157,9 +157,6 @@ export class Scroll implements IAction {
         this.parent.element.style.height = '100%';
         const height: number = this.widthService.getSiblingsHeight(content);
         content.style.height = 'calc(100% - ' + height + 'px)'; //Set the height to the  '.' + literals.gridContent;
-        if (this.parent.isFrozenGrid()) {
-            (content.firstElementChild as HTMLElement).style.height = 'calc(100% - ' + getScrollBarWidth() + 'px)';
-        }
     }
 
     private getThreshold(): number {
@@ -200,72 +197,43 @@ export class Scroll implements IAction {
     }
 
     private unwireEvents(): void {
-        const frzCols: boolean = this.parent.isFrozenGrid();
-        let mCont: HTMLElement;
-        let mHdr: HTMLElement;
-        if (this.content) {
-            mCont = this.content.querySelector('.' + literals.movableContent) as HTMLElement;
-        }
-        if (this.header) {
-            mHdr = this.header.querySelector('.' + literals.movableHeader) as HTMLElement;
+        if (this.parent.frozenRows && this.header) {
+            EventHandler.remove(this.header, 'touchstart pointerdown', this.setPageXY);
+            EventHandler.remove(this.header, 'touchmove pointermove', this.onTouchScroll);
         }
         const mScrollBar: HTMLElement = this.parent.getContent() ? this.parent.getContent().querySelector('.e-movablescrollbar') : null;
-        if (this.parent.frozenRows && ((this.header && !frzCols) || (frzCols && mHdr))) {
-            EventHandler.remove(frzCols ? mHdr : this.header, 'touchstart pointerdown', this.setPageXY);
-            EventHandler.remove(frzCols ? mHdr : this.header, 'touchmove pointermove', this.onTouchScroll);
-        }
-        if (this.parent.isFrozenGrid()) {
+        if (this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization) {
             if (mScrollBar) {
                 EventHandler.remove(mScrollBar, 'scroll', this.onCustomScrollbarScroll);
             }
-            if (mCont) {
-                EventHandler.remove(mCont, 'scroll', this.onCustomScrollbarScroll);
-                EventHandler.remove(mCont, 'touchstart pointerdown', this.setPageXY);
+            if (this.content) {
+                EventHandler.remove(this.content, 'scroll', this.onCustomScrollbarScroll);
+                EventHandler.remove(this.content, 'touchstart pointerdown', this.setPageXY);
                 if (!((/macintosh|ipad/ as RegExp).test(Browser.userAgent.toLowerCase()) && Browser.isDevice)) {
-                    EventHandler.remove(mCont, 'touchmove pointermove', this.onTouchScroll);
+                    EventHandler.remove(this.content, 'touchmove pointermove', this.onTouchScroll);
                 }
             }
-            if (mHdr) {
-                EventHandler.remove(mHdr, 'scroll', this.onCustomScrollbarScroll);
-                EventHandler.remove(mHdr, 'touchstart pointerdown', this.setPageXY);
-                EventHandler.remove(mHdr, 'touchmove pointermove', this.onTouchScroll);
-            }
-            if (this.content) {
-                EventHandler.remove(this.content, 'scroll', this.onFrozenContentScroll);
-            }
-        } else {
-            if (this.content) {
-                EventHandler.remove(this.content, 'scroll', this.contentScrollHandler);
-            }
             if (this.header) {
-                EventHandler.remove(this.header, 'scroll', this.headerScrollHandler);
+                EventHandler.remove(this.header, 'scroll', this.onCustomScrollbarScroll);
+                EventHandler.remove(this.header, 'touchstart pointerdown', this.setPageXY);
+                EventHandler.remove(this.header, 'touchmove pointermove', this.onTouchScroll);
             }
-            this.contentScrollHandler = null;
-            this.headerScrollHandler = null;
         }
+        if (this.content) {
+            EventHandler.remove(this.content, 'scroll', this.contentScrollHandler);
+        }
+        if (this.header) {
+            EventHandler.remove(this.header, 'scroll', this.headerScrollHandler);
+        }
+        this.contentScrollHandler = null;
+        this.headerScrollHandler = null;
         if (this.parent.aggregates.length && this.parent.getFooterContent()) {
             EventHandler.remove(<HTMLDivElement>this.parent.getFooterContent().firstChild, 'scroll', this.onContentScroll);
         }
     }
 
     private setScrollLeft(): void {
-        if (this.parent.isFrozenGrid()) {
-            (<HTMLElement>(<Grid>this.parent).headerModule.getMovableHeader()).scrollLeft = this.previousValues.left;
-        } else {
-            (<HTMLElement>(<Grid>this.parent).getHeaderContent().querySelector('.' + literals.headerContent)).scrollLeft = this.previousValues.left;
-        }
-    }
-
-    private onFrozenContentScroll(): Function {
-        return (e: Event) => {
-            if (this.content.querySelector( literals.tbody) === null || this.parent.isPreventScrollEvent) {
-                return;
-            }
-            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling) {
-                this.parent.notify(infiniteScrollHandler, e);
-            }
-            this.previousValues.top = (<HTMLElement>e.target).scrollTop;
-        };
+        (<HTMLElement>(<Grid>this.parent).getHeaderContent().querySelector('.' + literals.headerContent)).scrollLeft = this.previousValues.left;
     }
 
     private onContentScroll(scrollTarget: HTMLElement): Function {
@@ -275,8 +243,41 @@ export class Scroll implements IAction {
             if (this.content.querySelector( literals.tbody) === null || this.parent.isPreventScrollEvent) {
                 return;
             }
-
             const target: HTMLElement = (<HTMLElement>e.target);
+            if (this.parent.frozenRows) {
+                if (this.content.scrollTop > 0 && this.parent.frozenRows) {
+                    addClass([this.parent.element], 'e-top-shadow');
+                } else {
+                    removeClass([this.parent.element], 'e-top-shadow');
+                }
+            }
+            if (this.parent.element.querySelectorAll('.e-leftfreeze,.e-fixedfreeze,.e-rightfreeze').length) {
+                const errorFreeze: NodeListOf<Element> = this.parent.getContent().querySelectorAll('.e-freezeerror:not([style*="display: none"])');
+                const errorFixed: NodeListOf<Element> = this.parent.getContent().querySelectorAll('.e-fixederror:not([style*="display: none"])');
+                if (target.scrollLeft !== 0 && this.parent.getVisibleFrozenLeftCount()) {
+                    addClass([this.parent.element], 'e-left-shadow');
+                } else {
+                    removeClass([this.parent.element], 'e-left-shadow');
+                }
+                let widthVal =  Math.round((this.parent.enableRtl ? target.scrollWidth + target.scrollLeft : target.scrollWidth - target.scrollLeft) +
+                    (this.parent.height === 'auto' ? 0 : 1));
+                if (widthVal === target.offsetWidth && this.parent.getVisibleFrozenRightCount()) {
+                    removeClass([this.parent.element], 'e-right-shadow');
+                } else {
+                    addClass([this.parent.element], 'e-right-shadow');
+                }
+                const rows: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)'));
+                if (((rows.length === 1 && errorFreeze.length) ||
+                    (this.parent.element.querySelector('.e-freeze-autofill:not([style*="display: none"])')) ||
+                    errorFixed.length) && target.scrollLeft !== this.previousValues.left) {
+                    target.scrollLeft = this.previousValues.left;
+                    return;
+                }
+                if (rows.length !== 1 && (errorFreeze.length || errorFixed.length) && target.scrollTop !== this.previousValues.top) {
+                    target.scrollTop = this.previousValues.top;
+                    return;
+                }
+            }
             const left: number = target.scrollLeft;
             if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling && !this.parent.isEdit) {
                 this.parent.notify(infiniteScrollHandler, { target: e.target, isLeft: this.previousValues.left !== left });
@@ -299,9 +300,9 @@ export class Scroll implements IAction {
         };
     }
 
-    private onCustomScrollbarScroll(mCont: HTMLElement, mHdr: HTMLElement): Function {
-        const content: HTMLElement = mCont;
-        const header: HTMLElement = mHdr;
+    private onCustomScrollbarScroll(cont: HTMLElement, hdr: HTMLElement): Function {
+        const content: HTMLElement = cont;
+        const header: HTMLElement = hdr;
         return (e: Event) => {
             if (this.content.querySelector( literals.tbody) === null) {
                 return;
@@ -328,19 +329,15 @@ export class Scroll implements IAction {
             const isFrozen: boolean = this.parent.isFrozenGrid();
             const pageXY: { x: number, y: number } = this.getPointXY(e);
             const left: number = element.scrollLeft + (this.pageXY.x - pageXY.x);
-            const mHdr: Element = isFrozen ?
-                this.parent.getHeaderContent().querySelector('.' + literals.movableHeader) :
-                this.parent.getHeaderContent().querySelector('.' + literals.headerContent) as Element;
-            const mCont: Element = isFrozen ?
-                this.parent.getContent().querySelector('.' + literals.movableContent) :
-                this.parent.getContent().querySelector('.' + literals.content) as Element;
+            const mHdr: Element =  this.parent.getHeaderContent().querySelector('.' + literals.headerContent) as Element;
+            const mCont: Element = this.parent.getContent().querySelector('.' + literals.content) as Element;
             if (this.previousValues.left === left || (left < 0 || (mHdr.scrollWidth - mHdr.clientWidth) < left)) {
                 return;
             }
             e.preventDefault();
             mHdr.scrollLeft = left;
             mCont.scrollLeft = left;
-            if (isFrozen) {
+            if (isFrozen && this.parent.enableColumnVirtualization) {
                 const scrollBar: HTMLElement = this.parent.getContent().querySelector('.e-movablescrollbar');
                 scrollBar.scrollLeft = left;
             }
@@ -402,37 +399,47 @@ export class Scroll implements IAction {
         }
     }
 
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public resizeFrozenRowBorder(): void {
+        let div: HTMLElement;
+        if (!this.parent.element.querySelector('.e-frozenrow-border')) {
+            div = this.parent.createElement('div', { className: 'e-frozenrow-border' });
+            this.parent.element.insertBefore(div, this.parent.element.querySelector('.e-gridcontent'));
+        } else {
+            div = this.parent.element.querySelector('.e-frozenrow-border') as HTMLElement;
+        }
+        const scrollWidth: number = this.parent.height !== 'auto' ? Scroll.getScrollBarWidth() : 0;
+        div.style.width = (this.parent.element.offsetWidth - scrollWidth) - 0.5 + 'px';
+    }
+
     private wireEvents(): void {
         if (this.oneTimeReady) {
             const frzCols: boolean = this.parent.isFrozenGrid();
             this.content = <HTMLDivElement>this.parent.getContent().querySelector('.' + literals.content);
             this.header = <HTMLDivElement>this.parent.getHeaderContent().querySelector('.' + literals.headerContent);
-            const mCont: HTMLElement = this.content.querySelector('.' + literals.movableContent) as HTMLElement;
-            const mHdr: HTMLElement = this.header.querySelector('.' + literals.movableHeader) as HTMLElement;
             const mScrollBar: HTMLElement = this.parent.getContent().querySelector('.e-movablescrollbar');
-            if (this.parent.frozenRows) {
-                EventHandler.add(frzCols ? mHdr : this.header, 'touchstart pointerdown', this.setPageXY(), this);
-                EventHandler.add(
-                    frzCols ? mHdr : this.header, 'touchmove pointermove',
-                    this.onTouchScroll(frzCols ? mCont : this.content), this);
+            if (this.parent.frozenRows && this.header && this.content) {
+                EventHandler.add(this.header, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(this.header, 'touchmove pointermove', this.onTouchScroll( this.content), this);
             }
-            if (this.parent.isFrozenGrid()) {
-                EventHandler.add(mScrollBar, 'scroll', this.onCustomScrollbarScroll(mCont, mHdr), this);
-                EventHandler.add(mCont, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mHdr), this);
-                EventHandler.add(mHdr, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mCont), this);
-                EventHandler.add(this.content, 'scroll', this.onFrozenContentScroll(), this);
-                EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
-                EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mCont), this);
-                EventHandler.add(mCont, 'touchstart pointerdown', this.setPageXY(), this);
+            if (frzCols && mScrollBar && this.parent.enableColumnVirtualization) {
+                EventHandler.add(mScrollBar, 'scroll', this.onCustomScrollbarScroll(this.content, this.header), this);
+                EventHandler.add(this.content, 'scroll', this.onCustomScrollbarScroll(mScrollBar, this.header), this);
+                EventHandler.add(this.header, 'scroll', this.onCustomScrollbarScroll(mScrollBar, this.content), this);
+                EventHandler.add(this.header, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(this.header, 'touchmove pointermove', this.onTouchScroll(this.content), this);
+                EventHandler.add(this.content, 'touchstart pointerdown', this.setPageXY(), this);
                 if (!((/macintosh|ipad/ as RegExp).test(Browser.userAgent.toLowerCase()) && Browser.isDevice)) {
-                    EventHandler.add(mCont, 'touchmove pointermove', this.onTouchScroll(mHdr), this);
+                    EventHandler.add(this.content, 'touchmove pointermove', this.onTouchScroll(this.header), this);
                 }
-            } else {
-                this.contentScrollHandler = this.onContentScroll(this.header);
-                this.headerScrollHandler = this.onContentScroll(this.content);
-                EventHandler.add(this.content, 'scroll', this.contentScrollHandler, this);
-                EventHandler.add(this.header, 'scroll', this.headerScrollHandler, this);
             }
+            this.contentScrollHandler = this.onContentScroll(this.header);
+            this.headerScrollHandler = this.onContentScroll(this.content);
+            EventHandler.add(this.content, 'scroll', this.contentScrollHandler, this);
+            EventHandler.add(this.header, 'scroll', this.headerScrollHandler, this);
             if (this.parent.aggregates.length) {
                 EventHandler.add(
                     <HTMLDivElement>this.parent.getFooterContent().firstChild, 'scroll', this.onContentScroll(this.content), this);
@@ -456,26 +463,24 @@ export class Scroll implements IAction {
             () => {
                 const args: NotifyArgs = { cancel: false };
                 this.parent.notify(checkScrollReset, args);
-                if (sHeight < clientHeight) {
+                if (sHeight < clientHeight && this.parent.height !== 'auto') {
                     this.setLastRowCell();
+                }
+                if (this.parent.frozenRows) {
+                    this.resizeFrozenRowBorder();
                 }
                 if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
                     if (!args.cancel) {
-                        if ((this.parent.frozenRows > 0 || this.parent.isFrozenGrid()) && this.header.querySelector('.' + literals.movableHeader)) {
-                            this.header.querySelector('.' + literals.movableHeader).scrollLeft = this.previousValues.left;
-                        } else {
-                            this.header.scrollLeft = this.previousValues.left;
-                        }
+                        this.header.scrollLeft = this.previousValues.left;
                         this.content.scrollLeft = this.previousValues.left;
                         this.content.scrollTop = this.previousValues.top;
                     }
                 }
                 if (!this.parent.enableColumnVirtualization) {
                     this.content.scrollLeft = sLeft;
-                }
-                if (this.parent.isFrozenGrid() && this.header.querySelector('.' + literals.movableHeader)) {
-                    (this.header.querySelector('.' + literals.movableHeader) as HTMLElement).scrollLeft =
-                        (this.content.querySelector('.' + literals.movableContent) as HTMLElement).scrollLeft;
+                    if (this.parent.isFrozenGrid()) {
+                        this.previousValues.left = sLeft;
+                    }
                 }
             }
         );
@@ -492,32 +497,6 @@ export class Scroll implements IAction {
             removeClass(table.querySelector('tr:nth-last-child(2)').querySelectorAll('td'), 'e-lastrowcell');
         }
         addClass(table.querySelectorAll('tr:last-child td'), 'e-lastrowcell');
-        if (this.parent.isFrozenGrid()) {
-            const mTable: HTMLElement = this.parent.getContent().querySelector('.' + literals.movableContent);
-            if (mTable.querySelector('tr:nth-last-child(2)')) {
-                removeClass(
-                    mTable.querySelector('tr:nth-last-child(2)').querySelectorAll('td'),
-                    'e-lastrowcell'
-                );
-            }
-            addClass(
-                mTable.querySelectorAll('tr:last-child td'),
-                'e-lastrowcell'
-            );
-            if (this.parent.getFrozenRightColumnsCount()) {
-                const frTable: HTMLElement = this.parent.getContent().querySelector('.e-frozen-right-content');
-                if (frTable.querySelector('tr:nth-last-child(2)')) {
-                    removeClass(
-                        frTable.querySelector('tr:nth-last-child(2)').querySelectorAll('td'),
-                        'e-lastrowcell'
-                    );
-                }
-                addClass(
-                    frTable.querySelectorAll('tr:last-child td'),
-                    'e-lastrowcell'
-                );
-            }
-        }
     }
 
     /**

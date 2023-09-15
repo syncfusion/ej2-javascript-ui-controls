@@ -1,0 +1,34 @@
+@include export-module('uploader-bootstrap4-icons') {
+  .e-upload .e-upload-files .e-file-remove-btn.e-icons::before {
+    content: '\e745';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-pause-btn::before {
+    content: '\e757';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-reload-btn::before {
+    content: '\e716';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-play-btn::before {
+    content: '\e72d';
+  }
+
+  .e-upload .e-upload-files .e-file-delete-btn.e-icons::before {
+    content: '\e773';
+  }
+
+  .e-upload .e-upload-files .e-file-abort-btn.e-icons::before {
+    content: '\e742';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-msie::before {
+    position: relative;
+    right: $ie-icons-position-value;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-abort-icon.e-msie::before {
+    right: $ie-abort-icon-position-value;
+  }
+}

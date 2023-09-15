@@ -1039,7 +1039,7 @@ export class DateTimePicker extends DatePicker {
             if (!this.preventArgs.cancel && !this.readonly) {
                 const openAnimation: AnimationModel = {
                     name: 'FadeIn',
-                    duration: ANIMATIONDURATION
+                    duration: ANIMATIONDURATION,
                 };
                 if (this.zIndex === 1000) {
                     this.popupObject.show(new Animation(openAnimation), this.element);

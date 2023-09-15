@@ -361,7 +361,7 @@ describe('ListBase', () => {
             const listCollection: HTMLElement[] = ListBase.createListItemFromJson(createElement, deepCloning(minimalDsString));
             const firstListItem: HTMLElement = listCollection[0];
             expect(firstListItem.getAttribute('role')).toBe('presentation');
-            expect(firstListItem.getAttribute('aria-level')).toBe('1');
+            expect(firstListItem.getAttribute('aria-level')).toBe(null);
             expect(isNullOrUndefined(firstListItem.getAttribute('data-uid'))).toBe(false);
             expect(firstListItem.children[0].getAttribute('role')).toBe('presentation');
             expect(firstListItem.children[0].children[0].getAttribute('role')).toBe('list-item');
@@ -570,7 +570,7 @@ describe('ListBase', () => {
             const firstLevelListItem: HTMLElement = listCollection[0];
             expect(firstLevelListItem.classList.contains('e-has-child')).toBe(true);
             expect(firstLevelListItem.classList.contains('e-level-1')).toBe(true);
-            expect(firstLevelListItem.getAttribute('aria-level')).toBe('1');
+            expect(firstLevelListItem.getAttribute('aria-level')).toBe(null);
             const secondLevelList: HTMLElement = firstLevelListItem.querySelector('ul');
             expect(secondLevelList.classList.contains('e-ul')).toBe(true);
             expect(secondLevelList.classList.contains('e-list-parent')).toBe(true);
@@ -579,7 +579,7 @@ describe('ListBase', () => {
             expect(secondLevelListItem.tagName).toBe('LI');
             expect(secondLevelListItem.classList.contains('e-has-child')).toBe(true);
             expect(secondLevelListItem.classList.contains('e-level-2')).toBe(true);
-            expect(secondLevelListItem.getAttribute('aria-level')).toBe('2');
+            expect(secondLevelListItem.getAttribute('aria-level')).toBe(null);
             const thirdLevelList: HTMLElement = secondLevelListItem.querySelector('ul');
             expect(thirdLevelList.classList.contains('e-ul')).toBe(true);
             expect(thirdLevelList.classList.contains('e-list-parent')).toBe(true);
@@ -588,7 +588,7 @@ describe('ListBase', () => {
             expect(thirdLevelListItem.tagName).toBe('LI');
             expect(thirdLevelListItem.classList.contains('e-has-child')).toBe(false);
             expect(thirdLevelListItem.classList.contains('e-level-3')).toBe(true);
-            expect(thirdLevelListItem.getAttribute('aria-level')).toBe('3');
+            expect(thirdLevelListItem.getAttribute('aria-level')).toBe(null);
             expect(thirdLevelListItem.querySelector('ul')).toBe(null);
         });
 
@@ -626,7 +626,7 @@ describe('ListBase', () => {
             expect((groupListItem.children[0]).classList.contains('e-text-content')).toBe(true);
             expect((groupListItem.children[0].children[0]).classList.contains('e-list-text')).toBe(true);
             expect(groupListItem.getAttribute('role')).toBe('group');
-            expect(groupListItem.getAttribute('aria-level')).toBe('1');
+            expect(groupListItem.getAttribute('aria-level')).toBe(null);
             expect(isNullOrUndefined(groupListItem.getAttribute('data-uid'))).toBe(false);
             expect(groupListItem.children[0].getAttribute('role')).toBe('presentation');
             expect(groupListItem.children[0].children[0].getAttribute('role')).toBe('list-item');

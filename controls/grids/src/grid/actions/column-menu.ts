@@ -75,7 +75,7 @@ export class ColumnMenu implements IAction {
      */
     public destroy(): void {
         const gridElement: Element = this.parent.element;
-        if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
+        if (!gridElement.querySelector( '.' + literals.gridContent) && (!gridElement.querySelector('.' + literals.gridHeader)) || !gridElement) { return; }
         this.columnMenu.destroy();
         this.removeEventListener();
         this.unwireFilterEvents();
@@ -429,9 +429,7 @@ export class ColumnMenu implements IAction {
                 this.getFilter(args.element, args.element.id, true);
             }
         }
-        if (!this.parent.isFrozenGrid()) {
-            this.parent.notify(events.restoreFocus, {});
-        }
+        this.parent.notify(events.restoreFocus, {});
     }
 
     private getDefaultItems(): string[] {
@@ -639,7 +637,7 @@ export class ColumnMenu implements IAction {
     }
 
     private getFilterPop(): HTMLElement {
-        if (Browser.isDevice && this.targetColumn !== null && this.parent.filterSettings.type === 'Menu') {
+        if (this.targetColumn !== null && this.parent.filterSettings.type === 'Menu' && Browser.isDevice) {
             return document.getElementById(this.targetColumn.uid + '-flmdlg');
         }
         return this.parent.element.querySelector('.' + this.POP) as HTMLElement;

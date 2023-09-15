@@ -74,6 +74,7 @@ export class Revision {
         }
         let blockInfo: ParagraphInfo = selection.getParagraphInfo(startPos);
         this.owner.editor.initHistory(isFromAccept ? 'Accept Change' : 'Reject Change');
+        this.owner.editorHistory.currentBaseHistoryInfo.markerData.push(this.owner.editor.getMarkerData(undefined, undefined, this));
         if (this.revisionType === 'Deletion') {
             blockInfo = selection.getParagraphInfo(this.owner.selection.start);
             selection.editPosition = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
@@ -140,7 +141,7 @@ export class Revision {
         if (this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
             this.owner.editor.initComplexHistory(isAccept? 'Accept All': 'Reject All');
             let groupingAcceptReject: Revision[] = this.owner.trackChangesPane.tableRevisions.get(this);
-            for (let i: number = 0; i < groupingAcceptReject.length; i++) {
+            for (let i: number = groupingAcceptReject.length - 1; i >= 0; i--) {
                 if (isAccept) {
                     groupingAcceptReject[i].handleAcceptReject(true);
                 } else {
@@ -279,6 +280,7 @@ export class Revision {
                 }
             }
             this.owner.editorHistory.currentBaseHistoryInfo.action = 'BackSpace';
+            this.owner.editorHistory.currentBaseHistoryInfo.isAcceptOrReject = isFromAccept ? 'Accept' : 'Reject';
         } else if (item instanceof WRowFormat && removeChanges) {
             let tableWidget: TableWidget = (item as WRowFormat).ownerBase.ownerTable;
             let currentRow: TableRowWidget = item.ownerBase as TableRowWidget;
@@ -568,7 +570,9 @@ export class RevisionCollection {
                 this.owner.editorHistory.undoStack.pop();
             }
         }
+        this.owner.editor.isSkipOperationsBuild = true;
         this.owner.editor.reLayout(this.owner.selection, false);
+        this.owner.editor.isSkipOperationsBuild = false;
         this.skipGroupAcceptReject = false;
     }
 

@@ -12,12 +12,11 @@ import { Sort } from '../../../src/grid/actions/sort';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { Page } from '../../../src/grid/actions/page';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
 import { DatePicker } from '@syncfusion/ej2-calendars';
-import { Query } from '@syncfusion/ej2-data';
 import { createGrid, destroy } from '../base/specutil.spec';
+import { Query } from '@syncfusion/ej2-data';
 import { data, employeeData, filterData, normalData, foreigndata } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
@@ -26,7 +25,7 @@ import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { RowDD } from '../../../src/grid/actions/row-reorder';
 import { ForeignKey } from '../../../src/grid/actions/foreign-key';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, Freeze, VirtualScroll, RowDD, ForeignKey);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, VirtualScroll, RowDD, ForeignKey);
 
 let virtualData: Object[] = [];
 function virtualdataSource() {
@@ -1336,13 +1335,13 @@ describe('Inline Editing module', () => {
         it('Edit start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('form').length).toBe(2);
+                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
                     let cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
-                    let mCells = gridObj.element.querySelectorAll('.e-editedrow')[1].querySelectorAll('.e-rowcell');
-                    expect(cells.length + mCells.length).toBe(gridObj.getVisibleColumns().length);
+                    // let mCells = gridObj.element.querySelectorAll('.e-editedrow')[1].querySelectorAll('.e-rowcell');
+                    expect(cells.length).toBe(gridObj.getVisibleColumns().length);
                     //primary key check
                     expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
                     //focus check
@@ -1377,8 +1376,8 @@ describe('Inline Editing module', () => {
                     //updatated data cehck
                     expect((gridObj.currentViewData[0] as any).CustomerID).toBe('updated');
                     //row count check
-                    expect(gridObj.getContent().querySelector('.e-frozencontent').querySelectorAll('.e-row').length
-                        + gridObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody').querySelectorAll('.e-row').length).toBe(11);
+                    expect(gridObj.getContent().querySelectorAll('.e-row').length
+                        + gridObj.getHeaderContent().querySelector('tbody').querySelectorAll('.e-row').length).toBe(11);
                     //record count check
                     expect(gridObj.currentViewData.length).toBe(11);
                     expect(gridObj.isEdit).toBeFalsy();
@@ -1399,13 +1398,13 @@ describe('Inline Editing module', () => {
         it('Add start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'add') {
-                    expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('form').length).toBe(2);
+                    expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
                     let cells = gridObj.element.querySelector('.e-addedrow').querySelectorAll('.e-rowcell');
-                    let mCells = gridObj.element.querySelectorAll('.e-addedrow')[1].querySelectorAll('.e-rowcell');
-                    expect(cells.length + mCells.length).toBe(gridObj.getVisibleColumns().length);
+                    // let mCells = gridObj.element.querySelectorAll('.e-addedrow')[1].querySelectorAll('.e-rowcell');
+                    expect(cells.length).toBe(gridObj.getVisibleColumns().length);
                     //primary key check
                     expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(0);
                     //focus check
@@ -1502,8 +1501,8 @@ describe('Inline Editing module', () => {
             gridObj.editSettings.newRowPosition = "Bottom";
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'add') {
-                    let editFormIndex: number = gridObj.element.querySelectorAll('.e-addedrow')[1].rowIndex;
-                    let totalRowsCount: number = gridObj.element.querySelector('.e-movablecontent').querySelectorAll('.e-row').length;
+                    let editFormIndex: number = gridObj.element.querySelectorAll('.e-addedrow')[0].rowIndex;
+                    let totalRowsCount: number = gridObj.getContent().querySelectorAll('.e-row').length;
                     expect((editFormIndex + 1)).toBe(totalRowsCount);
                     gridObj.closeEdit();
                     done();
@@ -1516,13 +1515,13 @@ describe('Inline Editing module', () => {
         it('Edit start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('form').length).toBe(2);
+                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
                     let cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
-                    let mCells = gridObj.element.querySelectorAll('.e-editedrow')[1].querySelectorAll('.e-rowcell');
-                    expect(cells.length + mCells.length).toBe(gridObj.getVisibleColumns().length);
+                    // let mCells = gridObj.element.querySelectorAll('.e-editedrow')[1].querySelectorAll('.e-rowcell');
+                    expect(cells.length).toBe(gridObj.getVisibleColumns().length);
                     //primary key check
                     expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
                     //focus check
@@ -1543,7 +1542,7 @@ describe('Inline Editing module', () => {
             //toolbar status check
             expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
             gridObj.clearSelection();
-            gridObj.editModule.startEdit(gridObj.getContent().querySelector('.e-movablecontent').querySelector('tr'));
+            gridObj.editModule.startEdit(gridObj.getContent().querySelector('tr'));
         });
 
         afterAll(() => {
@@ -1581,13 +1580,13 @@ describe('Inline Editing module', () => {
         it('Edit start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
-                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('form').length).toBe(2);
+                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
                     let cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
-                    let mCells = gridObj.element.querySelectorAll('.e-editedrow')[1].querySelectorAll('.e-rowcell');
-                    expect(cells.length + mCells.length).toBe(gridObj.getVisibleColumns().length);
+                    // let mCells = gridObj.element.querySelectorAll('.e-editedrow')[1].querySelectorAll('.e-rowcell');
+                    expect(cells.length).toBe(gridObj.getVisibleColumns().length);
                     //primary key check
                     expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
                     //focus check
@@ -1625,7 +1624,7 @@ describe('Inline Editing module', () => {
                     //updatated data cehck
                     expect((gridObj.currentViewData[0] as any).CustomerID).toBe('updated');
                     //row count check
-                    expect(gridObj.getContent().querySelector('.e-frozencontent').querySelectorAll('.e-row').length).toBe(11);
+                    expect(gridObj.getContent().querySelectorAll('.e-row').length).toBe(11);
                     //record count check
                     expect(gridObj.currentViewData.length).toBe(11);
                     expect(gridObj.isEdit).toBeFalsy();
@@ -1646,13 +1645,13 @@ describe('Inline Editing module', () => {
         it('Add start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'add') {
-                    expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('form').length).toBe(2);
+                    expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
                     let cells = gridObj.element.querySelector('.e-addedrow').querySelectorAll('.e-rowcell');
-                    let mCells = gridObj.element.querySelectorAll('.e-addedrow')[1].querySelectorAll('.e-rowcell');
-                    expect(cells.length + mCells.length).toBe(gridObj.getVisibleColumns().length);
+                    // let mCells = gridObj.element.querySelectorAll('.e-addedrow')[1].querySelectorAll('.e-rowcell');
+                    expect(cells.length).toBe(gridObj.getVisibleColumns().length);
                     //primary key check
                     expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(0);
                     //focus check
@@ -2133,74 +2132,74 @@ describe('Inline Editing module', () => {
             gridObj = actionComplete = null;
         });
     });
-    describe('EJ2-35482-Inline edit template editing with Freeze => ', () => {
-        let gridObj: any;
-        let actionBegin: () => void;
-        let actionComplete: () => void;
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: dataSource(),
-                    allowFiltering: true,
-                    frozenColumns: 2,
-                    frozenRows: 2,
-                    allowGrouping: true,
-                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', showConfirmDialog: false, showDeleteConfirmDialog: false },
-                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
-                    allowPaging: false,
-                    columns: [
-                        { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, width: 75 },
-                        { field: 'CustomerID', type: 'string', width: 75 },
-                        { field: 'ShipCity', template:'<div style="height:70px">${ShipCity}</div>', type: 'string', width: 75 },
-                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit', width: 75 },
-                        { field: 'Verified', type: 'boolean', editType: 'booleanedit', width: 75 },
-                    ],
-                    actionBegin: actionBegin,
-                    actionComplete: actionComplete
-                }, done);
-        });
+    // describe('EJ2-35482-Inline edit template editing with Freeze => ', () => {
+    //     let gridObj: any;
+    //     let actionBegin: () => void;
+    //     let actionComplete: () => void;
+    //     beforeAll((done: Function) => {
+    //         gridObj = createGrid(
+    //             {
+    //                 dataSource: dataSource(),
+    //                 allowFiltering: true,
+    //                 frozenColumns: 2,
+    //                 frozenRows: 2,
+    //                 allowGrouping: true,
+    //                 editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', showConfirmDialog: false, showDeleteConfirmDialog: false },
+    //                 toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+    //                 allowPaging: false,
+    //                 columns: [
+    //                     { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, width: 75 },
+    //                     { field: 'CustomerID', type: 'string', width: 75 },
+    //                     { field: 'ShipCity', template:'<div style="height:70px">${ShipCity}</div>', type: 'string', width: 75 },
+    //                     { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit', width: 75 },
+    //                     { field: 'Verified', type: 'boolean', editType: 'booleanedit', width: 75 },
+    //                 ],
+    //                 actionBegin: actionBegin,
+    //                 actionComplete: actionComplete
+    //             }, done);
+    //     });
 
-        it('Edit start', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'beginEdit') {
-                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(2);
-                    expect(gridObj.element.querySelectorAll('.e-editedrow')[0].offsetHeight).toBe(gridObj.element.querySelectorAll('.e-editedrow')[1].offsetHeight);
-                    done();
-                }
-            };
-            gridObj.actionComplete = actionComplete;
-            gridObj.clearSelection();
-            gridObj.selectRow(0, true);
-            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
-        });
+    //     it('Edit start', (done: Function) => {
+    //         actionComplete = (args?: any): void => {
+    //             if (args.requestType === 'beginEdit') {
+    //                 expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(2);
+    //                 expect(gridObj.element.querySelectorAll('.e-editedrow')[0].offsetHeight).toBe(gridObj.element.querySelectorAll('.e-editedrow')[1].offsetHeight);
+    //                 done();
+    //             }
+    //         };
+    //         gridObj.actionComplete = actionComplete;
+    //         gridObj.clearSelection();
+    //         gridObj.selectRow(0, true);
+    //         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    //     });
 
-        it('Edit complete', (done: Function) => {
-            actionComplete = (args?: any): void => {               
-                if (args.requestType === 'save') {
-                    done();
-                }
-            };
-            gridObj.actionComplete = actionComplete;
-            (gridObj.editModule as any).editModule.endEdit();
-        });
+    //     it('Edit complete', (done: Function) => {
+    //         actionComplete = (args?: any): void => {               
+    //             if (args.requestType === 'save') {
+    //                 done();
+    //             }
+    //         };
+    //         gridObj.actionComplete = actionComplete;
+    //         (gridObj.editModule as any).editModule.endEdit();
+    //     });
 
-        it('adding record with freeze column template', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'add') {
-                    expect(gridObj.element.querySelectorAll('.e-addedrow')[0].offsetHeight).toBe(gridObj.element.querySelectorAll('.e-addedrow')[1].offsetHeight);
-                    done();
-                }
-            };
-            gridObj.actionComplete = actionComplete;
-            (gridObj.editModule as any).editModule.addRecord();           
-        });
+    //     it('adding record with freeze column template', (done: Function) => {
+    //         actionComplete = (args?: any): void => {
+    //             if (args.requestType === 'add') {
+    //                 expect(gridObj.element.querySelectorAll('.e-addedrow')[0].offsetHeight).toBe(gridObj.element.querySelectorAll('.e-addedrow')[1].offsetHeight);
+    //                 done();
+    //             }
+    //         };
+    //         gridObj.actionComplete = actionComplete;
+    //         (gridObj.editModule as any).editModule.addRecord();           
+    //     });
 
-       afterAll(() => {
-            gridObj.notify('tooltip-destroy', {});
-            destroy(gridObj);
-            gridObj = actionBegin = actionComplete = null;
-        });
-    });
+    //    afterAll(() => {
+    //         gridObj.notify('tooltip-destroy', {});
+    //         destroy(gridObj);
+    //         gridObj = actionBegin = actionComplete = null;
+    //     });
+    // });
 
     describe('Row virtualization with inline edit support', () => {
         virtualdataSource();
@@ -3281,8 +3280,8 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
         it('EJ2-60088 - Alignment issue while adding a new row with frozen columns with RowDD', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'add') {
-                    expect((grid.element.querySelector('.e-movablecontent').querySelector('.e-normaledit') as any).colSpan).toBe(
-                        grid.getVisibleColumns().length - grid.getVisibleFrozenColumns());
+                    expect((grid.element.querySelector('.e-normaledit') as any).colSpan).toBe(
+                        grid.getVisibleColumns().length + 1);
                     done();
                 }
             };
@@ -3401,6 +3400,45 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
             gridObj = actionComplete = null;
         });
     });
+    describe('845385 - deleteRecord with showDeleteConfirmDialog is not working', () => {
+        let gridObj: Grid;
+        let data = dataSource();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 5),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal',showDeleteConfirmDialog: true },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'EmployeeID' },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity', type: 'string', editType: 'dropdownedit' }
+                    ]
+                }, done);
+        });
+    
+        it('Delete a record programmatically', (done: Function) => {
+           let actionComplete = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    expect(gridObj.currentViewData.length).toBe(4);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.editModule.deleteRecord('OrderID', { OrderID: 10249 });
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+            select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    
+    });
 });
 
 describe('Editing on ForeignKey column is not working in frozen grid when allowEditOnDblClick is false', () => {
@@ -3436,7 +3474,7 @@ describe('Editing on ForeignKey column is not working in frozen grid when allowE
     it('Edit complete', () => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'save') {
-                expect(gridObj.getMovableContentTbody().querySelector('td').innerHTML as any).toBe('Andrew');
+                expect(gridObj.getContent().querySelectorAll('td')[1].innerHTML as any).toBe('Andrew');
             }
         };
         gridObj.actionComplete = actionComplete;
@@ -3473,7 +3511,7 @@ describe('EJ2-70349 - Last row gets removed, after adding a new row when page si
     });
 
     it('Add start when page size set to ALL', (done: Function) => {
-        (gridObj.pagerModule.pagerObj.pagerdropdownModule).setDropDownValue('value', gridObj.pageSettings.totalRecordsCount); 
+        (gridObj.pagerModule.pagerObj.pagerdropdownModule).setDropDownValue('value', gridObj.pageSettings.totalRecordsCount);   
         done();
     });
 
@@ -3510,7 +3548,6 @@ describe('EJ2-70349 - Last row gets removed, after adding a new row when page si
         actionComplete = null;
     });
 });
-
 
 describe('EJ2-835777 - Custom data source is not  assigned to the dropdown edit cell with Virtualization', () => {
     let gridObj: Grid;
@@ -3575,6 +3612,85 @@ describe('EJ2-835777 - Custom data source is not  assigned to the dropdown edit 
         expect(elem.querySelector('option').innerText).toBe('4');
         done();
     });
+
+    it('coverage improvement', () => {
+        let tr: any = gridObj.getDataRows()[0];
+        tr.style.display = 'none';
+       gridObj.editModule.startEdit(tr);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        actionComplete = null;
+    });
+});
+
+
+describe('Coverage Improvement', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    let actionBegin: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: normalData,
+                allowPaging: true,
+                height: 300,
+                enableVirtualization: true,
+                frozenRows: 1,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, allowEditOnDblClick: false},
+                columns: [
+                { field: 'OrderID', width: 120, headerText: 'Order ID', isPrimaryKey: true, textAlign: 'Right', freeze: 'Left', validationRules: { required: true, number: true }},
+                { field: 'EmployeeID', foreignKeyField: 'EmployeeID', foreignKeyValue: 'FirstName', dataSource: employeeData, width: 150, headerText: 'Customer Name', validationRules: { required: true }},
+                { field: 'Verified', type: 'boolean' }
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('Edit start', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(0, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
+
+    it('Scroll Down', () => {
+        gridObj.getContent().firstElementChild.scrollTop = 500;
+    });
+
+    it('Edit complete', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect(gridObj.isEdit).toBeFalsy();
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.actionBegin = actionBegin;
+        (select('#' + gridObj.element.id + 'Verified', gridObj.element) as any).value = 'false';
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+    });
+
+    it('check the addEventListener Binding', () => {
+        gridObj.isDestroyed = true;
+        gridObj.editModule.addEventListener();
+        gridObj.isDestroyed = false;
+    });
+
+
+    // it('check the destroy method', () => {
+    //     gridObj.element.innerHTML = '';
+    //     gridObj.editModule.destroy();
+    //     gridObj.element = null;
+    //     gridObj.editModule.destroy();
+    // });
 
     afterAll(() => {
         destroy(gridObj);

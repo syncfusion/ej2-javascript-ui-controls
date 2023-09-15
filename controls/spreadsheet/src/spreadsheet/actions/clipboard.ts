@@ -4,13 +4,13 @@ import { Spreadsheet } from '../base/index';
 import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook, getCellAddress} from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName, NumberFormatArgs } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
-import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
+import { ExtendedSheet, Cell, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells, focus } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, getExcludedColumnWidth, editAlert } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, DialogBeforeOpenEventArgs, insertImage } from '../common/index';
 import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, createImageElement, setMaxHgt } from '../common/index';
 import { getMaxHgt, setRowEleHeight, locale, deleteImage, getRowIdxFromClientY, getColIdxFromClientX, cut } from '../common/index';
-import { OpenOptions, colWidthChanged, isImported, PasteModelArgs } from '../common/index';
+import { OpenOptions, colWidthChanged, PasteModelArgs } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -176,10 +176,8 @@ export class Clipboard {
         isAction?: boolean, isInternal?: boolean, isFromUpdateAction?: boolean, focus?: boolean
     } & ClipboardEvent): void {
         if (this.parent.isEdit || this.parent.element.getElementsByClassName('e-dlg-overlay').length > 0) {
-            if (this.parent.isEdit) {
-                let editEle: HTMLElement = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement;
-                editEle.style.height = 'auto';
-            }
+            let editEle: HTMLElement = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement;
+            editEle.style.height = 'auto';
             return;
         }
         let rfshRange: number[];
@@ -351,10 +349,6 @@ export class Clipboard {
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
                 }
             } else {
-                let mergeArgs: { range: number[], prevSheet?: SheetModel, cancel?: boolean } = {
-                    range: cIdx, prevSheet: prevSheet, cancel: false };
-                this.parent.notify(pasteMerge, mergeArgs);
-                if (mergeArgs.cancel) { return; }
                 const cRows: RowModel[] = [];
                 const isInRange: boolean = this.isInRange(cIdx, selIdx, copiedIdx);
                 let isFullRowMerge: boolean = false;
@@ -464,12 +458,10 @@ export class Clipboard {
                                     prevCell = getCell(x + l, y + k, curSheet, false, true);
                                     if (!isExternal && (!isNullOrUndefined(prevCell.colSpan) || !isNullOrUndefined(prevCell.rowSpan))) {
                                         if (isRowSelected || isColSelected) { continue; }
-                                        mergeArgs = { range: [x + l, y + k, x + l, y + k] };
-                                        const merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
+                                        const merge: MergeArgs = { range: [x + l, y + k, x + l, y + k], merge: false, isAction: false, type: 'All',
+                                            sheetIndex: cSIdx, preventRefresh: cSIdx !== this.parent.activeSheetIndex };
                                         mergeCollection.push(merge);
-                                        if (this.parent.activeSheetIndex === curSheet.index) {
-                                            this.parent.notify(setMerge, merge);
-                                        }
+                                        this.parent.notify(setMerge, merge);
                                     }
                                     const colInd: number = y + k;
                                     cell = extend({}, cell ? cell : {}, null, true);
@@ -732,7 +724,6 @@ export class Clipboard {
     private setCell(args: { sheet: SheetModel, isExternal?: boolean, isRandFormula?: boolean }): Function {
         const sheet: SheetModel = args.sheet;
         const uiRefresh: boolean = sheet.name === this.parent.getActiveSheet().name;
-        const skipFormatCheck: boolean = !args.isExternal && isImported(this.parent);
         return (rIdx: number, cIdx: number, cell: CellModel, lastCell?: boolean, isExtend?: boolean, isUniqueCell?: boolean): boolean => {
             if (cell && cell.formula && (cell.formula.indexOf('RANDBETWEEN(') > - 1 || cell.formula.indexOf('RAND(') > - 1 || cell.formula.indexOf('NOW(') > - 1)) {
                 args.isRandFormula = true;
@@ -740,14 +731,14 @@ export class Clipboard {
             const cancel: boolean = updateCell(
                 this.parent, sheet, {
                 cell: cell, rowIdx: rIdx, colIdx: cIdx, pvtExtend: !isExtend, valChange: !isUniqueCell, lastCell: lastCell,
-                uiRefresh: uiRefresh, requestType: 'paste', skipFormatCheck: skipFormatCheck, isRandomFormula: args.isRandFormula
+                uiRefresh: uiRefresh, requestType: 'paste', skipFormatCheck: !args.isExternal, isRandomFormula: args.isRandFormula
             });
-            if (!cancel) {
-                if (cell && cell.validation) {
+            if (!cancel && cell) {
+                if (cell.validation) {
                     let cellAdress: string = getCellAddress(rIdx, cIdx)
                     this.parent.dataValidationRange += cellAdress + ':' + cellAdress + ','
                 }
-                if (cell && cell.style && args.isExternal) {
+                if (cell.style && args.isExternal) {
                     let hgt: number =
                         getTextHeightWithBorder(this.parent as Workbook, rIdx, cIdx, sheet, cell.style || this.parent.cellStyle, cell.wrap ?
                             getLines(this.parent.getDisplayText(cell),
@@ -1088,36 +1079,37 @@ export class Clipboard {
         let rows: RowModel[] = [];
         let pasteModelArgs: PasteModelArgs = { model: rows };
         const ele: Element = this.parent.createElement('span');
+        const clearClipboard: Function = () => setTimeout(() => { this.getClipboardEle().innerHTML = ''; }, 0);
         if (Browser.isIE) {
             text = window['clipboardData'].getData('text');
         } else {
             html = args.clipboardData.getData('text/html');
             text = args.clipboardData.getData('text/plain');
-            ele.innerHTML = html;
-        }
-        const clearClipboard: Function = () => setTimeout(() => { this.getClipboardEle().innerHTML = ''; }, 0);
-        if (ele.querySelector('table')) {
-            let isFilteredRange: boolean = false;
-            if (this.copiedInfo && !this.copiedInfo.isCut) {
-                const filterCol: FilterCollectionModel[] = this.parent.filterCollection;
-                if (filterCol) {
-                    for (let i: number = 0; i < filterCol.length; i++) {
-                        const indexes: number[] = getRangeIndexes(filterCol[i as number].filterRange);
-                        const copyIndexes: number[] = this.copiedInfo.range;
-                        if (indexes[0] === copyIndexes[0] && indexes[1] === copyIndexes[1] && indexes[2] === copyIndexes[2]
-                            && indexes[3] === copyIndexes[3]) {
-                            isFilteredRange = true;
-                            break;
+            if (this.copiedInfo && html.includes('<table class="e-spreadsheet"')) {
+                let isFilteredRange: boolean = false;
+                if (!this.copiedInfo.isCut) {
+                    const filterCol: FilterCollectionModel[] = this.parent.filterCollection;
+                    if (filterCol) {
+                        for (let i: number = 0; i < filterCol.length; i++) {
+                            const indexes: number[] = getRangeIndexes(filterCol[i as number].filterRange);
+                            const copyIndexes: number[] = this.copiedInfo.range;
+                            if (indexes[0] === copyIndexes[0] && indexes[1] === copyIndexes[1] && indexes[2] === copyIndexes[2]
+                                && indexes[3] === copyIndexes[3]) {
+                                isFilteredRange = true;
+                                break;
+                            }
                         }
                     }
                 }
+                if (!isFilteredRange) {
+                    clearClipboard();
+                    return { internal: true };
+                }
             }
-            if (ele.querySelector('.e-spreadsheet') && this.copiedInfo && !isFilteredRange) {
-                clearClipboard();
-                return { internal: true };
-            } else {
-                this.generateCells(ele, pasteModelArgs);
-            }
+            ele.innerHTML = html;
+        }
+        if (ele.querySelector('table')) {
+            this.generateCells(ele, pasteModelArgs);
         } else if (ele.querySelector('img')) {
             const img: HTMLImageElement = ele.querySelector('img');
             this.parent.notify(createImageElement, { options: { src: img.src, height: img.height, width: img.width }, isPublic: true });

@@ -976,7 +976,7 @@ export class Layout {
                         } while (firstBlock = firstBlock.nextWidget as BlockWidget);
                     }
                 } else if(element instanceof CommentCharacterElementBox) {
-                    let comment: CommentElementBox = this.getCommentById(element.commentId);
+                    let comment: CommentElementBox = this.getCommentById(this.documentHelper.comments, element.commentId);
                     if (!isNullOrUndefined(comment)) {
                         if (element.commentType === 0) {
                             comment.commentStart = element;
@@ -990,9 +990,12 @@ export class Layout {
         }
     }
 
-    private getCommentById(commentId: string): CommentElementBox {
-        for (let i: number = 0; i < this.documentHelper.comments.length; i++) {
-            let comment: CommentElementBox = this.documentHelper.comments[i] as CommentElementBox;
+    /**
+     * @private
+     */
+    public getCommentById(commentsCollection: CommentElementBox[], commentId: string): CommentElementBox {
+        for (let i: number = 0; i < commentsCollection.length; i++) {
+            let comment: CommentElementBox = commentsCollection[i] as CommentElementBox;
             if (comment.commentId === commentId) {
                 return comment;
             }
@@ -1985,7 +1988,7 @@ export class Layout {
                 this.isfootMove = false;
             }
             if (paragraph.paragraphFormat.keepWithNext && paragraph.paragraphFormat.keepLinesTogether && !(!element.isLayout || this.isLayoutWhole)) {
-                if (paragraph.bodyWidget.page.footnoteWidget.y !== 0 && paragraph.bodyWidget.page.footnoteWidget.y < this.viewer.clientActiveArea.y + this.viewer.clientActiveArea.height) {
+                if (!isNullOrUndefined(paragraph.bodyWidget.page.footnoteWidget) && paragraph.bodyWidget.page.footnoteWidget.y !== 0 && paragraph.bodyWidget.page.footnoteWidget.y < this.viewer.clientActiveArea.y + this.viewer.clientActiveArea.height) {
                     let findDiff: number = this.viewer.clientActiveArea.y + this.viewer.clientActiveArea.height - paragraph.bodyWidget.page.footnoteWidget.y;
                     this.viewer.clientActiveArea.height -= findDiff;
                 }
@@ -2047,7 +2050,7 @@ export class Layout {
                     if (!(element.previousElement instanceof FieldElementBox && element.previousElement.fieldType == 2
                         && !isNullOrUndefined(element.previousElement.fieldBeginInternal)
                         && element.previousElement.fieldBeginInternal.formFieldData instanceof DropDownFormField)) {
-                        this.splitTextForClientArea(line, element, element.text, element.width, element.characterFormat);
+                        this.splitTextForClientArea(line, element, element.text, element.trimEndWidth, element.characterFormat);
                     }
                     this.checkLineWidgetWithClientArea(line, element);
                     if (element instanceof FieldTextElementBox && !this.isInitialLoad) {
@@ -3552,7 +3555,7 @@ export class Layout {
             //splittedElementBox.revisions = splittedElementBox.revisions;
             elementBox.text = elementBox.text.substr(0, index);
             elementBox.width = this.documentHelper.textHelper.getWidth(elementBox.text, elementBox.characterFormat, elementBox.scriptType);
-            elementBox.trimEndWidth = elementBox.width;
+            elementBox.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat, elementBox.scriptType);
             if (elementBox.revisions.length > 0) {
                 this.updateRevisionForSplittedElement(elementBox, splittedElementBox, true);
                 splittedElementBox.isMarkedForRevision = elementBox.isMarkedForRevision;
@@ -7437,7 +7440,6 @@ export class Layout {
                     prevBodyWidgetFloatingElements = (widget.ownerTable.previousSplitWidget as TableWidget).bodyWidget.floatingElements;
                     isRowMovedToNextTable = true;
                 }
-                widget.ownerTable.bodyWidget.floatingElements;
                 if (paragraph.floatingElements.length > 0) {
                     for (let j = 0; j < paragraph.floatingElements.length; j++) {
                         let element: ShapeBase = paragraph.floatingElements[j];
@@ -8250,8 +8252,8 @@ export class Layout {
                 table.x = this.viewer.clientActiveArea.x;
             }
         }
-        const isHeader: boolean = (table.childWidgets[0] as TableRowWidget).rowFormat.isHeader;
         if (table.childWidgets.length > 0) {
+            const isHeader: boolean = (table.childWidgets[0] as TableRowWidget).rowFormat.isHeader;
             table.header = isHeader;
             table.continueHeader = isHeader;
             table.headerHeight = 0;

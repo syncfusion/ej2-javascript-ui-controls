@@ -895,10 +895,11 @@ export class Edit {
                 this.parent.predecessorModule.isValidatedParentTaskID = '';
             }
             if (this.parent.allowParentDependency && ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
-                (args.action === "DrawConnectorLine") || (args.action === "DialogEditing")) {
+                (args.action === "DrawConnectorLine")) {
                 this.updateChildItems(ganttRecord);
             }
             this.updateParentItemOnEditing();
+            this.parent.dataOperation.updateParentItems(ganttRecord, true);
         }
         /** Update parent up-to zeroth level */
         if (ganttRecord.parentItem ) {
@@ -911,6 +912,10 @@ export class Edit {
                this.updateParentItemOnEditing();
             }
         }
+        if (this.parent.UpdateOffsetOnTaskbarEdit && this.parent.connectorLineEditModule && args.data) {
+           this.parent.connectorLineEditModule['calculateOffset'](args.data);
+        }
+        this.parent.predecessorModule['validatedParentIds'] = [];
         this.initiateSaveAction(args);
     }
 
@@ -931,7 +936,7 @@ export class Edit {
      */
     public updateParentChildRecord(data: IGanttData): void {
         const ganttRecord: IGanttData = data;
-        if (ganttRecord.hasChildRecords && this.taskbarMoved && this.parent.taskMode === 'Auto' && (!isNullOrUndefined(this.parent.editModule.cellEditModule) && !this.parent.editModule.cellEditModule.isResourceCellEdited)) {
+        if (ganttRecord.hasChildRecords && this.taskbarMoved && (ganttRecord[this.parent.taskFields.manual] === false || this.parent.taskMode === 'Auto') && (!isNullOrUndefined(this.parent.editModule.cellEditModule) && !this.parent.editModule.cellEditModule.isResourceCellEdited)) {
             this.updateChildItems(ganttRecord);
         }
         if (!isNullOrUndefined(this.parent.editModule.cellEditModule)) {
@@ -1436,6 +1441,11 @@ export class Edit {
                 this.updateScheduleDatesOnEditing(args);
             }
         }
+        if (this.parent.enableCriticalPath) {
+            let criticalModule: CriticalPath = this.parent.criticalPathModule;
+            criticalModule.showCriticalPath(true);
+            criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
+        }
         if (!this.parent.editSettings.allowTaskbarEditing || (this.parent.editSettings.allowTaskbarEditing &&
             !this.taskbarEditModule.dependencyCancel)) {
             eventArgs.requestType = 'save';
@@ -1449,11 +1459,6 @@ export class Edit {
                 eventArgs.taskBarEditAction = args.taskBarEditAction;
             }
             this.endEditAction(args);
-            if (this.parent.enableCriticalPath) {
-                let criticalModule: CriticalPath = this.parent.criticalPathModule;
-                criticalModule.showCriticalPath(true);
-                criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
-            }
             this.parent.trigger('actionComplete', eventArgs);
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
                 this.parent.hideMaskRow();
@@ -1638,7 +1643,9 @@ export class Edit {
             if (!this.parent.taskFields.parentID) {
                 const deleteRecordIDs: string[] = [];
                 deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
-                this.parent.editModule.removeFromDataSource(deleteRecordIDs);
+                if (this.parent.viewType === 'ProjectView') {
+                   this.parent.editModule.removeFromDataSource(deleteRecordIDs);
+                }
             }
             const flatRecordIndex: number = this.parent.flatData.indexOf(deletedRow);
             if (gObj.taskFields.parentID) {
@@ -2953,7 +2960,7 @@ export class Edit {
             (args.data as IGanttData).ganttProperties['resources'] = serverReturnedValue[this.parent.taskFields.resourceInfo];
         }
     }
-
+    
     /**
      * Method to add new record.
      *
@@ -3014,7 +3021,7 @@ export class Edit {
                         const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         const adaptor: any = data.adaptor;
                         const moduleName: string = adaptor.getModuleName();
-                        if (!(moduleName == "WebApiAdaptor" || moduleName == "ODataAdaptor" || moduleName == "ODataV4Adaptor") || data.dataSource.batchUrl) {
+                        if (!(moduleName == "WebApiAdaptor" || moduleName == "ODataAdaptor" || moduleName == "ODataV4Adaptor") || data.dataSource.batchUrl) {                            
                             /* tslint:disable-next-line */
                             const crud: Promise<Object> =
                                 data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
@@ -3030,7 +3037,7 @@ export class Edit {
                                     this.parent.setRecordValue(
                                         'rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(),
                                         (args.data as IGanttData).ganttProperties, true);
-                                    this.updateClientDataFromServer(e,args);    
+                                    this.updateClientDataFromServer(e,args);
                                     const idsIndex: number = this.parent.ids.indexOf(prevID);
                                     if (idsIndex !== -1) {
                                         this.parent.ids[idsIndex as number] = e.addedRecords[0][this.parent.taskFields.id].toString();

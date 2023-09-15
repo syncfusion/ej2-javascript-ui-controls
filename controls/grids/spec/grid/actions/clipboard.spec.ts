@@ -10,8 +10,15 @@ import { BeforeCopyEventArgs } from '../../../src/grid/base/interface';
 import { createGrid, destroy, getKeyActionObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Edit } from '../../../src/grid/actions/edit';
+import { Page } from '../../../src/grid/actions/page';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
+import { LazyLoadGroup } from '../../../src/grid/actions/lazy-load-group';
+import { Group } from '../../../src/grid/actions/group';
 
-Grid.Inject(Selection, Clipboard);
+Grid.Inject(Selection, Clipboard, Edit, Page, Toolbar, Group, VirtualScroll, InfiniteScroll, LazyLoadGroup);
 
 describe('Grid clipboard copy testing - row type selection => ', () => {
     let gridObj: Grid;
@@ -186,87 +193,204 @@ describe('Clipboard copy testing while Freezing columns => ', () => {
     });
 });
 
-    describe('EJ2-7314/7299===>Grid clipboard => ', () => {
-        let gridObj: Grid;
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: employeeData,
-                    columns: [
-                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 135, },
-                        { field: 'FirstName', headerText: 'Name', width: 125 },
-                        { field: 'Title', headerText: 'Title', visible: false, width: 180 },
-                        { field: 'Region', headerText: 'Region', width: 180 },
-                        { field: 'Country', headerText: 'Country', width: 180 }
-                    ],
-                    allowSelection: true,
-                    selectionSettings: { type: 'Multiple' }
-                }, done);
-        });
-
-        it('EJ2-7299===>Hiding one column and copying the rows', () => {
-            gridObj.selectRow(0, true);
-            gridObj.copy();
-            expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value
-                === '1	Nancy	WA	USA').toBeTruthy();
-            gridObj.copy(true);
-            expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value
-                === 'Employee ID	Name	Region	Country\n1	Nancy	WA	USA').toBeTruthy();
-        });
-        it('memory leak', () => {     
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        });   
-
-        afterAll(() => {
-            destroy(gridObj);
-            gridObj = null;
-        });
+describe('EJ2-7314/7299===>Grid clipboard => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData,
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 135, },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Title', headerText: 'Title', visible: false, width: 180 },
+                    { field: 'Region', headerText: 'Region', width: 180 },
+                    { field: 'Country', headerText: 'Country', width: 180 }
+                ],
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple' }
+            }, done);
     });
 
-    describe('EJ2-826272 - Copy-Paste problem while adding a new row in grid', () => {
-        let gridObj: Grid;
-        let inputElement: HTMLInputElement;
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: filterData,
-                    allowPaging: true,
-                    pageSettings: { pageCount: 5 },
-                    toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
-                    selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'BoxWithBorder' },
-                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
-                    columns: [
-                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
-                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
-                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
-                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' }
-                    ]
-                }, done);
-        });
-    
-        it('Copy pasting the content in a newly added row', () => {
-            gridObj.selectionModule.selectCell({ rowIndex: 0, cellIndex: 1 }, false);
-            gridObj.copy();
-            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
-            gridObj.editModule.editCell(0, 'CustomerID');
-            gridObj.element.querySelectorAll('.e-editedbatchcell')
-            inputElement = gridObj.element.querySelector('.e-editedbatchcell').querySelector('input');
-            inputElement.value = (gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value;
-        });
-    
-        it('Ensuring the copied content', () => {
-            gridObj.selectionModule.selectCell({ rowIndex: 2, cellIndex: 1 }, false);
-            gridObj.copy();
-            expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value).toBe('TOMSP');
-        });
-    
-        afterAll(() => {
-            destroy(gridObj);
-        });
+    it('EJ2-7299===>Hiding one column and copying the rows', () => {
+        gridObj.selectRow(0, true);
+        gridObj.copy();
+        expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value
+            === '1	Nancy	WA	USA').toBeTruthy();
+        gridObj.copy(true);
+        expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value
+            === 'Employee ID	Name	Region	Country\n1	Nancy	WA	USA').toBeTruthy();
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-826272 - Copy-Paste problem while adding a new row in grid', () => {
+    let gridObj: Grid;
+    let inputElement: HTMLInputElement;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowPaging: true,
+                pageSettings: { pageCount: 5 },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'BoxWithBorder' },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' }
+                ]
+            }, done);
+    });
+
+    it('Copy pasting the content in a newly added row', () => {
+        gridObj.selectionModule.selectCell({ rowIndex: 0, cellIndex: 1 }, false);
+        gridObj.copy();
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        gridObj.editModule.editCell(0, 'CustomerID');
+        gridObj.element.querySelectorAll('.e-editedbatchcell')
+        inputElement = gridObj.element.querySelector('.e-editedbatchcell').querySelector('input');
+        inputElement.value = (gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value;
+    });
+
+    it('Ensuring the copied content', () => {
+        gridObj.selectionModule.selectCell({ rowIndex: 2, cellIndex: 1 }, false);
+        gridObj.copy();
+        expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value).toBe('TOMSP');
+    });
+
+    it('check the removeEventListener  Binding', () => {
+        gridObj.isDestroyed = true;
+        gridObj.clipboardModule.removeEventListener();
+        gridObj.isDestroyed = false;
+    });
+
+    it('check the addEventListener Binding', () => {
+        gridObj.isDestroyed = true;
+        gridObj.clipboardModule.addEventListener();
+        gridObj.isDestroyed = false;
+    });
+
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Coverage Improvemnet - clipborad', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowPaging: true,
+                pageSettings: { pageCount: 5 },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                selectionSettings: { type: 'Multiple', mode: 'Cell' },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150, allowEditing: false },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' }
+                ]
+            }, done);
+    });
+
+    it('copied content', () => {
+        gridObj.selectionModule.selectCell({ rowIndex: 2, cellIndex: 1 }, false);
+        gridObj.copy();
+    });
+
+    it('Coverage - Ensuring the copied content', () => {
+        let cell: any = gridObj.getContent().querySelector('.e-row').childNodes[1];
+        cell.click();
+        let args: any = { keyCode: 86, ctrlKey: true };
+        (gridObj.clipboardModule as any).pasteHandler(args);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Coverage Improvemnet - Lazy Load Grouping with Virtual Scroll  => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowGrouping: true,
+                groupSettings: { enableLazyLoading: true, columns: ['CustomerID'] },
+                height: 400,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' }
+                ],
+            }, done);
+    });
+
+    it('Expand the first Row', () => {
+        let expandElem: any = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+        gridObj.groupModule.expandCollapseRows(expandElem[1]);
+    });
+
+    it('Ensuring the copied content - Lazy Load Grouping ', () => {
+        let cell: HTMLElement = gridObj.getContent().querySelector('.e-row').childNodes[1] as HTMLElement;
+        cell.click();
+        gridObj.copy();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+
+describe('Coverage Improvemnet - Infinite Scroll  => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: true },
+                height: 400,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' }
+                ],
+            }, done);
+    });
+
+    it('Ensuring the copied content - Infinite scroll', () => {
+        gridObj.selectRow(0, true);
+        gridObj.copy();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -2,123 +2,37 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
 ### Grid
 
 #### Bug fixes
 
-- `#I490067` - Fixed the issue where all checkboxes should be checked when selecting a row and clicking the header checkbox.
+- `#I488183` - Fixed an issue where the frozen columns get hidden while using auto-generated columns.
+- `#I473780` - Resolved an issue where the frozen horizontal scroll did not work when a validation error message is shown.
+- `#I486159` - Fixed an issue where the Column Reorder was not working properly when the frozen right feature is enabled.
+- `#I498644` - Resolved an issue where the skip and take parameters are not passed to the server-side while performing grid actions only in the case of the total number of records and page sizes are equal.
 
-## 22.2.11 (2023-08-29)
+#### Features
 
-### Grid
+- `#FB10384` - Provided the support for exporting the grid with Column template and Detail template at the client side by using the `exportDetailTemplate` event of the grid where each cell of the grid rows can be customized.
+- `#FB10132` - Provided the support for exporting multiple grids in the same or different pages into PDF and Excel formats by listing the id values of each grid that needs to be exported in the `exportGrids` property of Grid.
+- `#FB44392` - Provided the support for Column Virtualization with pagination in Grid.
+- Improved frozen rows and columns by enabling previously limited features such as Grouping, Row templates, Infinite scrolling, Stacked Header, and Column Virtualization.
+- Introduced a new column freezing mode known as `Fixed`, in addition to the existing `Left`, `Right`, and `Center` modes within the column settings' freeze property. This `Fixed` mode locks columns in place, ensuring their visibility during horizontal scrolling.
 
-#### Bug fixes
+#### Breaking Changes
 
-- `#I488479` - The problem of the incorrect right indent of the custom filter dialog in RTL mode has been resolved.
-- `#I486810` - Resolved the issue where tab key focus navigation during batch editing.
-- `#I480995` - The error that occurred when update an image using the `updateCell` method has been resolved.
-- `#I489532` - The issue with the locale in the custom filter dialog for the excel filter has been successfully resolved.
+- Revamped the frozen feature by replacing the previous three-table approach with a single table, resulting in significant performance improvements and a reduction in file size. This update eliminates the need to inject the `Freeze` module to utilize the frozen feature, making it more efficient. We have listed the deprecated methods of frozen feature and their alternatives.
 
-## 22.2.10 (2023-08-22)
+**Deprecated Methods**
 
-### Grid
-
-#### Bug fixes
-
-- `#I486264` - JAWS screen reader doesn't read the grid cells properly when the pager is present has been fixed.
-- `#I490535` - Fixed the error in the script that occurred when cells were saved using a grid that had grouping and aggregate features.
-- `#I485527` - Unwanted horizontal auto-scrolling occurs when opening and closing the column chooser in column menu has been resolved.
-
-## 22.2.9 (2023-08-15)
-
-### Grid
-
-#### Bug fixes
-
-- `#I487601` - Fixed the issue that prevented batch adding is working properly with hidden primary key column.
-- `#I444618` - Script error thrown when performing print with empty dataSource has been resolved.
-- `#I485367` - The problem of the pager dropdown and message not displaying correctly when the Grid is rendered within the Tab component has been successfully resolved.
-- `#I839020` - Resolved an issue where row span was not being applied correctly when showing or hiding columns using the column chooser.
-- `#I483559` - Issue with the focused cell was not being properly indicated during row selection has been resolved.
-
-## 22.2.8 (2023-08-08)
-
-### Grid
-
-#### Bug fixes
-
-- `#I475018` - Grid filter showing duplicate values without ignoring case has been resolved.
-
-## 22.2.7 (2023-08-02)
-
-### Grid
-
-#### Bug fixes
-
-- `#I479266` - Resolved an issue where aggregates being displayed in the wrong column during Excel export.
-- `#I486035` - The issue regarding adding records using the index value when the selection is in the first row has been resolved.
-- `#I483149` - The problem of the `cssClass` property not supporting multiple classes has been resolved.
-
-## 22.2.5 (2023-07-27)
-
-### Grid
-
-#### Bug fixes
-
-- `#I477874` - The issue with the `foreignkey` column dropdown edit cell displaying incorrect values while editing different rows after scrolling has been successfully fixed when the `virtualization` feature is enabled in the grid.
-- `#I482022` - Pager information is wrong while dynamically changing the Grid width issue has been fixed.
-
-## 22.1.39 (2023-07-18)
-
-### Grid
-
-#### Bug fixes
-
-- `#I477090` - Fixed an issue where inline and batch edit modes behaved differently when the `column.allowEditing` attribute was set to false.
-- `#FB45184` - The error that occurred when searching for a backslash character in the Excel filter search has been resolved.
-- `#FB44897` - Fixed the problem with the MUI Select Dropdown not functioning correctly in the Filter Template.
-- `#I467307` - Resolved the issue with Excel export where the child grids were not exported properly.
-- `#I479191` - The error that occurred when clearing the searched value after performing a search has been resolved.
-- `#I477380` - Improved the Excel export of the hierarchy grid to prevent unwanted column filters.
-- `#I472635` - Resolved the problem where the selection moved to the first row when the `newRowPosition` was set to Bottom.
-
-## 22.1.38 (2023-07-11)
-
-### Grid
-
-#### Bug fixes
-
-- `#I472819` - The problem of missing skip and take parameters in the `UrlAdaptor` when invoking a Grid refresh has been fixed.
-- `#I475522` - Script error thrown when searching for the bracket "[" in the Grid has been resolved.
-- `#I477274` - The issue where the Grid cell ellipsis was not displaying in the Firefox browser when the `rowHeight` was set has been fixed.
-- `#I446649` - Fixed the issue that prevented infinite scrolling from working properly after adding a new row.
-- `#I473827` - The issue related to parsing a date value without seconds and encountering an "invalid date" has been resolved.
-- `#I475187` - Resolved the accessibility issue with the aria-selected attribute in pager numeric items.
-- `#FB44815` - The issue where the custom dataSource was not assigned to the dropdown edit cell when using Virtualization has been resolved.
-
-## 22.1.37 (2023-07-04)
-
-### Grid
-
-#### Bug fixes
-
-- `#I471572` - Fixed the issue where the Select all checkbox was disabled when using the `ResetOnRowClick` property.
-- `#I429156` - Provided the support for special characters in column field names.
-- `#I471760` - Resolved the flickering issue with grid column's `clipMode` - `EllipsisWithTooltip`.
-- `#F182956` - Fixed a typo error that occurred while setting a null value using the `setCellValue` method.
-
-## 22.1.36 (2023-06-28)
-
-### Grid
-
-#### Bug fixes
-
-- `#I473934` - The issue with drag and drop within grid sample throwing a script error when pressing Enter has been resolved.
-- `#I472112` - Fixed issue with `CommandClickEventArgs` getting incorrect command column header.
-- `#I470584` - The white space issue caused by deleting the previous record has been resolved.
-- `#I471458` - The problem with the pager dropdown not working properly while cancelling paging operation has been resolved.
+Deprecated Methods | Previous | Current | Suggested Alternative Methods
+ ---  | --- | --- | ---
+`getMovableRows()` | This method returns only the movable table rows `(tr's)`. | This method will return all table rows `(tr's)` of the entire table. The movable cells within the `tr` element can be selected using the `e-unfreeze` class. | `getRows()`
+`getFrozenRightRows()` | This method returns only the table rows `(tr's)` from the freeze right table. | This method will return all the rows `(tr’s)` of the entire table. The frozen right cells can be selected using the `e-rightfreeze` class. | `getRows()`
+`getMovableRowByIndex()` <br> `getFrozenRowByIndex()` <br> `getFrozenRightRowByIndex()` | * `getMovableRowByIndex` - select a movable row <br> * `getFrozenRowByIndex` - select a freeze row  <br> * `getFrozenRightRowByIndex` - select a right freeze row. | This method will return the table row `(tr)` based on the given index. Additionally, class names for table cells `(td's)` have been separated as follows: <br> * Left-Freeze: `e-leftfreeze` <br> * Movable: `e-unfreeze` <br> * Right-Freeze : `e-rightfreeze`  | `getRowByIndex()`
+`getMovableCellFromIndex()` <br> `getFrozenRightCellFromIndex()` |  * `getMovableCellFromIndex()` - select a particular cell in the movable table. <br> * `getFrozenRightCellFromIndex()` - select a particular cell in the right freeze table.|No change| `getCellFromIndex()`
+`getMovableDataRows()` <br> `getFrozenRightDataRows()` <br> `getFrozenDataRows()` | These methods return the viewport data rows for the freeze, movable, and right tables separately. | This method, will return the entire viewport data rows.| `getDataRows()`
+`getMovableColumnHeaderByIndex()` <br> `getFrozenRightColumnHeaderByIndex()` <br> `getFrozenLeftColumnHeaderByIndex()` | These methods select the movable, right freeze, and left freeze headers from the table separately. | No change | `getColumnHeaderByIndex`()
 
 ## 22.1.34 (2023-06-21)
 

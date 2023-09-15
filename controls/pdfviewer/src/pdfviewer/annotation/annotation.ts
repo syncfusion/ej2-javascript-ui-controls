@@ -5327,7 +5327,7 @@ export class Annotation {
         }
         if (annotation.comments) {
             for (let j: number = 0; j < annotation.comments.length; j++) {
-                if (annotation.comments[j].isLock === true) {
+                if (!isNullOrUndefined(annotation.comments[j].isLock)) {
                     newAnnotation.comments[j].isLock = annotation.comments[j].isLock;
                 }
             }

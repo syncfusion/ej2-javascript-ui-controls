@@ -31,6 +31,10 @@ export class FormatPainter implements IFormatPainter {
             (clickargs.args as KeyboardEventArgs).action = 'escape';
             this.actionHandler(clickargs, 'keyBoard');
         }
+        if (this.parent.quickToolbarModule && !isNOU(this.parent.quickToolbarSettings.text) &&
+            this.parent.element.ownerDocument.contains(this.parent.quickToolbarModule.textQTBar.element)){
+            this.parent.quickToolbarModule.textQTBar.hidePopup();
+        }
     }
 
     private toolbarDoubleClick(args: NotifyArgs): void {
@@ -113,11 +117,13 @@ export class FormatPainter implements IFormatPainter {
     }
 
     private updateToolbarBtn(enable: boolean): void  {
-        const toolbarBtn: HTMLElement = this.parent.element.querySelector('.e-rte-format-painter').parentElement.parentElement;
-        if (enable) {
-            addClass([toolbarBtn], 'e-active');
-        } else if (!this.isSticky) {
-            removeClass([toolbarBtn], 'e-active');
+        if (!isNOU(this.parent.element.querySelector('.e-rte-format-painter'))){
+            const toolbarBtn: HTMLElement = this.parent.element.querySelector('.e-rte-format-painter').parentElement.parentElement;
+            if (enable) {
+                addClass([toolbarBtn], 'e-active');
+            } else if (!this.isSticky) {
+                removeClass([toolbarBtn], 'e-active');
+            }
         }
     }
 

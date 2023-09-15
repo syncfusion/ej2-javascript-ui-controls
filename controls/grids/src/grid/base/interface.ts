@@ -13,7 +13,7 @@ import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel,
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
 import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ExcelBorderLineStyle } from './enum';
-import { MultipleExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
+import { MultipleExportType, MultiplePdfExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets } from './type';
 import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode } from './enum';
@@ -26,7 +26,7 @@ import { NumericTextBoxModel, MaskedTextBoxModel } from '@syncfusion/ej2-inputs'
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
 import { DatePickerModel, DateTimePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
-import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfTextWebLink, PdfImage, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
+import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfTextWebLink, PdfImage, PdfStringFormat, PdfGridRow } from '@syncfusion/ej2-pdf-export';
 import { Matrix, FocusStrategy } from '../services/focus-strategy';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import {
@@ -583,6 +583,10 @@ export interface IGrid extends Component<HTMLElement> {
 
     isManualRefresh?: boolean;
 
+    translateX?: number;
+
+    leftrightColumnWidth?: Function;
+
     isAutoFitColumns?: boolean;
 
     enableDeepCompare?: boolean;
@@ -660,10 +664,8 @@ export interface IGrid extends Component<HTMLElement> {
     getFooterContentTable?(): Element;
     getPager?(): Element;
     setGridPager?(value: Element): void;
-    hoverFrozenRows?(value: MouseEvent): void;
     getRowByIndex?(index: number): Element;
     getMovableRowByIndex?(index: number): Element;
-    getFrozenRightRowByIndex?(index: number): Element;
     getFrozenRightRowByIndex?(index: number): Element;
     getFrozenRowByIndex?(index: number): Element;
     showResponsiveCustomFilter?(): void;
@@ -682,7 +684,6 @@ export interface IGrid extends Component<HTMLElement> {
     getColumnIndexesInView(): number[];
     setColumnIndexesInView(indexes?: number[]): void;
     getRows?(): Element[];
-    getMovableRows?(): Element[];
     getCellFromIndex?(rowIndex: number, columnIndex: number): Element;
     getMovableCellFromIndex?(rowIndex: number, columnIndex: number): Element;
     getFrozenRightCellFromIndex?(rowIndex: number, columnIndex: number): Element;
@@ -722,7 +723,6 @@ export interface IGrid extends Component<HTMLElement> {
     getVisibleColumns?(): Column[];
     refreshHeader?(): void;
     getDataRows?(): Element[];
-    getFrozenRightRows?(): Element[];
     getMovableDataRows?(): Element[];
     getFrozenRightDataRows?(): Element[];
     getFrozenDataRows?(): Element[];
@@ -744,7 +744,6 @@ export interface IGrid extends Component<HTMLElement> {
     getMovableColumnsCount?(): number;
     isFrozenGrid?(): boolean;
     getFrozenMode?(): freezeMode;
-    setTablesCount?(): void;
     getTablesCount?(): number;
     setFrozenCount?(): void;
     getVisibleFrozenLeftCount?(): number;
@@ -753,15 +752,6 @@ export interface IGrid extends Component<HTMLElement> {
     getFrozenRightColumns?(): Column[];
     getFrozenLeftColumns?(): Column[];
     getMovableColumns?(): Column[];
-    getFrozenRightRowsObject?(): Row<Column>[];
-    getFrozenRightContent?(): Element;
-    getFrozenRightHeader?(): Element;
-    getMovableHeaderTbody?(): Element;
-    getMovableContentTbody?(): Element;
-    getFrozenHeaderTbody?(): Element;
-    getFrozenLeftContentTbody?(): Element;
-    getFrozenRightHeaderTbody?(): Element;
-    getFrozenRightContentTbody?(): Element;
     refreshReactColumnTemplateByUid?(columnUid: string, renderTemplates?: boolean): void;
     refreshReactHeaderTemplateByUid?(columnUid: string): void;
     refreshGroupCaptionFooterTemplate?(): void;
@@ -792,6 +782,15 @@ export interface IGrid extends Component<HTMLElement> {
     addFreezeRows?(fRows: Row<Column>[], mRows?: Row<Column>[]): Row<Column>[];
     getRowsObject?(): Row<Column>[];
     getMovableRowsObject?(): Row<Column>[];
+    getFrozenRightRowsObject?(): Row<Column>[];
+    getFrozenRightContent?(): Element;
+    getFrozenRightHeader?(): Element;
+    getMovableHeaderTbody?(): Element;
+    getMovableContentTbody?(): Element;
+    getFrozenHeaderTbody?(): Element;
+    getFrozenLeftContentTbody?(): Element;
+    getFrozenRightHeaderTbody?(): Element;
+    getFrozenRightContentTbody?(): Element;
     createColumnchooser(x: number, y: number, target: Element): void;
     getDataModule?(): Data;
     refreshTooltip?(): void;
@@ -812,10 +811,6 @@ export interface IGrid extends Component<HTMLElement> {
     grabColumnByFieldFromAllCols(field: string): Column;
     grabColumnByUidFromAllCols(uid: string): Column;
     getRowUid(prefix: string): string;
-    getMovableVirtualContent?(): Element;
-    getFrozenVirtualContent?(): Element;
-    getMovableVirtualHeader?(): Element;
-    getFrozenVirtualHeader?(): Element;
     getFilteredRecords(): Object[] | Promise<Object>;
     getRowElementByUID?(uid: string): Element;
     getMediaColumns?(): void;
@@ -856,19 +851,13 @@ export interface IRenderer {
     addEventListener?(): void;
     removeEventListener?(): void;
     getRowElements?(): Element[];
-    getMovableRowElements?(): Element[];
-    getFrozenRightRowElements?(): Element[];
     setSelection?(uid: string, set: boolean, clearAll: boolean): void;
     getRowByIndex?(index: number): Element;
     getVirtualRowIndex?(index: number): number;
-    getMovableRowByIndex?(index: number): Element;
-    getFrozenRightRowByIndex?(index: number): Element;
     getRowInfo?(target: Element): RowInfo;
     getState?(): Object;
-    getMovableHeader?(): Element;
+
     getMovableContent?(): Element;
-    getFrozenRightContent?(): Element;
-    getFrozenRightHeader?(): Element;
     destroyTemplate?(templateName: string[]): void;
     emptyVcRows?(): void;
     getBlockSize?(): number;
@@ -1250,7 +1239,7 @@ export interface GridActionEventArgs {
 }
 
 export interface FailureEventArgs {
-    /** Represents the Error object that contains information about the error that occurred. This property allows you to access details such as the error message, stack trace, error code, or any additional information associated with the error. */
+    /** Defines the error information. */
     error?: Error;
 }
 
@@ -1560,6 +1549,110 @@ export interface ExportDetailDataBoundEventArgs {
     exportProperties?: PdfExportProperties | ExcelExportProperties;
 }
 
+
+export interface ExportDetailTemplateEventArgs {
+    /** Defines the details of parent row. */
+    parentRow?: Row<Column>;
+    /** Defines the details of excel/pdf row */
+    row?: ExcelRow | PdfGridRow;
+    /** Define the detail template values. */
+    value?: DetailTemplateProperties;
+    /** Defines the action */
+    action?: string;
+    /** Defines the grid object */
+    gridInstance?: IGrid,
+}
+
+export interface DetailTemplateProperties {
+    /** Defines the total columns length of the detail pdf grid */
+    columnCount?: number;
+    /** Defines the base 64 for the cell */
+    image?: { base64: string, height?: number, width?: number };
+    /** Defines the text for the cell */
+    text?: string;
+    /** Defines the header content for detail row */
+    columnHeader?: DetailTemplateRow[];
+    /** Defines the content content for detail row */
+    rows?: DetailTemplateRow[];
+    /** Defines the hyperlink of the cell */
+    hyperLink?: Hyperlink;
+}
+
+export interface DetailTemplateRow {
+    /**  Defines the index of the row */
+    index?: number;
+    /**  Defines the cells in a row */
+    cells?: DetailTemplateCell[];
+    /** Defines the group of rows to expand and collapse */
+    grouping?: Object;
+}
+
+export interface DetailTemplateCell {
+    /** Defines the index for the cell */
+    index?: number;
+    /** Defines the column span for the cell  */
+    colSpan?: number;
+    /** Defines the value of the cell */
+    value?: string | boolean | number | Date | PdfTextWebLink | PdfImage;
+    /** Defines the hyperlink of the cell */
+    hyperLink?: Hyperlink;
+    /** Defines the style of the cell */
+    style?: DetailTemplateCellStyle;
+    /** Defines the row span for the cell */
+    rowSpan?: number;
+    /** Defines the base 64 for the cell */
+    image?: { base64: string, height?: number, width?: number };
+}
+
+export interface DetailTemplateCellStyle {
+    /** Defines the color of font */
+    fontColor?: string;
+    /** Defines the name of font */
+    fontName?: string;
+    /** Defines the size of font */
+    fontSize?: number;
+    /** Defines the horizontal alignment for excel cell style */
+    excelHAlign?: ExcelHAlign;
+    /** Defines the vertical alignment for excel cell style */
+    excelVAlign?: ExcelVAlign;
+    /** Defines the rotation degree for excel cell style */
+    excelRotation?: number;
+    /** Defines the bold style for fonts  */
+    bold?: boolean;
+    /** Defines the indent for cell style */
+    indent?: number;
+    /** Defines the italic style for fonts */
+    italic?: boolean;
+    /** Defines the underline style for fonts */
+    underline?: boolean;
+    /** Defines the background color for cell style */
+    backColor?: string;
+    /** Defines the wrapText for cell style */
+    wrapText?: boolean;
+    /** Defines the borders for excel cell style */
+    excelBorders?: ExcelBorder;
+    /** Defines the format of the excel cell */
+    excelNumberFormat?: string;
+    /** Defines the type of the excel cell */
+    excelType?: string;
+    /** Defines the strike through of the cell */
+    strikeThrough?: boolean;
+    /** Defines the horizontal alignment for the pdf cell */
+    pdfTextAlignment?: PdfHAlign;
+    /** Defines the vertical alignment for the pdf cell */
+    pdfVerticalAlignment?: PdfVAlign;
+    /** Defines the font family for the pdf cell */
+    pdfFontFamily?: string;
+    /** Defines the indent alignment for the pdf cell */
+    pdfIndent?: PdfHAlign;
+    /** Defines the grid border for the pdf cell */
+    pdfBorder?: PdfBorder;
+    /** Defines the indent for the pdf cell*/
+    pdfParagraphIndent?: number;
+    /*Defines the padding of the pdf cell */
+    pdfCellPadding?: PdfPaddings;
+}
+
 export interface AggregateQueryCellInfoEventArgs {
     /** Defines the row data associated with this cell. */
     row?: Object ;
@@ -1686,6 +1779,12 @@ export interface MultipleExport {
     type?: MultipleExportType;
     /**  Defines the number of blank rows between the multiple grid data */
     blankRows?: number;
+}
+export interface MultiplePdfExport {
+    /** Indicates whether to append the multiple grid in same sheet or different sheet */
+    type?: MultiplePdfExportType;
+    /**  Defines the blank space between the multiple grid data */
+    blankSpace?: number;
 }
 export interface ExcelRow {
     /**  Defines the index for cells */
@@ -2574,6 +2673,8 @@ export interface PdfExportProperties {
     allowHorizontalOverflow?: boolean;
     /** Defined the query dynamically before exporting */
     query?: Query;
+    /** Exports multiple grid into the pdf document */
+    multipleExport?: MultiplePdfExport;
 }
 
 export interface PdfTheme {

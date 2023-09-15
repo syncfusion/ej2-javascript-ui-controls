@@ -118,7 +118,6 @@ export const defaultLocale: object = {
     UnmergeCells: 'Unmerge Cells',
     SelectMergeType: 'Select Merge Type',
     MergeCellsAlert: 'Merging cells will only preserve the top-leftmost(Uppermost) value. Merge anyway?',
-    PasteMergeAlert: 'We can"t do that to a merge cell.',
     Borders: 'Borders',
     TopBorders: 'Top Borders',
     LeftBorders: 'Left Borders',
@@ -605,5 +604,14 @@ export const defaultLocale: object = {
     Material3: 'Material 3',
     Material3Dark: 'Material 3 Dark',
     CellReferenceTypoError: 'We found a typo in your cell reference. Do you want to correct this reference as follows?',
+    InvalidFormulaError: 'We found that you typed a formula which is invalid.',
+    InvalidArguments : 'We found that you typed a formula with an invalid arguments.',
+    EmptyExpression : 'We found that you typed a formula with an empty expression.',
+    MismatchedParenthesis : 'We found that you typed a formula with one or more missing opening or closing parenthesis.',
+    ImproperFormula : 'We found that you typed a formula which is improper.',
+    WrongNumberOfArguments : 'We found that you typed a formula with a wrong number of arguments.',
+    Requires3Arguments: 'We found that you typed a formula which requires 3 arguments.',
+    MismatchedStringQuotes : 'We found that you typed a formula with a mismatched quotes.',
+    FormulaCircularRef : 'We found that you typed a formula with a circular reference.',
     AddCurrentSelection : 'Add current selection to filter'
 };

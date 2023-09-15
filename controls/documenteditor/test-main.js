@@ -62,6 +62,11 @@ require.config({
       main: 'ej2-data.umd.min.js'
     },
     {
+      name: '@syncfusion/ej2-notifications',
+      location: 'node_modules/@syncfusion/ej2-notifications/dist',
+      main: 'ej2-notifications.umd.min.js'
+    },
+    {
       name: '@syncfusion/ej2-dropdowns',
       location: 'node_modules/@syncfusion/ej2-dropdowns/dist',
       main: 'ej2-dropdowns.umd.min.js'
@@ -70,6 +75,11 @@ require.config({
       name: '@syncfusion/ej2-navigations',
       location: 'node_modules/@syncfusion/ej2-navigations/dist',
       main: 'ej2-navigations.umd.min.js'
+    },
+    {
+      name: '@syncfusion/ej2-excel-export',
+      location: 'node_modules/@syncfusion/ej2-excel-export/dist',
+      main: 'ej2-excel-export.umd.min.js'
     },
     {
       name: '@syncfusion/ej2-charts',

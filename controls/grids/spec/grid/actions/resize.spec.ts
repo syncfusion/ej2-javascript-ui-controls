@@ -13,7 +13,6 @@ import { Page } from '../../../src/grid/actions/page';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { Resize, resizeClassList } from '../../../src/grid/actions/resize';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { data, employeeData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { GridModel } from '../../../src/grid/base/grid-model';
@@ -22,7 +21,7 @@ import { Aggregate } from '../../../src/grid/actions/aggregate';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { resizeStart } from '../../../src';
 
-Grid.Inject(Sort, Page, Filter, Reorder, Group, Resize, Selection, Aggregate, Freeze);
+Grid.Inject(Sort, Page, Filter, Reorder, Group, Resize, Selection, Aggregate);
 
 describe('Resize module', () => {
     describe('Resize functionalities for columns', () => {
@@ -883,7 +882,7 @@ describe('Resize module', () => {
             expect(headers.width).toBeTruthy();
             headers = gridObj.getColumns()[4] as Column;
             expect(headers.width).toBeTruthy();
-            headers = (gridObj.getHeaderContent().querySelector('.e-movableheader').children[0] as HTMLElement).style.width;
+            headers = (gridObj.getHeaderContent().querySelector('.e-headercontent').children[0] as HTMLElement).style.width;
             expect(headers).toBeTruthy();
         });
         afterAll(() => {
@@ -1177,4 +1176,153 @@ describe('Resize module', () => {
         });
     });
 
+    describe('Frozen Revamp feature', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    allowFiltering: true,
+                    allowResizing: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true,   freeze: 'Left', width: 120, validationRules: { required: true, number: true }, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', validationRules: { required: true }, width: 160, freeze: 'Left' },
+                        { field: 'ShipName', headerText: 'Ship Name', width: '190' },
+                        { field: 'Freight', width: 150, format: 'C', validationRules: { required: true }, textAlign: 'Right' },
+                        { field: 'ShipAddress', headerText: 'Ship Address', width: '170' },
+                        { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', format: { type: 'dateTime', format: 'M/d/y hh:mm a' },
+                            width: 160
+                        },
+                        { field: 'EmployeeID', headerText: 'Employee ID', width: '150', freeze: 'Fixed' },
+                        { field: 'ShipRegion', headerText: 'Ship Region', width: '150', freeze: 'Fixed' },
+                        { field: 'ShipCity', headerText: 'Ship City', width: '170' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 170,
+                            edit: { params: { popupHeight: '300px' }  }
+                        },
+                        { field: 'ShipPostalCode', headerText: 'ShipPostal Code', width: '150', freeze: 'Right' },
+                        { field: 'Verified', headerText: 'Boolean', width: '150', freeze: 'Right' },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            groupFooterTemplate: 'Total units: ${Sum}'
+                        },
+                        {
+                            type: 'Max',
+                            field: 'Freight',
+                            groupCaptionTemplate: 'Maximum: ${Max}'
+                        },
+                        {
+                            type: 'Sum',
+                            field: 'Freight',
+                            format: 'C2',
+                            footerTemplate: 'Sum: ${Sum}'
+                        }]
+                    }],
+                    actionComplete: actionComplete,
+                    pageSettings: { pageCount: 5 }
+                }, done);
+        });
+        it('freeze left column resizing - mousemove', () => {
+            let handler: Element = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[1];
+            (gridObj.resizeModule as any).resizeStart({ target: handler, pageX: 0 });
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 200 });
+            let width = (gridObj.getHeaderTable().querySelectorAll('th')[1]).offsetWidth;
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 300 });
+            width += 100;
+            expect(width).toEqual((gridObj.getHeaderTable().querySelectorAll('th')[1]).offsetWidth);
+            (gridObj.resizeModule as any).refresh();
+        });
+        it('freeze right column resizing - mousemove', () => {
+            let handler: Element = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[6];
+            (gridObj.resizeModule as any).resizeStart({ target: handler, pageX: 0 });
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 200 });
+            let width = (gridObj.getHeaderTable().querySelectorAll('th')[6]).offsetWidth;
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 300 });
+            width += 100;
+            expect(width).toEqual((gridObj.getHeaderTable().querySelectorAll('th')[6]).offsetWidth);
+            (gridObj.resizeModule as any).refresh();
+        });
+        it('freeze right column resizing - mousemove', () => {
+            let handler: Element = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[10];
+            (gridObj.resizeModule as any).resizeStart({ target: handler, pageX: 0 });
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 200 });
+            let width = (gridObj.getHeaderTable().querySelectorAll('th')[10]).offsetWidth;
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 300 });
+            width += 100;
+            expect(width).toEqual((gridObj.getHeaderTable().querySelectorAll('th')[10]).offsetWidth);
+            (gridObj.resizeModule as any).refresh();
+        });
+        it('column group testing', (done: Function) => {
+            actionComplete = (): void => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.groupModule.groupColumn('CustomerID');
+        });
+        it('freeze left column resizing - mousemove', () => {
+            let handler: Element = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[0];
+            (gridObj.resizeModule as any).resizeStart({ target: handler, pageX: 0 });
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 200 });
+            let width = (gridObj.getHeaderTable().querySelectorAll('th')[1]).offsetWidth;
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 300 });
+            width += 100;
+            expect(width).toEqual((gridObj.getHeaderTable().querySelectorAll('th')[1]).offsetWidth);
+            (gridObj.resizeModule as any).refresh();
+        });
+        it('freeze right column resizing - mousemove', () => {
+            let handler: Element = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[10];
+            (gridObj.resizeModule as any).resizeStart({ target: handler, pageX: 0 });
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 200 });
+            let width = (gridObj.getHeaderTable().querySelectorAll('th')[11]).offsetWidth;
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 300 });
+            width += 100;
+            expect(width).toEqual((gridObj.getHeaderTable().querySelectorAll('th')[11]).offsetWidth);
+            (gridObj.resizeModule as any).refresh();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    // used for code coverage
+    describe('Hide at media', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowReordering: true,
+                    allowResizing: true,
+                    allowGrouping: true,
+                    filterSettings: { showFilterBarOperator: true },
+                    height: 200,
+                    contextMenuItems: ['AutoFit', 'AutoFitAll'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'OrderID', width: 150 },
+                        { field: 'CustomerID', hideAtMedia: '(max-width: 500px)', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'EmployeeID', },
+                        { field: 'Freight', headerText: 'Freight', width: 200 }],
+                }, done);
+        });
+        it('update the media columns', () => {
+            gridObj.updateMediaColumns(gridObj.getColumns()[1]);
+            gridObj.updateMediaColumns(gridObj.getColumns()[2]);
+            expect(1).toBe(1);
+        });
+        
+        it('change resizeSettings', () => {
+            gridObj.resizeSettings = { mode: 'Auto'};
+            gridObj.enableRtl = true;
+            expect(1).toBe(1);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

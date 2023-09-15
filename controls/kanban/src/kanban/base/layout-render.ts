@@ -77,7 +77,7 @@ export class LayoutRender extends MobileLayout {
         header.appendChild(headerWrap);
         const headerTable: HTMLElement = createElement('table', {
             className: cls.TABLE_CLASS + ' ' + cls.HEADER_TABLE_CLASS,
-            attrs: { 'role': 'table' }
+            attrs: { 'role': 'table','aria-label': 'Kanban board header' }
         });
         headerWrap.appendChild(headerTable);
         this.renderColGroup(headerTable);
@@ -93,7 +93,7 @@ export class LayoutRender extends MobileLayout {
                 const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField.toString());
                 const th: HTMLElement = createElement('th', {
                     className: index === -1 ? cls.HEADER_CELLS_CLASS : cls.HEADER_CELLS_CLASS + ' ' + cls.COLLAPSED_CLASS,
-                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString() }
+                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString(), 'scope': 'row' }
                 });
                 const classList: string[] = [];
                 if (column.allowToggle) {
@@ -304,7 +304,7 @@ export class LayoutRender extends MobileLayout {
                     dataCount += columnData.length;
                     const columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     const cardWrapper: HTMLElement = createElement('div', {
-                        className: cls.CARD_WRAPPER_CLASS, attrs: { 'role': 'listbox', 'tabindex': '0' }
+                        className: cls.CARD_WRAPPER_CLASS, attrs: { 'role': 'listbox', 'tabindex': '0', 'aria-label': column.keyField.toString() }
                     });
                     if (column.transitionColumns.length > 0) {
                         columnTransition = true;
@@ -512,7 +512,7 @@ export class LayoutRender extends MobileLayout {
             const div: HTMLElement = createElement('div', { className: cls.HEADER_TEXT_CLASS, innerHTML: stackedHeaders[h as number] });
             const th: HTMLElement = createElement('th', {
                 className: cls.HEADER_CELLS_CLASS + ' ' + cls.STACKED_HEADER_CELL_CLASS,
-                attrs: { 'colspan': colSpan.toString() }
+                attrs: { 'colspan': colSpan.toString(),'scope': 'row'}
             });
             tr.appendChild(th).appendChild(div);
             h += colSpan - 1;

@@ -48,7 +48,7 @@ import { Print } from '../exports/print';
 import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
-import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, CallbackFunction } from '../base/interface';
+import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction } from '../base/interface';
 import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';
 import { ResourceBase } from '../base/resource';
 import { Timezone, timezoneData } from '../timezone/timezone';
@@ -109,6 +109,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     private eventTooltipTemplateFn: CallbackFunction;
     private headerTooltipTemplateFn: CallbackFunction;
     private editorTemplateFn: CallbackFunction;
+    private editorHeaderTemplateFn: CallbackFunction;
+    private editorFooterTemplateFn: CallbackFunction;
     private quickInfoTemplatesHeaderFn: CallbackFunction;
     private quickInfoTemplatesContentFn: CallbackFunction;
     private quickInfoTemplatesFooterFn: CallbackFunction;
@@ -668,6 +670,32 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public editorTemplate: string | Function;
 
     /**
+     * The template option to render the customized header of the editor window.
+     *
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property()
+    public editorHeaderTemplate: string | Function;
+
+    /**
+     * The template option to render the customized footer of the editor window.
+     *
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property()
+    public editorFooterTemplate: string | Function;
+
+    /**
      * The template option to customize the quick window. The three sections of the quick popup whereas the header, content,
      * and footer can be easily customized with individual template option.
      *
@@ -892,8 +920,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers on beginning of every scheduler action.
      *
-     * {% codeBlock src='schedule/actionBegin/index.md' %}{% endcodeBlock %}
-     *
      * @event 'actionBegin'
      */
     @Event()
@@ -901,8 +927,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers on successful completion of the scheduler actions.
-     *
-     * {% codeBlock src='schedule/actionComplete/index.md' %}{% endcodeBlock %}
      *
      * @event 'actionComplete'
      */
@@ -912,8 +936,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
      *
-     * {% codeBlock src='schedule/actionFailure/index.md' %}{% endcodeBlock %}
-     *
      * @event 'actionFailure'
      */
     @Event()
@@ -921,8 +943,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the date or view navigation takes place on scheduler.
-     *
-     * {% codeBlock src='schedule/navigating/index.md' %}{% endcodeBlock %}
      *
      * @event 'navigating'
      */
@@ -932,8 +952,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before each element of the schedule rendering on the page.
      *
-     * {% codeBlock src='schedule/renderCell/index.md' %}{% endcodeBlock %}
-     *
      * @event 'renderCell'
      */
     @Event()
@@ -941,8 +959,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
-     *
-     * {% codeBlock src='schedule/eventClick/index.md' %}{% endcodeBlock %}
      *
      * @event 'eventClick'
      */
@@ -952,8 +968,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before each of the event getting rendered on the scheduler user interface.
      *
-     * {% codeBlock src='schedule/eventRendered/index.md' %}{% endcodeBlock %}
-     *
      * @event 'eventRendered'
      */
     @Event()
@@ -961,8 +975,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the data binds to the scheduler.
-     *
-     * {% codeBlock src='schedule/dataBinding/index.md' %}{% endcodeBlock %}
      *
      * @event 'dataBinding'
      */
@@ -972,8 +984,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before any of the scheduler popups opens on the page.
      *
-     * {% codeBlock src='schedule/popupOpen/index.md' %}{% endcodeBlock %}
-     *
      * @event 'popupOpen'
      */
     @Event()
@@ -981,8 +991,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before any of the scheduler popups close on the page.
-     *
-     * {% codeBlock src='schedule/popupClose/index.md' %}{% endcodeBlock %}
      *
      * @event 'popupClose'
      */
@@ -992,8 +1000,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when an appointment is started to drag.
      *
-     * {% codeBlock src='schedule/dragStart/index.md' %}{% endcodeBlock %}
-     *
      * @event 'dragStart'
      */
     @Event()
@@ -1001,8 +1007,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when an appointment is being in a dragged state.
-     *
-     * {% codeBlock src='schedule/drag/index.md' %}{% endcodeBlock %}
      *
      * @event 'drag'
      */
@@ -1012,8 +1016,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the dragging of appointment is stopped.
      *
-     * {% codeBlock src='schedule/dragStop/index.md' %}{% endcodeBlock %}
-     *
      * @event 'dragStop'
      */
     @Event()
@@ -1021,8 +1023,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when an appointment is started to resize.
-     *
-     * {% codeBlock src='schedule/resizeStart/index.md' %}{% endcodeBlock %}
      *
      * @event 'resizeStart'
      */
@@ -1032,8 +1032,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when an appointment is being in a resizing action.
      *
-     * {% codeBlock src='schedule/resizing/index.md' %}{% endcodeBlock %}
-     *
      * @event 'resizing'
      */
     @Event()
@@ -1042,17 +1040,31 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the resizing of appointment is stopped.
      *
-     * {% codeBlock src='schedule/resizeStop/index.md' %}{% endcodeBlock %}
-     *
      * @event 'resizeStop'
      */
     @Event()
     public resizeStop: EmitType<ResizeEventArgs>;
 
     /**
-     * Triggers once the event data is bound to the scheduler.
+     * Triggers when the scroll action is started.
+     * This event triggers only when `allowVirtualScrolling` or `enableLazyLoading` properties are enabled along with resource grouping.
      *
-     * {% codeBlock src='schedule/dataBound/index.md' %}{% endcodeBlock %}
+     * @event 'virtualScrollStart'
+     */
+    @Event()
+    public virtualScrollStart: EmitType<ScrollEventArgs>;
+
+    /**
+     * Triggers when the scroll action is stopped.
+     * This event triggers only when `allowVirtualScrolling` or `enableLazyLoading` properties are enabled along with resource grouping.
+     *
+     * @event 'virtualScrollStop'
+     */
+    @Event()
+    public virtualScrollStop: EmitType<ScrollEventArgs>;
+
+    /**
+     * Triggers once the event data is bound to the scheduler.
      *
      * @event 'dataBound'
      */
@@ -1179,6 +1191,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.resourceCollection = [];
             this.renderElements(isSetModel);
         }
+    }
+
+    private destroyEditorWindow(): void {
+        if (this.eventWindow) {
+            this.eventWindow.destroy();
+            this.eventWindow = null;
+        }
+        this.eventWindow = new EventWindow(this);
     }
 
     /**
@@ -1348,7 +1368,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             headerRows: this.headerRows,
             orientation: 'Horizontal',
             numberOfWeeks: 0,
-            displayDate: null
+            displayDate: null,
+            enableLazyLoading: false
         };
         const viewOptions: ViewsData = this.viewCollections[this.viewIndex];
         const viewsData: ViewsData = extend(scheduleOptions, viewOptions, undefined, true);
@@ -1358,6 +1379,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (viewsData.displayDate) {
             viewsData.displayDate = viewsData.displayDate instanceof Date ? new Date(viewsData.displayDate.getTime()) :
                 new Date(viewsData.displayDate);
+        }
+        if (viewsData.enableLazyLoading && !isNullOrUndefined(viewsData.group.resources) && viewsData.group.resources.length > 0 &&
+        (['Agenda', 'MonthAgenda', 'Year', 'TimelineYear'].indexOf(viewsData.option) === -1 ||
+        (viewsData.option === 'TimelineYear' && viewsData.orientation === 'Vertical'))) {
+            viewsData.allowVirtualScrolling = true;
         }
         return viewsData;
     }
@@ -1424,6 +1450,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.headerTooltipTemplateFn = this.templateParser(this.activeViewOptions.group.headerTooltipTemplate);
         this.eventTooltipTemplateFn = this.templateParser(this.eventSettings.tooltipTemplate);
         this.editorTemplateFn = this.templateParser(this.editorTemplate);
+        this.editorHeaderTemplateFn = this.templateParser(this.editorHeaderTemplate);
+        this.editorFooterTemplateFn = this.templateParser(this.editorFooterTemplate);
         this.quickInfoTemplatesHeaderFn = this.templateParser(this.quickInfoTemplates.header);
         this.quickInfoTemplatesContentFn = this.templateParser(this.quickInfoTemplates.content);
         this.quickInfoTemplatesFooterFn = this.templateParser(this.quickInfoTemplates.footer);
@@ -2096,6 +2124,26 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Method to process editor header template
+     *
+     * @returns {CallbackFunction} Returns the callback function
+     * @private
+     */
+    public getEditorHeaderTemplate(): CallbackFunction {
+        return this.editorHeaderTemplateFn;
+    }
+
+    /**
+     * Method to process editor footer template
+     *
+     * @returns {CallbackFunction} Returns the callback function
+     * @private
+     */
+    public getEditorFooterTemplate(): CallbackFunction {
+        return this.editorFooterTemplateFn;
+    }
+
+    /**
      * Method to process quick info header template
      *
      * @returns {CallbackFunction} Returns the callback function
@@ -2615,6 +2663,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 this.editorTemplateFn = this.templateParser(this.editorTemplate);
             }
             if (this.eventWindow) { this.eventWindow.setDialogContent(); }
+            break;
+        case 'editorHeaderTemplate':
+            if (!isNullOrUndefined(this.editorHeaderTemplate)) {
+                this.editorHeaderTemplateFn = this.templateParser(this.editorHeaderTemplate);
+            }
+            if (this.eventWindow) { this.eventWindow.setDialogHeader(); }
+            break;
+        case 'editorFooterTemplate':
+            if (!isNullOrUndefined(this.editorFooterTemplate)) {
+                this.editorFooterTemplateFn = this.templateParser(this.editorFooterTemplate);
+            }
+            if (this.eventWindow) { this.eventWindow.setDialogFooter(); }
             break;
         case 'quickInfoTemplates':
             if (this.quickInfoTemplates.header) {
@@ -3396,12 +3456,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.quickInfoTemplatesFooterFn = this.templateParser(this.quickInfoTemplates.footer);
             break;
         case 'editorTemplate':
-            if (this.eventWindow) {
-                this.eventWindow.destroy();
-                this.eventWindow = null;
-            }
-            this.eventWindow = new EventWindow(this);
+            this.destroyEditorWindow();
             this.editorTemplateFn = this.templateParser(this.editorTemplate);
+            break;
+        case 'editorHeaderTemplate':
+            this.destroyEditorWindow();
+            this.editorHeaderTemplateFn = this.templateParser(this.editorHeaderTemplate);
+            break;
+        case 'editorFooterTemplate':
+            this.destroyEditorWindow();
+            this.editorFooterTemplateFn = this.templateParser(this.editorFooterTemplate);
             break;
         case 'tooltipTemplate':
         case 'headerTooltipTemplate':

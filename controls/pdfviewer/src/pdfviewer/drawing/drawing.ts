@@ -1175,7 +1175,6 @@ export class Drawing {
         else
             return false
     }
-
     /**
      * @private
      * @param {DrawingElement} selector - Specified the annotation selector object.

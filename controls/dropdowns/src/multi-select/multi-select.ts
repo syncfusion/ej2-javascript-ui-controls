@@ -846,6 +846,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.isFirstClick) {
                     this.loadTemplate();
                 }
+                if(this.mode === 'CheckBox' && this.showSelectAll){
+                    EventHandler.add((this as any).popupObj.element, 'click', this.clickHandler, this);
+                }
             }
         });
     }
@@ -1869,11 +1872,19 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private spaceKeySelection(e: KeyboardEventArgs): void {
         if (this.mode === 'CheckBox') {
-            if (!document.activeElement.classList.contains(FILTERINPUT)) {
+            const li: HTMLElement = <HTMLElement>this.list.querySelector('li.' + dropDownBaseClasses.focus);
+            const selectAllParent = document.getElementsByClassName('e-selectall-parent')[0];
+            if (!isNullOrUndefined(li) || (selectAllParent && selectAllParent.classList.contains('e-item-focus'))) {
                 e.preventDefault();
                 this.keyAction = true;
             }
             this.selectByKey(e);
+            if(this.keyAction){
+                const li: HTMLElement = <HTMLElement>this.list.querySelector('li.' + dropDownBaseClasses.focus);
+                if(!isNullOrUndefined(li) && selectAllParent && selectAllParent.classList.contains('e-item-focus')){
+                    li.classList.remove('e-item-focus');
+                }
+            }
         }
         this.checkPlaceholderSize();
     }
@@ -2018,9 +2029,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
         const selectAllParent = document.getElementsByClassName('e-selectall-parent')[0];
-        if(selectAllParent && !selectAllParent.classList.contains('e-item-focus')){
-            e.preventDefault();
-        }
         if (selectAllParent && selectAllParent.classList.contains('e-item-focus')) {
             const selectAllCheckBox = selectAllParent.childNodes[0] as HTMLElement;
             if (!selectAllCheckBox.classList.contains('e-check')) {
@@ -2092,6 +2100,15 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.updateAriaAttribute();
     }
+    private clickHandler(e: MouseEvent): void {
+        const targetElement = e.target as HTMLElement;
+        const filterInputClassName = targetElement.className;
+        const selectAllParent = document.getElementsByClassName('e-selectall-parent')[0];
+        if((filterInputClassName === 'e-input-filter e-input' || filterInputClassName === 'e-input-group e-control-wrapper e-input-focus') && selectAllParent.classList.contains('e-item-focus'))
+        {
+            selectAllParent.classList.remove('e-item-focus');
+        }
+    }
     private moveByList(position: number): void {
         if (this.list) {
             let elements: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
@@ -2106,15 +2123,23 @@ export class MultiSelect extends DropDownBase implements IInput {
             let temp: number = -1;
             const selectAllParent = document.getElementsByClassName('e-selectall-parent')[0];
             if(this.mode === 'CheckBox' && this.showSelectAll && position == 1 && !isNullOrUndefined(selectAllParent) && !selectAllParent.classList.contains('e-item-focus') && this.list.getElementsByClassName('e-item-focus').length == 0 && this.liCollections.length > 1){
-                selectAllParent.classList.add('e-item-focus');
+                if (!this.focusFirstListItem && selectAllParent.classList.contains('e-item-focus')) {
+                    selectAllParent.classList.remove('e-item-focus');
+                }
+                else if (!selectAllParent.classList.contains('e-item-focus')){
+                    selectAllParent.classList.add('e-item-focus');
+                }
             }
             else if (elements.length) {
-                if(this.mode === 'CheckBox' && this.showSelectAll && !isNullOrUndefined(selectAllParent)){
-                    selectAllParent.classList.remove('e-item-focus');
-                    if (this.showSelectAll && position == -1 && !isNullOrUndefined(selectAllParent) && this.liCollections.length > 1 && (this.focusFirstListItem || this.list.getElementsByClassName('e-item-focus').length == 0)){
+                if(this.mode === 'CheckBox' && this.showSelectAll && !isNullOrUndefined(selectAllParent && position == -1)){
+                    if (!this.focusFirstListItem && selectAllParent.classList.contains('e-item-focus')) {
+                        selectAllParent.classList.remove('e-item-focus');
+                    }
+                    else if (this.focusFirstListItem && !selectAllParent.classList.contains('e-item-focus')){
                         selectAllParent.classList.add('e-item-focus');
                     }
                 }
+
                 for (let index: number = 0; index < elements.length; index++) {
                     if (elements[index as number] === selectedElem) {
                         temp = index;
@@ -4360,6 +4385,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.popupObj.hide();
                     removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
                     EventHandler.remove(this.list, 'keydown', this.onKeyDown);
+                    if(this.mode === 'CheckBox' && this.showSelectAll){
+                        EventHandler.remove((this as any).popupObj.element, 'click', this.clickHandler);
+                    }
                 }
             });
         }

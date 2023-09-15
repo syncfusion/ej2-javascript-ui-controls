@@ -147,7 +147,8 @@ export class FormulaBar {
     }
 
     private nameBoxSelect(args: DdlSelectArgs): void {
-        if (args.isInteracted) {
+        if (args.isInteracted && (!args.e || args.e.type !== 'keydown' || ((args.e as KeyboardEvent).keyCode !== 40 &&
+            (args.e as KeyboardEvent).keyCode !== 38))) {
             const refersTo: string = (<DefineNameModel>args.itemData).refersTo.substr(1);
             const sheetIdx: number = getSheetIndex(this.parent as Workbook, getSheetNameFromAddress(refersTo));
             if (sheetIdx === undefined) { return; }
@@ -169,7 +170,7 @@ export class FormulaBar {
                     range = left + ':' + right;
                 }
             }
-            if ((sheetIdx) === this.parent.activeSheetIndex) {
+            if (sheetIdx === this.parent.activeSheetIndex) {
                 this.parent.selectRange(range);
                 focus(this.parent.element);
             } else {
@@ -489,8 +490,6 @@ export class FormulaBar {
         const dialogContentEle: HTMLElement = document.getElementsByClassName('e-spreadsheet-function-dlg')[0].
             querySelector('.e-dlg-content');
         dialogContentEle.parentNode.removeChild(dialogContentEle);
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        (this.dialog.dialogInstance as any).storeActiveElement = document.getElementById(this.parent.element.id + '_edit');
         this.categoryList.destroy();
         this.categoryList = null;
         this.formulaList.destroy();
@@ -509,6 +508,8 @@ export class FormulaBar {
             this.parent.notify(editOperation, { action: 'startEdit', value: '=' + formulaText + '(', address: sheet.activeCell });
             this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: '=' + formulaText + '(' });
         }
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        (this.dialog.dialogInstance as any).storeActiveElement = document.getElementById(this.parent.element.id + '_edit');
         this.dialog.hide();
     }
     private listSelected(args: SelectEventArgs): void {

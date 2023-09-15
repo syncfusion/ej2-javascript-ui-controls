@@ -586,8 +586,8 @@ export class FreeTextAnnotation {
                         break;
                     } else if (property === 'dynamicText') {
                         if (pageAnnotations[i].dynamicText !== annotationBase.dynamicText) {
+                            isEdited =true;
                             this.pdfViewer.fireCommentEdit(pageAnnotations[i].annotName, annotationBase.dynamicText, pageAnnotations[i]);
-                            isEdited = true;
                         }
                         pageAnnotations[i].dynamicText = annotationBase.dynamicText;
                     } else if (property === 'fontColor') {

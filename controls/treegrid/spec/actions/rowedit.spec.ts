@@ -2276,6 +2276,12 @@ describe('Edit module', () => {
     beforeAll((done: Function) => {
         let dataBound: EmitType<Object> = () => { done(); };
         jasmine.Ajax.install();
+        spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+          new Response(JSON.stringify({ d: data.slice(0, 3), __count: 3 }), {
+            status: 200,
+
+          })
+        ));
         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
         dataManager = new DataManager({
@@ -2301,11 +2307,7 @@ describe('Edit module', () => {
               ]
             });
         gridObj.appendTo('#Grid');
-        this.request = jasmine.Ajax.requests.mostRecent();
-        this.request.respondWith({
-            status: 200,
-            responseText: JSON.stringify({d:  data.slice(0,3), __count: 3})
-        });
+        this.request = window.fetch['calls'].mostRecent();
     });
 
     it('Add Row - No Selection', function (done) {
@@ -3255,6 +3257,219 @@ describe('ActionBegin action called twice while on Row Editing - 828869', () => 
     gridObj.actionBegin = actionBegin;
     gridObj.startEdit(gridObj.getRows()[0]);
     expect(count).toBe(1);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });  
+});
+
+describe('Code coverage improment', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'startDate', headerText: 'Start Date' }
+            ]
+      },
+      done
+    );
+  });
+  it('check the removeEventListener Binding', (done: Function) => {
+    gridObj.isDestroyed = false;
+    gridObj.editModule.removeEventListener();
+    done();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('Remote Data Editing with Below Mode', () => {
+    
+  let gridObj: TreeGrid;
+  let elem: HTMLElement = createElement('div', { id: 'Grid' });
+  let request: JasmineAjaxRequest;
+  let dataManager: DataManager;
+  let originalTimeout: number;
+  let actionBegin: (args: any) => void;
+  let actionComplete: (args: any) => void;
+  beforeAll((done: Function) => {
+      let dataBound: EmitType<Object> = () => { done(); };
+      spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+        new Response(JSON.stringify({ d: data.slice(0, 3), __count: 3 }), {
+          status: 200,
+
+        })
+      ));
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
+      dataManager = new DataManager({
+          url: 'http://localhost:50499/Home/UrlData',
+          crossDomain: true
+      });
+      document.body.appendChild(elem);
+      gridObj = new TreeGrid(
+          {
+              dataSource: dataManager, dataBound: dataBound,
+              hasChildMapping: 'isParent',
+              idMapping: 'TaskID',
+              toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+              editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
+              parentIdMapping: 'parentID',
+              treeColumnIndex: 1,
+              columns: [
+                  { field: "TaskID", headerText: "Task Id" },
+                  { field: "TaskName", headerText: "Task Name" },
+                  { field: "StartDate", headerText: "Start Date" },
+                  { field: "EndDate", headerText: "End Date" },                    
+                  { field: "Progress", headerText: "Progress" }
+            ]
+          });
+      gridObj.appendTo('#Grid');
+      this.request = window.fetch['calls'].mostRecent();
+  });
+
+  it('Add Row - No Selection', function (done) {
+      actionComplete = function (args) {
+          if (args.requestType === 'add') {
+              expect(args.row.rowIndex).toBe(0);
+              done();
+          }
+      };
+      gridObj.actionComplete = actionComplete;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+  });
+  it('Add Row - ActionBegin Event', function (done) {
+      var formEle = gridObj.grid.editModule.formObj.element;
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'Progress', formEle) as any).value = '23';
+      actionBegin = function (args) {
+          expect(args.data.TaskName === 'first').toBe(true);
+          done();
+      };
+      gridObj.actionBegin = actionBegin;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+  });
+  afterAll(() => {
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+      gridObj.destroy();
+      remove(elem);
+      jasmine.Ajax.uninstall();
+  });
+});
+
+describe('Remote Data Editing with Above Mode', () => {
+    
+  let gridObj: TreeGrid;
+  let elem: HTMLElement = createElement('div', { id: 'Grid' });
+  let request: JasmineAjaxRequest;
+  let dataManager: DataManager;
+  let originalTimeout: number;
+  let actionBegin: (args: any) => void;
+  let actionComplete: (args: any) => void;
+  beforeAll((done: Function) => {
+      let dataBound: EmitType<Object> = () => { done(); };
+      spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+        new Response(JSON.stringify({ d: data.slice(0, 3), __count: 3 }), {
+          status: 200,
+
+        })
+      ));
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
+      dataManager = new DataManager({
+          url: 'http://localhost:50499/Home/UrlData',
+          crossDomain: true
+      });
+      document.body.appendChild(elem);
+      gridObj = new TreeGrid(
+          {
+              dataSource: dataManager, dataBound: dataBound,
+              hasChildMapping: 'isParent',
+              idMapping: 'TaskID',
+              toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+              editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Above' },
+              parentIdMapping: 'parentID',
+              treeColumnIndex: 1,
+              columns: [
+                  { field: "TaskID", headerText: "Task Id" },
+                  { field: "TaskName", headerText: "Task Name" },
+                  { field: "StartDate", headerText: "Start Date" },
+                  { field: "EndDate", headerText: "End Date" },                    
+                  { field: "Progress", headerText: "Progress" }
+            ]
+          });
+      gridObj.appendTo('#Grid');
+      this.request = window.fetch['calls'].mostRecent();
+  });
+
+  it('Add Row - No Selection', function (done) {
+      actionComplete = function (args) {
+          if (args.requestType === 'add') {
+              expect(args.row.rowIndex).toBe(0);
+              done();
+          }
+      };
+      gridObj.actionComplete = actionComplete;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+  });
+  it('Add Row - ActionBegin Event', function (done) {
+      var formEle = gridObj.grid.editModule.formObj.element;
+      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
+      (select('#' + gridObj.grid.element.id + 'Progress', formEle) as any).value = '23';
+      actionBegin = function (args) {
+          expect(args.data.TaskName === 'first').toBe(true);
+          done();
+      };
+      gridObj.actionBegin = actionBegin;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+  });
+  afterAll(() => {
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+      gridObj.destroy();
+      remove(elem);
+      jasmine.Ajax.uninstall();
+  });
+});
+
+describe('Code coverage improment', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        allowPaging: true,
+        treeColumnIndex: 1,
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
+        height: '410',
+        columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left'},
+            { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+        ]
+      },
+      done
+    );
+  });
+  it('Check double click on treegrid expand', () => {
+    let event: MouseEvent = new MouseEvent('dblclick', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+    gridObj.getRowByIndex(0).querySelector('.e-treegridexpand').dispatchEvent(event);
+    // expect(gridObj.grid.getDataRows()[0]['dataset'].uid === 'grid-row39').toBe(true);
   });
   afterAll(() => {
     destroy(gridObj);

@@ -27,9 +27,17 @@ export class PeriodSelector {
     public selectedPeriod: PeriodsModel;
     public datePickerTriggered: boolean;
     public rootControl: StockChart | RangeNavigator;
+    public isDatetimeCategory: boolean = false;
+    public sortedData: number[] = [];
+    private startValue: number = 0;
+    private endValue: number = 0;
     //constructor for period selector
     constructor(control: RangeNavigator | StockChart) {
         this.rootControl = control;
+        if (this.rootControl.getModuleName() === 'stockChart') {
+            this.sortedData = (this.rootControl as StockChart).sortedData;
+            this.isDatetimeCategory = (this.rootControl as StockChart).isDateTimeCategory;
+        }
     }
     /**
      * To set the control values
@@ -162,6 +170,9 @@ export class PeriodSelector {
                             this.control.startValue = this.changedRange(
                                 period.intervalType, this.control.endValue, period.interval
                             ).getTime();
+                            if (this.isDatetimeCategory) {
+                                this.control.startValue = this.rootControl.getModuleName() !== 'stockChart' ? this.findStartValue(this.control.startValue, this.control.endValue) : this.rootControl.startValue;
+                            }
                             this.control.startValue = (period.text && period.text.toLowerCase() === 'all') ? this.control.seriesXMin : this.control.startValue;
                             this.control.endValue = (period.text && period.text.toLowerCase() === 'all') ? this.control.seriesXMax : this.control.endValue;
                             this.selectedIndex = (this.nodes.childNodes.length - buttons.length) + index;
@@ -183,12 +194,15 @@ export class PeriodSelector {
         this.triggerChange = true;
         if (enableCustom) {
             this.datePicker = new DateRangePicker({
-                min: new Date(this.control.seriesXMin),
-                max: new Date(this.control.seriesXMax),
+                min: this.isDatetimeCategory ? new Date(this.sortedData[this.control.seriesXMin]) : new Date(this.control.seriesXMin),
+                max: this.isDatetimeCategory ? new Date(this.sortedData[this.control.seriesXMax]) : new Date(this.control.seriesXMax),
                 // eslint-disable-next-line no-useless-escape
                 format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
-                showClearButton: false, startDate: new Date(this.control.startValue),
-                endDate: new Date(this.control.endValue),
+                showClearButton: false,
+                startDate: this.isDatetimeCategory ? new Date(this.sortedData[Math.floor(this.control.startValue)]) :
+                    new Date(this.control.startValue),
+                endDate: this.isDatetimeCategory ? new Date(this.sortedData[Math.floor(this.control.endValue)]) :
+                    new Date(this.control.endValue),
                 created: () => {
                     if (selctorArgs.enableCustomFormat) {
                         const datePicker: HTMLCollection = <HTMLCollection>document.getElementsByClassName('e-date-range-wrapper');
@@ -218,20 +232,29 @@ export class PeriodSelector {
                 },
                 change: (args: RangeEventArgs) => {
                     if (this.triggerChange) {
+                        if (this.isDatetimeCategory) {
+                            this.startValue = (args.startDate as Date).getTime();
+                            this.endValue = (args.endDate as Date).getTime();
+                            this.findPeriodValue(this.startValue , this.endValue);
+                        }
                         if (this.control.rangeSlider && args.event) {
                             if (this.rootControl.getModuleName() !== 'stockChart') {
-                                this.control.rangeNavigatorControl.startValue = args.startDate.getTime();
-                                this.control.rangeNavigatorControl.endValue = args.endDate.getTime();
+                                this.control.rangeNavigatorControl.startValue = this.isDatetimeCategory ? this.startValue :
+                                    args.startDate.getTime();
+                                this.control.rangeNavigatorControl.endValue = this.isDatetimeCategory ? this.endValue :
+                                    args.endDate.getTime();
                                 this.selectedIndex = undefined;
                                 this.selectedPeriod = null;
                                 this.control.rangeNavigatorControl.refresh();
                             }
                             this.control.rangeSlider.performAnimation(
-                                (args.startDate as Date).getTime(), (args.endDate as Date).getTime(), this.control.rangeNavigatorControl
+                                this.isDatetimeCategory ? this.startValue : (args.startDate as Date).getTime(), this.isDatetimeCategory ?
+                                    this.endValue : (args.endDate as Date).getTime(), this.control.rangeNavigatorControl
                             );
                         } else if (args.event) {
-                            (this.rootControl as StockChart).rangeChanged((args.startDate as Date).getTime(),
-                                                                          (args.endDate as Date).getTime());
+                            (this.rootControl as StockChart).rangeChanged(this.isDatetimeCategory ? this.startValue :
+                                (args.startDate as Date).getTime(), this.isDatetimeCategory ? this.endValue :
+                                (args.endDate as Date).getTime());
                         }
                         this.nodes = this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
                         if (!(this.rootControl as StockChart).resizeTo && this.control.rangeSlider && this.control.rangeSlider.isDrag) {
@@ -248,6 +271,27 @@ export class PeriodSelector {
                 }
             });
             this.datePicker.appendTo('#' + this.calendarId);
+        }
+    }
+
+    /**
+     * To find start and end value
+     * @param startValue
+     * @param endValue
+     */
+
+    private findPeriodValue(startValue: number, endValue: number): void {
+        for (let index: number = 0; index < (this.sortedData).length; index++) {
+            if ((this.sortedData[index as number]) >= startValue) {
+                this.startValue = index;
+                break;
+            }
+        }
+        for (let index: number = this.sortedData.length - 1; index >= 0; index--) {
+            if ((this.sortedData[index as number]) <= endValue) {
+                this.endValue = index;
+                break;
+            }
         }
     }
 
@@ -376,22 +420,32 @@ export class PeriodSelector {
             }
         } else if (clickedEle.text.toLowerCase() === 'ytd') {
             if (slider) {
-                updatedStart = new Date(new Date(slider.currentEnd).getFullYear().toString()).getTime();
+                updatedStart = this.isDatetimeCategory ?
+                    new Date(new Date(this.sortedData[Math.floor(slider.currentEnd)]).getFullYear().toString()).getTime() :
+                    new Date(new Date(slider.currentEnd).getFullYear().toString()).getTime();
+                updatedStart = this.isDatetimeCategory ? this.findStartValue(updatedStart, slider.currentEnd) : updatedStart;
                 updatedEnd = slider.currentEnd;
                 slider.performAnimation(updatedStart, updatedEnd, this.control.rangeNavigatorControl);
             } else {
-                updatedStart = new Date(new Date((this.rootControl as StockChart).currentEnd).getFullYear().toString()).getTime();
+                updatedStart = this.isDatetimeCategory ? new Date(
+                    new Date(this.sortedData[Math.floor((this.rootControl as StockChart).currentEnd)]).getFullYear().toString()).getTime() :
+                    new Date(new Date((this.rootControl as StockChart).currentEnd).getFullYear().toString()).getTime();
+                updatedStart = this.isDatetimeCategory ? this.findStartValue(updatedStart, (this.rootControl as StockChart).currentEnd) :
+                    updatedStart;
                 updatedEnd = (this.rootControl as StockChart).currentEnd;
                 (this.rootControl as StockChart).rangeChanged(updatedStart, updatedEnd);
             }
         } else if (clickedEle.text.toLowerCase() !== '') {
             if (slider) {
                 updatedStart = this.changedRange(button[0].intervalType, slider.currentEnd, button[0].interval).getTime();
+                updatedStart = this.isDatetimeCategory ? this.findStartValue(updatedStart, slider.currentEnd) : updatedStart;
                 updatedEnd = slider.currentEnd;
                 slider.performAnimation(updatedStart, updatedEnd, this.control.rangeNavigatorControl);
             } else {
                 updatedStart = this.changedRange(button[0].intervalType, (this.rootControl as StockChart).currentEnd,
                                                  button[0].interval).getTime();
+                updatedStart = this.isDatetimeCategory ? this.findStartValue(updatedStart, (this.rootControl as StockChart).currentEnd) :
+                    updatedStart;
                 updatedEnd = (this.rootControl as StockChart).currentEnd;
                 (this.rootControl as StockChart).rangeChanged(updatedStart, updatedEnd);
             }
@@ -405,7 +459,20 @@ export class PeriodSelector {
             (element.querySelectorAll('.e-range-header')[0] as HTMLElement).style.display = 'none';
         }
     }
+    /**
+     * To find the start value
+     * @param startValue
+     * @param endValue
+     */
 
+    public findStartValue(startValue: number, endValue: number): number {
+        for (let index: number = Math.floor(endValue); index >= 0; index--) {
+            if (this.sortedData[index as number] <= startValue) {
+                return (index + 1);
+            }
+        }
+        return 0;
+    }
     /**
      *
      * @param type updatedRange for selector
@@ -414,7 +481,7 @@ export class PeriodSelector {
      */
 
     public changedRange(type: RangeIntervalType, end: number, interval: number): Date {
-        const result: Date = new Date(end);
+        const result: Date = this.isDatetimeCategory ? new Date(this.sortedData[Math.floor(end)]) : new Date(end);
         switch (type) {
         case 'Quarter':
             result.setMonth(result.getMonth() - (3 * interval));

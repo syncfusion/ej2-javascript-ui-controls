@@ -122,6 +122,7 @@ export class TreeMapTooltip {
                 enable: true,
                 header: '',
                 data: args['data'],
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 template: args['template'] as any,
                 content: args['text'],
                 shapes: [],

@@ -61,6 +61,7 @@ export class EditTooltip {
      * @returns {void} .
      */
     private updateTooltipPosition(args: TooltipEventArgs): void {
+        args.element.style.visibility = 'visible';
         const parentWithZoomStyle = this.parent.element.closest('[style*="zoom"]') as HTMLElement;
         if (isNullOrUndefined(parentWithZoomStyle)) {
             const containerPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.chartPane);
@@ -70,8 +71,8 @@ export class EditTooltip {
                 tooltipPositionX += leftEnd - (tooltipPositionX + args.element.offsetWidth);
             }
             args.element.style.left = tooltipPositionX + 'px';
+            args.element.style.visibility = 'visible';
         }
-        args.element.style.visibility = 'visible';
     }
     /**
      * To show/hide taskbar edit tooltip.

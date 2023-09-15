@@ -819,7 +819,7 @@ export class LargeIconsView {
                 && (e.ctrlKey || target.classList.contains(CLS.CHECK))) {
                 action = 'unselect';
             }
-            if(e.ctrlKey && e.shiftKey) {   
+            if (e.ctrlKey && e.shiftKey) {   
                 this.isSelectAllCalled = true;
             }
             const fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection(action, item);
@@ -862,7 +862,7 @@ export class LargeIconsView {
                 this.triggerSelect(action, item);
             }
         } else {
-            if(this.parent.selectedItems.length === this.itemList.length) {   
+            if (this.parent.selectedItems.length === this.itemList.length) {   
                 this.isSelectAllCalled = true;
             }
             this.clearSelection();
@@ -1432,7 +1432,7 @@ export class LargeIconsView {
     private triggerSelection(action: string, item: Element): FileSelectionEventArgs {
         // eslint-disable-next-line
         const data: object[] = [];
-        if(this.isSelectAllCalled){
+        if (this.isSelectAllCalled){
             for (let i: number = 0, len: number =this.itemList.length; i< len; i++ ) {
                 data[i as number] = this.getItemObject(this.itemList[i as number]);
             }
@@ -1450,7 +1450,7 @@ export class LargeIconsView {
     private triggerSelect(action: string, item: Element): void {
         // eslint-disable-next-line
         const data: object[] = [];
-        if(this.isSelectAllCalled){
+        if (this.isSelectAllCalled){
             for (let i: number = 0, len: number =this.itemList.length; i< len; i++ ) {
                 data[i as number] = this.getItemObject(this.itemList[i as number]);
             }

@@ -256,6 +256,16 @@ describe('Map layer testing', () => {
             label.refresh();
         })
 
+        it('label  animationDuration testing spec', () => {
+            label.loaded = (args: ILoadedEventArgs) => {
+                spec = document.getElementById('label_LayerIndex_0_shapeIndex_0_LabelIndex_0')
+                let visibility: string = spec.getAttribute('visibility')
+                expect(visibility).toEqual('hidden');
+            }
+            label.layers[0].dataLabelSettings.animationDuration = 1000;
+            label.refresh();
+        })
+
         it('checking with datalabel template', () => {
             label.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById('label_LayerIndex_0_Label_Template_Group');

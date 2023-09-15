@@ -65,12 +65,13 @@
               @include focused-icon-color;
               background: $menu-li-bgcolor;
               @if $skin-name == 'Material3' {
-                border-radius: 20px;
+                border-radius: 2px;
               }
             }
           }
 
-          &.e-selected {
+          &.e-selected,
+          &.e-active-item {
             color: $menu-selected-color;
             outline: $menu-li-selected-outline;
             outline-offset: $menu-li-selected-outline-offset;
@@ -84,7 +85,7 @@
               background: $menu-li-selection-bgcolor;
             }
             @if $skin-name == 'Material3' {
-              border-radius: 20px;
+              border-radius: 2px;
             }
 
             & .e-caret {
@@ -150,7 +151,8 @@
             }
           }
 
-          &.e-selected {
+          &.e-selected,
+          &.e-active-item {
             @if $skin-name == 'bootstrap4' {
               & .e-caret {
                 color: $menu-icon-focussed-color;
@@ -170,7 +172,8 @@
             @include focused-color;
           }
 
-          &.e-selected {
+          &.e-selected,
+          &.e-active-item {
             @include selected-color;
           }
 
@@ -204,6 +207,9 @@
           & .e-icons {
             color: $menu-icon-focussed-color;
           }
+        }
+        @else if $skin-name == 'Material3' {
+          border-radius: 2px;
         }
         @else {
           background: $menu-li-bgcolor;
@@ -267,6 +273,7 @@
       }
 
       & .e-menu .e-menu-item.e-selected,
+      & .e-menu .e-menu-item.e-active-item,
       & .e-menu .e-menu-item.e-focused {
         background: rgba(transparent, .056);
         color: inherit;
@@ -289,6 +296,7 @@
 
       @if $skin-name == 'bootstrap4' {
         & .e-selected .e-caret,
+        & .e-active-item .e-caret,
         & .e-caret {
           color: $submenu-color;
         }

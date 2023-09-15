@@ -16,10 +16,10 @@ import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';
-import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset } from '../common/utils/helper';
+import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset, withInBounds } from '../common/utils/helper';
 import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement, getTextAnchor } from '../common/utils/helper';
 import { appendClipElement, ChartLocation } from '../common/utils/helper';
-import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel, RangeColorSettingModel, titleSettingsModel } from './chart-model';
+import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel, RangeColorSettingModel, titleSettingsModel, titleBorderModel } from './chart-model';
 import { MarginModel, BorderModel, ChartAreaModel, FontModel, TooltipSettingsModel } from '../common/model/base-model';
 import { getSeriesColor, Theme, getThemeColor } from '../common/model/theme';
 import { IndexesModel } from '../common/model/base-model';
@@ -332,6 +332,41 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
 }
 
+/**
+ * Configures the borders in the chart title.
+ */
+
+export class titleBorder extends ChildProperty<titleBorder> {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default 'transparent'
+     */
+
+    @Property('transparent')
+    public color: string;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public width: number;
+
+    /**
+     * corder radius for the border.
+     *
+     * @default 0.8
+     */
+
+    @Property(0.8)
+    public cornerRadius: number;
+
+}
+
 export class titleSettings extends ChildProperty<titleSettings> {
 
     /**
@@ -434,6 +469,22 @@ export class titleSettings extends ChildProperty<titleSettings> {
 
    @Property(0)
    public y: number;
+
+   /**
+    * Background of the title border.
+    *
+    * @default 'transparent'
+    */
+
+   @Property('transparent')
+   public background: string;
+
+   /**
+    * Options to customize the border of the chart title.
+    */
+
+   @Complex<titleBorderModel>({}, titleBorder)
+   public border: titleBorderModel;
 
 }
 /**
@@ -779,8 +830,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Options for customizing the Subtitle of the Chart.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
-    public subTitleStyle: FontModel;
+    @Complex<titleSettingsModel>({fontFamily: null, size: "14px", fontStyle: 'Normal', fontWeight: '400', color: null}, titleSettings)
+    public subTitleStyle: titleSettingsModel;
     /**
      *  Options to customize left, right, top and bottom margins of the chart.
      */
@@ -1653,6 +1704,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public scaleX: number = 1;
     /** @private */
     public scaleY: number = 1;
+    public isCrosshair: boolean = true;
     /**
      * `markerModule` is used to manipulate and add marker to the series.
      *
@@ -1779,7 +1831,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.tooltip.format = 'High : <b>${point.high}</b><br/>Low :' +
                     ' <b>${point.low}</b><br/>Open : <b>${point.open}</b><br/>Close : <b>${point.close}</b>';
             }
-            this.animateSeries = false;
         }
 
         this.element.setAttribute('dir', this.enableRtl ? 'rtl' : '');
@@ -2358,20 +2409,22 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         } else if (this.legendSettings.position !== 'Top' && this.border.width) { elementSpacing = 10; }
         let top: number = margin.top + elementSpacing + this.border.width + this.chartArea.border.width * 0.5;
         let height: number = this.availableSize.height - top - this.border.width - margin.bottom;
+        const marginTotal: number = subTitleHeight + titleHeight + this.titleStyle.border.width + this.subTitleStyle.border.width;
         switch (this.titleStyle.position) {
             case 'Top':
-                top += subTitleHeight + titleHeight;
-                height -= (titleHeight + subTitleHeight);
+                top += marginTotal;
+                height -= marginTotal;
                 break;
             case 'Bottom':
-                height -= (titleHeight + subTitleHeight);
+                height -= marginTotal;
                 break;
             case 'Left':
-                left += titleHeight + subTitleHeight;
-                width -= (titleHeight + subTitleHeight);
+                left += marginTotal;
+                width -= marginTotal;
                 break;
             case 'Right':
-                width -= (titleHeight + subTitleHeight);
+                left -= (this.titleStyle.border.width + this.subTitleStyle.border.width);
+                width -= marginTotal;
                 break;
         }
         if (this.stockChart && this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
@@ -2601,30 +2654,43 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private renderTitle(): void {
         let rect: Rect;
         const margin: MarginModel = this.margin;
+        let elementSpacing: number = 5;
         if (this.title) {
             let getAnchor: string = getTextAnchor(this.titleStyle.textAlignment, this.enableRtl);
             const elementSize: Size = measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont);
             rect = new Rect(
                 margin.left, 0, this.availableSize.width - margin.left - margin.right, 0
             );
+            const borderWidth: number = this.titleStyle.border.width;
             let positionY: number = this.margin.top + ((elementSize.height) * 3 / 4);
-            let positionX: number = titlePositionX(rect, this.titleStyle || this.themeStyle.chartTitleFont);
+            let positionX: number = titlePositionX(rect, this.titleStyle || this.themeStyle.chartTitleFont) + borderWidth;
             let rotation: string;
             let alignment: Alignment = this.titleStyle.textAlignment;
+            let subtitleSize = measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont);
             switch (this.titleStyle.position) {
+                case 'Top':
+                    positionY += borderWidth * 0.5;
+                    positionX += getAnchor === 'start' ? borderWidth * 0.5 + this.border.width :
+                        getAnchor === 'end' ? ((-borderWidth * 2) - this.border.width) : 0;
+                    break;
                 case 'Bottom':
-                    positionY = this.availableSize.height - this.margin.bottom - (elementSize.height);
+                    positionX += getAnchor === 'start' ? (borderWidth * 0.5) + this.border.width :
+                        getAnchor === 'end' ? (-borderWidth * 2) - this.border.width : 0;
+                    positionY = this.availableSize.height - this.margin.bottom - subtitleSize.height - (elementSize.height / 2) -
+                        (borderWidth * 0.5) - (this.subTitleStyle.border.width * 0.5);
                     break;
                 case 'Left':
-                    positionX = this.margin.left + ((elementSize.height) * 3 / 4);
-                    positionY = alignment == 'Near' ? margin.bottom : alignment == 'Far' ? this.availableSize.height - margin.bottom : this.availableSize.height / 2;
+                    positionX = this.margin.left + ((elementSize.height) * 3 / 4) + (borderWidth * 0.5);
+                    positionY = alignment == 'Near' ? margin.bottom + (borderWidth * 0.5) + this.border.width :
+                        alignment == 'Far' ? this.availableSize.height - margin.bottom - (borderWidth * 0.5) - this.border.width : this.availableSize.height / 2;
                     getAnchor = alignment == 'Near' ? 'end' : alignment == 'Far' ? 'start' : 'middle';
                     getAnchor = this.enableRtl ? (getAnchor === 'end' ? 'start' : getAnchor === 'start' ? 'end' : getAnchor) : getAnchor;
                     rotation = 'rotate(' + -90 + ',' + positionX + ',' + positionY + ')';
                     break;
                 case 'Right':
-                    positionX = this.availableSize.width - this.margin.right - ((elementSize.height) * 3 / 4);
-                    positionY = alignment == 'Near' ? margin.bottom : alignment == 'Far' ? this.availableSize.height - margin.bottom : this.availableSize.height / 2;
+                    positionX = this.availableSize.width - this.margin.right - ((elementSize.height) * 3 / 4) - (borderWidth * 0.5);
+                    positionY = alignment == 'Near' ? margin.bottom + (borderWidth * 0.5) + this.border.width :
+                        alignment == 'Far' ? this.availableSize.height - margin.bottom - (borderWidth * 0.5) - this.border.width : this.availableSize.height / 2;
                     getAnchor = alignment == 'Near' ? 'start' : alignment == 'Far' ? 'end' : 'middle';
                     getAnchor = this.enableRtl ? (getAnchor === 'end' ? 'start' : getAnchor === 'start' ? 'end' : getAnchor) : getAnchor;
                     rotation = 'rotate(' + 90 + ',' + positionX + ',' + positionY + ')';
@@ -2635,6 +2701,23 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     getAnchor = 'middle';
                     break;
             }
+            let borderOptions = {
+                'id': this.element.id + '_ChartTitleBorder',
+                'x': positionX - (getAnchor === 'middle' ? (elementSize.width / 2) + elementSpacing : getAnchor === 'end' ? elementSize.width + elementSpacing : elementSpacing),
+                'y': positionY - elementSize.height + (elementSize.height / 4),
+                'rx': this.titleStyle.border.cornerRadius,
+                'ry': this.titleStyle.border.cornerRadius,
+                'width': elementSize.width + (elementSpacing * 2),
+                'height': elementSize.height * this.titleCollection.length,
+                'fill': this.titleStyle.background,
+                'stroke-width': borderWidth,
+                'stroke': this.titleStyle.border.color,
+                'transform': rotation ? rotation : '',
+                'd': ''
+            };
+            let htmlObject: Element = redrawElement(this.redraw, this.element.id + '_ChartTitleBorder', borderOptions, this.renderer)
+                || this.renderer.drawRectangle(borderOptions);
+            appendChildElement(this.enableCanvas, this.svgObject, htmlObject, this.redraw);
             const options: TextOption = new TextOption(
                 this.element.id + '_ChartTitle',
                 positionX, positionY,
@@ -2663,7 +2746,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
             maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
         }
-        const subTitleElementSize: Size = measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont);
+        const subTitleElementSize: Size = measureText(this.subTitleCollection.reduce((a, b) => (a.length > b.length ? a : b)), this.subTitleStyle, this.themeStyle.chartSubTitleFont);
+        const getAnchor = getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl);
         const rect: Rect = new Rect(
             alignment === 'Center' ? (options.x - maxWidth * 0.5) : alignment === 'Far' ? options.x - maxWidth : options.x,
             0, maxWidth, 0
@@ -2671,12 +2755,34 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.titleStyle.position === 'Left') {
             rect.x = alignment === 'Center' ? (options.x - maxWidth * 0.5) : alignment == 'Far' ? this.margin.left + ((subTitleElementSize.height) * 3 / 4) : (options.x - maxWidth);
         }
+        const elementSize: Size = measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont);
+        let positionY: number = options.y * options.text.length + subTitleElementSize.height + (padding/2) + this.titleStyle.border.width + (this.subTitleStyle.border.width * 0.5);
+        if (this.titleStyle.position === 'Bottom') {
+            positionY = options.y * options.text.length + (padding/2) + (elementSize.height / 2) + (subTitleElementSize.height / 2);
+        }
+        let borderOptions = {
+            'id': this.element.id + '_ChartSubTitleBorder',
+            'x': titlePositionX(rect, this.subTitleStyle) - (getAnchor === 'middle' ? (subTitleElementSize.width / 2) + padding /2 : getAnchor === 'end' ? subTitleElementSize.width + padding/2 : padding/2),
+            'y': positionY - subTitleElementSize.height + (subTitleElementSize.height / 4),
+            'rx': this.subTitleStyle.border.cornerRadius,
+            'ry': this.subTitleStyle.border.cornerRadius,
+            'width': subTitleElementSize.width + padding,
+            'height': subTitleElementSize.height * this.subTitleCollection.length,
+            'fill': this.subTitleStyle.background,
+            'stroke-width': this.subTitleStyle.border.width,
+            'stroke': this.subTitleStyle.border.color,
+            'transform': options.transform,
+            'd': ''
+        };
+        let htmlObject: Element = redrawElement(this.redraw, this.element.id + '_ChartSubTitleBorder', borderOptions, this.renderer)
+            || this.renderer.drawRectangle(borderOptions);
+        appendChildElement(this.enableCanvas, this.svgObject, htmlObject, this.redraw);
         const subTitleOptions: TextOption = new TextOption(
             this.element.id + '_ChartSubTitle',
             titlePositionX(
                 rect, this.subTitleStyle
             ),
-            options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding,
+            positionY,
             getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl), this.subTitleCollection, options.transform, 'auto'
         );
         const element: Element = redrawElement(this.redraw, this.element.id + '_ChartSubTitle', subTitleOptions, this.renderer) ||
@@ -2875,6 +2981,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (element) { element.remove(); }
         let highlightElement: HTMLElement = document.getElementById(this.element.id + '_ej2_chart_highlight');
         if (highlightElement) { highlightElement.remove(); }
+        removeElement('chartmeasuretext');
         /**
          * To fix react timeout destroy issue.
          */
@@ -3036,6 +3143,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.mouseX = (e && e.originalEvent.changedTouches) ? (e.originalEvent.changedTouches[0].clientX) : 0;
         this.mouseY = (e && e.originalEvent.changedTouches) ? (e.originalEvent.changedTouches[0].clientY) : 0;
         this.startMove = true;
+         this.allowPan = this.stockChart ? false : this.allowPan;
         this.setMouseXY(this.mouseX, this.mouseY);
         this.notify('tapHold', e);
         return false;
@@ -3923,6 +4031,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 args: [this]
             });
         }
+        if (this.chartAreaType !== 'PolarRadar' && this.crosshair.enable) {
+            modules.push({
+                member: 'Crosshair',
+                args: [this]
+            });
+        }
         if (this.chartAreaType !== 'PolarRadar' && !this.scrollSettingEnabled && (zooming.enableSelectionZooming
             || zooming.enableMouseWheelZooming || zooming.enablePinchZooming || zooming.enablePan || zooming.enableScrollbar || zooming.showToolbar)) {
             modules.push({
@@ -3964,12 +4078,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (enableAnnotation) {
             modules.push({
                 member: 'Annotation',
-                args: [this]
-            });
-        }
-        if (this.chartAreaType !== 'PolarRadar' && this.crosshair.enable) {
-            modules.push({
-                member: 'Crosshair',
                 args: [this]
             });
         }
@@ -4274,6 +4382,77 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
+     * Displays a tooltip for the data points. 
+     * 
+     * @param {object} x - Specifies the x value of the point or x coordinate. 
+     * @param {number} y - Specifies the x value of the point or y coordinate. 
+     * @param {boolean} isPoint - Specifies whether x and y are data point or chart coordinates. 
+     * @returns {void} 
+     */
+    public showTooltip(x: number | string | Date, y: number, isPoint: boolean = false): void {
+        if (isPoint) {
+            for (const series of this.visibleSeries) {
+                for (const point of series.points) {
+                    const pointX: any = series.xAxis.valueType == 'DateTime' ? point.xValue : point.x;
+                    let xValue: any = x;
+                    if (series.xAxis.valueType == 'DateTime') {
+                        xValue = new Date(xValue).getTime();
+                    }
+                    if (x == pointX && y === point.yValue) {
+                        this.mouseX = point.regions[0].x + this.chartAxisLayoutPanel.seriesClipRect.x;
+                        this.mouseY = point.regions[0].y + this.chartAxisLayoutPanel.seriesClipRect.y;
+                        this.tooltipModule.tooltip();
+                        this.markerRender.mouseMoveHandler();
+                        break;
+                    }
+                }
+            }
+        } else {
+            this.mouseX = x as number;
+            this.mouseY = y;
+            this.tooltipModule.mouseMoveHandler();
+            this.markerRender.mouseMoveHandler();
+        }
+    }
+
+    /** 
+     * Hides a tooltip in the chart. 
+     * 
+     * @returns {void} 
+     */
+    public hideTooltip(): void {
+        this.tooltipModule.removeTooltip(Browser.isDevice ? 2000 : 1000);
+    }
+
+    /**
+     * Displays a crosshair for the chart. 
+     * 
+     * @param {object} x - Specifies the x value of the point or x coordinate. 
+     * @param {number} y - Specifies the x value of the point or y coordinate. 
+     * @returns {void} 
+     */ 
+    public showCrosshair(x: number, y: number): void {
+        this.mouseX = x;
+        this.mouseY = y;
+        this.isCrosshair = false;
+        if (withInBounds(this.mouseX, this.mouseY, this.chartAxisLayoutPanel.seriesClipRect)) {
+            this.crosshairModule.crosshair();
+        } else {
+            this.hideCrosshair();
+        }
+        this.isCrosshair = true;
+    }
+    
+    /** 
+     * Hides a tooltip in the chart. 
+     * 
+     * @returns {void} 
+     */
+    public hideCrosshair(): void {
+        this.crosshairModule.removeCrosshair(Browser.isDevice ? 2000 : 1000);
+    }
+
+    /**
      * Called internally if any of the property value changed.
      * @private
      */
@@ -4423,6 +4602,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             this.selectionModule.selectedDataIndexes = this.selectedDataIndexes as Indexes[];
                             this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
                             this.selectionModule.redrawSelection(this, oldProp.selectionMode, true);
+                        } else if (this.highlightModule) {
+                            this.highlightModule.currentMode = this.highlightMode;
+                            this.highlightModule.highlightDataIndexes = this.selectedDataIndexes as Indexes[];
+                            this.highlightModule.styleId = this.element.id + '_ej2_chart_highlight';
+                            this.highlightModule.redrawSelection(this, oldProp.selectionMode, true);
                         }
                         break;
                     case 'selectionMode':
@@ -4447,6 +4631,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         break;
                     case 'theme':
                         this.animateSeries = true; break;
+                    case 'enableRtl':
                     case 'locale':
                     case 'currencyCode':
                         if (this.isBlazor) {

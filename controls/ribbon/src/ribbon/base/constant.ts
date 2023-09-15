@@ -6,6 +6,8 @@ export const ITEM_VERTICAL_CENTER: string = 'e-ribbon-vertical-center';
 /** @hidden */
 export const EXPAND_COLLAPSE_ICON: string = 'e-icons e-drop-icon';
 /** @hidden */
+export const BACKSTAGE_CLOSE_ICON: string = 'e-icons e-arrow-left';
+/** @hidden */
 export const OVERFLOW_ICON: string = 'e-icons e-more-horizontal-1';
 /** @hidden */
 export const VERTICAL_DDB: string = 'e-vertical';
@@ -53,6 +55,14 @@ export const TAB_CONTENT: string = 'e-content';
 export const RIBBON_MINIMIZE: string = 'e-ribbon-minimize';
 /** @hidden */
 export const RIBBON_GROUP: string = 'e-ribbon-group';
+/** @hidden */
+export const RIBBON_SINGLE_BUTTON_SELECTION: string = 'e-ribbon-single-selection';
+/** @hidden */
+export const RIBBON_MULTIPLE_BUTTON_SELECTION: string = 'e-ribbon-multiple-selection';
+/** @hidden */
+export const RIBBON_GROUP_BUTTON: string = 'e-ribbon-group-button';
+/** @hidden */
+export const RIBBON_GROUP_BUTTON_OVERFLOW_POPUP: string = 'e-ribbon-group-button-overflow-popup';
 /** @hidden */
 export const RIBBON_GROUP_CONTAINER: string = 'e-ribbon-group-container';
 /** @hidden */
@@ -115,6 +125,27 @@ export const RIBBON_TOOLTIP_CONTAINER: string = 'e-ribbon-tooltip-container';
 export const RIBBON_TEXT_CONTAINER: string = 'e-ribbon-text-container';
 /** @hidden */
 export const RIBBON_SIMPLIFIED_MODE: string = 'e-ribbon-simplified-mode';
+/** @hidden */
+export const RIBBON_BACKSTAGE_POPUP: string = 'e-ribbon-backstage-popup';
+/** @hidden */
+export const RIBBON_BACKSTAGE_OPEN: string = 'e-ribbon-backstage-open';
+/** @hidden */
+export const RIBBON_BACKSTAGE_CONTENT: string = 'e-ribbon-backstage-content';
+/** @hidden */
+export const RIBBON_SELECTED_CONTENT: string = 'e-ribbon-selected-content';
+/** @hidden */
+export const RIBBON_BACKSTAGE: string = 'e-ribbon-backstage';
+/** @hidden */
+export const RIBBON_BACKSTAGE_MENU: string = 'e-ribbon-backstage-menu';
+/** @hidden */
+export const RIBBON_BACKSTAGE_TEMPLATE: string = 'e-ribbon-backstage-template';
+/** @hidden */
+export const RIBBON_BACKSTAGE_MENU_WRAPPER: string = 'e-ribbon-backstage-wrapper';
+/** @hidden */
+export const RIBBON_BACKSTAGE_ITEMS_WRAPPER: string = 'e-ribbon-backstage-items-wrapper';
+/** @hidden */
+export const RIBBON_BACKSTAGE_TEXT_MENU: string = 'e-blankicon';
+
 
 /** @hidden */
 export const TAB_ID: string = '_tab';
@@ -145,9 +176,19 @@ export const DROPDOWN_ID: string = '_dropdown';
 /** @hidden */
 export const RIBBON_FILE_MENU_ID: string = '_filemenu';
 /** @hidden */
+export const RIBBON_BACKSTAGE_MENU_ID: string = '_backstage';
+/** @hidden */
+export const RIBBON_BACKSTAGE_POPUP_ID: string = '_backstagepopup';
+/** @hidden */
 export const RIBBON_FILE_MENU_LIST: string = '_filemenulist';
 /** @hidden */
+export const RIBBON_MENU_LIST: string = '_menulist';
+/** @hidden */
+export const RIBBON_FOOTER_MENU_LIST: string = '_footermenulist';
+/** @hidden */
 export const RIBBON_HELP_PANE_TEMPLATE_ID: string = '_helppanetemplate';
+/** @hidden */
+export const RIBBON_GROUP_BUTTON_ID: string = '_grpbtn';
 
 /** @hidden */
 export const RIBBON_FILE_MENU_WIDTH: string = '--fileMenuWidth';

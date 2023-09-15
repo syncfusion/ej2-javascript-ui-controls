@@ -2292,7 +2292,7 @@ describe('Copy Paste the child node of group outside the group', () => {
         });
 
         diagram.appendTo('#diagram');
-    });
+        });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
@@ -2303,4 +2303,4 @@ describe('Copy Paste the child node of group outside the group', () => {
         diagram.paste();
         expect((diagram.selectedItems.nodes as any).parentId ==="").toBe(true); done();
     });
-});
+   });

@@ -1,10 +1,11 @@
 import { IDataSet } from '../../src/base/engine';
 import { pivot_dataset } from '../base/datasource.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
+import { createElement, remove, EmitType, getInstance } from '@syncfusion/ej2-base';
 import { ConditionalFormatting } from '../../src/common/conditionalformatting/conditional-formatting';
 import { LoadEventArgs } from '../../src';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 describe('Conditional Formatting', () => {
     beforeAll(() => {
@@ -352,6 +353,11 @@ describe('Conditional Formatting', () => {
                 pivotGridObj.destroy();
             }
             remove(elem);
+            let element = document.querySelector('#' + pivotGridObj.element.id)
+            while(element) {
+                remove(elem);
+                element = document.querySelector('#' + pivotGridObj.element.id)
+            }
         });
     });
     describe(' - UI', () => {
@@ -436,10 +442,15 @@ describe('Conditional Formatting', () => {
         });
         it('Add format', () => {
             expect(true).toBeTruthy();
-            (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
-            (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'Between';
-            (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-            (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+            const conditionalFormatting = document.querySelector('#' + pivotGridObj.element.id + 'conditionalformatting');
+            let element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'measureinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'balance';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'conditioninput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Between';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontnameinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Serif';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontsizeinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
             (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
@@ -455,10 +466,15 @@ describe('Conditional Formatting', () => {
         });
         it('Add format', () => {
             expect(true).toBeTruthy();
-            (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
-            (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'NotBetween';
-            (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-            (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+            const conditionalFormatting = document.querySelector('#' + pivotGridObj.element.id + 'conditionalformatting');
+            let element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'measureinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'balance';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'conditioninput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'NotBetween';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontnameinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Serif';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontsizeinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
             (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
@@ -474,10 +490,15 @@ describe('Conditional Formatting', () => {
         });
         it('Add format', () => {
             expect(true).toBeTruthy();
-            (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'quantity';
-            (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'LessThan';
-            (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-            (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+            const conditionalFormatting = document.querySelector('#' + pivotGridObj.element.id + 'conditionalformatting');
+            let element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'measureinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'quantity';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'conditioninput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'LessThan';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontnameinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Serif';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontsizeinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
             (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
@@ -608,10 +629,15 @@ describe('Conditional Formatting', () => {
         });
         it('Add format', () => {
             expect(true).toBeTruthy();
-            (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
-            (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'Between';
-            (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-            (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+            const conditionalFormatting = document.querySelector('#' + pivotGridObj.element.id + 'conditionalformatting');
+            let element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'measureinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'balance';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'conditioninput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Between';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontnameinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Serif';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontsizeinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
             (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
@@ -627,10 +653,15 @@ describe('Conditional Formatting', () => {
         });
         it('Add format', () => {
             expect(true).toBeTruthy();
-            (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'balance';
-            (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'NotBetween';
-            (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-            (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+            const conditionalFormatting = document.querySelector('#' + pivotGridObj.element.id + 'conditionalformatting');
+            let element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'measureinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'balance';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'conditioninput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'NotBetween';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontnameinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Serif';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontsizeinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
             (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';
@@ -646,10 +677,15 @@ describe('Conditional Formatting', () => {
         });
         it('Add format', () => {
             expect(true).toBeTruthy();
-            (pivotGridObj.conditionalFormattingModule as any).fieldsDropDown[0].value = 'quantity';
-            (pivotGridObj.conditionalFormattingModule as any).conditionsDropDown[0].value = 'LessThan';
-            (pivotGridObj.conditionalFormattingModule as any).fontNameDropDown[0].value = 'Serif';
-            (pivotGridObj.conditionalFormattingModule as any).fontSizeDropDown[0].value = '16px';
+            const conditionalFormatting = document.querySelector('#' + pivotGridObj.element.id + 'conditionalformatting');
+            let element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'measureinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'quantity';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'conditioninput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'LessThan';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontnameinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = 'Serif';
+            element = (conditionalFormatting as any).querySelector('#' + pivotGridObj.element.id + 'fontsizeinput' + 0);
+            (getInstance(element as HTMLElement, DropDownList) as DropDownList).value = '16px';
             (pivotGridObj.conditionalFormattingModule as any).fontColor[0].value = '#f5dd05';
             (pivotGridObj.conditionalFormattingModule as any).backgroundColor[0].value = '#cb04aa';
             (document.querySelector('.e-format-value1') as HTMLInputElement).value = '500';

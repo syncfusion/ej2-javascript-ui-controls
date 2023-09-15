@@ -25,6 +25,10 @@ export class Toolbar {
     /**
      * @private
      */
+    public uploadedFile: string;
+    /**
+     * @private
+     */
     public uploadedDocumentName: string;
     /**
     * @private
@@ -570,8 +574,10 @@ export class Toolbar {
      */
     public resetToolbar(): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            this.currentPageBox.min = 0;
-            this.currentPageBox.value = 0;
+            if (!isNullOrUndefined(this.currentPageBox)){
+                this.currentPageBox.min = 0;
+                this.currentPageBox.value = 0;
+            }
             this.updateTotalPage();
             this.updateToolbarItems();
             if (this.annotationToolbarModule) {
@@ -1630,14 +1636,17 @@ export class Toolbar {
                 // eslint-disable-next-line
                 reader.onload = (e: any): void => {
                     const uploadedFileUrl: string = e.currentTarget.result;
-                    
                     if(isBlazor()) {
                         this.pdfViewer._dotnetInstance.invokeMethodAsync("LoadDocumentFromClient",uploadedFileUrl);
                     } else {
+                        this.uploadedFile = uploadedFileUrl;
                         this.pdfViewer.load(uploadedFileUrl, null);
+                        this.pdfViewerBase.isSkipDocumentPath = true;
+                        this.pdfViewer.documentPath = uploadedFileUrl;
                     }
-                    
-                    
+                    if(!isNullOrUndefined(this.fileInputElement)){
+                        (this.fileInputElement as any).value = '';
+                    }
                 };
             }
         }

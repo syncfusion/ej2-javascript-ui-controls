@@ -849,6 +849,8 @@ export interface PdfExportProperties {
     exportType?: ExportType;
     /** Indicates whether to show the predecessors in exported Pdf */
     showPredecessorLines?: boolean;
+    /** Defines the export options in rendering each row fit to the PDF page width */
+    fitToWidthSettings?: FitToWidthSettings;
 }
 export interface PdfQueryCellInfoEventArgs {
     /** Defines the column of the current cell. */
@@ -936,6 +938,19 @@ export interface ITaskbarStyle {
     criticalProgressColor?: PdfColor;
     /** Defines the child taskbar border color */
     criticalTaskBorderColor?: PdfColor;
+    /** Defines the baseline  color */
+    baselineColor?: PdfColor;
+    /** Defines the baseline border color */
+    baselineBorderColor?: PdfColor;
+}
+
+export interface FitToWidthSettings{
+    /** Specifies whether to export gantt data where each row is adjusted and rendered to fit the PDF document page size. */ 
+    isFitToWidth?: boolean;
+    /** Specifies the grid width in percentage while exporting. */ 
+    gridWidth?: string;
+    /** Specifies the chart width in percentage while exporting. */
+    chartWidth?: string;
 }
 
 export interface IGanttStyle {

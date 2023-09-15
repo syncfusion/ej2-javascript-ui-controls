@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation, createElement } from '@syncfusion/ej2-base';
+import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation, createElement, animationMode } from '@syncfusion/ej2-base';
 import { Browser, isNullOrUndefined as isNOU, getUniqueID, formatUnit, EventHandler, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel, L10n } from '@syncfusion/ej2-base';
 import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined } from '@syncfusion/ej2-base';
@@ -983,7 +983,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         };
         let hideAnimate: ToastAnimationsModel = this.animation.hide;
         let animate: AnimationModel = {
-            duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
+            duration: hideAnimate.duration, name: (<Effect>hideAnimate.effect === <Effect>'None' && animationMode === 'Enable') ? 'FadeOut': hideAnimate.effect, timingFunction: hideAnimate.easing
         };
         const intervalId: number = parseInt(toastEle.id.split('toast_')[1], 10);
         const toastClose: ToastCloseArgs = this.isBlazorServer() ? {
@@ -1255,7 +1255,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     private displayToast(toastEle: HTEle, toastObj?: ToastModel): void {
         const showAnimate: ToastAnimationsModel = this.animation.show;
         const animate: AnimationModel = {
-            duration: showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
+            duration: showAnimate.duration, name: (<Effect>showAnimate.effect === <Effect>"None" && animationMode === 'Enable') ? 'FadeIn':showAnimate.effect, timingFunction: showAnimate.easing
         };
         const toastOpen: ToastOpenArgs = this.isBlazorServer() ? {
             options: toastObj,

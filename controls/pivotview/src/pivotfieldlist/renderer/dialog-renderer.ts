@@ -244,10 +244,23 @@ export class DialogRenderer {
             this.parent.pivotGridModule.actionObj.actionName = '';
             this.parent.pivotGridModule.engineModule = this.parent.engineModule;
             this.parent.pivotGridModule.olapEngineModule = this.parent.olapEngineModule;
-            this.parent.pivotGridModule.
-                setProperties({
-                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
-                }, true);
+            this.parent.pivotGridModule.setProperties({
+                dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+            }, true);
+        }
+        if (this.parent.allowDeferLayoutUpdate && this.parent.allowCalculatedField &&
+            this.parent.dataType === 'pivot' && !this.parent.isAdaptive) {
+            this.parent.engineModule.fieldList = PivotUtil.getClonedFieldList(this.parent.clonedFieldList);
+            let clonedField: string[] = Object.keys(this.parent.engineModule.fieldList);
+            if (this.parent.allowCalculatedField && clonedField.length !== this.parent.engineModule.fields.length) {
+                let fields: string[] =  [];
+                this.parent.engineModule.fields.forEach(field => {
+                    if (clonedField.indexOf(field) !== -1) {
+                        fields[fields.length] = field;
+                    }
+                })
+                this.parent.engineModule.fields = fields;
+            }
         }
         if (this.parent.renderMode === 'Popup' && !isDeferLayoutEnabled) {
             this.parent.dialogRenderer.fieldListDialog.hide();

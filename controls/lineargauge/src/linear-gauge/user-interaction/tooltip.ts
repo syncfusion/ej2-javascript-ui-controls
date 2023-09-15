@@ -182,9 +182,8 @@ export class GaugeTooltip {
         }
         return tooltipEle;
     }
-
-    private svgCreate(svgTooltip: Tooltip, args: ITooltipRenderEventArgs, gauge: LinearGauge, areaRect: ClientRect, fill: string,
-                      template: string | Function, tooltipPos: string, location: GaugeLocation, target: Element, textStyle: FontModel): Tooltip {
+    // eslint-disable-next-line max-len
+    private svgCreate(svgTooltip: Tooltip, args: ITooltipRenderEventArgs, gauge: LinearGauge, areaRect: ClientRect, fill: string, template: string | Function, tooltipPos: string, location: GaugeLocation, target: Element, textStyle: FontModel): Tooltip {
         const tooltipBorder : BorderModel = (target.id.indexOf('Range') > -1) ? args.tooltip.rangeSettings.border : args.tooltip.border;
         textStyle = {
             color: args.tooltip.textStyle.color || textStyle.color,
@@ -198,6 +197,7 @@ export class GaugeTooltip {
             enable: true,
             header: '',
             data: { value: args.content },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             template: template as any,
             content: [SanitizeHtmlHelper.sanitize(args.content)],
             shapes: [],

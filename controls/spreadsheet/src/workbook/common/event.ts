@@ -180,8 +180,6 @@ export const activeCellMergedRange: string = 'activeCellMergedRange';
 /** @hidden */
 export const insertMerge: string = 'insertMerge';
 /** @hidden */
-export const pasteMerge: string = 'pasteMerge';
-/** @hidden */
 export const hideShow: string = 'hideShow';
 /** @hidden */
 export const setCFRule: string = 'setCFRule';

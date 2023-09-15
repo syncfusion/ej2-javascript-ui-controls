@@ -1,0 +1,17 @@
+@include export-module('accordion-material-icons') {
+
+  /*! accordion icons */
+  #{&}.e-accordion {
+
+    .e-tgl-collapse-icon {
+
+      &::before {
+        content: '\e916';
+      }
+
+      &.e-expand-icon {
+        transform: rotate(-180deg);
+      }
+    }
+  }
+}

@@ -38,7 +38,12 @@ describe('OnDemand load Child', () => {
     let originalTimeout: number;
     beforeAll((done: Function) => {
         let dataBound: EmitType<Object> = () => { done(); };
-        jasmine.Ajax.install();
+        spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+            new Response(JSON.stringify({ d:  data.slice(0,3), __count: 3}), {
+                status: 200,
+
+            })
+        ));
         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
         dataManager = new DataManager({
@@ -63,11 +68,7 @@ describe('OnDemand load Child', () => {
               ]
             });
         gridObj.appendTo('#Grid');
-        this.request = jasmine.Ajax.requests.mostRecent();
-        this.request.respondWith({
-            status: 200,
-            responseText: JSON.stringify({d:  data.slice(0,3), __count: 3})
-        });
+        this.request = window.fetch['calls'].mostRecent();
     });
 
     it('Render the data with expaned state', () => {

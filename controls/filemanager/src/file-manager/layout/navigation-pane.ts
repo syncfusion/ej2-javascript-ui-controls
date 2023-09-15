@@ -212,13 +212,13 @@ export class NavigationPane {
             const nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
             if (args.node.getAttribute('data-uid') !== this.parent.pathId[this.parent.pathId.length-1] && !this.isRightClick && !this.isNodeClickCalled || this.isSameNodeClicked) {
                 this.isNodeClickCalled = false;
-                if(!this.isSameNodeClicked)
+                if (!this.isSameNodeClicked)
                 {
                     this.isSameNodeClicked=true;
                     const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: args.isInteracted };
                     this.parent.trigger('fileSelect', selecEventArgs);
                 }
-                if(!this.isRightClick)
+                if (!this.isRightClick)
                 {
                     const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
                     this.parent.trigger('fileOpen', eventArgs);
@@ -232,7 +232,7 @@ export class NavigationPane {
                     this.treeObj.selectedNodes = [args.node.getAttribute("data-uid")];
                 }
             }
-            else if(this.previousSelected[0] !== args.node.getAttribute('data-uid')){
+            else if (this.previousSelected[0] !== args.node.getAttribute('data-uid')){
                 const selecEventArgs: FileSelectEventArgs = { action: args.action, fileDetails: nodeData[0], isInteracted: this.isNodeClickCalled };
                 this.parent.trigger('fileSelect', selecEventArgs);
             }
@@ -250,7 +250,7 @@ export class NavigationPane {
         const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data[0], module: 'NavigationPane' };
         this.parent.trigger('fileOpen',eventArgs);
         this.isNodeClickCalled = true;
-        if(!eventArgs.cancel){
+        if (!eventArgs.cancel){
             updatePath(node, this.parent.itemData[0], this.parent);
             read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
             this.parent.visitedItem = node;
@@ -285,7 +285,6 @@ export class NavigationPane {
             this.parent.pathId = getPathId(args.node);
             this.parent.visitedItem = args.node;
         }
-        this.expandNodeTarget = null;
         if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
             this.expandNodeTarget = 'add';
         }
@@ -341,7 +340,7 @@ export class NavigationPane {
             const layout: string = (this.parent.view === 'LargeIcons') ? 'largeiconsview' : 'detailsview';
             this.parent.notify(events.modelChanged, { module: layout, newProp: { selectedItems: [] } });
         } else if (args.node.getAttribute('data-uid') === this.treeObj.selectedNodes[0] && !this.isNodeClickCalled && !this.isNodeExpandCalled) {
-            if(args.event.which === 3)
+            if (args.event.which === 3)
             {
                 this.isRightClick = true;
             }

@@ -1,0 +1,38 @@
+@include export-module('excel-filter-bootstrap-icons') {
+
+  /*! component icons */
+
+  .e-icon-check::before {
+    content: '\e7ff';
+  }
+
+  #{&}.e-excelfilter {
+    .e-excl-filter-icon::before {
+      content: '\e249';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e246';
+    }
+
+    .e-icon-filter::before {
+      content: '\e946';
+    }
+
+    .e-search-icon::before {
+      content: '\e961';
+    }
+
+    .e-chkcancel-icon::before {
+      content: '\e7a7';
+    }
+
+    .e-sortascending::before {
+      content: '\e734';
+    }
+
+    .e-sortdescending::before {
+      content: '\e733';
+    }
+  }
+}

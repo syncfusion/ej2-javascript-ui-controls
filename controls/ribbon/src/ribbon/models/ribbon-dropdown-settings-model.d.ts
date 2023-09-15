@@ -49,6 +49,13 @@ export interface RibbonDropDownSettingsModel {
     target?: string | HTMLElement;
 
     /**
+     * Specifies whether to create popup element on open.
+     *
+     * @default false
+     */
+    createPopupOnClick?: boolean;
+
+    /**
      * Triggers before closing the DropDownButton popup.
      *
      * @event beforeClose

@@ -9,7 +9,7 @@ import { VisibleRangeModel, Axis } from '../axis/axis';
 import { Series, Points } from './chart-series';
 import { Chart } from '../chart';
 import { AnimationModel } from '../../common/model/base-model';
-import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, animationMode, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
 
@@ -142,7 +142,7 @@ export class LineBase {
         let currentTime: number;
         path.style.visibility = 'hidden';
         animation.animate(path, {
-            duration: option.duration,
+            duration: (option.duration === 0 && animationMode === 'Enable') ? 1000 : option.duration,
             delay: option.delay,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {
@@ -278,7 +278,7 @@ export class LineBase {
         let value: number;
         clipRect.style.visibility = 'hidden';
         new Animation({}).animate(clipRect, {
-            duration: duration,
+            duration: (duration === 0 && animationMode === 'Enable') ? 1000 : duration,
             delay: animation.delay,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {

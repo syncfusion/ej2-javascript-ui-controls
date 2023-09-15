@@ -1,5 +1,5 @@
 import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
-import { createElement, remove, isNullOrUndefined, EmitType, closest, getInstance } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined, EmitType, closest, getInstance, select } from '@syncfusion/ej2-base';
 import { pivot_dataset } from '../base/datasource.spec';
 import { IDataSet } from '../../src/base/engine';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -12,6 +12,7 @@ import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { Dialog } from '@syncfusion/ej2-popups';
 
 /**
  * Pivot keyboard interaction spec
@@ -107,7 +108,9 @@ describe('Pivot Rendering', () => {
         it('Check enter formula action', (done: Function) => {
             (document.querySelector('.e-calculated-field') as HTMLElement).click();
             addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[0] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            cField.keyActionHandler({ action: 'enter', currentTarget: cField.dialog.element, preventDefault: (): void => { /** Null */ } });
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '"Count(_id)"').toBeTruthy();
@@ -118,7 +121,9 @@ describe('Pivot Rendering', () => {
         it('Check enter formula action', (done: Function) => {
             removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[0] as HTMLElement)], ['e-hover', 'e-node-focus']);
             addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            cField.keyActionHandler({ action: 'enter', currentTarget: cField.dialog.element, preventDefault: (): void => { /** Null */ } });
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '"Count(product)"').toBeTruthy();
@@ -129,7 +134,9 @@ describe('Pivot Rendering', () => {
             (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '10';
             removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
             addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[1] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            cField.keyActionHandler({ action: 'enter', currentTarget: cField.dialog.element, preventDefault: (): void => { /** Null */ } });
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '10"Sum(advance)"').toBeTruthy();
@@ -140,7 +147,9 @@ describe('Pivot Rendering', () => {
             (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '10';
             removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[1] as HTMLElement)], ['e-hover', 'e-node-focus']);
             addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            cField.keyActionHandler({ action: 'enter', currentTarget: cField.dialog.element, preventDefault: (): void => { /** Null */ } });
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '10"Count(product)"').toBeTruthy();
@@ -151,7 +160,9 @@ describe('Pivot Rendering', () => {
         it('Check menu action', () => {
             removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
             addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[1] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            cField.keyActionHandler({ action: 'moveRight', currentTarget: cField.dialog.element, preventDefault: (): void => { /** Null */ } });
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'moveRight', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
             expect(true).toBeTruthy();
             cField.closeDialog();
         });
@@ -574,7 +585,9 @@ describe('Pivot Rendering', () => {
             }, 1000);
         });
         it('agrregation options check', (done: Function) => {
-            let dialogElement: HTMLElement = (pivotGridObj.pivotButtonModule.menuOption as any).valueDialog.element;
+            const ele: HTMLElement = select('#' + pivotGridObj.element.id + '_ValueDialog', document);
+            let dialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined
+            let dialogElement: HTMLElement = dialog.element;
             let dropdownlist: any = getInstance(dialogElement.querySelector('#' + 'PivotGrid_type_option') as HTMLElement, DropDownList);
             let fieldsddl: any = getInstance(dialogElement.querySelector('#' + 'PivotGrid_base_field_option') as HTMLElement, DropDownList);
             expect(fieldsddl).toBeTruthy;

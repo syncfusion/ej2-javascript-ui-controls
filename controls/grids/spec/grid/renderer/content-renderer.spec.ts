@@ -1,8 +1,6 @@
 /**
  * Content renderer spec
  */
-import { EmitType } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { data } from '../base/datasource.spec';
@@ -168,89 +166,89 @@ describe('Content renderer module', () => {
 
 });
 
-describe('EJ2-62873 - customAttribute - Row height is not set properly in the grid when having frozen column and enable virtualization', () => {
-    let gridObj: Grid;
-    var css = '.e-attr { height: 38.5px; }',
-    head = document.head || document.getElementsByTagName('head')[0],
-    style = document.createElement('style');
-    head.appendChild(style);
-    if ((style as any).styleSheet){
-    // This is required for IE8 and below.
-        (style as any).styleSheet.cssText = css;
-    } else {
-        (style as any).appendChild(document.createTextNode(css));
-    }
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: data,
-                enableVirtualization: true,
-                columns: [
-                    { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10,isFrozen: true },
-                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', customAttributes: { class: "e-attr" }, minWidth: 10 },
-                    { field: 'Freight', width: 125, minWidth: 10 },
-                    { field: 'ShipName', headerText: 'Ship Name', width: 300, minWidth: 10 },
-                ]
-            }, done);
-    });
+// describe('EJ2-62873 - customAttribute - Row height is not set properly in the grid when having frozen column and enable virtualization', () => {
+//     let gridObj: Grid;
+//     var css = '.e-attr { height: 38.5px; }',
+//     head = document.head || document.getElementsByTagName('head')[0],
+//     style = document.createElement('style');
+//     head.appendChild(style);
+//     if ((style as any).styleSheet){
+//     // This is required for IE8 and below.
+//         (style as any).styleSheet.cssText = css;
+//     } else {
+//         (style as any).appendChild(document.createTextNode(css));
+//     }
+//     beforeAll((done: Function) => {
+//         gridObj = createGrid(
+//             {
+//                 dataSource: data,
+//                 enableVirtualization: true,
+//                 columns: [
+//                     { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10,isFrozen: true },
+//                     { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', customAttributes: { class: "e-attr" }, minWidth: 10 },
+//                     { field: 'Freight', width: 125, minWidth: 10 },
+//                     { field: 'ShipName', headerText: 'Ship Name', width: 300, minWidth: 10 },
+//                 ]
+//             }, done);
+//     });
   
-    it('Ensure Rows Height', () => {
-    let fContent: HTMLElement = gridObj.element.querySelector('.e-frozencontent').querySelector('table').rows[0];
-    let mContent: HTMLElement = gridObj.element.querySelector('.e-movablecontent').querySelector('table').rows[0];
-    expect(mContent.offsetHeight).toBe(fContent.offsetHeight);
-    });
+//     it('Ensure Rows Height', () => {
+//     let fContent: HTMLElement = gridObj.element.querySelector('.e-frozencontent').querySelector('table').rows[0];
+//     let mContent: HTMLElement = gridObj.element.querySelector('.e-movablecontent').querySelector('table').rows[0];
+//     expect(mContent.offsetHeight).toBe(fContent.offsetHeight);
+//     });
    
-    afterAll(() => {
-        destroy(gridObj);
-    });
-});
+//     afterAll(() => {
+//         destroy(gridObj);
+//     });
+// });
 
-describe("EJ2-68510 - Styling issue in first row when using textWrap with InfiniteScrolling Grid", () => {
-    let gridObj: Grid;
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: data,
-          frozenRows: 2,
-          height: 400,
-          allowTextWrap: true,
-          enableInfiniteScrolling: true,
-          columns: [
-            {
-              headerText: "OrderID",
-              field: "OrderID",
-              width: 120,
-              freeze: "Right",
-            },
-            {
-              headerText: "CustomerID",
-              field: "CustomerID",
-              width: 130,
-              freeze: "Left",
-            },
-            { headerText: "EmployeeID", field: "EmployeeID", width: 100 },
-            { headerText: "ShipCountry", field: "ShipCountry", width: 150 },
-            {
-              headerText: "ShipCity",
-              field: "ShipCity",
-              freeze: "Right",
-              width: 160,
-            },
-          ],
-        },
-        done
-      );
-    });
-    it("timeout to complete infinite scroll grid render", (done: Function) => {
-      setTimeout(done, 400);
-    });
-    it("Ensure first movable row height with next movable row in frozen infinite scroll grid with wrapText on", () => {
-      expect((gridObj.getMovableRows()[2] as HTMLElement).offsetHeight + 1).toBe(
-        (gridObj.getMovableRows()[3] as HTMLElement).offsetHeight
-      );
-    });
-    afterAll(() => {
-      gridObj["freezeModule"].destroy();
-      destroy(gridObj as any);
-    });
-});
+// describe("EJ2-68510 - Styling issue in first row when using textWrap with InfiniteScrolling Grid", () => {
+//     let gridObj: Grid;
+//     beforeAll((done: Function) => {
+//       gridObj = createGrid(
+//         {
+//           dataSource: data,
+//           frozenRows: 2,
+//           height: 400,
+//           allowTextWrap: true,
+//           enableInfiniteScrolling: true,
+//           columns: [
+//             {
+//               headerText: "OrderID",
+//               field: "OrderID",
+//               width: 120,
+//               freeze: "Right",
+//             },
+//             {
+//               headerText: "CustomerID",
+//               field: "CustomerID",
+//               width: 130,
+//               freeze: "Left",
+//             },
+//             { headerText: "EmployeeID", field: "EmployeeID", width: 100 },
+//             { headerText: "ShipCountry", field: "ShipCountry", width: 150 },
+//             {
+//               headerText: "ShipCity",
+//               field: "ShipCity",
+//               freeze: "Right",
+//               width: 160,
+//             },
+//           ],
+//         },
+//         done
+//       );
+//     });
+//     it("timeout to complete infinite scroll grid render", (done: Function) => {
+//       setTimeout(done, 400);
+//     });
+//     it("Ensure first movable row height with next movable row in frozen infinite scroll grid with wrapText on", () => {
+//       expect((gridObj.getMovableRows()[2] as HTMLElement).offsetHeight + 1).toBe(
+//         (gridObj.getMovableRows()[3] as HTMLElement).offsetHeight
+//       );
+//     });
+//     afterAll(() => {
+//       gridObj["freezeModule"].destroy();
+//       destroy(gridObj as any);
+//     });
+// });

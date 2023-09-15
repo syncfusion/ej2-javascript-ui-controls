@@ -365,6 +365,9 @@ export class Link {
             if (this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
                 this.quickToolObj.inlineQTBar.hidePopup();
             }
+            if (this.quickToolObj.textQTBar && this.parent.element.ownerDocument.body.contains(this.quickToolObj.textQTBar.element)) {
+                this.quickToolObj.textQTBar.hidePopup();
+            }
         }
     }
 

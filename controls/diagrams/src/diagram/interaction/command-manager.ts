@@ -15,7 +15,7 @@ import { TextElement } from '../core/elements/text-element';
 import { View } from '../objects/interface/interfaces';
 import { PointModel } from '../primitives/point-model';
 import { MouseEventArgs } from './event-handlers';
-import { PointPortModel } from '../objects/port-model';
+import { PointPortModel, PortModel } from '../objects/port-model';
 import { ConnectorModel, StraightSegmentModel, OrthogonalSegmentModel, BezierSegmentModel } from '../objects/connector-model';
 import { BpmnTransactionSubProcessModel, BpmnAnnotationModel, SwimLaneModel, LaneModel } from '../objects/node-model';
 import { OrthogonalSegment } from '../objects/connector';
@@ -24,7 +24,7 @@ import { Diagram } from '../../diagram/diagram';
 import { DiagramElement, Corners } from './../core/elements/diagram-element';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './../primitives/matrix';
 import { cloneObject as clone, cloneObject, getBounds, getFunction, getIndex } from './../utility/base-util';
-import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition, findParentInSwimlane } from './../utility/diagram-util';
+import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition, findParentInSwimlane, findPortIndex } from './../utility/diagram-util';
 import { updatePathElement, cloneBlazorObject, getUserHandlePosition, cloneSelectedObjects } from './../utility/diagram-util';
 import { updateDefaultValues } from './../utility/diagram-util';
 import { randomId, cornersPointsBeforeRotation } from './../utility/base-util';
@@ -60,7 +60,7 @@ import { swapBounds, findPoint, orthoConnection2Segment, End, getIntersection } 
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { SegmentInfo } from '../rendering/canvas-interface';
-import { PointPort } from '../objects/port';
+import { PathPort, PointPort, Port } from '../objects/port';
 import { MarginModel } from '../core/appearance-model';
 import { renderContainerHelper } from './container-interaction';
 import { checkChildNodeInContainer, checkParentAsContainer, addChildToContainer } from './container-interaction';
@@ -221,6 +221,8 @@ export class CommandHandler {
                 content = template ? template : content;
             }
         }
+        //840454- support to provide isSticky property for tooltip in diagram control
+        (this.diagram.tooltipObject as Tooltip).isSticky = false;    
         if (isBlazor() && isTooltipVisible) {
             this.diagram.tooltipObject.close();
         }
@@ -718,7 +720,7 @@ export class CommandHandler {
      */
     public findTarget(
         element: DiagramElement, argsTarget: IElement,
-        source?: boolean, connection?: boolean): NodeModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel {
+        source?: boolean, connection?: boolean): NodeModel | ConnectorModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel {
         let target: NodeModel | PointPortModel;
         if (argsTarget instanceof Node) {
             if (element && element.id === argsTarget.id + '_content') {
@@ -746,6 +748,21 @@ export class CommandHandler {
             if (element instanceof PathElement) {
                 for (let i: number = 0; i < argsTarget.ports.length; i++) {
                     const port: PointPortModel = argsTarget.ports[parseInt(i.toString(), 10)];
+                    if (element.id === argsTarget.id + '_' + port.id) {
+                        return port;
+                    }
+                }
+            }
+        }
+        // Feature 826644: Support to add ports to the connector.
+        // Added below condition to find the target connector port.
+        if (argsTarget instanceof Connector) {
+            if (element && element.id === argsTarget.id + '_content') {
+                return argsTarget;
+            }
+            if (element instanceof PathElement) {
+                for (let i: number = 0; i < argsTarget.ports.length; i++) {
+                    const port: PortModel = argsTarget.ports[parseInt(i.toString(), 10)];
                     if (element.id === argsTarget.id + '_' + port.id) {
                         return port;
                     }
@@ -877,7 +894,7 @@ export class CommandHandler {
             newChanges[`${nodeEndId}`] = connector[`${nodeEndId}`] as Connector;
             oldChanges[`${portEndId}`] = connector[`${portEndId}`];
             returnargs = this.connectionEventChange(connector, oldChanges, newChanges, endPoint, canCancel);
-        } else {
+        } else if( target instanceof Port) {
             oldNodeId = connector[`${nodeEndId}`];
             oldPortId = connector[`${portEndId}`];
             connector[`${portEndId}`] = target.id;
@@ -1427,7 +1444,7 @@ export class CommandHandler {
                     if((copy as Node).parentId){
                         let parentObj: NodeModel = this.diagram.getObject((copy as Node).parentId);
                         if(parentObj.shape.type !== "SwimLane" && (copy as Node).parentId){
-                            (copy as Node).parentId = "";
+                        (copy as Node).parentId = "";
                         }
                     }
                     if (getObjectType(copy) === Connector) {
@@ -1642,9 +1659,9 @@ export class CommandHandler {
 
     private cloneGroup(obj: NodeModel, multiSelect: boolean): NodeModel {
         let value: NodeModel;
-        const newChildren: string[] = [];
         let sourceId: string;
         let targetId: string;
+        const newChildren: string[] = [];
         let children: string[] = [];
         const connectorObj: ConnectorModel[] = [];
         let newObj: NodeModel | ConnectorModel;
@@ -4996,11 +5013,20 @@ Remove terinal segment in initial
         const port: PointPortModel = this.findTarget(portElement, obj as IElement) as PointPortModel;
         const bounds: Rect = getBounds(obj.wrapper);
         if (port && canDrag(port, this.diagram)) {
-            oldValues = this.getPortChanges(obj, port as PointPort);
-            port.offset.x += (tx / bounds.width);
-            port.offset.y += (ty / bounds.height);
-            changedvalues = this.getPortChanges(obj, port as PointPort);
-            this.diagram.nodePropertyChange(obj as Node, oldValues as Node, changedvalues as Node);
+            // Feature 826644: Support to add ports to the connector. Added below condition to check connector port.
+            if(obj instanceof Node) {
+                oldValues = this.getPortChanges(obj, port as PointPort);
+                port.offset.x += (tx / bounds.width);
+                port.offset.y += (ty / bounds.height);
+                changedvalues = this.getPortChanges(obj, port as PointPort);
+                this.diagram.nodePropertyChange(obj as Node, oldValues as Node, changedvalues as Node);
+            }else{
+                oldValues = this.getConnectorPortChanges(obj, port as PathPort);
+                this.updatePortOffset(obj as Connector, port as PathPort, tx, ty);
+                (port as PathPort).alignment = 'Center';
+                changedvalues = this.getConnectorPortChanges(obj, port as PathPort);
+                this.diagram.connectorPropertyChange(obj as Connector, oldValues as Connector, changedvalues as Connector);
+            }
             this.diagram.updateDiagramObject(obj);
         }
     }
@@ -5081,6 +5107,7 @@ Remove terinal segment in initial
         let newOffset: PointModel = intermediatePoints[intermediatePoints.length - 1];
         totalLength = Point.getLengthFromListOfPoints(intermediatePoints);
         if (intersetingPts.length > 0) {
+            label.dragLimit = label.dragLimit ? label.dragLimit : {};
             if (label.dragLimit.top || label.dragLimit.bottom || label.dragLimit.left || label.dragLimit.right) {
                 const minDistance: Distance = { minDistance: null };
                 newOffset = this.getRelativeOffset(currentPosition, intermediatePoints, minDistance);
@@ -5117,6 +5144,80 @@ Remove terinal segment in initial
             this.updateLabelMargin(object, label, null, currentPosition, size, tx, ty);
         }
     }
+    // Feature 826644: Support to add ports to the connector.
+    // Added below method to update the port offset when we drag the port.
+    private updatePortOffset(
+        object: Connector, port: PathPort, tx: number, ty: number, newPosition?: PointModel, size?: Size): void {
+        const textWrapper: DiagramElement = this.diagram.getWrapper(object.wrapper, port.id);
+        const offsetX: number = textWrapper.offsetX;
+        const offsetY: number = textWrapper.offsetY; let offset: PointModel;
+        const intermediatePoints: PointModel[] = object.intermediatePoints;
+        let prev: PointModel; let pointLength: number = 0; let totalLength: number = 0;
+        let intersectingOffset: PointModel;
+        let currentPosition:PointModel;
+        switch(port.verticalAlignment){
+        case 'Center':
+            if(port.horizontalAlignment === 'Center'){
+                currentPosition = (newPosition) ? newPosition : { x: offsetX + tx, y: offsetY + ty};
+            }
+            else if(port.horizontalAlignment === 'Right'){
+                currentPosition = (newPosition) ? newPosition : { x: offsetX+(textWrapper.actualSize.width)/2  +tx, y: offsetY +ty};
+            }
+            else if(port.horizontalAlignment === 'Left'){
+                currentPosition = (newPosition) ? newPosition : { x: offsetX-(textWrapper.actualSize.width)/2  +tx, y: offsetY +ty};
+            }
+            break;
+        case 'Top':
+            if(port.horizontalAlignment === 'Center'){
+                currentPosition = (newPosition) ? newPosition : { x: offsetX + tx, y: offsetY - (textWrapper.actualSize.height)/2  + ty};
+            }
+            else if(port.horizontalAlignment === 'Right'){
+                currentPosition = (newPosition) ? newPosition : { x: offsetX + (textWrapper.actualSize.width)/2 + tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
+            }
+            else if(port.horizontalAlignment === 'Left'){
+                currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.actualSize.width)/2 + tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
+            }
+            break;
+        case 'Bottom':
+            if(port.horizontalAlignment === 'Center'){
+                currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
+            }
+            else if(port.horizontalAlignment === 'Right'){
+                currentPosition = (newPosition) ? newPosition : { x: offsetX+ (textWrapper.actualSize.width)/2 +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
+            }
+            else if(port.horizontalAlignment === 'Left'){
+                currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.actualSize.width)/2 +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
+            }
+            break;
+        }
+        const intersectingPoints: PointModel[] = this.getInterceptWithSegment(currentPosition, intermediatePoints);
+        let newOffset: PointModel = intermediatePoints[intermediatePoints.length - 1];
+        totalLength = Point.getLengthFromListOfPoints(intermediatePoints);
+        if (intersectingPoints.length > 0) {
+            intersectingOffset = intersectingPoints[intersectingPoints.length - 1];
+            newOffset = intersectingOffset;
+            if (newOffset) {
+                let p: number; let bounds: Rect;
+                for (p = 0; p < intermediatePoints.length; p++) {
+                    if (prev != null) {
+                        bounds = Rect.toBounds([prev, intermediatePoints[parseInt(p.toString(), 10)]]);
+                        if (bounds.containsPoint(newOffset)) {
+                            pointLength += Point.findLength(prev, newOffset);
+                            break;
+                        } else {
+                            pointLength += Point.findLength(prev, intermediatePoints[parseInt(p.toString(), 10)]);
+                        }
+                    }
+                    prev = intermediatePoints[parseInt(p.toString(), 10)];
+                }
+                offset = { x: pointLength / totalLength, y: 0 };
+            }
+            this.updateLabelMargin(object, port as any, offset, currentPosition, size, tx, ty);
+        } else {
+            this.updateLabelMargin(object, port as any, null, currentPosition, size, tx, ty);
+        }
+    }
+
 
     private getRelativeOffset(currentPosition: PointModel, points: PointModel[], minDistance: Distance): PointModel {
         let newOffset: PointModel; let distance: number; let pt: PointModel; let i: number;
@@ -5154,7 +5255,7 @@ Remove terinal segment in initial
             const length: number = Point.getLengthFromListOfPoints(node.intermediatePoints);
             const point: PointModel = this.getPointAtLength(length * offset.x, node.intermediatePoints, 0);
             const curZoomfactor: number = this.diagram.scrollSettings.currentZoom;
-            const dragLimit: MarginModel = label.dragLimit;
+            const dragLimit: MarginModel = label.dragLimit ? label.dragLimit : { left: 0, right: 0, top: 0, bottom: 0 };
             if (dragLimit.top || dragLimit.bottom || dragLimit.left || dragLimit.right) {
                 const labelBounds: DiagramElement = this.diagram.getWrapper(node.wrapper, label.id);
                 const contentDimension: Rect = new Rect(0, 0, 0, 0);
@@ -5292,6 +5393,20 @@ Remove terinal segment in initial
         };
         return { annotations: annotations };
     }
+    // Feature 826644: Support to add ports to the connector. Added below method to get port values before and after drag.
+      /** @private */
+      public getConnectorPortChanges(object: NodeModel | ConnectorModel, label: PathPort): Object {
+        const index: string = findPortIndex(object as NodeModel, label.id, true);
+        const ports: Object = {};
+        ports[index] = {
+            width: label.width, height: label.height, offset:(label as PathPort).offset,
+            margin: { left: label.margin.left, right: label.margin.right, top: label.margin.top, bottom: label.margin.bottom },
+            horizontalAlignment: label.horizontalAlignment, verticalAlignment: label.verticalAlignment,
+            alignment: ((object instanceof Connector) ? (label as PathPort).alignment : undefined)
+        };
+        return { ports: ports };
+    }
+
 
     /** @private */
     public getPortChanges(object: NodeModel | ConnectorModel, port: PointPort): Object {
@@ -5815,14 +5930,14 @@ Remove terinal segment in initial
      */
     public renderHighlighter(args: MouseEventArgs, connectHighlighter?: boolean, source?: boolean): void {
         const bounds: Rect = new Rect();
-        if ((args.target instanceof Node) || (connectHighlighter && (args.source instanceof  Node))) {
+        if ((args.target instanceof Node || args.target instanceof Connector) || (connectHighlighter && (args.source instanceof  Node || args.source instanceof Connector))) {
             const tgt: IElement = connectHighlighter ? args.source : args.target;
             const tgtWrap: DiagramElement = connectHighlighter ? args.sourceWrapper : args.targetWrapper;
             const target: NodeModel | PointPortModel = this.findTarget(tgtWrap, tgt, source, true) as (NodeModel | PointPortModel);
             let element: DiagramElement;
             if (target instanceof BpmnSubEvent) {
                 const portId: string = target.id;
-                const node: NodeModel = args.target;
+                const node: NodeModel | ConnectorModel = args.target;
                 const parent: Canvas = ((node.wrapper.children[0] as Canvas).children[0] as Canvas).children[2] as Canvas;
                 for (const child of parent.children) {
                     if (child.id === node.id + '_' + portId) {
@@ -5834,7 +5949,9 @@ Remove terinal segment in initial
                 element = (target instanceof Node) ?
                     target.wrapper : connectHighlighter ? args.sourceWrapper : args.targetWrapper;
             }
-            this.diagram.renderHighlighter(element);
+            if(element && !(target instanceof Connector)){
+                this.diagram.renderHighlighter(element);
+            }
         }
     }
 

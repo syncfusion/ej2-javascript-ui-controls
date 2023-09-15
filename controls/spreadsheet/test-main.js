@@ -103,6 +103,11 @@ require.config({
             main: 'ej2-calendars.umd.min.js'
         },
         {
+            name: '@syncfusion/ej2-notifications',
+            location: 'node_modules/@syncfusion/ej2-notifications/dist',
+            main:  'ej2-notifications.umd.min.js'
+        },
+        {
             name: '../../../demos/common/data-source',
             location: 'demos/common/',
             main: 'data-source.js'

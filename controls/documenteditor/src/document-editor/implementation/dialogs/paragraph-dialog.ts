@@ -921,6 +921,7 @@ export class ParagraphDialog {
         this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
         this.documentHelper.dialog.close = this.documentHelper.updateFocus;
         this.documentHelper.dialog.dataBind();
+        this.alignment.focusIn();        
         this.documentHelper.dialog.show();
         const dialogElement: HTMLElement = this.documentHelper.dialog.element;
         if (dialogElement) {

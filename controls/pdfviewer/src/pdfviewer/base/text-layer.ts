@@ -66,6 +66,10 @@ export class TextLayer {
     public renderTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any, rtldoc: any): void {
         const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
         const canvasElement: HTMLElement = createElement("canvas");
+        let isRTLText: boolean;
+        if(this.pdfViewerBase.clientSideRendering){
+             isRTLText = false;
+        }
         let linebounds = [];
         var lineContent = [];
         var yValue;
@@ -116,6 +120,17 @@ export class TextLayer {
                         if (newLine !== ' ') {
                             textDiv.style.whiteSpace = 'pre';
                         }
+                        if(this.pdfViewerBase.clientSideRendering){
+                            if (textContent === ' ') {
+                                textDiv.style.whiteSpace = 'pre';
+                            }
+                            if (!isNullOrUndefined(textDiv.textContent) && textContent !== " ") {
+                                isRTLText = this.pdfViewerBase.checkIsRtlText(textDiv.textContent);
+                                textDiv.style.direction = isRTLText ? 'rtl' : 'ltr';
+                            } else {
+                                textDiv.style.direction = isRTLText ? 'rtl' : 'ltr';
+                            }
+                        }
                         if (bounds.Width === 0 && j != linebounds.length - 1 && j != 0) {
                             if (linebounds[j + 1].X - (linebounds[j - 1].X + linebounds[j - 1].Width) < 30 && (!lineContent[j - 1].includes("\r\n") && !(textContents[parseInt(j.toString(), 10)].includes("\u0002")))) {
                                 bounds.Width = linebounds[j + 1].X - (linebounds[j - 1].X + linebounds[j - 1].Width);
@@ -144,7 +159,7 @@ export class TextLayer {
                         const contextWidth: number = context.measureText(lineContent[parseInt(j.toString(), 10)].replace(/(\r\n|\n|\r)/gm, '')).width;
                         if (bounds) {
                             let scale: number;
-                            if (bounds.Rotation === 90) {
+                            if (bounds.Rotation === 90 || (this.pdfViewerBase.clientSideRendering && bounds.Rotation === 270)) {
                                 scale = bounds.Height * this.pdfViewerBase.getZoomFactor() / contextWidth;
                             } else {
                                 scale = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
@@ -220,7 +235,7 @@ export class TextLayer {
                 }
                 if (bounds) {
                     let scale: number;
-                    if (bounds.Rotation === 90) {
+                    if (bounds.Rotation === 90 || (this.pdfViewerBase.clientSideRendering && bounds.Rotation === 270)) {
                         scale = bounds.Height * this.pdfViewerBase.getZoomFactor() / contextWidth;
                     } else {
                         scale = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
@@ -241,58 +256,146 @@ export class TextLayer {
 
     private applyTextRotation(scale: number, textDiv: HTMLElement, rotation: number, textRotation: number, bounds: any): void {
         const scaleString: string = 'scaleX(' + scale + ')';
-        if (rotation === 0) {
-            if (textRotation >= 0 && textRotation < 90) {
-                textDiv.style.transform = scaleString;
-            } else if ((textRotation == 90) || (textRotation == 270)) {
-                if ((textRotation == 270)) {
-                    textDiv.style.left = (bounds.X * this.pdfViewerBase.getZoomFactor()) + "px";
-                    textDiv.style.top = ((bounds.Y + bounds.Width) * this.pdfViewerBase.getZoomFactor()) + "px";
-                    textDiv.style.height = (bounds.Height * this.pdfViewerBase.getZoomFactor()) + "px";
-                    textDiv.style.fontSize = (bounds.Height * this.pdfViewerBase.getZoomFactor()) + "px";
+        if (this.pdfViewerBase.clientSideRendering) {
+            if (rotation === 0) {
+                if (textRotation === 0) {
+                    textDiv.style.transform = scaleString;
+                } else if (textRotation === 90) {
+                    textDiv.style.left = (bounds.X + bounds.Width) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = bounds.Y * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+                } else if (textRotation === 180) {
+                    textDiv.style.left = (bounds.X + bounds.Width) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y + bounds.Height) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+                } else if (textRotation === 270) {
+                    textDiv.style.left = bounds.X * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y + bounds.Height) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+                } else {
+                    textDiv.style.transform = scaleString;
                 }
-                else {
-                    textDiv.style.left = ((bounds.X + bounds.Width) * this.pdfViewerBase.getZoomFactor()) + "px";
-                    textDiv.style.top = (bounds.Y * this.pdfViewerBase.getZoomFactor()) + "px";
-                    textDiv.style.height = (bounds.Width * this.pdfViewerBase.getZoomFactor()) + "px";
-                    textDiv.style.fontSize = (bounds.Width * this.pdfViewerBase.getZoomFactor()) + "px";
-                    textDiv.style.transformOrigin = '0% 0%';
+            } else if (rotation === 1) {
+                let textRotationAngle: number = textRotation + 90;
+                if (textRotationAngle >= 360) {
+                    textRotationAngle -= 360;
                 }
-                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
-            } else {
-                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+                if (textRotation === 0) {
+                    textDiv.style.transform = 'rotate(90deg) ' + scaleString;
+                } else if (textRotation === 90) {
+                    textDiv.style.left = bounds.X * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y + bounds.Width) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + textRotationAngle + 'deg) ' + scaleString;
+                } else if (textRotation === 180) {
+                    textDiv.style.left = (bounds.X - bounds.Height) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y + bounds.Width) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + textRotationAngle + 'deg) ' + scaleString;
+                } else if (textRotation === 270) {
+                    textDiv.style.left = (bounds.X - bounds.Height) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + textRotationAngle + 'deg) ' + scaleString;
+                } else {
+                    textDiv.style.transform = 'rotate(90deg) ' + scaleString;
+                }
+            } else if (rotation === 2) {
+                let textRotationAngle: number = textRotation + 180;
+                if (textRotationAngle >= 360) {
+                    textRotationAngle -= 360;
+                }
+                if (textRotation === 0) {
+                    textDiv.style.transform = 'rotate(180deg) ' + scaleString;
+                } else if (textRotation === 90) {
+                    textDiv.style.left = (bounds.X - bounds.Width) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = bounds.Y * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + (textRotationAngle) + 'deg) ' + scaleString;
+                } else if (textRotation === 180) {
+                    textDiv.style.left = (bounds.X - bounds.Width) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y - bounds.Height) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + (textRotationAngle) + 'deg) ' + scaleString;
+                } else if (textRotation === 270) {
+                    textDiv.style.left = bounds.X * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y - bounds.Height) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + (textRotationAngle) + 'deg) ' + scaleString;
+                } else {
+                    textDiv.style.transform = 'rotate(180deg) ' + scaleString;
+                }
+            } else if (rotation === 3) {
+                let textRotationAngle: number = textRotation + 270;
+                if (textRotationAngle >= 360) {
+                    textRotationAngle -= 360;
+                }
+                if (textRotation === 0) {
+                    textDiv.style.transform = 'rotate(270deg) ' + scaleString;
+                } else if (textRotation === 90) {
+                    textDiv.style.left = bounds.X * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y - bounds.Width) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + (textRotationAngle) + 'deg) ' + scaleString;
+                } else if (textRotation === 180) {
+                    textDiv.style.left = (bounds.X + bounds.Height) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y - bounds.Width) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + (textRotationAngle) + 'deg) ' + scaleString;
+                } else if (textRotation === 270) {
+                    textDiv.style.left = (bounds.X + bounds.Height) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.top = (bounds.Y) * this.pdfViewerBase.getZoomFactor() + "px";
+                    textDiv.style.transform = 'rotate(' + (textRotationAngle) + 'deg) ' + scaleString;
+                } else {
+                    textDiv.style.transform = 'rotate(270deg) ' + scaleString;
+                }
             }
-        } else if (rotation === 1) {
-            if (textRotation === 0) {
-                textDiv.style.transform = 'rotate(90deg) ' + scaleString;
-            } else if (textRotation === -90) {
-                textDiv.style.transform = scaleString;
-            } else {
-                textRotation = textRotation + 90;
-                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
-            }
-        } else if (rotation === 2) {
-            if (textRotation === 0) {
-                textDiv.style.transform = 'rotate(180deg) ' + scaleString;
-            } else if (textRotation === 180) {
-                textDiv.style.transform = scaleString;
-            } else {
-                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
-            }
-        } else if (rotation === 3) {
-            if (textRotation === 0) {
-                textDiv.style.transform = 'rotate(-90deg) ' + scaleString;
-            } else if (textRotation === 90) {
-                textDiv.style.transform = scaleString;
-            } else {
-                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+        } else {
+            if (rotation === 0) {
+                if ((textRotation >= 0 && textRotation < 90)) {
+                    textDiv.style.transform = scaleString;
+                } else if ((textRotation == 90) || (textRotation == 270)) {
+                    if ((textRotation == 270)) {
+                        textDiv.style.left = (bounds.X * this.pdfViewerBase.getZoomFactor()) + "px";
+                        textDiv.style.top = ((bounds.Y + bounds.Width) * this.pdfViewerBase.getZoomFactor()) + "px";
+                        textDiv.style.height = (bounds.Height * this.pdfViewerBase.getZoomFactor()) + "px";
+                        textDiv.style.fontSize = (bounds.Height * this.pdfViewerBase.getZoomFactor()) + "px";
+                    }
+                    else {
+                        textDiv.style.left = ((bounds.X + bounds.Width) * this.pdfViewerBase.getZoomFactor()) + "px";
+                        textDiv.style.top = (bounds.Y * this.pdfViewerBase.getZoomFactor()) + "px";
+                        textDiv.style.height = (bounds.Width * this.pdfViewerBase.getZoomFactor()) + "px";
+                        textDiv.style.fontSize = (bounds.Width * this.pdfViewerBase.getZoomFactor()) + "px";
+                        textDiv.style.transformOrigin = '0% 0%';
+                    }
+                    textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+                } else {
+                    textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+                }
+            } else if (rotation === 1) {
+                if (textRotation === 0) {
+                    textDiv.style.transform = 'rotate(90deg) ' + scaleString;
+                } else if (textRotation === -90) {
+                    textDiv.style.transform = scaleString;
+                } else {
+                    textRotation = textRotation + 90;
+                    textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+                }
+            } else if (rotation === 2) {
+                if (textRotation === 0) {
+                    textDiv.style.transform = 'rotate(180deg) ' + scaleString;
+                } else if (textRotation === 180) {
+                    textDiv.style.transform = scaleString;
+                } else {
+                    textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+                }
+            } else if (rotation === 3) {
+                if (textRotation === 0) {
+                    textDiv.style.transform = 'rotate(-90deg) ' + scaleString;
+                } else if (textRotation === 90) {
+                    textDiv.style.transform = scaleString;
+                } else {
+                    textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+                }
             }
         }
     }
 
     private setTextElementProperties(textDiv: HTMLElement): void {
         textDiv.style.fontFamily = 'serif';
-        textDiv.style.transformOrigin = '0%';
+        textDiv.style.transformOrigin = this.pdfViewerBase.clientSideRendering? '0% 0%' : '0%';
     }
     /**
      * @param {number} pageNumber - The pageNumber.
@@ -421,13 +524,28 @@ export class TextLayer {
      * @private
      */
     // eslint-disable-next-line max-len
-    public convertToSpan(pageNumber: number, divId: number, fromOffset: number, toOffset: number, textString: string, className: string): void {
+    public convertToSpan(pageNumber: number, divId: number, fromOffset: number, toOffset: number, textString: string, className: string, isRTLText?: boolean): void {
         const textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageNumber + '_' + divId);
         const textContent: string = textString.substring(fromOffset, toOffset);
         const node: Node = document.createTextNode(textContent);
         if (className) {
             const spanElement: HTMLElement = createElement('span');
             spanElement.className = className + ' e-pv-text';
+            if (this.pdfViewerBase.clientSideRendering && isRTLText) {
+                if (toOffset === textString.length) {
+                    spanElement.style.left = 0 + 'px';
+                    spanElement.style.top = 0 + 'px';
+                } else {
+                    if (textDiv.style.direction == 'rtl') {
+                        let currentText: string = textDiv.textContent;
+                        textDiv.textContent = textString.substring(toOffset, textString.length);
+                        var textBounds = textDiv.getBoundingClientRect();
+                        spanElement.style.left = textBounds.width + 'px';
+                        spanElement.style.top = 0 + 'px';
+                        textDiv.textContent = currentText;
+                    }
+                }
+            }
             spanElement.appendChild(node);
             textDiv.appendChild(spanElement);
         } else {
@@ -447,6 +565,12 @@ export class TextLayer {
     public applySpanForSelection(startPage: number, endPage: number, anchorOffsetDiv: number, focusOffsetDiv: number, anchorOffset: number, focusOffset: number): void {
         if (this.pdfViewer.textSelectionModule) {
             for (let i: number = startPage; i <= endPage; i++) {
+                let isRTLText: boolean;
+                if(this.pdfViewerBase.clientSideRendering){
+                    let storedData: any = JSON.parse(this.pdfViewerBase.pageTextDetails[this.pdfViewerBase.documentId+ '_' + i + '_textDetails']);
+                    let pageText: string = storedData["pageText"];
+                    isRTLText = this.pdfViewerBase.checkIsRtlText(pageText);
+                }
                 let startId: number;
                 let endId: number;
                 // eslint-disable-next-line
@@ -481,7 +605,7 @@ export class TextLayer {
                                 initId = 0;
                             }
                             lastId = length;
-                            this.convertToSpan(i, j, 0, initId, textContent, null);
+                            this.convertToSpan(i, j, 0, initId, textContent, null, isRTLText);
                         } else if (j === endId && i === endPage) {
                             initId = 0;
                             lastId = focusOffset;
@@ -493,9 +617,9 @@ export class TextLayer {
                             initId = anchorOffset;
                             lastId = focusOffset;
                         }
-                        this.convertToSpan(i, j, initId, lastId, textContent, 'e-pv-maintaincontent');
+                        this.convertToSpan(i, j, initId, lastId, textContent, 'e-pv-maintaincontent', isRTLText);
                         if (j === endId && i === endPage) {
-                            this.convertToSpan(i, j, lastId, textContent.length, textContent, null);
+                            this.convertToSpan(i, j, lastId, textContent.length, textContent, null, isRTLText);
                         }
                     }
                 }
@@ -530,7 +654,7 @@ export class TextLayer {
         textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
         textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
         let textHeight: number;
-        if (rotation === 90) {
+        if (rotation === 90 || (this.pdfViewerBase.clientSideRendering && rotation === 270)) {
             textHeight = width * this.pdfViewerBase.getZoomFactor();
         } else {
             textHeight = height * this.pdfViewerBase.getZoomFactor();

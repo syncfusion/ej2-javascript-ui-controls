@@ -1,8 +1,8 @@
 /**
  * Data spec
  */
-import { createElement, remove, selectAll, select } from '@syncfusion/ej2-base';
-import { EventHandler, ChildProperty, EmitType, debounce } from '@syncfusion/ej2-base';
+import { createElement, selectAll, select } from '@syncfusion/ej2-base';
+import { EmitType } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { CustomSummaryType } from '../../../src/grid/base/type';
@@ -18,11 +18,11 @@ import { Group } from '../../../src/grid/actions/group';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Freeze } from '../../../src/grid/actions/freeze';
-import { DataManager, ODataAdaptor, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { dataBound } from '../../../src';
+import { Page } from '../../../src/grid/actions/page';
 
-Grid.Inject(Aggregate, Edit, Group, Toolbar, Selection, Freeze, Sort);
+Grid.Inject(Aggregate, Edit, Group, Toolbar, Selection, Freeze, Sort, Page);
 
 
 let createGrid: Function = (options: GridModel, done: Function): Grid => {
@@ -1191,11 +1191,11 @@ describe('Aggregates Functionality testing', () => {
         });
 
         it('Footer content  scroll check', () => {
-            grid.element.querySelector('.e-movablecontent').scroll(200, 0);
-            let left : number = (grid.element.querySelector('.e-movablecontent')).scrollLeft;
+            grid.element.querySelector('.e-content').scroll(200, 0);
+            let left : number = (grid.element.querySelector('.e-content')).scrollLeft;
             grid.editModule.updateCell(5, 'ShipRegion', 'updated');
             (grid.aggregateModule as any).footerRenderer.refresh();
-            expect(grid.element.querySelector('.e-movablefootercontent').scrollLeft).toBe(left);
+            expect(grid.element.querySelector('.e-summarycontent').scrollLeft).toBe(left);
         });
 
         afterAll(() => {
@@ -1508,7 +1508,7 @@ describe('Aggregates Functionality testing', () => {
         it('Query selector check', (done:Function) => {
             let dataBound = () => gridObj.autoFitColumns();
             actionComplete = (args: any): void => {
-                expect((gridObj.getFooterContent().querySelector('.e-movablefootercontent').children[0] as any)).toBeDefined();
+                expect((gridObj.getFooterContent().querySelector('.e-summarycontent').children[0] as any)).toBeDefined();
                 done();
             }
             gridObj.dataBound = dataBound;
@@ -1671,6 +1671,45 @@ describe('Aggregates Functionality testing', () => {
         afterAll(() => {
             destroy(grid);
             grid = null;
+        });
+    });
+    describe('Code coverage improvement', () => {
+        let grid: Grid;
+        let rows: HTMLTableRowElement;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', visible: false
+                        },
+                        { field: 'Verified', displayAsCheckbox: true, type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd', type: 'datetime' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Average',
+                            field: 'Freight',
+                            customFormat: 'c2'
+                        }]
+                    }]
+                },
+                done
+            );
+        });
+        it('check the addEventListener Binding', () => {
+            grid.isDestroyed = true;
+            grid.aggregateModule.addEventListener();
+            grid.isDestroyed = false;
+            expect((<AggregateColumn>grid.aggregates[0].columns[0]).format).toBe('c2');
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = rows = null;
         });
     });
 

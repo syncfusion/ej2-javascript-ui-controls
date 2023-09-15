@@ -2,9 +2,13 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
+## 23.1.36 (2023-09-15)
 
 ### Common
+
+#### New Features
+
+- `#F155731` - Provided an option to enable or disable the animation across all Syncfusion components.
 
 #### Bug Fixes
 

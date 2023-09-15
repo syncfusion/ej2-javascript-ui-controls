@@ -97,4 +97,18 @@
       }
     }
   }
+
+  .e-timepicker-mob-popup-wrap .e-timepicker.e-popup-expand,
+  .e-datetimepicker.e-popup-expand {
+  
+    #{if(&, '&', '*')} .e-model-header {
+      background-color: $modal-header-bg-color;
+      color: $modal-header-text-color;
+
+      #{if(&, '&', '*')} .e-popup-close {
+        color: $modal-header-text-color;
+        font-weight: 500;
+      }
+    }
+  }
 }

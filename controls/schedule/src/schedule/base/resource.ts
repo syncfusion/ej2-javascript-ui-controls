@@ -365,6 +365,7 @@ export class ResourceBase {
             nodeClicked: this.resourceClick.bind(this),
             created: this.resourceTreeCreated.bind(this)
         });
+        this.treeViewObj.root = this.parent.root ? this.parent.root : this.parent;
         this.treeViewObj.appendTo(resourceTree);
         this.treeViewObj.expandAll();
         this.treePopup = new Popup(treeWrapper, {

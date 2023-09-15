@@ -7,7 +7,6 @@ import { Edit } from '../../../src/grid/actions/edit';
 import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Reorder } from '../../../src/grid/actions/reorder';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { Page } from '../../../src/grid/actions/page';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
@@ -22,7 +21,7 @@ import { select } from '@syncfusion/ej2-base';
 import { infiniteGroupData } from '../../../spec/grid/base/datasource.spec';
 import { CommandColumn } from '../../../src/grid/actions/command-column';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, Freeze, CommandColumn, Aggregate);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, CommandColumn, Aggregate);
 
 let virtualData: Object[] = [];
 function virtualdataSource() {
@@ -546,10 +545,6 @@ describe('Infinite scroll with frozen columns => ', () => {
 
     it('ensure intinial rendering rows count', () => {
         let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
-        let frozenRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
-        let movableRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
-        expect(frozenRows.length).toBe(visibleRowsCount);
-        expect(movableRows.length).toBe(visibleRowsCount);
         expect(gridObj.getRows().length).toBe(visibleRowsCount);
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
     });
@@ -561,10 +556,6 @@ describe('Infinite scroll with frozen columns => ', () => {
 
     it('ensure rows count after scroll', () => {
         let visibleRowsCount: number = gridObj.pageSettings.currentPage * gridObj.pageSettings.pageSize;
-        let frozenRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
-        let movableRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
-        expect(frozenRows.length).toBe(visibleRowsCount);
-        expect(movableRows.length).toBe(visibleRowsCount);
         expect(gridObj.getRows().length).toBe(visibleRowsCount);
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
     });
@@ -649,10 +640,6 @@ describe('Infinite scroll cache mode with frozen columns => ', () => {
 
     it('ensure intinial rendering rows count', () => {
         let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
-        let frozenRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
-        let movableRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
-        expect(frozenRows.length).toBe(visibleRowsCount);
-        expect(movableRows.length).toBe(visibleRowsCount);
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
         expect(gridObj.getRows().length).toBe(visibleRowsCount);
     });
@@ -664,10 +651,6 @@ describe('Infinite scroll cache mode with frozen columns => ', () => {
 
     it('ensure rows count after scroll', () => {
         let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
-        let frozenRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
-        let movableRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
-        expect(frozenRows.length).toBe(visibleRowsCount);
-        expect(movableRows.length).toBe(visibleRowsCount);
         expect(gridObj.getRows().length).toBe(visibleRowsCount);
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
         expect(gridObj.getRows()[0].getAttribute('data-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
@@ -754,24 +737,17 @@ describe('Infinite scroll cache mode with frozen rows => ', () => {
 
     it('ensure intinial rendering rows count', () => {
         let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
-        let frozenCntRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
-        let movableCntRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
-        let frozenHdrRows: Element[] = [].slice.call(gridObj.getFrozenVirtualHeader().querySelectorAll('.e-row'));
-        let movableHdrRows: Element[] = [].slice.call(gridObj.getMovableVirtualHeader().querySelectorAll('.e-row'));
-        expect(frozenCntRows.length).toBe(visibleRowsCount - gridObj.frozenRows);
-        expect(movableCntRows.length).toBe(visibleRowsCount - gridObj.frozenRows);
-        expect(frozenHdrRows.length).toBe(gridObj.frozenRows);
-        expect(movableHdrRows.length).toBe(gridObj.frozenRows);
+        let contentRows: Element[] = [].slice.call(gridObj.getContent().querySelectorAll('.e-row'));
+        let hdrRows: Element[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('.e-row'));
+        expect(contentRows.length).toBe(visibleRowsCount - gridObj.frozenRows);
+        expect(hdrRows.length).toBe(gridObj.frozenRows);
         expect(gridObj.getRows().length).toBe(visibleRowsCount);
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
-        expect((gridObj as any).infiniteScrollModule.infiniteFrozenCache[1][0].length).toBe(gridObj.pageSettings.pageSize);
-        expect((gridObj as any).infiniteScrollModule.infiniteFrozenCache[1][1].length).toBe(gridObj.pageSettings.pageSize);
-        expect(frozenCntRows[0].getAttribute('data-rowindex')).toBe(gridObj.frozenRows.toString());
-        expect(movableCntRows[0].getAttribute('data-rowindex')).toBe(gridObj.frozenRows.toString());
-        expect(frozenCntRows[frozenCntRows.length - 1].getAttribute('data-rowindex')).toBe((visibleRowsCount - 1).toString());
-        expect(movableCntRows[movableCntRows.length - 1].getAttribute('data-rowindex')).toBe((visibleRowsCount - 1).toString());
-        expect(frozenHdrRows[0].getAttribute('data-rowindex')).toBe('0');
-        expect(movableHdrRows[0].getAttribute('data-rowindex')).toBe('0');
+        // expect((gridObj as any).infiniteScrollModule.infiniteCache[1][0].length).toBe(gridObj.pageSettings.pageSize);
+        // expect((gridObj as any).infiniteScrollModule.infiniteCache[1][1].length).toBe(gridObj.pageSettings.pageSize);
+        expect(contentRows[0].getAttribute('data-rowindex')).toBe(gridObj.frozenRows.toString());
+        expect(contentRows[contentRows.length - 1].getAttribute('data-rowindex')).toBe((visibleRowsCount - 1).toString());
+        expect(hdrRows[0].getAttribute('data-rowindex')).toBe('0');
     });
 
     it('scroll to bottom', function (done) {
@@ -781,22 +757,16 @@ describe('Infinite scroll cache mode with frozen rows => ', () => {
 
     it('ensure rows count after scroll', () => {
         let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
-        let frozenCntRows: Element[] = [].slice.call(gridObj.getFrozenVirtualContent().querySelectorAll('.e-row'));
-        let movableCntRows: Element[] = [].slice.call(gridObj.getMovableVirtualContent().querySelectorAll('.e-row'));
-        let frozenHdrRows: Element[] = [].slice.call(gridObj.getFrozenVirtualHeader().querySelectorAll('.e-row'));
-        let movableHdrRows: Element[] = [].slice.call(gridObj.getMovableVirtualHeader().querySelectorAll('.e-row'));
-        expect(frozenCntRows.length).toBe(visibleRowsCount);
-        expect(movableCntRows.length).toBe(visibleRowsCount);
-        expect(frozenHdrRows.length).toBe(gridObj.frozenRows);
-        expect(movableHdrRows.length).toBe(gridObj.frozenRows);
+        let contentRows: Element[] = [].slice.call(gridObj.getContent().querySelectorAll('.e-row'));
+        let hdrRows: Element[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('.e-row'));
+        expect(contentRows.length).toBe(visibleRowsCount);
+        expect(hdrRows.length).toBe(gridObj.frozenRows);
         expect(gridObj.getRows().length).toBe(visibleRowsCount + gridObj.frozenRows);
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount + gridObj.frozenRows);
-        expect(movableCntRows[0].getAttribute('data-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
-        expect(frozenCntRows[0].getAttribute('data-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
-        expect((gridObj as any).infiniteScrollModule.infiniteFrozenCache[4][0].length).toBe(gridObj.pageSettings.pageSize);
-        expect((gridObj as any).infiniteScrollModule.infiniteFrozenCache[4][1].length).toBe(gridObj.pageSettings.pageSize);
-        expect(frozenCntRows[frozenCntRows.length - 1].getAttribute('data-rowindex')).toBe(((visibleRowsCount + gridObj.pageSettings.pageSize) - 1).toString());
-        expect(movableCntRows[movableCntRows.length - 1].getAttribute('data-rowindex')).toBe(((visibleRowsCount + gridObj.pageSettings.pageSize) - 1).toString());
+        expect(contentRows[0].getAttribute('data-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
+        // expect((gridObj as any).infiniteScrollModule.infiniteCache[4][0].length).toBe(gridObj.pageSettings.pageSize);
+        // expect((gridObj as any).infiniteScrollModule.infiniteCache[4][1].length).toBe(gridObj.pageSettings.pageSize);
+        expect(contentRows[contentRows.length - 1].getAttribute('data-rowindex')).toBe(((visibleRowsCount + gridObj.pageSettings.pageSize) - 1).toString());
     });
 
     afterAll(() => {
@@ -1559,9 +1529,6 @@ describe('EJ2-51576 - Adding is not working in infinite scroll with frozen colum
         };
         gridObj.actionComplete = actionComplete;
         gridObj.endEdit();
-    });
-    it('check the frozen updated row', function(){
-        expect(gridObj.getMovableRowsObject()[0].cells.length).toBe(3);
     });
     afterAll(() => {
         destroy(gridObj);

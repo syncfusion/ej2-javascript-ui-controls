@@ -3,7 +3,7 @@
  * Helper functions for maps control
  */
 import { createElement, isNullOrUndefined, remove, compile as templateComplier, merge, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { AnimationOptions, Animation } from '@syncfusion/ej2-base';
+import { AnimationOptions, Animation, animationMode } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType, ISelectionEventArgs, itemSelection } from '../../index';
 import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel, ZoomToolbarTooltipSettingsModel } from '../index';
@@ -1370,7 +1370,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
     markerCollection.appendChild(ele);
     const element: string = (markerData.length - 1) === dataIndex ? 'marker' : null;
     const markerPoint: Point = new Point(x, y);
-    if (markerSettings.animationDuration > 0) {
+    if (markerSettings.animationDuration > 0 || animationMode === 'Enable') {
         elementAnimate(
             ele, markerSettings.animationDelay, markerSettings.animationDuration, markerPoint, maps, element
         );
@@ -2732,7 +2732,7 @@ export function elementAnimate(
     let height: number = 0;
     const transform: string = element.getAttribute('transform') || '';
     new Animation({}).animate(<HTMLElement>element, {
-        duration: duration,
+        duration: (duration === 0 && animationMode === 'Enable') ? 1000: duration,
         delay: delay,
         progress: (args: AnimationOptions): void => {
             if (args.timeStamp > args.delay) {
@@ -3344,6 +3344,7 @@ export function animate(element: Element, delay: number, duration: number, proce
     // eslint-disable-next-line prefer-const
     let clearAnimation: number;
     const markerStyle: string = 'visibility:visible';
+    duration = animationMode === "Disable" ? 0 : duration;
     const startAnimation: FrameRequestCallback = (timestamp: number) => {
         if (!start) { start = timestamp; }
         const progress: number = timestamp - start;

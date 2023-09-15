@@ -2,105 +2,12 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I482911` - Fixed an issue where the `refreshPosition` method did not correctly append the model dialog to the intended position.
-
-## 22.2.9 (2023-08-15)
-
 ### Tooltip
 
 #### Bug Fixes
 
-- `#I488643` - Resolved an issue where the Tooltip does not update properly for the canvas elements.
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I488643` - Resolved an issue where the Tooltip does not update properly for the rect and g elements.
-
-## 22.2.7 (2023-08-02)
-
-### Spinner
-
-#### Bug Fixes
-
-- `#483152` - Resolved an issue where the `cssClass` property was not able to accept multiple classes.
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I483277` - Fixed a memory leak issue in the dialog component.
-
-## 22.2.5 (2023-07-27)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I473286` - Resolved the incorrect positioning of Tooltip when page is scaled.
-
-## 22.1.38 (2023-07-11)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I477278` - The issue, when enabling the sticky mode the Tooltip component does not stick to its target when page is scrolled has been resolved.
-
-## 22.1.36 (2023-06-28)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I466814` - The Tooltip fit alignment issue when hovering over the last element has been resolved
-
-## 21.2.10 (2023-06-13)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I466814` - The Tooltip alignment issue when hovering over the last element has been resolved.
-
-## 21.2.3 (2023-05-03)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I446416` - The performance issue in ListView while integrating Tooltip has been resolved.
-
-## 21.1.41 (2023-04-18)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I448669` - The issue in Tooltip component while hovering the previous selected item has been resolved.
-
-### Spinner
-
-#### Bug Fixes
-
-- `#I448112` - Now, able to change the Spinner template dynamically.
-
-- `I449008` - Now, Spinner actions on parent element not affecting the child element spinner.
-
-## 21.1.37 (2023-03-29)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I446985` - Now, while using the NVDA screen reader, the entire dialog elements will not be read twice.
+- `#I498062` - The issue with the disabled arrow tip pointer has been resolved.
+- `#I494771` - Provided support to dynamically update the isSticky property value of the Tooltip component.
 
 ## 21.1.35 (2023-03-23)
 

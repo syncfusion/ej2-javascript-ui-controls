@@ -2,25 +2,13 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
 ### Kanban
 
 #### Bug Fixes
 
-- `#I481342` - Now, kanban `virtualization` works properly when a small amount of data is loaded.
+`#I492818` - Now, fast scrolling from top to bottom of the column continuously works properly.
 
-- `#I484188` - Now, column scrolling works properly on Kanban `virtualization` when the Kanban columns have different data sizes.
-
-- `#F45534` - Now, dragging and dropping a card into any position within a column works properly.
-
-## 22.1.38 (2023-07-11)
-
-### Kanban
-
-#### Bug Fixes
-
-- `#I476520`, `#I477525` - Now, dragging and dropping a card into an empty column works properly.
+`#I495751` - Now, dragging a card to the first position in the Kanban works properly without flickering.
 
 ## 22.1.34 (2023-06-21)
 

@@ -1,0 +1,14 @@
+@include export-module('breadcrumb-highcontrast-icons') {
+
+  /*! breadcrumb icons */
+  .e-breadcrumb {
+    .e-breadcrumb-collapsed::before,
+    .e-breadcrumb-menu::before {
+      content: '\eb04';
+    }
+
+    .e-home::before {
+      content: '\e92b';
+    }
+  }
+}

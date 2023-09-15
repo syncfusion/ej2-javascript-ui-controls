@@ -251,10 +251,10 @@ describe('Gantt Selection support', () => {
                 destroyGantt(ganttObj);
             }
         });
-        // it('check selected row index', () => {
-           // ganttObj.selectionModule.selectRow(3);
-            // ganttObj.ganttChartModule.scrollObject.setScrollTop(500);
-            // expect(ganttObj.selectedRowIndex).toBe(3);
+       // it('check selected row index', () => {
+         //   ganttObj.selectionModule.selectRow(3);
+          //  ganttObj.ganttChartModule.scrollObject.setScrollTop(500);
+          //  expect(ganttObj.selectedRowIndex).toBe(3);
         // });
     });
 });

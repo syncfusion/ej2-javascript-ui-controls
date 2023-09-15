@@ -216,7 +216,7 @@ export class CheckBoxSelection {
     }
     private clickHandler(e: MouseEvent): void {
         let target: EventTarget;
-        if ((e.currentTarget as HTMLElement).classList.contains(this.checkAllParent.className)) {
+        if ((e.currentTarget as HTMLElement).classList.contains(this.checkAllParent.className) || ((e.currentTarget as HTMLElement).classList.value === this.checkAllParent.className)) {
             target = (e.currentTarget as HTMLElement).firstElementChild.lastElementChild;
         } else {
             target = <Element>e.currentTarget;

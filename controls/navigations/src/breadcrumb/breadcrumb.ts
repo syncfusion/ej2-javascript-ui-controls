@@ -483,6 +483,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     // list item
                     listBaseOptions.itemClass = '';
                     if (this.itemTemplate) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         listBaseOptions.template = this.itemTemplate as any;
                         isSingleLevel = false;
                     } else {

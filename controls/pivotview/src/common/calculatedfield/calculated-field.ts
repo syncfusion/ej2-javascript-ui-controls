@@ -54,11 +54,8 @@ export class CalculatedField implements IAction {
     /**
      * Internal variables.
      */
-    private dialog: Dialog;
     private treeObj: TreeView;
-    private inputObj: MaskedTextBox;
     private droppable: Droppable;
-    private menuObj: Menu;
     private newFields: ICalculatedFields[];
     private curMenu: Element;
     private isFieldExist: boolean;
@@ -74,9 +71,7 @@ export class CalculatedField implements IAction {
     private isEdit: boolean;
     private currentFieldName: string;
     private currentFormula: string;
-    private confirmPopUp: Dialog;
     private field: string;
-    private accordion: Accordion;
     private formatTypes: string[] = ['Standard', 'Currency', 'Percent', 'Custom', 'None'];
 
     /**
@@ -91,11 +86,8 @@ export class CalculatedField implements IAction {
         this.removeEventListener();
         this.addEventListener();
         this.parentID = this.parent.element.id;
-        this.dialog = null;
-        this.inputObj = null;
         this.treeObj = null;
         this.droppable = null;
-        this.menuObj = null;
         this.newFields = null;
         this.isFieldExist = true;
         this.formulaText = null;
@@ -106,7 +98,6 @@ export class CalculatedField implements IAction {
         this.parentHierarchy = null;
         this.isEdit = false;
         this.currentFieldName = null;
-        this.confirmPopUp = null;
     }
 
     /**
@@ -139,9 +130,10 @@ export class CalculatedField implements IAction {
             case 'enter':
                 {
                     let field: string = node.getAttribute('data-field');
+                    const dialog: Dialog = getInstance(select('#' + this.parentID + 'calculateddialog', document) as HTMLElement, Dialog) as Dialog;
                     const type: string = node.getAttribute('data-type');
                     const dropField: HTMLTextAreaElement =
-                        select('#' + this.parentID + 'droppable', this.dialog.element) as HTMLTextAreaElement;
+                        select('#' + this.parentID + 'droppable', dialog.element) as HTMLTextAreaElement;
                     if (this.parent.dataType === 'pivot') {
                         if (dropField.value === '') {
                             if (type === CALC) {
@@ -258,7 +250,8 @@ export class CalculatedField implements IAction {
     }
 
     private accordionCreated(): void {
-        const allElement: NodeListOf<Element> = this.accordion.element.querySelectorAll('.e-acrdn-item');
+        const accordion: Accordion = getInstance(select('#' + this.parentID + 'accordDiv', document) as HTMLElement, Accordion) as Accordion;
+        const allElement: NodeListOf<Element> = accordion.element.querySelectorAll('.e-acrdn-item');
         for (let i: number = 0; i < allElement.length; i++) {
             if (allElement[i as number].querySelector('.' + cls.CALC_EDIT) || allElement[i as number].querySelector('.' + cls.CALC_EDITED)) {
                 const element: HTMLElement = createElement('span', {
@@ -287,14 +280,19 @@ export class CalculatedField implements IAction {
     private displayMenu(node: HTMLElement, treeNode?: HTMLElement, target?: HTMLElement): void {
         const edit: boolean = target ? target.classList.contains(cls.CALC_EDIT) : true;
         const edited: boolean = target ? target.classList.contains(cls.CALC_EDITED) : true;
+        const dialog: Dialog = getInstance(select('#' + this.parentID + 'calculateddialog', document) as HTMLElement, Dialog) as Dialog;
+        const inputObj: MaskedTextBox = getInstance(
+            select('#' + this.parentID + 'ddlelement', document) as HTMLElement, MaskedTextBox) as MaskedTextBox;
         try {
             if (this.parent.dataType === 'pivot' && node.querySelector('.e-list-icon.e-format') &&
                 node.querySelector('.e-list-icon.e-format').classList.contains(cls.ICON) &&
                 !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) &&
                 !node.querySelector('.e-list-icon').classList.contains(cls.GRID_REMOVE) &&
                 !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) && node.tagName === 'LI') {
-                if (this.menuObj && !this.menuObj.isDestroyed) {
-                    this.menuObj.destroy();
+                const menuObj: Menu = select('#' + this.parentID + 'CalcContextmenu', document) ?
+                    getInstance(select('#' + this.parentID + 'CalcContextmenu', document) as HTMLElement, Menu) as Menu : null;
+                if (menuObj && !menuObj.isDestroyed) {
+                    menuObj.destroy();
                 }
                 this.curMenu = (node.querySelector('.' + cls.LIST_TEXT_CLASS) as HTMLElement);
                 this.openContextMenu(node);
@@ -305,10 +303,10 @@ export class CalculatedField implements IAction {
                 const fieldName: string = node.getAttribute('data-field');
                 const caption: string = node.getAttribute('data-caption');
                 this.currentFieldName = fieldName;
-                this.inputObj.value = caption;
-                this.inputObj.dataBind();
+                inputObj.value = caption;
+                inputObj.dataBind();
                 const formatString: string = node.getAttribute('data-formatString');
-                const dialogElement: HTMLElement = this.dialog.element;
+                const dialogElement: HTMLElement = dialog.element;
                 const ddlFormatTypes: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
                 const customFormat: MaskedTextBox = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement) as HTMLElement, MaskedTextBox) as MaskedTextBox;
                 const customFormatString: string = node.getAttribute('data-customformatstring');
@@ -345,9 +343,9 @@ export class CalculatedField implements IAction {
                 node.querySelector('.' + cls.CALC_EDITED).classList.contains('e-list-icon') && edited ||
                 (this.parent.dataType === 'olap' && !node.classList.contains('e-active')))) {
                 this.isEdit = false;
-                this.inputObj.value = '';
-                this.inputObj.dataBind();
-                const dialogElement: HTMLElement = this.dialog.element;
+                inputObj.value = '';
+                inputObj.dataBind();
+                const dialogElement: HTMLElement = dialog.element;
                 const customFormat: MaskedTextBox = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement) as HTMLElement, MaskedTextBox) as MaskedTextBox;
                 customFormat.value = '';
                 customFormat.dataBind();
@@ -378,8 +376,8 @@ export class CalculatedField implements IAction {
                 }
                 const dropField: HTMLTextAreaElement = select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement;
                 const field: ICalculatedFields = {
-                    name: this.isEdit ? this.currentFieldName : this.inputObj.value,
-                    caption: this.inputObj.value,
+                    name: this.isEdit ? this.currentFieldName : inputObj.value,
+                    caption: inputObj.value,
                     formula: dropField.value
                 };
                 this.createConfirmDialog(
@@ -402,7 +400,9 @@ export class CalculatedField implements IAction {
             } else {
                 const index: number = parseInt(node.getAttribute('id').split(this.parentID + '_')[1], 10);
                 if (typeof index === 'number') {
-                    this.accordion.hideItem(index);
+                    const accordion: Accordion = getInstance(
+                        select('#' + this.parentID + 'accordDiv', document) as HTMLElement, Accordion) as Accordion;
+                    accordion.hideItem(index);
                 }
             }
         }
@@ -415,8 +415,8 @@ export class CalculatedField implements IAction {
 
         if (this.parent.dataType === 'olap') {
             engineModule = this.parent.olapEngineModule;
-            const fields: { [key: string]: Object }[] =
-                engineModule.fieldListData ? engineModule.fieldListData as { [key: string]: Object }[] : [];
+            const fields: { [key: string]: Object }[] = engineModule.fieldListData ?
+                engineModule.fieldListData as { [key: string]: Object }[] : [];
             for (const item of Object.keys(fields) as string[]) { // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (fields[item as any].name === fieldName) {
                     const index: number = parseInt(item, 10);
@@ -466,8 +466,10 @@ export class CalculatedField implements IAction {
             }
         }
         if (this.isEdit && this.currentFieldName === fieldName) {
+            const inputObj: MaskedTextBox = getInstance(
+                select('#' + this.parentID + 'ddlelement', document) as HTMLElement, MaskedTextBox) as MaskedTextBox;
             this.isEdit = false;
-            this.inputObj.value = '';
+            inputObj.value = '';
             this.currentFieldName = this.formatText = this.fieldText = this.formatType = null;
             this.formulaText = this.fieldType = this.parentHierarchy = null;
         }
@@ -509,10 +511,11 @@ export class CalculatedField implements IAction {
                 this.createMenu(items, node);
                 const pos: OffsetPosition = node.getBoundingClientRect();
                 const offset: number = window.scrollY || document.documentElement.scrollTop;
+                const menuObj: Menu = getInstance(select('#' + this.parentID + 'CalcContextmenu', document) as HTMLElement, Menu) as Menu;
                 if (this.parent.enableRtl) {
-                    this.menuObj.open(pos.top + offset, pos.left - 100);
+                    menuObj.open(pos.top + offset, pos.left - 100);
                 } else {
-                    this.menuObj.open(pos.top + offset, pos.left + 150);
+                    menuObj.open(pos.top + offset, pos.left + 150);
                 } /* eslint-enable security/detect-non-literal-fs-filename */
             }
         });
@@ -564,10 +567,11 @@ export class CalculatedField implements IAction {
                 id: this.parentID + 'CalcContextmenu'
             });
         }
-        this.dialog.element.appendChild(contextMenu);
-        this.menuObj = new Menu(menuOptions);
-        this.menuObj.isStringTemplate = true;
-        this.menuObj.appendTo(contextMenu);
+        const dialog: Dialog = getInstance(select('#' + this.parentID + 'calculateddialog', document) as HTMLElement, Dialog) as Dialog;
+        dialog.element.appendChild(contextMenu);
+        const menuObj: Menu = new Menu(menuOptions);
+        menuObj.isStringTemplate = true;
+        menuObj.appendTo(contextMenu);
     }
 
     /**
@@ -579,10 +583,12 @@ export class CalculatedField implements IAction {
         const currentObj: CalculatedField = this;
         let isExist: boolean = false;
         removeClass([document.getElementById(this.parentID + 'ddlelement')], cls.EMPTY_FIELD);
+        const inputObj: MaskedTextBox = getInstance(
+            select('#' + this.parentID + 'ddlelement', document) as HTMLElement, MaskedTextBox) as MaskedTextBox;
         this.newFields =
             extend([], (this.parent.dataSourceSettings as IDataOptions).calculatedFieldSettings, null, true) as ICalculatedFields[];
         const eventArgs: CalculatedFieldCreateEventArgs = {
-            fieldName: this.isEdit ? this.currentFieldName : this.inputObj.value,
+            fieldName: this.isEdit ? this.currentFieldName : inputObj.value,
             calculatedField: this.getCalculatedFieldInfo(),
             calculatedFieldSettings: PivotUtil.cloneCalculatedFieldSettings(this.parent.dataSourceSettings.calculatedFieldSettings),
             cancel: false
@@ -726,7 +732,9 @@ export class CalculatedField implements IAction {
                 } else {
                     if (isNullOrUndefined(calcInfo.name) || calcInfo.name === '' ||
                         isNullOrUndefined(calcInfo.caption) || calcInfo.caption === '') {
-                        this.inputObj.value = '';
+                        const inputObj: MaskedTextBox = getInstance(
+                            select('#' + this.parentID + 'ddlelement', document) as HTMLElement, MaskedTextBox) as MaskedTextBox;
+                        inputObj.value = '';
                         addClass([document.getElementById(this.parentID + 'ddlelement')], cls.EMPTY_FIELD);
                         document.getElementById(this.parentID + 'ddlelement').focus();
                     } else {
@@ -742,13 +750,17 @@ export class CalculatedField implements IAction {
         });
     }
     private getCalculatedFieldInfo(): ICalculatedFields {
+        const element: HTMLElement = select('#' + this.parentID + 'calculateddialog', document);
+        const dialog: Dialog = element ? getInstance(element, Dialog) as Dialog : undefined;
+        const inputObj: MaskedTextBox = getInstance(
+            select('#' + this.parentID + 'ddlelement', document) as HTMLElement, MaskedTextBox) as MaskedTextBox;
         const dropField: HTMLTextAreaElement = select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement;
         const dialogElement: HTMLElement = this.parent.isAdaptive ?
-            (this.parent as PivotFieldList).dialogRenderer.adaptiveElement.element : this.dialog.element;
+            (this.parent as PivotFieldList).dialogRenderer.adaptiveElement.element : dialog.element;
         const customFormat: MaskedTextBox = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement) as HTMLElement, MaskedTextBox) as MaskedTextBox;
         const field: ICalculatedFields = {
-            name: this.isEdit ? this.currentFieldName : this.inputObj.value,
-            caption: this.inputObj.value,
+            name: this.isEdit ? this.currentFieldName : inputObj.value,
+            caption: inputObj.value,
             formula: dropField.value
         };
         const ddlFormatTypes: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
@@ -828,15 +840,19 @@ export class CalculatedField implements IAction {
      * @hidden */
     public endDialog(): void {
         this.isEdit = false;
-        if (this.dialog) {
-            this.dialog.close();
+        const element: HTMLElement = select('#' + this.parentID + 'calculateddialog', document);
+        const dialog: Dialog = element ? getInstance(element, Dialog) as Dialog : undefined;
+        if (dialog) {
+            dialog.close();
         } else {
-            this.inputObj.value = '';
+            const inputObj: MaskedTextBox = getInstance(
+                select('#' + this.parentID + 'ddlelement', document) as HTMLElement, MaskedTextBox) as MaskedTextBox;
+            inputObj.value = '';
             this.currentFieldName = this.formatText = this.fieldText = this.formatType = null;
             this.formulaText = this.fieldType = this.parentHierarchy = null;
             const dialogElement: HTMLElement =
                 this.parent.isAdaptive ?
-                    (this.parent as PivotFieldList).dialogRenderer.parentElement : this.dialog.element;
+                    (this.parent as PivotFieldList).dialogRenderer.parentElement : dialog.element;
             ((this.parent as PivotFieldList).dialogRenderer.parentElement.querySelector('.' + cls.CALCINPUT) as HTMLInputElement).value = '';
             (select('#' + this.parentID + 'droppable', (this.parent as PivotFieldList).dialogRenderer.parentElement) as HTMLTextAreaElement).value = '';
             (select('#' + this.parentID + 'Custom_Format_Element', (this.parent as PivotFieldList).dialogRenderer.parentElement) as HTMLTextAreaElement).value = '';
@@ -954,7 +970,8 @@ export class CalculatedField implements IAction {
      */
     private fieldDropped(args: DragAndDropEventArgs): void {
         args.cancel = true;
-        const dropField: HTMLTextAreaElement = select('#' + this.parentID + 'droppable', this.dialog.element) as HTMLTextAreaElement;
+        const dialog: Dialog = getInstance(select('#' + this.parentID + 'calculateddialog', document) as HTMLElement, Dialog) as Dialog;
+        const dropField: HTMLTextAreaElement = select('#' + this.parentID + 'droppable', dialog.element) as HTMLTextAreaElement;
         removeClass([dropField], 'e-copy-drop');
         removeClass([args.draggedNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.SELECTED_NODE_CLASS);
         let field: string = args.draggedNode.getAttribute('data-field');
@@ -1051,15 +1068,15 @@ export class CalculatedField implements IAction {
             };
             calcButtons.splice(0, 0, clearButton);
         }
-        this.dialog = new Dialog({
+        const dialog: Dialog = new Dialog({
             allowDragging: true,
             position: { X: 'center', Y: 'center' },
             buttons: calcButtons,
             close: this.closeDialog.bind(this),
             beforeOpen: this.beforeOpen.bind(this),
             open: () => {
-                if (select('#' + this.parentID + 'ddlelement', this.dialog.element)) {
-                    (select('#' + this.parentID + 'ddlelement', this.dialog.element) as HTMLElement).focus();
+                if (select('#' + this.parentID + 'ddlelement', dialog.element)) {
+                    (select('#' + this.parentID + 'ddlelement', dialog.element) as HTMLElement).focus();
                 }
             },
             animationSettings: { effect: 'Zoom' },
@@ -1074,19 +1091,22 @@ export class CalculatedField implements IAction {
             target: document.body,
             cssClass: this.parent.cssClass
         });
-        this.dialog.isStringTemplate = true;
-        this.dialog.appendTo('#' + this.parentID + 'calculateddialog');
+        dialog.isStringTemplate = true;
+        dialog.appendTo('#' + this.parentID + 'calculateddialog');
     }
 
     private cancelClick(): void {
-        this.dialog.close();
+        const dialog: Dialog = getInstance(
+            select('#' + this.parentID + 'calculateddialog', document), Dialog) as Dialog;
+        dialog.close();
         this.isEdit = false;
     }
 
     private beforeOpen(): void {
-        // this.dialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('createCalculatedField');
-        this.dialog.element.querySelector('.e-dlg-header').
-            setAttribute('title', this.parent.localeObj.getConstant('createCalculatedField'));
+        const dialog: Dialog = getInstance(
+            select('#' + this.parentID + 'calculateddialog', document) as HTMLElement, Dialog) as Dialog;
+        // dialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('createCalculatedField');
+        dialog.element.querySelector('.e-dlg-header').setAttribute('title', this.parent.localeObj.getConstant('createCalculatedField'));
     }
 
     private closeDialog(): void {
@@ -1344,8 +1364,10 @@ export class CalculatedField implements IAction {
         const dialogElement: Tab = (this.parent as PivotFieldList).dialogRenderer.adaptiveElement;
         if (isEdit) {
             if (select('#' + this.parentID + 'droppable', dialogElement.element)) {
+                const inputObj: MaskedTextBox = getInstance(
+                    select('#' + this.parentID + 'ddlelement', document) as HTMLElement, MaskedTextBox) as MaskedTextBox;
                 this.formulaText = (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value;
-                this.fieldText = this.inputObj.value;
+                this.fieldText = inputObj.value;
             }
             if (dialogElement.element.querySelector('.' + cls.CALC_MEMBER_TYPE_DIV) as HTMLTextAreaElement) {
                 const memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement.element) as HTMLElement, DropDownList) as DropDownList;
@@ -1388,10 +1410,12 @@ export class CalculatedField implements IAction {
                 formatString: (this.parent.dataType === 'pivot' ? null : 'Standard'), parentHierarchy: null
             });
         this.currentFieldName = calcInfo.id;
+        const inputObj: MaskedTextBox = getInstance(
+            select('#' + this.parentID + 'ddlelement', document) as HTMLElement, MaskedTextBox) as MaskedTextBox;
         if (select('#' + this.parentID + 'droppable', document)) {
             this.formulaText = (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value = calcInfo.formula;
-            this.fieldText = this.inputObj.value = calcInfo.caption;
-            this.inputObj.dataBind();
+            this.fieldText = inputObj.value = calcInfo.caption;
+            inputObj.dataBind();
         }
         if (dialogElement.querySelector('.' + cls.CALC_MEMBER_TYPE_DIV) as HTMLTextAreaElement) {
             const memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
@@ -1432,8 +1456,10 @@ export class CalculatedField implements IAction {
      * @returns {void}
      */
     private createDropElements(): void {
+        const dialog: Dialog = select('#' + this.parentID + 'calculateddialog', document) ? getInstance(
+            select('#' + this.parentID + 'calculateddialog', document) as HTMLElement, Dialog) as Dialog : null;
         const dialogElement: HTMLElement = (this.parent.isAdaptive ?
-            (this.parent as PivotFieldList).dialogRenderer.parentElement : this.dialog.element);
+            (this.parent as PivotFieldList).dialogRenderer.parentElement : dialog.element);
         const fData: { [key: string]: Object }[] = [];
         const fieldData: { [key: string]: Object }[] = [];
         for (const format of this.formatTypes) {
@@ -1662,7 +1688,8 @@ export class CalculatedField implements IAction {
         if (isDrag) {
             addClass([args.draggedNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.SELECTED_NODE_CLASS);
             addClass([dragItem], cls.PIVOTCALC);
-            dragItem.style.zIndex = (this.dialog.zIndex + 1).toString();
+            const dialog: Dialog = getInstance(select('#' + this.parentID + 'calculateddialog', document) as HTMLElement, Dialog) as Dialog;
+            dragItem.style.zIndex = (dialog.zIndex + 1).toString();
             dragItem.style.display = 'inline';
         } else {
             args.cancel = true;
@@ -1854,7 +1881,7 @@ export class CalculatedField implements IAction {
             const okBtn: Button = new Button({ cssClass: cls.FLAT + ' ' + cls.OUTLINE_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl, enableHtmlSanitizer: this.parent.enableHtmlSanitizer });
             okBtn.isStringTemplate = true;
             okBtn.appendTo('#' + this.parentID + 'okBtn');
-            this.inputObj = new MaskedTextBox({
+            const inputObj: MaskedTextBox = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('fieldName'),
                 locale: this.parent.locale, enableRtl: this.parent.enableRtl,
                 change: (args: MaskChangeEventArgs) => {
@@ -1863,8 +1890,8 @@ export class CalculatedField implements IAction {
                 },
                 cssClass: this.parent.cssClass
             });
-            this.inputObj.isStringTemplate = true;
-            this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
+            inputObj.isStringTemplate = true;
+            inputObj.appendTo('#' + this.parentID + 'ddlelement');
             if (this.formulaText !== null && select('#' + this.parentID + 'droppable', (this.parent as PivotFieldList).dialogRenderer.parentElement) !== null) {
                 const drop: HTMLTextAreaElement = select('#' + this.parentID + 'droppable', (this.parent as PivotFieldList).dialogRenderer.parentElement) as HTMLTextAreaElement;
                 drop.value = this.formulaText;
@@ -1873,7 +1900,7 @@ export class CalculatedField implements IAction {
                 dialogRenderer.parentElement.querySelector('.' + cls.CALCINPUT) !== null) {
                 ((this.parent as PivotFieldList).
                     dialogRenderer.parentElement.querySelector('.' + cls.CALCINPUT) as HTMLInputElement).value = this.fieldText;
-                this.inputObj.value = this.fieldText;
+                inputObj.value = this.fieldText;
             }
             if (okBtn.element) {
                 okBtn.element.onclick = this.applyFormula.bind(this);
@@ -1904,7 +1931,7 @@ export class CalculatedField implements IAction {
                 this.treeObj.isStringTemplate = true;
                 this.treeObj.appendTo('#' + this.parentID + 'accordDiv');
             } else {
-                this.accordion = new Accordion({
+                const accordion: Accordion = new Accordion({
                     items: this.getAccordionData(this.parent),
                     enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
@@ -1913,8 +1940,8 @@ export class CalculatedField implements IAction {
                     clicked: this.accordionClickHandler.bind(this),
                     created: this.accordionCreated.bind(this)
                 });
-                this.accordion.isStringTemplate = true;
-                this.accordion.appendTo('#' + this.parentID + 'accordDiv');
+                accordion.isStringTemplate = true;
+                accordion.appendTo('#' + this.parentID + 'accordDiv');
                 this.updateType();
             }
             if (addBtn.element) {
@@ -2065,7 +2092,8 @@ export class CalculatedField implements IAction {
                     }
                 }
             }
-            this.dialog.element.style.top = parseInt(this.dialog.element.style.top, 10) < 0 ? '0px' : this.dialog.element.style.top;
+            const dialog: Dialog = getInstance(select('#' + this.parentID + 'calculateddialog', document) as HTMLElement, Dialog) as Dialog;
+            dialog.element.style.top = parseInt(dialog.element.style.top, 10) < 0 ? '0px' : dialog.element.style.top;
         }
     }
 
@@ -2078,19 +2106,20 @@ export class CalculatedField implements IAction {
         this.newFields =
             extend([], (this.parent.dataSourceSettings as IDataOptions).calculatedFieldSettings, null, true) as ICalculatedFields[];
         this.createDialog();
-        this.dialog.content = this.renderDialogElements();
-        this.dialog.refresh();
-        this.inputObj = new MaskedTextBox({
+        const dialog: Dialog = getInstance(select('#' + this.parentID + 'calculateddialog', document) as HTMLElement, Dialog) as Dialog;
+        dialog.content = this.renderDialogElements();
+        dialog.refresh();
+        const inputObj: MaskedTextBox = new MaskedTextBox({
             placeholder: this.parent.localeObj.getConstant('fieldName'),
             locale: this.parent.locale, enableRtl: this.parent.enableRtl,
             cssClass: this.parent.cssClass
         });
-        this.inputObj.isStringTemplate = true;
-        this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
+        inputObj.isStringTemplate = true;
+        inputObj.appendTo('#' + this.parentID + 'ddlelement');
         this.createDropElements();
         this.createTreeView();
         this.droppable = new Droppable(select('#' + this.parentID + 'droppable') as HTMLElement);
-        this.keyboardEvents = new KeyboardEvents(this.parent.calculatedFieldModule.dialog.element, {
+        this.keyboardEvents = new KeyboardEvents(dialog.element, {
             keyAction: this.keyActionHandler.bind(this),
             keyConfigs: { moveRight: 'rightarrow', enter: 'enter', shiftE: 'shift+E', delete: 'delete' },
             eventName: 'keydown'
@@ -2103,7 +2132,7 @@ export class CalculatedField implements IAction {
             className: cls.ERROR_DIALOG_CLASS
         });
         this.parent.element.appendChild(errorDialog);
-        this.confirmPopUp = new Dialog({
+        const confirmPopUp: Dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: false,
             showCloseIcon: true,
@@ -2138,9 +2167,9 @@ export class CalculatedField implements IAction {
             cssClass: this.parent.cssClass,
             close: this.removeErrorDialog.bind(this)
         });
-        this.confirmPopUp.isStringTemplate = true;
-        this.confirmPopUp.appendTo(errorDialog);
-        // this.confirmPopUp.element.querySelector('.e-dlg-header').innerText = title;
+        confirmPopUp.isStringTemplate = true;
+        confirmPopUp.appendTo(errorDialog);
+        // confirmPopUp.element.querySelector('.e-dlg-header').innerText = title;
     }
 
     private replaceFormula(calcInfo: ICalculatedFields): void {
@@ -2175,8 +2204,10 @@ export class CalculatedField implements IAction {
     }
 
     private removeErrorDialog(): void {
-        if (this.confirmPopUp && !this.confirmPopUp.isDestroyed) {
-            this.confirmPopUp.destroy();
+        const element: HTMLElement = select('#' + this.parentID + '_CalculatedFieldErrorDialog', document);
+        const confirmPopUp: Dialog = getInstance(element, Dialog) as Dialog;
+        if (confirmPopUp && !confirmPopUp.isDestroyed) {
+            confirmPopUp.destroy();
         }
         if (select('#' + this.parentID + '_CalculatedFieldErrorDialog', document) !== null) {
             remove(select('#' + this.parentID + '_CalculatedFieldErrorDialog', document));
@@ -2184,7 +2215,9 @@ export class CalculatedField implements IAction {
     }
 
     private closeErrorDialog(): void {
-        this.confirmPopUp.close();
+        const confirmPopUp: Dialog = getInstance(
+            select('#' + this.parentID + '_CalculatedFieldErrorDialog', document) as HTMLElement, Dialog) as Dialog;
+        confirmPopUp.close();
     }
 
     /**
@@ -2216,47 +2249,43 @@ export class CalculatedField implements IAction {
      * @hidden
      */
     public destroy(): void {
-        if (this.menuObj && !this.menuObj.isDestroyed) {
-            this.menuObj.destroy();
-        }
         if (this.treeObj && !this.treeObj.isDestroyed) {
             this.treeObj.destroy();
-        }
-        if (this.dialog && !this.dialog.isDestroyed) {
-            this.dialog.destroy();
-        }
-        if (this.inputObj && !this.inputObj.isDestroyed) {
-            this.inputObj.destroy();
-        }
-        if (this.confirmPopUp && !this.confirmPopUp.isDestroyed) {
-            this.confirmPopUp.destroy();
-        }
-        if (this.accordion && !this.accordion.isDestroyed) {
-            this.accordion.destroy();
-        }
-        if (this.menuObj) {
-            this.menuObj = null;
         }
         if (this.treeObj) {
             this.treeObj = null;
         }
-        if (this.dialog) {
-            this.dialog = null;
-        }
-        if (this.inputObj) {
-            this.inputObj = null;
-        }
         if (this.newFields) {
             this.newFields = null;
         }
-        if (this.confirmPopUp) {
-            this.confirmPopUp = null;
-        }
-        if (this.accordion) {
-            this.accordion = null;
-        }
         if (this.curMenu) {
             this.curMenu = null;
+        }
+        if (this.droppable) {
+            this.droppable = null;
+        }
+        if (this.keyboardEvents) {
+            this.keyboardEvents = null;
+        }
+        let element: HTMLElement = select('#' + this.parentID + 'calculateddialog', document);
+        if (element) { /* dialog */
+            (getInstance(element, Dialog) as Dialog).destroy();
+        }
+        element = select('#' + this.parentID + 'ddlelement', document);
+        if (element) { /* inputObj */
+            (getInstance(element, MaskedTextBox) as MaskedTextBox).destroy();
+        }
+        element = select('#' + this.parentID + 'CalcContextmenu', document);
+        if (element) { /* menuObj */
+            (getInstance(element, Menu) as Menu).destroy();
+        }
+        element = select('#' + this.parentID + 'accordDiv', document);
+        if (element) { /* accordion */
+            (getInstance(element, Accordion) as Accordion).destroy();
+        }
+        element = select('#' + this.parentID + '_CalculatedFieldErrorDialog', document);
+        if (element) { /* confirmPopUp */
+            (getInstance(element, Dialog) as Dialog).destroy();
         }
     }
 }

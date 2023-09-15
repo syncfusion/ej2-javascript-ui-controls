@@ -1,6 +1,7 @@
 import { CommentAction, HyperlinkType, ServerActionType, RevisionType, RevisionActionType } from './types';
 import { DocumentEditor } from '../document-editor';
 import { DocumentEditorContainer } from '../../document-editor-container';
+import { Operation } from '../implementation';
 
 /**
  * ServiceFailureArgs
@@ -153,6 +154,12 @@ export interface ContentChangeEventArgs {
      * @deprecated
      */
     source: DocumentEditor
+
+    /**
+     * Provide necessary information about operations performed in DocumentEditor.
+     * @private
+     */
+    operations?: Operation[]
 }
 /**
  * This event arguments provides the necessary information about key down event.
@@ -298,6 +305,11 @@ export interface ContainerContentChangeEventArgs {
      * @deprecated
      */
     source: DocumentEditorContainer
+    /**
+     * Provide necessary information about operations performed in DocumentEditor.
+     * @private
+     */
+    operations?: Operation[]
 }
 
 /**
@@ -318,7 +330,7 @@ export interface ContainerSelectionChangeEventArgs {
 /**
  * This event arguments provides the necessary information about DocumentEditorContainer's documentChange event.
  */
-export interface ContainerDocumentChangeEventArgs {
+export interface  ContainerDocumentChangeEventArgs {
     /**
      * Specifies the source DocumentEditorContainer instance which triggers this documentChange event.
      *

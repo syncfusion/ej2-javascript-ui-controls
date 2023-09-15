@@ -508,7 +508,7 @@ export class Kanban extends Component<HTMLElement> {
         if (this.cssClass) {
             addClasses.push(this.cssClass);
         }
-        this.element.setAttribute('role', 'main');
+        this.element.setAttribute('role', 'presentation');
         classList(this.element, addClasses, removeClasses);
         this.element.style.width = formatUnit(this.width);
         this.element.style.height = formatUnit(this.height);
@@ -951,7 +951,9 @@ export class Kanban extends Component<HTMLElement> {
      */
     public refreshHeader(): void {
         this.resetTemplates(['columnTemplate']);
-        if (this.layoutModule) {
+        if (this.enableVirtualization) {
+            this.virtualLayoutModule.refreshHeaders();
+        } else {
             this.layoutModule.refreshHeaders();
         }
         this.renderTemplates();

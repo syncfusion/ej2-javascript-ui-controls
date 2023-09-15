@@ -124,22 +124,8 @@ export class BatchEdit {
         this.batchAddedRecords = this.batchRecords = this.batchAddRowRecord = this.batchDeletedRecords = this.currentViewRecords = [];
     }
     private cellSaved(args: CellSaveArgs): void {
-        let actualCellIndex: number = args.column.index;
-        const frozenCols: number = this.parent.frozenColumns || this.parent.getFrozenColumns();
-        if (frozenCols && args.columnObject.index > frozenCols) {
-            actualCellIndex = actualCellIndex + frozenCols;
-        }
-        const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
-                                 this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
-        if (freeze) {
-            const colCount: number = this.parent.getFrozenLeftColumnsCount() + actualCellIndex;
-            if (colCount === this.parent.treeColumnIndex) {
-                this.parent.renderModule.cellRender({ data: args.rowData, cell: args.cell,
-                    column: this.parent.grid.getColumnByIndex(args.column.index)
-                });
-            }
-        }
-        else if (actualCellIndex === this.parent.treeColumnIndex) {
+        const actualCellIndex: number = args.column.index;
+        if (actualCellIndex === this.parent.treeColumnIndex) {
             this.parent.renderModule.cellRender({ data: args.rowData, cell: args.cell,
                 column: this.parent.grid.getColumnByIndex(args.column.index)
             });
@@ -327,7 +313,7 @@ export class BatchEdit {
             for (let i: number = firstChildIndex; i <= totalCount; i++){
                 row.push(this.parent.grid.getDataRows()[parseInt(i.toString(), 10)] as Element);
                 if (this.parent.frozenRows || this.parent.frozenColumns || this.parent.getFrozenColumns()) {
-                    row.push(this.parent.grid.getMovableRows()[parseInt(i.toString(), 10)] as Element);
+                    row.push(this.parent.grid.getHeaderContent()[parseInt(i.toString(), 10)] as Element);
                 }
             }
         }
@@ -358,18 +344,6 @@ export class BatchEdit {
         const rows: Element[] = this.parent.grid.getDataRows();
         for (let i: number = 0 ; i < rows.length; i++) {
             rows[parseInt(i.toString(), 10)].setAttribute('data-rowindex', i.toString());
-        }
-        const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
-                                 this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
-        if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns || freeze) {
-            const mRows: Element[] = this.parent.grid.getMovableDataRows();
-            const freezeRightRows: Element[] = this.parent.grid.getFrozenRightDataRows();
-            for (let i: number = 0 ; i < mRows.length; i++) {
-                mRows[parseInt(i.toString(), 10)].setAttribute('data-rowindex', i.toString());
-                if (freeze) {
-                    freezeRightRows[parseInt(i.toString(), 10)].setAttribute('data-rowindex', i.toString());
-                }
-            }
         }
     }
     private updateChildCount(records: Object[]): void {

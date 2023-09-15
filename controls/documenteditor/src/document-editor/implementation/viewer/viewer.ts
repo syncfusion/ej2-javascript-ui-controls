@@ -24,7 +24,7 @@ import {
 } from '../editor/editor-helper';
 import { TextHelper, TextHeightInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Selection, CommentReviewPane } from '../index';
+import { Selection, CommentReviewPane, HistoryInfo } from '../index';
 import { TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
 import { Dialog, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -600,7 +600,8 @@ export class DocumentHelper {
     /**
      * @private
      */
-    public L10n: L10n;
+    public isBookmarkInserted: boolean = true;
+    private L10n: L10n;
 
     private isAutoResizeCanStart: boolean = false;
 
@@ -1010,14 +1011,18 @@ export class DocumentHelper {
      * @param {number} id - Specfies abstract list id.
      * @returns {WAbstractList} - Returns abstract list.
      */
-    public getAbstractListById(id: number): WAbstractList {
+    public getAbstractListById(id: number, isNsid?: boolean): WAbstractList {
         if (isNullOrUndefined(this.abstractLists)) {
             return undefined;
         }
         for (let i: number = 0; i < this.abstractLists.length; i++) {
             const abstractList: WAbstractList = this.abstractLists[i];
-            if (abstractList instanceof WAbstractList && (abstractList as WAbstractList).abstractListId === id) {
-                return abstractList;
+            if (!isNullOrUndefined(abstractList)) {
+                if (isNsid && abstractList.nsid === id) {
+                    return abstractList;
+                } else if (abstractList.abstractListId === id) {
+                    return abstractList;
+                }
             }
         }
         return undefined;
@@ -1027,13 +1032,18 @@ export class DocumentHelper {
      * @param {number} id - Specfies list id.
      * @returns {WAbstractList} - Returns list.
      */
-    public getListById(id: number): WList {
+    public getListById(id: number, isNsid?: boolean): WList {
         if (isNullOrUndefined(this.lists)) {
             return undefined;
         }
         for (let i: number = 0; i < this.lists.length; i++) {
-            if (!isNullOrUndefined(this.lists[i]) && (this.lists[i] as WList).listId === id) {
-                return this.lists[i] as WList;
+            let list: WList = this.lists[i];
+            if (!isNullOrUndefined(list)) {
+                if (isNsid && list.nsid === id) {
+                    return list;
+                } else if (list.listId === id) {
+                    return list;
+                }
             }
         }
         return undefined;
@@ -1375,13 +1385,18 @@ export class DocumentHelper {
             this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
             this.editableDiv.innerHTML = '';
             if (this.owner.editorHistory) {
+                if (text !== '') {
+                    this.owner.editor.isSkipOperationsBuild = true;
+                }
                 this.owner.editorHistory.updateComplexHistory();
                 if (text === '') {
                     //When the composition in live. The Undo operation will terminate the composition and empty text will be return from text box.
                     //At that time the the history should be updated. Undo the operation and clear the redo stack. This undo operation will not be saved for redo operation.
+                    this.owner.editor.isSkipOperationsBuild = true;
                     this.owner.editorHistory.undo();
                     this.owner.editorHistory.redoStack.pop();
                 }
+                this.owner.editor.isSkipOperationsBuild = false;
             }
         }
         event.preventDefault();
@@ -3084,7 +3099,7 @@ export class DocumentHelper {
         }
     }
     public scrollToPosition(startPosition: TextPosition, endPosition: TextPosition, skipCursorUpdate?: boolean, isBookmark?: boolean): void {
-        if (this.skipScrollToPosition || this.isWebPrinting) {
+        if (this.skipScrollToPosition || this.isWebPrinting || (this.owner.editor && this.owner.editor.isRemoteAction)) {
             this.skipScrollToPosition = false;
             return;
         }
@@ -4301,35 +4316,37 @@ export class DocumentHelper {
         const charIcon: string = 'e-list-icon e-de-listview-icon e-de-e-character-style-mark e-icons';
         const linkedIcon: string = 'e-list-icon e-de-listview-icon e-de-e-linked-style-mark e-icons';
         // StyleName for the dropDownItem
-        const styleName: string = this.owner ? this.L10n.getConstant(style.name) : style.name;
-        returnStyle.StyleName = (styleName === '') ? style.name : styleName;
-        if (style.type == "Paragraph") {
-            returnStyleObject.paragraphFormat = {};
-            HelperMethods.writeParagraphFormat(returnStyleObject.paragraphFormat,true,(style as any).paragraphFormat);
-        }
-        returnStyleObject.characterFormat = {};
-        HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat,true,(style as any).characterFormat);
-        // CSS Style for dropDownItem
-        returnStyle.Style = this.parseStyle(JSON.stringify(returnStyleObject));
-        // Setting type for segregating and adding iconcss
-        if (!isNullOrUndefined(style.type)) {
-            returnStyle.type = style.type;
-            if (returnStyle.type == "Paragraph" && !isNullOrUndefined(style.link)) {
-                returnStyle.type = "Linked";
+        if (!isNullOrUndefined(style)) {
+            const styleName: string = this.owner ? this.L10n.getConstant(style.name) : style.name;
+            returnStyle.StyleName = (styleName === '') ? style.name : styleName;
+            if (style.type == "Paragraph") {
+                returnStyleObject.paragraphFormat = {};
+                HelperMethods.writeParagraphFormat(returnStyleObject.paragraphFormat, true, (style as any).paragraphFormat);
             }
-        }
-        // Adding IconCss to the dropDownItem
-        if (returnStyle.type == "Paragraph") {
-            returnStyle.IconClass = paraIcon;
-        } else if (returnStyle.type == "Character") {
-            returnStyle.IconClass = charIcon;
-        } else {
-            returnStyle.IconClass = linkedIcon;
-        }
-        if(this.stylesMap.get(returnStyle.type)) {
-            this.stylesMap.get(returnStyle.type).push(returnStyle);
-        } else {
-            this.stylesMap.add(returnStyle.type, [returnStyle])
+            returnStyleObject.characterFormat = {};
+            HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat, true, (style as any).characterFormat);
+            // CSS Style for dropDownItem
+            returnStyle.Style = this.parseStyle(JSON.stringify(returnStyleObject));
+            // Setting type for segregating and adding iconcss
+            if (!isNullOrUndefined(style.type)) {
+                returnStyle.type = style.type;
+                if (returnStyle.type == "Paragraph" && !isNullOrUndefined(style.link)) {
+                    returnStyle.type = "Linked";
+                }
+            }
+            // Adding IconCss to the dropDownItem
+            if (returnStyle.type == "Paragraph") {
+                returnStyle.IconClass = paraIcon;
+            } else if (returnStyle.type == "Character") {
+                returnStyle.IconClass = charIcon;
+            } else {
+                returnStyle.IconClass = linkedIcon;
+            }
+            if (this.stylesMap.get(returnStyle.type)) {
+                this.stylesMap.get(returnStyle.type).push(returnStyle);
+            } else {
+                this.stylesMap.add(returnStyle.type, [returnStyle])
+            }
         }
     }
     private parseStyle(style: string): string {
@@ -5522,6 +5539,7 @@ export class PageLayoutViewer extends LayoutViewer {
                         this.owner.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
                     }
                     page.allowNextPageRendering = true;
+                    this.documentHelper.triggerElementsOnLoading = true;
                     this.documentHelper.triggerSpellCheck = true;
                     this.documentHelper.triggerElementsOnLoading = true;
                     this.renderPage(page, x, y, width, height);

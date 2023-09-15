@@ -804,7 +804,10 @@ export class HtmlExport {
     /**
      * @private
      */
-    public serializeParagraphFormat(paragraphFormat: any, isList: boolean): string {
+    public serializeParagraphFormat(paragraphFormat: any, isList: boolean, keywordIndex?: number): string {
+        if (isNullOrUndefined(this.keywordIndex)) {
+            this.keywordIndex = keywordIndex;
+        }
         if (!isNullOrUndefined(paragraphFormat[inlineFormatProperty[this.keywordIndex]])) {
             return this.serializeParagraphFormat(paragraphFormat[inlineFormatProperty[this.keywordIndex]], isList);
         }

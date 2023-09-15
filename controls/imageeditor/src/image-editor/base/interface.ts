@@ -1,4 +1,4 @@
-import { FileType, ShapeType, ImageFinetuneOption, ImageFilterOption } from '../index';
+import { FileType, ShapeType, ImageFinetuneOption, ImageFilterOption, FrameType, FrameLineStyle } from '../index';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 
 /**
@@ -421,6 +421,14 @@ export interface ShapeSettings {
      * Returns the points collection of freehand drawing.
      */
     points?: Point[];
+    /**
+     * Returns the degree of rotated shape.
+     */
+    degree?: number;
+    /**
+     * Returns the imageData of the image annotation.
+     */
+    imageData?: string | ImageData;
 }
 
 /**
@@ -489,6 +497,36 @@ export interface ImageEditorClickEventArgs {
 }
 
 /**
+ * The Interface which contains the properties for resize action in the Image Editor.
+ */
+export interface ResizeEventArgs {
+    /**
+     * Defines whether to cancel the resizing action of image editor.
+     */
+    cancel: boolean;
+    /**
+     * Returns the width of the image before resizing can be performed.
+     */
+    previousWidth: number;
+    /**
+     * Returns the height of the image before resizing can be performed.
+     */
+    previousHeight: number;
+    /**
+     * Returns the width of the image after resizing can be performed.
+     */
+    width: number;
+    /**
+     * Returns the height of the image after resizing can be performed.
+     */
+    height: number;
+    /**
+     * Returns whether the resizing action should be an aspect ratio resizing or not.
+     */
+    isAspectRatio: boolean;
+}
+
+/**
  * Interface for quick access toolbar for the image.
  *
  */
@@ -514,9 +552,127 @@ export interface QuickAccessToolbarEventArgs {
      */
     toolbarItems: (string | ItemModel)[];
     /**
-     * Returns the type of shape to be selected such as Rectangle, Text, Line, Ellipse, Arrow, Path, or Freehand draw.
+     * Returns the type of shape to be selected such as Rectangle, Text, Line, Ellipse, Arrow, Path, Image, or Freehand draw.
      */
     shape?: string;
+}
+
+/**
+ * The Interface which contains the properties for frame action in the Image Editor.
+ */
+export interface FrameChangeEventArgs {
+    /**
+     * Defines whether to cancel the frame changing action of image editor.
+     */
+    cancel : boolean;
+    /**
+     * Returns the previous frame settings applied on the image.
+     */
+    previousFrameSetting : FrameSettings,
+    /**
+     * Defines the current frame settings to be applied on the image. 
+     */
+    currentFrameSetting : FrameSettings
+}
+
+/**
+ * Interface for a class FrameSettings
+ */
+export interface FrameSettings {
+
+    /** 
+     * Specifies the frame option such as None, Mat, Bevel, Line, Inset, and Hook.
+     * 
+     * @type {FrameType}
+     * 
+     */
+    type: FrameType;
+
+    /** 
+     * Specifies the color of a frame. 
+     * A string value specifying the color of the frame. The color can be provided in various formats, including named colors ("red", "blue") and hexadecimal notation.
+     * 
+     * @type {string}
+     * 
+     */
+    color: string;
+
+    /** 
+     * Specifies the color of a frame. 
+     * A string value specifying the gradient color of the frame. The color can be provided in various formats, including named colors ("red", "blue") and hexadecimal notation.
+     * 
+     * @type {string}
+     * 
+     */
+    gradientColor: string;
+
+    /** 
+     * Specifies the size of a frame. 
+     * A number value specifying the size of the frame as a percentage. The size value indicates how much of the image's dimensions the frame occupies.
+     * 
+     * @type {number}
+     * 
+     */
+    size: number;
+
+    /** 
+     * Specifies the inset value of a frame. 
+     * A number value specifying the inset of the frame as a percentage. The inset value determines how far the frame is drawn inside the image boundaries.
+     * 
+     * @remarks 
+     * The Inset value only be available for Line, Inset, and Hook frames.  
+     * 
+     * @type {number}
+     * 
+     */
+    inset: number;
+
+    /** 
+     * Specifies the offset value of a frame. 
+     * A number value specifying the inset of the frame as a percentage. The inset value determines how far the frame is drawn inside the image boundaries.
+     * 
+     * @remarks 
+     * The Inset value only be available for Line, Inset, and Hook frames.  
+     * 
+     * @type {number}
+     * 
+     */
+    offset: number;
+
+    /** 
+     *  Specifies the radius value for line-type frame.  
+     *  A number value that specifies the border radius of the frame as a percentage. The border radius controls the curvature of the frame's corners or edges.
+     * 
+     * @remarks 
+     * The radius value only be available for Line and Bevel frames.  
+     * 
+     * @type {number}
+     * 
+     */
+    borderRadius: number;
+
+    /** 
+     *  Specifies the type of line to be drawn for line-type frame.
+     *  A FrameLineStyle enumeration value that specifies the type of line to be applied as a frame.
+     * 
+     * @remarks 
+     * The FrameLineStyle value only be available for Line frames.  
+     * 
+     * @type {FrameLineStyle}
+     * 
+     */
+    frameLineStyle: FrameLineStyle;
+
+    /** 
+     *  Specifies the number of lines to be drawn for line-type frame.
+     * 
+     * @remarks 
+     * The lineCount value only be available for Line frame.  
+     * 
+     * @type {number}
+     * 
+     */
+    lineCount: number;
 }
 
 /**
@@ -625,6 +781,22 @@ export interface CurrentObject {
      * Specifies the brightness finetune is adjusted or not for the image in Image Editor.
      */
     isBrightAdjust: boolean;
+    /**
+     * Specifies the width of image to be resized in Image Editor.
+     */
+    aspectWidth: number;
+    /**
+     * Specifies the height of image to be resized in Image Editor.
+     */
+    aspectHeight: number;
+    /**
+     * Specifies the frame to be drawn in the image in Image Editor.
+     */
+    frame: string;
+    /**
+     * Specifies the frame object to be drawn on the image in Image Editor.
+     */
+    frameObj?: FrameValue;
     /**
      * Specifies the object collection in Image Editor.
      */
@@ -934,6 +1106,10 @@ export interface Adjustment {
      */
     blur: number;
     /**
+     * Gets transparency level of image.
+     */
+    transparency: number;
+    /**
      * Gets sharpness level of image.
      */
     sharpen: boolean;
@@ -1005,6 +1181,50 @@ export interface Interaction {
      * Gets function name called from the canvas.
      */
     isResize: boolean;
+}
+
+/**
+ * Interface for frame support in the Image Editor.
+ *
+ * @private
+ */
+export interface FrameValue {
+    /**
+     * Gets type of the frame.
+     */
+    type: string;
+    /**
+     * Gets color of the frame.
+     */
+    color: string;
+    /**
+     * Gets size of the frame.
+     */
+    size: number;
+    /**
+     * Gets inset value of the frame.
+     */
+    inset: number;
+    /**
+     * Gets offset value of the frame.
+     */
+    offset: number;
+    /**
+     * Gets radius of the frame.
+     */
+    radius: number;
+    /**
+     * Gets amount of the frame.
+     */
+    amount: number;
+    /**
+     * Gets line type of the frame.
+     */
+    border: string;
+    /**
+     * Gets gradient color of the frame.
+     */
+    gradientColor: string;
 }
 
 /**
@@ -1185,4 +1405,28 @@ export interface SelectionPoint {
      * Gets the end type of arrow shape.
      */
     end?: string;
+    /**
+     * Gets the canvas of image shape.
+     */
+    imageCanvas?: HTMLCanvasElement;
+    /**
+     * Gets the image element of image shape.
+     */
+    imageElement?: HTMLImageElement;
+    /**
+     * Gets the image element is flipped in horizontal or not.
+     */
+    isHorImageFlip?: boolean;
+    /**
+     * Gets the image element is flipped in vertical  or not.
+     */
+    isVerImageFlip?: boolean;
+    /**
+     * Gets the image transparency value.
+     */
+    imageTransparency?: number;
+    /**
+     * Gets the transform collection values.
+     */
+    rotateFlipColl?: any;
 }

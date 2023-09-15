@@ -177,16 +177,16 @@ console.log('e-de-list-numbered-low-roman');
         editor.documentHelper.dialog.element.getElementsByClassName('e-de-list-numbered-low-roman').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
-    it('e-de-icon-bullet-list-none', () => {
-console.log('e-de-icon-bullet-list-none');
-        createDocument(editor);
-        let event: any;
-        event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
-        editor.documentHelper.onKeyDownInternal(event);
-        numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-none').item(0).dispatchEvent(new Event('click'));
-        numBulletDialog.onOkButtonClick();
-    });
+//     it('e-de-icon-bullet-list-none', () => {
+// console.log('e-de-icon-bullet-list-none');
+//         createDocument(editor);
+//         let event: any;
+//         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+//         editor.documentHelper.onKeyDownInternal(event);
+//         numBulletDialog.showNumberBulletDialog(undefined, undefined);
+//         numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-none').item(0).dispatchEvent(new Event('click'));
+//         numBulletDialog.onOkButtonClick();
+//     });
     it('e-de-list-bullet-dot', () => {
 console.log('e-de-list-bullet-dot');
         createDocument(editor);

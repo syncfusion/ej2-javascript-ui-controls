@@ -6,6 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel, CallbackFunction } from '../../../src/schedule/index';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { resourceData } from '../base/datasource.spec';
+import { EJ2Instance } from '../../../src/schedule/base/interface';
 import * as util from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
@@ -891,6 +892,85 @@ describe('Event Base Module', () => {
             expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-close')).toBeTruthy();
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(3);
             expect(Math.floor(schObj.element.querySelector('.e-content-wrap').scrollTop)).toBe(1);
+        });
+    });
+
+    describe('ES-835930 - Checking the work cell Selection', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 11,
+            Subject: 'Vacation',
+            StartTime: new Date(2017, 9, 30, 13, 45),
+            EndTime: new Date(2017, 9, 30, 15, 45),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+            IsAllDay: false
+        },
+        {
+            Id: 12,
+            Subject: 'Meeting',
+            StartTime: new Date(2017, 9, 30, 16, 30),
+            EndTime: new Date(2017, 9, 30, 17, 30),
+            IsAllDay: false
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { selectedDate: new Date(2017, 10, 1), timezone: 'America/New_York', width: '100%',
+            height: '550px', };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking the scroll position on occurrence Event save', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-content-wrap').scrollTop).toEqual(648);
+                done();
+            };
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(schObj.element.querySelector('.e-content-wrap').scrollTop).toEqual(648);
+            util.triggerMouseEvent(app[2], 'click');
+            util.triggerMouseEvent(app[2], 'dblclick');
+            const quickDialog: HTMLElement = document.querySelector('.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.e-schedule-dialog');
+            const start = (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0];
+            start.value = new Date(2017, 9, 31, 10, 30, 0);
+            start.dataBind();
+            const end = (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0];
+            end.value = new Date(2017, 9, 31, 12, 30, 0);
+            end.dataBind();
+            (dialogElement.querySelector('.e-event-save') as HTMLElement).click();
+        });
+        it('Checking the cell Selection on updating the event', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells.e-selected-cell');
+                expect(workCell.getAttribute('data-date')).toBe('1509710400000');
+                done();
+            };
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(app[1], 'click');
+            util.triggerMouseEvent(app[1], 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.e-schedule-dialog');
+            const start = (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0];
+            start.value = new Date(2017, 10, 3, 12, 0, 0);
+            start.dataBind();
+            const end = (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0];
+            end.value = new Date(2017, 10, 3, 13, 0, 0);
+            end.dataBind();
+            (dialogElement.querySelector('.e-event-save') as HTMLElement).click();
+        });
+        it('Checking the cell Selection on deleting the event', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells.e-selected-cell');
+                expect(workCell.getAttribute('data-date')).toBe('1509710400000');
+                done();
+            };
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(app[5], 'click');
+            util.triggerMouseEvent(app[5], 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.e-schedule-dialog');
+            (dialogElement.querySelector('.e-event-delete') as HTMLElement).click();
+            const quickDialog: HTMLElement = document.querySelector('.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-delete') as HTMLElement).click();
         });
     });
 

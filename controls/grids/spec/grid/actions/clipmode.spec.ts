@@ -216,6 +216,13 @@ describe('ClipMode module', () => {
             row = [gridObj.contentModule.getTable().children['1'].children];
             expect(row[0][2].cells[5].classList.contains('e-ellipsistooltip')).toBeTruthy();
         });
+        // used for code coverage
+        it('get the tooltip status', () => {
+            let div = document.createElement('div');
+            div.innerText = 'text';
+            expect((gridObj as any).getTooltipStatus(div)).not.toBeNull();
+            div = null;
+        });
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

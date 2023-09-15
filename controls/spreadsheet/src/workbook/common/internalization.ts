@@ -1,5 +1,6 @@
 import { isNumber } from '../common/math';
 import { CellModel } from '../base/index';
+import { isUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Check the value of the cell is number with thousand separator and currency symbol and returns the parsed value.
@@ -37,8 +38,8 @@ export function parseThousandSeparator(value: string, locale: string, groupSep: 
         if (i === splitedValue.length - 1) {
             isParsed = splitedValue[i as number].length === splitedNum[0].length;
         } else {
-            isParsed = i === 0 ? splitedValue[i as number].length <= splitedNum[1].length :
-                splitedValue[i as number].length === splitedNum[1 as number].length;
+            isParsed = !isUndefined(splitedNum[1]) && (i === 0 ? splitedValue[i as number].length <= splitedNum[1].length :
+                splitedValue[i as number].length === splitedNum[1].length);
         }
         if (!isParsed) {
             break;

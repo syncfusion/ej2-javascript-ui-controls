@@ -3233,8 +3233,8 @@ describe('RTE base module', () => {
             rteObj.locale = 'en-US';
             rteObj.dataBind();
             let rteEle: HTMLElement = rteObj.element;
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl + B)");
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Italic (Ctrl + I)");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl+B)");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Italic (Ctrl+I)");
         });
         it('Ensure placeholder property', () => {
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
@@ -5991,7 +5991,7 @@ describe('Check undo in execCommand', () => {
         (rteObj as any).inputElement.focus();
         rteObj.executeCommand("insertImage", el, { undo: true });
         expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
-        expect(rteObj.element.querySelector('[title="Undo (Ctrl + Z)"]').classList.contains('e-overlay')).toBe(false);
+        expect(rteObj.element.querySelector('[title="Undo (Ctrl+Z)"]').classList.contains('e-overlay')).toBe(false);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -6554,25 +6554,115 @@ describe('EJ2-71306 - PlaceHolder is not working with Iframe mode in RichTextEdi
         destroy(rteObj);
     });
 });
-describe('EJ2-70166 Not removed the heading formats while pressing the backspace key ', () => {
-    let formatsRTE : RichTextEditor ;
-    beforeEach( () => {
-        formatsRTE = renderRTE({
-            toolbarSettings: { items: ['Formats'] },
+describe('836937 - Rich Text Editor Table Module', function () {
+    let rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({ enableXhtml: true, 
+            value:`<table>
+            <tr>
+              <th>Company</th>
+              <th>Contact</th>
+              <th>Country</th>
+            </tr>
+            <tr>
+              <td>Alfreds Futterkiste</td>
+              <td class="tdElement"></td>
+              <td>Germany</td>
+            </tr>
+            <tr>
+              <td>Centro comercial Moctezuma</td>
+              <td>Francisco Chang</td>
+              <td>Mexico</td>
+            </tr>
+          </table><div id="elementCursorPosition">Rich Text Editor</div>`
         });
-    })
-    afterEach( () => {
-        destroy(formatsRTE);
-    })
-    it('Changing format using drop down should and using backspace to remove the format should remove the heading element', (done : Function) => {
-        formatsRTE.focusIn();
-        const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn');
-        ( dropButton[0] as HTMLElement ).click(); // Formats
-        const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
-        ( fontDropItems[3] as HTMLElement ).click(); // Apply Heading 1
-        expect(formatsRTE.inputElement.innerHTML).toEqual('<h1><br></h1>');
-        expect(formatsRTE.inputElement.innerHTML).not.toEqual('<h1>﻿﻿<br></h1>');
-        // Partially covered Backspace key down does not work in jasmine test
         done();
+    });
+    it("Table selection", function (done) {
+        rteObj.focusIn();
+        let element: Element= rteObj.contentModule.getDocument().getElementById("elementCursorPosition");
+        let selectioncursor: NodeSelection = new NodeSelection();
+        let range: Range = document.createRange();
+        range.setStart(element, 1);
+        selectioncursor.setRange(document, range);
+        var keyBoardEvent = { type: 'keyup', preventDefault: function () { }, key: 'ArrowRight', keyCode: 39, stopPropagation: function () { }, shiftKey: false, which: 39 };
+        rteObj.keyUp(keyBoardEvent);
+        setTimeout(() => {
+            expect((window.getSelection().anchorNode as any).closest("td") == null).toBe(true);
+            done();
+        }, 100);     
+    });
+    it("Remove the selection from the previous table", function (done) {
+        rteObj.focusIn();
+        var tdElement = rteObj.contentModule.getDocument().getElementsByClassName("tdElement");
+        let selectioncursor: NodeSelection = new NodeSelection();
+        let range: Range = document.createRange();
+        range.setStart(tdElement[0], 1);
+        selectioncursor.setRange(document, range);
+        var keyBoardEvent = { type: 'keyup', preventDefault: function () { }, key: 'ArrowRight', keyCode: 39, stopPropagation: function () { }, shiftKey: false, which: 39 };
+        rteObj.mouseDownHandler({ target:  rteObj.element.querySelectorAll('.tdElement')[0], isTrusted: true });
+        rteObj.keyDown(keyBoardEvent);
+        rteObj.keyUp(keyBoardEvent);
+        setTimeout(() => {
+            expect(rteObj.element.querySelectorAll('.tdElement')[0].classList.contains("e-cell-select") == false).toBe(true);
+            done();
+        }, 100); 
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('845077 - The Enter key action is not working properly while setting enableXhtml to true', function () {
+    let rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            enableXhtml: true,
+            value: null,
+            placeholder: 'Type something',
+        });
+        done();
+    });
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+    it("Enter key action should not add zerowidthspace with null value", function () {
+        expect((rteObj as any).value).toBe('<p><br/></p>');
+        let node: any = (rteObj as any).inputElement;
+        setCursorPoint(document, node, 0);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.code = 'Enter';
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.which = 13;
+        (rteObj as any).keyDown(keyBoardEvent);
+        dispatchEvent(rteObj.contentModule.getEditPanel(), 'focusout');
+        expect((rteObj as any).inputElement.innerHTML).toBe('<p><br></p><p><br></p>');
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('842745 - Space Keypress causes the console error and the cursor position is removed', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: `<p>Object2</p><p class="focusNode">rrr,&nbsp;</p><p style="font-family: &quot;Open Sans&quot;; border: none; font-variant-numeric: inherit; font-variant-east-asian: inherit; font-variant-alternates: inherit; font-stretch: inherit; line-height: inherit; font-optical-sizing: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; padding: 0px; vertical-align: baseline;"><span style="border: none; font-style: inherit; font-variant: inherit; font-weight: inherit; font-stretch: inherit; line-height: inherit; font-family: inherit; font-optical-sizing: inherit; font-kerning: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-size: 8pt; margin: 0px; padding: 0px; vertical-align: baseline;">Hello GIVENNAME,FAMILYNAME&ZeroWidthSpace;</span></p>`
+        });
+    });
+
+    it('826826 - Space Keypress causes the console error and the cursor position is removed', () => {
+        let keyBoardEvent: any = { preventDefault: () => { }, key: ' ', stopPropagation: () => { }, shiftKey: false, which: 32 };
+        let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+        editNode.focus();
+        keyBoardEvent.which = 32;
+        keyBoardEvent.code = 'Space';
+        let focusNode: any = editNode.querySelector('.focusNode')
+        let sel1 = new NodeSelection().setSelectionText(document, focusNode.firstChild, focusNode.firstChild, 5, 5);
+        rteObj.executeCommand('insertHTML', 'object2');
+        setCursorPoint(document,focusNode.childNodes[1],focusNode.childNodes[1].textContent.length);
+        keyBoardEvent.type = 'keyup';
+        (rteObj as any).keyUp(keyBoardEvent);
+        expect(rteObj.inputElement === document.activeElement).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
     });
 });

@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper, animationMode } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';
@@ -367,7 +367,7 @@ export interface DataSourceChangedEventArgs {
     action: string;
     /**
      * Return the new node data of updated data source
-     *
+     * 
      */
     nodeData: { [key: string]: Object }[];
 }
@@ -419,7 +419,7 @@ export interface NodeData {
  * Interface for Failure event arguments
  */
 export interface FailureEventArgs {
-    /** Represents the Error object that contains information about the error that occurred. This property allows you to access details such as the error message, stack trace, error code, or any additional information associated with the error. */
+    /** Defines the error information. */
     error?: Error;
 }
 
@@ -1858,7 +1858,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         let eNodes: HTMLElement[] = selectAll('.' + EXPANDED, element);
-        if (!this.loadOnDemand) {
+        if (!this.loadOnDemand && this.fields.dataSource instanceof DataManager) {
             this.isInitalExpand = this.treeData.filter(e => e[this.fields.expanded] == true).length > 0 ? true : this.isInitalExpand;
         }
         if (!this.isInitalExpand) {
@@ -2345,7 +2345,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private doExpandAction(): void {
         let eUids: string[] = this.expandedNodes;
-        if (!this.loadOnDemand) {
+        if (!this.loadOnDemand && this.fields.dataSource instanceof DataManager) {
             this.isInitalExpand = this.treeData.filter(e => e[this.fields.expanded] == true).length > 0 ? true : this.isInitalExpand;
         }
         if (this.isInitalExpand && eUids.length > 0) {
@@ -2531,7 +2531,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.isAnimate && !this.isRefreshed) {
                     this.aniObj.animate(ul, {
                         name: this.animation.expand.effect,
-                        duration: this.animation.expand.duration,
+                        duration:(this.animation.expand.duration === 0 && animationMode === 'Enable') ? 400 : this.animation.expand.duration,
                         timingFunction: this.animation.expand.easing,
                         begin: (args: AnimationOptions): void => {
                             liEle.style.overflow = 'hidden';
@@ -2630,7 +2630,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.isAnimate) {
             this.aniObj.animate(ul, {
                 name: this.animation.collapse.effect,
-                duration: this.animation.collapse.duration,
+                duration: (this.animation.collapse.duration === 0 && animationMode === 'Enable') ? 400 : this.animation.collapse.duration,
                 timingFunction: this.animation.collapse.easing,
                 begin: (args: AnimationOptions): void => {
                     liEle.style.overflow = 'hidden';

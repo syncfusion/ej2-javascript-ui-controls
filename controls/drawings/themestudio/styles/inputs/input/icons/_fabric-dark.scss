@@ -1,0 +1,17 @@
+@include export-module('input-fabric-icons') {
+  .e-float-input,
+  .e-float-input.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e953';
+      font-family: 'e-icons';
+    }
+  }
+
+  .e-input-group,
+  .e-input-group.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e953';
+      font-family: 'e-icons';
+    }
+  }
+}

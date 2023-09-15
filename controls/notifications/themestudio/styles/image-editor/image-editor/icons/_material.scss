@@ -1,0 +1,350 @@
+@include export-module('image-editor-material-icons') {
+  .e-image-editor {
+    & .e-upload-icon {
+      &::before {
+        content: '\e65f';
+      }
+    }
+
+    & .e-zoom-in {
+      &::before {
+        content: '\e22c';
+      }
+    }
+
+    & .e-zoom-out {
+      &::before {
+        content: '\e974';
+      }
+    }
+
+    & .e-pan {
+      &::before {
+        content: '\ec1a';
+      }
+    }
+
+    & .e-select {
+      &::before {
+        content: '\e94c';
+      }
+    }
+
+    & .e-transform {
+      &::before {
+        content: '\e96c';
+      }
+    }
+
+    & .e-annotation {
+      &::before {
+        content: '\ec26';
+      }
+    }
+
+    & .e-shapes {
+      &::before {
+        content: '\ec23';
+      }
+    }
+
+    & .e-mouse {
+      &::before {
+        content: '\ec1d';
+      }
+    }
+
+    & .e-btn-reset {
+      &::before {
+        content: '\e953';
+      }
+    }
+
+    & .e-btn-save {
+      &::before {
+        content: '\e98e';
+      }
+    }
+
+    & .e-custom {
+      &::before {
+        content: '\e964';
+      }
+    }
+
+    & .e-close {
+      &::before {
+        content: '\eb36';
+      }
+    }
+
+    & .e-check {
+      &::before {
+        content: '\e96d';
+      }
+    }
+
+    & .e-text-font-color.e-template {
+      & .e-caret::before {
+        content: '\e35f';
+      }
+    }
+
+    & .e-stroke.e-template,
+    & .e-pen-stroke-color.e-template {
+      & .e-caret::before {
+        content: '\ec15';
+      }
+    }
+
+    & .e-fill.e-template {
+      & .e-caret {
+        &::before {
+          content: '\e35c';
+        }
+      }
+    }
+
+    & .e-custom {
+      &::before {
+        content: '\e964';
+      }
+    }
+    
+    & .e-circle {
+      &::before {
+        content: '\e671';
+      }
+    }
+    
+    & .e-square{
+      &::before {
+        content: '\e965';
+      }
+    }
+    
+    & .e-custom-a {
+      &::before {
+        content: '\e966';
+      }
+    }
+    
+    & .e-custom-b {
+      &::before {
+        content: '\e967';
+      }
+    }
+    
+    & .e-custom-c {
+      &::before {
+        content: '\e968';
+      }
+    }
+    
+    & .e-custom-d {
+      &::before {
+        content: '\e96a';
+      }
+    }
+    
+    & .e-custom-e {
+      &::before {
+        content: '\e96b';
+      }
+    }
+  
+    & .e-horizontal-flip {
+      &::before {
+        content: '\e95c';
+      }
+    }
+    
+    & .e-vertical-flip {
+      &::before {
+        content: '\e95d';
+      }
+    }
+  
+    & .e-clock-wise {
+      &::before {
+        content: '\e960';
+      }
+    }
+    
+    & .e-anti-clock-wise {
+      &::before {
+        content: '\e95f';
+      }
+    }
+  
+    & .e-rectangle {
+      &::before {
+        content: '\e670';
+      }
+    }
+    
+    & .e-circle {
+      &::before {
+        content: '\e671';
+      }
+    }
+    
+    & .e-triangle {
+      &::before {
+        content: '\e954';
+      }
+    }
+    
+    & .e-line {
+      &::before {
+        content: '\e668';
+      }
+    }
+    
+    & .e-add-text {
+      &::before {
+        content: '\e35b';
+      }
+    }
+    
+    & .e-free-pen {
+      &::before {
+        content: '\e737';
+      }
+    }
+
+    & .e-arrow {
+      &::before {
+        content: '\e669';
+      }
+    }
+    
+    & .e-path {
+      &::before {
+        content: '\e931';
+      }
+    }
+  }
+}
+
+.e-dropdown-popup.e-image-popup {
+  & .e-custom {
+    &::before {
+      content: '\e964';
+    }
+  }
+  
+  & .e-circle {
+    &::before {
+      content: '\e671';
+    }
+  }
+  
+  & .e-square{
+    &::before {
+      content: '\e965';
+    }
+  }
+  
+  & .e-custom-a {
+    &::before {
+      content: '\e966';
+    }
+  }
+  
+  & .e-custom-b {
+    &::before {
+      content: '\e967';
+    }
+  }
+  
+  & .e-custom-c {
+    &::before {
+      content: '\e968';
+    }
+  }
+  
+  & .e-custom-d {
+    &::before {
+      content: '\e96a';
+    }
+  }
+  
+  & .e-custom-e {
+    &::before {
+      content: '\e96b';
+    }
+  }
+  
+  & .e-rectangle {
+    &::before {
+      content: '\e670';
+    }
+  }
+  
+  & .e-circle {
+    &::before {
+      content: '\e671';
+    }
+  }
+  
+  & .e-triangle {
+    &::before {
+      content: '\e954';
+    }
+  }
+  
+  & .e-line {
+    &::before {
+      content: '\e668';
+    }
+  }
+  
+  & .e-clock-wise {
+    &::before {
+      content: '\e960';
+    }
+  }
+  
+  & .e-anti-clock-wise {
+    &::before {
+      content: '\e95f';
+    }
+  }
+  
+  & .e-add-text {
+    &::before {
+      content: '\e35b';
+    }
+  }
+  
+  & .e-free-pen {
+    &::before {
+      content: '\e737';
+    }
+  }
+  
+  & .e-horizontal-flip {
+    &::before {
+      content: '\e95c';
+    }
+  }
+  
+  & .e-vertical-flip {
+    &::before {
+      content: '\e95d';
+    }
+  }
+
+  & .e-arrow {
+    &::before {
+      content: '\e669';
+    }
+  }
+  
+  & .e-path {
+    &::before {
+      content: '\e931';
+    }
+  }
+}

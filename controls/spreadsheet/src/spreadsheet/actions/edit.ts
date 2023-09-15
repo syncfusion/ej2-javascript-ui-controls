@@ -60,6 +60,15 @@ export class Edit {
         FIREFOXMINUS: 173,
         F2: 113
     };
+    private formulaErrorStrings: string[] = [
+        'mismatched parentheses',
+        'requires 3 arguments',
+        'improper formula',
+        'empty expression',
+        'mismatched string quotes',
+        'wrong number of arguments',
+        'invalid arguments'
+    ];
 
     /**
      * Constructor for edit module in Spreadsheet.
@@ -709,25 +718,22 @@ export class Edit {
     }
 
     private dblClickHandler(e: MouseEvent | TouchEvent): void {
-        const trgtElem: HTMLElement = <HTMLElement>e.target;
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        const actCell: number[] = getCellIndexes(sheet.activeCell);
-        const cell: CellModel = getCell(actCell[0], actCell[1], sheet) || {};
-        if (closest(trgtElem, '.e-datavisualization-chart')) {
-            return;
-        }
-        if (!sheet.isProtected || !isLocked(cell, getColumn(sheet, actCell[1]))) {
-            if ((trgtElem.className.indexOf('e-ss-overlay') < 0) &&
-                (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
-                    || closest(trgtElem, '.e-sheet-content') || trgtElem.classList.contains('e-table'))) {
+        const trgt: HTMLElement = <HTMLElement>e.target;
+        if (!closest(trgt, '.e-datavisualization-chart') && !trgt.classList.contains('e-ss-overlay') &&
+            (trgt.classList.contains('e-active-cell') || trgt.classList.contains('e-cell') || trgt.classList.contains('e-wrap-content') ||
+            closest(trgt, '.e-sheet-content') || trgt.classList.contains('e-table'))) {
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const actCell: number[] = getCellIndexes(sheet.activeCell);
+            const cell: CellModel = getCell(actCell[0], actCell[1], sheet, false, true);
+            if (!sheet.isProtected || !isLocked(cell, getColumn(sheet, actCell[1]))) {
                 if (this.isEdit) {
-                    if (checkIsFormula(this.editCellData.value)) {
-                        const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
-                        if (this.parent.getActiveSheet().name === sheetName) {
-                            this.endEdit();
-                        }
-                    } else {
-                        if (trgtElem.className.indexOf('e-spreadsheet-edit') < 0) {
+                    if (!trgt.classList.contains('e-spreadsheet-edit')) {
+                        if (checkIsFormula(this.editCellData.value)) {
+                            const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
+                            if (this.parent.getActiveSheet().name === sheetName) {
+                                this.endEdit();
+                            }
+                        } else {
                             this.endEdit();
                         }
                     }
@@ -736,9 +742,7 @@ export class Edit {
                     this.startEdit();
                     focus(this.getEditElement(sheet));
                 }
-            }
-        } else {
-            if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')) {
+            } else {
                 this.parent.notify(editAlert, null);
             }
         }
@@ -952,9 +956,6 @@ export class Edit {
                         click: (): void => {
                             isYesBtnClick = true;
                             erroDialogInst.hide();
-                            value = this.editCellData.value = eventArgs.formula;
-                            this.updateCell(oldCellValue, tdRefresh, value, newVal, e);
-                            this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: eventArgs.formula });
                         }
                     },
                     {
@@ -962,9 +963,15 @@ export class Edit {
                         click: (): void => erroDialogInst.hide()
                     }],
                     close: (): void => {
-                        const editorElem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
-                        if (!isYesBtnClick && editorElem.innerText) {
-                            window.getSelection().selectAllChildren(editorElem);
+                        if (isYesBtnClick) {
+                            value = this.editCellData.value = eventArgs.formula;
+                            this.updateCell(oldCellValue, tdRefresh, value, newVal, e);
+                            this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: eventArgs.formula });
+                        } else {
+                            const editorElem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
+                            if (editorElem.innerText) {
+                                window.getSelection().selectAllChildren(editorElem);
+                            }
                         }
                     }
                 }, false);
@@ -1005,6 +1012,26 @@ export class Edit {
                 address: this.editCellData.addr, value: this.editCellData.value
             };
             this.parent.notify(workbookEditOperation, evtArgs);
+            const updatedCell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
+            let cellValue: string;
+            if (!isNullOrUndefined(updatedCell)) {
+                cellValue = updatedCell.value.toString();
+            }
+            const isInvalidFormula: boolean = this.formulaErrorStrings.indexOf(cellValue) > -1 || (cellValue && cellValue.includes('circular reference:'));
+            if (isInvalidFormula) {
+                delete updatedCell.value;
+                delete updatedCell.formula;
+                if (e) {
+                    const target: Element = e.target as Element;
+                    const ribbonCls: string[] = ['e-toolbar-item', 'e-tab-wrap', 'e-text-wrap', 'e-tab-text', 'e-caret'];
+                    const skipAlertCls: string[] = ['e-scroller', 'e-main-panel', 'e-autofill'];
+                    if ((!ribbonCls.some((cls: string) => target.classList.contains(cls)) || !closest(target, '.e-ribbon')) && 
+                        !skipAlertCls.some((cls: string) => target.classList.contains(cls))) {
+                        this.showFormulaAlertDlg(cellValue);
+                    }
+                }
+                return;
+            }
             let indexes: number[][];
             if (<boolean>evtArgs.isFormulaDependent) {
                 indexes = getViewportIndexes(this.parent, this.parent.viewport);
@@ -1058,7 +1085,7 @@ export class Edit {
         }
         this.triggerEvent('cellSave', e, value);
         this.resetEditState();
-        this.focusElement();
+        this.focusElement(e as KeyboardEventArgs);
         if (this.parent.showSheetTabs && !this.parent.isProtected) {
             this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
         }
@@ -1199,8 +1226,16 @@ export class Edit {
         this.focusElement();
     }
 
-    private focusElement(): void {
-        focus(this.parent.element);
+    private focusElement(e?: KeyboardEventArgs): void {
+        if (e && e.keyCode === 9 && document.activeElement.classList.contains('e-formula-bar')) {
+            const focusEle: HTMLElement = this.parent.element.querySelector(
+                `.e-formula-bar-panel ${e.shiftKey ? '.e-insert-function' : '.e-combobox'}`) as HTMLElement;
+            if (focusEle) {
+                focus(focusEle);
+            }
+        } else {
+            focus(this.parent.element);
+        }
         this.parent.notify(enableToolbarItems, [{ enable: true }]);
     }
 
@@ -1319,7 +1354,12 @@ export class Edit {
         }
     }
 
-    private addressHandler(args: { range: string, isSelect: boolean, isMultiple: boolean }): void {
+    private addressHandler(args: { range: string, isSelect: boolean, isMultiple: boolean, isAlertDlgOpen?: boolean }): void {
+        const dlgInst: { element: Element } = this.parent.serviceLocator.getService<Dialog>(dialog).dialogInstance;
+        if (dlgInst && dlgInst.element && dlgInst.element.classList.contains('e-validation-error-dlg')) {
+            args.isAlertDlgOpen = true;
+            return;
+        }
         const selection: Selection = window.getSelection();
         this.selectionStart = selection.anchorOffset;
         this.selectionEnd = selection.focusOffset;
@@ -1488,6 +1528,73 @@ export class Edit {
         if (!this.isEdit) {
             this.editCellData.value = null;
         }
+    }
+
+    private showFormulaAlertDlg(errorString: string): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const alertDialog: Dialog = this.parent.serviceLocator.getService('dialog') as Dialog;
+        let cursorPosition: number;
+        let errorKey: string = this.getFormulaErrorKey(errorString);
+        alertDialog.show({
+            width: 400, isModal: true, showCloseIcon: true, target: this.parent.element, cssClass: 'e-validation-error-dlg',
+            content: l10n.getConstant(errorKey),
+            beforeOpen: () => {
+                if (window.getSelection().rangeCount > 0) {
+                    const range: Range = window.getSelection().getRangeAt(0);
+                    cursorPosition = range.endOffset;
+                }
+            },
+            buttons: [{
+                buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true},
+                click: (): void => {
+                    alertDialog.hide();
+                }
+            }],
+            close: (): void => {
+                const elem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
+                const selection: Selection = document.getSelection();
+                const range: Range = document.createRange();
+                range.setStart(elem.firstChild, cursorPosition);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                elem.focus();
+            }
+        },false);
+    }
+
+    private getFormulaErrorKey(errorString: string): string {
+        let errorKey: string;
+        switch(errorString) {
+            case 'invalid arguments':
+                errorKey = 'InvalidArguments';
+                break;
+            case 'improper formula':
+                errorKey = 'ImproperFormula';
+                break;
+            case 'empty expression':
+                errorKey = 'EmptyExpression';
+                break;
+            case 'mismatched parentheses':
+                errorKey = 'MismatchedParenthesis';
+                break;
+            case 'mismatched string quotes':
+                errorKey = 'MismatchedStringQuotes'
+                break;
+            case 'wrong number of arguments':
+                errorKey = 'WrongNumberOfArguments';
+                break;
+            case 'requires 3 arguments':
+                errorKey = 'Requires3Arguments';
+                break;
+            default:
+                if (errorString.includes('circular reference')) {
+                    errorKey = 'FormulaCircularRef'
+                } else {
+                    errorKey = 'InvalidFormulaError';
+                }
+        }
+        return errorKey;
     }
 }
 

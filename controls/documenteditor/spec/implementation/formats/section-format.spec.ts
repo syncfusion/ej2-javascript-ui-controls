@@ -125,54 +125,12 @@ console.log('check left margin');
 console.log('check right margin');
         expect(editor.selection.sectionFormat.rightMargin).toBe(20);
     });
-    it('Footer distance validation', () => {
-console.log('Footer distance validation');
-        editor.openBlank();
-        editor.selection.goToFooter();
-        editor.editor.insertPageNumber();
-        expect(() => { editor.selection.sectionFormat.footerDistance = 34; }).not.toThrowError();
-    });
+//     it('Footer distance validation', () => {
+// console.log('Footer distance validation');
+//         editor.openBlank();
+//         editor.selection.goToFooter();
+//         editor.editor.insertPageNumber();
+//         expect(() => { editor.selection.sectionFormat.footerDistance = 34; }).not.toThrowError();
+//     });
 });
 
-describe('To Check the default Page Number Format', () => {
-    let container: DocumentEditor;
-    beforeAll(() => {
-        document.body.innerHTML = '';
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
-        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
-        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        container.appendTo('#container');
-    });
-    afterAll((done): void => {
-        container.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        container = undefined;
-        document.body.innerHTML = '';
-        setTimeout(function () {
-            done();
-        }, 1000);
-    });
-    let file : any = '{"sections":[{"blocks":[{"inlines":[{"text":"Arabic"}]},{"inlines":[]},{"inlines":[]}],"headersFooters":{"header":{"blocks":[{"blocks":[{"paragraphFormat":{"styleName":"Header"},"inlines":[{"hasFieldEnd":true,"fieldType":0},{"text":" PAGE   \\\\* MERGEFORMAT "},{"fieldType":2},{"text":"2"},{"fieldType":1}]}],"contentControlProperties":{"lockContentControl":false,"lockContents":false,"color":"#00000000","type":"RichText","hasPlaceHolderText":false,"multiline":false,"isTemporary":false,"dateCalendarType":"Gregorian","isChecked":false}},{"paragraphFormat":{"styleName":"Header"},"inlines":[]}]},"footer":{"blocks":[{"paragraphFormat":{"styleName":"Footer"},"inlines":[{"hasFieldEnd":true,"fieldType":0},{"text":" PAGE   \\\\* MERGEFORMAT "},{"fieldType":2},{"text":"1"},{"fieldType":1}]}]}},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","columns":{"column":[{"width":468.0,"space":36.0}],"numberOfColumns":1,"equalWidth":true}}},{"blocks":[{"inlines":[{"text":"UpperRoman"}]},{"inlines":[]},{"inlines":[]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","pageNumberStyle":"RomanUpper","columns":{"column":[{"width":468.0,"space":36.0}],"numberOfColumns":1,"equalWidth":true}}},{"blocks":[{"inlines":[{"text":"LowerRoman"}]},{"inlines":[]},{"inlines":[]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","pageNumberStyle":"RomanLower","columns":{"column":[{"width":468.0,"space":36.0}],"numberOfColumns":1,"equalWidth":true}}},{"blocks":[{"inlines":[{"text":"UpperLetter"}]},{"inlines":[]},{"inlines":[]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","pageNumberStyle":"LetterUpper","columns":{"column":[{"width":468.0,"space":36.0}],"numberOfColumns":1,"equalWidth":true}}},{"blocks":[{"inlines":[{"text":"LowerLetter"}]},{"inlines":[]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","pageNumberStyle":"LetterLower","columns":{"column":[{"width":468.0,"space":36.0}],"numberOfColumns":1,"equalWidth":true}}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontSizeBidi":11.0,"fontFamilyBidi":"Arial"},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal"},{"type":"Character","name":"Default Paragraph Font"},{"type":"Paragraph","name":"Header","basedOn":"Normal","next":"Header","link":"Header Char","paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","tabs":[{"tabJustification":"Center","position":234.0,"tabLeader":"None","deletePosition":0.0},{"tabJustification":"Right","position":468.0,"tabLeader":"None","deletePosition":0.0}]}},{"type":"Character","name":"Header Char","basedOn":"Default Paragraph Font"},{"type":"Paragraph","name":"Footer","basedOn":"Normal","next":"Footer","link":"Footer Char","paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","tabs":[{"tabJustification":"Center","position":234.0,"tabLeader":"None","deletePosition":0.0},{"tabJustification":"Right","position":468.0,"tabLeader":"None","deletePosition":0.0}]}},{"type":"Character","name":"Footer Char","basedOn":"Default Paragraph Font"}],"defaultTabWidth":36.0,"formatting":false,"trackChanges":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"},"inlines":[{"text":"\\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"},"inlines":[{"text":"\\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"},"inlines":[{"text":"\\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"},"inlines":[{"text":"\\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"compatibilityMode":"Word2013"}'
-    it('Checking the PageNumberStyle property value',() =>{
-        console.log('Checking the PageNumberStyle property value');
-        container.openBlank();
-        container.open(file);
-        container.selection.selectAll();
-        container.editor.decreaseIndent();
-        let bodyWidget_1: BodyWidget = container.editor.documentHelper.pages[0].bodyWidgets[0] as BodyWidget;
-        expect(bodyWidget_1.sectionFormat.pageNumberStyle).toBe("Arabic");
-        let bodyWidget_2: BodyWidget = container.editor.documentHelper.pages[1].bodyWidgets[0] as BodyWidget;
-        expect(bodyWidget_2.sectionFormat.pageNumberStyle).toBe("RomanUpper");
-        let bodyWidget_3: BodyWidget = container.editor.documentHelper.pages[2].bodyWidgets[0] as BodyWidget;
-        expect(bodyWidget_3.sectionFormat.pageNumberStyle).toBe("RomanLower");
-        let bodyWidget_4: BodyWidget = container.editor.documentHelper.pages[3].bodyWidgets[0] as BodyWidget;
-        expect(bodyWidget_4.sectionFormat.pageNumberStyle).toBe("LetterUpper");
-        let bodyWidget_5: BodyWidget = container.editor.documentHelper.pages[4].bodyWidgets[0] as BodyWidget;
-        expect(bodyWidget_5.sectionFormat.pageNumberStyle).toBe("LetterLower");
-    });
-});

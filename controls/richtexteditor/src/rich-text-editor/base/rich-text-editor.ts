@@ -524,7 +524,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Specify the value whether tooltip will be displayed for the Rich Text Editor toolbar.
      *
-     * @default false.
+     * @default true.
      */
     @Property(true)
     public showTooltip: boolean;
@@ -899,7 +899,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Set the cancel argument to true to cancel the command execution.
      *
      * @event 'actionBegin'
-     * @blazorProperty 'OnActionBegin'
      */
     @Event()
     public actionBegin: EmitType<ActionBeginEventArgs>;
@@ -907,7 +906,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers after command execution using toolbar items or executeCommand method.
      *
      * @event 'actionComplete'
-     * @blazorProperty 'OnActionComplete'
      */
     @Event()
     public actionComplete: EmitType<ActionCompleteEventArgs>;
@@ -917,8 +915,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Set the cancel argument to true to cancel the open of a dialog.
      *
      * @event 'beforeDialogOpen'
-     * @blazorProperty 'OnDialogOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
 
     @Event()
@@ -927,8 +923,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when a dialog is opened.
      *
      * @event 'dialogOpen'
-     * @blazorProperty 'DialogOpened'
-     * @blazorType DialogOpenEventArgs
      */
     @Event()
     public dialogOpen: EmitType<Object>;
@@ -938,8 +932,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Set the cancel argument to true to prevent closing a dialog.
      *
      * @event 'beforeDialogClose'
-     * @blazorProperty 'OnDialogClose'
-     * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
     @Event()
     public beforeDialogClose: EmitType<BeforeCloseEventArgs>;
@@ -947,8 +939,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers after the dialog has been closed.
      *
      * @event 'dialogClose'
-     * @blazorProperty 'DialogClosed'
-     * @blazorType DialogCloseEventArgs
      */
     @Event()
     public dialogClose: EmitType<Object>;
@@ -956,7 +946,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when the quick toolbar is being opened.
      *
      * @event 'beforeQuickToolbarOpen'
-     * @blazorProperty 'OnQuickToolbarOpen'
      */
     @Event()
     public beforeQuickToolbarOpen: EmitType<BeforeQuickToolbarOpenArgs>;
@@ -964,8 +953,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when a quick toolbar is opened.
      *
      * @event 'quickToolbarOpen'
-     * @blazorProperty 'QuickToolbarOpened'
-     * @blazorType QuickToolbarEventArgs
      */
     @Event()
     public quickToolbarOpen: EmitType<Object>;
@@ -973,8 +960,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers after the quick toolbar has been closed.
      *
      * @event 'quickToolbarClose'
-     * @blazorProperty 'QuickToolbarClosed'
-     * @blazorType QuickToolbarEventArgs
      */
     @Event()
     public quickToolbarClose: EmitType<Object>;
@@ -990,7 +975,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when the toolbar items status is updated.
      *
      * @event 'updatedToolbarStatus'
-     * @blazorType ToolbarUpdateEventArgs
      */
     @Event()
     public updatedToolbarStatus: EmitType<ToolbarStatusEventArgs>;
@@ -998,7 +982,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when the image is selected or dragged into the insert image dialog.
      *
      * @event 'imageSelected'
-     * @blazorProperty 'OnImageSelected'
      */
     @Event()
     public imageSelected: EmitType<SelectedEventArgs>;
@@ -1013,7 +996,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when the selected image begins to upload in the insert image dialog.
      *
      * @event 'imageUploading'
-     * @blazorProperty 'OnImageUploading'
      */
     @Event()
     public imageUploading: EmitType<UploadingEventArgs>;
@@ -1021,8 +1003,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when the image is successfully uploaded to the server side.
      *
      * @event 'imageUploadSuccess'
-     * @blazorProperty 'OnImageUploadSuccess'
-     * @blazorType ImageSuccessEventArgs
      */
     @Event()
     public imageUploadSuccess: EmitType<Object>;
@@ -1030,8 +1010,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when there is an error in the image upload.
      *
      * @event 'imageUploadFailed'
-     * @blazorProperty 'OnImageUploadFailed'
-     * @blazorType ImageFailedEventArgs
      */
     @Event()
     public imageUploadFailed: EmitType<Object>;
@@ -1039,7 +1017,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when the selected image is cleared from the insert image dialog.
      *
      * @event 'imageRemoving'
-     * @blazorProperty 'OnImageRemoving'
      */
     @Event()
     public imageRemoving: EmitType<RemovingEventArgs>;
@@ -1047,7 +1024,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when the selected image is cleared from the Rich Text Editor Content.
      *
      * @event 'afterImageDelete'
-     * @blazorProperty 'OnImageDelete'
      */
     @Event()
     public afterImageDelete: EmitType<AfterImageDeleteEventArgs>;
@@ -1104,7 +1080,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when the Rich Text Editor is rendered.
      *
      * @event 'created'
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -1112,8 +1087,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when the Rich Text Editor is destroyed.
      *
      * @event 'destroyed'
-     * @blazorProperty 'Destroyed'
-     * @blazorType DestroyedEventArgs
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -1121,7 +1094,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
      *
      * @event 'beforeSanitizeHtml'
-     * @blazorProperty 'OnSanitizeHtml'
      */
     @Event()
     public beforeSanitizeHtml: EmitType<BeforeSanitizeHtmlArgs>;
@@ -1129,7 +1101,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when Rich Text Editor is focused out.
      *
      * @event 'blur'
-     * @blazorType BlurEventArgs
      */
     @Event()
     public blur: EmitType<Object>;
@@ -1137,8 +1108,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when Rich Text Editor Toolbar items is clicked.
      *
      * @event 'toolbarClick'
-     * @blazorProperty 'OnToolbarClick'
-     * @blazorType ToolbarClickEventArgs
      */
     @Event()
     public toolbarClick: EmitType<Object>;
@@ -1146,7 +1115,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when Rich Text Editor is focused in
      *
      * @event 'focus'
-     * @blazorType FocusEventArgs
      */
     @Event()
     public focus: EmitType<Object>;
@@ -1154,7 +1122,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers only when Rich Text Editor is blurred and changes are done to the content.
      *
      * @event 'change'
-     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -1162,7 +1129,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers only when resizing the image.
      *
      * @event 'resizing'
-     * @blazorProperty 'Resizing'
      */
     @Event()
     public resizing: EmitType<ResizeArgs>;
@@ -1170,7 +1136,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers only when start resize the image.
      *
      * @event 'resizeStart'
-     * @blazorProperty 'OnResizeStart'
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
@@ -1178,7 +1143,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers only when stop resize the image.
      *
      * @event 'resizeStop'
-     * @blazorProperty 'OnResizeStop'
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
@@ -1203,7 +1167,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers before drop the image.
      *
      * @event 'beforeImageDrop'
-     * @blazorProperty 'OnImageDrop'
      */
     @Event()
     public beforeImageDrop: EmitType<ImageDropEventArgs>;
@@ -1213,7 +1176,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * {% codeBlock src='rich-text-editor/formatter/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType object
      */
     @Property(null)
     public formatter: IFormatter;
@@ -2296,9 +2258,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.removeAttributes();
         super.destroy();
         this.isRendered = false;
-        if (this.enablePersistence) {
-            window.localStorage.removeItem(this.getModuleName() + this.element.id);
-        }
     }
 
 
@@ -2435,9 +2394,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 } else {
                     nVal = newProp[prop];
                 }
+                nVal = this.serializeValue(nVal);
                 const val: string = this.editorMode === 'HTML' ? getEditValue(nVal, this) : nVal;
                 if ((!isNOU(nVal) && nVal !== '') || prop === 'enterKey') {
-                    this.value = this.serializeValue(((this.enableHtmlEncode) ? this.encode(decode(val)) : val));
+                    this.setProperties({value:((this.enableHtmlEncode) ? this.encode(decode(val)) : val)}, true);
                 }
                 this.updatePanelValue();
                 if (this.inputElement) {
@@ -2965,10 +2925,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         // eslint-disable-next-line
         const imgPadding: number = 12
         const imgResizeBorder: number = 2;
-        if (isNOU(this.contentModule) || isNOU(this.contentModule.getEditPanel())) {
-            EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, (this.imageModule as any).resizing);
-            return maxWidth;
-        }
         const editEle: HTMLElement = this.contentModule.getEditPanel() as HTMLElement;
         const eleStyle: CSSStyleDeclaration = window.getComputedStyle(editEle);
         const editEleMaxWidth: number = editEle.offsetWidth - (imgPadding + imgResizeBorder +

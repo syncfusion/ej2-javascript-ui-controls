@@ -45,9 +45,11 @@ export class KeyboardNavigation {
             return;
         }
         const dlgInst: { element: Element } = this.parent.serviceLocator.getService<Dialog>(dialog).dialogInstance;
-        if (this.parent.selectionSettings.mode === 'None' || dlgInst || this.parent.isEdit || target.classList.contains('e-ss-ddb') ||
-            target.id === `${this.parent.element.id}_name_box` || target.classList.contains('e-sheet-rename') || target.id ===
-            `${this.parent.element.id}_SearchBox` || (target.classList.contains('e-ddl') && target.classList.contains('e-input-focus'))) {
+        const isNameBox: boolean = target.id === `${this.parent.element.id}_name_box`;
+        if (this.parent.selectionSettings.mode === 'None' || dlgInst || this.parent.isEdit || (target.classList.contains('e-ss-ddb') &&
+            e.keyCode !== 117 && e.keyCode !== 9) || (isNameBox && e.keyCode !== 117) || target.classList.contains('e-sheet-rename') ||
+            target.id === `${this.parent.element.id}_SearchBox` || (target.classList.contains('e-ddl') &&
+            target.classList.contains('e-input-focus'))) {
             if (dlgInst) {
                 if (e.keyCode === 13) {
                     if (dlgInst.element.classList.contains('e-spreadsheet-function-dlg') &&
@@ -135,6 +137,8 @@ export class KeyboardNavigation {
                         }
                     }
                 }
+            } else if (isNameBox && e.keyCode === 9 && e.shiftKey) {
+                this.focusEle(e, '.e-formula-bar', false, true);
             }
             return;
         }
@@ -170,7 +174,10 @@ export class KeyboardNavigation {
         if (target.id === `${this.parent.element.id}_File`) {
             focus(this.parent.element);
         }
-        if ([9, 37, 38, 39, 40, 33, 34, 35, 36].indexOf(e.keyCode) > -1) {
+        const isSheetTabFocus: boolean = target.classList.contains('e-add-sheet-tab') || target.classList.contains('e-sheets-list') ||
+            (target.classList.contains('e-tab-wrap') && !!closest(target, '.e-sheet-tabs-items')) ||
+            target.classList.contains('e-aggregate-list') || target.classList.contains('e-scroll-nav');
+        if ([9, 37, 38, 39, 40, 33, 34, 35, 36].indexOf(e.keyCode) > -1 && !isSheetTabFocus) {
             e.preventDefault();
         }
         let isNavigate: boolean;
@@ -254,6 +261,17 @@ export class KeyboardNavigation {
                     }
                     this.parent.selectRange(getRangeAddress(actIdxes));
                     this.scrollNavigation([actIdxes[0], actIdxes[1]], true);
+                }
+            } else if (e.keyCode === 117) {
+                const activeEle: HTMLElement = document.activeElement as HTMLElement;
+                if (activeEle.classList.contains('e-spreadsheet') || closest(activeEle, '.e-sheet')) {
+                    this.setFocus('Sheet', e, true);
+                } else if (isSheetTabFocus) {
+                    this.setFocus('SheetTabs', e);
+                } else if (closest(activeEle, '.e-ribbon')) {
+                    this.setFocus('Ribbon', e);
+                } else if (isNameBox || activeEle.classList.contains('e-insert-function')) {
+                    this.setFocus('FormulaBar', e);
                 }
             }
         } else {
@@ -424,13 +442,14 @@ export class KeyboardNavigation {
                         const contentEle: Element = this.parent.getMainContent().parentElement;
                         if (actIdxes[0] === 0 && contentEle.scrollTop) {
                             contentEle.scrollTop = 0;
-                        }   
+                        }
                     }
                 }
             }
         }
-        if (isNavigate && (!this.parent.scrollModule || this.parent.scrollModule.isKeyScroll) &&
-            (e.keyCode === 40 || e.keyCode === 38 || !closest(document.activeElement, '.e-ribbon'))) {
+        if (isNavigate && (!this.parent.scrollModule || this.parent.scrollModule.isKeyScroll) && !isSheetTabFocus &&
+            !closest(document.activeElement, '.e-ribbon') && !target.classList.contains('e-insert-function')
+            && !target.classList.contains('e-formula-bar')) {
             if (e.keyCode === 40 || e.keyCode === 38 || e.keyCode === 13) { /* down || up */
                 while (isHiddenRow(sheet, actIdxes[0])) {
                     if (e.keyCode === 40 || (!e.shiftKey && e.keyCode === 13)) {
@@ -477,6 +496,168 @@ export class KeyboardNavigation {
                 getUpdateUsingRaf(navigateFn.bind(this, true));
             } else {
                 navigateFn();
+            }
+        } else if (e.keyCode === 9) {
+            const ribbon: Element = this.parent.showRibbon && closest(document.activeElement, '.e-ribbon');
+            if (ribbon) {
+                if (closest(document.activeElement, '.e-tab-header')) {
+                    if (e.shiftKey || ribbon.classList.contains('e-collapsed')) {
+                        this.focusEle(e, '.e-ribbon .e-drop-icon');
+                    } else {
+                        this.focusEle(e, '.e-ribbon .e-content .e-toolbar-item:not(.e-separator):not(.e-overlay) .e-btn');
+                    }
+                } else if (closest(document.activeElement, '.e-content')) {
+                    if (e.shiftKey) {
+                        this.focusEle(e, '.e-ribbon .e-toolbar-items .e-toolbar-item.e-active .e-tab-wrap', true);
+                    } else {
+                        this.focusEle(e, '.e-ribbon .e-drop-icon');
+                    }
+                } else if (document.activeElement.classList.contains('e-drop-icon')) {
+                    if (e.shiftKey && !ribbon.classList.contains('e-collapsed')) {
+                        this.focusEle(e, '.e-ribbon .e-content .e-toolbar-item:not(.e-separator):not(.e-overlay) .e-btn');
+                    } else {
+                        this.focusEle(e, '.e-ribbon .e-toolbar-items .e-toolbar-item.e-active .e-tab-wrap', true);
+                    }
+                }
+            } else if (target.classList.contains('e-insert-function')) {
+                if (e.shiftKey) {
+                    this.focusEle(e, '.e-formula-bar-panel .e-combobox');
+                } else {
+                    this.focusEle(e, '.e-formula-bar', false, true);
+                }
+            } else if (isSheetTabFocus) {
+                if (e.shiftKey) {
+                    const isNavOrAggregate: boolean = target.classList.contains('e-aggregate-list') || target.classList.contains('e-scroll-left-nav');
+                    if (target.classList.contains('e-add-sheet-tab') || isNavOrAggregate || (target.classList.contains('e-sheets-list') &&
+                        target.previousElementSibling && (target.previousElementSibling as HTMLButtonElement).disabled)) {
+                        const focusEle: HTMLElement = !isNavOrAggregate && this.parent.element.querySelector('.e-aggregate-list');
+                        if (focusEle) {
+                            this.focusEle(e, null, false, false, <HTMLInputElement>focusEle);
+                        } else if (!target.classList.contains('e-scroll-left-nav') && this.parent.element.querySelector('.e-sheet-tab-panel .e-scroll-nav')) {
+                            this.focusEle(e, '.e-sheet-tab-panel .e-scroll-right-nav', true);
+                        } else {
+                            const items: HTMLInputElement[] = [].slice.call(this.parent.element.querySelectorAll(
+                                '.e-sheet-tab-panel .e-toolbar-item'));
+                            if (items[items.length - 1]) {
+                                this.focusEle(e, null, true, false, items[items.length - 1].querySelector('.e-tab-wrap'));
+                            }
+                        }
+                    } else if (target.classList.contains('e-scroll-right-nav')) {
+                        this.focusEle(e, '.e-sheet-tab-panel .e-scroll-left-nav', true);
+                    } else if (target.classList.contains('e-tab-wrap')) {
+                        const items: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-sheet-tab-panel .e-toolbar-item'));
+                        const idx: number = items.indexOf(target.parentElement);
+                        if (idx === 0) {
+                            this.focusEle(e, '.e-sheet-tab-panel .e-sheets-list');
+                        } else {
+                            this.focusEle(e, null, true, false, items[idx - 1].querySelector('.e-tab-wrap'));
+                        }
+                    }
+                } else {
+                    const isAggAvail: boolean = !!this.parent.element.querySelector('.e-aggregate-list');
+                    if (target.classList.contains('e-aggregate-list') || (!isAggAvail && target.classList.contains('e-scroll-right-nav'))) {
+                        this.focusEle(e, '.e-sheet-tab-panel .e-icon-btn:not(:disabled)');
+                    } else if (target.classList.contains('e-sheets-list')) {
+                        this.focusEle(e, '.e-sheet-tab-panel .e-toolbar-item .e-tab-wrap', true);
+                    } else if (target.classList.contains('e-scroll-left-nav')) {
+                        this.focusEle(e, '.e-sheet-tab-panel .e-scroll-right-nav', true);
+                    } else if (target.classList.contains('e-tab-wrap')) {
+                        const items: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-sheet-tab-panel .e-toolbar-item'));
+                        const index: number = items.indexOf(target.parentElement);
+                        if (index === items.length - 1) {
+                            const isNav: boolean = !!this.parent.element.querySelector('.e-sheet-tab-panel .e-scroll-nav');
+                            if (isNav || !isAggAvail) {
+                                this.focusEle(e, `.e-sheet-tab-panel .${isNav ? 'e-scroll-nav' : 'e-icon-btn:not(:disabled)'}`, isNav);
+                            }
+                        } else {
+                            this.focusEle(e, null, true, false, <HTMLInputElement>items[index + 1].querySelector('.e-tab-wrap'));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private setFocus(layout: string, e: KeyboardEvent, isSheetArea?: boolean): void {
+        if (layout === 'Sheet') {
+            if (e.shiftKey) {
+                if (this.parent.showFormulaBar) {
+                    this.focusEle(e, '.e-formula-bar-panel .e-combobox');
+                } else {
+                    this.setFocus('FormulaBar', e, isSheetArea);
+                }
+            } else {
+                if (this.parent.showSheetTabs) {
+                    this.focusEle(e, '.e-sheet-tab-panel .e-icon-btn:not(:disabled)');
+                } else {
+                    this.setFocus('SheetTabs', e, isSheetArea);
+                }
+            }
+        } else if (layout === 'SheetTabs') {
+            if (e.shiftKey) {
+                if (!isSheetArea) {
+                    this.focusEle(e, '.e-selectall');
+                }
+            } else {
+                if (this.parent.showRibbon) {
+                    this.focusEle(e, '.e-ribbon .e-toolbar-items .e-toolbar-item.e-active .e-tab-wrap', true);
+                } else {
+                    this.setFocus('Ribbon', e, isSheetArea);
+                }
+            }
+        } else if (layout === 'Ribbon') {
+            if (e.shiftKey) {
+                if (this.parent.showSheetTabs) {
+                    this.focusEle(e, '.e-sheet-tab-panel .e-icon-btn:not(:disabled)');
+                } else if (!isSheetArea) {
+                    this.focusEle(e, '.e-selectall');
+                }
+            } else {
+                if (this.parent.showFormulaBar) {
+                    this.focusEle(e, '.e-formula-bar-panel .e-combobox');
+                } else {
+                    this.setFocus('FormulaBar', e, isSheetArea);
+                }
+            }
+        } else if (layout === 'FormulaBar') {
+            if (e.shiftKey) {
+                if (this.parent.showRibbon) {
+                    this.focusEle(e, '.e-ribbon .e-toolbar-items .e-toolbar-item.e-active .e-tab-wrap', true);
+                } else {
+                    this.setFocus('Ribbon', e, isSheetArea);
+                }
+            } else if (!isSheetArea) {
+                this.focusEle(e, '.e-selectall');
+            }
+        }
+    }
+
+    private focusEle(e: KeyboardEvent, selector: string, setTabIndex?: boolean, startEdit?: boolean, focusEle?: HTMLInputElement): void {
+        focusEle  = focusEle || this.parent.element.querySelector(selector);
+        if (setTabIndex && !focusEle) {
+            const tabEle: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-ribbon .e-tab');
+            const selectedTab: number = (tabEle && (getComponent(tabEle, 'tab') as { selectedItem: number }).selectedItem) || 0;
+            focusEle = this.parent.element.querySelector('.e-tab-header').getElementsByClassName(
+                'e-toolbar-item')[selectedTab as number] as HTMLInputElement;
+            focusEle = focusEle && focusEle.querySelector('.e-tab-wrap') as HTMLInputElement;
+        }
+        if (focusEle) {
+            e.preventDefault();
+            if (startEdit) {
+                focusEle.click();
+                focus(focusEle);
+                focusEle.setSelectionRange(focusEle.value.length, focusEle.value.length);
+            } else if (setTabIndex) {
+                focusEle.setAttribute('tabindex', '0');
+                if (focusEle.parentElement.classList.contains('e-active') && focusEle.parentElement.classList.contains('e-toolbar-item')) {
+                    const tabEle: HTMLElement = this.parent.element.querySelector('.e-sheet-tab-panel .e-sheet-tab');
+                    if (!tabEle && tabEle.classList.contains('e-focused')) {
+                        tabEle.classList.add('e-focused');
+                    }
+                }
+                focusEle.focus();
+            } else {
+                focus(focusEle);
             }
         }
     }

@@ -708,6 +708,11 @@ describe('Ribbon Items', () => {
                 tabs: tabs
             });
             ribbon.appendTo("#ribbon");
+            expect(document.getElementById('largetable-popup') !== null).toBe(true);
+            ribbon.ribbonDropDownModule.updateDropDown({ createPopupOnClick: true }, 'largetable');
+            expect(document.getElementById('largetable-popup') !== null).toBe(false);
+            ribbon.ribbonDropDownModule.updateDropDown({ createPopupOnClick: false }, 'largetable');
+            expect(document.getElementById('largetable-popup') !== null).toBe(true);
             expect(document.getElementById('largetable-popup').classList.contains('e-popup-open')).toBe(false);
             document.getElementById('largetable').click();
             expect(document.getElementById('largetable-popup').classList.contains('e-popup-open')).toBe(true);
@@ -828,6 +833,17 @@ describe('Ribbon Items', () => {
             expect(outputEle.innerText.toLowerCase()).toBe('small cut clicked');
             document.getElementById('small_overflow_dropdown').click();
             outputEle.click();
+        });
+        it('Ribbon Button active state', () => {
+            ribbon = new Ribbon({
+                tabs: tabs
+            });
+            ribbon.appendTo("#ribbon");
+            expect(document.getElementById('largecut').classList.contains('e-active')).toBe(false);
+            ribbon.ribbonButtonModule.updateButton({ isToggle: true }, 'largecut');
+            expect(document.getElementById('largecut').classList.contains('e-active')).toBe(true);
+            ribbon.ribbonButtonModule.updateButton({ isToggle: false }, 'largecut');
+            expect(document.getElementById('largecut').classList.contains('e-active')).toBe(false);
         });
         it('Simplfied Button', () => { 
                 ribbon =  new Ribbon({

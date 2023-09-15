@@ -89,7 +89,7 @@ export class ConnectorLine {
 
     private getTaskbarMidpoint(isMilestone: boolean): number {
         return Math.floor(isMilestone ?
-            (this.parent.chartRowsModule.milestoneMarginTop + (this.parent.chartRowsModule.milestoneHeight / 2)) + 1 :
+            (this.parent.chartRowsModule.milestoneMarginTop + (this.parent.chartRowsModule.milestoneHeight / 2)):
             (this.parent.chartRowsModule.taskBarMarginTop + (this.parent.chartRowsModule.taskBarHeight / 2))) + 1;
     }
 
@@ -105,14 +105,44 @@ export class ConnectorLine {
     public createConnectorLineObject(parentGanttData: IGanttData, childGanttData: IGanttData, predecessor: IPredecessor):
         IConnectorLineObject {
         const connectorObj: IConnectorLineObject = {} as IConnectorLineObject;
-        const updatedRecords: IGanttData[] = this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport ?
-            this.parent.flatData : this.expandedRecords;
-        const parentIndex: number = updatedRecords.indexOf(parentGanttData);
-        const childIndex: number = updatedRecords.indexOf(childGanttData);
+        let updatedRecords: IGanttData[];
+        if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps &&
+            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) {
+            updatedRecords = this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport ?
+                this.parent.pdfExportModule.helper.beforeSinglePageExport['cloneFlatData'] : this.expandedRecords;
+        }
+        else {
+            updatedRecords = this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport ?
+                this.parent.flatData : this.expandedRecords;
+        }
+        let parentIndex: number;
+        let childIndex: number;
+        if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps &&
+            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) {
+            let parentData: IGanttData = this.parent.flatData.filter((data: IGanttData) => {
+                return data.ganttProperties.taskId.toString() == parentGanttData.ganttProperties.taskId.toString();
+            })[0];
+            let childData: IGanttData = this.parent.flatData.filter((data: IGanttData) => {
+                return data.ganttProperties.taskId.toString() == childGanttData.ganttProperties.taskId.toString();
+            })[0];
+            parentIndex = parentData.index;
+            childIndex = childData.index;
+        } else {
+            parentIndex = updatedRecords.indexOf(parentGanttData);
+            childIndex = updatedRecords.indexOf(childGanttData);
+        }
         const parentGanttRecord: ITaskData = parentGanttData.ganttProperties;
         const childGanttRecord: ITaskData = childGanttData.ganttProperties;
-        const currentData: IGanttData[] = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
-            this.parent.currentViewData : this.parent.getExpandedRecords(this.parent.currentViewData);
+        let currentData: IGanttData[];
+        if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps &&
+            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) {
+            currentData = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+                this.parent.pdfExportModule.helper.beforeSinglePageExport['cloneFlatData'] : this.parent.getExpandedRecords(this.parent.pdfExportModule.helper.beforeSinglePageExport['cloneFlatData']);
+        }
+        else {
+            currentData = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+                this.parent.currentViewData : this.parent.getExpandedRecords(this.parent.currentViewData);
+        }
         connectorObj.parentIndexInCurrentView = currentData.indexOf(parentGanttData);
         connectorObj.childIndexInCurrentView = currentData.indexOf(childGanttData);
         const isVirtualScroll: boolean = this.parent.virtualScrollModule && this.parent.enableVirtualization;
@@ -519,7 +549,7 @@ export class ConnectorLine {
                         borderTopWidth = -11;
                     }
                 }
-            }      
+            }
         }
         if (this.getParentPosition(data)) {
             // Create the group element
@@ -910,8 +940,17 @@ export class ConnectorLine {
         if (isNullOrUndefined(id)) {
             return null;
         }
-        return this.parent.viewType === 'ResourceView' ? this.parent.flatData[this.parent.getTaskIds().indexOf('T' + id.toString())] :
+        if(this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps && 
+            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth){
+            let a: IGanttData = this.parent.pdfExportModule.helper.beforeSinglePageExport['cloneFlatData'].filter((data : IGanttData) => {
+                    return data.ganttProperties.taskId.toString() === id.toString();
+            })[0];
+            return a;
+        }
+        else {
+            return this.parent.viewType === 'ResourceView' ? this.parent.flatData[this.parent.getTaskIds().indexOf('T' + id.toString())] :
             this.parent.flatData[this.parent.ids.indexOf(id.toString())];
+        }
     }
     /**
      * Method to remove connector line from DOM

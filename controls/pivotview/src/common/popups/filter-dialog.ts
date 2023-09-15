@@ -1,6 +1,6 @@
 import {
     createElement, removeClass, addClass, remove, isNullOrUndefined,
-    setStyleAttribute, closest, EventHandler
+    setStyleAttribute, closest, EventHandler, getInstance
 } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
@@ -844,9 +844,9 @@ export class FilterDialog {
                             }
                             let inputObj1: MaskedTextBox | NumericTextBox;
                             let inputObj2: MaskedTextBox | NumericTextBox;
-                            if (type === 'value') {     /* eslint-disable @typescript-eslint/no-explicit-any */
-                                inputObj1 = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as NumericTextBox;
-                                inputObj2 = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as NumericTextBox;
+                            if (type === 'value') {
+                                inputObj1 = getInstance(<HTMLElement>inputDiv1 as HTMLInputElement, NumericTextBox) as NumericTextBox;
+                                inputObj2 = getInstance(<HTMLElement>inputDiv2 as HTMLInputElement, NumericTextBox) as NumericTextBox;
                                 if (inputObj1) {
                                     inputObj1.value = filterObj.value1 ? parseInt(filterObj.value1 as string, 10) : undefined;
                                 }
@@ -854,8 +854,8 @@ export class FilterDialog {
                                     inputObj2.value = filterObj.value2 ? parseInt(filterObj.value2 as string, 10) : undefined;
                                 }
                             } else {
-                                inputObj1 = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as MaskedTextBox;
-                                inputObj2 = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as MaskedTextBox;
+                                inputObj1 = getInstance(<HTMLElement>inputDiv1 as HTMLInputElement, MaskedTextBox) as MaskedTextBox;
+                                inputObj2 = getInstance(<HTMLElement>inputDiv2 as HTMLInputElement, MaskedTextBox) as MaskedTextBox;
                                 if (inputObj1) { /* eslint-enable @typescript-eslint/no-explicit-any */
                                     inputObj1.value = filterObj.value1 ? filterObj.value1 as string : '';
                                 }
@@ -1039,20 +1039,16 @@ export class FilterDialog {
         }
     }
     private updateInputValues(element: Element, type: string, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement): void {
-        let value1: string;
-        let value2: string;
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        if (type === 'date') {
-            const inputObj1: DateTimePicker = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as DateTimePicker;
-            const inputObj2: DateTimePicker = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as DateTimePicker;
-            value1 = !isNullOrUndefined(inputObj1.value) ? inputObj1.value.toString() : '';
-            value2 = !isNullOrUndefined(inputObj2.value) ? inputObj2.value.toString() : '';
-        } else {
-            const inputObj1: MaskedTextBox = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as MaskedTextBox;
-            const inputObj2: MaskedTextBox = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as MaskedTextBox;
-            value1 = inputObj1.value;
-            value2 = inputObj2.value;
-        }
+        const inputObj1: NumericTextBox | MaskedTextBox | DateTimePicker = getInstance(
+            <HTMLElement>inputDiv1 as HTMLInputElement,
+            type === 'date' ? DateTimePicker : type === 'value' ? NumericTextBox : MaskedTextBox
+        ) as NumericTextBox | MaskedTextBox | DateTimePicker;
+        const inputObj2: NumericTextBox | MaskedTextBox | DateTimePicker = getInstance(
+            <HTMLElement>inputDiv2 as HTMLInputElement,
+            type === 'date' ? DateTimePicker : type === 'value' ? NumericTextBox : MaskedTextBox
+        ) as NumericTextBox | MaskedTextBox | DateTimePicker;
+        const value1: string = !isNullOrUndefined(inputObj1.value) ? inputObj1.value.toString() : '';
+        const value2: string = !isNullOrUndefined(inputObj2.value) ? inputObj2.value.toString() : '';
         /* eslint-enable @typescript-eslint/no-explicit-any */
         setStyleAndAttributes(element, { 'data-value1': value1, 'data-value2': value2 });
     }

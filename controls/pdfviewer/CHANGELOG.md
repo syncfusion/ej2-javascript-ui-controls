@@ -2,16 +2,21 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
 ### PDF Viewer
+
+#### New Features
+
+- `#I472310` - Provided support to render the digital signature appearance in the exported images using the 'Export as Image APIs'.
+- `#I445342` - Provided support to enable or disable the lock on comment replies for annotations.
+- `#I320602`, `#I332921`, `#I335469`, `#I334005`, `#I336580`, `#I338402`, `#I340993`, `#I342275`, `#I342451`, `#I344418`, `#I345156`, `#I297938`, `#I374753`, `#F156674`, `#379682`, `#I379543`, `#I381844`, `#I428937`, `#I448747`, `#I450636`, `#I448292`, `#I453737`, `#I453781`, `#I494648`, `#I495352` - Provided support for client side rendering using the PDFIUM Web Assembly.
+- Provided support to restrict file downloads when exporting form fields and annotations using the event argument "cancel".
 
 #### Bug Fixes
 
 - `#I489522` - Now, when annotations are double-clicked, the `isDocumentEdited API` no longer switches to the TRUE state.
-- `#I492457` - Now, the page renders properly after zooming in and zooming out when the provided PDF document is loaded.
-- `#I488322` - Now, annotations that were exported from the older version are imported into the latest version.
-- `#I491908` - Now, the type handwritten signature in Arabic language is retained when downloading the document.
+- `#I492457` - Now, the page renders properly after zooming in and out when the provided PDF document is loaded.
+- `#I488322` - Now, the annotations exported from the older version are imported into the latest version
+- `#I491908` - Now, the type of handwritten signature in Arabic language is retained when downloading the document.
 - `#I490945` - Now, the rotation of the annotations is properly preserved when importing them before rendering the pages.
 
 ## 22.2.11 (2023-08-29)
@@ -70,7 +75,7 @@
 
 - `#I481075` - Now, the link navigation is working properly in the provided document.
 - `#I481233` - Now, the selected value of the dropdown field is properly preserved in the downloaded document when we programmatically set the form fields to be read-only.
-- `#I479497` - Now, the annotations are locked properly when setting the isLock true in annotationSetting.
+- `#I479497` - Now, the annotations are locked properly when setting the isLock to true in `annotationSettings`.
 
 ## 22.1.39 (2023-07-18)
 
@@ -80,8 +85,8 @@
 
 - `#I476124` - Now, able to cut, copy and paste the comments on the comment panel using keyboard shortcuts.
 - `#I475392` - Now, `Ctrl + Z` does not removes the entire comment text while editing the comment.
-- `#I478671` - Now, annotations have been rendered and no script error occurred while loading the given document by setting the enableMeasureAnnotation to false.
-- `#I464868` - Now, we can automatically select the placeholder text in the comment panel for the FreeText annotation without having to set the defaultText in freeTextSettings.
+- `#I478671` - Now, annotations have been rendered and no script error occurred while loading the given document by setting the `enableMeasureAnnotation` to false.
+- `#I464868` - Now, we can automatically select the placeholder text in the comment panel for the FreeText annotation without having to set the `defaultText` in `freeTextSettings`.
 - `#I480522` - Now, the deleted imported annotations do not appear when we resize the PDF Viewer.
 - `#F182930` - Now, the script error no longer occurs when updating the values for the signature and initial fields that have the same name, which are found in pages that are not being rendered.
 - `#I477780` - Now, we are able to add the annotations properly using the add annotation API.
@@ -94,7 +99,7 @@
 
 - `#I476114` - Now, the text selection is properly preserved in the comment panel for text markup annotation.
 - `#I470260` - Now, the signature content prints properly in the printed outputs.
-- `#I475929` - Now, the annotation's isReadonly behavior is working properly when the allowedInteractions set to Select and the isLock property is set to true.
+- `#I475929` - Now, the annotation's `isReadonly` behavior is working properly when the `allowedInteractions` set to Select and the isLock property is set to true.
 
 ## 22.1.37 (2023-07-04)
 
@@ -102,8 +107,8 @@
 
 #### Bug Fixes
 
-- `#I473387` - Now, the fontStyle object is properly preserved in the annotationSelect event argument if we apply strikeout after underline.
-- `#I472962` - Now, the isStrikeout property is properly preserved in the annotationSelect event argument when applying the underline programmatically.
+- `#I473387` - Now, the `fontStyle` object is properly preserved in the annotationSelect event argument if we apply strikeout after underline.
+- `#I472962` - Now, the `isStrikeout` property is properly preserved in the annotationSelect event argument when applying the underline programmatically.
 - `#I470103` - Now, the ink annotation mode is maintained when resizing the PDF Viewer container.
 - `#I473639` - Now, the ink annotation is preserved in the downloaded document when session storage exceeds in the application.
 - `#I473865` - Now, the content of the typed Handwritten signature position is properly preserved in downloaded document.

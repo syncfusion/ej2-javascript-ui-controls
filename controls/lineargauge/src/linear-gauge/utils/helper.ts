@@ -207,12 +207,12 @@ export function formatValue(value: number, gauge: LinearGauge): string | number 
 }
 
 
-/** @private */
-export function getLabelFormat(format: string): string {
-    const customLabelFormat: boolean = format && format.match('{value}') !== null;
-    const skeleton: string = customLabelFormat ? '' : format;
-    return skeleton;
-}
+// /** @private */
+// export function getLabelFormat(format: string): string {
+//     const customLabelFormat: boolean = format && format.match('{value}') !== null;
+//     const skeleton: string = customLabelFormat ? '' : format;
+//     return skeleton;
+// }
 
 /** @private */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

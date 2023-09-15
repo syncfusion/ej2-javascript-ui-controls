@@ -421,7 +421,7 @@ export class LayoutPanel {
         this.calculateLayoutItems(parentItemGroupname, totalRect);
         this.renderLayoutItems();
     }
-
+    // eslint-disable-next-line valid-jsdoc
     /** @private */
     public renderLayoutItems(): void {
         let position: string;
@@ -543,8 +543,14 @@ export class LayoutPanel {
                         }
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
-                    itemGroup.setAttribute('role', '');
-                    itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
+                    if ((this.treemap.enableDrillDown && isLeafItem) || (this.treemap.selectionSettings.enable || this.treemap.highlightSettings.enable)) {
+                        itemGroup.setAttribute('role', 'button');
+                        itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
+                        (itemGroup as HTMLElement).style.cursor = this.treemap.highlightSettings.enable && !this.treemap.selectionSettings.enable && (this.treemap.enableDrillDown && item['groupIndex'] == (this.treemap.levels.length - 1)) ? 'default' : 
+                            this.treemap.highlightSettings.enable && !this.treemap.selectionSettings.enable && !this.treemap.enableDrillDown ? 'default' : 'pointer';
+                    } else {
+                        itemGroup.setAttribute('role', 'region');
+                    }
                     maintainSelection(this.treemap, itemGroup, 'treeMapSelection');
                     this.layoutGroup.appendChild(itemGroup);
                 }
@@ -668,7 +674,7 @@ export class LayoutPanel {
     }
 
     private renderTemplate(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, max-len
         secondaryEle: HTMLElement, groupId: string, rect: Rect, position: LabelPosition, template: string | Function, item: any, isLeafItem: boolean
     ): HTMLElement {
         const templateId: string = isLeafItem ? groupId + '_LabelTemplate' : groupId + '_HeaderTemplate';

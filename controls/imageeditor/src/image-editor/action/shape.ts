@@ -10,6 +10,7 @@ export class Shape {
     private strokeSettings: StrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
     private keyHistory: string = '';  // text history
     private prevObj: CurrentObject;
+    private shapeImg: HTMLImageElement;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -32,11 +33,12 @@ export class Shape {
     }
 
     private shape(args?: { onPropertyChange: boolean, prop: string, value?: object }): void {
-        this.initShapePvtProps();
+        this.initShapePvtProps(); let uploader: HTMLElement;
         switch (args.prop) {
         case 'drawEllipse':
             this.drawEllipse(args.value['x'], args.value['y'], args.value['radiusX'], args.value['radiusY'],
-                             args.value['strokeWidth'], args.value['strokeColor'], args.value['fillColor']);
+                             args.value['strokeWidth'], args.value['strokeColor'], args.value['fillColor'],
+                             args.value['degree']);
             break;
         case 'drawLine':
             this.drawLine(args.value['startX'], args.value['startY'], args.value['endX'], args.value['endY'],
@@ -52,7 +54,8 @@ export class Shape {
             break;
         case 'drawRectangle':
             this.drawRectangle(args.value['x'], args.value['y'], args.value['width'], args.value['height'],
-                               args.value['strokeWidth'], args.value['strokeColor'], args.value['fillColor']);
+                               args.value['strokeWidth'], args.value['strokeColor'], args.value['fillColor'],
+                               args.value['degree']);
             break;
         case 'drawText':
             this.drawText(args.value['x'], args.value['y'], args.value['text'], args.value['fontFamily'],
@@ -137,10 +140,16 @@ export class Shape {
         case 'wireEvent':
             EventHandler.add(this.parent.upperCanvas, 'dblclick', this.findTextTarget, this);
             EventHandler.add(this.parent.textArea, 'mousedown', this.findTextTarget, this);
+            uploader = document.getElementById(this.parent.element.id + '_fileUpload');
+            if (uploader) {
+                EventHandler.add(uploader, 'change', this.fileChanged, this);
+            }
             break;
         case 'unWireEvent':
             EventHandler.remove(this.parent.upperCanvas, 'dblclick', this.findTextTarget);
             EventHandler.remove(this.parent.textArea, 'mousedown', this.findTextTarget);
+            uploader = document.getElementById(this.parent.element.id + '_fileUpload');
+            EventHandler.remove(uploader, 'change', this.fileChanged);
             break;
         case 'getShapeSetting':
             this.getShapeSetting(args.value['id'], args.value['obj']);
@@ -215,7 +224,7 @@ export class Shape {
                                      args.value['bold'], args.value['italic'], args.value['strokeColor']);
             break;
         case 'stopPathDrawing':
-            this.stopPathDrawing(args.value['e']);
+            this.stopPathDrawing(args.value['e'], args.value['isApply']);
             break;
         case 'updateArrowRatio':
             this.updateArrowRatio(args.value['obj']);
@@ -223,9 +232,19 @@ export class Shape {
         case 'getSquarePointForRotatedShape':
             this.getSquarePointForRotatedShape(args.value['obj'], args.value['object']);
             break;
+        case 'drawImage':
+            this.drawImage(args.value['x'], args.value['y'], args.value['width'], args.value['height'],
+                           args.value['src'], args.value['degree'], args.value['isAspectRatio']);
+            break;
         case 'reset':
             this.reset();
             break;
+        case 'fileChanged':
+            this.fileChanged(args.value['e']);
+            break;
+        case 'updateObj':
+            this.updateObj(args.value['dimObj'], args.value['x'], args.value['y']);
+            break
         }
     }
 
@@ -236,6 +255,11 @@ export class Shape {
     private initShapePvtProps(): void {
         if (this.parent.lowerCanvas) {this.lowerContext = this.parent.lowerCanvas.getContext('2d'); }
         if (this.parent.upperCanvas) {this.upperContext = this.parent.upperCanvas.getContext('2d'); }
+        if (isNullOrUndefined(this.shapeImg)) {
+            this.shapeImg = this.parent.createElement('img', {
+                id: this.parent.element.id + '_shapeImg', attrs: { name: 'Image', crossorigin: 'anonymous' }
+            });
+        }
     }
 
     private reset(): void {
@@ -498,15 +522,8 @@ export class Shape {
             this.initializeTextShape(text, fontFamily, fontSize, bold, italic, strokeColor);
             parent.currObjType.isText = parent.currObjType.isInitialText = true;
             if (isNullOrUndefined(parent.activeObj.textSettings.fontSize)) {
-                if (parent.img.destWidth > parent.img.destHeight) {
-                    parent.activeObj.textSettings.fontSize = (parent.img.destWidth / 15);
-                }
-                else {
-                    parent.activeObj.textSettings.fontSize = (parent.img.destHeight / 15);
-                }
-                if (parent.activeObj.textSettings.fontSize < 20) {
-                    parent.activeObj.textSettings.fontSize = 20;
-                }
+                parent.getFontSizes();
+                parent.activeObj.textSettings.fontSize = parseInt(parent.fontSizeColl[(parseInt('3', 10) - 1)].text, 10);
             }
             if (parent.img.destWidth < 100) {
                 parent.activeObj.textSettings.fontSize = Math.floor((parent.img.destWidth / 20));
@@ -549,6 +566,35 @@ export class Shape {
                 parent.isPublicMethod = false;
             }
         }
+    }
+
+    private drawShapeImageEvent(shapeChangingArgs: ShapeChangeEventArgs, isSelect: boolean): void {
+        const parent: ImageEditor = this.parent;
+        this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
+        parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate' }});
+        parent.objColl.push(parent.activeObj);
+        const prevCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
+        parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
+            value: {operation: 'shapeTransform', previousObj: this.prevObj, previousObjColl: this.prevObj.objColl,
+                previousPointColl: this.prevObj.pointColl, previousSelPointColl: this.prevObj.selPointColl,
+                previousCropObj: prevCropObj, previousText: null,
+                currentText: null, previousFilter: null, isCircleCrop: null}});
+        parent.notify('selection', { prop: 'redrawShape', onPropertyChange: false,
+            value: {obj: parent.objColl[parent.objColl.length - 1]}});
+        if (isSelect) {
+            if (!isBlazor()) {
+                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
+                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+                parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
+            } else {
+                parent.updateToolbar(parent.element, parent.activeObj.shape);
+                parent.updateToolbar(parent.element, 'quickAccessToolbar', parent.activeObj.shape);
+            }
+        } else {
+            parent.okBtn();
+        }
+        parent.notify('selection', { prop: 'isShapeInserted', onPropertyChange: false, value: {bool: true} });
     }
 
     private drawShapeTextEvent(shapeChangingArgs: ShapeChangeEventArgs): void {
@@ -597,6 +643,12 @@ export class Shape {
         parent.activeObj.textSettings.fontSize = fontSize || parent.activeObj.textSettings.fontSize;
         parent.activeObj.textSettings.bold = bold || parent.activeObj.textSettings.bold;
         parent.activeObj.textSettings.italic = italic || parent.activeObj.textSettings.italic;
+    }
+
+    private drawImage(x: number, y: number, width: number, height: number, src: string | ImageData, degree: number,
+                      isAspectRatio: boolean): void {
+        this.initializeShape('image');
+        this.onLoadImgShape(x, y, width, height, src, null, degree, isAspectRatio);
     }
 
     private redrawActObj(x?: number, y?: number, isMouseDown?: boolean): void {
@@ -704,6 +756,7 @@ export class Shape {
         switch (parent.activeObj.shape) {
         case 'ellipse':
             parent.activeObj.activePoint.width = shapeSettings.radius * 2;
+            parent.activeObj.rotatedAngle = shapeSettings.degree * (Math.PI / 180);
             break;
         case 'line':
         case 'arrow':
@@ -716,6 +769,10 @@ export class Shape {
             parent.activeObj.textSettings.fontFamily = shapeSettings.fontFamily;
             break;
         case 'rectangle':
+        case 'image':
+            if (shapeSettings.degree) {
+                parent.activeObj.rotatedAngle = shapeSettings.degree * (Math.PI / 180);
+            }
             break;
         }
         if (parent.activeObj.shape === 'text' && parent.activeObj.textSettings) {
@@ -828,9 +885,12 @@ export class Shape {
 
     private iterateObjColl(): void {
         const parent: ImageEditor = this.parent;
-        for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
-            this.apply(parent.objColl[i as number].shape, parent.objColl[i as number]);
-            this.refreshActiveObj();
+        if (parent.objColl.length > 0) {
+            for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
+                this.apply(parent.objColl[i as number].shape, parent.objColl[i as number]);
+                this.refreshActiveObj();
+            }
+            parent.notify('draw', {prop: 'applyFrame', value: {ctx: this.lowerContext, frame: parent.frameObj.type, preventImg: true}});
         }
     }
 
@@ -891,6 +951,7 @@ export class Shape {
                 const temp: string = this.lowerContext.filter; this.lowerContext.filter = 'none';
                 this.apply(currObj.shape, currObj);
                 this.refreshActiveObj(); this.lowerContext.filter = temp;
+                parent.notify('draw', {prop: 'applyFrame', value: {ctx: this.lowerContext, frame: parent.frameObj.type, preventImg: true}});
             }
             if (currObj.shape !== 'line' && currObj.shape !== 'arrow' && currObj.shape !== 'path' && currObj.rotatedAngle !== 0) {
                 this.setPointCollForShapeRotation(currObj);
@@ -910,6 +971,7 @@ export class Shape {
 
     private redrawObj(degree?: number | string): void {
         const parent: ImageEditor = this.parent;
+        let isShape: boolean = false;
         if (this.parent.objColl.length > 0) {
             if (degree === 'horizontal' || degree === 'vertical' || degree === 'Horizontal' || degree === 'Vertical' ||
             degree === 'horizontalVertical' || degree === 'verticalHorizontal') {
@@ -922,7 +984,11 @@ export class Shape {
                     const splitWords: string[] = parent.objColl[i as number].shape.split('-');
                     if (splitWords[0] !== 'crop') {
                         this.apply(parent.objColl[i as number].shape, parent.objColl[i as number]);
+                        isShape = true;
                     }
+                }
+                if (isShape) {
+                    parent.notify('draw', {prop: 'applyFrame', value: {ctx: this.lowerContext, frame: parent.frameObj.type, preventImg: true}});
                 }
                 this.lowerContext.filter = tempFilter;
             }
@@ -1407,7 +1473,7 @@ export class Shape {
         }
     }
 
-    private stopPathDrawing(e: MouseEvent & TouchEvent): void {
+    private stopPathDrawing(e: MouseEvent & TouchEvent, isApply: boolean): void {
         const parent: ImageEditor = this.parent;
         if (parent.activeObj.shape === 'path') {
             const obj: Object = {shape: null };
@@ -1426,7 +1492,7 @@ export class Shape {
                 prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
                 parent.notify('selection', { prop: 'setCurrentDrawingShape', value: {value: '' }});
                 parent.currObjType.isDragging = false;
-                if (e.type !== 'touchstart') {parent.activeObj.pointColl.pop(); }
+                if (e && e.type !== 'touchstart' && isNullOrUndefined(isApply)) {parent.activeObj.pointColl.pop(); }
                 this.updatePathRatio(parent.activeObj);
                 parent.objColl.push(parent.activeObj);
                 parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
@@ -1435,7 +1501,9 @@ export class Shape {
                         previousCropObj: prevCropObj, previousText: null,
                         currentText: null, previousFilter: null, isCircleCrop: null}});
                 parent.objColl.pop();
-                parent.notify('selection', { prop: 'mouseUpEventHandler', value: {e: e }});
+                if (e) {
+                    parent.notify('selection', { prop: 'mouseUpEventHandler', value: {e: e }});
+                }
                 parent.notify('draw', { prop: 'setNewPath', value: {bool: true }});
                 if (parent.objColl[parent.objColl.length - 1]) {
                     parent.selectShape(parent.objColl[parent.objColl.length - 1].currIndex);
@@ -1452,7 +1520,7 @@ export class Shape {
     private findTextTarget(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent;
         if (parent.activeObj.shape !== 'text') {
-            this.stopPathDrawing(e);
+            this.stopPathDrawing(e, null);
             return;
         }
         let x: number; let y: number;
@@ -1462,11 +1530,15 @@ export class Shape {
             parent.notify('selection', { prop: 'setTouchEndPoint', onPropertyChange: false,
                 value: {x: e.touches[0].clientX, y: e.touches[0].clientY}});
         }
-        parent.notify('toolbar', { prop: 'setPreventZoomBtn', onPropertyChange: false, value: {isPrevent: true }});
-        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
-            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-        parent.notify('toolbar', { prop: 'setPreventZoomBtn', onPropertyChange: false, value: {isPrevent: false }});
-        parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+        if (!isBlazor()) {
+            parent.notify('toolbar', { prop: 'setPreventZoomBtn', onPropertyChange: false, value: {isPrevent: true }});
+            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
+                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+            parent.notify('toolbar', { prop: 'setPreventZoomBtn', onPropertyChange: false, value: {isPrevent: false }});
+            parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+        } else {
+            parent.updateToolbar(parent.element, 'enableDisableToolbarBtn', 'textAreaClicked');
+        }
         if (!isNullOrUndefined(x) && !isNullOrUndefined(y)) {
             const bbox: DOMRect = this.parent.lowerCanvas.getBoundingClientRect() as DOMRect;
             x -= bbox.left; y -= bbox.top; let flip: string = '';
@@ -1491,6 +1563,8 @@ export class Shape {
                 this.upperContext.clearRect(0, 0, this.parent.upperCanvas.width, this.parent.upperCanvas.height);
                 this.lowerContext.clearRect(0, 0, this.parent.upperCanvas.width, this.parent.upperCanvas.height);
                 parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
+                this.parent.notify('draw', { prop: 'clearOuterCanvas', onPropertyChange: false, value: {context: this.lowerContext}});
+                this.parent.notify('draw', { prop: 'clearOuterCanvas', onPropertyChange: false, value: {context: this.upperContext}});
                 if ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop) {
                     parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
                         value: {context: this.lowerContext, isSave: null, isFlip: null}});
@@ -1528,6 +1602,127 @@ export class Shape {
         } else if (parent.textArea.style.display === 'none') {
             parent.textArea.style.display = 'block';
         }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private fileChanged(e: any): void {
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const filesData: FileList = (e.target as any).files[0];
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const fileData: any = filesData;
+        const fileExtension: string = fileData.name && fileData.name.split('.')[1].toLowerCase();
+        if (fileExtension && ['jpg', 'jpeg', 'png', 'svg'].indexOf(fileExtension) === -1) {
+            this.refreshActiveObj();
+            return;
+        }
+        // eslint-disable-next-line @typescript-eslint/tslint/config, @typescript-eslint/no-explicit-any
+        const URL = window.URL; const url = URL.createObjectURL((e.target as any).files[0]);
+        this.onLoadImgShape(null, null, null, null, url.toString(), true);
+        if (!isBlazor()) {
+            (document.getElementById(this.parent.element.id + '_fileUpload') as HTMLInputElement).value = '';
+        }
+    }
+
+    private onLoadImgShape(x: number, y: number, width: number, height: number, url: string | ImageData,
+                           isSelect?: boolean, degree?: number, isAspectRatio?: boolean): void {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const proxy: Shape = this;
+        if (typeof(url) === 'string') {this.shapeImg.src = url; }
+        else {
+            this.parent.inMemoryCanvas.width = (url as ImageData).width;
+            this.parent.inMemoryCanvas.height = (url as ImageData).height;
+            this.parent.inMemoryCanvas.getContext('2d').putImageData((url as ImageData), 0, 0);
+            this.shapeImg.src = this.parent.inMemoryCanvas.toDataURL();
+        }
+        this.prevObjColl();
+        this.parent.activeObj.shape = 'image';
+        this.initShapeProps();
+        this.shapeImg.onload = () => {
+            proxy.upperContext.drawImage(proxy.shapeImg, 0, 0, proxy.shapeImg.width, proxy.shapeImg.height);
+            proxy.updateImgCanvas(isSelect, x, y, width, height, degree, isAspectRatio);
+        };
+    }
+
+    private updateImgCanvas(isSelect: boolean, x: number, y: number, width: number, height: number, degree: number,
+                            isAspectRatio: boolean): void {
+        const parent: ImageEditor = this.parent;
+        parent.activeObj.imageElement = this.shapeImg;
+        parent.activeObj.imageCanvas = parent.createElement('canvas');
+        let dimObj: Object = {width: 0, height: 0 };
+        parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
+            value: {width: this.shapeImg.width, height: this.shapeImg.height, obj: dimObj, isImgShape: null }});
+        if (width && height) {
+            if (isAspectRatio) {
+                const obj: Object = {ratio: null };
+                parent.notify('selection', { prop: 'findImageRatio', onPropertyChange: false,
+                    value: {width: this.shapeImg.width, height: this.shapeImg.height, obj: obj }});
+                dimObj = this.resizeImage(width, obj['ratio']);
+            } else {
+                dimObj = {width: width, height: height };
+            }
+        }
+        this.updateObj(dimObj, x, y);
+        parent.notify('draw', { prop: 'downScaleImgCanvas', onPropertyChange: false,
+            value: {ctx: parent.activeObj.imageCanvas.getContext('2d'), isImgAnnotation: true, isHFlip: null, isVFlip: null }});
+        parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
+            value: {width: this.shapeImg.width, height: this.shapeImg.height, obj: dimObj, isImgShape: true }});
+        if (width && height) {
+            if (isAspectRatio) {
+                const obj: Object = {ratio: null };
+                parent.notify('selection', { prop: 'findImageRatio', onPropertyChange: false,
+                    value: {width: this.shapeImg.width, height: this.shapeImg.height, obj: obj }});
+                dimObj = this.resizeImage(width, obj['ratio']);
+            } else {
+                dimObj = {width: width, height: height };
+            }
+        }
+        this.updateObj(dimObj, x, y);
+        parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate' }});
+        this.shapeImg = null;
+        if (degree) {
+            parent.activeObj.rotatedAngle = degree * (Math.PI / 180);
+            parent.notify('selection', {prop: 'updPtCollForShpRot', onPropertyChange: false, value: {obj: parent.activeObj }});
+        }
+        const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
+        parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
+        const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
+        const shapeChangingArgs: ShapeChangeEventArgs = {action: 'insert', previousShapeSettings: shapeSettings,
+            currentShapeSettings: shapeSettings};
+        if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape', shapeChangingArgs) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
+                this.drawShapeImageEvent(shapeChangingArgs, isSelect);
+                if (parent.isPublicMethod) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});
+                }
+                parent.isPublicMethod = false;
+            });
+        } else {
+            parent.trigger('shapeChanging', shapeChangingArgs);
+            this.drawShapeImageEvent(shapeChangingArgs, isSelect);
+            if (parent.isPublicMethod) {
+                parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});
+            }
+            parent.isPublicMethod = false;
+        }
+    }
+
+    private updateObj(dimObj: Object, x: number, y: number): void {
+        const parent: ImageEditor = this.parent;
+        parent.activeObj.activePoint.width = dimObj['width'];
+        parent.activeObj.activePoint.height = dimObj['height'];
+        parent.activeObj.activePoint.startX = x ? x : (parent.lowerCanvas.width / 2) - (dimObj['width'] / 2);
+        parent.activeObj.activePoint.startY = y ? y : (parent.lowerCanvas.height / 2) - (dimObj['height'] / 2);
+        parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX + dimObj['width'];
+        parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + dimObj['height'];
+    }
+
+    private resizeImage(newWidth: number, aspectRatio: string): Object {
+        const aspectRatioArray: string[] = aspectRatio.split(':');
+        const aspectRatioWidth: number = parseInt(aspectRatioArray[0], 10);
+        const aspectRatioHeight: number = parseInt(aspectRatioArray[1], 10);
+        const newHeight: number = Math.round((newWidth * aspectRatioHeight) / aspectRatioWidth);
+        return { width: newWidth, height: newHeight };
     }
 
     private setTextBoxPos(actObj: SelectionPoint, degree: number, flip: string, x: number, y: number): Point {
@@ -1648,71 +1843,74 @@ export class Shape {
 
     private panObjColl(xDiff: number, yDiff: number, panRegion: string): void {
         const parent: ImageEditor = this.parent;
-        for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
-            let currObj: SelectionPoint = parent.objColl[i as number];
-            if (panRegion === '' || panRegion === 'vertical') {
-                currObj.activePoint.startX += xDiff;
-                currObj.activePoint.endX += xDiff;
-                if (currObj.rotationCirclePointColl) {
-                    currObj.rotationCirclePointColl.x += xDiff;
-                }
-                if (currObj.shape === 'path') {
-                    for (let l: number = 0, len: number = currObj.pointColl.length; l < len; l++) {
-                        currObj.pointColl[l as number].x += xDiff;
+        if (parent.objColl.length > 0) {
+            for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
+                let currObj: SelectionPoint = parent.objColl[i as number];
+                if (panRegion === '' || panRegion === 'vertical') {
+                    currObj.activePoint.startX += xDiff;
+                    currObj.activePoint.endX += xDiff;
+                    if (currObj.rotationCirclePointColl) {
+                        currObj.rotationCirclePointColl.x += xDiff;
+                    }
+                    if (currObj.shape === 'path') {
+                        for (let l: number = 0, len: number = currObj.pointColl.length; l < len; l++) {
+                            currObj.pointColl[l as number].x += xDiff;
+                        }
+                    }
+                } else {
+                    currObj.activePoint.startX -= xDiff;
+                    currObj.activePoint.endX -= xDiff;
+                    if (currObj.rotationCirclePointColl) {
+                        currObj.rotationCirclePointColl.x -= xDiff;
+                    }
+                    if (currObj.shape === 'path') {
+                        for (let l: number = 0, len: number = currObj.pointColl.length; l < len; l++) {
+                            currObj.pointColl[l as number].x -= xDiff;
+                        }
                     }
                 }
-            } else {
-                currObj.activePoint.startX -= xDiff;
-                currObj.activePoint.endX -= xDiff;
-                if (currObj.rotationCirclePointColl) {
-                    currObj.rotationCirclePointColl.x -= xDiff;
-                }
-                if (currObj.shape === 'path') {
-                    for (let l: number = 0, len: number = currObj.pointColl.length; l < len; l++) {
-                        currObj.pointColl[l as number].x -= xDiff;
+                if (panRegion === '' || panRegion === 'horizontal') {
+                    currObj.activePoint.startY += yDiff;
+                    currObj.activePoint.endY += yDiff;
+                    if (currObj.rotationCirclePointColl) {
+                        currObj.rotationCirclePointColl.y += yDiff;
+                    }
+                    if (currObj.shape === 'path') {
+                        for (let l: number = 0; l < currObj.pointColl.length; l++) {
+                            currObj.pointColl[l as number].y += yDiff;
+                        }
+                    }
+                } else {
+                    currObj.activePoint.startY -= yDiff;
+                    currObj.activePoint.endY -= yDiff;
+                    if (currObj.rotationCirclePointColl) {
+                        currObj.rotationCirclePointColl.y -= yDiff;
+                    }
+                    if (currObj.shape === 'path') {
+                        for (let l: number = 0; l < currObj.pointColl.length; l++) {
+                            currObj.pointColl[l as number].y -= yDiff;
+                        }
                     }
                 }
+                currObj = this.updateWidthHeight(currObj);
+                parent.notify('draw', { prop: 'updateActiveObject', onPropertyChange: false, value:
+                {actPoint: currObj.activePoint,
+                    obj: currObj}});
+                if (currObj.shape === 'line' || currObj.shape === 'arrow') {
+                    currObj.pointColl = this.getLinePoints(currObj.activePoint.startX, currObj.activePoint.startY, currObj.activePoint.endX,
+                                                           currObj.activePoint.endY);
+                    for (let j: number = 0, len: number = currObj.pointColl.length; j < len; j++) {
+                        currObj.pointColl[j as number].ratioX =
+                            (currObj.pointColl[j as number].x - parent.img.destLeft) / parent.img.destWidth;
+                        currObj.pointColl[j as number].ratioY =
+                            (currObj.pointColl[j as number].y - parent.img.destTop) / parent.img.destHeight;
+                    }
+                }
+                const temp: string = this.lowerContext.filter; this.lowerContext.filter = 'none';
+                this.apply(currObj.shape, currObj);
+                this.lowerContext.filter = temp; this.refreshActiveObj();
             }
-            if (panRegion === '' || panRegion === 'horizontal') {
-                currObj.activePoint.startY += yDiff;
-                currObj.activePoint.endY += yDiff;
-                if (currObj.rotationCirclePointColl) {
-                    currObj.rotationCirclePointColl.y += yDiff;
-                }
-                if (currObj.shape === 'path') {
-                    for (let l: number = 0; l < currObj.pointColl.length; l++) {
-                        currObj.pointColl[l as number].y += yDiff;
-                    }
-                }
-            } else {
-                currObj.activePoint.startY -= yDiff;
-                currObj.activePoint.endY -= yDiff;
-                if (currObj.rotationCirclePointColl) {
-                    currObj.rotationCirclePointColl.y -= yDiff;
-                }
-                if (currObj.shape === 'path') {
-                    for (let l: number = 0; l < currObj.pointColl.length; l++) {
-                        currObj.pointColl[l as number].y -= yDiff;
-                    }
-                }
-            }
-            currObj = this.updateWidthHeight(currObj);
-            parent.notify('draw', { prop: 'updateActiveObject', onPropertyChange: false, value:
-            {actPoint: currObj.activePoint,
-                obj: currObj}});
-            if (currObj.shape === 'line' || currObj.shape === 'arrow') {
-                currObj.pointColl = this.getLinePoints(currObj.activePoint.startX, currObj.activePoint.startY, currObj.activePoint.endX,
-                                                       currObj.activePoint.endY);
-                for (let j: number = 0, len: number = currObj.pointColl.length; j < len; j++) {
-                    currObj.pointColl[j as number].ratioX =
-                        (currObj.pointColl[j as number].x - parent.img.destLeft) / parent.img.destWidth;
-                    currObj.pointColl[j as number].ratioY =
-                        (currObj.pointColl[j as number].y - parent.img.destTop) / parent.img.destHeight;
-                }
-            }
-            const temp: string = this.lowerContext.filter; this.lowerContext.filter = 'none';
-            this.apply(currObj.shape, currObj);
-            this.lowerContext.filter = temp; this.refreshActiveObj();
+            parent.notify('draw', {prop: 'applyFrame', value: {ctx: this.lowerContext, frame: parent.frameObj.type, preventImg: true}});
         }
     }
 

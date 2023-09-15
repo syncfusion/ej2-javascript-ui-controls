@@ -131,6 +131,14 @@ describe('Foreign Key =>', () => {
             gridObj.filterModule.filterByColumn('EmployeeID', '>=', new Date(-664743600000), 'or', false);
         });
 
+        // getDataRows
+        it('getDataRows check in frozen grid', () => {
+            let length: number = gridObj.getDataRows().length
+            expect(gridObj.getMovableDataRows().length).toBe(length);
+            expect(gridObj.getFrozenRightDataRows().length).toBe(length);
+            expect(gridObj.getFrozenDataRows().length).toBe(length);
+        });
+
         // filter bar filtering
         it('Filter bar filtering', (done: Function) => {
             gridObj.actionComplete = (args) => {

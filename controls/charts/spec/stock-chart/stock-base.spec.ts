@@ -2,13 +2,13 @@
  * Stock chart test cases
  */
 import { createElement } from '@syncfusion/ej2-base';
-import { CandleSeries, DateTime, getElement, Tooltip, RangeTooltip, Zoom, Axis, VisibleRangeModel } from '../../src/index';
+import { CandleSeries, DateTime, getElement, Tooltip, RangeTooltip, Zoom, Axis, VisibleRangeModel, DateTimeCategory, LineSeries, IChangedEventArgs } from '../../src/index';
 import { StockChart } from '../../src/stock-chart/index';
-import { chartData } from './indicatordata.spec';
+import { chartData, stockData,googl,goog } from './indicatordata.spec';
 import { IStockChartEventArgs, IRangeChangeEventArgs } from '../../src/stock-chart/model/base';
 import { MouseEvents } from '../chart/base/events.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
-StockChart.Inject(CandleSeries, DateTime, Tooltip, RangeTooltip, Zoom);
+StockChart.Inject(CandleSeries, DateTime, Tooltip, RangeTooltip, Zoom, DateTimeCategory, LineSeries);
 
 describe('Stock Chart', () => {
     beforeAll(() => {
@@ -440,6 +440,200 @@ describe('default stock chart', () => {
     //     chart.refresh();
     // });
 });
+    describe('checking datetime category in stock chart', () => {
+        let chart: StockChart;
+        let chartElement: Element = createElement('div', { id: 'stock' });
+        let trigger: MouseEvents = new MouseEvents();
+        let element: Element;
+        let prevent: Function = (): void => {
+        };
+        beforeAll(() => {
+            document.body.appendChild(chartElement);
+            chart = new StockChart({
+                primaryXAxis: { valueType: 'DateTimeCategory' },
+                series: [{
+                    xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                    dataSource: chartData, type: 'Line', yName: 'close'
+                }],
+                legendSettings: { visible: false }
+            });
+            chart.appendTo('#stock');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            chartElement.remove();
+        });
+        it('Checking default date time category', (done: Function) => {
+            chart.loaded = (args: Object): void => {
+                element = document.getElementById('stock_stockChart_chartAxisLabels0');
+                expect(element.childNodes[1].firstChild.textContent === '1/30/2017' ||
+                element.childNodes[1].firstChild.textContent === 'Feb 13').toBe(true);
+                done();
+            };
+            chart.refresh();
+        });
+        it('checking with default stock events', (done: Function) => {
+            chart.loaded = (args: Object) => {
+                element = getElement(chartElement.id + '_StockEvents');
+                expect(element.childElementCount).toBe(1);
+                //expect((element.childNodes[1]).childNodes.length).toBe(3);
+                done();
+            };
+            chart.stockEvents = [{ date: new Date('2017-08-28'), text: 'Market' }];
+            chart.refresh();
+        });
+        it('Checking default date time category with unordered data', (done: Function) => {
+            chart.loaded = (args: Object): void => {
+                element = document.getElementById('stock_stockChart_chartAxisLabels0');
+                expect(element.childNodes[1].firstChild.textContent === '4/23/2012' ||
+                element.childNodes[1].firstChild.textContent === '4/30/2012').toBe(true);
+                done();
+            };
+            chart.series =  [{
+                xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                dataSource: stockData, type: 'Line', yName: 'close'
+            }];
+            chart.refresh();
+        });
+        it('Checking default date time category with multiple series', (done: Function) => {
+            chart.loaded = (args: Object): void => {
+                element = document.getElementById('stock_stockChart_chartAxisLabels0');
+                expect(element.childNodes[1].firstChild.textContent === '4/23/2012' ||
+                element.childNodes[1].firstChild.textContent === '4/30/2012').toBe(true);
+                done();
+            };
+            chart.series =  [{
+                xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                dataSource: goog, type: 'Line', yName: 'close'
+            },
+            {
+                xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                dataSource: googl, type: 'Line', yName: 'close'
+            }];
+            chart.refresh();
+        });
+        it('Checking with year as interval type ', (done: Function) => {
+            chart.loaded = (args: Object): void => {
+                element = document.getElementById('stock_stockChart_chartAxisLabels0');
+                expect(element.childNodes[0].firstChild.textContent).toEqual('Jan 2017');
+                done();
+            };
+            chart.series =  [{
+                xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                dataSource: chartData, type: 'Line', yName: 'close'
+            }];
+            chart.primaryXAxis.intervalType = 'Years';
+            chart.refresh();
+        });
+        it('Checking with panning mouse events', (done: Function) => {
+            const elem: Element = getElement('stock_stockChart_chart');
+            chart.loaded = (args: Object): void => {
+                chart.loaded = null;
+                const previousRange: VisibleRangeModel = (chart.chart.primaryXAxis as Axis).visibleRange;
+                const resetElement = document.getElementById('stock_Zooming_Reset');
+                expect(resetElement == null).toBe(true);
+                chart.primaryXAxis.zoomFactor = 1;
+                let eventObj: Object = {
+                    target: elem,
+                    type: 'mousedown',
+                    stopImmediatePropagation: prevent,
+                    pageX: 50,
+                    pageY: 50,
+                    clientX: 50,
+                    clientY: 250
+                };
+                chart.stockChartOnMouseDown(<PointerEvent>eventObj);
+                eventObj = {
+                    target: elem,
+                    type: 'mousemove',
+                    stopImmediatePropagation: prevent,
+                    pageX: 100,
+                    pageY: 350,
+                    clientX: 100,
+                    clientY: 350
+                };
+                chart.stockChartOnMouseMove(<PointerEvent>eventObj);
+                const currentRange: VisibleRangeModel = (chart.chart.primaryXAxis as Axis).visibleRange;
+                //expect(previousRange.min).not.toEqual(currentRange.min);
+                eventObj = {
+                    target: elem,
+                    type: 'mouseend',
+                    stopImmediatePropagation: prevent,
+                    pageX: 100,
+                    pageY: 350,
+                    clientX: 100,
+                    clientY: 350
+                };
+                chart.stockChartMouseEnd(<PointerEvent>eventObj);
+                done();
+            };
+            chart.series =  [{
+                xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+                dataSource: chartData, type: 'Candle', yName: 'close'
+            }];
+            chart.periods = [{ intervalType: 'Months', interval: 1, text: '1M' },
+                { intervalType: 'Months', interval: 3, text: '3M' },
+                { intervalType: 'Months', interval: 6, text: '6M' },
+                { intervalType: 'Months', text: 'YTD', selected: true },
+                { text: 'All' }];
+            chart.zoomSettings = { enableSelectionZooming: true, enablePan: true };
+            chart.refresh();
+        });
+        it('Checking with ytd selected in period selector', (done: Function) => {
+            const elem: Element = getElement('stock_stockChart_chart');
+            chart.loaded = (args: Object): void => {
+                expect(chart.periodSelector.selectedIndex).toEqual(4);
+                done();
+            };
+            chart.periods = [{ intervalType: 'Months', interval: 1, text: '1M' },
+                { intervalType: 'Months', interval: 3, text: '3M' },
+                { intervalType: 'Months', interval: 6, text: '6M' },
+                { intervalType: 'Months', text: 'YTD', selected: true },
+                { text: 'All' }];
+            chart.refresh();
+        });
+        it('Checking with all selected in period selector', (done: Function) => {
+            const elem: Element = getElement('stock_stockChart_chart');
+            chart.loaded = (args: Object): void => {
+                expect(chart.periodSelector.selectedIndex).toEqual(5);
+                done();
+            };
+            chart.periods = [{ intervalType: 'Months', interval: 1, text: '1M' },
+                { intervalType: 'Months', interval: 3, text: '3M' },
+                { intervalType: 'Months', interval: 6, text: '6M' },
+                { intervalType: 'Months', text: 'YTD' },
+                { text: 'All' , selected: true}];
+            chart.refresh();
+        });
+        it('Checking with ytd selected in period selector without range navigator', (done: Function) => {
+            const elem: Element = getElement('stock_stockChart_chart');
+            chart.loaded = (args: Object): void => {
+                expect(chart.periodSelector.selectedIndex).toEqual(4);
+                done();
+            };
+            chart.enableSelector = false;
+            chart.periods = [{ intervalType: 'Months', interval: 1, text: '1M' },
+                { intervalType: 'Months', interval: 3, text: '3M' },
+                { intervalType: 'Months', interval: 6, text: '6M' },
+                { intervalType: 'Months', text: 'YTD', selected: true },
+                { text: 'All' }];
+            chart.refresh();
+        });
+        it('Checking with all selected in period selector without range navigator', (done: Function) => {
+            const elem: Element = getElement('stock_stockChart_chart');
+            chart.loaded = (args: Object): void => {
+                expect(chart.periodSelector.selectedIndex).toEqual(5);
+                done();
+            };
+            chart.enableSelector = false;
+            chart.periods = [{ intervalType: 'Months', interval: 1, text: '1M' },
+                { intervalType: 'Months', interval: 3, text: '3M' },
+                { intervalType: 'Months', interval: 6, text: '6M' },
+                { intervalType: 'Months', text: 'YTD' },
+                { text: 'All', selected: true }];
+            chart.refresh();
+        });
+    });
 it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

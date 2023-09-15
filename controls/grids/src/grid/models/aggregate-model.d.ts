@@ -20,6 +20,7 @@ export interface AggregateColumnModel {
      * > Specify the `type` value as `custom` to use custom aggregation.
      *
      * @default null
+     * @aspType string
      */
     type?: AggregateType | AggregateType[] | string;
 

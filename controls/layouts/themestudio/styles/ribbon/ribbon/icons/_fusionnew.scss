@@ -1,0 +1,9 @@
+@include export-module('ribbon-fusionnew-icons') {
+  .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e729';
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@
  * legend click checking
  */
 import { Chart, Legend, LineSeries, ILoadedEventArgs, ILegendClickEventArgs, SeriesModel, getElement, Series, ColumnSeries, 
-    Category  } from '../../../src/index';
+    Category, Trendlines  } from '../../../src/index';
 import { BarSeries, SplineSeries, DataLabel, AreaSeries, StackingColumnSeries, StackingAreaSeries } from '../../../src/index';
 import { ErrorBar, StackingBarSeries, StripLine, DateTime, AccumulationDistributionIndicator, ChartAnnotation } from '../../../src/index';
 import { CandleSeries, HiloOpenCloseSeries, HiloSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries } from '../../../src/index';
@@ -10,7 +10,7 @@ import { Logarithmic, DateTimeCategory } from '../../../src/index';
 import { createElement, EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-Chart.Inject(Legend, LineSeries, ColumnSeries, BarSeries, SplineSeries, DataLabel, AreaSeries, ScatterSeries);
+Chart.Inject(Legend, LineSeries, ColumnSeries, BarSeries, SplineSeries, DataLabel, AreaSeries, ScatterSeries, Trendlines);
 Chart.Inject(StackingColumnSeries, StackingBarSeries, StackingAreaSeries, ErrorBar, StripLine, ChartAnnotation);
 Chart.Inject(DateTime, CandleSeries, HiloOpenCloseSeries, HiloSeries, RangeAreaSeries, RangeColumnSeries);
 Chart.Inject(AccumulationDistributionIndicator, Logarithmic, Category, DateTimeCategory);
@@ -642,6 +642,35 @@ describe('Financial chart', () => {
             expect(seriesCollection.childElementCount).toEqual(4);
             done();
         }, 301);
+    });
+    it('checking with series visibilty with trendline series', (done: Function) => {
+        loaded = (args: Object): void => {
+            chart.loaded = null;
+            legendElement = document.getElementById('cartesianChart_chart_legend_text_0');
+            trigger.clickEvent(legendElement);
+            expect(legendElement.textContent).toBe('Series');
+            legendElement = document.getElementById('cartesianChart_chart_legend_text_1');
+            trigger.clickEvent(legendElement);
+            trigger.clickEvent(legendElement);
+            expect(legendElement.textContent).toBe('Trendlines');
+            legendElement = document.getElementById('cartesianChart_chart_legend_text_0');
+            trigger.clickEvent(legendElement);
+            expect(legendElement.textContent).toBe('Series');
+            done();
+        };
+        chart.series = [
+            {
+                dataSource: [{ x: "1947", y: 4.76 }, { x: "1967", y: 7.50 }, { x: "1974", y: 8.10 }, { x: "1989", y: 16.64 }, { x: "1990", y: 17.32 }, { x: "2000", y: 43.56 },], xName: 'x', yName: 'y', name: 'Series', type: 'Spline',
+                trendlines: [{ type: 'Linear', width: 3, name: 'Trendlines', fill: '#C64A75', enableTooltip: false }]
+            },
+        ];
+        chart.primaryYAxis = {
+            minimum: 0, maximum: 50,
+            interval: 2, lineStyle: { width: 0 }, majorTickLines: { width: 0 }, majorGridLines: { width: 1 },
+        },
+        chart.primaryXAxis.valueType = 'Category';
+        chart.loaded = loaded;
+        chart.refresh();
     });
 });
 it('memory leak', () => {

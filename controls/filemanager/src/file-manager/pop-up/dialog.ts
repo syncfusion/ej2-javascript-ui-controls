@@ -7,11 +7,10 @@ import { createFolder } from '../common/operations';
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
 import { paste, rename } from '../common/operations';
-import { getLocaleText, getDuplicateData, getParentPath, objectToString, getCssClass } from '../common/utility';
+import { getLocaleText, getDuplicateData, objectToString, getCssClass } from '../common/utility';
 import { SelectedEventArgs, FileInfo, Input } from '@syncfusion/ej2-inputs';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 
-// eslint:disable-next-line
 /**
  *
  * @param {IFileManager} parent - Specifies the parent element
@@ -174,7 +173,6 @@ function triggerPopupClose(parent: IFileManager, dlgModule: Dialog, dialogName: 
     parent.trigger('popupClose', args);
 }
 
-// eslint:disable-next-line
 /**
  *
  * @param {IFileManager} parent - Specifies the parent element.
@@ -371,7 +369,6 @@ function retryDlgClose(parent: IFileManager): void {
  * @returns {void}
  * @private
  */
-// eslint-disable-next-line
 function onRetryOpen(parent: IFileManager, args: object): void {
     parent.isRetryOpened = true;
     const dialogEle: Element = getValue('element', args);
@@ -526,8 +523,6 @@ function createInput(ele: HTMLInputElement, placeholder: string): void {
     });
 }
 
-/* istanbul ignore next */
-// eslint:disable-next-line
 /**
  *
  * @param {IFileManager} parent - specifies the parent element.
@@ -640,7 +635,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             index = val.name.indexOf('.') + 1;
             return (index === 0 && (!val.isFile)) ? 'Folder' : ((index !== 0) ? val.name.substr(index).replace(' ', '') : 'undetermined');
         });
-        if(strArr[0]== undefined){
+        if (strArr[0] == undefined) {
             strArr = details.name.split(',').map((val: string) => {
                 index = val.indexOf('.') + 1;
                 return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');
@@ -876,7 +871,7 @@ function onSubmitValidate(parent: IFileManager, ele: HTMLInputElement): void {
     onValidate(parent, ele);
     const len: number = ele.value.length - 1;
     if (ele.value !== '' && ((ele.value.lastIndexOf('.') === len) || (ele.value.lastIndexOf(' ') === len)) &&
-        (parent.showFileExtension || (ele.value.lastIndexOf('.') === -1 || ele.value.substring(ele.value.indexOf('.')+1).length === 0))) {
+        (parent.showFileExtension || (ele.value.lastIndexOf('.') === -1 || ele.value.substring(ele.value.indexOf('.') + 1).length === 0))) {
         addInvalid(parent, ele);
     }
 }

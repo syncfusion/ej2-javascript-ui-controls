@@ -868,4 +868,41 @@ describe('TreeGrid Hierarchy Selection', () => {
       destroy(gridObj);
     });
   });
+
+  describe('Code coverage improment', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: [],
+              childMapping: 'subtasks',
+              allowPaging: true,
+              treeColumnIndex: 1,
+              editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
+              height: '410',
+              autoCheckHierarchy: true,
+              columns: [
+                  { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                  { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left', showCheckbox: true },
+                  { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                  { field: 'endDate', headerText: 'End Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                  { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                  { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' },
+              ]
+        },
+        done
+      );
+    });
+    it('Check double click on frame', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getHeaderTable().querySelector('.e-frame').dispatchEvent(event);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 });

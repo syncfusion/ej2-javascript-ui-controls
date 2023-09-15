@@ -220,8 +220,7 @@ export class KeyboardInteraction {
         const queryStr: string = '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' + cls.HEADER_CELLS_CLASS;
         let target: HTMLTableCellElement = closest((e.target as Element), queryStr) as HTMLTableCellElement;
         const selectedCells: Element[] = this.parent.getSelectedCells();
-        if (this.parent.activeViewOptions.group.resources.length > 0 && selectedCells.length > 0 &&
-            selectedCells[0].getAttribute('data-group-index') !== target.getAttribute('data-group-index')) {
+        if (selectedCells.length > 0 && selectedCells.indexOf(target) === -1) {
             target = selectedCells[selectedCells.length - 1] as HTMLTableCellElement;
         }
         if (this.parent.currentView === 'TimelineYear' && target.classList.contains(cls.OTHERMONTH_CLASS)) {

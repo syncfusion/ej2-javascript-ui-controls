@@ -72,6 +72,11 @@ require.config({
 	  location: 'node_modules/@syncfusion/ej2-dropdowns/dist',
 	  main: 'ej2-dropdowns.umd.min.js'
 	},
+    {
+        name: '@syncfusion/ej2-notifications',
+        location: 'node_modules/@syncfusion/ej2-notifications/dist',
+        main: 'ej2-notifications.umd.min.js'
+    },
 	{
 	  name: '@syncfusion/ej2-calendars',
 	  location: 'node_modules/@syncfusion/ej2-calendars/dist',

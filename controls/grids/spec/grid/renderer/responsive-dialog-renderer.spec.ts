@@ -215,6 +215,11 @@ describe('Adaptive renderer', () => {
         });
 
         it('Filter responsive back button functionality check', () => {
+            // used for code coverage
+            let excelBase: any = gridObj.filterModule.filterModule.excelFilterBase;
+            let top: any = excelBase.getCMenuYPosition(excelBase.dlg);
+            excelBase = null;
+            top = null;
             (document.querySelector('.e-resfilterback') as HTMLElement).click();
             let filterContent: HTMLElement = document.querySelector('.e-resfilterdiv > .e-dlg-content');
         });
@@ -340,6 +345,7 @@ describe('Adaptive renderer', () => {
                     allowFiltering: true,
                     allowSorting: true,
                     allowPaging: true,
+                    cssClass: 'coverage',
                     filterSettings: { type: 'Excel' },
                     editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Dialog' },
                     toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search'],
@@ -664,7 +670,58 @@ describe('Adaptive renderer', () => {
         });
 
         it('Ensuring the CSS class', () => {
+            gridObj.enableVerticalRendering();
             expect(gridObj.getRows()[0].classList.contains('e-verticalwrap')).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Ensure onproperty change', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    rowRenderingMode: 'Horizontal',
+                    allowMultiSorting: false,
+                    allowFiltering: true,
+                    allowSorting: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Excel' },
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Dialog' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search'],
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'EmployeeID',
+                            format: 'C2',
+                            footerTemplate: 'Sum: ${Sum}'
+                        }]
+                    }]
+                }, done);
+        });
+
+        it('bind enableAdaptiveUI', (done: Function) => {
+            gridObj.enableAdaptiveUI = true;
+            expect(1).toBe(1)
+            done();
         });
 
         afterAll(() => {

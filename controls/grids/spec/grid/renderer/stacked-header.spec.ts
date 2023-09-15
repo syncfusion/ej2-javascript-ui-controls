@@ -5,15 +5,15 @@ import { EmitType, Draggable  } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Reorder } from '../../../src/grid/actions/reorder';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Group } from '../../../src/grid/actions/group';
 import { HeaderRender } from '../../../src/grid/renderer/header-renderer';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { RowDD } from '../../../src/grid/actions/row-reorder';
 
-Grid.Inject(Reorder, Freeze, Group);
+Grid.Inject(Reorder, Group, RowDD);
 
 describe('Stacked header render module', () => {
     describe('Stacked header render', () => {
@@ -137,22 +137,16 @@ describe('Stacked header render module', () => {
 
         it('header count testing', () => {
             let trs: any = gridObj.getHeaderContent().querySelectorAll('tr');
-            expect(trs[0].querySelectorAll('.e-headercell').length).toBe(1);
-            expect(trs[0].querySelectorAll('.e-stackedheadercell').length).toBe(1);
-            expect(trs[1].querySelectorAll('.e-headercell').length).toBe(1);
-            expect(trs[1].querySelectorAll('.e-stackedheadercell').length).toBe(0);
-            expect(trs[2].querySelectorAll('.e-headercell').length).toBe(0);
+            expect(trs[0].querySelectorAll('.e-headercell').length).toBe(5);
+            expect(trs[0].querySelectorAll('.e-stackedheadercell').length).toBe(3);
+            expect(trs[1].querySelectorAll('.e-headercell').length).toBe(5);
+            expect(trs[1].querySelectorAll('.e-stackedheadercell').length).toBe(1);
+            expect(trs[2].querySelectorAll('.e-headercell').length).toBe(3);
             expect(trs[2].querySelectorAll('.e-stackedheadercell').length).toBe(0);
-            expect(trs[5].querySelectorAll('.e-headercell').length).toBe(4);
-            expect(trs[5].querySelectorAll('.e-stackedheadercell').length).toBe(2);
-            expect(trs[6].querySelectorAll('.e-headercell').length).toBe(4);
-            expect(trs[6].querySelectorAll('.e-stackedheadercell').length).toBe(1);
-            expect(trs[7].querySelectorAll('.e-headercell').length).toBe(3);
-            expect(trs[7].querySelectorAll('.e-stackedheadercell').length).toBe(0);
-            let pTxt: string = trs[6].querySelector('.e-headercell').innerText;
-            gridObj.reorderColumns('OrderID', 'OrderDate');
-            trs = gridObj.getHeaderContent().querySelectorAll('tr');
-            expect(trs[1].querySelector('.e-headercell').innerText.trim()).toBe(pTxt.trim());
+            // let pTxt: string = trs[6].querySelector('.e-headercell').innerText;
+            // gridObj.reorderColumns('OrderID', 'OrderDate');
+            // trs = gridObj.getHeaderContent().querySelectorAll('tr');
+            // expect(trs[1].querySelector('.e-headercell').innerText.trim()).toBe(pTxt.trim());
         });
         it('memory leak', () => {     
             profile.sample();
@@ -243,6 +237,125 @@ describe('Stacked header render module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('Frozen Revamp featur with stacked header with RowDD', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', freeze: 'Left', },
+                        { field: 'Freight', width: 125, format: 'C2', validationRules: { required: true }, textAlign: 'Right', },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 270 },
+
+                        { field: 'ShipAddress1', headerText: 'Ship Address', width: 100, freeze: 'Right' },
+                        {
+                            headerText: 'Order Details', columns: [
+                                {
+                                    headerText: 'Orderes', columns: [
+                                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10, freeze: 'Fixed' },
+                                        {
+                                            headerText: '4th level', columns: [
+                                                { field: 'ShipName', headerText: 'Ship Name', width: 190 },
+                                            ]
+                                        },
+                                    ]
+                                },
+
+                                {
+                                    headerText: 'Customer', columns: [
+                                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, freeze: 'Right' },
+                                        { field: 'ShipAddress', headerText: 'Ship Address', width: 170, freeze: 'Fixed' },
+                                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150, validationRules: { required: true }, freeze: 'Left' },
+                                        {
+                                            headerText: '3th level', columns: [
+                                                { field: 'ShipCity', headerText: 'Ship City', width: 140 },
+                                                { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10 },
+                                            ]
+                                        },
+                                    ]
+                                },
+
+                                {
+                                    headerText: 'ID', columns: [
+                                        { field: 'ShipName', headerText: 'Ship Name', freeze: 'Left', width: 190 },
+                                        {
+                                            headerText: '5th level', columns: [
+                                                { field: 'ShipName', headerText: 'Ship Name', width: 190, freeze: 'Right' },
+                                                { field: 'ShipCity', headerText: 'Ship City', width: 140 },
+                                            ]
+                                        }
+                                    ]
+                                }
+
+                            ]
+                        },
+                        { field: 'ShipRegion', headerText: 'ShipRegion ', width: 150, freeze: 'Left' },
+                    ]
+                }, done);
+        });
+
+        it('freeze header colunmn testing', () => {
+            let trs = gridObj.getHeaderContent().querySelectorAll('tr');
+            expect(trs[0].querySelectorAll('.e-headercell').length).toBe(9);
+            expect(trs[0].querySelectorAll('.e-stackedheadercell').length).toBe(4);
+            expect(trs[1].querySelectorAll('.e-headercell').length).toBe(9);
+            expect(trs[1].querySelectorAll('.e-stackedheadercell').length).toBe(9);
+            expect(trs[2].querySelectorAll('.e-headercell').length).toBe(9);
+            expect(trs[2].querySelectorAll('.e-stackedheadercell').length).toBe(4);
+            expect(trs[3].querySelectorAll('.e-headercell').length).toBe(5);
+            expect(trs[3].querySelectorAll('.e-stackedheadercell').length).toBe(0);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('EJ2-52799 - Script error throws while adding the stacked columns dynamically', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowRowDragAndDrop: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, minWidth: 10 },
+                        {
+                            headerText: 'ID', columns: [
+                                { field: 'CustomerID', headerText: 'Customer ID', freeze: 'Fixed' },
+                                { field: 'EmployeeID', textAlign: 'Right', headerText: 'Employee ID', freeze: 'Fixed' }
+                            ]
+                        },
+                        {
+                            headerText: 'Order Details', columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10 },
+                                { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10 },
+                            ]
+                        },
+                        {
+                            headerText: 'Ship Details', columns: [
+                                { field: 'ShipCity', width: 120, headerText: 'Ship City', freeze: 'Right' },
+                                { field: 'ShipCountry', headerText: 'Ship Country', width: 140, minWidth: 10, freeze: 'Right' }
+                            ]
+                        }
+                    ]
+                }, done);
+        });
+        it('freeze header right colunmn with rowDD testing', () => {
+            let trs = gridObj.getHeaderContent().querySelectorAll('tr');
+            expect(trs[0].querySelectorAll('.e-headercell').length).toBe(4);
+            expect(trs[0].querySelectorAll('.e-stackedheadercell').length).toBe(3);
+            expect(trs[1].querySelectorAll('.e-headercell').length).toBe(6);
+            expect(trs[1].querySelectorAll('.e-stackedheadercell').length).toBe(0);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 
 
 });

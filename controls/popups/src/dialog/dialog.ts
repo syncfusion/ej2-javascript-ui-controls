@@ -1,4 +1,4 @@
-import { Component, Property, Event, Collection, L10n, EmitType, Complex, compile, createElement } from '@syncfusion/ej2-base';
+import { Component, Property, Event, Collection, L10n, EmitType, Complex, compile, createElement, animationMode } from '@syncfusion/ej2-base';
 import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, append, EventHandler, Draggable, extend } from '@syncfusion/ej2-base';
@@ -2068,7 +2068,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         }
                     }
                     const openAnimation: Object = {
-                        name: this.animationSettings.effect + 'In',
+                        name: (this.animationSettings.effect === 'None' && animationMode === 'Enable') ? 'Zoom' + 'In' : this.animationSettings.effect + 'In',
                         duration: this.animationSettings.duration,
                         delay: this.animationSettings.delay
                     };
@@ -2081,7 +2081,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         }
                     }
                     // eslint-disable-next-line
-                    this.animationSettings.effect === 'None' ? this.popupObj.show() : this.popupObj.show(openAnimation);
+                    (this.animationSettings.effect === 'None' && animationMode === 'Enable') ? this.popupObj.show(openAnimation) : ((this.animationSettings.effect === 'None') ? this.popupObj.show() : this.popupObj.show(openAnimation));
                     this.dialogOpen = true;
                     const prevOnChange: boolean = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
@@ -2135,12 +2135,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         removeClass([document.body],  [DLG_TARGET , SCROLL_DISABLED]);
                     }
                     const closeAnimation: Object = {
-                        name: this.animationSettings.effect + 'Out',
+                        name: (this.animationSettings.effect === 'None' && animationMode === 'Enable') ? 'Zoom' + 'Out' : this.animationSettings.effect + 'Out',
                         duration: this.animationSettings.duration,
                         delay: this.animationSettings.delay
                     };
                     // eslint-disable-next-line
-                    this.animationSettings.effect === 'None' ? this.popupObj.hide() : this.popupObj.hide(closeAnimation);
+                    (this.animationSettings.effect === 'None' && animationMode === 'Enable') ? this.popupObj.hide(closeAnimation) : ((this.animationSettings.effect === 'None') ?  this.popupObj.hide() : this.popupObj.hide(closeAnimation));
                     this.dialogOpen = false;
                     const prevOnChange: boolean = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;

@@ -1,5 +1,5 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer, ImageUploadingEventArgs, ImageSuccessEventArgs, ICssClassArgs } from '../base/interface';
+import { IRichTextEditor, NotifyArgs, IRenderer, ImageSuccessEventArgs, ICssClassArgs } from '../base/interface';
 import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
@@ -49,6 +49,7 @@ export class PasteCleanup {
         'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
     private isNotFromHtml: boolean = false;
     private containsHtml: boolean = false;
+    private cropImageData: { [key: string]: string | boolean | number }[] = [];
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
@@ -137,8 +138,9 @@ export class PasteCleanup {
                     args: e.args,
                     text: e.text,
                     allowedStylePropertiesArray: this.parent.pasteCleanupSettings.allowedStyleProps,
-                    callBack: (a: string) => {
+                    callBack: (a: string, cropImageData: { [key: string]: string | boolean | number }[]) => {
                         value = a.trim();
+                        this.cropImageData = cropImageData;
                     }
                 });
             }
@@ -181,7 +183,9 @@ export class PasteCleanup {
                     currentFocusNode = currentFocusNode.childNodes[this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()).startOffset];
                 }
                 if (currentFocusNode.previousSibling.nodeName === 'IMG') {
-                    (currentFocusNode.previousSibling as HTMLElement).classList.add('pasteContent_Img');
+                    if (!isNOU((currentFocusNode.previousSibling as HTMLElement).getAttribute('src'))) {
+                        (currentFocusNode.previousSibling as HTMLElement).classList.add('pasteContent_Img');
+                    }
                     (currentFocusNode.previousSibling as HTMLElement).classList.add(CLS_RTE_IMAGE);
                     if (this.parent.insertImageSettings.display === 'inline') {
                         (currentFocusNode.previousSibling as HTMLElement).classList.add(CLS_IMGINLINE);
@@ -211,6 +215,7 @@ export class PasteCleanup {
     private makeSpace(enterSplitText: string): string {
         let contentWithSpace: string = '';
         let spaceBetweenContent: boolean = true;
+        enterSplitText = enterSplitText.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
         const spaceSplit: string[] = enterSplitText.split(' ');
         for (let j: number = 0; j < spaceSplit.length; j++) {
             if (spaceSplit[j as number].trim() === '') {
@@ -230,7 +235,8 @@ export class PasteCleanup {
             const imgName: string[] = [];
             const uploadImg: Element[] = [];
             for (let i: number = 0; i < allImgElm.length; i++) {
-                if (allImgElm[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
+                if (!isNOU(allImgElm[i as number].getAttribute('src')) &&
+                    allImgElm[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
                     base64Src.push(allImgElm[i as number].getAttribute('src'));
                     imgName.push(getUniqueID('rte_image'));
                     uploadImg.push(allImgElm[i as number]);
@@ -313,7 +319,6 @@ export class PasteCleanup {
             this.refreshPopup(imgElem as HTMLElement, this.popupObj);
         }, timeOut);
         let rawFile: FileInfo[];
-        let beforeUploadArgs: ImageUploadingEventArgs;
         this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
@@ -344,27 +349,8 @@ export class PasteCleanup {
                 }
             },
             beforeUpload: (args: BeforeUploadEventArgs) => {
-                if (this.parent.isServerRendered) {
-                    beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                    beforeUploadArgs.filesData = rawFile;
-                    args.cancel = true;
-                    this.parent.trigger(events.imageUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
-                        if (beforeUploadArgs.cancel) {
-                            return;
-                        }
-                        this.toolbarEnableDisable(true);
-                        /* eslint-disable */
-                    (this.uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
-                        beforeUploadArgs.currentRequest : (this.uploadObj as any).currentRequestHeader;
-                    (this.uploadObj as any).customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
-                        beforeUploadArgs.customFormData : (this.uploadObj as any).customFormDatas;
-                    (this.uploadObj as any).uploadFiles(rawFile, null);
-                    /* eslint-enable */
-                    });
-                } else {
-                    this.parent.trigger(events.beforeImageUpload, args);
-                    this.toolbarEnableDisable(true);
-                }
+                this.parent.trigger(events.beforeImageUpload, args);
+                this.toolbarEnableDisable(true);
             },
             // eslint-disable-next-line
                 failure: (e: Object) => {
@@ -382,9 +368,6 @@ export class PasteCleanup {
             },
             selected: (e: SelectedEventArgs) => {
                 e.cancel = true;
-                if (this.parent.isServerRendered) {
-                    rawFile = e.filesData;
-                }
             },
             removing: () => {
                 this.parent.inputElement.contentEditable = 'true';
@@ -407,8 +390,8 @@ export class PasteCleanup {
     statusCode: '1'
   }];
   (this.uploadObj as any).createFileList(fileData);
-  /* eslint-enable */
         rawFile = fileData;
+        /* eslint-enable */
         this.uploadObj.upload(fileData);
         (this.popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
         detach(this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
@@ -480,7 +463,9 @@ export class PasteCleanup {
      * @deprecated
      */
     private imageFormatting(pasteArgs: Object, imgElement: { [key: string]: Element[] }): void {
-        imgElement.elements[0].classList.add('pasteContent_Img');
+        if (!isNOU(imgElement.elements[0].getAttribute('src'))) {
+            imgElement.elements[0].classList.add('pasteContent_Img');
+        }
         const imageElement: HTMLElement = this.parent.createElement('span');
         imageElement.appendChild(imgElement.elements[0]);
         const imageValue: string = imageElement.innerHTML;
@@ -671,7 +656,9 @@ export class PasteCleanup {
         clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
         const allImg: NodeListOf<HTMLImageElement> = clipBoardElem.querySelectorAll('img');
         for (let i: number = 0; i < allImg.length; i++) {
-            allImg[i as number].classList.add('pasteContent_Img');
+            if (!isNOU(allImg[i as number].getAttribute('src'))) {
+                allImg[i as number].classList.add('pasteContent_Img');
+            }
             this.setImageProperties(allImg[i as number]);
         }
         this.addTempClass(clipBoardElem);
@@ -723,6 +710,46 @@ export class PasteCleanup {
             );
             this.removeTempClass();
             this.parent.notify(events.toolbarRefresh, {});
+            this.cropImageHandler(this.parent.inputElement);
+        }
+    }
+    private cropImageHandler(element: HTMLElement): void {
+        const allImgElm: NodeListOf<HTMLImageElement> = element.querySelectorAll('.e-img-cropped');
+        if (allImgElm.length > 0) {
+            for (let i: number = 0; i < allImgElm.length; i++) {
+                if (allImgElm[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
+                    const image: HTMLImageElement = new Image();
+                    image.src = allImgElm[i as number].getAttribute('src');
+                    const canvas: HTMLCanvasElement = document.createElement('canvas');
+                    const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+                    image.onload = () => {
+                        const wGoalWidth: number = this.cropImageData[i as number].goalWidth as number / image.naturalWidth;
+                        const hGoalHeight: number = this.cropImageData[i as number].goalHeight as number / image.naturalHeight;
+                        const cropLength: number = this.cropImageData[i as number].cropLength as number / wGoalWidth;
+                        const cropTop: number = this.cropImageData[i as number].cropTop as number / hGoalHeight;
+                        const cropWidth: number = (this.cropImageData[i as number].goalWidth as number -
+                            (this.cropImageData[i as number].cropLength as number) -
+                            (this.cropImageData[i as number].cropR as number)) / wGoalWidth;
+                        const cropHeight: number = (this.cropImageData[i as number].goalHeight as number -
+                            (this.cropImageData[i as number].cropTop as number) -
+                            (this.cropImageData[i as number].cropB as number)) / hGoalHeight;
+                        canvas.width = cropWidth;
+                        canvas.height = cropHeight;
+                        // Draw the cropped portion of the image onto the canvas
+                        ctx.drawImage(image, cropLength, cropTop, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+                        // Convert the cropped canvas to a base64 encoded image
+                        const croppedBase64: string = canvas.toDataURL('image/png');
+                        // Call the provided callback with the cropped base64 data
+                        allImgElm[i as number].setAttribute('src', croppedBase64);
+                        allImgElm[i as number].classList.remove('e-img-cropped');
+                        this.imgUploading(this.parent.inputElement);
+                        if (this.parent.iframeSettings.enable) {
+                            this.parent.updateValue();
+                        }
+                    };
+                }
+            }
+        } else {
             this.imgUploading(this.parent.inputElement);
             if (this.parent.iframeSettings.enable) {
                 this.parent.updateValue();

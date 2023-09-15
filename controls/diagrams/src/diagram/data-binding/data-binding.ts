@@ -289,7 +289,7 @@ export class DataBinding {
         return diagram.connectors.some((connector: Connector) => {
           return connector !== undefined && connector.sourceID === sourceNode && connector.targetID === targetNode;
         });
-      }  
+      } 
 
     /**
      *  collectionContains method is used to  check wthear the node is already present in collection or not

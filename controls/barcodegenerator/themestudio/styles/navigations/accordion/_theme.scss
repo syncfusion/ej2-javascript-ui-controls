@@ -27,6 +27,12 @@
         border-radius: $acrdn-item-first-child-hdr-focus-border-radius;
       }
 
+      @if ($skin-name == 'Material3') {
+        &:first-child.e-selected.e-select > .e-acrdn-header:focus {
+          border-radius: $acrdn-item-first-child-hdr-focus-border-radius;
+        }
+      }
+
       &:last-child {
         border-bottom: $acrdn-item-last-child-border-bottom;
 
@@ -169,6 +175,7 @@
           color: $acrdn-content-color;
           background: $acrdn-item-panel-content-select-bg;
           border-top: $acrdn-item-panel-content-select-border-top;
+          border-bottom: $acrdn-item-panel-content-select-border-bottom;
         }
       }
 
@@ -180,6 +187,11 @@
 
         .e-acrdn-header-icon {
           color: $acrdn-icon-color;
+        }
+      }
+      &.e-select.e-selected > .e-acrdn-header {
+        &:focus {
+          border: $acrdn-item-exp-not-selected-hdr-focus-border;
         }
       }
 
@@ -327,6 +339,8 @@
 
           &:focus {
             box-shadow: $acrdn-item-header-focus-box-shadow;
+            position: relative;
+            z-index: 2;
           }
         }
 

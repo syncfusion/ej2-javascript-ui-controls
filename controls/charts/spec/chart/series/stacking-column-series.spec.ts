@@ -744,6 +744,281 @@ describe('Chart Control', () => {
             chartObj.dataBind();
          });
     });
+    describe('StackingColumn and StackingColumn100 Series in Cyliderical shape', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animate: EmitType<IAnimationCompleteEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', interval: 1, majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 } },
+                    primaryYAxis: { title: 'Vehicles Production (In Millions)', majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelFormat: '{value}' },
+                    series: [
+                        {
+                            animation: { enable: false }, name: 'General Motors',
+                            dataSource: [{ x: '2013', y: 9628912 },
+                                { x: '2014', y: 9609326 },
+                                { x: '2015', y: 7485587 },
+                                { x: '2016', y: 7793066 },
+                                { x: '2017', y: 6856880 }],
+                            xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                            type: 'StackingColumn', fill: 'skyblue'
+                        },
+                        {
+                            animation: { enable: false }, name: 'Honda',
+                            dataSource: [{ x: '2013', y: 4298390 },
+                                { x: '2014', y: 4513769 },
+                                { x: '2015', y: 4543838 },
+                                { x: '2016', y: 4999266 },
+                                { x: '2017', y: 5235842 }],
+                            xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                            type: 'StackingColumn', fill: 'orange'
+                        },
+                        {
+                            animation: { enable: false }, name: 'BMW',
+                            dataSource: [{ x: '2013', y: 2842133 },
+                                { x: '2014', y: 3016710 },
+                                { x: '2015', y: 3034081 },
+                                { x: '2016', y: 2945295 },
+                                { x: '2017', y: 3302336 }],
+                            xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                            type: 'StackingColumn', fill: 'pink'
+                        }
+                    ],
+                    width: '800', tooltip: { enable: true }, legendSettings: { visible: true },
+                    title: 'Motor Vehicle Production by Manufacturer', loaded: loaded
+                });
+            chartObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('StackingColumn Series type with ColumnFacet property as Cylinder', (done: Function) => {
+            loaded = (args: Object): void => {
+                let region1: string = document.getElementById('container_Series_1_Point_2_Region_1').getAttribute('d');
+                let region2: string = document.getElementById('container_Series_1_Point_2_Region_0').getAttribute('d');
+                let region3: string = document.getElementById('container_Series_1_Point_2_Region_2').getAttribute('d');
+                expect(region1 === 'M301.43,122.53484968749999a49.07000000000002,12.267500000000005 0 1,0 98.14000000000004,0a49.07000000000002,12.267500000000005 0 1,0 -98.14000000000004,0').toBe(true);
+                expect(region2 === 'M301.43,199.38250986249997a49.07000000000002,12.267500000000005 0 1,0 98.14000000000004,0a49.07000000000002,12.267500000000005 0 1,0 -98.14000000000004,0').toBe(true);
+                expect(region3 === 'M301.43,122.53484968749999a49.07000000000002,12.267500000000005 0 1,0 98.14000000000004,0l0 76.84766017499999a49.07000000000002,12.267500000000005 0 1,1 -98.14000000000004,0 z').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('ColumnFacet property as Cylinder with DataLabel', (done: Function) => {
+            loaded = (args: Object): void => {
+                let region1: string = document.getElementById('container_Series_0_Point_3_Region_1').getAttribute('d');
+                let region2: string = document.getElementById('container_Series_0_Point_3_Region_0').getAttribute('d');
+                let region3: string = document.getElementById('container_Series_0_Point_3_Region_2').getAttribute('d');
+                expect(region1 === 'M441.63,114.49378545833335a16.356666666666655,4.089166666666664 0 1,0 32.71333333333331,0a16.356666666666655,4.089166666666664 0 1,0 -32.71333333333331,0').toBe(true);
+                expect(region2 === 'M441.63,334.16083333333336a16.356666666666655,4.089166666666664 0 1,0 32.71333333333331,0a16.356666666666655,4.089166666666664 0 1,0 -32.71333333333331,0').toBe(true);
+                expect(region3 === 'M441.63,114.49378545833335a16.356666666666655,4.089166666666664 0 1,0 32.71333333333331,0l0 219.66704787499998a16.356666666666655,4.089166666666664 0 1,1 -32.71333333333331,0 z').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker.dataLabel.visible = true;
+            chartObj.series[1].marker.dataLabel.visible = true;
+            chartObj.series[2].marker.dataLabel.visible = true;
+            chartObj.series[0].type = 'Column';
+            chartObj.series[1].type = 'Column';
+            chartObj.series[2].type = 'Column';
+            chartObj.refresh();
+        });
+
+        it('StackingColumn100 Series Type with ColumnFacet property as Cylinder', (done: Function) => {
+            loaded = (args: Object): void => {
+                let region1: string = document.getElementById('container_Series_0_Point_3_Region_1').getAttribute('d');
+                let region2: string = document.getElementById('container_Series_0_Point_3_Region_0').getAttribute('d');
+                let region3: string = document.getElementById('container_Series_0_Point_3_Region_2').getAttribute('d');
+                expect(region1 === 'M460.53000000000003,157.96054671091775a51.16999999999999,12.792499999999997 0 1,0 102.33999999999997,0a51.16999999999999,12.792499999999997 0 1,0 -102.33999999999997,0').toBe(true);
+                expect(region2 === 'M460.53000000000003,325.4575a51.16999999999999,12.792499999999997 0 1,0 102.33999999999997,0a51.16999999999999,12.792499999999997 0 1,0 -102.33999999999997,0').toBe(true);
+                expect(region3 === 'M460.53000000000003,157.96054671091775a51.16999999999999,12.792499999999997 0 1,0 102.33999999999997,0l0 167.49695328908226a51.16999999999999,12.792499999999997 0 1,1 -102.33999999999997,0 z').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].type = 'StackingColumn100';
+            chartObj.series[1].type = 'StackingColumn100';
+            chartObj.series[2].type = 'StackingColumn100';
+            chartObj.refresh();
+        });
+
+        it('Checking animation for stackingcolumn series in Cylindrical chart', (done: Function) => {
+            animate = (args: IAnimationCompleteEventArgs): void => {
+                let point = document.getElementById('container_Series_' + args.series.index + '_Point_4_Region_2');
+                expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
+                done();
+            };
+            chartObj.series[0].animation.enable = true;
+            chartObj.series[1].animation.enable = true;
+            chartObj.series[2].animation.enable = true;
+            chartObj.animationComplete = animate;
+            chartObj.refresh();
+        });
+
+        it('Checking animation for stackingcolumn100 series in Cylindrical chart', (done: Function) => {
+            animate = (args: IAnimationCompleteEventArgs): void => {
+                let point = document.getElementById('container_Series_' + args.series.index + '_Point_4_Region_2');
+                expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
+                done();
+            };
+            chartObj.series[0].type = 'StackingColumn100';
+            chartObj.series[1].type = 'StackingColumn100';
+            chartObj.series[2].type = 'StackingColumn100';
+            chartObj.animationComplete = animate;
+            chartObj.refresh();
+        });
+
+    });
+
+    describe('StackingColumn100 Series in Cyliderical shape', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animate: EmitType<IAnimationCompleteEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', interval: 1, majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 } },
+                    primaryYAxis: { title: 'Vehicles Production (In Millions)', majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelFormat: '{value}' },
+                    series: [
+                        {
+                            animation: { enable: false }, name: 'General Motors',
+                            dataSource: [{ x: '2013', y: 9628912 },
+                                { x: '2014', y: 9609326 },
+                                { x: '2015', y: 7485587 },
+                                { x: '2016', y: 7793066 },
+                                { x: '2017', y: 6856880 }],
+                            xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                            type: 'StackingColumn100', fill: 'purple'
+                        },
+                        {
+                            animation: { enable: false }, name: 'Honda',
+                            dataSource: [{ x: '2013', y: 4298390 },
+                                { x: '2014', y: 4513769 },
+                                { x: '2015', y: 4543838 },
+                                { x: '2016', y: 4999266 },
+                                { x: '2017', y: 5235842 }],
+                            xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                            type: 'StackingColumn100', fill: 'green'
+                        },
+                        {
+                            animation: { enable: false }, name: 'BMW',
+                            dataSource: [{ x: '2013', y: 2842133 },
+                                { x: '2014', y: 3016710 },
+                                { x: '2015', y: 3034081 },
+                                { x: '2016', y: 2945295 },
+                                { x: '2017', y: 3302336 }],
+                            xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                            type: 'StackingColumn100', fill: 'yellow'
+                        }
+                    ],
+                    height: '400', tooltip: { enable: true }, legendSettings: { visible: true },
+                    title: 'Motor Vehicle Production by Manufacturer', loaded: loaded
+                });
+            chartObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('ColumnFacet property as Cylinder with fill color', (done: Function) => {
+            loaded = (args: Object): void => {
+                let region1: string = document.getElementById('container_Series_2_Point_3_Region_1').getAttribute('d');
+                let region2: string = document.getElementById('container_Series_2_Point_3_Region_0').getAttribute('d');
+                let region3: string = document.getElementById('container_Series_2_Point_3_Region_2').getAttribute('d');
+                expect(region1 === 'M441,12.25a49,12.25 0 1,0 98,0a49,12.25 0 1,0 -98,0').toBe(true);
+                expect(region2 === 'M441,41.69595282694144a49,12.25 0 1,0 98,0a49,12.25 0 1,0 -98,0').toBe(true);
+                expect(region3 === 'M441,12.25a49,12.25 0 1,0 98,0l0 29.445952826941443a49,12.25 0 1,1 -98,0 z').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
+
+    describe('Checking Cylindrical chart in Canvas Mode.', () => {
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'CanvasContainer' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chart = new Chart({
+                primaryXAxis: { valueType: 'Category', interval: 1, majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 } },
+                primaryYAxis: { title: 'Vehicles Production (In Millions)', majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelFormat: '{value}' },
+                series: [
+                    {
+                        animation: { enable: false }, name: 'Honda',
+                        dataSource: [{ x: '2013', y: 4298390 },
+                            { x: '2014', y: 4513769 },
+                            { x: '2015', y: 4543838 },
+                            { x: '2016', y: 4999266 },
+                            { x: '2017', y: 5235842 }],
+                        xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                        type: 'StackingColumn', fill: 'skyblue'
+                    },
+                    {
+                        animation: { enable: false }, name: 'Suzuki',
+                        dataSource: [{ x: '2013', y: 2842133 },
+                            { x: '2014', y: 3016710 },
+                            { x: '2015', y: 3034081 },
+                            { x: '2016', y: 2945295 },
+                            { x: '2017', y: 3302336 }],
+                        xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                        type: 'StackingColumn', fill: 'orange'
+                    },
+                    {
+                        animation: { enable: false }, name: 'BMW',
+                        dataSource: [{ x: '2013', y: 2006366  },
+                            { x: '2014', y: 2165566  },
+                            { x: '2015', y: 2279503  },
+                            { x: '2016', y: 2359756  },
+                            { x: '2017', y: 2505741  }],
+                        xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                        type: 'StackingColumn', fill: 'pink'
+                    }
+                ],
+                width: '800', tooltip: { enable: true }, legendSettings: { visible: true },
+                title: 'Motor Vehicle Production by Manufacturer', loaded: loaded
+            });
+            chart.appendTo('#CanvasContainer');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            element.remove();
+        });
+        it('Checking Cylindrical chart render in canvas mode to stackingcolumn series', (done: Function) => {
+            loaded = (args: Object): void => {
+                expect(document.getElementsByTagName('canvas')[0].id).toEqual('CanvasContainer_canvas');
+                done();
+            };
+            chart.enableCanvas = true;
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+
+        it('Checking Cylindrical chart render in canvas mode to stackingcolumn100 series', (done: Function) => {
+            loaded = (args: Object): void => {
+                expect(document.getElementsByTagName('canvas')[0].id).toEqual('CanvasContainer_canvas');
+                done();
+            };
+            chart.enableCanvas = true;
+            chart.series[0].type = 'StackingColumn100';
+            chart.series[1].type = 'StackingColumn100';
+            chart.series[2].type = 'StackingColumn100';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+    });
 });
 describe('Chart Control', () => {
     describe('Chart column series', () => {

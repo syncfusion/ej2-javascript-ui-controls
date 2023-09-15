@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType, WeekRule } from '../base/type';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, CallbackFunction } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone, timezoneData } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';
+import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType, WeekRule } from '../base/type';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone, timezoneData } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -478,6 +478,30 @@ export interface ScheduleModel extends ComponentModel{
     editorTemplate?: string | Function;
 
     /**
+     * The template option to render the customized header of the editor window.
+     *
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    editorHeaderTemplate?: string | Function;
+
+    /**
+     * The template option to render the customized footer of the editor window.
+     *
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    editorFooterTemplate?: string | Function;
+
+    /**
      * The template option to customize the quick window. The three sections of the quick popup whereas the header, content,
      * and footer can be easily customized with individual template option.
      *
@@ -681,16 +705,12 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers on beginning of every scheduler action.
      *
-     * {% codeBlock src='schedule/actionBegin/index.md' %}{% endcodeBlock %}
-     *
      * @event 'actionBegin'
      */
     actionBegin?: EmitType<ActionEventArgs>;
 
     /**
      * Triggers on successful completion of the scheduler actions.
-     *
-     * {% codeBlock src='schedule/actionComplete/index.md' %}{% endcodeBlock %}
      *
      * @event 'actionComplete'
      */
@@ -699,16 +719,12 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
      *
-     * {% codeBlock src='schedule/actionFailure/index.md' %}{% endcodeBlock %}
-     *
      * @event 'actionFailure'
      */
     actionFailure?: EmitType<ActionEventArgs>;
 
     /**
      * Triggers before the date or view navigation takes place on scheduler.
-     *
-     * {% codeBlock src='schedule/navigating/index.md' %}{% endcodeBlock %}
      *
      * @event 'navigating'
      */
@@ -717,16 +733,12 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers before each element of the schedule rendering on the page.
      *
-     * {% codeBlock src='schedule/renderCell/index.md' %}{% endcodeBlock %}
-     *
      * @event 'renderCell'
      */
     renderCell?: EmitType<RenderCellEventArgs>;
 
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
-     *
-     * {% codeBlock src='schedule/eventClick/index.md' %}{% endcodeBlock %}
      *
      * @event 'eventClick'
      */
@@ -735,16 +747,12 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers before each of the event getting rendered on the scheduler user interface.
      *
-     * {% codeBlock src='schedule/eventRendered/index.md' %}{% endcodeBlock %}
-     *
      * @event 'eventRendered'
      */
     eventRendered?: EmitType<EventRenderedArgs>;
 
     /**
      * Triggers before the data binds to the scheduler.
-     *
-     * {% codeBlock src='schedule/dataBinding/index.md' %}{% endcodeBlock %}
      *
      * @event 'dataBinding'
      */
@@ -753,16 +761,12 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers before any of the scheduler popups opens on the page.
      *
-     * {% codeBlock src='schedule/popupOpen/index.md' %}{% endcodeBlock %}
-     *
      * @event 'popupOpen'
      */
     popupOpen?: EmitType<PopupOpenEventArgs>;
 
     /**
      * Triggers before any of the scheduler popups close on the page.
-     *
-     * {% codeBlock src='schedule/popupClose/index.md' %}{% endcodeBlock %}
      *
      * @event 'popupClose'
      */
@@ -771,16 +775,12 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers when an appointment is started to drag.
      *
-     * {% codeBlock src='schedule/dragStart/index.md' %}{% endcodeBlock %}
-     *
      * @event 'dragStart'
      */
     dragStart?: EmitType<DragEventArgs>;
 
     /**
      * Triggers when an appointment is being in a dragged state.
-     *
-     * {% codeBlock src='schedule/drag/index.md' %}{% endcodeBlock %}
      *
      * @event 'drag'
      */
@@ -789,16 +789,12 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers when the dragging of appointment is stopped.
      *
-     * {% codeBlock src='schedule/dragStop/index.md' %}{% endcodeBlock %}
-     *
      * @event 'dragStop'
      */
     dragStop?: EmitType<DragEventArgs>;
 
     /**
      * Triggers when an appointment is started to resize.
-     *
-     * {% codeBlock src='schedule/resizeStart/index.md' %}{% endcodeBlock %}
      *
      * @event 'resizeStart'
      */
@@ -807,8 +803,6 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers when an appointment is being in a resizing action.
      *
-     * {% codeBlock src='schedule/resizing/index.md' %}{% endcodeBlock %}
-     *
      * @event 'resizing'
      */
     resizing?: EmitType<ResizeEventArgs>;
@@ -816,16 +810,28 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers when the resizing of appointment is stopped.
      *
-     * {% codeBlock src='schedule/resizeStop/index.md' %}{% endcodeBlock %}
-     *
      * @event 'resizeStop'
      */
     resizeStop?: EmitType<ResizeEventArgs>;
 
     /**
-     * Triggers once the event data is bound to the scheduler.
+     * Triggers when the scroll action is started.
+     * This event triggers only when `allowVirtualScrolling` or `enableLazyLoading` properties are enabled along with resource grouping.
      *
-     * {% codeBlock src='schedule/dataBound/index.md' %}{% endcodeBlock %}
+     * @event 'virtualScrollStart'
+     */
+    virtualScrollStart?: EmitType<ScrollEventArgs>;
+
+    /**
+     * Triggers when the scroll action is stopped.
+     * This event triggers only when `allowVirtualScrolling` or `enableLazyLoading` properties are enabled along with resource grouping.
+     *
+     * @event 'virtualScrollStop'
+     */
+    virtualScrollStop?: EmitType<ScrollEventArgs>;
+
+    /**
+     * Triggers once the event data is bound to the scheduler.
      *
      * @event 'dataBound'
      */

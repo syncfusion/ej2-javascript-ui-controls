@@ -931,7 +931,7 @@ describe('ListView', () => {
 
         it('role of the ul element', () => {
             let deepNode = ele.childNodes[0].childNodes[0] as HTMLElement;
-            expect(deepNode.getAttribute('role')).toBe('group');
+            expect(deepNode.getAttribute('role')).toBe('list');
         });
 
         it('role of the li element', () => {

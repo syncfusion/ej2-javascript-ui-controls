@@ -22,6 +22,7 @@ console.log('Set value in Dictionary');
         dictionary.add(1, 1);
         dictionary.add(2, 2);
         dictionary.set(2, 5);
+        expect(dictionary.values.length).toBe(2);
         expect(dictionary.get(2)).toBe(5);
         expect(() => { dictionary.set(undefined, 3) }).toThrowError();
         expect(() => { dictionary.set(5, 3) }).toThrowError();

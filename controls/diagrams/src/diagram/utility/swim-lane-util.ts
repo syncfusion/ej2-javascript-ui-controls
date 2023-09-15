@@ -1094,7 +1094,8 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
                     point = { x: child.wrapper.offsetX, y: child.wrapper.offsetY };
 
                     if (shape.orientation === 'Horizontal') {
-                        cell = grid.rows[parseInt(index.toString(), 10)].cells[parseInt(i.toString(), 10)];
+                        //839579 - swimlane delete Lane and perform undo redo issue
+                        cell = grid.rows[parseInt(index.toString(), 10)].cells[parseInt(j.toString(), 10)];
                         for (i = 0; i < grid.rows[parseInt(index.toString(), 10)].cells.length; i++) {
                             addChildNodeToNewLane(diagram, grid.rows[parseInt(index.toString(), 10)].cells[parseInt(i.toString(), 10)], point, child);
                         }
@@ -1433,7 +1434,7 @@ export function arrangeChildInGrid(
                 (gridCell.children[0] as Container).children.push(child);
                 (changeCell.children[0] as Container).children.splice(j, 1);
                 j--;
-                diagram.deleteChild(childNode,undefined,true);
+                diagram.deleteChild(childNode,undefined, true);
                 if (!(childNode as Node).isLane) {
                     (childNode as Node).parentId = parentWrapper.id;
                 }

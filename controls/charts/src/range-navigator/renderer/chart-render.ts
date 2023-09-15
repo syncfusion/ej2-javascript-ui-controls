@@ -10,12 +10,13 @@ import { AxisModel } from '../../chart/axis/axis-model';
 import { RangeNavigator } from '../range-navigator';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { DataPoint } from '../utils/helper';
-import { getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { animationMode, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Double } from '../../chart/axis/double-axis';
 import { RangeNavigatorSeries } from '../model/range-base';
 import { getSeriesColor } from '../../common/model/theme';
 import { PathOption, Rect, measureText, Size } from '@syncfusion/ej2-svg-base';
 import { Data } from '../../common/model/data';
+import { DateTimeCategory } from '../../chart/axis/date-time-category-axis';
 
 /**
  * To render Chart series
@@ -31,6 +32,8 @@ export class RangeSeries extends NiceInterval {
     public yMax: number;
     private yAxis: Axis;
     public xAxis: Axis;
+    public labels: string[];
+    public indexLabels: object;
     private seriesLength: number;
     private chartGroup: Element;
     constructor(range: RangeNavigator) {
@@ -41,6 +44,8 @@ export class RangeSeries extends NiceInterval {
         this.query = range.query;
         this.xMin = Infinity; this.xMax = -Infinity;
         this.yMin = Infinity; this.yMax = -Infinity;
+        this.labels = [];
+        this.indexLabels = {};
     }
     /**
      * To render light weight and data manager process
@@ -99,11 +104,18 @@ export class RangeSeries extends NiceInterval {
         while (i < len) {
             point = new DataPoint(getValue(xName, viewData[i as number]), getValue(yName, viewData[i as number]));
             point.yValue = +point.y;
-            if (control.valueType === 'DateTime') {
+            if (control.valueType.indexOf('DateTime') > -1) {
                 const dateParser: Function = control.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
                 const dateFormatter: Function = control.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
                 point.x = new Date( DataUtil.parse.parseJson({ val: point.x }).val );
                 point.xValue = Date.parse(dateParser(dateFormatter(point.x)));
+                if (control.valueType === 'DateTimeCategory'){
+                    if (this.indexLabels[point.xValue.toString()] === undefined) {
+                        this.indexLabels[point.xValue.toString()] = this.labels.length;
+                        this.labels.push(point.xValue.toString());
+                    }
+                    point.xValue = this.indexLabels[point.xValue];
+                }
             } else {
                 point.xValue = +point.x;
             }
@@ -138,11 +150,13 @@ export class RangeSeries extends NiceInterval {
         this.xAxis.rect = control.bounds;
         this.xAxis.visibleLabels = [];
         this.xAxis.orientation = 'Horizontal';
-        const axisModule: DateTime | Double | DateTime | Logarithmic = control[firstToLowerCase(control.valueType) + 'Module'];
+        this.xAxis.labels = this.labels;
+        this.xAxis.indexLabels = this.indexLabels;
+        const axisModule: DateTime | Double | DateTime | Logarithmic | DateTimeCategory = control[firstToLowerCase(control.valueType) + 'Module'];
         axisModule.min = this.xMin;
         axisModule.max = this.xMax;
         axisModule.getActualRange(this.xAxis, control.bounds);
-        if (this.xAxis.valueType === 'Double' || this.xAxis.valueType === 'DateTime') {
+        if (this.xAxis.valueType === 'Double' || this.xAxis.valueType === 'DateTime' || this.xAxis.valueType === 'DateTimeCategory') {
             axisModule.updateActualRange(
                 this.xAxis, this.xAxis.actualRange.min, this.xAxis.actualRange.max, this.xAxis.actualRange.interval
             );
@@ -150,6 +164,10 @@ export class RangeSeries extends NiceInterval {
         this.xAxis.actualRange.delta = this.xAxis.actualRange.max - this.xAxis.actualRange.min;
         this.xAxis.visibleRange = this.xAxis.actualRange;
         axisModule.calculateVisibleLabels(this.xAxis, control);
+        if (this.xAxis.valueType === 'DateTimeCategory' && control.periodSelectorModule) {
+            control.periodSelectorModule.isDatetimeCategory = true;
+            control.periodSelectorModule.sortedData = this.labels.map((label : string) => parseInt(label, 10));
+        }
     }
     /**
      * Process yAxis for range navigator
@@ -198,6 +216,12 @@ export class RangeSeries extends NiceInterval {
                 series.xAxis.isInversed = control.enableRtl;
                 series.interior = series.fill || colors[index % colors.length];
                 this.createSeriesElement(control, series, index);
+                if (series.xAxis.valueType === 'DateTimeCategory') {
+                    for (let i: number = 0; i < series.points.length; i++) {
+                        series.points[i as number].xValue =
+                        this.xAxis.labels.indexOf(Date.parse(series.points[i as number].x.toString()).toString());
+                    }
+                }
                 if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
                     control[firstToLowerCase(series.type) + 'SeriesModule'].render(
                         series, this.xAxis, this.yAxis, false
@@ -208,7 +232,7 @@ export class RangeSeries extends NiceInterval {
                     );
                 }
                 this.chartGroup.appendChild(series.seriesElement);
-                if (series.animation.enable && control.animateSeries) {
+                if (((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && control.animateSeries) {
                     if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
                         control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
                     } else {
@@ -259,8 +283,10 @@ export class RangeSeries extends NiceInterval {
     public calculateGroupingBounds(control: RangeNavigator): void {
         const padding: number = control.margin.bottom;
         const labelHeight: number = measureText('string', control.labelStyle, control.themeStyle.axisLabelFont).height;
-        this.calculateDateTimeNiceInterval(this.xAxis, new Size(control.bounds.width, control.bounds.height), this.xMin, this.xMax, false);
-        if (control.enableGrouping && control.valueType === 'DateTime'
+        const xMin: number = control.valueType === 'DateTimeCategory' ? parseInt(this.xAxis.labels[this.xMin], 10) : this.xMin;
+        const xMax: number = control.valueType === 'DateTimeCategory' ? parseInt(this.xAxis.labels[this.xMax], 10) : this.xMax;
+        this.calculateDateTimeNiceInterval(this.xAxis, new Size(control.bounds.width, control.bounds.height), xMin, xMax, false);
+        if (control.enableGrouping && (control.valueType === 'DateTime' || control.valueType === 'DateTimeCategory')
             && (this.xAxis.actualIntervalType !== 'Years' || !control.series.length)
         ) {
             control.bounds.height -= (control.labelPosition === 'Outside' || control.series.length === 0) ? padding + labelHeight :

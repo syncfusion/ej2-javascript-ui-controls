@@ -15,7 +15,7 @@ import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
-import { tooltipData1, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
+import { tooltipData1, negativeDataPoint, rotateData1, rotateData2, datetimeData } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { unbindResizeEvents } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
@@ -376,6 +376,161 @@ describe('Column Series', () => {
 
         });
     });
+
+    describe('Column Series in Cyliderical shape', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animationCOmplete: EmitType<IAnimationCompleteEventArgs>;
+        let element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', interval: 1, majorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 } },
+                    primaryYAxis: { title: 'Medal Count', majorTickLines: { width: 0 }, lineStyle: { width: 0 }, maximum: 50, interval: 10 },
+                    series: [{
+                        animation: { enable: false }, name: 'Gold',
+                        dataSource: [{ x: 'GBR', y: 27, tooltipMappingName: 'Great Britain' }, 
+                            { x: 'CHN', y: 26, tooltipMappingName: 'China' }, 
+                            { x: 'AUS', y: 8, tooltipMappingName: 'Australia' }, 
+                            { x: 'RUS', y: 19, tooltipMappingName: 'Russia' }, 
+                            { x: 'GER', y: 17, tooltipMappingName: 'Germany' }, 
+                            { x: 'UA', y: 2, tooltipMappingName: 'Ukraine' }, 
+                            { x: 'ES', y: 7, tooltipMappingName: 'Spain' }, 
+                            { x: 'UZB', y: 4, tooltipMappingName: 'Uzbekistan' }, 
+                            { x: 'JPN', y: 12, tooltipMappingName: 'Japan' }, 
+                            { x: 'NL', y: 8, tooltipMappingName: 'NetherLand' }, 
+                            { x: 'USA', y: 46, tooltipMappingName: 'United States' }], 
+                        xName: 'x', yName: 'y', columnFacet: 'Cylinder', marker: { visible: true, dataLabel: { visible: true } },
+                        type: 'Column', fill: 'skyblue',
+                    }],
+                    width: '800', tooltip: { enable: true }, legendSettings: { visible: true },
+                    title: 'Olympic Medal Counts - RIO', loaded: loaded
+                });
+            chartObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+
+        it('Column Series Type with ColumnFacet property as Cylinder', (done: Function) => {
+            loaded = (args: Object): void => {
+                let region1: string = document.getElementById('container_Series_0_Point_2_Region_1').getAttribute('d');
+                let region2: string = document.getElementById('container_Series_0_Point_2_Region_0').getAttribute('d');
+                let region3: string = document.getElementById('container_Series_0_Point_2_Region_2').getAttribute('d');
+                expect(region1 === 'M144.04999999999998,278.2675a23.450000000000003,5.862500000000001 0 1,0 46.900000000000006,0a23.450000000000003,5.862500000000001 0 1,0 -46.900000000000006,0').toBe(true);
+                expect(region2 === 'M144.04999999999998,332.3875a23.450000000000003,5.862500000000001 0 1,0 46.900000000000006,0a23.450000000000003,5.862500000000001 0 1,0 -46.900000000000006,0').toBe(true);
+                expect(region3 === 'M144.04999999999998,278.2675a23.450000000000003,5.862500000000001 0 1,0 46.900000000000006,0l0 54.120000000000005a23.450000000000003,5.862500000000001 0 1,1 -46.900000000000006,0 z').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Checking animation for Cylindrical chart', (done: Function) => {
+            animationCOmplete = (args: IAnimationCompleteEventArgs): void => {
+                let point = document.getElementById('container_Series_' + args.series.index + '_Point_4_Region_2');
+                expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
+                done();
+            };
+            chartObj.series[0].animation.enable = true;
+            chartObj.animationComplete = animationCOmplete;
+            chartObj.refresh();
+        });
+    });
+
+    describe('Column Series in Cyliderical shape with DateTime Category', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animationCOmplete: EmitType<IAnimationCompleteEventArgs>;
+        let element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'DateTime', majorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 } },
+                    primaryYAxis: { title: 'Medal Count', majorTickLines: { width: 0 }, lineStyle: { width: 0 } },
+                    series: [{
+                        animation: { enable: false }, name: 'Gold',
+                        dataSource: datetimeData, 
+                        xName: 'x', yName: 'y', columnFacet: 'Cylinder', marker: { visible: true, dataLabel: { visible: true } },
+                        type: 'Column', fill: 'pink',
+                    }],
+                    width: '800', tooltip: { enable: true }, legendSettings: { visible: true },
+                    title: 'Olympic Medal Counts - RIO', loaded: loaded
+                });
+            chartObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+
+        it('Column Series Type with ColumnFacet property as Cylinder', (done: Function) => {
+            loaded = (args: Object): void => {
+                let region1: string = document.getElementById('container_Series_0_Point_5_Region_1').getAttribute('d');
+                let region2: string = document.getElementById('container_Series_0_Point_5_Region_0').getAttribute('d');
+                let region3: string = document.getElementById('container_Series_0_Point_5_Region_2').getAttribute('d');
+                expect(region1 === 'M636.9009658955401,41.0508347245409a38.74666110183642,9.686665275459106 0 1,0 77.49332220367285,0a38.74666110183642,9.686665275459106 0 1,0 -77.49332220367285,0').toBe(true);
+                expect(region2 === 'M636.9009658955401,328.5633347245409a38.74666110183642,9.686665275459106 0 1,0 77.49332220367285,0a38.74666110183642,9.686665275459106 0 1,0 -77.49332220367285,0').toBe(true);
+                expect(region3 === 'M636.9009658955401,41.0508347245409a38.74666110183642,9.686665275459106 0 1,0 77.49332220367285,0l0 287.5125a38.74666110183642,9.686665275459106 0 1,1 -77.49332220367285,0 z').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker.fill = 'violet';
+            chartObj.refresh();
+        });
+    });
+
+    describe('Checking Cylindrical chart in Canvas Mode.', () => {
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'CanvasContainer' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chart = new Chart({
+                primaryXAxis: { valueType: 'Category', interval: 1, majorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 } },
+                primaryYAxis: { title: 'Medal Count', majorTickLines: { width: 0 }, lineStyle: { width: 0 }, maximum: 50, interval: 10 },
+                series: [{
+                    name: 'Gold',
+                    dataSource: [{ x: 'GBR', y: 27, tooltipMappingName: 'Great Britain' },
+                    { x: 'CHN', y: 26, tooltipMappingName: 'China' },
+                    { x: 'AUS', y: 8, tooltipMappingName: 'Australia' },
+                    { x: 'RUS', y: 19, tooltipMappingName: 'Russia' },
+                    { x: 'GER', y: 17, tooltipMappingName: 'Germany' },
+                    { x: 'UA', y: 2, tooltipMappingName: 'Ukraine' },
+                    { x: 'ES', y: 7, tooltipMappingName: 'Spain' },
+                    { x: 'UZB', y: 4, tooltipMappingName: 'Uzbekistan' },
+                    { x: 'JPN', y: 12, tooltipMappingName: 'Japan' },
+                    { x: 'NL', y: 8, tooltipMappingName: 'NetherLand' },
+                    { x: 'USA', y: 46, tooltipMappingName: 'United States' }],
+                    xName: 'x', yName: 'y',
+                    type: 'Column', fill: 'skyblue',
+                }],
+                width: '800',
+                title: 'Olympic Medal Counts - RIO', loaded: loaded
+            });
+            chart.appendTo('#CanvasContainer');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            element.remove();
+        });
+        it('Checking Cylindrical chart render in canvas mode', (done: Function) => {
+            loaded = (args: Object): void => {
+                expect(document.getElementsByTagName('canvas')[0].id).toEqual('CanvasContainer_canvas');
+                done();
+            };
+            chart.enableCanvas = true;
+            chart.series[0].animation.enable = false;
+            chart.series[0].columnFacet = 'Cylinder';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+    });    
 
     describe('DataLabel', () => {
         let chartObj: Chart;

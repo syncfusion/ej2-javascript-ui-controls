@@ -1,7 +1,7 @@
 /**
  * Grid batch edit spec document
  */ 
-import { extend, getValue, select, selectAll } from '@syncfusion/ej2-base';
+import { extend, getValue, select, selectAll, createElement } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { isActionPrevent } from '../../../src/grid/base/util';
@@ -11,7 +11,6 @@ import { Edit } from '../../../src/grid/actions/edit';
 import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Reorder } from '../../../src/grid/actions/reorder';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { Page } from '../../../src/grid/actions/page';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Column } from '../../../src/grid/models/column';
@@ -24,8 +23,11 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import * as events from '../../../src/grid/base/constant';
 import { BatchEdit } from '../../../src';
 import { DefaultEditCell } from '../../../src/grid/renderer/default-edit-cell';
+import { CommandColumn } from '../../../src/grid/actions/command-column';
+import { Aggregate } from '../../../src/grid/actions/aggregate';
+import { RowDD } from '../../../src/grid/actions/row-reorder';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, Freeze, DetailRow);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Aggregate, RowDD, Toolbar, DetailRow, CommandColumn);
 
 describe('Batch Editing module', () => {
 
@@ -126,7 +128,7 @@ describe('Batch Editing module', () => {
             gridObj.cellSave = cellSave;
             //toolbar status check
             expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
-            gridObj.editModule.saveCell();
+            gridObj.saveCell();
         });
 
         it('last action check', () => {
@@ -2026,7 +2028,7 @@ describe('Batch Editing module', () => {
             expect((gridObj as any).contentModule.getRows()[0].data.CustomerID).toBe('VINET');
             expect((gridObj as any).contentModule.getRows()[0].changes.CustomerID).toBe('updated');
             //row count check
-            expect(gridObj.getContent().querySelectorAll('.e-row').length).toBe(18);
+            expect(gridObj.getContent().querySelectorAll('.e-row').length).toBe(9);
             //record count check
             expect(gridObj.currentViewData.length).toBe(11);
             expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(1);
@@ -2071,7 +2073,7 @@ describe('Batch Editing module', () => {
             let batchDelete = (args?: any): void => {
                 expect(gridObj.isEdit).toBeFalsy();
                 //row count check
-                expect(gridObj.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)').length).toBe(16);
+                expect(gridObj.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)').length).toBe(8);
                 //record count check
                 expect(gridObj.currentViewData.length).toBe(11);
                 gridObj.batchDelete = null;
@@ -2092,7 +2094,7 @@ describe('Batch Editing module', () => {
             let batchDelete = (args?: any): void => {
                 expect(gridObj.isEdit).toBeFalsy();
                 //row count check
-                expect(gridObj.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)').length).toBe(16);
+                expect(gridObj.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)').length).toBe(8);
                 //record count check
                 expect(gridObj.currentViewData.length).toBe(11);
                 gridObj.batchDelete = null;
@@ -2113,7 +2115,7 @@ describe('Batch Editing module', () => {
             let dataBound = (args?: any): void => {
                 expect(gridObj.isEdit).toBeFalsy();
                 //row count check
-                expect(gridObj.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)').length).toBe(16);
+                expect(gridObj.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)').length).toBe(8);
                 //record count check
                 expect(gridObj.currentViewData.length).toBe(10);
                 expect((gridObj.currentViewData[0] as any).CustomerID).toBe('updated');
@@ -3301,7 +3303,7 @@ describe('adding rows in empty grid through edit cell and press enter in batch e
                 done();
             };
             gridObj.batchAdd = batchAdd;
-            elem = gridObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+            elem = gridObj.getContent().querySelector('tbody');
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
            
         });
@@ -3314,44 +3316,44 @@ describe('adding rows in empty grid through edit cell and press enter in batch e
         });
     });
 
-     describe('EJ2-39517- Border Misalignment issue with Frozen Columns in Grid in batch edit', () => {
-        let gridObj: Grid;
-        let fElem: HTMLElement;
-        let mElem: HTMLElement;
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: data.slice(0,7),
-                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
-                    allowPaging: true,
-                    frozenColumns:2,        
-                    pageSettings: { pageCount: 5 },
-                    toolbar: ['Add',  'Delete', 'Update', 'Cancel'],
-                    columns: [
-                        { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
-                        { field: 'CustomerID', type: 'string',validationRules: { required: true } },
-                        { field: 'EmployeeID', type: 'number', allowEditing: false },
-                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
-                    ]
-                }, done);
-        });
-        it('Check Frozen-Content Height', (done: Function) => {
-            let batchDelete = (args?: any): void => {
-                expect(fElem.offsetHeight).toBe(Math.floor(mElem.offsetHeight));
-                gridObj.batchDelete = null;
-                done();
-            };
-            gridObj.batchDelete = batchDelete;
-            mElem = gridObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
-            fElem = gridObj.getContent().querySelector('.e-frozencontent'); 
-            gridObj.deleteRow(gridObj.getContent().querySelectorAll('.e-row')[2] as any);
+    //  describe('EJ2-39517- Border Misalignment issue with Frozen Columns in Grid in batch edit', () => {
+    //     let gridObj: Grid;
+    //     let fElem: HTMLElement;
+    //     let mElem: HTMLElement;
+    //     beforeAll((done: Function) => {
+    //         gridObj = createGrid(
+    //             {
+    //                 dataSource: data.slice(0,7),
+    //                 editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+    //                 allowPaging: true,
+    //                 frozenColumns:2,        
+    //                 pageSettings: { pageCount: 5 },
+    //                 toolbar: ['Add',  'Delete', 'Update', 'Cancel'],
+    //                 columns: [
+    //                     { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+    //                     { field: 'CustomerID', type: 'string',validationRules: { required: true } },
+    //                     { field: 'EmployeeID', type: 'number', allowEditing: false },
+    //                     { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+    //                 ]
+    //             }, done);
+    //     });
+    //     it('Check Frozen-Content Height', (done: Function) => {
+    //         let batchDelete = (args?: any): void => {
+    //             expect(fElem.offsetHeight).toBe(Math.floor(mElem.offsetHeight));
+    //             gridObj.batchDelete = null;
+    //             done();
+    //         };
+    //         gridObj.batchDelete = batchDelete;
+    //         mElem = gridObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+    //         fElem = gridObj.getContent().querySelector('.e-frozencontent'); 
+    //         gridObj.deleteRow(gridObj.getContent().querySelectorAll('.e-row')[2] as any);
            
-        });
-        afterAll(() => {
-            destroy(gridObj);
-            gridObj = fElem = mElem = null ;
-        });
-    });
+    //     });
+    //     afterAll(() => {
+    //         destroy(gridObj);
+    //         gridObj = fElem = mElem = null ;
+    //     });
+    // });
     
 });
 
@@ -3383,7 +3385,7 @@ describe('EJ2-39455- Cell editing is not working properly in last batch added ro
             }, done);
     });
     it('Check the Movable insertrow cells text', () => {
-        let cell: HTMLElement= gridObj.getContent().querySelector('.e-movablecontent').querySelectorAll('.e-row')[9].childNodes[5] as any;
+        let cell: HTMLElement= gridObj.getContent().querySelectorAll('.e-row')[9].childNodes[6] as any;
         cell.click();
         gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: cell } as any);
@@ -3401,13 +3403,13 @@ describe('EJ2-39455- Cell editing is not working properly in last batch added ro
         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
         gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'U.S';
         gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-        let mText: any = gridObj.element.querySelector('.e-movablecontent').querySelector('table').querySelector('.e-insertedrow');
-        expect(mText.cells[0].innerText).toBe('JHON');
-        expect(mText.cells[1].innerText).toBe('7');
-        expect(mText.cells[2].innerText).toBe('5.3');
-        expect(mText.cells[3].innerText).toBe('Newyork');
-        expect(mText.cells[4].innerText).toBe('America');
-        expect(mText.cells[5].innerText).toBe('U.S');
+        let mText: any = gridObj.getContent().querySelector('.e-insertedrow');
+        expect(mText.cells[1].innerText).toBe('JHON');
+        expect(mText.cells[2].innerText).toBe('7');
+        expect(mText.cells[3].innerText).toBe('5.3');
+        expect(mText.cells[4].innerText).toBe('Newyork');
+        expect(mText.cells[5].innerText).toBe('America');
+        expect(mText.cells[6].innerText).toBe('U.S');
     });
     afterAll(() => {
         destroy(gridObj);
@@ -3529,12 +3531,12 @@ describe('EJ2-41938-Auto-fill functionality not working properly with frozen col
     });
     it('EJ2-49283 - columns.allowEditing property is not working properly when enable AutoFill ', () => {
         gridObj.editModule.updateCell(0, 'ShipCity', 'updated');
-        expect((gridObj as any).contentModule.getMovableRows()[0].changes).toBeUndefined();
+        expect((gridObj as any).contentModule.getRows()[0].changes).toBeUndefined();
     });
     it('Check the updatecell value', () => {
         (select('#'+gridObj.element.id+'_add', gridObj.element) as any).click();
         gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
-        expect((gridObj as any).contentModule.getMovableRows()[0].changes.CustomerID).toBe('updated');
+        expect((gridObj as any).contentModule.getRows()[0].changes.CustomerID).toBe('updated');
     });
     afterAll(() => {
         destroy(gridObj);
@@ -3608,6 +3610,12 @@ describe('EJ2-42197 - Delete action was not working properly in checkbox selecti
         };
         gridObj.beforeBatchAdd = beforeBatchAdd;
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+    it('code coverage improvement', () => {
+        let checkAll: Element = gridObj.element.querySelector('.e-checkselectall').parentElement;
+        checkAll.classList.add('e-checkbox-disabled');
+        (gridObj.editModule as any).editModule.batchSave();
+        expect(checkAll.classList.contains('e-checkbox-disabled')).toBeFalsy();
     });
     afterAll(() => {
         destroy(gridObj);
@@ -3791,7 +3799,7 @@ describe('EJ2-59995 - Frozen Grid Batch editing Bulk Validation and script error
 
     it('check multiple row adding', () => {
         var rowLength = gridObj.element.querySelectorAll('.e-insertedrow').length;
-        expect(rowLength).toBe(10);
+        expect(rowLength).toBe(5);
         var row = gridObj.element.querySelectorAll('.e-insertedrow')[0];
         expect(row.classList.contains('e-editedrow')).toBe(false);
     });
@@ -3801,9 +3809,9 @@ describe('EJ2-59995 - Frozen Grid Batch editing Bulk Validation and script error
     });
 
     it('check validation for multiple row adding when update', () => {
-        var row = gridObj.element.querySelectorAll('.e-insertedrow')[5];
+        var row = gridObj.element.querySelectorAll('.e-insertedrow')[0];
         expect(row.classList.contains('e-editedrow')).toBe(true);
-        var cell = row.querySelectorAll('td')[0];
+        var cell = row.querySelectorAll('td')[4];
         expect(cell.classList.contains('e-editedbatchcell')).toBe(true);
         var validation = row.querySelectorAll('.e-formvalidator')[0];
         expect(validation).toBeDefined();
@@ -3893,473 +3901,473 @@ describe('EJ2-63046-Script error while batch adding if the primary key column is
     });
 });
 
-describe('EJ2-64778 - Skipping non editable batch edit cell in freeze left => ', () => {
-    let gridObj: Grid;
-    let preventDefault: Function = new Function();
-    let gridHeader: Element;
-    let gridContent: Element;
-    let tr: HTMLTableRowElement;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: data.slice(0, 4),
-                frozenRows: 2,
-                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
-                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
-                columns: [
-                    { field: 'OrderID', type: 'number', isPrimaryKey: true, freeze: 'Left' },
-                    { field: 'CustomerID', type: 'string', freeze: 'Left' },
-                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit', allowEditing: false },
-                    { field: 'ShipCity' }
-                ]
-            }, done);
-    });
-
-    it('Focus on frozen left header cell by click', (done: Function) => {
-        gridHeader = gridObj.getHeaderContent().firstChild as Element;
-        gridContent = gridObj.getContent().firstChild as Element;
-        tr = gridHeader.querySelector('.e-frozen-left-header').querySelectorAll('tr')[1];
-        tr.cells[0].click();
-        done();
-    });
-
-    it('Batch edit focus on frozen left header cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze left header coverage by tab - 1', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left header coverage by tab - 2', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on movable header cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[2];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on frozen left content cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-frozen-left-content').querySelectorAll('tr')[0];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze left content coverage by tab - 3', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left content coverage by tab - 4', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on movable content cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[1];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze left content coverage by shiftTab - 1', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left content coverage by shiftTab - 2', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on frozen left content cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-frozen-left-content').querySelectorAll('tr')[0];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on movable header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[2];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze left header coverage by shiftTab - 3', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left header coverage by shiftTab - 4', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on frozen left header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-frozen-left-header').querySelectorAll('tr')[1];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on movable header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        expect(gridObj.isEdit).toBeFalsy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBeNull();
-        done();
-    });
-
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = null;
-    });
-});
-
-describe('EJ2-64778 - Skipping non editable batch edit cell in freeze right => ', () => {
-    let gridObj: Grid;
-    let preventDefault: Function = new Function();
-    let gridHeader: Element;
-    let gridContent: Element;
-    let tr: HTMLTableRowElement;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: data.slice(0, 4),
-                frozenRows: 2,
-                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
-                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
-                columns: [
-                    { field: 'OrderID', type: 'number', isPrimaryKey: true, freeze: 'Right' },
-                    { field: 'CustomerID', type: 'string', freeze: 'Right' },
-                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit', allowEditing: false },
-                    { field: 'ShipCity' }
-                ]
-            }, done);
-    });
-
-    it('Focus on movable header cell', (done: Function) => {
-        gridHeader = gridObj.getHeaderContent().firstChild as Element;
-        gridContent = gridObj.getContent().firstChild as Element;
-        tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[1];
-        tr.cells[0].click();
-        done();
-    });
-
-    it('Batch edit focus on movable header cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze right header coverage by tab - 1', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze right header coverage by tab - 2', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on frozen right header cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-frozen-right-header').querySelectorAll('tr')[2];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on movable content cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[0];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze right content coverage by tab - 3', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze right content coverage by tab - 4', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on frozen right content cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-frozen-right-content').querySelectorAll('tr')[1];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze right content coverage by shiftTab - 1', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze right content coverage by shiftTab - 2', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on movable content cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[0];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on frozen right header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-frozen-right-header').querySelectorAll('tr')[2];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze left header coverage by shiftTab - 3', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left header coverage by shiftTab - 4', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on movable header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[1];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on frozen right header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        expect(gridObj.isEdit).toBeFalsy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBeNull();
-        done();
-    });
-
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = null;
-    });
-});
-
-describe('EJ2-64778 - Skipping non editable batch edit cell in freeze left right => ', () => {
-    let gridObj: Grid;
-    let preventDefault: Function = new Function();
-    let gridHeader: Element;
-    let gridContent: Element;
-    let tr: HTMLTableRowElement;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: data.slice(0, 4),
-                frozenRows: 2,
-                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
-                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
-                columns: [
-                    { field: 'OrderID', type: 'number', isPrimaryKey: true, freeze: 'Left' },
-                    { field: 'CustomerID', type: 'string', freeze: 'Left' },
-                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit', allowEditing: false },
-                    { field: 'ShipCity', headerText: 'Ship City' },
-                    { field: 'ShipPostalCode', headerText: 'Ship Postal Code', freeze: 'Right', allowEditing: false },
-                    { field: 'ShipRegion', headerText: 'Ship Region', freeze: 'Right' },
-                ]
-            }, done);
-    });
-
-    it('Focus on frozen left header cell', (done: Function) => {
-        gridHeader = gridObj.getHeaderContent().firstChild as Element;
-        gridContent = gridObj.getContent().firstChild as Element;
-        tr = gridHeader.querySelector('.e-frozen-left-header').querySelectorAll('tr')[1];
-        tr.cells[0].click();
-        done();
-    });
-
-    it('Batch edit focus on frozen left header cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on movable header cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[1];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by tab - 1', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by tab - 2', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by tab - 3', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on frozen right header cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-frozen-right-header').querySelectorAll('tr')[2];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on frozen left content cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-frozen-left-content').querySelectorAll('tr')[0];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on movable content cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[0];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by tab - 3', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by tab - 4', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by tab - 5', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on frozen right content cell by tab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-frozen-right-content').querySelectorAll('tr')[1];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by shiftTab - 1', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by shiftTab - 2', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by shiftTab - 3', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on movable content cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[0];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on frozen left content cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridContent.querySelector('.e-frozen-left-content').querySelectorAll('tr')[0];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on frozen right header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-frozen-right-header').querySelectorAll('tr')[2];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by shiftTab - 4', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by shiftTab - 5', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Focus on freeze left-right content coverage by shiftTab - 6', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        done();
-    });
-
-    it('Batch edit focus on movable header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[1];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Batch edit focus on frozen left header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        tr = gridHeader.querySelector('.e-frozen-left-header').querySelectorAll('tr')[1];
-        expect(gridObj.isEdit).toBeTruthy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
-        done();
-    });
-
-    it('Focus on frozen right header cell by shiftTab', (done: Function) => {
-        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
-        expect(gridObj.isEdit).toBeFalsy();
-        expect(gridObj.element.querySelector('.e-editedbatchcell')).toBeNull();
-        done();
-    });
-
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = null;
-    });
-});
+// describe('EJ2-64778 - Skipping non editable batch edit cell in freeze left => ', () => {
+//     let gridObj: Grid;
+//     let preventDefault: Function = new Function();
+//     let gridHeader: Element;
+//     let gridContent: Element;
+//     let tr: HTMLTableRowElement;
+//     beforeAll((done: Function) => {
+//         gridObj = createGrid(
+//             {
+//                 dataSource: data.slice(0, 4),
+//                 frozenRows: 2,
+//                 editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+//                 toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+//                 columns: [
+//                     { field: 'OrderID', type: 'number', isPrimaryKey: true, freeze: 'Left' },
+//                     { field: 'CustomerID', type: 'string', freeze: 'Left' },
+//                     { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit', allowEditing: false },
+//                     { field: 'ShipCity' }
+//                 ]
+//             }, done);
+//     });
+
+//     it('Focus on frozen left header cell by click', (done: Function) => {
+//         gridHeader = gridObj.getHeaderContent().firstChild as Element;
+//         gridContent = gridObj.getContent().firstChild as Element;
+//         tr = gridHeader.querySelector('.e-frozen-left-header').querySelectorAll('tr')[1];
+//         tr.cells[0].click();
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen left header cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze left header coverage by tab - 1', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left header coverage by tab - 2', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable header cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[2];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen left content cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-frozen-left-content').querySelectorAll('tr')[0];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze left content coverage by tab - 3', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left content coverage by tab - 4', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable content cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[1];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze left content coverage by shiftTab - 1', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left content coverage by shiftTab - 2', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen left content cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-frozen-left-content').querySelectorAll('tr')[0];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[2];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze left header coverage by shiftTab - 3', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left header coverage by shiftTab - 4', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen left header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-frozen-left-header').querySelectorAll('tr')[1];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on movable header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         expect(gridObj.isEdit).toBeFalsy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBeNull();
+//         done();
+//     });
+
+//     afterAll(() => {
+//         destroy(gridObj);
+//         gridObj = null;
+//     });
+// });
+
+// describe('EJ2-64778 - Skipping non editable batch edit cell in freeze right => ', () => {
+//     let gridObj: Grid;
+//     let preventDefault: Function = new Function();
+//     let gridHeader: Element;
+//     let gridContent: Element;
+//     let tr: HTMLTableRowElement;
+//     beforeAll((done: Function) => {
+//         gridObj = createGrid(
+//             {
+//                 dataSource: data.slice(0, 4),
+//                 frozenRows: 2,
+//                 editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+//                 toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+//                 columns: [
+//                     { field: 'OrderID', type: 'number', isPrimaryKey: true, freeze: 'Right' },
+//                     { field: 'CustomerID', type: 'string', freeze: 'Right' },
+//                     { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit', allowEditing: false },
+//                     { field: 'ShipCity' }
+//                 ]
+//             }, done);
+//     });
+
+//     it('Focus on movable header cell', (done: Function) => {
+//         gridHeader = gridObj.getHeaderContent().firstChild as Element;
+//         gridContent = gridObj.getContent().firstChild as Element;
+//         tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[1];
+//         tr.cells[0].click();
+//         done();
+//     });
+
+//     it('Batch edit focus on movable header cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze right header coverage by tab - 1', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze right header coverage by tab - 2', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen right header cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-frozen-right-header').querySelectorAll('tr')[2];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable content cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[0];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze right content coverage by tab - 3', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze right content coverage by tab - 4', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen right content cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-frozen-right-content').querySelectorAll('tr')[1];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze right content coverage by shiftTab - 1', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze right content coverage by shiftTab - 2', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable content cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[0];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen right header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-frozen-right-header').querySelectorAll('tr')[2];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze left header coverage by shiftTab - 3', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left header coverage by shiftTab - 4', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[1];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on frozen right header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         expect(gridObj.isEdit).toBeFalsy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBeNull();
+//         done();
+//     });
+
+//     afterAll(() => {
+//         destroy(gridObj);
+//         gridObj = null;
+//     });
+// });
+
+// describe('EJ2-64778 - Skipping non editable batch edit cell in freeze left right => ', () => {
+//     let gridObj: Grid;
+//     let preventDefault: Function = new Function();
+//     let gridHeader: Element;
+//     let gridContent: Element;
+//     let tr: HTMLTableRowElement;
+//     beforeAll((done: Function) => {
+//         gridObj = createGrid(
+//             {
+//                 dataSource: data.slice(0, 4),
+//                 frozenRows: 2,
+//                 editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+//                 toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+//                 columns: [
+//                     { field: 'OrderID', type: 'number', isPrimaryKey: true, freeze: 'Left' },
+//                     { field: 'CustomerID', type: 'string', freeze: 'Left' },
+//                     { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit', allowEditing: false },
+//                     { field: 'ShipCity', headerText: 'Ship City' },
+//                     { field: 'ShipPostalCode', headerText: 'Ship Postal Code', freeze: 'Right', allowEditing: false },
+//                     { field: 'ShipRegion', headerText: 'Ship Region', freeze: 'Right' },
+//                 ]
+//             }, done);
+//     });
+
+//     it('Focus on frozen left header cell', (done: Function) => {
+//         gridHeader = gridObj.getHeaderContent().firstChild as Element;
+//         gridContent = gridObj.getContent().firstChild as Element;
+//         tr = gridHeader.querySelector('.e-frozen-left-header').querySelectorAll('tr')[1];
+//         tr.cells[0].click();
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen left header cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable header cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[1];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by tab - 1', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by tab - 2', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by tab - 3', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen right header cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-frozen-right-header').querySelectorAll('tr')[2];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen left content cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-frozen-left-content').querySelectorAll('tr')[0];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable content cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[0];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by tab - 3', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by tab - 4', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by tab - 5', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen right content cell by tab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-frozen-right-content').querySelectorAll('tr')[1];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by shiftTab - 1', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by shiftTab - 2', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by shiftTab - 3', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable content cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-movablecontent').querySelectorAll('tr')[0];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen left content cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridContent.querySelector('.e-frozen-left-content').querySelectorAll('tr')[0];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen right header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-frozen-right-header').querySelectorAll('tr')[2];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by shiftTab - 4', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by shiftTab - 5', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Focus on freeze left-right content coverage by shiftTab - 6', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         done();
+//     });
+
+//     it('Batch edit focus on movable header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-movableheader').querySelectorAll('tr')[1];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Batch edit focus on frozen left header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         tr = gridHeader.querySelector('.e-frozen-left-header').querySelectorAll('tr')[1];
+//         expect(gridObj.isEdit).toBeTruthy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBe(tr.cells[1]);
+//         done();
+//     });
+
+//     it('Focus on frozen right header cell by shiftTab', (done: Function) => {
+//         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: document.activeElement } as any);
+//         expect(gridObj.isEdit).toBeFalsy();
+//         expect(gridObj.element.querySelector('.e-editedbatchcell')).toBeNull();
+//         done();
+//     });
+
+//     afterAll(() => {
+//         destroy(gridObj);
+//         gridObj = null;
+//     });
+// });
 
 describe('EJ2-65238 - Show/hide column after batch editing confirm using cancel button', () => {
     let gridObj: Grid;
@@ -4653,7 +4661,7 @@ describe('EJ2-841523 - Batch Adding is not working properly with hidden primary 
         gridObj.editModule.editCell(0, 'ShipCountry');
         gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'india';
     })
-    
+
     it('Editing the second row', function (done) {
         let batchAdd = (args?: any): void => {
             gridObj.batchAdd = null;
@@ -4665,9 +4673,393 @@ describe('EJ2-841523 - Batch Adding is not working properly with hidden primary 
         (gridObj.editModule as any).editModule.clickHandler({ target: gridObj.element.querySelectorAll('.e-row')[0].childNodes[2] });
         expect(gridObj.element.querySelectorAll('.e-insertedrow')[0].querySelectorAll('td')[2].classList.contains('e-editedbatchcell')).toBeTruthy();
     })
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('coverage Improvement', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowSelection: true,
+                allowPaging: true,
+                pageSettings: { pageSize: 6 },
+                allowGrouping: true,
+                selectionSettings: { persistSelection: true },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', width: 120, textAlign: 'Right', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 120, format: 'C2', validationRules: { required: true },
+                    }
+                ],
+                aggregates: [{
+                    columns: [{
+                        type: 'Sum',
+                        field: 'Freight',
+                        format: 'C2',
+                        footerTemplate: 'Sum: ${Sum}'
+                    }]
+                }]
+            }, done);
+    });
+    it('coverage code improvemnet', function () {
+        gridObj.editModule.editModule.deleteRecord();
+        expect(gridObj.getContent().querySelectorAll('.e-row')[0].classList.contains('e-hiddenrow')).toBeFalsy();
+        gridObj.selectionModule.selectRowsByRange(0, 2);
+        gridObj.editModule.editModule.deleteRecord();
+        gridObj.editModule.editModule.batchSave();
+        expect(gridObj.getContent().querySelectorAll('.e-row')[0].classList.contains('e-hiddenrow')).toBeTruthy();
+    });
+
+    it('delete - 1', (done: Function) => {
+        let beforeBatchDelete = (args?: any): void => {
+            args.row = null;
+            expect(gridObj.isEdit).toBeFalsy();
+            gridObj.beforeBatchDelete = null;
+            done();
+        };
+        gridObj.beforeBatchDelete = beforeBatchDelete;
+        gridObj.selectedRowIndex = 2;
+        gridObj.editModule.deleteRecord('OrderID', gridObj.currentViewData[0]);
+    });
+
+    it('delete - 2', () => {
+        let beforeBatchDelete = (args?: any): void => {
+            args.row = null;
+            expect(gridObj.isEdit).toBeFalsy();
+            gridObj.beforeBatchDelete = null;
+        };
+        gridObj.beforeBatchDelete = beforeBatchDelete;
+        gridObj.selectedRowIndex = 3;
+        gridObj.editModule.deleteRecord('OrderID');
+    });
+
+    it('add', () => {
+        gridObj.addRecord({ OrderID: 11111, CustomerID: 'India', Freight: 20.22 });
+        gridObj.selectionModule.selectRowsByRange(0, 2);
+        gridObj.editModule.deleteRecord();
+        gridObj.editModule.batchSave();
+    });
+
+    it('column group testing', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+            expect(gridObj.groupSettings.columns.length).toBe(1);
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.groupModule.groupColumn('CustomerID');
+    });
+    it('Grouped with add Records', () => {
+        gridObj.addRecord({ OrderID: 22222, CustomerID: 'India', Freight: 22.22 });
+        expect(gridObj.element.querySelectorAll('.e-updatedtd').length).toBeGreaterThan(3);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('coverage Improvement', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowSelection: true,
+                allowPaging: true,
+                pageSettings: { pageSize: 6 },
+                selectionSettings: { persistSelection: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                columns: [
+                    { type: 'checkbox', width: 50, allowEditing: false },
+                    { field: 'OrderID', width: 120, textAlign: 'Right', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 120, format: 'C2', validationRules: { required: true },
+                    }
+                ],
+            }, done);
+    });
+
+    it('add start', (done: Function) => {
+        let batchAdd = (): void => {
+            gridObj.batchAdd = null;
+            done();
+        };
+        gridObj.batchAdd = batchAdd;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+
+    it('cell edit start - args.cancel false', (done: Function) => {
+        let cellEdit = (args?: any): void => {
+            expect(gridObj.isEdit).toBeFalsy();
+            args.cell = null;
+            args.row = null;
+            args.columnObject = null;
+            gridObj.cellEdit = null;
+            done();
+        };
+        gridObj.cellEdit = cellEdit;
+        gridObj.editModule.editCell(0, 'CustomerID');
+    });
+
+    it('cell save complete', (done: Function) => {
+        let cellSave = (args?: any): void => {
+            gridObj.cellSave = null;
+            done();
+        };
+        gridObj.cellSave = cellSave;
+        gridObj.editModule.saveCell();
+    });
 
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
+    });
+});
+
+describe('coverage Improvement', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowSelection: true,
+                allowPaging: true,
+                pageSettings: { pageSize: 6 },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', newRowPosition: 'Bottom' },
+                columns: [
+                    { type: 'checkbox', width: 50, allowEditing: false },
+                    { field: 'OrderID', width: 120, textAlign: 'Right', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                ],
+            }, done);
+    });
+
+    it('add and update check', function () {
+        (select('#' + gridObj.element.id + '_add', gridObj.element) as any).click();
+        (select('#' + gridObj.element.id + '_add', gridObj.element) as any).click();
+        gridObj.element.click();
+    });
+
+    it('check the batch', () => {
+        gridObj.isDestroyed = true;
+        (gridObj.editModule.editModule as any).addEventListener();
+        gridObj.isDestroyed = false;
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('coverage Improvement => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowRowDragAndDrop: true,
+                detailTemplate: '#detailtemplate',
+                allowPaging: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, isPrimaryKey: true, textAlign: 'Right' },
+                    { field: 'CustomerID', validationRules: { required: true }, headerText: 'Customer ID', width: 125 },
+                    { field: 'Freight', width: 120, format: 'C', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('Edit first row cell type - 1', () => {
+        let cell: HTMLElement = gridObj.getContentTable().querySelector('tr').querySelectorAll('td')[3];
+        cell.click();
+        gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = '';
+        gridObj.keyboardModule.keyAction({ action: 'escape', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+    });
+
+    it('Edit first row cell type - 2', (done: Function) => {
+        let cellSave = (args?: any): void => {
+            gridObj.cellSave = null;
+            args.cell = null;
+            args.columnObject = null;
+            args.cancel = true;
+            done();
+        };
+        gridObj.cellSave = cellSave;
+        let cell: HTMLElement = gridObj.getContentTable().querySelector('tr').querySelectorAll('td')[3];
+        cell.click();
+        gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updatetd';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+    });
+
+    it('Edit first row cell type - 3', () => {
+        gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = '';
+        gridObj.editModule.editModule.addCancelWhilePaging();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+
+// used for code coverage
+describe('Execute Batch Update method => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 5),
+                allowFiltering: true,
+                allowGrouping: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                ]
+            }, done);
+    });
+
+    it('execute updateCell method', (done: Function) => {
+        gridObj.updateCell(3, "Freight", 100);
+        gridObj.addRecord({ OrderID: 1, CustomerID: "TOMPS", EmployeeID: 3, Freight: 12.56 });
+        done();
+    });
+
+    it('delete the record', (done: Function) => {
+        let batchDelete = (args?: any): void => {
+            expect(gridObj.isEdit).toBeFalsy();
+            gridObj.batchDelete = null;
+            done();
+        };
+        gridObj.batchDelete = batchDelete;
+        gridObj.clearSelection();
+        gridObj.selectRow(2, true);
+        gridObj.deleteRow(gridObj.getContent().querySelectorAll('.e-row')[2] as any);
+    });
+
+    it('execute batch update', (done: Function) => {
+        (gridObj as any).batchUpdate();
+        expect(gridObj.isEdit).toBeFalsy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+describe('Code Coverage - renderer, react batch edit, number-filter-ui and numeric-edit-cell', () => {
+    let gObj: Grid;
+    beforeAll((done: Function) => {
+        let template1: Element = createElement('div', { id: 'templateObj1' });
+        template1.innerHTML = '<button class="tempcell">${ShipCity}</button>';
+        document.body.appendChild(template1);
+        let template2: Element = createElement('div', { id: 'templateObj2' });
+        template2.innerHTML = '<button class="tempcell">Ship City</button>';
+        document.body.appendChild(template2);
+        gObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: false,
+                allowFiltering: true,
+                cssClass: 'coverage',
+                filterSettings: { type: 'Menu' },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, isPrimaryKey: true },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 150,
+                        headerTemplate: '#templateObj2', template: '#templateObj1' },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150, },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right', editType: 'numericedit' }
+                ],
+                load: function() {
+                    expect(this.isReact).toBe(undefined);
+                    expect(this.requireTemplateRef).toBe(true);
+                    this.isReact = true;
+                }
+            }, done);
+    });
+
+    it("for coverage - 1", () => {
+        gObj.editCell(0, 'ShipCity');
+        gObj.editCell(0, 'Freight');
+        let instances: string = 'ej2_instances';
+        let numberuiObj: any = gObj.element.querySelector('.e-editedbatchcell .e-control.e-numerictextbox')[instances][0];
+        (gObj.columns[4] as any).edit.dispatchEvent = function () { };
+        (gObj.columns[4] as any).edit.keyEventHandler({ action: 'enter', preventDefault: function() {}, target: numberuiObj.element, keyCode: 13 } as any);
+        numberuiObj = gObj.element.querySelector('.e-editedbatchcell .e-control.e-numerictextbox')[instances][0];
+        (gObj.columns[4] as any).edit.dispatchEvent = function () { };
+        (gObj.columns[4] as any).edit.keyEventHandler({ action: 'tab', preventDefault: function() {}, target: numberuiObj.element, keyCode: 9 } as any);
+    });
+
+    it('for coverage - 2', (done: Function) => {
+        let actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect((gObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
+                let instances: string = 'ej2_instances';
+                let numberuiObj: any = document.querySelector('#numberui-' + gObj.getColumns()[4].uid)[instances][0];
+                (numberuiObj.element).click();
+                const filterMod: any = (gObj.filterModule.filterModule as any);
+                const fltrmnuInst: any = new filterMod.colTypes[(gObj.columns[4] as any).type](gObj, filterMod.serviceLocator, gObj.filterSettings);
+                fltrmnuInst.dispatchEvent = function () { };
+                fltrmnuInst.keyEventHandler({ action: 'enter', preventDefault: function() {}, target: numberuiObj.element, keyCode: 13 } as any);
+                (numberuiObj.element).click();
+                fltrmnuInst.dispatchEvent = function () { };
+                fltrmnuInst.keyEventHandler({ action: 'tab', preventDefault: function() {}, target: numberuiObj.element, keyCode: 9 } as any);
+                done();
+            }
+        };
+        gObj.actionComplete = actionComplete;
+        (gObj.filterModule as any).filterIconClickHandler(
+            getClickObj(gObj.getColumnHeaderByField('Freight').querySelector('.e-filtermenudiv')));
+    });
+
+    it('for coverage - 3 setrowvalue, setcellvalue', () => {
+        const rowObj = gObj.getRowsObject();
+        rowObj[0].setRowValue({ OrderID: 10248, CustomerID: 'customer id test', ShipName: 'shipname test', ShipCity: 'shipcity test', Freight: 32.38, Verified: !0 })
+        rowObj[1].setCellValue('CustomerID', 'TOMSP');
+        rowObj[1].setCellValue('CustomerID', 'coverage');
+        rowObj[0].parent = null;
+        rowObj[1].parent = null;
+        rowObj[0].setRowValue({ OrderID: 10248, CustomerID: 'customer id test', ShipName: 'shipname test', ShipCity: 'shipcity test', Freight: 32.38, Verified: !0 })
+        rowObj[1].setCellValue('CustomerID', 'coverage');
+        (rowObj[1] as any).makechanges('OrderID', {});
+    });
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = null;
     });
 });

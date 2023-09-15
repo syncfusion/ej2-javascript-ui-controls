@@ -111,7 +111,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('New Jercy');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 100);
+            }, 1000);
         });
         it('click delhi-quantity-female', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[2].dispatchEvent(event);
@@ -214,7 +214,7 @@ describe('- Drill Through', () => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 300);
         });
         it('click balance', (done: Function) => {
             document.querySelectorAll('th[aria-colindex="2"]')[0].querySelector('.e-headertext').dispatchEvent(event);
@@ -351,10 +351,11 @@ describe('- Drill Through', () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
                 expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
                 expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[2].textContent).toBe('Delhi');
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                 done();
-            }, 500);
+            }, 1000);
         });
         it('click bike-male', (done: Function) => {
             document.querySelectorAll('td[aria-colindex="2"]')[0].dispatchEvent(event);

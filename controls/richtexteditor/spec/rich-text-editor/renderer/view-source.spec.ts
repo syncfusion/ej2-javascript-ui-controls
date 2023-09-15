@@ -33,7 +33,7 @@ describe('Toolbar - view html', () => {
         });
 
         it('open view html', () => {
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View (Ctrl+Shift+H)");
             rteObj.contentModule.getEditPanel().innerHTML = '<p>data</p>';
             let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
             trgEle.click();
@@ -140,7 +140,7 @@ describe('Toolbar - view html', () => {
             rteEle = rteObj.element;
         });
         it('open source code and toolbar focus using keyboard event', () => {
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View (Ctrl+Shift+H)");
             rteObj.contentModule.getEditPanel().innerHTML = '<p>data</p>';
             let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
             trgEle.click();
@@ -207,7 +207,7 @@ describe('Toolbar - view html', () => {
                 }
             });
             rteEle = rteObj.element;
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View (Ctrl+Shift+H)");
             expect(rteObj.contentModule.getEditPanel().innerHTML).toBe("<p><br></p>");
             expect(rteObj.value).toBe(null);
             trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
@@ -240,7 +240,7 @@ describe('Toolbar - view html', () => {
                 }
             });
             rteEle = rteObj.element;
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View (Ctrl+Shift+H)");
             expect(rteObj.contentModule.getEditPanel().innerHTML).toBe("<p><br></p>");
             expect(rteObj.value).toBe(null);
             trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
@@ -434,7 +434,7 @@ describe('Toolbar - view html', () => {
         });
 
         it('Test - Checking the table class is added in the preview to code view', () => {
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View (Ctrl+Shift+H)");
             rteObj.contentModule.getEditPanel().innerHTML = '<table><tbody><tr><td><p>Provide the tool bar support, its also customizable.</p></td></tr></tbody></table>';
             let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
             trgEle.click();

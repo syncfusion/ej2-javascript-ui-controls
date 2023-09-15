@@ -2,7 +2,7 @@ import { BulletChart } from '../../../src/bullet-chart/index';
 import { createElement, remove, EventHandler } from '@syncfusion/ej2-base';
 
 /**
- * Spec for Bullet chart axis
+ * Spec for Bullet chart axis.
  */
 describe('Bullet Chat Axis', () => {
     beforeAll(() => {

@@ -235,6 +235,8 @@ export interface ToolbarModel extends ComponentModel{
      * * Extended - Hide the overflowing toolbar items in the next row.  Show the overflowing toolbar items when you click the expand icons.
      * * If the popup content overflows the height of the page, the rest of the elements will be hidden.
      *
+     * {% codeBlock src='toolbar/scrollStep/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      */
     scrollStep?: number;

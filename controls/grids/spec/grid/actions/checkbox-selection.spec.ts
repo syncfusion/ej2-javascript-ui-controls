@@ -1075,4 +1075,42 @@ describe('Grid checkbox selection functionality', () => {
             gridObj = null;
         });
     });
+
+    describe('dataSource change with persist selection', () => {
+        let gridObj: Grid;
+        let selectionModule: Selection;
+        let rows: Element[];
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    selectionSettings: { persistSelection: true },
+                    columns: [
+                        { type: 'checkbox', width: 120 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 }
+                    ],
+                }, done);
+        });
+        it('Selecting first row in first page', function () {
+            selectionModule = gridObj.selectionModule;
+            rows = gridObj.getRows();
+            selectionModule.selectRow(0, true);
+            expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+        });
+        it('change the dataSource', (done: Function) => {
+            let dataBound = (args: Object) => {
+                rows = gridObj.getRows();
+                expect(gridObj.getSelectedRecords().length).toBe(0);
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.dataSource = filterData.slice(0,5);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = selectionModule = rows = null;
+        });
+    });
 });

@@ -1,0 +1,108 @@
+@include export-module('v-scroll-theme') {
+
+  /*! v-scroll theme */
+  #{&}.e-vscroll {
+
+    .e-icons {
+      color: $vscroll-default-icon-color;
+    }
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-scroll-nav.e-scroll-right-nav {
+          border-color: $vscroll-device-arrow-border-color;
+          box-shadow: $vscroll-device-arrow-rtl-box-shadow;
+        }
+      }
+    }
+
+    &.e-scroll-device {
+
+      .e-scroll-nav.e-scroll-right-nav {
+        background-color: $vscroll-device-arrow-bg;
+        border-color: $vscroll-device-arrow-border-color;
+        border-width: $vscroll-device-arrow-border-size;
+        box-shadow: $vscroll-device-arrow-box-shadow;
+
+        .e-nav-arrow {
+          color: $vscroll-device-arrow-color;
+        }
+      }
+    }
+
+    .e-scroll-overlay {
+      background-color: transparent;
+      background-repeat: repeat-x;
+
+      &.e-scroll-up-overlay {
+        background-image: $vscroll-left-bg;
+      }
+
+      &.e-scroll-down-overlay {
+        background-image: $vscroll-right-bg;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+        background: $vscroll-default-bg;
+
+        &:hover {
+          background: $vscroll-hover-bg;
+          border: $vscroll-hover-border;
+          border-color: $vscroll-hover-border-color;
+          color: $vscroll-hover-font;
+        }
+      }
+    }
+
+    &:not(.e-scroll-device) {
+
+      .e-scroll-nav  {
+
+        &:hover {
+          background: $vscroll-hover-bg;
+          border: $vscroll-hover-border;
+          color: $vscroll-hover-font;
+        }
+
+        &:focus {
+          background: $vscroll-hover-bg;
+          border: $vscroll-focus-border;
+          border-color: $vscroll-hover-border-color;
+          color: $vscroll-hover-font;
+        }
+
+        &:active {
+          background: $vscroll-press-bg;
+          border: $vscroll-active-border;
+          box-shadow: $vscroll-active-box-shadow;
+          color: $vscroll-active-font-color;
+        }
+      }
+    }
+
+    .e-scroll-nav  {
+      background: $vscroll-default-bg;
+
+      &.e-scroll-up-nav {
+        border-bottom: $vscroll-border-size $vscroll-border-type $vscroll-default-border;
+      }
+
+      &.e-scroll-down-nav {
+        border-top: $vscroll-border-size $vscroll-border-type $vscroll-default-border;
+      }
+
+      &::after {
+        @include vscroll-btn-animation;
+      }
+
+      &:active::after {
+        @include vscroll-btn-animation-after;
+      }
+    }
+  }
+}

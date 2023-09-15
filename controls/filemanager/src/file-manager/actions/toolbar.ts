@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Toolbar as BaseToolbar, ItemModel, ClickEventArgs, MenuEventArgs, DisplayMode } from '@syncfusion/ej2-navigations';
 import { select, isNullOrUndefined as isNOU, closest, selectAll } from '@syncfusion/ej2-base';
 import { createDialog } from '../pop-up/dialog';
@@ -10,6 +11,7 @@ import { GetDetails } from '../common/operations';
 import { DropDownButton, ItemModel as SplitButtonItemModel } from '@syncfusion/ej2-splitbuttons';
 import { cutFiles, copyFiles, pasteHandler, hasEditAccess } from '../common/index';
 import { doDownload, createNewFolder, uploadItem } from '../common/index';
+import { ToolbarItem, ToolbarItemModel } from '../models';
 
 /**
  * Toolbar module
@@ -56,6 +58,7 @@ export class Toolbar {
                 enableRtl: this.parent.enableRtl
             });
             this.toolbarObj.isStringTemplate = true;
+            this.toolbarObj.root = this.parent.root ? this.parent.root : this.parent;
             this.toolbarObj.appendTo('#' + this.parent.element.id + CLS.TOOLBAR_ID);
         });
     }
@@ -71,8 +74,11 @@ export class Toolbar {
     }
 
     private getItems(items: string[]): string[] {
-        const currItems: string[] = items.slice();
+        let currItems: string[] = items.slice();
         if (this.parent.isDevice && this.parent.allowMultiSelection) { currItems.push('SelectAll'); }
+        if (this.parent.toolbarItems.length > 0) {
+            currItems = this.parent.toolbarItems.map((item: ToolbarItem) => item.name);
+        }
         return currItems;
     }
     /* istanbul ignore next */
@@ -209,7 +215,10 @@ export class Toolbar {
         }
         this.hideItems(this.default, true);
         this.hideStatus();
-
+        if ((this as any).parent.portals && (this.toolbarObj as any).portals) {
+            (this as any).parent.portals = (this as any).parent.portals.concat((this.toolbarObj as any).portals);
+            (this.parent as any)['renderReactTemplates']();
+        }
         const btnElement: HTMLInputElement[] = (selectAll('.e-btn', this.toolbarObj.element) as HTMLInputElement[]);
         for (let btnCount: number = 0; btnCount < btnElement.length; btnCount++) {
             /* istanbul ignore next */
@@ -236,7 +245,7 @@ export class Toolbar {
                 } else if (items[itemCount as number].id === this.getPupupId('size')) {
                     items[itemCount as number].iconCss = this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : '';
                 } else if (items[itemCount as number].id === this.getPupupId('date')) {
-                    if (this.parent.sortBy === 'dateModified' || this.parent.sortBy === 'dateCreated') {    
+                    if (this.parent.sortBy === 'dateModified' || this.parent.sortBy === 'dateCreated') {
                         items[itemCount as number].iconCss = this.parent.sortBy === this.parent.sortBy ? CLS.TB_OPTION_DOT : '';
                     }
                     else {
@@ -277,10 +286,13 @@ export class Toolbar {
         }
         for (let i: number = 0; i < data.length; i++) {
             let item: ItemModel;
+            let propItem: ToolbarItemModel;
+            if (this.parent.toolbarItems.length > 0) {
+                propItem = this.getItemModel(this.parent.toolbarItems[parseInt(i.toString(), 10)]);
+            }
             const itemId: string = this.getId(data[i as number]);
             const itemText: string = getLocaleText(this.parent, data[i as number]);
             const itemTooltip: string = getLocaleText(this.parent, 'Tooltip-' + data[i as number]);
-            const spanElement: string = '<span class="e-tbar-btn-text e-tbar-ddb-text">' + itemText + '</span>';
             switch (data[i as number]) {
             case '|':
                 item = { type: 'Separator' };
@@ -288,12 +300,17 @@ export class Toolbar {
             case 'Upload':
                 item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_UPLOAD, showTextOn: mode };
                 break;
-            case 'SortBy':
+            case 'SortBy': {
+                let spanElement: string = '<span class="e-tbar-btn-text e-tbar-ddb-text">' + itemText + '</span>';
+                if (propItem && propItem.text) {
+                    spanElement = '<span class="e-tbar-btn-text e-tbar-ddb-text">' + propItem.text + '</span>';
+                }
                 item = {
                     id: itemId, tooltipText: itemTooltip,
                     template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1">' + spanElement + '</button>'
                 };
                 break;
+            }
             case 'Refresh':
                 item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_REFRESH, showTextOn: mode };
                 break;
@@ -303,14 +320,21 @@ export class Toolbar {
                     align: 'Right'
                 };
                 break;
-            case 'View':
+            case 'View': {
+                let viewText: string;
+                if (propItem && propItem.text) {
+                    viewText = propItem.text;
+                } else {
+                    viewText = getLocaleText(this.parent, 'View');
+                }
                 item = {
                     id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE,
                     overflow: 'Show', align: 'Right', text: itemText, showTextOn: 'Overflow',
                     template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1" aria-label=' +
-                        getLocaleText(this.parent, 'View') + '></button>'
+                    viewText + '></button>'
                 };
                 break;
+            }
             case 'Details':
                 item = {
                     id: itemId, tooltipText: itemTooltip, prefixIcon: CLS.ICON_DETAILS, overflow: 'Show', align: 'Right',
@@ -342,12 +366,74 @@ export class Toolbar {
                 item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_SELECTALL, showTextOn: mode };
                 break;
             default:
-                item = { id: itemId, text: itemText, tooltipText: itemTooltip };
+                item = { id: itemId, text: itemText, tooltipText: itemTooltip, template: '' };
                 break;
             }
-            items.push(item);
+            if (this.parent.toolbarItems.length > 0 && propItem) {
+                const mergedItems: ToolbarItemModel = { ...item, ...propItem };
+                items.push(mergedItems);
+            }
+            else {
+                items.push(item);
+            }
         }
         return items;
+    }
+
+    private getItemModel(propItem: ToolbarItemModel): ToolbarItemModel {
+        const item: ToolbarItemModel = {};
+        if (propItem.id) {
+            item.id = propItem.id;
+        }
+        if (propItem.text) {
+            item.text = propItem.text;
+        }
+        if (propItem.tooltipText) {
+            item.tooltipText = propItem.tooltipText;
+        }
+        if (propItem.prefixIcon) {
+            item.prefixIcon = propItem.prefixIcon;
+        }
+        if (propItem.cssClass) {
+            item.cssClass = propItem.cssClass;
+        }
+        if (propItem.showTextOn !== 'Both') {
+            item.showTextOn = propItem.showTextOn;
+        }
+        if (propItem.template) {
+            item.template = propItem.template;
+        }
+        if (propItem.disabled) {
+            item.disabled = propItem.disabled;
+        }
+        if (propItem.width !== 'auto') {
+            item.width = propItem.width;
+        }
+        if (propItem.suffixIcon) {
+            item.suffixIcon = propItem.suffixIcon;
+        }
+        if (propItem.align !== 'Left') {
+            item.align = propItem.align;
+        }
+        if (propItem.overflow !== 'None') {
+            item.overflow = propItem.overflow;
+        }
+        if (propItem.htmlAttributes) {
+            item.htmlAttributes = propItem.htmlAttributes;
+        }
+        if (propItem.type !== 'Button') {
+            item.type = propItem.type;
+        }
+        if (propItem.visible !== true) {
+            item.visible = propItem.visible;
+        }
+        if (propItem.showAlwaysInPopup) {
+            item.showAlwaysInPopup = propItem.showAlwaysInPopup;
+        }
+        if (propItem.tabIndex !== -1) {
+            item.tabIndex = propItem.tabIndex;
+        }
+        return item;
     }
 
     private getId(id: string): string {
@@ -365,8 +451,19 @@ export class Toolbar {
     }
 
     private reRenderToolbar(e: NotifyArgs): void {
-        if (e.newProp.toolbarSettings.items !== undefined) {
-            this.items = this.toolbarItemData(this.getItems(e.newProp.toolbarSettings.items.map((item: string) => item.trim())));
+        let itemsToProcess: string | string[] = [];
+        if (this.parent.toolbarItems.length > 0) {
+            itemsToProcess = this.parent.toolbarItems.map((item: ToolbarItem) => {
+                return item.name;
+            });
+        } else if (e.newProp.toolbarSettings.items !== undefined) {
+            itemsToProcess = e.newProp.toolbarSettings.items.map((item: string) => {
+                return item.trim();
+            });
+        }
+
+        if (itemsToProcess.length > 0) {
+            this.items = this.toolbarItemData(this.getItems(itemsToProcess));
             const eventArgs: ToolbarCreateEventArgs = { items: this.items };
             this.parent.trigger('toolbarCreate', eventArgs, (toolbarCreateArgs: ToolbarCreateEventArgs) => {
                 if (this.buttonObj) { this.buttonObj.destroy(); }
@@ -476,6 +573,7 @@ export class Toolbar {
                 this.toolbarObj.refreshOverflow();
                 break;
             case 'toolbarSettings':
+            case 'toolbarItems':
                 this.reRenderToolbar(e);
                 break;
             }

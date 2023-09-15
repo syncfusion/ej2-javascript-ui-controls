@@ -377,7 +377,7 @@ export class Selection {
         if (recordIndex > -1) {
             let movableTr: Element;
             if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
-                movableTr = this.parent.getMovableDataRows()[parseInt(recordIndex.toString(), 10)];
+                movableTr = this.parent.getDataRows()[parseInt(recordIndex.toString(), 10)];
             }
             checkbox = <HTMLElement>tr.querySelectorAll('.e-frame')[0] ? <HTMLElement>tr.querySelectorAll('.e-frame')[0]
                 : <HTMLElement>movableTr.querySelectorAll('.e-frame')[0];

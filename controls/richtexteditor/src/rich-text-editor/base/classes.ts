@@ -107,6 +107,11 @@ export const CLS_IMAGE_POP: string = 'e-rte-image-popup';
  * @hidden
  * @deprecated
  */
+export const CLS_TEXT_POP: string = 'e-rte-text-popup';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_INLINE_POP: string = 'e-rte-inline-popup';
 /**
  * @hidden

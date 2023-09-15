@@ -1,0 +1,9 @@
+@include export-module('ribbon-bootstrap4-icons') {
+  .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e705';
+      }
+    }
+  }
+}

@@ -3,13 +3,13 @@
  */
 import { Grid } from '../../../src/grid/base/grid';
 import { Page } from '../../../src/grid/actions/page';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Resize } from '../../../src/grid/actions/resize';
 
-Grid.Inject(Page, Freeze);
+Grid.Inject(Page, Resize);
 
 describe('auto wrap testing', () => {
     describe('auto wrap properties', () => {

@@ -174,6 +174,9 @@ export class WUniqueFormat {
         if (property === 'listLevelNumber') {
             return 2;
         }
+        if (property === 'nsid') {
+            return 3;
+        }
         return 0;
     }
     private static getTableFormatType(property: string): number {
@@ -789,6 +792,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('listLevelNumber', source, modifiedProperty, modifiedValue, 7)) {
+            return false;
+        }
+        if (this.isNotEqual('nsid', source, modifiedProperty, modifiedValue, 7)) {
             return false;
         }
         return true;

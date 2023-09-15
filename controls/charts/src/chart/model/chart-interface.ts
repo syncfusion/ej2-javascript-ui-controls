@@ -297,6 +297,7 @@ export interface IDragCompleteEventArgs extends IChartEventArgs {
 export interface ISelectionCompleteEventArgs extends IChartEventArgs {
     /** Defines current selected Data X, Y values. */
     selectedDataValues: { x ?: string | number | Date, y ?: number, seriesIndex ?: number, pointIndex ?: number }[];
+    chart:Chart;
 }
 
 export interface ILoadedEventArgs extends IChartEventArgs {

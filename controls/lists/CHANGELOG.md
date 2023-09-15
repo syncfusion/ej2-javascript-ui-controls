@@ -2,47 +2,31 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
 ### ListView
 
-#### Bug Fixes
+#### Breaking Changes
 
-- `#I488100` `#F45810`- Facing a console error when clicking in an empty ListView component has been resolved.
+- Using a ternary operator within the string-type template is not supported and we suggest using a function type template in ListView. Refer to the below code for example
 
-## 22.2.8 (2023-08-08)
+**Previous**
 
-### ListBox
+```typescript
 
-#### Bug Fixes
+let template: string = '<div class="e-list-wrapper e-list-avatar" id = ${id}>' +
+        '<span class="e-list-content">${name} ${$imgUrl ?  $imgUrl : \'no image\' }</span></div>';
+```
 
-- `#F44817` - Issue with "Dragged item may be one that is adjacent to the item over which mouse down occurred in listbox." has been resolved.
+**Now**
 
-## 22.2.5 (2023-07-27)
+```typescript
 
-### ListView
-
-#### Bug Fixes
-
-- `#I481465` - Resolved the `enableHtmlSanitizer` property issue in the ListView component.
-
-## 22.1.34 (2023-06-21)
-
-### ListView
-
-#### Bug Fixes
-
-- `#I463091` - Resolved the CSS override issue of `e-content` class name with other components and changed the `e-content` class name into `e-list-container`.
-
-## 21.2.9 (2023-06-06)
-
-### ListView
-
-#### Bug Fixes
-
-- `#I466565` - The console error in the nested ListView component sample has been resolved.
-
-## 21.2.6 (2023-05-23)
+// data denotes the template data of each nodes from ListView data.
+let template: Function = (data: any) => {
+    let result = `<div class="e-list-wrapper e-list-avatar" id = "${data.id}">`+
+    `<span class="e-list-content">${data.name} ${data.imgUrl ?  data.imgUrl : 'no image' }</span></div>`;
+    return result;
+}
+```
 
 ### ListBox
 
@@ -50,35 +34,13 @@
 
 - `#I461648` - Issue with "Drag and drop on mobile browsers, it unable to drag an element to the topmost place in list box component" has been resolved.
 
-## 21.1.41 (2023-04-18)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#F181131` - Issue with "No Record Found text disappears while hovering the drag item on list box without drop" has been resolved.
-
 ### ListView
 
 #### Bug Fixes
 
-- `#I447633` - An issue with the primary button styles of the e-icons in the ListView component has been resolved.
+- `#I463091` - Resolved the CSS override issue in the ListView component, and changed the `e-content` class name into `e-list-container`.
 
-## 21.1.39 (2023-04-11)
-
-### ListBox
-
-#### Bug Fixes
-
-- Issue with Dragging the ListBox item when the end-user pressed the Escape key and the drag operation should be cancelled has been fixed.
-
-### ListView
-
-#### Bug Fixes
-
-- `#I452079` - Resolved detached elements memory leak issue in the ListView component.
-
-## 21.1.35 (2023-03-23)
+## 19.3.43 (2021-09-30)
 
 ### ListView
 

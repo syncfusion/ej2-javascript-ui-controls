@@ -90,7 +90,12 @@ describe('Data module', () => {
         let query: Query = new Query().take(5);
         beforeAll((done: Function) => {
             let dataBound: EmitType<Object> = () => { done(); };
-            jasmine.Ajax.install();
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+                new Response(JSON.stringify({ d: data.slice(0, 15), __count: 15 }), {
+                    status: 200,
+                    
+                })
+            ));
             dataManager = new DataManager({
                 url: 'service/Orders/'
             });
@@ -101,11 +106,7 @@ describe('Data module', () => {
                     query: query, allowPaging: true,
                 });
             gridObj.appendTo('#Grid');
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify({ d: data.slice(0, 15), __count: 15 })
-            });
+            this.request = window.fetch['calls'].mostRecent();
         });
 
         it('TR generated testing', () => {
@@ -118,7 +119,6 @@ describe('Data module', () => {
 
         afterAll(() => {
             remove(gridObj.element);
-            jasmine.Ajax.uninstall();
         });
     });
 
@@ -206,18 +206,18 @@ describe('Data module', () => {
         let elem: HTMLElement = createElement('div', { id: 'Grid' });
         let actionComplete: (e?: Object) => void;
         beforeAll((done: Function) => {
-            jasmine.Ajax.install();
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+                new Response(JSON.stringify({value: data.slice(0, 15)}), {
+                    status: 200,
+                })
+            ));
             dataManager = new DataManager({
                 url: '/test/db',
                 adaptor: new ODataV4Adaptor,
                 offline: true
                 }
             );
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify({value: data.slice(0, 15)})
-            });
+            this.request = window.fetch['calls'].mostRecent();
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(elem);
             gridObj = new Grid(
