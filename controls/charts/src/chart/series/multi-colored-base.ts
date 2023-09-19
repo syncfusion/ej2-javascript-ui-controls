@@ -197,15 +197,15 @@ export class MultiColoredSeries extends LineBase {
         endPointLocation = isRequired ?
             [startPointLocation, startPointLocation = endPointLocation][0] : endPointLocation;
         let options: RectOption;
-        if ((series.xAxis.isInversed ? startPointLocation.x - endPointLocation.x > 0 : endPointLocation.x - startPointLocation.x > 0) &&
+        if (((series.xAxis.isInversed || series.xAxis.isAxisInverse)  ? startPointLocation.x - endPointLocation.x > 0 : endPointLocation.x - startPointLocation.x > 0) &&
             (series.yAxis.isInversed ? startPointLocation.y - endPointLocation.y > 0 : endPointLocation.y - startPointLocation.y > 0)) {
             options = new RectOption(
                 series.chart.element.id + '_ChartSegment' + series.index + 'ClipRect_' + index,
                 'transparent', { width: 1, color: 'Gray' }, 1,
                 {
-                    x: series.xAxis.isInversed ? endPointLocation.x : startPointLocation.x,
+                    x: (series.xAxis.isInversed || series.xAxis.isAxisInverse) ? endPointLocation.x : startPointLocation.x,
                     y: series.yAxis.isInversed ? endPointLocation.y : startPointLocation.y,
-                    width: series.xAxis.isInversed ? startPointLocation.x - endPointLocation.x : endPointLocation.x - startPointLocation.x,
+                    width: (series.xAxis.isInversed || series.xAxis.isAxisInverse) ? startPointLocation.x - endPointLocation.x : endPointLocation.x - startPointLocation.x,
                     height: series.yAxis.isInversed ? startPointLocation.y - endPointLocation.y : endPointLocation.y - startPointLocation.y
                 }
             );

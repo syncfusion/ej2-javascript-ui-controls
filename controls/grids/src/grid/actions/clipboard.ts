@@ -74,8 +74,8 @@ export class Clipboard implements IAction {
         }
         if (e.keyCode === 86 && (e.ctrlKey || (isMacLike && e.metaKey)) && !grid.isEdit) {
             const target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
-            if (!target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
-                grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow' || !this.clipBoardTextArea) {
+            if (!this.clipBoardTextArea || !target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
+            grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
                 return;
             }
             this.activeElement = document.activeElement;
@@ -112,23 +112,8 @@ export class Clipboard implements IAction {
         let col: Column;
         let value: string;
         let isAvail: Element | boolean;
-        if (!grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
-            grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
-            return;
-        }
         const rows: string[] = data.split('\n');
         let cols: string[];
-        const dataRows: HTMLElement[] = grid.getDataRows() as HTMLElement[];
-        let mRows: HTMLElement[];
-        let frRows: HTMLElement[];
-        const isFrozen: boolean = this.parent.isFrozenGrid();
-        if (isFrozen) {
-            mRows = grid.getMovableDataRows() as HTMLElement[];
-            if (grid.getFrozenRightColumnsCount()) {
-                frRows = grid.getFrozenRightDataRows() as HTMLElement[];
-            }
-        }
-
         for (let r: number = 0; r < rows.length; r++) {
             cols = rows[parseInt(r.toString(), 10)].split('\t');
             cIdx = colIndex;
@@ -138,16 +123,6 @@ export class Clipboard implements IAction {
             }
             for (let c: number = 0; c < cols.length; c++) {
                 isAvail = grid.getCellFromIndex(rIdx, cIdx);
-                if (isFrozen) {
-                    const fTr: HTMLElement = dataRows[parseInt(rIdx.toString(), 10)];
-                    const mTr: HTMLElement = mRows[parseInt(rIdx.toString(), 10)];
-                    isAvail = !fTr.querySelector('[data-colindex="' + cIdx + '"]') ?
-                        mTr.querySelector('[data-colindex="' + cIdx + '"]') : true;
-                    if (frRows && !isAvail) {
-                        const frTr: HTMLElement = frRows[parseInt(rIdx.toString(), 10)];
-                        isAvail = frTr.querySelector('[data-colindex="' + cIdx + '"]');
-                    }
-                }
                 if (!isAvail) {
                     cIdx++;
                     break;
@@ -205,17 +180,8 @@ export class Clipboard implements IAction {
 
     protected setCopyData(withHeader?: boolean): void {
         if (window.getSelection().toString() === '') {
-            const isFrozen: boolean = this.parent.isFrozenGrid();
             this.clipBoardTextArea.value = this.copyContent = '';
-            let mRows: Element[];
-            let frRows: Element[];
             const rows: Element[] = this.parent.getDataRows();
-            if (isFrozen) {
-                mRows = this.parent.getMovableDataRows();
-                if (this.parent.getFrozenMode() === literals.leftRight || this.parent.getFrozenMode() === 'Right') {
-                    frRows = this.parent.getFrozenRightRows();
-                }
-            }
             if (this.parent.selectionSettings.mode !== 'Cell') {
                 const selectedIndexes: Object[] = this.parent.getSelectedRowIndexes().sort((a: number, b: number) => { return a - b; });
                 if (withHeader) {
@@ -231,32 +197,16 @@ export class Clipboard implements IAction {
                     if (i > 0) {
                         this.copyContent += '\n';
                     }
-                    const leftCols: HTMLElement[] = []; const rightCols: HTMLElement[] = []; const movableCols: HTMLElement[] = [];
-                    if (isFrozen) {
-                        movableCols.push(...[].slice.call(mRows[selectedIndexes[parseInt(i.toString(), 10)] as number].
-                            querySelectorAll('.e-rowcell:not(.e-hide)')));
-                        if (this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenMode() === literals.leftRight) {
-                            rightCols.push(...[].slice.call(frRows[selectedIndexes[parseInt(i.toString(), 10)] as number].
-                                querySelectorAll('.e-rowcell:not(.e-hide)')));
-                        }
-                        if (this.parent.getFrozenMode() === 'Left' || this.parent.getFrozenMode() === literals.leftRight ||
-                            (this.parent.isFrozenGrid() && !this.parent.getFrozenMode())) {
-                            leftCols.push(...[].slice.call(rows[selectedIndexes[parseInt(i.toString(), 10)] as number].
-                                querySelectorAll('.e-rowcell:not(.e-hide)')));
-                        }
+                    const leftCols: HTMLElement[] = [];
+                    let idx: number = selectedIndexes[parseInt(i.toString(), 10)] as number;
+                    if (!isGroupAdaptive(this.parent) && (this.parent.enableVirtualization ||
+                        (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) ||
+                        (this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading))) {
+                        idx = rows.map((m: Element) => m.getAttribute('data-rowindex')).indexOf(
+                            selectedIndexes[parseInt(i.toString(), 10)].toString());
                     }
-                    else {
-                        let idx: number = selectedIndexes[parseInt(i.toString(), 10)] as number;
-                        if (!isGroupAdaptive(this.parent) && (this.parent.enableVirtualization ||
-                            (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) ||
-                            (this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading))) {
-                            idx = rows.map((m: Element) => m.getAttribute('data-rowindex')).indexOf(
-                                selectedIndexes[parseInt(i.toString(), 10)].toString());
-                        }
-                        leftCols.push(...[].slice.call(rows[parseInt(idx.toString(), 10)].querySelectorAll('.e-rowcell:not(.e-hide)')));
-                    }
-                    const cells: HTMLElement[] = leftCols.concat(movableCols).concat(rightCols);
-                    this.getCopyData(cells, false, '\t', withHeader);
+                    leftCols.push(...[].slice.call(rows[parseInt(idx.toString(), 10)].querySelectorAll('.e-rowcell:not(.e-hide)')));
+                    this.getCopyData(leftCols, false, '\t', withHeader);
                 }
             } else {
                 const obj: { status: boolean, rowIndexes?: number[], colIndexes?: number[] } = this.checkBoxSelection();
@@ -275,14 +225,6 @@ export class Clipboard implements IAction {
                         }
                         const cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[parseInt(i.toString(), 10)] as number].
                             getElementsByClassName('e-cellselectionbackground'));
-                        if (isFrozen) {
-                            cells.push(...[].slice.call(mRows[obj.rowIndexes[parseInt(i.toString(), 10)] as number]
-                                .getElementsByClassName('e-cellselectionbackground')));
-                            if (frRows) {
-                                cells.push(...[].slice.call(frRows[obj.rowIndexes[parseInt(i.toString(), 10)] as number]
-                                    .getElementsByClassName('e-cellselectionbackground')));
-                            }
-                        }
                         this.getCopyData(cells, false, '\t', withHeader);
                     }
                 } else {

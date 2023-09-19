@@ -2,7 +2,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
-import { PointPortModel } from '../../../src/diagram/objects/port-model';
+import { PathPortModel, PointPortModel } from '../../../src/diagram/objects/port-model';
 import { Segments, accessibilityElement, ConnectorConstraints, NodeConstraints, PortVisibility, PortConstraints, ControlPointsVisibility } from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
@@ -2177,4 +2177,72 @@ describe('Diagram Control', () => {
             done();
         });  
     });
+
+    describe('Support to add ports to connector', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramconPort' });
+            document.body.appendChild(ele);
+            var newNodes:NodeModel[] = [
+                { id: 'n1', offsetX: 100, offsetY: 100, width: 70, height: 70, ports: [{ id: 'n1p1', shape: 'Square', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default | PortConstraints.Drag }] },
+                { id: 'n2', offsetX: 500, offsetY: 150, width: 70, height: 70, ports: [{ id: 'n2p1', shape: 'Square', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default | PortConstraints.Draw }] },
+            ];
+            var newConnectors:ConnectorModel[] = [
+                {id:'con1',sourcePoint:{x:200,y:300},targetPoint:{x:400,y:300}, ports: [{ id: 'con1p1', shape: 'Square', offset: 0.5, visibility: PortVisibility.Visible, constraints: (PortConstraints.Default | PortConstraints.Drag) &~ PortConstraints.OutConnect, }]},
+                {id:'con2',sourcePoint:{x:450,y:300},targetPoint:{x:600,y:300}, ports: [{ id: 'con2p1', shape: 'Square', offset: 0.5, visibility: PortVisibility.Visible, constraints: (PortConstraints.Default | PortConstraints.Draw)}]},
+                { id: 'c1', type: 'Straight', sourceID: 'n1', targetID: 'con1', sourcePortID: 'n1p1', targetPortID:'con1p1', ports: [{ id: 'c1p1', shape: 'Square', offset: 0.5, visibility: PortVisibility.Visible, constraints: PortConstraints.Default | PortConstraints.ToolTip, tooltip:{content:'port tooltip'} }] },
+                { id: 'c2', type: 'Straight', sourceID: 'con2', targetID: 'n2', sourcePortID: 'con2p1', targetPortID:'n2p1', ports: [{ id: 'c2p1', shape: 'Square', offset: 0.5, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }] },
+                { id: 'bez1', type: 'Bezier', sourceID: 'n1', targetID: 'n2', sourcePortID: 'n1p1', targetPortID: 'n2p1', 
+                ports: [{ id: 'bezp1', shape: 'Square', offset: 0.5, visibility: PortVisibility.Visible, constraints: PortConstraints.Default, },
+                { id: 'bezp2', shape: 'Square', offset: 0.8, visibility: PortVisibility.Visible, constraints: PortConstraints.Default, width:15,height:15 },
+                { id: 'bezp3', shape: 'Circle', offset: 0.2, visibility: PortVisibility.Visible, constraints: PortConstraints.Default, }]
+             },
+                { id: 'ortho1', type: 'Orthogonal', sourcePoint:{x:600,y:100},targetPoint:{x:550,y:300}, ports: [{ id: 'orthop1', shape: 'Square', offset: 0.5, visibility: PortVisibility.Visible, constraints: PortConstraints.Default| PortConstraints.Draw, }] },
+            ];
+            diagram = new Diagram({
+                width: '900px', height: '500px', nodes: newNodes, connectors: newConnectors
+            });
+            diagram.appendTo('#diagramconPort');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking connector port rendering at initial rendering', (done: Function) => {
+            let con1 = diagram.connectors[0];
+            let portRender: boolean;
+            if(con1.ports && con1.ports.length > 0){
+                portRender = true;
+            }
+            expect(portRender).toBe(true);
+            done();
+        });
+        it('Checking in connections of connector port', (done: Function) => {
+           let con1: ConnectorModel = diagram.connectors[0];
+           let inEdges = (con1 as Connector).inEdges;
+           expect(inEdges.length === 1 && inEdges[0] === 'c1').toBe(true);
+           done();
+        });
+        it('Checking out connections of connector port', (done: Function) => {
+            let con2: ConnectorModel = diagram.connectors[1];
+            let outEdges = (con2 as Connector).outEdges;
+            expect(outEdges.length === 1 && outEdges[0] === 'c2').toBe(true);
+            done();
+        });
+        it('Adding port to connector at runtime', (done: Function) => {
+            let con1: ConnectorModel = diagram.connectors[0];
+            let portCount = con1.ports.length;
+            let ports: PathPortModel[] = [{id:'newPort1',visibility:PortVisibility.Visible,shape:"Square",offset:0.2},
+            {id:'newPort2',visibility:PortVisibility.Visible,shape:"Square",offset:0.8,constraints:PortConstraints.Default| PortConstraints.Draw}]
+            diagram.addPorts(con1,ports);
+            let newPortCount = con1.ports.length;
+            expect(newPortCount === portCount + 2).toBe(true);
+            done();
+        });
+    });
+
 });

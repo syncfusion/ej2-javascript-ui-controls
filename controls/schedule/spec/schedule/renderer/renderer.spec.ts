@@ -42,12 +42,14 @@ describe('Data module', () => {
     describe('Remote data testing', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
-            jasmine.Ajax.install();
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+                new Response(JSON.stringify({ d: defaultData, __count: 15 }), {
+                    status: 200
+                })
+            ));
             const dataManager: DataManager = new DataManager({ url: 'api/Schedule/Events/' });
             const model: ScheduleModel = { eventSettings: { query: new Query().take(5) } };
             schObj = util.createSchedule(model, dataManager, done);
-            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
-            request.respondWith({ status: 200, responseText: JSON.stringify({ d: defaultData, __count: 15 }) });
         });
 
         it('Events data generated testing', () => {
@@ -56,7 +58,6 @@ describe('Data module', () => {
 
         afterAll(() => {
             util.destroy(schObj);
-            jasmine.Ajax.uninstall();
         });
     });
 
@@ -64,14 +65,17 @@ describe('Data module', () => {
         const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
         let schObj: Schedule;
         beforeAll(() => {
-            jasmine.Ajax.install();
             const dataManager: DataManager = new DataManager({ url: 'api/Schedule/Events/' });
             const model: ScheduleModel = { actionFailure: actionFailedFunction };
             schObj = util.createSchedule(model, dataManager);
         });
         beforeEach((done: DoneFn) => {
-            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
-            request.respondWith({ 'status': 404, 'contentType': 'application/json', 'responseText': 'Page not found' });
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: false,
+                status: 404,
+                headers: { 'Content-type': 'application/json' },
+                statusText: 'Page not found'
+            }));
             done();
         });
         it('actionFailure testing', () => {
@@ -79,7 +83,6 @@ describe('Data module', () => {
         });
         afterAll(() => {
             util.destroy(schObj);
-            jasmine.Ajax.uninstall();
         });
     });
 

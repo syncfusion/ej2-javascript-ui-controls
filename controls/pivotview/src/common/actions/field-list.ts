@@ -17,10 +17,6 @@ export class FieldList implements IAction {
      */
     private parent: PivotView;
     private element: HTMLElement;
-    private handlers: {
-        load: Function,
-        update: Function
-    };
     private timeOutObj: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     /**
@@ -150,15 +146,11 @@ export class FieldList implements IAction {
      * @hidden
      */
     public addEventListener(): void {
-        this.handlers = {
-            load: this.initiateModule,
-            update: this.updateControl
-        };
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.on(events.initSubComponent, this.handlers.load, this);
-        this.parent.on(events.uiUpdate, this.handlers.update, this);
+        this.parent.on(events.initSubComponent, this.initiateModule, this);
+        this.parent.on(events.uiUpdate, this.updateControl, this);
     }
 
     /**
@@ -170,8 +162,8 @@ export class FieldList implements IAction {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off(events.initSubComponent, this.handlers.load);
-        this.parent.off(events.uiUpdate, this.handlers.update);
+        this.parent.off(events.initSubComponent, this.initiateModule);
+        this.parent.off(events.uiUpdate, this.updateControl);
     }
 
     /**

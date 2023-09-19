@@ -1,7 +1,7 @@
 import { Maps } from '../../index';
 import { BubbleSettingsModel, ColorMapping, IBubbleRenderingEventArgs, bubbleRendering } from '../index';
 import { IBubbleClickEventArgs, bubbleClick, LayerSettings, IBubbleMoveEventArgs, bubbleMouseMove } from '../index';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, animationMode } from '@syncfusion/ej2-base';
 import { CircleOption, MapLocation, findMidPointOfPolygon, Point, drawCircle, elementAnimate, getTranslate } from '../utils/helper';
 import { RectOption, Rect, drawRectangle, checkPropertyPath, getZoomTranslate, getRatioOfBubble, maintainSelection,
     getValueFromObject } from '../utils/helper';
@@ -157,7 +157,7 @@ export class Bubble {
                 });
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let translate: any;
-                const animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                const animate: boolean = (layer.animationDuration !== 0 || animationMode === 'Enable') || isNullOrUndefined(this.maps.zoomModule);
                 if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule) && !this.maps.isTileMap) {
                     translate = getZoomTranslate(this.maps, layer, animate);
                 } else {
@@ -177,7 +177,7 @@ export class Bubble {
                 } else {
                     radius = 0;
                 }
-                if (bubbleSettings.animationDuration > 0) {
+                if (bubbleSettings.animationDuration > 0 || animationMode === 'Enable') {
                     elementAnimate(
                         bubbleElement, bubbleSettings.animationDelay, bubbleSettings.animationDuration, position, this.maps, bubble, radius
                     );

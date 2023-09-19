@@ -2,81 +2,11 @@
 
 ## [Unreleased]
 
-## 22.2.9 (2023-08-15)
-
-### Checkbox
-
-#### Bug Fixes
-
-- `#I489450` - The issue with "Indeterminate state changed to unchecked while hovering the checkbox when Tristate is enabled" has been resolved.
-
-### Checkbox
-
-#### Bug Fixes
-
-- `#I488474` - The issue with "Hovering the checkbox checked items of checkbox is unchecked while using RTL mode" in Bigger mode has been resolved.
-
-## 22.2.8 (2023-08-08)
-
-### Checkbox
-
-#### Bug Fixes
-
-- `#I488474` - The issue with "Hovering the checkbox checked items of checkbox is unchecked while using RTL mode" has been resolved.
-
-## 22.2.5 (2023-07-27)
-
 ### Checkbox
 
 #### Bug Fixes
 
 - `#I483250` - The issue with "CheckBox not working in IE 11" has been resolved.
-
-## 22.1.39 (2023-07-18)
-
-### Speed Dial
-
-#### Bug Fixes
-
-- `#I478092` - Enhanced the component's functionality, by introducing the `isPrimary` property to specify whether it is a primary button or not.
-
-## 22.1.38 (2023-07-11)
-
-### Switch
-
-#### Bug Fixes
-
-- `#I478637` - The issue with "Change event trigger twice for key down action of switch component" has been resolved.
-
-### Checkbox
-
-- Resolved checkbox wrapper width issue.
-
-## 21.2.10 (2023-06-13)
-
-### RadioButton
-
-#### Bug Fixes
-
-- `#F182133` - The issue with "Correcting Ripple element is not destroyed properly while clicking on radio button component" has been resolved.
-
-## 21.2.6 (2023-05-23)
-
-### RadioButton
-
-#### Bug Fixes
-
-- `#I463728` - The issue with "Provide the boolean value support for radio button while using the v-model property in VUE platform" has been resolved.
-
-## 21.2.5 (2023-05-16)
-
-### RadioButton
-
-#### Bug Fixes
-
-- `#F182133` - The issue with "Ripple element is not destroyed properly while clicking on radio button component" has been resolved.
-
-## 21.2.3 (2023-05-03)
 
 ### Switch
 
@@ -84,15 +14,12 @@
 
 - `#I456259` - provided the `role` attribute support to `htmlAttributes` property of switch component.
 
-## 21.1.37 (2023-03-29)
-
 ### Checkbox
 
 #### Bug Fixes
 
+- `#I445000` - The issue with "Triggered the change event for the checkbox while changing the checked property value programmatically" has been resolved.
 - `#I436942` - The issue with "Validation rule not display properly when we use Checkbox within form validator" has been resolved.
-
-## 21.1.35 (2023-03-23)
 
 ### Checkbox
 
@@ -105,7 +32,7 @@
 
 #### New Features
 
-- `#I422263` - The Chip component now supports htmlAttributes, which enables users to add required attributes such as 'aria-label', 'title', 'class', and more to the Chip item.
+- `#I422263` - Provided the htmlAttributes support for the Chip component.
 
 ### RadioButton
 
@@ -124,36 +51,6 @@
 #### Bug Fixes
 
 - `#I427235` - The issue `cssClass` property not updated properly while string with a white space in the end of the property in checkbox has been fixed.
-
-## 20.3.47 (2022-10-11)
-
-### Floating Action Button `Preview`
-
-The Floating Action Button (FAB) component performs the primary action that appears in front of all screen contents. It can be positioned in relation to a page or a target container.
-
-- **Rendering** - The FAB component can be rendered as Icon only, Icon with Label, Label only, or in a disabled state.
-
-- **Positioning** - Supports to place various built-in positions on the target element.
-
-- **Styles** - The appearance of the FAB can be customized using predefined styles.
-
-- **Accessibility** - The FAB provides built-in compliance with the `WAI-ARIA` specifications and it is achieved through attributes.
-
-### Speed Dial `Preview`
-
-The Speed Dial component is an extension of the floating action button that displays a list of action buttons when clicked. It is useful when there is more than one primary action for the page.
-
-- **Rendering** - The Speed Dial component can be rendered in two display modes: Linear and Radial.
-
-- **Positioning** - Supports to place various built-in positions on the target element.
-
-- **Styles** - The appearance of the Speed Dial can be customized using predefined styles.
-
-- **Template Support** - The Speed Dial component action items and popup container can also be rendered with custom templates.
-
-- **Modal Support** - Supports showing a modal overlay behind the Speed Dial.
-
-- **Accessibility** - The Speed Dial provides built-in compliance with the `WAI-ARIA` specifications and it is achieved through attributes.
 
 ### Switch
 

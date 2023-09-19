@@ -380,6 +380,7 @@ export class Column {
      * The available built-in freeze directions are
      * * Left - Freeze the column at left side.
      * * Right - Freeze the column at right side.
+     * * Fixed - Freeze the column at Center.
      *
      * @default null
      */

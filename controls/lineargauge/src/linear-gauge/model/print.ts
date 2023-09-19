@@ -62,6 +62,7 @@ export class Print {
             }
         } else {
             const exportElement: HTMLElement = gauge.element.cloneNode(true) as HTMLElement;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let backgroundElement: HTMLElement = (exportElement.getElementsByTagName('svg')[0] as any) as HTMLElement;
             if (!isNullOrUndefined(backgroundElement)) {
                 backgroundElement = backgroundElement.childNodes[0] as HTMLElement;
@@ -71,6 +72,9 @@ export class Print {
                         backgroundElement.setAttribute('fill', 'rgba(255,255,255, 1)');
                     } else if ((gauge.theme === 'TailwindDark' || gauge.theme === 'Bootstrap5Dark' || gauge.theme === 'FluentDark' || gauge.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                         backgroundElement.setAttribute('fill', 'rgba(0, 0, 0, 1)');
+                    }
+                    if (backgroundElement.getAttribute('stroke') === '') {
+                        backgroundElement.setAttribute('stroke', 'transparent');
                     }
                 }
             }

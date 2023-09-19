@@ -5,7 +5,7 @@ import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCente
 import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker } from '../utils/helper';
 import { markerTemplate, removeElement, getElement, clusterSeparate, markerColorChoose } from '../utils/helper';
 import { markerShapeChoose   } from '../utils/helper';
-import { isNullOrUndefined, EventHandler, Browser, remove, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, EventHandler, Browser, remove, createElement, animationMode } from '@syncfusion/ej2-base';
 import { MarkerSettings, LayerSettings, changeBorderWidth, IMarkerRenderingEventArgs, markerRendering } from '../index';
 import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
 import { pan } from '../model/constants';
@@ -204,7 +204,7 @@ export class Zoom {
                     this.markerLineAnimation(map);
                     map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint, type + 'wheel', null, position);
                     const element1: HTMLElement = document.getElementById(this.maps.element.id + '_tiles');
-                    const animationDuration: number = this.maps.layersCollection[0].animationDuration;
+                    const animationDuration: number = this.maps.layersCollection[0].animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.maps.layersCollection[0].animationDuration;
                     setTimeout(() => {
                         // if (type === 'ZoomOut') {
                         //     element1.removeChild(element1.children[element1.childElementCount - 1]);
@@ -468,7 +468,7 @@ export class Zoom {
      * @returns {void}
      */
     private animateTransform(element: Element, animate: boolean, x: number, y: number, scale: number): void {
-        const duration: number = this.currentLayer.animationDuration;
+        const duration: number = this.currentLayer.animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.currentLayer.animationDuration;
         if (!animate || duration === 0 || this.maps.isTileMap) {
             element.setAttribute('transform', 'scale(' + (scale) + ') translate( ' + x + ' ' + y + ' )');
             return;
@@ -540,7 +540,7 @@ export class Zoom {
                                     const layerIndex : number = parseInt(currentEle.childNodes[k as number]['id'].split('_LayerIndex_')[1].split('_')[0], 10);
                                     const dataIndex : number = parseInt(currentEle.childNodes[k as number]['id'].split('_dataIndex_')[1].split('_')[0], 10);
                                     const markerIndex  : number = parseInt(currentEle.childNodes[k as number]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
-                                    markerAnimation = this.currentLayer.markerSettings[markerIndex as number].animationDuration > 0;
+                                    markerAnimation = this.currentLayer.markerSettings[markerIndex as number].animationDuration > 0 || animationMode === 'Enable';
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     const markerSelectionValues : any = this.currentLayer.markerSettings[markerIndex as number].dataSource[dataIndex as number];
                                     for (let x : number = 0; x < this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection.length; x++) {
@@ -554,7 +554,7 @@ export class Zoom {
                                             );
                                         }
                                     }
-                                    if ((this.currentLayer.animationDuration > 0 || (maps.layersCollection[0].animationDuration > 0 && this.currentLayer.type === 'SubLayer')) && !this.isPanning) {
+                                    if (((this.currentLayer.animationDuration > 0 || animationMode === 'Enable') || ((maps.layersCollection[0].animationDuration > 0 || animationMode === 'Enable') && this.currentLayer.type === 'SubLayer')) && !this.isPanning) {
                                         if (maps.isTileMap) {
                                             const groupElement: Element = document.querySelector('.GroupElement');
                                             if (groupElement && !(document.querySelector('.ClusterGroupElement')) && markerAnimation) {
@@ -611,7 +611,7 @@ export class Zoom {
                                         const centerY: number = bubbleCollection['center']['y'];
                                         const currentX: number = ((centerX + x) * scale);
                                         const currentY: number = ((centerY + y) * scale);
-                                        const duration: number = this.currentLayer.animationDuration;
+                                        const duration: number = this.currentLayer.animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.currentLayer.animationDuration;
                                         if (!animate || duration === 0) {
                                             childElement.setAttribute('transform', 'translate( ' + currentX + ' ' + currentY + ' )');
                                         } else {
@@ -809,7 +809,7 @@ export class Zoom {
         if (element.id.indexOf('_LabelIndex_') > -1) {
             labelIndex = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
         }
-        const duration: number = this.currentLayer.animationDuration;
+        const duration: number = this.currentLayer.animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.currentLayer.animationDuration;
         for (let l: number = 0; l < labelCollection.length; l++) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const label: any = labelCollection[l as number];
@@ -948,7 +948,7 @@ export class Zoom {
                 Number(getValueFromObject(marker.dataSource[dataIndex as number], marker.latitudeValuePath)) :
                 !isNullOrUndefined(marker.dataSource[dataIndex as number]['latitude']) ? parseFloat(marker.dataSource[dataIndex as number]['latitude']) :
                     !isNullOrUndefined(marker.dataSource[dataIndex as number]['Latitude']) ? parseFloat(marker.dataSource[dataIndex as number]['Latitude']) : 0;
-            const duration: number = this.currentLayer.animationDuration;
+            const duration: number = this.currentLayer.animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.currentLayer.animationDuration;
             const location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                 new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
             ) : convertGeoToPoint(lat, lng, factor, layer, this.maps);
@@ -1201,7 +1201,7 @@ export class Zoom {
                     this.markerLineAnimation(map);
                     map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint, type);
                     const element1: HTMLElement = document.getElementById(this.maps.element.id + '_tiles');
-                    const animationDuration: number = this.maps.layersCollection[0].animationDuration;
+                    const animationDuration: number = this.maps.layersCollection[0].animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.maps.layersCollection[0].animationDuration;
                     setTimeout(() => {
                         if (type === 'ZoomOut' || type === 'Reset') {
                             // element1.removeChild(element1.children[element1.childElementCount - 1]);

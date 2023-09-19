@@ -357,14 +357,14 @@ export class Legend extends BaseLegend {
                     chart.visibleSeries[index as number].interior = series.fill;
                 }
                 if (chart.legendSettings.toggleVisibility) {
+                    series.chart[changeDetection as string] = true;
                     if (series.category === 'TrendLine') {
-                        if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
+                        if (!chart.series[series.sourceIndex].trendlines[series.index].visible && chart.series[series.sourceIndex].visible) {
                             chart.series[series.sourceIndex].trendlines[series.index].visible = true;
                         } else {
                             chart.series[series.sourceIndex].trendlines[series.index].visible = false;
                         }
                     } else {
-                        series.chart[changeDetection as string] = true;
                         this.changeSeriesVisiblity(series, series.visible);
                     }
                     legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
@@ -458,6 +458,11 @@ export class Legend extends BaseLegend {
         }
         if (this.isSecondaryAxis(series.yAxis) || (series.category == 'Pareto' && series.type == 'Line')) {
             series.yAxis.internalVisibility = series.yAxis.series.some((value: Series) => (value.visible));
+        }
+        if (series.trendlines.length && series.visible) {
+            series.trendlines.forEach((trendline) => {
+                trendline.visible = true;
+            });
         }
     }
     private isSecondaryAxis(axis: Axis): boolean {

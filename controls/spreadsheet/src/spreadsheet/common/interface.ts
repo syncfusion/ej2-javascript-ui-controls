@@ -3,7 +3,7 @@ import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, H
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { CellInfoEventArgs, CFColor, ChartTheme, RowModel } from './../../workbook/index';
+import { CellInfoEventArgs, CFColor, ChartTheme, RowModel, CellStyleModel } from './../../workbook/index';
 import { SortCollectionModel } from './../../workbook/index';
 
 
@@ -34,7 +34,7 @@ export interface IRenderer {
     showHideHeaders(): void;
     getRowHeaderWidth(sheet: SheetModel, skipFreezeCheck?: boolean): number;
     getColHeaderHeight(sheet: SheetModel, skipHeader?: boolean): number
-    setPanelWidth(sheet: SheetModel, rowHdr: HTMLElement): void;
+    setPanelWidth(sheet: SheetModel, rowHdr: HTMLElement, isRtlChange?: boolean): void;
     getScrollSize(addOffset?: boolean): number;
     rowHeightChanged(args: { rowIdx: number, isHideShow?: boolean }): void;
     colWidthChanged(args: { colIdx: number, isHideShow?: boolean }): void;
@@ -286,6 +286,7 @@ export interface CellRenderArgs {
     colSpan?: number;
     rowSpan?: number;
     isRandomFormula?: boolean;
+    style?: CellStyleModel;
 }
 /** @hidden */
 export interface IAriaOptions<T> {

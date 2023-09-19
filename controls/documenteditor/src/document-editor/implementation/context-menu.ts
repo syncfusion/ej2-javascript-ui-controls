@@ -1,4 +1,4 @@
-import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs, Item } from '@syncfusion/ej2-navigations';
 import { LayoutViewer, DocumentHelper } from './viewer';
 import { isNullOrUndefined, L10n, classList, Browser } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../document-editor';
@@ -88,6 +88,10 @@ export class ContextMenu {
      * @private
      */
     public enableCustomContextMenuBottom: boolean;
+    /**
+     * @private
+     */
+    public itemsmenu : string;
 
     private currentContextInfo: ContextElementInfo;
     private noSuggestion: HTMLElement;
@@ -374,7 +378,9 @@ export class ContextMenu {
         this.contextMenuInstance.onClose = () => {
             if (this.viewer && this.documentHelper.selection) {
                 classList(this.documentHelper.selection.caret, ['e-de-cursor-animation'], []);
+                if(id + CONTEXTMENU_FONT_DIALOG !== this.itemsmenu && id + CONTEXTMENU_HYPERLINK!== this.itemsmenu && id + CONTEXTMENU_TABLE !== this.itemsmenu && id + CONTEXTMENU_PARAGRAPH !== this.itemsmenu){
                 this.documentHelper.updateFocus();
+                }
             }
         };
     }
@@ -430,6 +436,7 @@ export class ContextMenu {
      */
     public handleContextMenuItem(item: string): void {
         let id: string = this.documentHelper.owner.element.id;
+        this.itemsmenu =item;
         switch (item) {
             case id + CONTEXTMENU_LOCK:
                 if (this.documentHelper.owner.collaborativeEditingModule) {

@@ -68,7 +68,7 @@ export class Crosshair {
         this.removeCrosshair(1000);
     }
 
-    private mouseMoveHandler(event: PointerEvent | TouchEvent): void {
+    public mouseMoveHandler(event: PointerEvent | TouchEvent): void {
         const chart: Chart = this.chart;
         chart.mouseX = chart.mouseX / chart.scaleX;
         chart.mouseY = chart.mouseY / chart.scaleY;
@@ -133,12 +133,12 @@ export class Crosshair {
             }
         }
         this.stopAnimation();
-        if (chart.tooltip.enable && !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect)) {
+        if (chart.isCrosshair && chart.tooltip.enable && !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect)) {
             return null;
         }
 
-        this.valueX = chart.tooltip.enable ? chart.tooltipModule.valueX : chart.mouseX;
-        this.valueY = chart.tooltip.enable ? chart.tooltipModule.valueY : chart.mouseY;
+        this.valueX = chart.tooltip.enable && chart.tooltipModule.valueX ? chart.tooltipModule.valueX : chart.mouseX;
+        this.valueY = chart.tooltip.enable && chart.tooltipModule.valueY ? chart.tooltipModule.valueY : chart.mouseY;
         if (!chart.enableCanvas) {
             crossGroup.setAttribute('opacity', '1');
         }
@@ -266,6 +266,9 @@ export class Crosshair {
                         continue;
                     }
                     rect = this.tooltipLocation(text, axis, chartRect, axisRect);
+                    if (rect.y + rect.height / 2 > chart.availableSize.height || rect.y < 0) {
+                        continue;
+                    }
                     if (pathElement === null) {
                         if (chart.enableCanvas) {
                             pathElement = this.svgRenderer.drawPath(
@@ -348,7 +351,7 @@ export class Crosshair {
         } else if (axis.valueType === 'Category') {
             return axis.labels[Math.floor(<number>value)];
         } else if (axis.valueType === 'DateTimeCategory') {
-            return this.chart.dateTimeCategoryModule.getIndexedAxisLabel(axis.labels[Math.floor(<number>value)], axis.format);
+            return this.chart.dateTimeCategoryModule.getIndexedAxisLabel(axis.labels[Math.round(<number>value)], axis.format);
         } else if (axis.valueType === 'Logarithmic') {
             return value = axis.format(Math.pow(axis.logBase, value));
         } else {

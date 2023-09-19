@@ -1,5 +1,5 @@
 import { MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { ZoomTypes, PageOrientation, DiagramRegions, FitModes, RenderingMode } from '../../enum/enum';
+import { ZoomTypes, PageOrientation, DiagramRegions, FitModes, RenderingMode, SegmentEditing } from '../../enum/enum';
 import { PointModel } from '../../primitives/point-model';
 import { Rect } from '../../primitives/rect';
 import { MarginModel } from '../../core/appearance-model';
@@ -185,6 +185,17 @@ export interface DiagramBeforeMenuOpenEventArgs extends BeforeOpenCloseMenuEvent
     parentItem: MenuItemModel;
 }
 
+/**Defines the options to add / remove the intermediate segment points for straight connector.  */
+export interface IEditSegmentOptions {
+    /**  Defines the connector in which segment to be add/remove */
+    connector?: ConnectorModel;
+    /** Specify a value used as an intersection point on the segment  */
+    point?: PointModel;
+    /** Specify a value that defines whether to add or remove or toggle the segment editing operation  */
+    SegmentEditing?: SegmentEditing;
+    /** Specify the range of the intersection point selection  */
+    hitPadding?: number;
+}
 /**
  * Defines how the diagram has to be fit into the viewport
  */

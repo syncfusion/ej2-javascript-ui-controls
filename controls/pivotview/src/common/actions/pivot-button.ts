@@ -1,4 +1,4 @@
-import { createElement, Draggable, DragEventArgs, remove, extend, detach, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { createElement, Draggable, DragEventArgs, remove, extend, detach, isNullOrUndefined, SanitizeHtmlHelper, getInstance } from '@syncfusion/ej2-base';
 import { EventHandler, MouseEventArgs, select } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, closest, Browser } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
@@ -37,8 +37,6 @@ export class PivotButton implements IAction {
     public axisField: AxisFieldRenderer;
     /** @hidden */
     public fieldName: string;
-    private valueFiedDropDownList: DropDownList;
-    private columnFieldDropDownList: DropDownList;
     private index: number;
     /** @hidden */
     public isDestroyed: boolean;
@@ -232,21 +230,24 @@ export class PivotButton implements IAction {
                         }
                     }
                 }
-                if (axis === 'values') { // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (axis === 'values') {
+                    let valueFiedDropDownList: DropDownList = select('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV, this.parentElement) ?
+                        getInstance(select('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV, this.parentElement), DropDownList) as DropDownList : null;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     for (const element of this.parentElement.querySelectorAll('.e-group-' + axis) as any) {
                         if (element.classList.contains(cls.GROUP_CHART_VALUE) && (this.parent as PivotView).pivotChartModule) {
                             const valueData: { text: string, value: string }[] = field.map((item: IFieldOptions) => {
                                 return { text: item.caption ? item.caption : item.name, value: item.name };
                             });
                             const parent: PivotView = this.parent as PivotView;
-                            if (this.valueFiedDropDownList && element.querySelector('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV)) {
-                                this.valueFiedDropDownList.dataSource = valueData;
-                                this.valueFiedDropDownList.value = !parent.chartSettings.enableMultipleAxis ?
+                            if (valueFiedDropDownList && element.querySelector('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV)) {
+                                valueFiedDropDownList.dataSource = valueData;
+                                valueFiedDropDownList.value = !parent.chartSettings.enableMultipleAxis ?
                                     parent.pivotChartModule.currentMeasure : valueData[0].value;
                             } else {
                                 const ddlDiv: HTMLElement = createElement('div', { className: cls.GROUP_CHART_VALUE_DROPDOWN_DIV });
                                 element.appendChild(ddlDiv);
-                                this.valueFiedDropDownList = new DropDownList({
+                                valueFiedDropDownList = new DropDownList({
                                     dataSource: valueData,
                                     enableRtl: this.parent.enableRtl,
                                     locale: this.parent.locale,
@@ -261,14 +262,17 @@ export class PivotButton implements IAction {
                                         }
                                     }
                                 });
-                                this.valueFiedDropDownList.isStringTemplate = true;
-                                this.valueFiedDropDownList.appendTo(ddlDiv);
+                                valueFiedDropDownList.isStringTemplate = true;
+                                valueFiedDropDownList.appendTo(ddlDiv);
                             }
                         }
                     }
                 }
                 else if (axis === 'columns') {
-                    let availColindex: number = undefined; // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    let availColindex: number = undefined;
+                    let columnFieldDropDownList: DropDownList = select('.' + cls.GROUP_CHART_COLUMN_DROPDOWN_DIV, this.parentElement) ?
+                        getInstance(select('.' + cls.GROUP_CHART_COLUMN_DROPDOWN_DIV, this.parentElement), DropDownList) as DropDownList : null;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     for (const element of this.parentElement.querySelectorAll('.e-group-' + axis) as any) {
                         if (element.classList.contains(cls.GROUP_CHART_COLUMN) && (this.parent as PivotView).pivotChartModule) {
                             const currentMeasure: string = (this.parent as PivotView).pivotChartModule.currentMeasure;
@@ -315,17 +319,17 @@ export class PivotButton implements IAction {
                                     }
                                 }
                             }
-                            if (this.columnFieldDropDownList && element.querySelector('.' + cls.GROUP_CHART_COLUMN_DROPDOWN_DIV)) {
-                                this.columnFieldDropDownList.dataSource = columnData;
+                            if (columnFieldDropDownList && element.querySelector('.' + cls.GROUP_CHART_COLUMN_DROPDOWN_DIV)) {
+                                columnFieldDropDownList.dataSource = columnData;
                                 if (availColindex !== undefined) {
-                                    this.columnFieldDropDownList.value = columnData[availColindex - 1].value;
+                                    columnFieldDropDownList.value = columnData[availColindex - 1].value;
                                 } else {
-                                    this.columnFieldDropDownList.value = columnData[0].value;
+                                    columnFieldDropDownList.value = columnData[0].value;
                                 }
                             } else {
                                 const ddlDiv: HTMLElement = createElement('div', { className: cls.GROUP_CHART_COLUMN_DROPDOWN_DIV });
                                 element.appendChild(ddlDiv);
-                                this.columnFieldDropDownList = new DropDownList({
+                                columnFieldDropDownList = new DropDownList({
                                     dataSource: columnData,
                                     enableRtl: this.parent.enableRtl,
                                     locale: this.parent.locale,
@@ -340,8 +344,8 @@ export class PivotButton implements IAction {
                                         }
                                     }
                                 });
-                                this.columnFieldDropDownList.isStringTemplate = true;
-                                this.columnFieldDropDownList.appendTo(ddlDiv);
+                                columnFieldDropDownList.isStringTemplate = true;
+                                columnFieldDropDownList.appendTo(ddlDiv);
                             }
                         }
                     }
@@ -1483,13 +1487,16 @@ export class PivotButton implements IAction {
         if (this.menuOption) {
             this.menuOption.destroy();
         }
-        if (this.valueFiedDropDownList && !this.valueFiedDropDownList.isDestroyed) {
-            this.valueFiedDropDownList.destroy();
-            this.valueFiedDropDownList = null;
+        let element: HTMLElement = select('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV, this.parentElement);
+        const valueFiedDropDownList: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
+        if (valueFiedDropDownList && !valueFiedDropDownList.isDestroyed) {
+            valueFiedDropDownList.destroy();
         }
-        if (this.columnFieldDropDownList && !this.columnFieldDropDownList.isDestroyed) {
-            this.columnFieldDropDownList.destroy();
-            this.columnFieldDropDownList = null;
+        element = select('.' + cls.GROUP_CHART_COLUMN_DROPDOWN_DIV, this.parentElement);
+        let columnFieldDropDownList: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
+        if (columnFieldDropDownList && !columnFieldDropDownList.isDestroyed) {
+            columnFieldDropDownList.destroy();
+            columnFieldDropDownList = null;
         }
         if (this.draggable && !this.draggable.isDestroyed) {
             this.draggable.destroy();

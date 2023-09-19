@@ -6,19 +6,18 @@ import { Page } from '../../../src/grid/actions/page';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { data, employeeData } from '../base/datasource.spec';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { EJ2Intance } from '../../../src/grid/base/interface';
 import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
 import { createGrid, destroy } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { removeClass, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import * as events from '../../../src/grid/base/constant';
 import { Edit } from '../../../src/grid/actions/edit';
 
 
-Grid.Inject(Page, Toolbar, ColumnChooser, Freeze, DetailRow, Edit);
+Grid.Inject(Page, Toolbar, ColumnChooser, DetailRow, Edit);
 describe('Column chooser module', () => {
     describe('Column chooser testing', () => {
         let gridObj: Grid;
@@ -37,6 +36,7 @@ describe('Column chooser module', () => {
                     { field: 'ShipCity' }],
                     allowPaging: true,
                     showColumnChooser: true,
+                    cssClass: 'report',
                     toolbar: ['ColumnChooser'],
                     pageSettings: { pageSize: 5 },
                     beforeOpenColumnChooser: beforeOpenColumnChooser,
@@ -878,12 +878,14 @@ describe('Column chooser module', () => {
         it('hide the template column action', () => {
             gridObj.hideColumns('Name');
         });
-
-        it('check the width and height of frozen grid', () => {
-            expect(gridObj.element.querySelectorAll('.e-gridcontent .e-movablecontent .e-table')[0].getAttribute('style')).toBe(null);
-            expect(gridObj.element.querySelectorAll('.e-gridcontent .e-frozencontent .e-table')[0].getAttribute('style')).toBe(null);
-            expect(gridObj.element.querySelectorAll('.e-gridcontent .e-movablecontent .e-table .e-row')[0].getAttribute('style')).toBe(null);
-            expect(gridObj.element.querySelectorAll('.e-gridcontent .e-frozencontent .e-table .e-row')[0].getAttribute('style')).toBe('');
+        it('coverage', () => {
+            let ccToolbar: any = gridObj.element.querySelector('.e-cc-toolbar');
+            ccToolbar.click();
+        });
+        it('coverage - 1', () => {
+            (gridObj.columnChooserModule as any).dlgObj.visible = true;
+            let cell: any = gridObj.getContent().querySelector('.e-row').childNodes[1];
+            cell.click();
         });
 
         afterAll(() => {
@@ -896,12 +898,15 @@ describe('Column chooser module', () => {
     
     describe('EJ2-69223 => Columns in column chooser is not get focused while clicking or tabbing', () => {
         let gridObj: Grid;
+        let beforeOpenColumnChooser: () => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
                     dataSource: data,
                     allowPaging: true,
                     showColumnChooser: true,
+                    detailTemplate: '#detailtemplate1',
+                    cssClass: 'grid1',
                         toolbar: ['ColumnChooser'],
                         columns: [
                             { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
@@ -909,7 +914,8 @@ describe('Column chooser module', () => {
                             { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
                             { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
                             { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
-                        ]
+                        ],
+                        beforeOpenColumnChooser: beforeOpenColumnChooser,
                 }, done);
         });
         it('check highlight with mouse click', () => {
@@ -918,6 +924,106 @@ describe('Column chooser module', () => {
             let patentelem: any = cheEle.closest('.e-cclist');
             expect(patentelem.classList.contains('e-colfocus')).toBeTruthy();
         });
+        it('Coverage Improvement -  column choooser action', () => {
+            let ccToolbar: any = gridObj.element.querySelector('.e-cc-toolbar');
+            ccToolbar.click();
+            ccToolbar.click();
+        });
+
+
+        it('Coverage Improvement  - Column chooser render testing', (done: Function) => {
+            beforeOpenColumnChooser = (args?: any): void => {
+                args.cancel = true;
+                gridObj.beforeOpenColumnChooser = null;
+                done();
+            };
+
+            gridObj.beforeOpenColumnChooser = beforeOpenColumnChooser;
+            setTimeout(() => {
+                select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar()).click();
+                (<any>gridObj).columnChooserModule.isDlgOpen = true;
+                select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar()).click();
+                (<any>gridObj).columnChooserModule.destroy();
+                (<any>gridObj).destroy();
+            }, 500);
+        });
+
+        it('Coverage Improvement -  onResetColumns', () => {
+            let args: any = { requestType : 'columnstate'};
+            (gridObj.columnChooserModule as any).onResetColumns(args);
+        });
+
+
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+
+    describe('Coverage Improvement ', () => {
+        let gridObj: Grid;
+        let beforeOpenColumnChooser: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                    enableStickyHeader: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                    ],
+                    beforeOpenColumnChooser: beforeOpenColumnChooser,
+                }, done);
+        });
+
+        it('Coverage Improvement -  empty grid cc action', () => {
+            let ccToolbar: any = gridObj.element.querySelector('.e-cc-toolbar');
+            ccToolbar.click();
+            let ccOkbtn: any = gridObj.element.querySelector('.e-cc_okbtn');
+            ccOkbtn.click();
+        });
+
+        it('Colum chooser args cancel', (done: Function) => {
+            beforeOpenColumnChooser = (args?: any): void => {
+                args.cancel = true;
+                gridObj.beforeOpenColumnChooser = null;
+                done();
+            };
+            gridObj.beforeOpenColumnChooser = beforeOpenColumnChooser;
+            gridObj.columnChooserModule.openColumnChooser();
+        });
+
+        it('Coverage Improvement -  column choooser escape action', () => {
+            let ccToolbar: any = gridObj.element.querySelector('.e-cc-toolbar');
+            ccToolbar.click();
+            let args: any = { key: 'Escape' };
+            (gridObj.columnChooserModule as any).keyUpHandler(args);
+        });
+
+        it('Coverage Improvement -  hideOpenedDialog ', () => {
+            gridObj.getHeaderContent().classList.add('e-sticky');
+            let ccToolbar: any = gridObj.element.querySelector('.e-cc-toolbar');
+            ccToolbar.click();
+            (gridObj.columnChooserModule as any).hideOpenedDialog();
+        });
+
+        it('Coverage Improvement -  cancel icon click ', () => {
+            let ccToolbar: any = gridObj.element.querySelector('.e-cc-toolbar');
+            ccToolbar.click();
+            let cancelIcon: any = gridObj.element.querySelector('.e-ccsearch');
+            cancelIcon.classList.add('e-cc-cancel');
+            let args: any = { target: cancelIcon };
+            (gridObj.columnChooserModule as any).clickHandler(args);
+        });
+
         afterAll(() => {
             (<any>gridObj).columnChooserModule.destroy();
             destroy(gridObj);

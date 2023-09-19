@@ -155,10 +155,23 @@ export class HtmlEditor {
             const currentLength: number = this.parent.inputElement.innerHTML.replace(regEx, '').length;
             let focusNode: Element = range.startContainer as Element;
             if (previousLength > currentLength && !isRootParent) {
+                if (focusNode.textContent.trim().length !== 0 && focusNode.previousSibling) {
+                    const tempSpan: HTMLElement = document.createElement('span');
+                    tempSpan.className = 'tempSpan';
+                    range.insertNode(tempSpan);
+                }
                 let currentChild: Element = this.parent.inputElement.firstChild as Element;
                 while (!isNOU(currentChild) && currentChild.textContent.replace(regEx, '').trim().length > 0) {
                     currentChild.innerHTML = currentChild.innerHTML.replace(regEx, '');
                     currentChild = currentChild.nextElementSibling;
+                }
+                let tempSpanToRemove: Element = this.parent.inputElement.querySelector('.tempSpan');
+                if (tempSpanToRemove && tempSpanToRemove.previousSibling && focusNode.textContent.trim().length !== 0) {
+                    focusNode = tempSpanToRemove.previousSibling as Element;
+                    pointer = tempSpanToRemove.previousSibling.textContent.length;
+                    const parentElement: HTMLElement | null = tempSpanToRemove.parentNode as HTMLElement | null;
+                    parentElement.removeChild(tempSpanToRemove);
+                    tempSpanToRemove = null;
                 }
                 const currentChildNode : NodeListOf<ChildNode> = this.parent.inputElement.querySelector('.currentStartMark').childNodes;
                 if (currentChildNode.length > 1) {
@@ -604,7 +617,7 @@ export class HtmlEditor {
         const item: IToolbarItemModel = args.item as IToolbarItemModel;
         const closestElement: Element = closest(args.originalEvent.target as Element, '.e-rte-quick-popup');
         if (item.command !== 'FormatPainter') {
-            if (closestElement && !closestElement.classList.contains('e-rte-inline-popup')) {
+            if (closestElement && !closestElement.classList.contains('e-rte-inline-popup') && !closestElement.classList.contains('e-rte-text-popup')) {
                 if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
                     item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
                     if (isIDevice() && item.command === 'Images') {

@@ -267,8 +267,10 @@ export class Formula {
             if (trgtElem.id === this.parent.element.id + '_name_box') {
                 switch (keyCode) {
                 case keyCodes.ENTER:
-                    this.addDefinedName({ name: trgtElem.value });
-                    focus(this.parent.element);
+                    if (!document.querySelector('.e-name-box.e-popup-open')) {
+                        this.addDefinedName({ name: trgtElem.value });
+                        focus(this.parent.element);
+                    }
                     break;
                 case keyCodes.ESC:
                     focus(this.parent.element);

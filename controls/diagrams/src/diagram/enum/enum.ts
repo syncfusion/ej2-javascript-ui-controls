@@ -82,6 +82,26 @@ export type VerticalAlignment =
 
 
 /**
+ * Defines how the ports have to be aligned with respect to its immediate parent
+ * Center - Aligns the ports at the center of a connector segment
+ * Before - Aligns the ports before a connector segment
+ * After - Aligns the ports after a connector segment
+ */
+export type PortAlignment =
+    /**
+     * Center - Aligns the ports at the center of a connector segment
+     */
+    'Center' |
+    /**
+     * Before - Aligns the ports before a connector segment
+     */
+    'Before' |
+    /**
+     * After - Aligns the ports after a connector segment
+     */
+    'After';
+
+/**
  * Defines how the diagram elements have to be flipped with respect to its immediate parent
  * * FlipHorizontal - Translate the diagram element throughout its immediate parent
  * * FlipVertical - Rotate the diagram element throughout its immediate parent
@@ -869,6 +889,7 @@ export type TextAlign =
  * * InheritToolTip - Displays a tooltip for the connectors.
  * * Interaction - Features of the connector used for interaction.
  * * ReadOnly - Enables ReadOnly
+ * * InheritSegmentThumbShape - Enables or disables to inherit the value of segmentThumbShape
  * * Default - Default features of the connector.
  *
  * @aspNumberEnum
@@ -917,8 +938,10 @@ export enum ConnectorConstraints {
     ConnectToNearByPort = 1 << 18,
     /** Enables or disables Enables or disables near port and node padding to the connector. */
     ConnectToNearByElement = 1 << 17 | 1 << 18,
+    /**Enables or disables to inherit the value of segmentThumbShape */
+    InheritSegmentThumbShape = 1 << 19,
     /** Enables all constraints. */
-    Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 13 | 1 << 16 | 1 << 17 | 1 << 18
+    Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 13 | 1 << 16 | 1 << 17 | 1 << 18 | 1 << 19
 }
 
 
@@ -2712,7 +2735,21 @@ export type MouseButtons =
     'Middle' |
     /** Right - Whenever the right button of the mouse is clicked, ‘Right’ is returned. */
     'Right';
-
+/**
+ * Specifies to add or remove intermediate segment.
+ * Add - Specifies to add the intermediate segment at the specified point.
+ * Remove - Specifies to remove the intermediate segment at the specified point.
+ * Toggle - New segment will be added at the tapped point if there is no segment at that point or existing segment will be deleted
+ */
+export type SegmentEditing =
+    /** Add - Specifies to add the intermediate segment at the specified point. */
+    'Add' |
+    /** Remove - Specifies to remove the intermediate segment at the specified point. */
+    'Remove' |
+    /** 
+     * Toggle - Specifies to either add or remove the intermediate segment at the specified point. 
+     * Note: If there is a segment in the specified point then the existing segment will be removed. Otherwise, it will add a new segment.  */
+    'Toggle';
 /**
  * Defines whether an object is added/removed from diagram
  * Addition - Sets the ChangeType as Addition
@@ -2811,7 +2848,7 @@ export type AssociationFlow = 'Directional' | 'Default' | 'BiDirectional';
  * * OneToOne - Indicates the connector multiplicity is OneToOne.
  * * OneToMany - Indicates the connector multiplicity is OneToMany.
  * * ManyToOne - Indicates the connector multiplicity is ManyToOne.
- * * ManyToMany - Indicates the connector multiplicity us ManyToMany.
+ * * ManyToMany - Indicates the connector multiplicity is ManyToMany.
  */
 export type Multiplicity = 'OneToOne' | 'OneToMany' | 'ManyToOne' | 'ManyToMany';
 

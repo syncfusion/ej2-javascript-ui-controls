@@ -2863,6 +2863,55 @@ describe('Quick Popups', () => {
         });
     });
 
+    describe('appointment colour was not applied read-only events in year view', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'event-1',
+            StartTime: new Date(2023, 0, 22, 0, 0),
+            EndTime: new Date(2023, 0, 22, 0, 0)
+        },
+        {
+            Id: 2,
+            Subject: 'event-2',
+            StartTime: new Date(2023, 0, 22, 9, 0),
+            EndTime: new Date(2023, 0, 22, 10, 0),
+            IsReadonly: true
+        },
+        {
+            Id: 3,
+            Subject: 'event-3',
+            StartTime: new Date(2023, 0, 22, 11, 0),
+            EndTime: new Date(2023, 0, 22, 12, 0),
+            IsReadonly: true
+        }];
+
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                currentView: 'Year',
+                views: ['Year'],
+                eventSettings: { dataSource: data}
+            };
+            schObj = util.createSchedule(model, data, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('More event popup checking read only on the year view', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-cell.e-work-cells')[21].firstElementChild as HTMLElement, 'click');
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            expect(morePopup.classList).toContain('e-popup-open');
+            const appElement: NodeListOf<Element> = morePopup.querySelectorAll('.e-appointment');
+            expect(appElement.length).toEqual(3);
+            expect(appElement[0].classList.contains('e-read-only')).toEqual(false);
+            expect(appElement[1].classList.contains('e-read-only')).toEqual(true);
+            expect(appElement[2].classList.contains('e-read-only')).toEqual(true);
+            (morePopup.querySelector('.e-more-event-close') as HTMLElement).click();
+        });
+
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

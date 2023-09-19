@@ -1,7 +1,7 @@
 import { extend, select } from '@syncfusion/ej2-base';
 import { remove, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs, CustomEditEventArgs, CustomAddEventArgs } from '../base/interface';
-import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject, gridActionHandler } from '../base/util';
+import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
 import { RowRenderer } from '../renderer/row-renderer';
@@ -11,8 +11,7 @@ import { Column } from '../models/column';
 import { ReturnType } from '../base/type';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { DataUtil } from '@syncfusion/ej2-data';
-import { freezeTable } from '../base/enum';
-import { addRemoveEventListener } from '../base/util';
+import { addRemoveEventListener, addFixedColumnBorder } from '../base/util';
 import * as literals from '../base/string-literals';
 import { Grid } from '../base/grid';
 import { Group } from './group';
@@ -119,7 +118,7 @@ export class NormalEdit {
     protected startEdit(tr: Element): void {
         const gObj: IGrid = this.parent;
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute(literals.dataRowIndex), 10);
-        if (gObj.enableVirtualization || gObj.enableInfiniteScrolling) {
+        if (gObj.enableVirtualization || gObj.enableColumnVirtualization || gObj.enableInfiniteScrolling) {
             const selector: string = '.e-row[data-rowindex="' + this.rowIndex + '"]';
             const virtualRow: Element = this.parent.element.querySelector(selector);
             if (!virtualRow) {
@@ -131,7 +130,8 @@ export class NormalEdit {
         if (isGroupAdaptive(gObj)) {
             const rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
-        } else if (!this.previousData && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+        } else if (!this.previousData && (this.parent.enableVirtualization ||
+            this.parent.enableColumnVirtualization || this.parent.enableInfiniteScrolling)) {
             this.previousData = e.data;
         } else if (!this.parent.enableVirtualization) {
             this.previousData = extend({}, {}, gObj.getCurrentViewRecords()[this.rowIndex], true);
@@ -228,43 +228,20 @@ export class NormalEdit {
             requestType: 'save', type: events.actionBegin, data: editedData, cancel: false,
             previousData: this.previousData, selectedRow: gObj.selectedRowIndex, foreignKeyData: {}
         });
-        const index: number = gObj.getFrozenMode() === 'Right' ? 1 : 0;
         const isDlg: boolean = gObj.editSettings.mode === 'Dialog';
         const dlgWrapper: Element = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
-        const dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.getElementsByClassName('e-gridform')[parseInt(index.toString(), 10)];
+        const dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.getElementsByClassName('e-gridform')[0];
         const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
             virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
         };
         this.parent.notify(events.getVirtualData, data);
-        if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
+        if ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization || this.parent.enableInfiniteScrolling)
             && this.parent.editSettings.mode === 'Normal' && Object.keys(data.virtualData).length) {
             if (this.parent.isEdit) {
                 this.currentVirtualData = editedData = args.data = data.virtualData;
             }
         } else {
             editedData = gObj.editModule.getCurrentEditedData(dlgForm, editedData);
-        }
-        if (gObj.isFrozenGrid() && gObj.editSettings.mode === 'Normal') {
-            const mhdrFrm: Element = gObj.getMovableVirtualHeader().querySelector('.e-gridform');
-            const mCntFrm: Element = gObj.getMovableVirtualContent().querySelector('.e-gridform');
-            const mvblEle: Element[] = [mhdrFrm || mCntFrm];
-            let frHdrFrm: Element; let frCntFrm: Element; let frEle: Element[] = [];
-            if (gObj.getFrozenMode() === literals.leftRight) {
-                frHdrFrm = gObj.getFrozenRightHeader().querySelector('.e-gridform');
-                frCntFrm = gObj.getFrozenRightContent().querySelector('.e-gridform');
-                frEle = [frHdrFrm || frCntFrm];
-            }
-            gridActionHandler(
-                this.parent,
-                (tableName: freezeTable, elements: Element[]) => {
-                    for (const ele of elements) {
-                        if (ele) {
-                            editedData = gObj.editModule.getCurrentEditedData(ele, editedData);
-                        }
-                    }
-                },
-                [[], mvblEle, frEle]
-            );
         }
         let eleLength: number = [].slice.call(gObj.element.getElementsByClassName(literals.editedRow)).length;
         if (!data.isAdd && Object.keys(this.currentVirtualData).length && !eleLength) {
@@ -295,7 +272,6 @@ export class NormalEdit {
                 return;
             }
         }
-        gObj.editModule.resetMovableContentValidation();
     }
 
     private destroyElements(): void {
@@ -401,9 +377,11 @@ export class NormalEdit {
             this.cloneRow = null;
             this.originalRow.classList.remove('e-hiddenrow');
         }
-        if (this.parent.isFrozenGrid() && this.cloneFrozen) {
+        if (this.cloneFrozen) {
             this.cloneFrozen.remove();
-            this.frozen.classList.remove('e-hiddenrow');
+            if (this.frozen) {
+                this.frozen.classList.remove('e-hiddenrow');
+            }
         }
     }
 
@@ -441,9 +419,8 @@ export class NormalEdit {
     }
 
     private refreshRow(data: Object): void {
-        const frzCols: boolean = this.parent.isFrozenGrid();
         const row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
-        let rowObj: Row<Column> = this.parent.getRowObjectFromUID(this.uid);
+        const rowObj: Row<Column> = this.parent.getRowObjectFromUID(this.uid);
         if (rowObj) {
             rowObj.changes = data;
             this.parent.notify(events.refreshVirtualCache, { data: data });
@@ -452,16 +429,29 @@ export class NormalEdit {
                 row.refresh(rowObj, this.parent.getColumns() as Column[], true);
             }
             const tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[data-rowindex="' + rowObj.index + '"]'));
-            if (frzCols && tr.length) {
-                for (let i: number = 0; i < tr.length; i++) {
-                    const rowUid: string = tr[parseInt(i.toString(), 10)].getAttribute('data-uid');
-                    if (rowUid !== this.uid) {
-                        rowObj = this.parent.getRowObjectFromUID(rowUid);
-                        rowObj.changes = data;
-                        refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
-                        row.refresh(rowObj, this.parent.getColumns(), true);
-                        this.parent.editModule.checkLastRow(tr[parseInt(i.toString(), 10)]);
+            for (let i: number = 0; i < tr.length; i++) {
+                addFixedColumnBorder(tr[parseInt(i.toString(), 10)]);
+                if (this.parent.enableColumnVirtualization &&
+                    tr[parseInt(i.toString(), 10)].querySelectorAll('.e-leftfreeze,.e-rightfreeze,.e-fixedfreeze').length) {
+                    const cols: Column[] = this.parent.getColumns();
+                    const leftrightCells: HTMLElement[] = [].slice.call(
+                        tr[parseInt(i.toString(), 10)].querySelectorAll('.e-leftfreeze,.e-rightfreeze.e-fixedfreeze'));
+                    for (let j: number = 0; j < leftrightCells.length; j++) {
+                        if (leftrightCells[parseInt(j.toString(), 10)].classList.contains('e-leftfreeze')) {
+                            leftrightCells[parseInt(j.toString(), 10)].style.left = (
+                                (<{ valueX?: number }>cols[parseInt(j.toString(), 10)]).valueX - this.parent.translateX) + 'px';
+                        } else if (leftrightCells[parseInt(j.toString(), 10)].classList.contains('e-rightfreeze')) {
+                            const idx: number = parseInt(leftrightCells[parseInt(j.toString(), 10)].getAttribute('data-colindex'), 10);
+                            leftrightCells[parseInt(j.toString(), 10)].style.right = (
+                                ((<{ valueX?: number }>cols[parseInt(idx.toString(), 10)]).valueX + this.parent.translateX)) + 'px';
+                        } else {
+                            leftrightCells[parseInt(j.toString(), 10)].style.left = (this.parent.leftrightColumnWidth('left') -
+                                this.parent.translateX) + 'px';
+                        leftrightCells[parseInt(j.toString(), 10)].style.right = (this.parent.leftrightColumnWidth('right') +
+                                this.parent.translateX) + 'px';
+                        }
                     }
+
                 }
             }
         }
@@ -499,7 +489,6 @@ export class NormalEdit {
                 if (gObj.editSettings.mode !== 'Dialog') {
                     gObj.selectRow(this.rowIndex);
                 }
-                gObj.editModule.resetMovableContentValidation();
                 gObj.trigger(events.actionComplete, closeEditArgs);
             });
     }
@@ -522,7 +511,7 @@ export class NormalEdit {
         const rowData: { virtualData: Object, isScroll: boolean } = { virtualData: {}, isScroll: false };
         this.parent.notify(events.getVirtualData, rowData);
         for (let i: number = 0; i < cols.length; i++) {
-            if (rowData.isScroll && cols[parseInt(i.toString(), 10)].getFreezeTableName() !== 'movable') {
+            if (rowData.isScroll) {
                 continue;
             }
             if (cols[parseInt(i.toString(), 10)].field) {
@@ -537,7 +526,7 @@ export class NormalEdit {
             requestType: 'add', data: this.previousData, type: events.actionBegin, index: index,
             rowData: this.previousData, target: undefined, isScroll: rowData.isScroll
         };
-        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+        if ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization || this.parent.infiniteScrollSettings.enableCache)
             && Object.keys(rowData.virtualData).length) {
             args.data = args.rowData = rowData.virtualData;
         }
@@ -599,7 +588,7 @@ export class NormalEdit {
             (<{ data?: Object[] }>args).data[0] =
             this.parent.getRowObjectFromUID(this.parent.getRowByIndex(this.parent.commandDelIndex).getAttribute('data-uid')).data;
         }
-        if (this.parent.enableVirtualization && (<{ data?: Object[] }>args).data.length > 1) {
+        if ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && (<{ data?: Object[] }>args).data.length > 1) {
             const uid: string = this.parent.getSelectedRows()[0].getAttribute('data-uid');
             (<{ data?: Object[] }>args).data = [this.parent.getRowObjectFromUID(uid).data];
         }

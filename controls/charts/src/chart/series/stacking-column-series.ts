@@ -7,6 +7,7 @@ import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
+import { CylinderSeriesOption } from './column-series';
 
 /**
  * `StackingColumnSeries` module used to render the stacking column series.
@@ -19,10 +20,10 @@ export class StackingColumnSeries extends ColumnBase {
      * @returns {void}
      * @private
      */
+    public rect: Rect;
     public render(series: Series): void {
         series.isRectSeries = true;
         const sideBySideInfo: DoubleRange = this.getSideBySideInfo(series);
-        let rect: Rect;
         let argsData: IPointRenderEventArgs;
         const stackedValue: StackValues = series.stackedValues;
         const visiblePoints: Points[] = getVisiblePoints(series);
@@ -30,15 +31,23 @@ export class StackingColumnSeries extends ColumnBase {
             point.symbolLocations = [];
             point.regions = [];
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
-                rect = this.getRectangle(point.xValue + sideBySideInfo.start, stackedValue.endValues[point.index],
-                                         point.xValue + sideBySideInfo.end, stackedValue.startValues[point.index], series);
-                rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : rect.width;
-                rect.x = series.columnWidthInPixel ? rect.x - (series.columnWidthInPixel / 2) : rect.x;
+                this.rect = this.getRectangle(point.xValue + sideBySideInfo.start, stackedValue.endValues[point.index],
+                                              point.xValue + sideBySideInfo.end, stackedValue.startValues[point.index], series);
+                this.rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.width;
+                this.rect.x = series.columnWidthInPixel ? this.rect.x - (series.columnWidthInPixel / 2) : this.rect.x;
                 argsData = this.triggerEvent(series, point, series.interior,
                                              { width: series.border.width, color: series.border.color });
                 if (!argsData.cancel) {
-                    this.drawRectangle(series, point, rect, argsData);
-                    this.updateSymbolLocation(point, rect, series);
+                    this.drawRectangle(series, point, this.rect, argsData);
+                    this.updateSymbolLocation(point, this.rect, series);
+                    if (series.columnFacet === 'Cylinder') {
+                        const cylinderSeriesOption: CylinderSeriesOption = {
+                            'isColumn': true,
+                            'stacking': series.type === 'StackingColumn100',
+                            'isLastSeries': true
+                        };
+                        this.drawCylinder(this.options, this.element, cylinderSeriesOption, this.rect, series);
+                    }
                 }
             }
         }

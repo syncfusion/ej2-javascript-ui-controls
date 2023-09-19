@@ -175,12 +175,10 @@ export class NotesDialog {
             if (!isNullOrUndefined(this.notesList)) {
                 if (this.documentHelper.selection.isinFootnote) {
                     format.footNoteNumberFormat = renderFormat;
-                    format.footNoteNumberFormat = renderFormat;
                     format.initialFootNoteNumber = startValue;
                     this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, format);
 
                 } else {
-                    format.endnoteNumberFormat = renderFormat;
                     format.endnoteNumberFormat = renderFormat;
                     format.initialEndNoteNumber = startValue;
                     this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, format);

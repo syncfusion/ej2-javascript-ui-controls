@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { createElement, L10n, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
-import { CommentElementBox, CommentCharacterElementBox, ElementBox } from '../../implementation/viewer/page';
+import { CommentElementBox, CommentCharacterElementBox, ElementBox, CommentEditInfo } from '../../implementation/viewer/page';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Toolbar, TabItemModel, Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
@@ -469,7 +469,9 @@ export class CommentReviewPane {
             if (this.owner.editorHistory) {
                 this.owner.editorHistory.undo();
                 this.owner.editorHistory.redoStack.pop();
+                this.owner.editor.isSkipOperationsBuild = true;
                 this.owner.editor.deleteCommentInternal(comment);
+                this.owner.editor.isSkipOperationsBuild = false;
             } else if (this.owner.editor) {
                 this.owner.editor.deleteCommentInternal(comment);
             }
@@ -1084,7 +1086,10 @@ export class CommentView {
         this.cancelReply();
         this.updateReplyTextAreaHeight();
         this.owner.editorModule.replyComment(this.comment, replyText);
-        this.owner.fireContentChange();
+        if (!this.owner.editor.isSkipOperationsBuild) {
+            this.owner.fireContentChange();
+        }
+        this.owner.editor.isSkipOperationsBuild = false;
     }
 
     public cancelReply(): void {
@@ -1193,6 +1198,16 @@ export class CommentView {
             return;
         }
         const updatedText: string = SanitizeHtmlHelper.sanitize(this.textArea.value);
+        if (this.owner.editor && this.comment.text != '' && (this.comment.text != updatedText)) {
+            this.owner.editor.initHistory('EditComment');
+            let modifiedObject: CommentEditInfo = {
+                commentId: this.comment.commentId,
+                text: this.comment.text
+            };
+            this.owner.editorHistory.currentBaseHistoryInfo.modifiedProperties.push(modifiedObject);
+            this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(this.comment);
+            this.owner.editorHistory.updateHistory();
+        }
         this.commentText.innerText = updatedText;
         this.comment.text = updatedText;
         this.showCommentView();

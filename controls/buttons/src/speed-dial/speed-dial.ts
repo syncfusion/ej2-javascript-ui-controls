@@ -1,4 +1,4 @@
-import { BaseEventArgs, EmitType, Event, ChildProperty, Collection, Complex, Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, getUniqueID, EventHandler, isRippleEnabled, removeClass, addClass, attributes } from '@syncfusion/ej2-base';
+import { BaseEventArgs, EmitType, Event, ChildProperty, Collection, Complex, Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, getUniqueID, EventHandler, isRippleEnabled, removeClass, addClass, attributes, animationMode } from '@syncfusion/ej2-base';
 import { select, extend, deleteObject, KeyboardEvents, append, rippleEffect, remove, closest, selectAll, KeyboardEventArgs, isNullOrUndefined, compile, formatUnit, Animation, AnimationModel, Effect as baseEffect } from '@syncfusion/ej2-base';
 import { SpeedDialItemModel, SpeedDialModel, RadialSettingsModel, SpeedDialAnimationSettingsModel } from './speed-dial-model';
 import { Fab, FabPosition } from './../floating-action-button/index';
@@ -472,6 +472,9 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * {% codeBlock src='speeddial/itemTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property('')
@@ -546,6 +549,9 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * Defines a template content for popup of SpeedDial.
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     @Property('')
@@ -1414,7 +1420,13 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         const eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e, cancel: false };
         this.trigger('beforeOpen', eventArgs, (args: SpeedDialBeforeOpenCloseEventArgs) => {
             if (args.cancel) { return; }
-            if (this.animation.effect !== 'None') {
+            if (this.animation.effect !== 'None' || (animationMode === 'Enable' && this.animation.effect === 'None')) {
+                if (animationMode === 'Enable' && this.animation.effect === 'None') {
+                    this.animation.effect = 'Fade';
+                }
+                if (animationMode === 'Enable' && this.animation.duration === 0) {
+                    this.animation.duration = 400;
+                }
                 const openAnimation: AnimationModel = {
                     name: (this.animation.effect + 'In') as baseEffect,
                     timingFunction: 'easeIn'

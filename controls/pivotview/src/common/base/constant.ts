@@ -91,9 +91,9 @@ export const chartTooltipRender: string = 'chartTooltipRender';
 /** @hidden */
 export const chartLegendClick: string = 'chartLegendClick';
 /** @hidden */
-export const multiLevelLabelRender: string = 'multiLevelLabelRender';
-/** @hidden */
 export const chartLoaded: string = 'chartLoaded';
+/** @hidden */
+export const multiLevelLabelRender: string = 'multiLevelLabelRender';
 /** @hidden */
 export const chartLoad: string = 'chartLoad';
 /** @hidden */

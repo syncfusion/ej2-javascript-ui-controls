@@ -7,11 +7,12 @@ import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, Striket
 import { ToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // eslint-disable-next-line max-len
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
-import { IAnnotationPoint, IPoint, PdfViewerBase } from './index';
+import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
+import { PdfRenderer } from './index';
 // eslint-disable-next-line max-len
 import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat } from './base/types';
 import { Annotation } from './index';
@@ -4522,6 +4523,13 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
     public name: string;
 
     /**
+     * Get or set the value of the check box.
+     */
+    @Property('')
+    public value: string;
+
+
+    /**
      * Specifies whether the check box is in checked state or not.
      */
     @Property(false)
@@ -4620,6 +4628,12 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      */
     @Property('')
     public name: string;
+
+    /**
+     * Get or set the value of the form field element.
+     */
+    @Property('')
+    public value: string;
 
     /**
      * Specifies whether the radio button is in checked state or not.
@@ -5005,6 +5019,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(0)
     public pageCount: number;
+
+    /**
+     * gets the printScaleRatio value of the document loaded in the PdfViewer control.
+     *
+     * @private
+     * @default 1
+     */
+    @Property(1)
+    public printScaleRatio: number;
+ 
+    /**
+      * Get File byte array of the PDF document.
+      * 
+      * @private
+      */
+    public fileByteArray: Uint8Array;
 
     /**
      * Checks whether the PDF document is edited.
@@ -6174,7 +6204,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * {% codeBlock src='pdfviewer/checkBoxFieldSettings/index.md' %}{% endcodeBlock %}
      * 
      */
-    @Property({ name: '', isChecked: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black' })
+    @Property({ name: '', value: '', isChecked: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black' })
     public checkBoxFieldSettings: CheckBoxFieldSettingsModel;
 
     /**
@@ -6183,7 +6213,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * {% codeBlock src='pdfviewer/radioButtonFieldSettings/index.md' %}{% endcodeBlock %}
      * 
      */
-    @Property({ name: '', isSelected: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black' })
+    @Property({ name: '', value: '', isSelected: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black' })
     public radioButtonFieldSettings: RadioButtonFieldSettingsModel;
 
     /**
@@ -6307,6 +6337,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public accessibilityTagsModule: AccessibilityTags;
+    /**
+     * @private
+     */
+    public pdfRendererModule: PdfRenderer;
     private isTextSelectionStarted: boolean = false;
     /**
      * @private
@@ -6430,6 +6464,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public get accessibilityTags(): AccessibilityTags {
         return this.accessibilityTagsModule;
+    }
+
+    /**
+     * Gets the Pdf renderer object of the pdf renderer.
+     *
+     * @asptype PdfRenderer
+     * @blazorType PdfRenderer
+     * @returns { PdfRenderer }
+     * @private
+     */
+    public get pdfRenderer(): PdfRenderer {
+        return this.pdfRendererModule;
     }
 
     /**
@@ -7082,6 +7128,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         super(options, <HTMLElement | string>element);
         this.viewerBase = new PdfViewerBase(this);
         this.drawing = new Drawing(this);
+        this.pdfRendererModule = new PdfRenderer(this,this.viewerBase);
     }
 
     protected preRender(): void {
@@ -7100,8 +7147,60 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     protected render(): void {
+        if (isNullOrUndefined(this.serviceUrl) || this.serviceUrl === '') {
+            this.viewerBase.clientSideRendering = true;
+        }
+        if (this.viewerBase.clientSideRendering) {
+            let proxy: any = this;
+            let workerBob = new Blob([PdfiumRunner.toString().replace(/^[^{]*{([\s\S]*)}$/m, '$1')], { type: 'text/javascript' });
+            let workerBlobUrl = URL.createObjectURL(workerBob);
+            (window as any)['pdfViewerRunner_' + this.element.id] = this.viewerBase.pdfViewerRunner = new Worker(workerBlobUrl);
+
+            this.viewerBase.pdfViewerRunner.postMessage({
+                url: this.getScriptPathForPlatform(),
+                message: 'initialLoading'
+            });
+            this.viewerBase.pdfViewerRunner.onmessage = function (event) {
+                if (event.data.message === 'loaded') {
+                    proxy.renderComponent();
+                }
+            }
+        } else {
+            this.renderComponent();
+        }
+    }
+
+    private getScriptPathForPlatform(): string {
+        const { protocol, host, pathname } = document.location;
+        // Remove trailing slashes from the pathname using a regular expression
+        const trimmedPathname = pathname.replace(/\/+$/, '');
+        const baseUrl = `${protocol}//${host}${trimmedPathname}`;
+        if ((this as any).isAngular || ((this as any).parent && (this as any).parent.isAngular)) {
+            return baseUrl + '/assets/ej2-pdfviewer-lib';
+        } else if ((this as any).isReact || ((this as any).parent && (this as any).parent.isReact)) 
+        {
+            return baseUrl + '/ej2-pdfviewer-lib';
+        }
+        // eslint-disable-next-line max-len
+        else if (((this as any).isVue || ((this as any).parent && (this as any).parent.isVue)) || ((this as any).isVue3 || ((this as any).parent && (this as any).parent.isVue3))) {
+            return baseUrl + '/public/js/ej2-pdfviewer-lib';
+        }
+        else {
+            (window as any).getRunningScript = (): (() => string) => {
+                return (): string => {
+                    return new Error().stack.match(/(?:http[s]?:\/\/(?:[^\/\s]+\/))(.*\.js)/)[0];
+                }
+            }
+            let scriptLinkURL: string = (window as any).getRunningScript()();
+            let splitURL: any = scriptLinkURL.split('/');
+            let path: string = scriptLinkURL.replace("/" + splitURL[splitURL.length - 1], "");
+            return path + "/ej2-pdfviewer-lib";
+        }
+    }
+
+    private renderComponent(): void {
         this.viewerBase.initializeComponent();
-        if(!this.enableFormFields){
+        if (!this.enableFormFields) {
             this.formFieldsModule = new FormFields(this, this.viewerBase);
             this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
         }
@@ -7144,129 +7243,134 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         const properties: string[] = Object.keys(newProp);
         for (const prop of properties) {
             switch (prop) {
-            case 'locale':
-                if (this.viewerBase.loadedData) {
-                    // eslint-disable-next-line
-                    let data: any = null;
-                    if (this.formFieldsModule) {
-                        data = this.viewerBase.getItemFromSessionStorage('_formfields');
-                    }
-                    if (data) {
-                        this.viewerBase.formfieldvalue = JSON.parse(data);
+                case 'locale':
+                    if (this.viewerBase.loadedData) {
                         // eslint-disable-next-line
-                        let annotCollection: any[] = this.annotationCollection;
-                        const filename: string = this.viewerBase.jsonDocumentId;
-                        super.refresh();
-                        this.load(this.viewerBase.loadedData, null);
-                        this.addAnnotation(annotCollection);
-                        this.viewerBase.loadedData = null;
-                        this.downloadFileName = filename;
-                        this.fileName = filename;
+                        let data: any = null;
+                        if (this.formFieldsModule) {
+                            data = this.viewerBase.getItemFromSessionStorage('_formfields');
+                        }
+                        if (data) {
+                            this.viewerBase.formfieldvalue = JSON.parse(data);
+                            // eslint-disable-next-line
+                            let annotCollection: any[] = this.annotationCollection;
+                            const filename: string = this.viewerBase.jsonDocumentId;
+                            super.refresh();
+                            this.load(this.viewerBase.loadedData, null);
+                            this.addAnnotation(annotCollection);
+                            this.viewerBase.loadedData = null;
+                            this.downloadFileName = filename;
+                            this.fileName = filename;
+                        }
                     }
-                }
-                break;
-            case 'toolbarSettings':
-                if (!Browser.isDevice|| this.enableDesktopMode){
-                    this.toolbar.applyToolbarSettings();
-                    this.toolbar.annotationToolbarModule.applyAnnotationToolbarSettings();  
-                    this.toolbar.formDesignerToolbarModule.applyFormDesignerToolbarSettings();
-                }
-                else{
-                    this.toolbar.applyToolbarSettingsForMobile();
-                    this.toolbar.annotationToolbarModule.applyMobileAnnotationToolbarSettings();
-                }
-                break;
-            case 'enableToolbar':
-                this.notify('', { module: 'toolbar', enable: this.enableToolbar });
-                requireRefresh = true;
-                break;
-            case 'enableCommentPanel':
-                this.notify('', { module: 'annotation', enable: this.enableCommentPanel });
-                requireRefresh = true;
-                if (this.toolbarModule && this.toolbarModule.annotationToolbarModule) {
-                    this.toolbarModule.annotationToolbarModule.enableCommentPanelTool(this.enableCommentPanel);
-                }
-                if (!this.enableCommentPanel) {
-                    if (this.viewerBase.navigationPane) {
-                        this.viewerBase.navigationPane.closeCommentPanelContainer();
+                    break;
+                case 'toolbarSettings':
+                    if (!Browser.isDevice || this.enableDesktopMode) {
+                        this.toolbar.applyToolbarSettings();
+                        this.toolbar.annotationToolbarModule.applyAnnotationToolbarSettings();
+                        this.toolbar.formDesignerToolbarModule.applyFormDesignerToolbarSettings();
                     }
-                }
-                break;
-            case 'documentPath':
-                if (!isBlazor()) {
-                    this.load(newProp.documentPath, null);
-                }
-                else {
-                    this._dotnetInstance.invokeMethodAsync('LoadDocumentFromClient', newProp.documentPath);
-                }
-                break;
-            case 'interactionMode':
-                this.interactionMode = newProp.interactionMode;
-                if (newProp.interactionMode === 'Pan') {
-                    this.viewerBase.initiatePanning();
-                    if (this.toolbar) {
-                        this.toolbar.updateInteractionTools(false);
+                    else {
+                        this.toolbar.applyToolbarSettingsForMobile();
+                        this.toolbar.annotationToolbarModule.applyMobileAnnotationToolbarSettings();
                     }
-                } else if (newProp.interactionMode === 'TextSelection') {
-                    this.viewerBase.initiateTextSelectMode();
-                    if (this.toolbar) {
-                        this.toolbar.updateInteractionTools(true);
+                    break;
+                case 'enableToolbar':
+                    this.notify('', { module: 'toolbar', enable: this.enableToolbar });
+                    requireRefresh = true;
+                    break;
+                case 'enableCommentPanel':
+                    this.notify('', { module: 'annotation', enable: this.enableCommentPanel });
+                    requireRefresh = true;
+                    if (this.toolbarModule && this.toolbarModule.annotationToolbarModule) {
+                        this.toolbarModule.annotationToolbarModule.enableCommentPanelTool(this.enableCommentPanel);
                     }
-                }
-                break;
-            case 'height':
-                this.height = newProp.height;
-                this.viewerBase.updateHeight();
-                this.viewerBase.onWindowResize();
-                if (this.toolbar && this.toolbar.annotationToolbarModule) {
-                    if (this.toolbar.annotationToolbarModule.isToolbarHidden) {
-                        this.toolbar.annotationToolbarModule.adjustViewer(false);
+                    if (!this.enableCommentPanel) {
+                        if (this.viewerBase.navigationPane) {
+                            this.viewerBase.navigationPane.closeCommentPanelContainer();
+                        }
+                    }
+                    break;
+                case 'documentPath':
+                    if (!this.viewerBase.isSkipDocumentPath){
+                        if (!isBlazor()) {
+                            this.load(newProp.documentPath, null);
+                        }
+                        else {
+                            this._dotnetInstance.invokeMethodAsync('LoadDocumentFromClient', newProp.documentPath);
+                        }
+                    }
+                    else {
+                        this.viewerBase.isSkipDocumentPath = false;
+                    }
+                    break;
+                case 'interactionMode':
+                    this.interactionMode = newProp.interactionMode;
+                    if (newProp.interactionMode === 'Pan') {
+                        this.viewerBase.initiatePanning();
+                        if (this.toolbar) {
+                            this.toolbar.updateInteractionTools(false);
+                        }
+                    } else if (newProp.interactionMode === 'TextSelection') {
+                        this.viewerBase.initiateTextSelectMode();
+                        if (this.toolbar) {
+                            this.toolbar.updateInteractionTools(true);
+                        }
+                    }
+                    break;
+                case 'height':
+                    this.height = newProp.height;
+                    this.viewerBase.updateHeight();
+                    this.viewerBase.onWindowResize();
+                    if (this.toolbar && this.toolbar.annotationToolbarModule) {
+                        if (this.toolbar.annotationToolbarModule.isToolbarHidden) {
+                            this.toolbar.annotationToolbarModule.adjustViewer(false);
+                        } else {
+                            this.toolbar.annotationToolbarModule.adjustViewer(true);
+                        }
+                    }
+                    break;
+                case 'width':
+                    this.width = newProp.width;
+                    this.viewerBase.updateWidth();
+                    this.viewerBase.onWindowResize();
+                    break;
+                case 'customStamp':
+                    this.renderCustomerStamp(this.customStamp[0]);
+                    break;
+                case 'customStampSettings':
+                    if (newProp.customStampSettings.customStamps) {
+                        this.renderCustomerStamp(this.customStampSettings.customStamps[0]);
+                    }
+                    break;
+                case 'enableFormFields':
+                    if (this.enableFormFields && this.formFieldsModule) {
+                        for (let m: number = 0; m < this.pageCount; m++) {
+                            this.formFieldsModule.renderFormFields(m, false);
+                        }
                     } else {
-                        this.toolbar.annotationToolbarModule.adjustViewer(true);
+                        this.formFieldsModule = new FormFields(this, this.viewerBase);
+                        this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
                     }
-                }
-                break;
-            case 'width':
-                this.width = newProp.width;
-                this.viewerBase.updateWidth();
-                this.viewerBase.onWindowResize();
-                break;
-            case 'customStamp':
-                this.renderCustomerStamp(this.customStamp[0]);
-                break;
-            case 'customStampSettings':
-                if (newProp.customStampSettings.customStamps) {
-                    this.renderCustomerStamp(this.customStampSettings.customStamps[0]);
-                }
-                break;
-            case 'enableFormFields':
-                if (this.enableFormFields && this.formFieldsModule) {
-                    for (let m: number = 0; m < this.pageCount; m++) {
-                        this.formFieldsModule.renderFormFields(m, false);
+                    break;
+                case 'designerMode':
+                    if (this.designerMode) {
+                        this.formDesignerModule.setMode('designer');
+                    } else {
+                        this.formDesignerModule.setMode('edit');
                     }
-                } else {
-                    this.formFieldsModule = new FormFields(this, this.viewerBase);
-                    this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
-                }
-                break;
-            case 'designerMode':
-                if(this.designerMode) {
-                    this.formDesignerModule.setMode('designer');
-                } else {
-                    this.formDesignerModule.setMode('edit');
-                }
-                break;
-            case 'highlightSettings':
-            case 'underlineSettings':
-            case 'strikethroughSettings':
-                if (this.annotationModule && this.annotationModule.textMarkupAnnotationModule) {
-                    this.annotationModule.textMarkupAnnotationModule.updateTextMarkupSettings(prop);
-                }
-                break;
-            case 'signatureFieldSettings':
-            case 'initialFieldSettings':
+                    break;
+                case 'highlightSettings':
+                case 'underlineSettings':
+                case 'strikethroughSettings':
+                    if (this.annotationModule && this.annotationModule.textMarkupAnnotationModule) {
+                        this.annotationModule.textMarkupAnnotationModule.updateTextMarkupSettings(prop);
+                    }
+                    break;
+                case 'signatureFieldSettings':
+                case 'initialFieldSettings':
                     if (this.formDesignerModule) {
-                        let isInitialField : boolean =(prop === "initialFieldSettings");
+                        let isInitialField: boolean = (prop === "initialFieldSettings");
                         this.formDesignerModule.updateSignatureSettings(newProp[prop], isInitialField);
                     }
                     break;
@@ -7327,6 +7431,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                             }
                             this.toolbarModule.annotationToolbarModule.resetToolbar();
                         }
+                    }
+                    break;
+                case 'serviceUrl':
+                    if (isNullOrUndefined(newProp.serviceUrl) || newProp.serviceUrl === '') {
+                        this.viewerBase.clientSideRendering = true;
+                    }
+                    else {
+                        this.viewerBase.clientSideRendering = false;
                     }
                     break;
             }
@@ -7411,6 +7523,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         modules.push({
             member: 'AccessibilityTags', args: [this, this.viewerBase]
+        });
+        modules.push({
+            member: 'PdfRenderer', args: [this, this.viewerBase]
         });
         
         return modules;
@@ -7831,6 +7946,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         target.checked = fieldValue.isChecked;
                     }
                 }
+                if(target.value != fieldValue.value){
+                    target.value = fieldValue.value;
+                }
             } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
                 if (this.formDesignerModule) {
                     isformDesignerModuleListBox = true;
@@ -7886,7 +8004,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     let currentData: any = FormFieldsData[m];
                     let fieldName: string;
                     if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
-                        fieldName = currentData.GroupName;
+                        fieldName = currentData.FieldName;
                     } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
                         fieldName = currentData.Text;
                     } else {
@@ -7909,6 +8027,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         }
                         else if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
                             fieldValue.isSelected || fieldValue.isChecked ? currentData.Selected = true : currentData.Selected = false;
+                            currentData.Value = fieldValue.value;
                         }
                         else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
                             currentData.SelectedValue = fieldValue.value;
@@ -8080,7 +8199,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.viewerBase.blazorUIAdaptor.resetToolbar();
         }
-        this.magnificationModule.zoomTo(100);    
+        if (this.fileByteArray) {
+            this.fileByteArray = null;
+        }
+        if (this.magnificationModule) {
+            this.magnificationModule.zoomTo(100);
+        }
+        if (this.viewerBase.hyperlinkAndLinkAnnotation) {
+            this.viewerBase.hyperlinkAndLinkAnnotation = {};
+        }
+        if (this.viewerBase.pageTextDetails) {
+            this.viewerBase.pageTextDetails = {};
+        }   
     }
 
     /**

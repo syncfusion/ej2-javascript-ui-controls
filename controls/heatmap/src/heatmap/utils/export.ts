@@ -44,6 +44,7 @@ export class ExportUtils {
         const height: number = controlValue.height;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let element: any = this.control.svgObject;
+        let url: string;
         const isCanvas: boolean = (this.control as HeatMap). enableCanvasRendering;
         let image: string;
         if (!isCanvas) {
@@ -60,13 +61,26 @@ export class ExportUtils {
         const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
             controlValue.svg.outerHTML +
             '</svg>';
-        const url: string = window.URL.createObjectURL(
-            new Blob(
-                type === 'SVG' ? [svgData] :
-                    [(new XMLSerializer()).serializeToString(controlValue.svg)],
-                { type: 'image/svg+xml' }
-            )
-        );
+        if (!isCanvas) {
+            const exportElement: HTMLElement = this.control.svgObject.cloneNode(true) as HTMLElement;
+            const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
+            const backgroundColor: string = backgroundElement.getAttribute('fill');
+            if ((this.control.theme === 'Tailwind' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Fluent' || this.control.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                backgroundElement.setAttribute('fill', 'rgba(255,255,255, 1)');
+            }
+            else if ((this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5Dark' || this.control.theme === 'FluentDark' || this.control.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                backgroundElement.setAttribute('fill', 'rgba(0, 0, 0, 1)');
+            }
+            url = window.URL.createObjectURL(
+                new Blob(
+                    type === 'SVG' ? [svgData] :
+                        [(new XMLSerializer()).serializeToString(exportElement)],
+                    { type: 'image/svg+xml' }
+                )
+            );
+        } else {
+            url = element.toDataURL('image/png');
+        }
         if (type === 'SVG') {
             if (Browser.info.name === 'msie') {
                 const svg: Blob = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
@@ -88,7 +102,15 @@ export class ExportUtils {
         } else {
             const image: HTMLImageElement = new Image();
             const ctx: CanvasRenderingContext2D = element.getContext('2d');
+            let backgroundColor: string = ctx.shadowColor;
             image.onload = (() => {
+                if ((this.control.theme === 'Tailwind' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Fluent' || this.control.theme === 'Material3') && (backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent')) {
+                    ctx.fillStyle = 'rgba(255,255,255, 1)';
+                }
+                else if ((this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5Dark' || this.control.theme === 'FluentDark' || this.control.theme === 'Material3Dark') && (backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent')) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+                }
+                ctx.fillRect(0, 0, element.width, element.height);
                 ctx.drawImage(image, 0, 0);
                 window.URL.revokeObjectURL(url);
                 if (type === 'PDF') {
@@ -106,7 +128,6 @@ export class ExportUtils {
                 }
             });
             image.src = url;
-
         }
         if (!isCanvas) {
             const id : HTMLElement = document.getElementById(this.control.element.id);

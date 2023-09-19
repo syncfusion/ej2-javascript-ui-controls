@@ -1,8 +1,7 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, Ajax, formatUnit } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
-    IVideoCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, AfterMediaDeleteEventArgs, ImageUploadingEventArgs
-} from '../base/interface';
+    IVideoCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, AfterMediaDeleteEventArgs } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
@@ -1155,6 +1154,9 @@ export class Video {
             if (this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
                 this.quickToolObj.inlineQTBar.hidePopup();
             }
+            if (this.quickToolObj.textQTBar && this.parent.element.ownerDocument.body.contains(this.quickToolObj.textQTBar.element)) {
+                this.quickToolObj.textQTBar.hidePopup();
+            }
         }
     }
 
@@ -1261,10 +1263,8 @@ export class Video {
         });
         uploadParentEle.appendChild(uploadEle);
         let fileName: string;
-        let rawFile: FileInfo[];
         let selectArgs: SelectedEventArgs;
         let filesData: FileInfo[];
-        let beforeUploadArgs: ImageUploadingEventArgs;
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertVideoSettings.saveUrl, removeUrl: this.parent.insertVideoSettings.removeUrl },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
@@ -1272,13 +1272,8 @@ export class Video {
             selected: (e: SelectedEventArgs) => {
                 proxy.isVideoUploaded = true;
                 selectArgs = e;
+                // eslint-disable-next-line
                 filesData = e.filesData;
-                if (this.parent.isServerRendered) {
-                    selectArgs = JSON.parse(JSON.stringify(e));
-                    e.cancel = true;
-                    rawFile = e.filesData;
-                    selectArgs.filesData = rawFile;
-                }
                 this.parent.trigger(events.fileSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     if (!selectArgs.cancel) {
                         this.checkExtension(selectArgs.filesData[0]); fileName = selectArgs.filesData[0].name;
@@ -1301,34 +1296,11 @@ export class Video {
                             });
                             reader.readAsDataURL(selectArgs.filesData[0].rawFile as Blob);
                         }
-                        if (this.parent.isServerRendered) {
-                            /* eslint-disable */
-                            (this.uploadObj as any)._internalRenderSelect(selectArgs, rawFile);
-                            /* eslint-enable */
-                        }
                     }
                 });
             },
             beforeUpload: (args: BeforeUploadEventArgs) => {
-                if (this.parent.isServerRendered) {
-                    beforeUploadArgs = JSON.parse(JSON.stringify(args));
-                    beforeUploadArgs.filesData = filesData;
-                    args.cancel = true;
-                    this.parent.trigger(events.fileUploading, beforeUploadArgs, (beforeUploadArgs: ImageUploadingEventArgs) => {
-                        if (beforeUploadArgs.cancel) {
-                            return;
-                        }
-                        /* eslint-disable */
-                        (this.uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
-                        beforeUploadArgs.currentRequest : (this.uploadObj as any).currentRequestHeader;
-                       (this.uploadObj as any).customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
-                       beforeUploadArgs.customFormData : (this.uploadObj as any).customFormDatas;
-                        (this.uploadObj as any).uploadFiles(rawFile, null);
-                        /* eslint-enable */
-                    });
-                } else {
-                    this.parent.trigger(events.beforeFileUpload, args);
-                }
+                this.parent.trigger(events.beforeFileUpload, args);
             },
             uploading: (e: UploadingEventArgs) => {
                 if (!this.parent.isServerRendered) {

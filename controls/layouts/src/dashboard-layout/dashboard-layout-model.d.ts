@@ -23,7 +23,7 @@ export interface PanelModel {
 
     /**
      * Defines the template value that should be displayed as the panel's header.
-     * 
+     *
      * @aspType string
      */
     header?: string | HTMLElement | Function;

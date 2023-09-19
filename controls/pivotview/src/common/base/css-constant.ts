@@ -499,17 +499,15 @@ export const FORMAT_ROUND_BUTTON: string = 'e-small e-round';
 /** @hidden */
 export const VIRTUALTRACK_DIV: string = 'e-virtualtrack';
 /** @hidden */
-export const MOVABLECONTENT_DIV: string = 'e-movablecontent';
+export const VIRTUALTABLE_DIV: string = 'e-movablescrolldiv';
+/** @hidden */
+export const CONTENT_VIRTUALTABLE_DIV: string = 'e-content-virtualtable';
+/** @hidden */
+export const VIRTUALSCROLL_DIV: string = 'e-movablescroll';
 /** @hidden */
 export const MOVABLESCROLL_DIV: string = 'e-movablescrollbar';
 /** @hidden */
-export const MOVABLECHILD_DIV: string = 'e-movablechild';
-/** @hidden */
-export const FROZENCONTENT_DIV: string = 'e-frozencontent';
-/** @hidden */
-export const MOVABLEHEADER_DIV: string = 'e-movableheader';
-/** @hidden */
-export const FROZENHEADER_DIV: string = 'e-frozenheader';
+export const MOVABLEHEADER_DIV: string = 'e-headercontent';
 /** @hidden */
 export const DEFER_APPLY_BUTTON: string = 'e-defer-apply-button';
 /** @hidden */
@@ -826,3 +824,5 @@ export const PIVOT_CELL_CONTAINER: string = 'e-pivotcell-container';
 export const PIVOT_FILTER_TAB_CONTAINER: string = 'e-filter-tab-container';
 /** @hidden */
 export const PIVOT_FILTER_MEMBER_LIMIT: string = 'e-node-limit';
+/** @hidden */
+export const FREEZED_CELL: string = 'e-leftfreeze';

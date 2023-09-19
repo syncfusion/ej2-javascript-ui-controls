@@ -61,8 +61,11 @@ export class StockEvents extends BaseTooltip {
                     stockEventElement = sChart.renderer.createGroup(
                         { id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i }
                     );
-                    const stockEventDate: number = this.dateParse(stockEvent.date).getTime();
-                    if (withIn(stockEventDate , series.xAxis.visibleRange) && (stockEventDate >= series.xMin && stockEventDate <= series.xMax)) {
+                    let stockEventDate: number = this.dateParse(stockEvent.date).getTime();
+                    stockEventDate = this.stockChart.isDateTimeCategory ? series.xAxis.labels.indexOf(stockEventDate.toString()) :
+                    stockEventDate;
+                    if (withIn(stockEventDate , series.xAxis.visibleRange) && (stockEventDate >= series.xMin &&
+                        stockEventDate <= series.xMax)) {
                         if (stockEvent.seriesIndexes.length > 0) {
                             for (let j: number = 0; j < stockEvent.seriesIndexes.length; j++) {
                                 if (stockEvent.seriesIndexes[j as number] === series.index) {
@@ -93,7 +96,8 @@ export class StockEvents extends BaseTooltip {
     }
 
     private findClosePoint(series: Series, sEvent: StockEventsSettingsModel): ChartLocation {
-        const stockEventDate: number = this.dateParse(sEvent.date).getTime();
+        let stockEventDate: number = this.dateParse(sEvent.date).getTime();
+        stockEventDate = this.stockChart.isDateTimeCategory ? series.xAxis.labels.indexOf(stockEventDate.toString()) : stockEventDate;
         const closeIndex: number = this.getClosest(series, stockEventDate );
         let pointData: PointData;
         let point: Points;

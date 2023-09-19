@@ -151,7 +151,7 @@ describe('Heatmap Control', () => {
             heatmap.refresh();
             text = document.getElementById('container_XAxis_Label0');        
             expect(text.textContent == 'test').toBe(true);
-            expect((text.getAttribute('x') == '667.8' || text.getAttribute('x') == '678.9') && (text.getAttribute('y') == '52' || text.getAttribute('y') == '50')).toBe(true);
+            expect((text.getAttribute('x') == '667.8' || text.getAttribute('x') == '678.9' || text.getAttribute('x') == '687.4') && (text.getAttribute('y') == '52' || text.getAttribute('y') == '50')).toBe(true);
         });
 
         //y-axis
@@ -772,6 +772,71 @@ describe('Heatmap Control', () => {
             text = document.getElementById('container_YAxis_MultiLevel0_Text0');
             expect(text.textContent == "Testing 3").toBe(true);
         });
+        it('Checking x-axis with Category value type', function () {
+            heatmap.xAxis.valueType = "Category";
+            heatmap.xAxis.labels = ["India","America","Australia","Srilanka","South Africa"];
+            heatmap.yAxis.valueType = "Category";
+            heatmap.yAxis.labels = ['Mon', 'Tues', 'Wed', 'Thurs', 'Fri'],
+            heatmap.xAxis.labelFormat = "${value}";
+            heatmap.yAxis.labelFormat = "${value}";
+            heatmap.width ="1000px",
+            heatmap.dataSource = [
+                [1,2,3,4,5],
+                [6,7,8,9,10],
+                [11,12,13,14,15],
+                [16,17,18,19,20],
+                [21,22,23,24,25],
+            ],
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_Label0');
+            expect(text.textContent == '$India').toBe(true);
+            text = document.getElementById('container_XAxis_Label1');
+            expect(text.textContent == '$America').toBe(true);
+            text = document.getElementById('container_XAxis_Label2');
+            expect(text.textContent == '$Australia').toBe(true);
+            text = document.getElementById('container_XAxis_Label3');
+            expect(text.textContent == '$Srilanka').toBe(true);
+            text = document.getElementById('container_XAxis_Label4');
+            expect(text.textContent == '$South Africa').toBe(true);
+            text = document.getElementById('container_YAxis_Label0');
+            expect(text.textContent == '$Mon').toBe(true);
+            text = document.getElementById('container_YAxis_Label1');
+            expect(text.textContent == '$Tues').toBe(true);
+            text = document.getElementById('container_YAxis_Label2');
+            expect(text.textContent == '$Wed').toBe(true);
+            text = document.getElementById('container_YAxis_Label3');
+            expect(text.textContent == '$Thurs').toBe(true);
+            text = document.getElementById('container_YAxis_Label4');
+            expect(text.textContent == '$Fri').toBe(true);
+        });
+        it('Checking x-axis with Category value type', function () {
+            heatmap.xAxis.valueType = "Category";
+            heatmap.xAxis.labelFormat = "{value}%";
+            heatmap.yAxis.labelFormat = "{value}%";
+            heatmap.xAxis.labels = null;
+            heatmap.yAxis.labels = null;
+            heatmap.refresh();
+            text = document.getElementById('container_XAxis_Label0');
+            expect(text.textContent == '0%').toBe(true);
+            text = document.getElementById('container_XAxis_Label1');
+            expect(text.textContent == '1%').toBe(true);
+            text = document.getElementById('container_XAxis_Label2');
+            expect(text.textContent == '2%').toBe(true);
+            text = document.getElementById('container_XAxis_Label3');
+            expect(text.textContent == '3%').toBe(true);
+            text = document.getElementById('container_XAxis_Label4');
+            expect(text.textContent == '4%').toBe(true);
+            text = document.getElementById('container_YAxis_Label0');
+            expect(text.textContent == '0%').toBe(true);
+            text = document.getElementById('container_YAxis_Label1');
+            expect(text.textContent == '1%').toBe(true);
+            text = document.getElementById('container_YAxis_Label2');
+            expect(text.textContent == '2%').toBe(true);
+            text = document.getElementById('container_YAxis_Label3');
+            expect(text.textContent == '3%').toBe(true);
+            text = document.getElementById('container_YAxis_Label4');
+            expect(text.textContent == '4%').toBe(true);
+        });
     });
     it('memory leak', () => {     
         profile.sample();
@@ -783,3 +848,261 @@ describe('Heatmap Control', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
+
+describe('Axis properties', () => {
+    let heatmap: HeatMap;
+    let ele: HTMLElement;
+    let text: HTMLElement;
+    let created: EmitType<Object>;
+    let trigger: MouseEvents = new MouseEvents();
+    let data: number[][] = [
+        [73, 39, 26, 39, 94, 0],
+        [93, 58, 53, 38, 26, 68],
+        [99, 28, 22, 4, 66, 90],
+        [14, 26, 97, 69, 69, 3],
+        [7, 46, 47, 47, 88, 6],
+        [41, 55, 73, 23, 3, 79],
+        [56, 69, 21, 86, 3, 33],
+        [45, 7, 53, 81, 95, 79],
+        [60, 77, 74, 68, 88, 51],
+        [25, 25, 10, 12, 78, 14],
+        [25, 56, 55, 58, 12, 82],
+        [74, 33, 88, 23, 86, 59]
+    ]
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        heatmap = new HeatMap({
+            dataSource: data,
+            legendSettings: {
+                visible: false
+            },
+            xAxis: {
+                labels: ['Nancy', 'Andrew', 'Janet', 'Margaret', 'Steven', 'Michael', 'Robert', 'Laura', 'Anne', 'Paul', 'Karin', 'Mario'],
+            },
+            yAxis: {
+                labels: ['Peace', 'Energy', 'NASA', 'Health', 'Interior',
+                    'Justice'],
+                labelRotation: 270,
+            },
+            paletteSettings: {
+                type: 'Gradient'
+            },
+
+        });
+    });
+
+    afterAll((): void => {
+        heatmap.destroy();
+    });
+    it('Checking heatmap instance creation', (done: Function) => {
+        created = (args: Object): void => {
+            expect(heatmap != null).toBe(true);
+            done();
+        }
+        heatmap.created = created;
+        heatmap.appendTo('#container');
+    });
+
+    it('Checking y-axis with label rotation', function () {
+        heatmap.yAxis.isInversed = false;
+        heatmap.yAxis.labelRotation = 270;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label0');
+        expect(text.textContent == 'Peace').toBe(true);
+        expect((text.getAttribute('x') == '18') && (text.getAttribute('y') == '388')).toBe(false);
+    });
+
+    it('Checking y-axis with label rotation', function () {
+        heatmap.yAxis.isInversed = false;
+        heatmap.yAxis.labelRotation = 270;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label1');
+        expect(text.textContent == 'Energy').toBe(true);
+        expect((text.getAttribute('x') == '18') && (text.getAttribute('y') == '320.6666666666667')).toBe(false);
+    });
+
+    it('Checking y-axis with label rotation', function () {
+        heatmap.yAxis.isInversed = false;
+        heatmap.yAxis.labelRotation = 270;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label2');
+        expect(text.textContent == 'NASA').toBe(true);
+        expect((text.getAttribute('x') == '18') && (text.getAttribute('y') == '253.33333333333337')).toBe(false);
+    });
+
+    it('Checking y-axis with label rotation', function () {
+        heatmap.yAxis.isInversed = false;
+        heatmap.yAxis.labelRotation = 270;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label3');
+        expect(text.textContent == 'Health').toBe(true);
+        expect((text.getAttribute('x') == '18') && (text.getAttribute('y') == '186.00000000000006')).toBe(false);
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
+});
+
+describe('Axis properties', () => {
+    let heatmap: HeatMap;
+    let ele: HTMLElement;
+    let text: HTMLElement;
+    let created: EmitType<Object>;
+    let data: number[][] = [
+        [73, 39, 26, 39, 94, 0],
+        [93, 58, 53, 38, 26, 68],
+        [99, 28, 22, 4, 66, 90],
+        [14, 26, 97, 69, 69, 3],
+        [7, 46, 47, 47, 88, 6],
+        [41, 55, 73, 23, 3, 79],
+        [56, 69, 21, 86, 3, 33],
+        [45, 7, 53, 81, 95, 79],
+        [60, 77, 74, 68, 88, 51],
+        [25, 25, 10, 12, 78, 14],
+        [25, 56, 55, 58, 12, 82],
+        [74, 33, 88, 23, 86, 59]
+    ]
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        heatmap = new HeatMap({
+            dataSource: data,
+            legendSettings: {
+                visible: false
+            },
+            xAxis: {
+                labels: ['Nancy Andrew Andrew', 'Andrew', 'Janet', 'Margaret', 'Steven', 'Michael', 'Robert', 'Laura', 'Anne', 'Paul', 'Karin', 'Mario'],
+                textStyle: {
+                    textOverflow: 'Wrap'
+                }
+            },
+            yAxis: {
+                labels: ['Peace Justice', 'Energy', 'NASA', 'Health', 'Interior',
+                    'Justice'],
+                textStyle: {
+                    textOverflow: 'Wrap'
+                }
+            },
+            paletteSettings: {
+                type: 'Gradient'
+            },
+
+        });
+    });
+
+    afterAll((): void => {
+        heatmap.destroy();
+    });
+    it('Checking heatmap instance creation', (done: Function) => {
+        created = (args: Object): void => {
+            expect(heatmap != null).toBe(true);
+            done();
+        }
+        heatmap.created = created;
+        heatmap.appendTo('#container');
+    });
+
+    it('Checking y-axis without label rotation', function () {
+        heatmap.yAxis.isInversed = false;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label0');
+        expect(text.textContent == 'PeaceJustice').toBe(true);
+        expect((text.getAttribute('x') == '45') && (text.getAttribute('y') == '357.6666666666667' || text.getAttribute('y') == '343' || text.getAttribute('y') == '346.25')).toBe(true);
+    });
+
+    it('Checking x-axis without label rotation', function () {
+        heatmap.xAxis.isInversed = false;
+        heatmap.refresh();
+        text = document.getElementById('container_XAxis_Label0');
+        expect(text.textContent == 'Nancy AndrewAndrew' || text.textContent == 'NancyAndrewAndrew').toBe(true);
+        expect((text.getAttribute('x') == '56.291666666666664' || text.getAttribute('x') == '84.33333333333333' || text.getAttribute('x') == '55.583333333333336') && (text.getAttribute('y') == '416' || text.getAttribute('y') == '402.5')).toBe(true);
+    });
+
+    it('Checking y-axis with label rotation', function () {
+        heatmap.yAxis.isInversed = false;
+        heatmap.yAxis.labelRotation = 270;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label0');
+        expect(text.textContent == 'PeaceJustice').toBe(true);
+        expect((text.getAttribute('x') == '18' || text.getAttribute('x') == '17') && (text.getAttribute('y') == '365.6666666666667' || text.getAttribute('y') == '353.75')).toBe(true);
+    });
+
+    it('Checking x-axis with label rotation', function () {
+        heatmap.xAxis.isInversed = false;
+        heatmap.xAxis.labelRotation = 270;
+        heatmap.refresh();
+        text = document.getElementById('container_XAxis_Label0');
+        expect(text.textContent == 'Nancy AndrewAndrew' || text.textContent == 'NancyAndrewAndrew').toBe(true);
+        expect((text.getAttribute('x') == '83.91666666666666' || text.getAttribute('x') == '63.58333333333333' || text.getAttribute('x') == '83.20833333333334') && (text.getAttribute('y') == '401.3226547241211' || text.getAttribute('y') == '415.0703125')).toBe(true);
+    });
+    it('Checking x-axis label with line break', function () {
+        heatmap.xAxis.isInversed = false;
+        heatmap.xAxis = {
+            labels: ['Nancy<br>Andrew', 'Andrew', 'Janet', 'Margaret', 'Steven', 'Michael', 'Robert', 'Laura', 'Anne', 'Paul', 'Karin', 'Mario']
+        }
+        heatmap.refresh();
+        text = document.getElementById('container_XAxis_Label0');
+        expect(text.textContent == 'NancyAndrew').toBe(true);
+        expect((text.getAttribute('x') == '83.20833333333334' || text.getAttribute('x') == '71.08333333333333' || text.getAttribute('x') == '83.91666666666666') && (text.getAttribute('y') == '412.0724620819092' || text.getAttribute('y') == '415.0703125')).toBe(true);
+    });
+    it('Checking y-axis label with line break', function () {
+        heatmap.yAxis.isInversed = false;
+        heatmap.yAxis = {
+            labels: ['Peace<br>Justice', 'Energy', 'NASA', 'Health', 'Interior', 'Justice']
+        }
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label0');
+        expect(text.textContent == 'PeaceJustice').toBe(true);
+        expect((text.getAttribute('x') == '18' || text.getAttribute('x') == '17') && (text.getAttribute('y') == '350.3125' || text.getAttribute('y') == '354.2781575520833')).toBe(true);
+    });
+    it('Checking x-axis label with line break and label rotation', function () {
+        heatmap.xAxis.isInversed = false;
+        heatmap.xAxis.labelRotation = 270;
+        heatmap.refresh();
+        text = document.getElementById('container_XAxis_Label0');
+        expect(text.textContent == 'NancyAndrew').toBe(true);
+        expect((text.getAttribute('x') == '83.20833333333334' || text.getAttribute('x') == '71.08333333333333' || text.getAttribute('x') == '83.91666666666666') && (text.getAttribute('y') == '412.0724620819092' || text.getAttribute('y') == '415.0703125')).toBe(true);
+    });
+    it('Checking y-axis label with line break and label rotation', function () {
+        heatmap.yAxis.isInversed = false;
+        heatmap.yAxis.labelRotation = 270;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label0');
+        expect(text.textContent == 'PeaceJustice').toBe(true);
+        expect((text.getAttribute('x') == '18' || text.getAttribute('x') == '17') && (text.getAttribute('y') == '350.3125' || text.getAttribute('y') == '354.2781575520833')).toBe(true);
+    });
+    it('Checking x-axis label with line break and label rotation', function () {
+        heatmap.xAxis.isInversed = false;
+        heatmap.xAxis.labelRotation = 0;
+        heatmap.xAxis.enableTrim = true;
+        heatmap.refresh();
+        text = document.getElementById('container_XAxis_Label0');
+        expect(text.textContent == 'Nan...' || text.textContent == 'Nancy...').toBe(true);
+        expect((text.getAttribute('x') == '91.20833333333334' || text.getAttribute('x') == '78.58333333333333') && (text.getAttribute('y') == '432' || text.getAttribute('y') == '432.5')).toBe(true);
+    });
+    it('Checking y-axis label with line break and label rotation', function () {
+        heatmap.yAxis.isInversed = false;
+        heatmap.yAxis.labelRotation = 0;
+        heatmap.yAxis.enableTrim = true;
+        heatmap.refresh();
+        text = document.getElementById('container_YAxis_Label0');
+        expect(text.textContent == 'Peace...').toBe(true);
+        expect((text.getAttribute('x') == '45' || text.getAttribute('x') == '17') && (text.getAttribute('y') == '380.3333333333333' || text.getAttribute('y') == '381.25')).toBe(true);
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
+}); 

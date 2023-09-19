@@ -2,7 +2,7 @@ import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { Spreadsheet } from '../../../src/spreadsheet/index';
 import { L10n } from '@syncfusion/ej2-base';
-import { getCell, ProtectSettingsModel } from "../../../src/index";
+import { getCell, ProtectSettingsModel, setRow } from "../../../src/index";
 
 describe('Auto fill ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -1611,7 +1611,22 @@ describe('Auto fill ->', () => {
                 });
             });
         });
-    }); 
+        it('Date formatted cells which has the string values', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const sheet: any = spreadsheet.getActiveSheet();
+            setRow(sheet, 11, { cells: [{ value: '10/2/2020', format: 'mm-dd-yyyy' }] });
+            helper.invoke('autoFill', ['A13:A15', 'A12:A12']);
+            expect(sheet.rows[11].cells[0].value).toBe('44106');
+            expect(sheet.rows[11].cells[0].format).toBe('mm-dd-yyyy');
+            expect(sheet.rows[12].cells[0].value).toBe(44107);
+            expect(sheet.rows[12].cells[0].format).toBe('mm-dd-yyyy');
+            expect(sheet.rows[13].cells[0].value).toBe(44108);
+            expect(sheet.rows[13].cells[0].format).toBe('mm-dd-yyyy');
+            expect(sheet.rows[14].cells[0].value).toBe(44109);
+            expect(sheet.rows[14].cells[0].format).toBe('mm-dd-yyyy');
+            done();
+        });
+    });
 
     describe('CR Issues ->', () => {
         describe('EJ2-56558, EJ2-60197, EJ2-71594 ->', () => {

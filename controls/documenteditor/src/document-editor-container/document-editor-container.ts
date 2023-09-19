@@ -11,12 +11,12 @@ import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
 import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
-import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
+import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { ToolbarItem } from '../document-editor/base/types';
-import { CustomToolbarItemModel, TrackChangeEventArgs, FormFieldFillEventArgs, AutoResizeEventArgs } from '../document-editor/base/events-helper';
+import { CustomToolbarItemModel, TrackChangeEventArgs, FormFieldFillEventArgs, AutoResizeEventArgs, ContentChangeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent } from '../document-editor/base/constants';
+import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DialogUtility } from '@syncfusion/ej2-popups';
@@ -1028,6 +1028,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         // Internal event to trigger auto resize.
         this.documentEditor.on(internalAutoResize, this.triggerAutoResize, this)
         this.documentEditor.on(beforeAutoResize, this.onBeforeAutoResize, this);
+        this.documentEditor.on(trackChanges, this.onEnableTrackChanges, this);
+    }
+
+    private onEnableTrackChanges(model: DocumentEditorModel): void {
+        this.enableTrackChanges = model.enableTrackChanges;
     }
 
     private triggerAutoResize(args: AutoResizeEventArgs): void {
@@ -1161,14 +1166,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * @private
      */
-    public onContentChange(): void {
+    public onContentChange(args: ContentChangeEventArgs): void {
         if (this.toolbarModule) {
             this.toolbarModule.enableDisableUndoRedo();
         }
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        let eventArgs: ContainerContentChangeEventArgs = { source: this };
+        let eventArgs: ContainerContentChangeEventArgs = { source: this, operations: args.operations };
         this.trigger(contentChangeEvent, eventArgs);
     }
     /**

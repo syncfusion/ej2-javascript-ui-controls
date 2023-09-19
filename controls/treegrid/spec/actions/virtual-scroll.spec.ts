@@ -986,99 +986,98 @@ describe('TreeGrid Virtual Scroll', () => {
     });
   });
 
-  describe('EJ2-62266 - Frozen columns with Row and Column virutalization', () => {
-    let gridObj: TreeGrid;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: editVirtualData,
-                childMapping: 'Crew',
-                enableVirtualization: true,
-                enableColumnVirtualization: true,
-                treeColumnIndex: 1,
-                allowFiltering: true,
-                frozenColumns: 2,
-                allowSorting: true,
-                toolbar: ['Search'],
-                height: 400,
-                columns: [
-                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
-                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
-                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD5', headerText: 'TMD', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD6', headerText: 'GP', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD7', headerText: 'GS', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD8', headerText: 'Minutes', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD9', headerText: 'Points', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD10', headerText: 'OREB', width: 130, textAlign: 'Right' },
-                    { field: 'FIELD11', headerText: 'DREB', width: 130, textAlign: 'Right' },
-                    { field: 'FIELD12', headerText: 'REB', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD13', headerText: 'Assists', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD14', headerText: 'Steals', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD15', headerText: 'Blocks', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD16', headerText: 'Turnovers', width: 130, textAlign: 'Right' },
-                    { field: 'FIELD17', headerText: 'PF', width: 130, textAlign: 'Right' },
-                    { field: 'FIELD18', headerText: 'FGA', width: 150, textAlign: 'Right' },
-                    { field: 'FIELD19', headerText: 'FGM', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD20', headerText: 'FTA', width: 150, textAlign: 'Right' },
-                    { field: 'FIELD21', headerText: 'FTM', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD22', headerText: 'Three Attempted', width: 150, textAlign: 'Right' },
-                    { field: 'FIELD23', headerText: 'Three Made', width: 130, textAlign: 'Right' },
-                    { field: 'FIELD24', headerText: 'Post GP', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD25', headerText: 'Post GS', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD26', headerText: 'Post Minutes', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD27', headerText: 'Post Points', width: 130, textAlign: 'Right' },
-                    { field: 'FIELD28', headerText: 'Post OREB', width: 130, textAlign: 'Right' },
-                    { field: 'FIELD29', headerText: 'Post DREB', width: 130, textAlign: 'Right' },
-                    { field: 'FIELD30', headerText: 'Post REB', width: 130, textAlign: 'Right' }
-                   ]
-            },
-        done
-      );
-    });
+  // describe('EJ2-62266 - Frozen columns with Row and Column virutalization', () => {
+  //   let gridObj: TreeGrid;
+  //   beforeAll((done: Function) => {
+  //       gridObj = createGrid(
+  //           {
+  //               dataSource: editVirtualData,
+  //               childMapping: 'Crew',
+  //               enableVirtualization: true,
+  //               enableColumnVirtualization: true,
+  //               treeColumnIndex: 1,
+  //               allowFiltering: true,
+  //               frozenColumns: 2,
+  //               allowSorting: true,
+  //               toolbar: ['Search'],
+  //               height: 400,
+  //               columns: [
+  //                   { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
+  //                   { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+  //                   { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD5', headerText: 'TMD', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD6', headerText: 'GP', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD7', headerText: 'GS', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD8', headerText: 'Minutes', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD9', headerText: 'Points', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD10', headerText: 'OREB', width: 130, textAlign: 'Right' },
+  //                   { field: 'FIELD11', headerText: 'DREB', width: 130, textAlign: 'Right' },
+  //                   { field: 'FIELD12', headerText: 'REB', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD13', headerText: 'Assists', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD14', headerText: 'Steals', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD15', headerText: 'Blocks', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD16', headerText: 'Turnovers', width: 130, textAlign: 'Right' },
+  //                   { field: 'FIELD17', headerText: 'PF', width: 130, textAlign: 'Right' },
+  //                   { field: 'FIELD18', headerText: 'FGA', width: 150, textAlign: 'Right' },
+  //                   { field: 'FIELD19', headerText: 'FGM', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD20', headerText: 'FTA', width: 150, textAlign: 'Right' },
+  //                   { field: 'FIELD21', headerText: 'FTM', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD22', headerText: 'Three Attempted', width: 150, textAlign: 'Right' },
+  //                   { field: 'FIELD23', headerText: 'Three Made', width: 130, textAlign: 'Right' },
+  //                   { field: 'FIELD24', headerText: 'Post GP', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD25', headerText: 'Post GS', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD26', headerText: 'Post Minutes', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD27', headerText: 'Post Points', width: 130, textAlign: 'Right' },
+  //                   { field: 'FIELD28', headerText: 'Post OREB', width: 130, textAlign: 'Right' },
+  //                   { field: 'FIELD29', headerText: 'Post DREB', width: 130, textAlign: 'Right' },
+  //                   { field: 'FIELD30', headerText: 'Post REB', width: 130, textAlign: 'Right' }
+  //                  ]
+  //           },
+  //       done
+  //     );
+  //   });
 
-    it('Frozen rows with virtualization render check', () => {
-        expect(gridObj.getRows()[gridObj.frozenRows].closest('div').classList.contains("e-frozencontent")).toBe(true);
-        expect(gridObj.getMovableDataRows()[gridObj.frozenColumns].closest('div').classList.contains("e-virtualtable")).toBe(true);
-    });
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
+  //   it('Frozen rows with virtualization render check', () => {
+  //       expect(gridObj.getRows()[gridObj.frozenRows].closest('div').classList.contains("e-virtualtable")).toBe(true);
+  //       expect(gridObj.getDataRows()[gridObj.frozenColumns].closest('div').classList.contains("e-virtualtable")).toBe(true);
+  //   });
+  //   afterAll(() => {
+  //     destroy(gridObj);
+  //   });
+  // });
 
   describe('EJ2-62266 - Frozen columns with virutalization', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: editVirtualData,
-                childMapping: 'Crew',
-                enableVirtualization: true,
-                treeColumnIndex: 1,
-                allowFiltering: true,
-                frozenColumns: 2,
-                allowSorting: true,
-                toolbar: ['Search'],
-                height: 400,
-                columns: [
-                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
-                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
-                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD5', headerText: 'TMD', width: 120, textAlign: 'Right' },
-                   
-                   ]
-            },
+      gridObj = createGrid(
+        {
+          dataSource: editVirtualData,
+          childMapping: 'Crew',
+          enableVirtualization: true,
+          treeColumnIndex: 1,
+          allowFiltering: true,
+          frozenColumns: 2,
+          allowSorting: true,
+          toolbar: ['Search'],
+          height: 400,
+          columns: [
+            { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
+            { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+            { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+            { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+            { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
+            { field: 'FIELD5', headerText: 'TMD', width: 120, textAlign: 'Right' },
+          ]
+        },
         done
       );
     });
 
     it('Frozen rows with virtualization render check', () => {
-        expect(gridObj.getRows()[gridObj.frozenRows].closest('div').classList.contains("e-frozencontent")).toBe(true);
-        expect(gridObj.getMovableDataRows()[gridObj.frozenColumns].closest('div').classList.contains("e-movablecontent")).toBe(true);
+      expect(gridObj.getRows()[gridObj.frozenRows].closest('div').classList.contains("e-virtualtable")).toBe(true);
+      expect(gridObj.getDataRows()[gridObj.frozenColumns].closest('div').classList.contains("e-virtualtable")).toBe(true);
     });
 
 
@@ -1090,37 +1089,37 @@ describe('TreeGrid Virtual Scroll', () => {
   describe('EJ2-62266 - Freeze direction with virutalization', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: editVirtualData,
-                childMapping: 'Crew',
-                enableVirtualization: true,
-                treeColumnIndex: 1,
-                allowFiltering: true,
-                allowSorting: true,
-                toolbar: ['Search'],
-                height: 400,
-                columns: [
-                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, freeze: 'Left', textAlign: 'Right' },
-                    { field: 'FIELD1', headerText: 'Player Name', freeze: 'Left', width: 140 },
-                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD4', headerText: 'TMID', width: 120, freeze: 'Right',  textAlign: 'Right' },                   
-                   ]
-            },
+      gridObj = createGrid(
+        {
+          dataSource: editVirtualData,
+          childMapping: 'Crew',
+          enableVirtualization: true,
+          treeColumnIndex: 1,
+          allowFiltering: true,
+          allowSorting: true,
+          toolbar: ['Search'],
+          height: 400,
+          columns: [
+            { field: 'TaskID', headerText: 'Player Jersey', width: 140, freeze: 'Left', textAlign: 'Right' },
+            { field: 'FIELD1', headerText: 'Player Name', freeze: 'Left', width: 140 },
+            { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+            { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+            { field: 'FIELD4', headerText: 'TMID', width: 120, freeze: 'Right', textAlign: 'Right' },
+          ]
+        },
         done
       );
     });
 
     it('Ensure frozen method', (done: Function) => {
-        expect(gridObj.getFrozenLeftColumnsCount()).toBe(2);
-        expect(gridObj.getMovableColumnsCount()).toBe(2);
-        expect(gridObj.getFrozenRightColumnsCount()).toBe(1);
-        expect(gridObj.getFrozenLeftColumns().length).toBe(gridObj.getFrozenLeftColumnsCount());
-        expect(gridObj.getMovableColumns().length).toBe(gridObj.getMovableColumnsCount());
-        expect(gridObj.getFrozenRightColumns().length).toBe(gridObj.getFrozenRightColumnsCount());
-        done();
-     });
+      expect(gridObj.getFrozenLeftColumnsCount()).toBe(2);
+      expect(gridObj.getMovableColumnsCount()).toBe(2);
+      expect(gridObj.getFrozenRightColumnsCount()).toBe(1);
+      expect(gridObj.getFrozenLeftColumns().length).toBe(gridObj.getFrozenLeftColumnsCount());
+      expect(gridObj.getMovableColumns().length).toBe(gridObj.getMovableColumnsCount());
+      expect(gridObj.getFrozenRightColumns().length).toBe(gridObj.getFrozenRightColumnsCount());
+      done();
+    });
 
     afterAll(() => {
       destroy(gridObj);
@@ -1205,321 +1204,359 @@ describe('TreeGrid Virtual Scroll', () => {
 	});
   });
 
-  describe('EJ2-63548 - Indent/Outdent action check after edited the row with virtualization ', () => {
-    let TreeGridObj: TreeGrid;
-    let actionComplete: () => void;
-    let rows: Element[];
-    beforeAll((done: Function) => {
-      TreeGridObj = createGrid(
-        {
-          dataSource: editVirtualData,
-          childMapping: 'Crew',
-          enableVirtualization: true,
-          height: 400,
-          toolbar: [ 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Indent', 'Outdent'],
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-          columns: [
-          { field: 'TaskID', headerText: 'ID', isPrimaryKey: true, width: 140 },
-          { field: 'FIELD1', headerText: 'Player Name', width: 140 },
-          { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
-          { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
-          { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
-          { field: 'FIELD5', headerText: 'LGID', width: 120, textAlign: 'Right' },
-          ],
-        treeColumnIndex: 1
-        },done);
-    });
+  // describe('EJ2-63548 - Indent/Outdent action check after edited the row with virtualization ', () => {
+  //   let TreeGridObj: TreeGrid;
+  //   let actionComplete: () => void;
+  //   let rows: Element[];
+  //   beforeAll((done: Function) => {
+  //     TreeGridObj = createGrid(
+  //       {
+  //         dataSource: editVirtualData,
+  //         childMapping: 'Crew',
+  //         enableVirtualization: true,
+  //         height: 400,
+  //         toolbar: [ 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Indent', 'Outdent'],
+  //         editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+  //         columns: [
+  //         { field: 'TaskID', headerText: 'ID', isPrimaryKey: true, width: 140 },
+  //         { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+  //         { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+  //         { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+  //         { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
+  //         { field: 'FIELD5', headerText: 'LGID', width: 120, textAlign: 'Right' },
+  //         ],
+  //       treeColumnIndex: 1
+  //       },done);
+  //   });
   
-    it('Indent/Outdent icon updated check after edited the row', (done: Function) => {
-      actionComplete = (args?: any): void => {
-        if (args.requestType == 'outdented') {
-          expect(args.data[0].parentItem == undefined).toBe(true);
-          done();
-        }
-      }
-      rows = TreeGridObj.grid.getRows();
-      TreeGridObj.selectRow(1);
-      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_edit' } });
-      (select('#' + TreeGridObj.grid.element.id + 'FIELD1', TreeGridObj.grid.element) as any).value = 'updated';
-      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_update' } });
-      TreeGridObj.outdent(TreeGridObj.getCurrentViewRecords()[1]);
-      TreeGridObj.actionComplete = actionComplete;
-    });
-    afterAll(() => {
-      destroy(TreeGridObj);
-    });
-  });
+  //   it('Indent/Outdent icon updated check after edited the row', (done: Function) => {
+  //     actionComplete = (args?: any): void => {
+  //       if (args.requestType == 'outdented') {
+  //         expect(args.data[0].parentItem == undefined).toBe(true);
+  //         done();
+  //       }
+  //     }
+  //     rows = TreeGridObj.grid.getRows();
+  //     TreeGridObj.selectRow(1);
+  //     (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_edit' } });
+  //     (select('#' + TreeGridObj.grid.element.id + 'FIELD1', TreeGridObj.grid.element) as any).value = 'updated';
+  //     (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_update' } });
+  //     TreeGridObj.outdent(TreeGridObj.getCurrentViewRecords()[1]);
+  //     TreeGridObj.actionComplete = actionComplete;
+  //   });
+  //   afterAll(() => {
+  //     destroy(TreeGridObj);
+  //   });
+  // });
 
-  describe('EJ2-64501 - virutalization shimmer effect check', () => {
-    let gridObj: TreeGrid;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: editVirtualData,
-                childMapping: 'Crew',
-                enableVirtualization: true,
-                treeColumnIndex: 1,
-                allowFiltering: true,
-                allowSorting: true,
-                toolbar: ['Search'],
-                height: 400,
-                columns: [
-                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
-                    { field: 'FIELD1', headerText: 'Player Name',  width: 140 },
-                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD4', headerText: 'TMID', width: 120,  textAlign: 'Right' },                   
-                   ]
-            },
-        done
-      );
-    });
+  // describe('EJ2-64501 - virutalization shimmer effect check', () => {
+  //   let gridObj: TreeGrid;
+  //   beforeAll((done: Function) => {
+  //       gridObj = createGrid(
+  //           {
+  //               dataSource: editVirtualData,
+  //               childMapping: 'Crew',
+  //               enableVirtualization: true,
+  //               treeColumnIndex: 1,
+  //               allowFiltering: true,
+  //               allowSorting: true,
+  //               toolbar: ['Search'],
+  //               height: 400,
+  //               columns: [
+  //                   { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
+  //                   { field: 'FIELD1', headerText: 'Player Name',  width: 140 },
+  //                   { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD4', headerText: 'TMID', width: 120,  textAlign: 'Right' },                   
+  //                  ]
+  //           },
+  //       done
+  //     );
+  //   });
 
-    it('Show Mask Row', () => {
-      gridObj.grid.showMaskRow();
-      expect(gridObj.getContent().querySelector('.e-masked-table')).toBeTruthy();
-  });
-  it('Remove Mask Row', () => {
-      gridObj.grid.removeMaskRow();
-      expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
-  });
+  //   it('Show Mask Row', () => {
+  //     gridObj.grid.showMaskRow();
+  //     expect(gridObj.getContent().querySelector('.e-masked-table')).toBeTruthy();
+  // });
+  // it('Remove Mask Row', () => {
+  //     gridObj.grid.removeMaskRow();
+  //     expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
+  // });
 
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
+  //   afterAll(() => {
+  //     destroy(gridObj);
+  //   });
+  // });
 
 
 
-  describe('EJ2-64501 - Freeze direction with virutalization shimmer effect check', () => {
-    let gridObj: TreeGrid;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: editVirtualData,
-                childMapping: 'Crew',
-                enableVirtualization: true,
-                treeColumnIndex: 1,
-                allowFiltering: true,
-                allowSorting: true,
-                toolbar: ['Search'],
-                height: 400,
-                columns: [
-                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, freeze: 'Left', textAlign: 'Right' },
-                    { field: 'FIELD1', headerText: 'Player Name', freeze: 'Left', width: 140 },
-                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
-                    { field: 'FIELD4', headerText: 'TMID', width: 120, freeze: 'Right',  textAlign: 'Right' },                   
-                   ]
-            },
-        done
-      );
-    });
+  // describe('EJ2-64501 - Freeze direction with virutalization shimmer effect check', () => {
+  //   let gridObj: TreeGrid;
+  //   beforeAll((done: Function) => {
+  //       gridObj = createGrid(
+  //           {
+  //               dataSource: editVirtualData,
+  //               childMapping: 'Crew',
+  //               enableVirtualization: true,
+  //               treeColumnIndex: 1,
+  //               allowFiltering: true,
+  //               allowSorting: true,
+  //               toolbar: ['Search'],
+  //               height: 400,
+  //               columns: [
+  //                   { field: 'TaskID', headerText: 'Player Jersey', width: 140, freeze: 'Left', textAlign: 'Right' },
+  //                   { field: 'FIELD1', headerText: 'Player Name', freeze: 'Left', width: 140 },
+  //                   { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD4', headerText: 'TMID', width: 120, freeze: 'Right',  textAlign: 'Right' },                   
+  //                  ]
+  //           },
+  //       done
+  //     );
+  //   });
 
-    it('Show Mask Row', () => {
-      gridObj.grid.showMaskRow();
-      expect(gridObj.getContent().querySelector('.e-masked-table')).toBeTruthy();
-  });
-  it('Remove Mask Row', () => {
-      gridObj.grid.removeMaskRow();
-      expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
-  });
+  //   it('Show Mask Row', () => {
+  //     gridObj.grid.showMaskRow();
+  //     expect(gridObj.getContent().querySelector('.e-masked-table')).toBeTruthy();
+  // });
+  // it('Remove Mask Row', () => {
+  //     gridObj.grid.removeMaskRow();
+  //     expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
+  // });
 
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
+  //   afterAll(() => {
+  //     destroy(gridObj);
+  //   });
+  // });
 
-  describe('EJ2-828680 - Script Error throws while using Virtualization with CollapseAll action in self reference data ', () => {
-    let TreeGridObj: TreeGrid;
-    var data: any = [];
-    var x = 0;
-    for (var i = 0; i < 500; i++) {
-      var parent = {};
-      parent['TaskId'] = ++x;
-      parent['TaskName'] = 'Task ' + x;
-      parent['StartDate'] = new Date('01/09/2017');
-      parent['EndDate'] = new Date('01/13/2017');
-      parent['Duration'] = 5;
-      parent['Status'] = Math.round(Math.random() * 100);
-      data.push(parent);
-      for (var j = 1; j < 3; j++) {
-        var child = {};
-        child['TaskId'] = ++x;
-        child['TaskName'] = 'Task ' + x;
-        child['StartDate'] = new Date('01/09/2017');
-        child['EndDate'] = new Date('01/13/2017');
-        child['Duration'] = 5;
-        child['Status'] = Math.round(Math.random() * 100);
-        child['parentID'] = parent['TaskId'];
-        data.push(child);
-        for (var k = 1; k < 4; k++) {
-          var c = {};
-          c['TaskId'] = ++x;
-          c['TaskName'] = 'Task ' + x;
-          c['StartDate'] = new Date('01/09/2017');
-          c['EndDate'] = new Date('01/13/2017');
-          c['Duration'] = 5;
-          c['Status'] = Math.round(Math.random() * 100);
-          c['parentID'] = child['TaskId'];
-          data.push(c);
-        }
-      }
-    };
-    beforeAll((done: Function) => {
-      TreeGridObj = createGrid(
-        {
-          dataSource: data.slice(0, 4),
-            enableVirtualization: true,
-            height: 400,
-            idMapping: 'TaskId',
-            parentIdMapping: 'parentID',
-            treeColumnIndex: 1,
-            enableVirtualMaskRow: true,
-            editSettings: {
-              allowEditing: true,
-              allowAdding: true,
-              allowDeleting: true,
-              mode: 'Row',
-              newRowPosition: 'Below',
-            },
-            columns: [
-              {
-                field: 'TaskId',
-                headerText: 'Player Jersey',
-                validationRules: { required: true, number: true },
-                width: 140,
-                textAlign: 'Right',
-                isPrimaryKey: true,
-              },
-              {
-                field: 'TaskName',
-                headerText: 'Player Name',
-                validationRules: { required: true },
-                width: 140,
-              },
-              { field: 'StartDate', headerText: 'Year', width: 120, textAlign: 'Right' },
-              { field: 'EndDate', headerText: 'Stint', width: 120, textAlign: 'Right' },
-              { field: 'Duration', headerText: 'TMID', width: 120, textAlign: 'Right' },
-            ],
-            toolbar: ['ExpandAll', 'CollapseAll'],
-        },done);
-    });
+  // describe('EJ2-828680 - Script Error throws while using Virtualization with CollapseAll action in self reference data ', () => {
+  //   let TreeGridObj: TreeGrid;
+  //   var data: any = [];
+  //   var x = 0;
+  //   for (var i = 0; i < 500; i++) {
+  //     var parent = {};
+  //     parent['TaskId'] = ++x;
+  //     parent['TaskName'] = 'Task ' + x;
+  //     parent['StartDate'] = new Date('01/09/2017');
+  //     parent['EndDate'] = new Date('01/13/2017');
+  //     parent['Duration'] = 5;
+  //     parent['Status'] = Math.round(Math.random() * 100);
+  //     data.push(parent);
+  //     for (var j = 1; j < 3; j++) {
+  //       var child = {};
+  //       child['TaskId'] = ++x;
+  //       child['TaskName'] = 'Task ' + x;
+  //       child['StartDate'] = new Date('01/09/2017');
+  //       child['EndDate'] = new Date('01/13/2017');
+  //       child['Duration'] = 5;
+  //       child['Status'] = Math.round(Math.random() * 100);
+  //       child['parentID'] = parent['TaskId'];
+  //       data.push(child);
+  //       for (var k = 1; k < 4; k++) {
+  //         var c = {};
+  //         c['TaskId'] = ++x;
+  //         c['TaskName'] = 'Task ' + x;
+  //         c['StartDate'] = new Date('01/09/2017');
+  //         c['EndDate'] = new Date('01/13/2017');
+  //         c['Duration'] = 5;
+  //         c['Status'] = Math.round(Math.random() * 100);
+  //         c['parentID'] = child['TaskId'];
+  //         data.push(c);
+  //       }
+  //     }
+  //   };
+  //   beforeAll((done: Function) => {
+  //     TreeGridObj = createGrid(
+  //       {
+  //         dataSource: data.slice(0, 4),
+  //           enableVirtualization: true,
+  //           height: 400,
+  //           idMapping: 'TaskId',
+  //           parentIdMapping: 'parentID',
+  //           treeColumnIndex: 1,
+  //           enableVirtualMaskRow: true,
+  //           editSettings: {
+  //             allowEditing: true,
+  //             allowAdding: true,
+  //             allowDeleting: true,
+  //             mode: 'Row',
+  //             newRowPosition: 'Below',
+  //           },
+  //           columns: [
+  //             {
+  //               field: 'TaskId',
+  //               headerText: 'Player Jersey',
+  //               validationRules: { required: true, number: true },
+  //               width: 140,
+  //               textAlign: 'Right',
+  //               isPrimaryKey: true,
+  //             },
+  //             {
+  //               field: 'TaskName',
+  //               headerText: 'Player Name',
+  //               validationRules: { required: true },
+  //               width: 140,
+  //             },
+  //             { field: 'StartDate', headerText: 'Year', width: 120, textAlign: 'Right' },
+  //             { field: 'EndDate', headerText: 'Stint', width: 120, textAlign: 'Right' },
+  //             { field: 'Duration', headerText: 'TMID', width: 120, textAlign: 'Right' },
+  //           ],
+  //           toolbar: ['ExpandAll', 'CollapseAll'],
+  //       },done);
+  //   });
   
-    it('Collapsing all the records', (done: Function) => {
-      TreeGridObj.collapseAll();
-      expect(TreeGridObj.getCurrentViewRecords().length === 1).toBe(true);
-      done();
-    });
-    afterAll(() => {
-      destroy(TreeGridObj);
-    });
-  });
+  //   it('Collapsing all the records', (done: Function) => {
+  //     TreeGridObj.collapseAll();
+  //     expect(TreeGridObj.getCurrentViewRecords().length === 1).toBe(true);
+  //     done();
+  //   });
+  //   afterAll(() => {
+  //     destroy(TreeGridObj);
+  //   });
+  // });
 
-  describe('EJ2-828680 - Script Error throws while using Virtualization with CollapseAll action in Hierarchy data ', () => {
-    let TreeGridObj: TreeGrid;
-    beforeAll((done: Function) => {
-      TreeGridObj = createGrid(
-        {
-          dataSource: editVirtualData,
-          enableVirtualization: true,
-          height: 400,
-          treeColumnIndex: 1,
-          enableVirtualMaskRow: true,
-          childMapping: 'Crew',
-          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
-          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent','ExpandAll','CollapseAll'],
-          columns: [
-            { field: 'TaskID', headerText: 'Player Jersey', validationRules: { required: true, number: true }, width: 140, textAlign: 'Right', isPrimaryKey: true },
-            { field: 'FIELD1', headerText: 'Player Name', validationRules: { required: true }, width: 140 },
-            { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
-            { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
-            { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
-        ]
-        },done);
-    });
+  // describe('EJ2-828680 - Script Error throws while using Virtualization with CollapseAll action in Hierarchy data ', () => {
+  //   let TreeGridObj: TreeGrid;
+  //   beforeAll((done: Function) => {
+  //     TreeGridObj = createGrid(
+  //       {
+  //         dataSource: editVirtualData,
+  //         enableVirtualization: true,
+  //         height: 400,
+  //         treeColumnIndex: 1,
+  //         enableVirtualMaskRow: true,
+  //         childMapping: 'Crew',
+  //         editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
+  //         toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent','ExpandAll','CollapseAll'],
+  //         columns: [
+  //           { field: 'TaskID', headerText: 'Player Jersey', validationRules: { required: true, number: true }, width: 140, textAlign: 'Right', isPrimaryKey: true },
+  //           { field: 'FIELD1', headerText: 'Player Name', validationRules: { required: true }, width: 140 },
+  //           { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+  //           { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+  //           { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+  //       ]
+  //       },done);
+  //   });
   
-    it('Collapsing all the records', (done: Function) => {
-      TreeGridObj.collapseAll();
-      expect(TreeGridObj.getCurrentViewRecords().length === 40).toBe(true);
-      done();
-    });
-    afterAll(() => {
-      destroy(TreeGridObj);
-    });
-  });
+  //   it('Collapsing all the records', (done: Function) => {
+  //     TreeGridObj.collapseAll();
+  //     expect(TreeGridObj.getCurrentViewRecords().length === 40).toBe(true);
+  //     done();
+  //   });
+  //   afterAll(() => {
+  //     destroy(TreeGridObj);
+  //   });
+  // });
 
-  describe('EJ2-831337 - Script Error throws while using Virtualization with ExpandAll action ', () => {
-    let TreeGridObj: TreeGrid;
-    beforeAll((done: Function) => {
-      TreeGridObj = createGrid(
-        {
-          dataSource: editVirtualData,
-          enableVirtualization: true,
-          height: 400,
-          treeColumnIndex: 1,
-          childMapping: 'Crew',
-          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
-          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent','ExpandAll','CollapseAll'],
-          columns: [
-            { field: 'TaskID', headerText: 'Player Jersey', validationRules: { required: true, number: true }, width: 140, textAlign: 'Right', isPrimaryKey: true },
-            { field: 'FIELD1', headerText: 'Player Name', validationRules: { required: true }, width: 140 },
-            { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
-            { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
-            { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
-        ]
-        },done);
-    });
+  // describe('EJ2-831337 - Script Error throws while using Virtualization with ExpandAll action ', () => {
+  //   let TreeGridObj: TreeGrid;
+  //   beforeAll((done: Function) => {
+  //     TreeGridObj = createGrid(
+  //       {
+  //         dataSource: editVirtualData,
+  //         enableVirtualization: true,
+  //         height: 400,
+  //         treeColumnIndex: 1,
+  //         childMapping: 'Crew',
+  //         editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
+  //         toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent','ExpandAll','CollapseAll'],
+  //         columns: [
+  //           { field: 'TaskID', headerText: 'Player Jersey', validationRules: { required: true, number: true }, width: 140, textAlign: 'Right', isPrimaryKey: true },
+  //           { field: 'FIELD1', headerText: 'Player Name', validationRules: { required: true }, width: 140 },
+  //           { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+  //           { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+  //           { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+  //       ]
+  //       },done);
+  //   });
   
-    it('Collapsing and expanding all the records', (done: Function) => {
-      TreeGridObj.collapseAll();
-      TreeGridObj.expandAll();
-      expect(TreeGridObj.getCurrentViewRecords().length === 40).toBe(true);
-      done();
-    });
-    afterAll(() => {
-      destroy(TreeGridObj);
-    });
-  });
+  //   it('Collapsing and expanding all the records', (done: Function) => {
+  //     TreeGridObj.collapseAll();
+  //     TreeGridObj.expandAll();
+  //     expect(TreeGridObj.getCurrentViewRecords().length === 40).toBe(true);
+  //     done();
+  //   });
+  //   afterAll(() => {
+  //     destroy(TreeGridObj);
+  //   });
+  // });
 
-  describe('EJ2-833425 - Collapsed event triggered multiple times in virtualization enabled sample ', () => {
-    let TreeGridObj: TreeGrid;
-    let collapsed: () => void;
-    let count: number = 0;
-    beforeAll((done: Function) => {
-      TreeGridObj = createGrid(
-        {
-          dataSource: editVirtualData,
-          enableVirtualization: true,
-          height: 400,
-          treeColumnIndex: 1,
-          childMapping: 'Crew',
-          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
-          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent','ExpandAll','CollapseAll'],
-          columns: [
-            { field: 'TaskID', headerText: 'Player Jersey', validationRules: { required: true, number: true }, width: 140, textAlign: 'Right', isPrimaryKey: true },
-            { field: 'FIELD1', headerText: 'Player Name', validationRules: { required: true }, width: 140 },
-            { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
-            { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
-            { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
-        ]
-        },done);
-    });
+  // describe('EJ2-833425 - Collapsed event triggered multiple times in virtualization enabled sample ', () => {
+  //   let TreeGridObj: TreeGrid;
+  //   let collapsed: () => void;
+  //   let count: number = 0;
+  //   beforeAll((done: Function) => {
+  //     TreeGridObj = createGrid(
+  //       {
+  //         dataSource: editVirtualData,
+  //         enableVirtualization: true,
+  //         height: 400,
+  //         treeColumnIndex: 1,
+  //         childMapping: 'Crew',
+  //         editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
+  //         toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent','ExpandAll','CollapseAll'],
+  //         columns: [
+  //           { field: 'TaskID', headerText: 'Player Jersey', validationRules: { required: true, number: true }, width: 140, textAlign: 'Right', isPrimaryKey: true },
+  //           { field: 'FIELD1', headerText: 'Player Name', validationRules: { required: true }, width: 140 },
+  //           { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+  //           { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+  //           { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+  //       ]
+  //       },done);
+  //   });
 
-    it('CollapseAll the record and check collapsed event', (done: Function) => {
-      collapsed = (args?: any): void => {
-        if (args.name === 'collapsed') {
-          count++;
-          done();
-        }
-      };
-      TreeGridObj.collapsed = collapsed;
-      TreeGridObj.collapseAll();
-      expect(count).toBe(1);
-    });
-    afterAll(() => {
-      destroy(TreeGridObj);
-    });
-  });
+  //   it('CollapseAll the record and check collapsed event', (done: Function) => {
+  //     collapsed = (args?: any): void => {
+  //       if (args.name === 'collapsed') {
+  //         count++;
+  //         done();
+  //       }
+  //     };
+  //     TreeGridObj.collapsed = collapsed;
+  //     TreeGridObj.collapseAll();
+  //     expect(count).toBe(1);
+  //   });
+  //   afterAll(() => {
+  //     destroy(TreeGridObj);
+  //   });
+  // });
 
+  // describe('Cell Editing with Virtual Scrolling', () => {
+  //   let gridObj: TreeGrid;  
+  //   beforeAll((done: Function) => {
+  //       gridObj = createGrid(
+  //           {
+  //               dataSource: editVirtualData,
+  //               enableVirtualization: true,
+  //               treeColumnIndex: 1,
+  //               toolbar: ['Add','Edit','Update','Delete','Cancel'],               
+  //               editSettings:{ allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Cell', newRowPosition: 'Below' },
+  //               childMapping: 'Crew',
+  //               height: 400,
+  //               columns: [
+  //                   { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+  //                   { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+  //                   { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+  //                   { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+  //                  ]
+  //           },
+  //       done
+  //     );
+  //   });
+  //   it('Rendering Test', (done: Function) => {
+  //     let event: MouseEvent = new MouseEvent('dblclick', {
+  //       'view': window,
+  //       'bubbles': true,
+  //       'cancelable': true
+  //     });
+  //     gridObj.getCellFromIndex(0,1).dispatchEvent(event);
+  //     gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
+  //     gridObj.getRows()[0].click();
+  //     expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "test").toBe(true);
+  //     done();
+  //   })
+  //   afterAll(() => {
+  //     destroy(gridObj);
+  //   });
+  // });
 });

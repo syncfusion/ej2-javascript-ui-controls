@@ -1,4 +1,4 @@
-import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';
+import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs, animationMode } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';
 import {AnimationSettings,checkBoxPosition,SelectEventArgs} from "./list-view";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -254,9 +254,9 @@ export interface ListViewModel extends ComponentModel{
      * @angularType string | object
      * @reactType string | function | JSX.Element
      * @vueType string | function
-     * @deprecated
+     * @aspType string
      */
-    template?: string;
+    template?: string | Function;
 
     /**
      * The ListView has an option to custom design the ListView header title with the help of `headerTemplate` property.
@@ -267,9 +267,9 @@ export interface ListViewModel extends ComponentModel{
      * @angularType string | object
      * @reactType string | function | JSX.Element
      * @vueType string | function
-     * @deprecated
+     * @aspType string
      */
-    headerTemplate?: string;
+    headerTemplate?: string | Function;
 
     /**
      * The ListView has an option to custom design the group header title with the help of `groupTemplate` property.
@@ -280,9 +280,9 @@ export interface ListViewModel extends ComponentModel{
      * @angularType string | object
      * @reactType string | function | JSX.Element
      * @vueType string | function
-     * @deprecated
+     * @aspType string
      */
-    groupTemplate?: string;
+    groupTemplate?: string | Function;
 
     /**
      * Triggers when we select the list item in the component.

@@ -11,7 +11,7 @@ import { ISmithchartAnimationCompleteEventArgs, ISmithchartSeriesRenderEventArgs
 import { animationComplete } from '../../smithchart/model/constant';
 import { DataLabel } from '../../smithchart/series/datalabel';
 import { ISmithchartTextRenderEventArgs } from '../../smithchart/model/interface';
-import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, animationMode } from '@syncfusion/ej2-base';
 import { textRender, seriesRender } from '../model/constant';
 
 export class SeriesRender {
@@ -187,7 +187,7 @@ export class SeriesRender {
             }
         }
         for (let i: number = 0; i < smithchart.series.length; i++) {
-            if (smithchart.series[i].enableAnimation && smithchart.animateSeries) {
+            if (((smithchart.series[i].enableAnimation && animationMode != 'Disable') || animationMode === 'Enable') && smithchart.animateSeries) {
                 if (smithchart.series[i].marker.dataLabel.template) {
                     this.animateDataLabelTemplate(i, smithchart);
                 }
@@ -291,7 +291,7 @@ export class SeriesRender {
         let x: number = +clipRect.getAttribute('x');
         let value: number;
         animation.animate(clipRect, {
-            duration: parseFloat(smithchart.series[seriesIndex].animationDuration),
+            duration: (parseFloat(smithchart.series[seriesIndex].animationDuration) === 0 && animationMode === 'Enable') ? 2000: parseFloat(smithchart.series[seriesIndex].animationDuration) ,
             progress: (args: AnimationOptions): void => {
                 if (smithchart.renderType === 'Impedance') {
                     value = effect(args.timeStamp - args.delay, 0, width, args.duration);

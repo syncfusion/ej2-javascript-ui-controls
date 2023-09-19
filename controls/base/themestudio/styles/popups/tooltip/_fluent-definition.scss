@@ -1,0 +1,49 @@
+//layout variables
+$tooltip-close-icon-border: 1px solid $icon-color !default;
+$tooltip-drop-shadow: $shadow-lg !default;
+$tooltip-shadow-color: rgba(0, 0, 0, .25) !default;
+$tooltip-drop-shadow-filter: drop-shadow(1px 1px 3px $tooltip-shadow-color) !default;
+$tooltip-font-size: $text-xs !default;
+$tooltip-border-radius: 2px !default;
+$border-size: 1px !default;
+$border-type: solid !default;
+$tooltip-arrow-outer-border: 12.5px !default;
+$tooltip-arrow-inner-border: 7px !default;
+$tooltip-horizontal-padding: 6px !default;
+$tooltip-vertical-padding: 8px !default;
+$tooltip-line-height: 18px !default;
+$tooltip-arrow-icon-font-size: 26px !default;
+$tooltip-tip-bottom-height: 12.5px !default;
+$tooltip-tip-bottom-left: 50% !default;
+$tooltip-tip-bottom-top: 100% !default;
+$tooltip-tip-bottom-width: 25.5px !default;
+
+$tooltip-tip-top-height: 12.5px !default;
+$tooltip-tip-top-left: 50% !default;
+$tooltip-tip-top-top: -9px !default;
+$tooltip-tip-top-width: 25.5px !default;
+
+$tooltip-tip-left-height: 25.5px !default;
+$tooltip-tip-left-left: -9px !default;
+$tooltip-tip-left-top: 48% !default;
+$tooltip-tip-left-width: 12.5px !default;
+
+$tooltip-tip-right-height: 25.5px !default;
+$tooltip-tip-right-left: 100% !default;
+$tooltip-tip-right-top: 50% !default;
+$tooltip-tip-right-width: 12.5px !default;
+
+$tooltip-mobile-font-size: $text-sm !default;
+$tooltip-mobile-horizontal-padding: 9px !default;
+$tooltip-mobile-vertical-padding: 8px !default;
+
+//color variables
+$tooltip-content-bg-color: $tooltip-bg-color !default;
+$tooltip-content-border-color: $tooltip-border !default;
+$tooltip-content-font-color: $toooltip-text-color !default;
+$tooltip-default-icon-color: $secondary-text-color !default;
+$tooltip-icon-bg-normal: $secondary-bg-color !default;
+$tooltip-hover-icon-color:  $secondary-text-color !default;
+$tooltip-icon-bg-hover: $secondary-bg-color-hover !default;
+$tooltip-icon-border-color: $secondary-bg-color !default;
+$tooltip-close-icon-border-hover: $secondary-border-color-hover !default;

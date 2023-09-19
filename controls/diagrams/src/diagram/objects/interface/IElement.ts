@@ -30,28 +30,26 @@ export interface IElement {
 }
 
 /**
- * IDataLoadedEventArgs defines the event arguments after data is loaded
+ * IDataLoadedEventArgs notifies after data is loaded.
  */
 export interface IDataLoadedEventArgs {
-    /** returns the id of the diagram */
+    /** returns the instance of the diagram. */
     diagram: Diagram;
 }
 /**
- * ISelectionChangeEventArgs notifies when the node/connector are select
+ * ISelectionChangeEventArgs notifies when the node/connector are select.
  *
  */
 export interface ISelectionChangeEventArgs {
-    /** returns the collection of nodes and connectors that have to be removed from selection list */
+    /** returns the collection of nodes and connectors that must be removed from selection list */
     oldValue: (NodeModel | ConnectorModel)[];
-    /** returns the collection of nodes and connectors that have to be added to selection list  */
+    /** returns the collection of nodes and connectors that must be added to selection list  */
     newValue: (NodeModel | ConnectorModel)[];
     /**
-     * Triggers before and after adding the selection to the object
-     * in the diagram which can be differentiated through `state` argument.
-     * We can cancel the event only before the selection of the object
+     Triggers before and after adding the selection to the object
      */
     state: EventState;
-    /** returns the actual cause of the event  */
+    /** returns the actual cause of the event */
     cause: DiagramAction;
     /** returns whether the item is added or removed from the selection list  */
     type: ChangeType;
@@ -90,13 +88,13 @@ export interface ISizeChangeEventArgs {
      *
      */
     source?: SelectorModel;
-    /** returns the state of the event */
+    /** returns the state of size change event (Start, Progress, Completed) */
     state: State;
-    /** returns the previous width, height, offsetX and offsetY values of the element that is being resized
+    /** returns the previous width, height, offsetX and offsetY values of the element that is being resized.
      *
      */
     oldValue: SelectorModel;
-    /** returns the new width, height, offsetX and offsetY values of the element that is being resized
+    /** returns the new width, height, offsetX and offsetY values of the element that is being resized.
      *
      */
     newValue: SelectorModel;
@@ -113,7 +111,7 @@ export interface IRotationEventArgs {
      *
      */
     source?: SelectorModel;
-    /** returns the state of the event */
+    /** returns the state of rotate event (Start, Progress, Completed) */
     state: State;
     /** returns the previous rotation angle
      *
@@ -200,7 +198,7 @@ export interface BlazorFixedUserHandleClickEventArgs {
     /** returns the fixed user handle of nodes/connector.
      */
     fixedUserHandle: DiagramFixedUserHandle;
-    /** returns the selected nodes/connector */
+    /** returns the selected nodes/connector. */
     element: DiagramEventObject;
 }
 
@@ -209,7 +207,7 @@ export interface BlazorFixedUserHandleClickEventArgs {
  *
  */
 export interface FixedUserHandleClickEventArgs {
-    /** returns the fixed user handle  of nodes/connector.
+    /** returns the fixed user handle of nodes/connector.
      */
     fixedUserHandle: NodeFixedUserHandleModel | ConnectorFixedUserHandleModel;
     /** returns the selected nodes/connector */
@@ -232,21 +230,21 @@ export interface DiagramFixedUserHandle {
 
 
 /**
- * ICollectionChangeEventArgs notifies while the node/connector are added or removed
+ * ICollectionChangeEventArgs notifies while the node/connector are added or removed.
  *
  */
 export interface ICollectionChangeEventArgs {
-    /** returns the selected element  */
+    /** returns the element that is going to added or removed from the diagram. */
     element: NodeModel | ConnectorModel;
     /** returns the action of diagram */
     cause: DiagramAction;
     /** returns the string of the DiagramAction*/
     diagramAction: string;
-    /** returns the state of the event */
+    /** returns the state of collection change event (Changing, Changed, Canceled) */
     state: EventState;
-    /** returns the type of the collection change */
+    /** returns the type of the collection change. */
     type: ChangeType;
-    /** returns whether to cancel the change or not */
+    /** returns whether to cancel the change or not. */
     cancel: boolean;
     /** returns the lane index */
     laneIndex?: Number;
@@ -292,12 +290,12 @@ export interface IBlazorSegmentCollectionChangeEventArgs {
  *
  */
 export interface UserHandleEventsArgs {
-    /** returns the user handle object */
+    /** returns the user handle object that is being clicked. */
     element: UserHandleModel;
 }
 
 /**
- * ICollectionChangeEventArgs notifies while the node/connector are added or removed
+ * ISegmentCollectionChangeEventArgs notifies while the segments are added or removed from the connector.
  *
  */
 export interface ISegmentCollectionChangeEventArgs {
@@ -305,9 +303,9 @@ export interface ISegmentCollectionChangeEventArgs {
      *
      */
     element: ConnectorModel;
-    /** returns the selected element  */
+    /** returns the collection of segment that must be removed from connector segment collection */
     removeSegments?: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
-    /** returns the action of diagram */
+    /**returns the collection of segment that must be added to connector segment collection */
     addSegments?: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
     /** returns the type of the collection change */
     type: ChangeType;
@@ -320,9 +318,9 @@ export interface ISegmentCollectionChangeEventArgs {
  *
  */
 export interface IPropertyChangeEventArgs {
-    /** returns the selected element */
+    /** returns the selected element. */
     element: (NodeModel | ConnectorModel | Diagram);
-    /** returns the action is nudge or not */
+    /** returns the action of diagram. */
     cause: DiagramAction;
     /** returns the string of the DiagramAction*/
     diagramAction: string;
@@ -370,7 +368,7 @@ export interface IBlazorPropertyChangeEventArgs {
  *
  */
 export interface IDraggingEventArgs {
-    /** returns the node or connector that is being dragged */
+    /** returns the node or connector that is being dragged. */
     source: SelectorModel;
     /** returns the state of drag event (Starting, dragging, completed) */
     state: State;
@@ -466,36 +464,36 @@ export interface IBlazorDraggingEventArgs {
 }
 
 /**
- * IConnectionChangeEventArgs notifies when the connector are connect or disconnect
+ * IConnectionChangeEventArgs notifies when the connector is connected or disconnect from the node.
  *
  */
 export interface IConnectionChangeEventArgs {
-    /** returns the new source node or target node of the connector */
+    /** returns the selected connector */
     connector: ConnectorModel;
     /** returns the previous source or target node of the element */
     oldValue: Connector | { nodeId: string, portId: string };
-    /** returns the current source or target node of the element */
+    /** returns the new source or target node of the element */
     newValue: Connector | { nodeId: string, portId: string };
     /** returns the connector end  */
     connectorEnd: string;
-    /** returns the state of connection end point dragging(starting, dragging, completed) */
+    /** returns the state of connection end point dragging (starting, dragging, completed) */
     state: EventState;
     /** returns whether to cancel the change or not */
     cancel: boolean;
 }
 
 /**
- * IEndChangeEventArgs notifies when the connector end point are resized
+ * IEndChangeEventArgs notifies when the connector end point is resized
  *
  */
 export interface IEndChangeEventArgs {
-    /** returns the connector, the target point of which is being dragged
+    /** returns the connector, the source / target point which is being dragged
      *
      */
     connector: ConnectorModel;
-    /** returns the previous target node of the element */
+    /** returns the previous point of the connector */
     oldValue: PointModel;
-    /** returns the current target node of the element */
+    /** returns the current point of the connector */
     newValue: PointModel;
     /** returns the target node of the element */
     targetNode: string;
@@ -505,33 +503,33 @@ export interface IEndChangeEventArgs {
     sourceNode?: string;
     /** returns the source port of the element */
     sourcePort?: string;
-    /** returns the state of connection end point dragging(starting, dragging, completed) */
+    /** returns the state of connection end point dragging (starting, dragging, completed) */
     state: State;
     /** returns whether to cancel the change or not */
     cancel: boolean;
 }
 
 /**
- * Animation notifies when the animation is take place
+ * Animation - Animation notifies when the animation is taken place.
  *
  */
 export interface Animation {
-    /** returns the current animation status */
+    /** returns the state of animation event (Start, Progress, Completed) */
     state: State;
 }
 
 /**
- * IClickEventArgs notifies while click on the objects or diagram
+ * IClickEventArgs - IClickEventArgs notifies while click on the objects or diagram.
  *
  */
 export interface IClickEventArgs {
-    /** returns the object that is clicked or id of the diagram */
+    /** returns the object that is clicked or instance of the diagram */
     element: SelectorModel | Diagram;
     /** returns the object position that is actually clicked */
     position: PointModel;
     /** returns the number of times clicked */
     count: number;
-    /** returns the actual object that is clicked or id of the diagram */
+    /** returns the object that is clicked or instance of the diagram */
     actualObject: SelectorModel | Diagram;
     /** returns the button clicked */
     button?: MouseButtons;
@@ -555,11 +553,11 @@ export interface IBlazorClickEventArgs {
 }
 
 /**
- * IDoubleClickEventArgs notifies while double click on the diagram or its objects
+ * IDoubleClickEventArgs - IDoubleClickEventArgs notifies while double click on the diagram or its objects
  *
  */
 export interface IDoubleClickEventArgs {
-    /** returns the object that is clicked or id of the diagram */
+    /** returns the object that is clicked or instance of the diagram */
     source: SelectorModel | Diagram;
     /** returns the object position that is actually clicked */
     position: PointModel;
@@ -691,48 +689,48 @@ export interface IBlazorScrollChangeEventArgs {
     panState: State;
 }
 /**
- * IScrollChangeEventArgs notifies when the scroller has changed
+ * IScrollChangeEventArgs - IScrollChangeEventArgs notifies when the scroller has changed
  *
  */
 export interface IScrollChangeEventArgs {
-    /** returns the object that is clicked or id of the diagram */
+    /** returns the object that is clicked or instance of the diagram */
     source: SelectorModel | Diagram;
     /** returns the previous delay value between subsequent auto scrolls */
     oldValue: ScrollValues;
     /** returns the new delay value between subsequent auto scrolls */
     newValue: ScrollValues;
-    /** returns the pan state of the object */
+    /** returns the pan state of scroll change event (Start, Progress, Completed) */
     panState: State;
 }
 
 /**
- * Event triggers whenever the user rotate the mouse wheel either upwards or downwards
+ * IMouseWheelEventArgs - Event triggers whenever the user rotates the mouse wheel either upwards or downwards
  *
  */
 export interface IMouseWheelEventArgs {
-    /** returns the DOM Object*/
+    /** returns the DOM Object */
     event: WheelEvent ;
-    /**specifies whether to cancel the mouse wheel interaction in the diagram*/
+    /** specifies whether to cancel the mouse wheel interaction in the diagram */
     cancel: boolean;
 }
 
 /**
- * IPaletteSelectionChangeArgs notifies when the selection objects change in the symbol palette
+ * IPaletteSelectionChangeArgs - IPaletteSelectionChangeArgs notifies when the selection objects change in the symbol palette.
  *
  */
 export interface IPaletteSelectionChangeArgs {
-    /** returns the old palette item that is selected */
+    /** returns the old palette item that is selected. */
     oldValue: string;
-    /** returns the new palette item that is selected */
+    /** returns the new palette item that is selected. */
     newValue: string;
 }
 
 /**
- * IPaletteExpandArgs notifies when the palette items are expanded or collapsed in the symbol palette
+ * IPaletteExpandArgs - IPaletteExpandArgs notifies when the palette items are expanded or collapsed in the symbol palette
  *
  */
 export interface IPaletteExpandArgs {
-    /** returns the index of the palette item selected */
+    /** returns the index of the palette item selected. */
     index: number;
     /** returns the value whether the palette item is expanded */
     isExpanded: boolean;
@@ -740,24 +738,24 @@ export interface IPaletteExpandArgs {
     cancel: boolean;
     /** returns the content of the palette item that is selected */
     content: HTMLElement;
-    /** returns the  palette item selected */
+    /** returns the palette item selected */
     element: HTMLElement;
     /** returns the properties of the palette item selected */
     palette: PaletteModel;
 }
 
 /**
- * IDragEnterEventArgs notifies when the element enter into the diagram from symbol palette
+ * IDragEnterEventArgs - IDragEnterEventArgs notifies when the element enters into the diagram from symbol palette
  *
  */
 export interface IDragEnterEventArgs {
-    /** returns the node or connector that is to be dragged into diagram */
+    /** returns the node or connector that is to be dragged into diagram. */
     source: Object;
-    /** returns the node or connector that is dragged into diagram */
+    /** returns the node or connector that is dragged into diagram. */
     element: NodeModel | ConnectorModel;
-    /** returns the id of the diagram */
+    /**returns the instance of the diagram. */
     diagram: DiagramModel;
-    /** parameter returns whether to add or remove the symbol from diagram */
+    /** returns whether to add or remove the symbol from diagram*/
     cancel: boolean;
     /** returns the node or connector that been dragged into diagram from other component */
     dragData: DropInfo;
@@ -781,11 +779,11 @@ export interface IBlazorDragEnterEventArgs {
 }
 
 /**
- * IDragLeaveEventArgs notifies when the element leaves from  the diagram
+ * IDragLeaveEventArgs - IDragLeaveEventArgs notifies when the element leaves from the diagram
  *
  */
 export interface IDragLeaveEventArgs {
-    /** returns the id of the diagram */
+    /** returns the instance of the diagram */
     diagram: DiagramModel;
     /** returns the node or connector that is dragged outside of the diagram
      *
@@ -794,11 +792,11 @@ export interface IDragLeaveEventArgs {
 }
 
 /**
- * IDragOverEventArgs notifies when an element drag over another diagram element
+ * IDragOverEventArgs - IDragOverEventArgs notifies when an element drags over another diagram element
  *
  */
 export interface IDragOverEventArgs {
-    /** returns the id of the diagram */
+    /** returns the instance of the diagram */
     diagram: DiagramModel;
     /** returns the node or connector that is dragged over diagram
      *
@@ -813,18 +811,18 @@ export interface IDragOverEventArgs {
 }
 
 /**
- * ITextEditEventArgs notifies when the label of an element under goes editing
+ * ITextEditEventArgs - ITextEditEventArgs notifies when the label of an element undergoes editing
  */
 export interface ITextEditEventArgs {
-    /** Returns the old text value of the element */
+    /** returns the old text value of the element. */
     oldValue: string;
-    /** Returns the new text value of the element that is being changed */
+    /** returns the new text value of the element. */
     newValue: string;
-    /** Returns a node or connector in which annotation is being edited */
+    /** returns a node or connector in which annotation is being edited. */
     element: NodeModel | ConnectorModel;
-    /** Returns a annotation which is being edited */
+    /** returns an annotation which is being edited. */
     annotation: ShapeAnnotationModel | PathAnnotationModel | TextModel;
-    /** Returns whether or not to cancel the event */
+    /** returns whether to cancel the event. */
     cancel: boolean;
 }
 
@@ -883,7 +881,7 @@ export interface IBlazorHistoryChangeArgs {
 
 }
 /**
- * IHistoryChangeArgs notifies when the label of an element under goes editing
+ * IHistoryChangeArgs - IHistoryChangeArgs notifies when the undo/redo operation perform.
  *
  */
 export interface IHistoryChangeArgs {
@@ -927,7 +925,7 @@ export interface ChangedValues {
 
 
 /**
- * ICustomHistoryChangeArgs notifies when the label of an element under goes editing
+ * ICustomHistoryChangeArgs - ICustomHistoryChangeArgs notifies when the custom undo/redo operation perform.
  *
  */
 export interface ICustomHistoryChangeArgs {
@@ -1014,31 +1012,31 @@ export interface IBlazorDropEventArgs {
 }
 
 /**
- * IDropEventArgs notifies when the element is dropped in the diagram
+ * IDropEventArgs - IDropEventArgs notifies when the element is dropped in the diagram
  *
  */
 export interface IDropEventArgs {
-    /** returns node or connector that is being dropped */
+    /** returns node or connector that is being dropped into diagram */
     element: NodeModel | ConnectorModel | SelectorModel;
-    /** returns the object from where the element is dragged */
+    /** returns the object from where the element is dragged. */
     source?: Object;
-    /** returns the object over which the object will be dropped */
+    /** returns the object over which the object will be dropped. */
     target: NodeModel | ConnectorModel | DiagramModel;
-    /** returns the position of the object */
+    /** returns the position of the dropped object. */
     position: PointModel;
     /** returns whether or not to cancel the drop event */
     cancel: boolean;
 }
 
 /**
- * ISegmentChangeEventArgs triggered when we drag the segment thumb of Orthogonal/ Straight /Bezier connector
+ * ISegmentChangeEventArgs - ISegmentChangeEventArgs triggered when we drag the segment thumb of Orthogonal/ Straight /Bezier connector
  */
 export interface ISegmentChangeEventArgs {
-    /** Returns the connector, the segment of which is being dragged  */
+    /** Returns the connector, the segment of which is being dragged */
     source: ConnectorModel;
     /** Returns the current state of segment change event (Start, Progress, Completed)  */
     state: State;
-    /** Returns the segment with the newly changed values  */
+    /** Returns the segment with the newly changed values */
     newValue: OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
     /** Returns the segment with the values before the event triggered.  */
     oldValue: OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel;
@@ -1050,6 +1048,7 @@ export interface ISegmentChangeEventArgs {
 
 /**
  * Interface for command
+ * ICommandExecuteEventArgs – ICommandExecuteEventArgs notifies when custom command executed in the diagram.
  */
 export interface ICommandExecuteEventArgs {
     /** Sets the key value, on recognition of which the command will be executed */
@@ -1064,32 +1063,32 @@ export interface StackEntryObject {
     source?: NodeModel;
 }
 /**
- * IExpandStateChangeEventArgs notifies when the icon is changed
+ * IExpandStateChangeEventArgs - IExpandStateChangeEventArgs notifies when the node is expanded or collapsed.
  */
 export interface IExpandStateChangeEventArgs {
-    /** returns node that is being changed the icon
+    /**returns node that is being expanded or collapsed.
      *
      */
     element?: NodeModel;
-    /** returns whether or not to expanded */
+    /** returns whether or not to expanded. */
     state?: boolean;
 }
 
 /**
- * IImageLoadEventArgs notifies while the image node is loaded.
+ * IImageLoadEventArgs - IImageLoadEventArgs notifies while the image node is loaded.
  *
  */
 export interface IImageLoadEventArgs {
-    /** returns the selected element
+    /** returns the node in which image is loaded
      *
      */
     element: NodeModel;
-    /** returns the size of image element */
+    /** returns the size of an image element. */
     size: Size;
 }
 
 /**
- * IKeyEventArgs notifies while perform the key actions.
+ * IKeyEventArgs - IKeyEventArgs notifies while perform the key actions in the diagram.
  *
  */
 export interface IKeyEventArgs {
@@ -1105,18 +1104,17 @@ export interface IKeyEventArgs {
     label?: object;
     /** Returns value of the key action */
     key?: string;
-    /** Returns a number which represents an actual key pressed */
+    /** Returns a number which represents an actual key pressed. */
     keyCode?: number;
-    /** Returns any, modifier keys were pressed when the flick gesture occurred */
+    /** Returns any, modifier keys were pressed when the flick gesture occurred. */
     keyModifiers?: KeyModifiers;
 }
-
 /**
- * ILoadEventArgs  defines the event arguments when diagram rendering is initialized.
+ * ILoadEventArgs - ILoadEventArgs defines the event arguments when diagram rendering is initialized.
  */
 export interface ILoadEventArgs {
-    /** Returns the name of the event */
+    /** Returns the name of the event. */
     name?: string
-    /** Returns the diagram instance */
+    /** Returns the diagram instance. */
     diagram?: Diagram;
 }

@@ -4,14 +4,13 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { rowDataBound, queryCellInfo } from '../base/constant';
-import { setStyleAndAttributes, getObject, extendObjWithFn } from '../base/util';
+import { setStyleAndAttributes, getObject, extendObjWithFn, applyStickyLeftRightPosition, groupCaptionRowLeftRightPos, resetColspanGroupCaption } from '../base/util';
 import { ICellRenderer, IRowRenderer, IRow, QueryCellInfoEventArgs, RowDataBoundEventArgs, IGrid } from '../base/interface';
 import { CellType } from '../base/enum';
 import { CellRendererFactory } from '../services/cell-render-factory';
 import { ServiceLocator } from '../services/service-locator';
 import { CellMergeRender } from './cell-merge-renderer';
 import * as literals from '../base/string-literals';
-import { ContentRender } from './content-renderer';
 /**
  * RowRenderer class which responsible for building row content.
  *
@@ -168,8 +167,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     }
                     let isRowSpanned: boolean = false;
                     if (row.index > 0 && this.isSpan) {
-                        const rowsObject: Row<Column>[] = this.parent.isFrozenGrid() ?
-                            (this.parent.contentModule as ContentRender).tempFreezeRows : this.parent.getRowsObject();
+                        const rowsObject: Row<Column>[] = this.parent.getRowsObject();
                         const prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
                             !rowsObject[row.index - 1].isDataRow ? rowsObject[row.index].cells : rowsObject[row.index - 1].cells;
                         const uid: string = 'uid';
@@ -186,6 +184,46 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 }
                 if (!row.cells[parseInt(i.toString(), 10)].isSpanned) {
                     tr.appendChild(td);
+                }
+            }
+        }
+        let emptyColspan: number = 0;
+        if (this.parent.groupSettings.columns.length && this.parent.getFrozenLeftColumnsCount()) {
+            if (tr.classList.contains('e-groupcaptionrow')) {
+                let freezeCells: HTMLElement[] = [].slice.call(tr.querySelectorAll(
+                    '.e-leftfreeze,.e-unfreeze,.e-rightfreeze,.e-fixedfreeze,.e-freezerightborder,.e-freezeleftborder'));
+                if (freezeCells.length) {
+                    removeClass(freezeCells, ['e-leftfreeze', 'e-unfreeze', 'e-rightfreeze', 'e-fixedfreeze', 'e-freezerightborder', 'e-freezeleftborder']);
+                }
+                if (tr.querySelector('.e-summarycell')) {
+                    groupCaptionRowLeftRightPos(tr, this.parent);
+                } else {
+                    for (let j: number = 0; j < tr.childNodes.length; j++) {
+                        const td: HTMLElement = tr.childNodes[parseInt(j.toString(), 10)] as HTMLElement;
+                        td.classList.add('e-leftfreeze');
+                        applyStickyLeftRightPosition(td, j * 30, this.parent.enableRtl, 'Left');
+                        if (td.classList.contains('e-groupcaption')) {
+                            const oldColspan: number = parseInt(td.getAttribute('colspan'), 10);
+                            const colspan: number = resetColspanGroupCaption(this.parent, j);
+                            td.setAttribute('colspan', colspan.toString());
+                            emptyColspan = oldColspan - colspan;
+                        }
+                    }
+                    if (emptyColspan) {
+                        const td: HTMLElement = this.parent.createElement('TD', {
+                            className: 'e-groupcaption',
+                            attrs: { colspan: emptyColspan.toString(), id: this.parent.element.id + 'captioncell', tabindex: '-1' }
+                        });
+                        tr.appendChild(td);
+                    }
+                }
+            }
+            if (tr.querySelectorAll('.e-leftfreeze').length &&
+                (tr.querySelectorAll('.e-indentcell').length || tr.querySelectorAll('.e-grouptopleftcell').length)) {
+                const td: NodeListOf<Element> = tr.querySelectorAll('.e-indentcell, .e-grouptopleftcell');
+                for (let i: number = 0; i < td.length; i++) {
+                    td[parseInt(i.toString(), 10)].classList.add('e-leftfreeze');
+                    applyStickyLeftRightPosition(td[parseInt(i.toString(), 10)] as HTMLElement, i * 30, this.parent.enableRtl, 'Left');
                 }
             }
         }
@@ -239,7 +277,6 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 }
             }
             if (this.parent.childGrid || isDraggable || this.parent.detailTemplate) {
-
                 const td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
                 if (td) {
                     td.classList.add('e-detailrowvisible');
@@ -264,7 +301,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             || this.parent.textWrapSettings.wrapMode === 'Both')) {
             tr.classList.add('e-verticalwrap');
         }
-        const vFTable: boolean = this.parent.enableColumnVirtualization && this.parent.frozenColumns !== 0;
+        const vFTable: boolean = this.parent.enableColumnVirtualization;
         if (!vFTable && this.parent.aggregates.length && this.parent.element.scrollHeight > this.parent.height) {
             for (let i: number = 0; i < this.parent.aggregates.length; i++) {
                 const property: string = 'properties';

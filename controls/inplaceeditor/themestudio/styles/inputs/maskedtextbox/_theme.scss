@@ -1,0 +1,15 @@
+@include export-module('maskedit-theme') {
+
+  /*! maskedtextbox theme */
+  .e-control-wrapper.e-mask.e-error #{&}.e-maskedtextbox {
+    @if $skin-name != 'bootstrap' and $skin-name != 'FluentUI' {
+      color: $mask-error-color;
+    }
+  }
+
+  .e-utility-mask.e-error {
+    @if $skin-name != 'bootstrap' and $skin-name != 'FluentUI' {
+      color: $mask-error-color;
+    }
+  }
+}

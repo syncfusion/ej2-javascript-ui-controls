@@ -362,6 +362,15 @@ export class Gantt extends Component<HTMLElement>
      */
      @Property(true)
     public enableVirtualMaskRow: boolean;
+        
+    /**
+     * Gets or sets whether to load child record on demand in remote data binding. Initially parent records are rendered in collapsed state.  
+     *
+     * @default false
+     */
+    @Property(false)
+    public loadChildOnDemand: boolean;
+        
     /**
      * Specifies whether to update offset value on a task for all the predecessor edit actions.
      *
@@ -1651,14 +1660,14 @@ export class Gantt extends Component<HTMLElement>
         };
         this.focusModule = new FocusModule(this);
         if (this.zoomingLevels.length === 0) {
-            this.setProperties({ zoomingLevels: this.getZoomingLevels() }, true)
+           this.setProperties({ zoomingLevels: this.getZoomingLevels() }, true)
         }
         this.resourceFieldsMapping();
         if (isNullOrUndefined(this.resourceFields.unit)) { //set resourceUnit as unit if not mapping
-            this.setProperties({ resourceFields: { unit: 'unit' } }, true)
+          this.setProperties({ resourceFields: { unit: 'unit' } }, true)
         }
         if (!isNullOrUndefined(this.taskFields.work)) {
-            this.setProperties({ taskType: 'FixedWork' }, true) 
+            this.setProperties({ taskType: 'FixedWork' }, true)
         }
         this.taskIds = [];
     }
@@ -1774,6 +1783,7 @@ export class Gantt extends Component<HTMLElement>
         createSpinner({ target: this.element }, this.createElement);
         this.trigger('load', {});
         this.element.classList.add(cls.root);
+        this.rowHeight = (!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger")) ? (this.rowHeight === 36) ? 46 : this.rowHeight : this.rowHeight
         if (this.isAdaptive) {
             this.element.classList.add(cls.adaptive);
         } else {
@@ -2302,6 +2312,37 @@ export class Gantt extends Component<HTMLElement>
     }
     private updateCurrentViewData(): void {
         this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
+        if (!this.loadChildOnDemand && this.taskFields.hasChildMapping && this.currentViewData.length > 0) {
+            this.autoCalculateDateScheduling = false;
+            this.flatData = [];
+            this.dataOperation.taskIds = [];
+            this.ids = [];
+            this.dataOperation.recordIndex = 0;
+            this.dataOperation.dataArray = this.currentViewData;
+            this.dataOperation.cloneDataSource();
+            if (this.predecessorModule && this.taskFields.dependency) {
+                this.predecessorModule['parentIds'] = [];
+                this.predecessorModule['parentRecord'] = [];
+                this.predecessorModule.updatePredecessors();
+            }
+            let gridData = this.treeGrid.grid.contentModule['rows'];
+                const data: object = gridData.filter((x: any) => {
+                    if (x['data'][this.taskFields.id] === this.flatData[0].ganttProperties.taskId) {
+                        return x;
+                    }
+                })[0];
+                let index = data['index'];
+            for (let i: number =0;i < this.flatData.length;i++) {
+                this.flatData[i as number].index = index;
+                index++;
+            }
+            this.currentViewData = this.flatData;
+            this.treeGrid.grid.currentViewData = this.flatData;
+            if (!isNullOrUndefined(this.treeGrid['virtualScrollModule'])) {
+                this.treeGrid['virtualScrollModule'].visualData = this.flatData;
+                this.updatedRecords = this.flatData;
+            }
+        }
     }
     /**
      * @param {IGanttData} records -Defines the delete record collections.
@@ -2321,7 +2362,7 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public updateContentHeight(args?: object): void {
-        if (!this.allowTaskbarOverlap && this.viewType === 'ResourceView' && !this.isLoad) {
+        if ((!this.allowTaskbarOverlap && !this.ganttChartModule.isCollapseAll && !this.ganttChartModule.isExpandAll) && this.viewType === 'ResourceView' && !this.isLoad) {
             return
         }
         else {
@@ -2673,6 +2714,9 @@ export class Gantt extends Component<HTMLElement>
         } else {
             this.getCurrentRecords(args);
         }
+        if (!this.loadChildOnDemand && this.taskFields.hasChildMapping) {
+            this.updateContentHeight();
+        }
         if (this.enableCriticalPath && this.criticalPathModule) {
             this.criticalPathModule.showCriticalPath(this.enableCriticalPath);
         }
@@ -2688,6 +2732,9 @@ export class Gantt extends Component<HTMLElement>
         }
         this.initialChartRowElements = this.ganttChartModule.getChartRows();
         this.isLoad = false;
+        if (!this.loadChildOnDemand && this.taskFields.hasChildMapping) {
+           this.autoCalculateDateScheduling = true;
+        }
         this.trigger('dataBound', args);
     }
     /**
@@ -2950,7 +2997,14 @@ export class Gantt extends Component<HTMLElement>
                 if (prop === 'locale') {
                    this.isLocaleChanged = true;
                 }
-                isRefresh = true;
+                if (prop === 'taskFields') {
+                    if (!isNullOrUndefined(newProp.taskFields.child)) {
+                        return;
+                    }
+                }
+                if (prop !== 'allowTaskbarDragAndDrop') {
+                   isRefresh = true;
+                }
                 break;
             case 'validateManualTasksOnLinking':
                 this.validateManualTasksOnLinking = newProp.validateManualTasksOnLinking;
@@ -3645,6 +3699,9 @@ export class Gantt extends Component<HTMLElement>
      * @returns {Promise<any>} .
      */
     public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
+        if (pdfExportProperties && pdfExportProperties.fitToWidthSettings && pdfExportProperties.fitToWidthSettings.isFitToWidth) {
+            pdfExportProperties.pageOrientation == 'Landscape';
+        }
         return this.pdfExportModule ? this.pdfExportModule.export(pdfExportProperties, isMultipleExport, pdfDoc, isBlob)
             : null;
     }
@@ -3736,15 +3793,18 @@ export class Gantt extends Component<HTMLElement>
         this.isTimelineRoundOff = isTimelineRoundOff;
         this.timelineModule.refreshTimelineByTimeSpan();
         this.dataOperation.reUpdateGanttDataPosition();
-        this.timelineModule.updateChartByNewTimeline();
-        this.ganttChartModule.chartBodyContent.style.width = formatUnit(this.timelineModule.totalTimelineWidth);
-        this.ganttChartModule.updateLastRowBottomWidth();
-       
-        if (this.taskFields.dependency) {
-            this.ganttChartModule.reRenderConnectorLines();
-        }
-        if (isFrom !== 'beforeAdd') {
-            this.notify('selectRowByIndex', {});
+        if (!this.pdfExportModule || (this.pdfExportModule && !this.pdfExportModule.isPdfExport) || (this.pdfExportModule && this.pdfExportModule.isPdfExport && this.pdfExportModule.helper.exportProps &&
+            this.pdfExportModule.helper.exportProps.fitToWidthSettings && !this.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)) {
+            this.timelineModule.updateChartByNewTimeline();
+            this.ganttChartModule.chartBodyContent.style.width = formatUnit(this.timelineModule.totalTimelineWidth);
+            this.ganttChartModule.updateLastRowBottomWidth();
+
+            if (this.taskFields.dependency) {
+                this.ganttChartModule.reRenderConnectorLines();
+            }
+            if (isFrom !== 'beforeAdd') {
+                this.notify('selectRowByIndex', {});
+            }
         }
     }
 
@@ -4320,7 +4380,13 @@ export class Gantt extends Component<HTMLElement>
      */
     public getRowByID(id: string | number): HTMLElement {
         const record: IGanttData = this.getRecordByID(id.toString());
-        const index: number = this.updatedRecords.indexOf(record);
+        let index: number;
+        if (!this.loadChildOnDemand && this.taskFields.hasChildMapping) {
+            index = this.updatedRecords.map(item => item[this.taskFields.id]).indexOf(record.ganttProperties.taskId);
+        }
+        else {
+            index = this.updatedRecords.indexOf(record);
+        }
         if (index !== -1) {
             return this.getRowByIndex(index);
         } else {

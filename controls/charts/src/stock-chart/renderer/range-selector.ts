@@ -48,12 +48,16 @@ export class RangeSelector {
             height: this.calculateChartSize().height.toString(),
             tickPosition: 'Inside',
             majorTickLines: { width: 0 },
-            value: [new Date(stockChart.startValue), new Date(stockChart.endValue)],
+            value: [ stockChart.isDateTimeCategory ? new Date(stockChart.sortedData[Math.floor(stockChart.startValue)]) :
+                new Date(stockChart.startValue),
+            stockChart.isDateTimeCategory ? new Date(stockChart.sortedData[Math.floor(stockChart.endValue)]) :
+                new Date(stockChart.endValue)],
             margin : this.findMargin(),
             tooltip: { enable: stockChart.tooltip.enable, displayMode: 'OnDemand' },
             labelPlacement:'OnTicks',
             labelPosition:'Inside',
             dataSource: stockChart.dataSource,
+            intervalType : stockChart.primaryXAxis.intervalType,
             changed: (args: IChangedEventArgs) => {
                 const arg: IRangeChangeEventArgs = {
                     name: 'rangeChange',
@@ -70,8 +74,10 @@ export class RangeSelector {
                     this.stockChart.cartesianChart.cartesianChartRefresh(this.stockChart, arg.data);
                 }
                 if (stockChart.periodSelector && stockChart.periodSelector.datePicker) {
-                    stockChart.periodSelector.datePicker.startDate = new Date(args.start as number);
-                    stockChart.periodSelector.datePicker.endDate = new Date(args.end as number);
+                    stockChart.periodSelector.datePicker.startDate = this.stockChart.isDateTimeCategory ?
+                        new Date (this.stockChart.sortedData[Math.floor(args.start as number)]) : new Date(args.start as number);
+                    stockChart.periodSelector.datePicker.endDate = this.stockChart.isDateTimeCategory ?
+                        new Date (this.stockChart.sortedData[Math.floor(args.end as number)]) : new Date(args.end as number);
                     stockChart.periodSelector.datePicker.dataBind();
                 }
             }

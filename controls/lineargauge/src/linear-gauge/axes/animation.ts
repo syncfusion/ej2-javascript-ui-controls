@@ -1,4 +1,4 @@
-import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, isNullOrUndefined, animationMode } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Pointer } from './axis';
 import { animationComplete } from '../model/constant';
@@ -51,7 +51,7 @@ export class Animations {
         const x: number = options['x'];
         const y: number = options['y'];
         new Animation({}).animate(markerElement, {
-            duration: pointer.animationDuration,
+            duration: (pointer.animationDuration === 0 && animationMode === 'Enable') ? 1000: pointer.animationDuration,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {
                     timeStamp = ((args.timeStamp - args.delay) / args.duration);
@@ -156,7 +156,7 @@ export class Animations {
             pointer.bounds, this.gauge.container.type, this.gauge.orientation,
             new Size(pointer.bounds.width, pointer.bounds.height), 'bar', this.gauge.container.width, axis, pointer.roundedCornerRadius);
         new Animation({}).animate(pointerElement, {
-            duration: pointer.animationDuration,
+            duration: (pointer.animationDuration === 0 && animationMode === 'Enable') ? 1000: pointer.animationDuration,
             progress: (animate: AnimationOptions): void => {
                 if (animate.timeStamp >= animate.delay) {
                     timeStamp = ((animate.timeStamp - animate.delay) / animate.duration);

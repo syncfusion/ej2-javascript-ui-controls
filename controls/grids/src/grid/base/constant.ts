@@ -289,6 +289,8 @@ export const excelHeaderQueryCellInfo: string = 'excelHeaderQueryCellInfo';
 /** @hidden */
 export const exportDetailDataBound: string = 'exportDetailDataBound';
 /** @hidden */
+export const exportDetailTemplate: string = 'exportDetailTemplate';
+/** @hidden */
 export const beforePdfExport: string = 'beforePdfExport';
 /** @hidden */
 export const pdfExportComplete: string = 'pdfExportComplete';
@@ -560,3 +562,9 @@ export const commandColumnDestroy: string = 'commandColumnDestroy';
 export const batchCnfrmDlgCancel: string = 'cancelcnfrmDlg';
 /** @hidden */
 export const refreshVirtualLazyLoadCache: string = 'refresh-Virtual-LazyLoad-Cache';
+/** @hidden */
+export const refreshFrozenPosition: string = 'refresh-Frozen-Position';
+/** @hidden */
+export const refreshResizePosition: string = 'refresh-Resize-Position';
+/** @hidden */
+export const refreshSplitFrozenColumn: string = 'refresh-Split-Frozen-Column';

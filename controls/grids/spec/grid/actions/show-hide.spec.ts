@@ -6,7 +6,6 @@ import { extend } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { contentReady, freezeRender } from '../../../src/grid/base/constant';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { Column } from '../../../src/grid/models/column';
@@ -19,8 +18,9 @@ import { Edit } from '../../../src/grid/actions/edit';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
 import { Group } from '../../../src/grid/actions/group';
+import { Aggregate } from '../../../src/grid/actions/aggregate';
 
-Grid.Inject(Filter, Freeze, Resize, RowDD, Edit, VirtualScroll, InfiniteScroll, Group);
+Grid.Inject(Aggregate, Filter, Resize, RowDD, Edit, VirtualScroll, InfiniteScroll, Group);
 
 describe('ShowHide module testing', () => {
 
@@ -534,28 +534,24 @@ describe('ShowHide module testing', () => {
         });
         it('Hide Column using field', () => {
             gridObj.hideColumns(['Freight'], 'field');
-            rows =
-                (gridObj.getHeaderContent().querySelector('.e-movableheader').children[0] as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].classList.contains('e-hide')).toBeTruthy();
-            rows = ((select('.e-movablecontent').children[0] as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].style.display).toBe('none');
-            let col: HTMLTableColElement =
-                <HTMLTableColElement>(<HTMLTableElement>select('.e-movableheader').children[0]).children[0].children[0];
+            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+            expect(rows.cells[2].classList.contains('e-hide')).toBeTruthy();
+            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+            expect(rows.cells[2].style.display).toBe('none');
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
             expect(col.style.display).toBe('none');
-            col = <HTMLTableColElement>(<HTMLTableElement>select('.e-movablecontent').children[0]).children[0].children[0];
+            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
             expect(col.style.display).toBe('none');
         });
         it('Show Column using UID', () => {
             gridObj.showColumns((<Column>gridObj.getColumns()[2]).uid, 'uid');
-            rows =
-                (gridObj.getHeaderContent().querySelector('.e-movableheader').children[0] as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].classList.contains('e-hide')).toBeFalsy();
-            rows = ((select('.e-movablecontent').children[0] as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
             expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
-            let col: HTMLTableColElement =
-                <HTMLTableColElement>(<HTMLTableElement>select('.e-movableheader').children[0]).children[0].children[0];
+            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+            expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
             expect(col.style.display).toBe('');
-            col = <HTMLTableColElement>(<HTMLTableElement>select('.e-movablecontent').children[0]).children[0].children[0];
+            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
             expect(col.style.display).toBe('');
         });
         it('SetVisible function', () => {
@@ -563,19 +559,17 @@ describe('ShowHide module testing', () => {
             cols[2].visible = true;
             cols[1].visible = false;
             gridObj.showHider.setVisible();
-            rows =
-                (gridObj.getHeaderContent().querySelector('.e-movableheader').children[0] as any).tHead.rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].classList.contains('e-hide')).toBeFalsy();
-            rows = ((select('.e-movablecontent').children[0] as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
-            expect(rows.cells[0].classList.contains('e-hide')).toBeFalsy();
+            rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+            expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
+            rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+            expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
             rows = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
             expect(rows.cells[1].classList.contains('e-hide')).toBeTruthy();
             rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[1] as HTMLTableRowElement;
             expect(rows.cells[1].style.display).toBe('none');
-            let col: HTMLTableColElement =
-                <HTMLTableColElement>(<HTMLTableElement>select('.e-movableheader').children[0]).children[0].children[0];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
             expect(col.style.display).toBe('');
-            col = <HTMLTableColElement>(<HTMLTableElement>select('.e-movablecontent').children[0]).children[0].children[0];
+            col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
             expect(col.style.display).toBe('');
             col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[1];
             expect(col.style.display).toBe('none');
@@ -851,6 +845,149 @@ describe('ShowHide module testing', () => {
             gridObj.copy(true);
             expect((document.querySelector('.e-clipboard') as HTMLInputElement).value
                 === 'Order ID\tFreight\n10249\t$11.61').toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Frozen Revamp feature', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    allowFiltering: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true,   freeze: 'Left', width: 120, validationRules: { required: true, number: true }, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', validationRules: { required: true }, width: 160, freeze: 'Left' },
+                        { field: 'ShipName', headerText: 'Ship Name', width: '190' },
+                        { field: 'Freight', width: 150, format: 'C', validationRules: { required: true }, textAlign: 'Right' },
+                        { field: 'ShipAddress', headerText: 'Ship Address', width: '170' },
+                        { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', format: { type: 'dateTime', format: 'M/d/y hh:mm a' },
+                            width: 160
+                        },
+                        { field: 'EmployeeID', headerText: 'Employee ID', width: '150', freeze: 'Fixed' },
+                        { field: 'ShipRegion', headerText: 'Ship Region', width: '150', freeze: 'Fixed' },
+                        { field: 'ShipCity', headerText: 'Ship City', width: '170' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 170,
+                            edit: { params: { popupHeight: '300px' }  }
+                        },
+                        { field: 'ShipPostalCode', headerText: 'ShipPostal Code', width: '150', freeze: 'Right' },
+                        { field: 'Verified', headerText: 'Boolean', width: '150', freeze: 'Right' },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            groupFooterTemplate: 'Total units: ${Sum}'
+                        },
+                        {
+                            type: 'Max',
+                            field: 'Freight',
+                            groupCaptionTemplate: 'Maximum: ${Max}'
+                        },
+                        {
+                            type: 'Sum',
+                            field: 'Freight',
+                            format: 'C2',
+                            footerTemplate: 'Sum: ${Sum}'
+                        }]
+                    }],
+                    actionComplete: actionComplete,
+                    pageSettings: { pageCount: 5 }
+                }, done);
+        });
+
+        it('Hide a Freeze Left Columns', () => {
+            gridObj.hideColumns(['Customer Name']);
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-headercell.e-hide').length).toBe(1);
+            let rows: HTMLTableRowElement = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+            expect(rows.cells[1].classList.contains('e-hide')).toBeTruthy();
+        });
+        it('Hide a Freeze Right Columns', () => {
+            gridObj.hideColumns(['ShipPostal Code']);
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-headercell.e-hide').length).toBe(2);
+            let rows: HTMLTableRowElement = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+            expect(rows.cells[10].classList.contains('e-hide')).toBeTruthy();
+            gridObj.showColumns(['ShipPostal Code', 'Customer Name'], 'headerText');
+        });
+        it('column group testing', (done: Function) => {
+            actionComplete = (): void => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.groupModule.groupColumn('CustomerID');
+        });
+        it('Hide a Grouping Freeze Left Columns', () => {
+            gridObj.hideColumns(['Ship Name']);
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-headercell.e-hide').length).toBe(2);
+            let rows: HTMLTableRowElement = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+            expect(rows.cells[2].classList.contains('e-hide')).toBeTruthy();
+            expect(rows.cells[3].classList.contains('e-hide')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Frozen Revamp feature with Grouping', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    allowFiltering: true,
+                    allowRowDragAndDrop: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true,   freeze: 'Left', width: 120, validationRules: { required: true, number: true }, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', validationRules: { required: true }, width: 160, freeze: 'Left' },
+                        { field: 'ShipName', headerText: 'Ship Name', width: '190' },
+                        { field: 'Freight', width: 150, format: 'C', validationRules: { required: true }, textAlign: 'Right' },
+                        { field: 'ShipAddress', headerText: 'Ship Address', width: '170' },
+                        { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', format: { type: 'dateTime', format: 'M/d/y hh:mm a' },
+                            width: 160
+                        },
+                        { field: 'EmployeeID', headerText: 'Employee ID', width: '150', freeze: 'Fixed' },
+                        { field: 'ShipRegion', headerText: 'Ship Region', width: '150', freeze: 'Fixed' },
+                        { field: 'ShipCity', headerText: 'Ship City', width: '170' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 170,
+                            edit: { params: { popupHeight: '300px' }  }
+                        },
+                        { field: 'ShipPostalCode', headerText: 'ShipPostal Code', width: '150', freeze: 'Right' },
+                        { field: 'Verified', headerText: 'Boolean', width: '150', freeze: 'Right' },
+                    ],
+                    actionComplete: actionComplete,
+                    pageSettings: { pageCount: 5 }
+                }, done);
+        });
+
+        it('Hide a Freeze Left Columns', () => {
+            gridObj.hideColumns(['Customer Name']);
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-headercell.e-hide').length).toBe(1);
+            let rows: HTMLTableRowElement = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+            expect(rows.cells[2].classList.contains('e-hide')).toBeTruthy();
+            gridObj.showColumns(['Customer Name'], 'headerText');
+        });
+        it('column group testing', (done: Function) => {
+            actionComplete = (): void => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.groupModule.groupColumn('CustomerID');
+        });
+        it('Hide a Grouping Freeze Left Columns', () => {
+            gridObj.hideColumns(['Ship Name']);
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-headercell.e-hide').length).toBe(2);
+            let rows: HTMLTableRowElement = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+            expect(rows.cells[3].classList.contains('e-hide')).toBeTruthy();
+            expect(rows.cells[4].classList.contains('e-hide')).toBeTruthy();
         });
         afterAll(() => {
             destroy(gridObj);

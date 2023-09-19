@@ -18,9 +18,10 @@ import { DetailRow } from '../../../src/grid/actions/detail-row';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { Page } from '../../../src/grid/actions/page';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
 
 
-Grid.Inject(Group, Sort,DetailRow, Filter, Reorder, CommandColumn, Edit, VirtualScroll, Page);
+Grid.Inject(Group, Sort, DetailRow, Filter, Reorder, Toolbar, CommandColumn, Edit, VirtualScroll, Page);
 
 describe('Command Column ', () => {
 

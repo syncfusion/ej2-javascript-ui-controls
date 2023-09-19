@@ -986,6 +986,43 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 done();
             });
         });
+        describe('EJ2-844735 ->', () => {
+            beforeEach((done: Function) => {
+                model = {
+                    sheets: [{
+                        rows: [
+                            { cells: [{ value: '1', format: '0.0%' }] },
+                            { cells: [{ value: '1', format: '#,##0' }] },
+                            { cells: [{ value: '1', format: '$#,##0.00' }] },
+                            { cells: [{ value: '1', format: '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)' }] },
+                            { cells: [{ value: '1', format: '0.00%' }] }
+                        ]
+                    }]
+                };
+                helper.initializeSpreadsheet(model, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Value converts to string when entered with % in custom format applied cell', (done: Function) => {
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('100.0%');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('1');
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('$1.00');
+                expect(helper.invoke('getCell', [3, 0]).textContent).toBe(' $1.00 ');
+                expect(helper.invoke('getCell', [4, 0]).textContent).toBe('100.00%');
+                helper.edit('A1', '1%');
+                helper.edit('A2', '1%');
+                helper.edit('A3', '1%');
+                helper.edit('A4', '1%');
+                helper.edit('A5', '1%');
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('1.0%');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('0');
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('$0.01');
+                expect(helper.invoke('getCell', [3, 0]).textContent).toBe(' $0.01 ');
+                expect(helper.invoke('getCell', [4, 0]).textContent).toBe('1.00%');
+                done();
+            });
+        });
     });
 
     describe('Localization is not updated for placeholder and dialog content in the number format ->',(): void =>{

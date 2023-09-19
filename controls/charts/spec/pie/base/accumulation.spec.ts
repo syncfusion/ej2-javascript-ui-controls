@@ -125,7 +125,7 @@ describe('accumulation and Doughnut Control Checking', () => {
         expect(text).toBeNull();
     });
     it('Checking with  title', () => {
-        debugger;
+        //debugger;
         accumulation.title = 'Syncfusion accumulation Title';
         accumulation.dataBind();
         text = getElement(id + '_title');

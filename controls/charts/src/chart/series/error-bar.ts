@@ -8,6 +8,7 @@ import { Mean, RectOption, pathAnimation, getElement, appendChildElement, append
 import { getPoint, ChartLocation, sum, templateAnimate } from '../../common/utils/helper';
 import { ErrorBarMode, ErrorBarDirection } from '../../chart/utils/enum';
 import { PathOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { animationMode } from '@syncfusion/ej2-base';
 
 /**
  * `ErrorBar` module is used to render the error bar for series.
@@ -344,7 +345,7 @@ export class ErrorBar {
         if (!errorBarElements) {
             return null;
         }
-        const delay: number = series.animation.delay + series.animation.duration;
+        const delay: number = series.animation.delay + ((series.animation.duration === 0 && animationMode === 'Enable') ? 1000 : series.animation.duration);
         let j: number = 1;
         while (j < errorBarElements.length) {
             for (let i: number = 0; i < series.points.length; i++) {

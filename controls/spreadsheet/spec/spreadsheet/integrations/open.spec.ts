@@ -238,8 +238,10 @@ describe('EJ2-832406', () => {
                                         setTimeout(() => {
                                             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
                                             helper.click('#' + helper.id + '_contextmenu li:nth-child(5)');
-                                            expect(document.activeElement.id).toBe('spreadsheet');
-                                            done();
+                                            setTimeout(() => {
+                                                expect(document.activeElement.id).toBe('spreadsheet');
+                                                done();
+                                            });
                                         })
                                     })
                                 })
@@ -250,7 +252,7 @@ describe('EJ2-832406', () => {
             })
         })
     })
-})
+});
 
 describe('EJ2-842068', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');

@@ -28,6 +28,11 @@ require.config({
       main: 'ej2-navigations.umd.min.js'
     },
     {
+      name: '@syncfusion/ej2-pdf',
+      location: '../node_modules/@syncfusion/ej2-pdf/dist',
+      main: 'ej2-pdf.umd.min.js'
+    },
+    {
       name: '@syncfusion/ej2-data',
       location: 'node_modules/@syncfusion/ej2-data/dist',
       main: 'ej2-data.umd.min.js'

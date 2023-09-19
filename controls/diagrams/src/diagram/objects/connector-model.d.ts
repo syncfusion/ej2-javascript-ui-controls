@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor, compile as baseTemplateCompiler } from '@syncfusion/ej2-base';import { ShapeStyle, StrokeStyle } from '../core/appearance';import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { TextElement } from '../core/elements/text-element';import { PointModel } from '../primitives/point-model';import { Segments, DecoratorShapes, Transform, ConnectorConstraints, ControlPointsVisibility, BezierSegmentEditOrientation, Orientation } from '../enum/enum';import { Direction, LayoutOrientation, Status, PortConstraints, BezierSmoothness } from '../enum/enum';import { Rect } from '../primitives/rect';import { Size } from '../primitives/size';import { getAnnotationPosition, alignLabelOnSegments, updateConnector } from '../utility/diagram-util';import { setUMLActivityDefaults, initfixedUserHandlesSymbol } from '../utility/diagram-util';import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { flipConnector } from './../utility/diagram-util';import { PathElement } from '../core/elements/path-element';import { PathAnnotation } from './annotation';import { Canvas } from '../core/containers/canvas';import { getDecoratorShape } from './dictionary/common';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { DiagramElement } from '../core/elements/diagram-element';import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity, DiagramAction } from '../enum/enum';import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';import { SegmentInfo, Alignment, IReactDiagram } from '../rendering/canvas-interface';import { PathAnnotationModel } from './annotation-model';import { NodeBase } from './node-base';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix, transformPointByMatrix } from '../primitives/matrix';import { DiagramHtmlElement } from '../core/elements/html-element';import { getTemplateContent } from '../utility/dom-util';import { SymbolSizeModel } from './preview-model';import { SymbolSize } from './preview';import { ConnectorFixedUserHandle } from './fixed-user-handle';import { ConnectorFixedUserHandleModel } from './fixed-user-handle-model';import { ResizeTool } from '../interaction/tool';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor, compile as baseTemplateCompiler } from '@syncfusion/ej2-base';import { Margin, ShapeStyle, StrokeStyle } from '../core/appearance';import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { TextElement } from '../core/elements/text-element';import { PointModel } from '../primitives/point-model';import { Segments, DecoratorShapes, Transform, ConnectorConstraints, ControlPointsVisibility, BezierSegmentEditOrientation, Orientation, SegmentThumbShapes, PortVisibility, ElementAction } from '../enum/enum';import { Direction, LayoutOrientation, Status, PortConstraints, BezierSmoothness } from '../enum/enum';import { Rect } from '../primitives/rect';import { Size } from '../primitives/size';import { getAnnotationPosition, alignLabelOnSegments, updateConnector, checkPortRestriction, updatePortEdges, getPortsPosition } from '../utility/diagram-util';import { setUMLActivityDefaults, initfixedUserHandlesSymbol } from '../utility/diagram-util';import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { flipConnector } from './../utility/diagram-util';import { PathElement } from '../core/elements/path-element';import { PathAnnotation } from './annotation';import { Canvas } from '../core/containers/canvas';import { getDecoratorShape, getPortShape } from './dictionary/common';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { DiagramElement } from '../core/elements/diagram-element';import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity, DiagramAction } from '../enum/enum';import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';import { SegmentInfo, Alignment,IReactDiagram } from '../rendering/canvas-interface';import { PathAnnotationModel } from './annotation-model';import { NodeBase } from './node-base';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix, transformPointByMatrix } from '../primitives/matrix';import { DiagramHtmlElement } from '../core/elements/html-element';import { getTemplateContent } from '../utility/dom-util';import { SymbolSizeModel } from './preview-model';import { SymbolSize } from './preview';import { ConnectorFixedUserHandle } from './fixed-user-handle';import { ConnectorFixedUserHandleModel } from './fixed-user-handle-model';import { ResizeTool } from '../interaction/tool';import { PathPort, Port } from './port';import { PathPortModel } from './port-model';
 import {NodeBaseModel} from "./node-base-model";
 
 /**
@@ -806,6 +806,26 @@ export interface ConnectorModel extends NodeBaseModel{
     type?: Segments;
 
     /**
+     * Defines the shape for the connector segmentThumb
+     * Rhombus - Sets the segmentThumb shape as Rhombus
+     * Square - Sets the segmentThumb shape as Square
+     * Rectangle - Sets the segmentThumb shape as Rectangle
+     * Ellipse - Sets the segmentThumb shape as Ellipse
+     * Arrow - Sets the segmentThumb shape as Arrow
+     * Diamond - Sets the segmentThumb shape as Diamond
+     * OpenArrow - Sets the segmentThumb shape as OpenArrow
+     * Circle - Sets the segmentThumb shape as Circle
+     * Fletch - Sets the segmentThumb shape as Fletch
+     * OpenFetch - Sets the segmentThumb shape as OpenFetch
+     * IndentedArrow - Sets the segmentThumb shape as Indented Arrow
+     * OutdentedArrow - Sets the segmentThumb shape as Outdented Arrow
+     * DoubleArrow - Sets the segmentThumb shape as DoubleArrow
+     * 
+     * @default 'Circle'
+     */
+    segmentThumbShape?: SegmentThumbShapes;
+
+    /**
      * Sets the corner radius of the connector
      *
      * @default 0
@@ -912,6 +932,14 @@ export interface ConnectorModel extends NodeBaseModel{
      * @default null
      */
     bezierSettings?: BezierSettingsModel;
+
+    /**
+     * Defines the behavior of connection ports
+     *
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    ports?: PathPortModel[];
 
     /**
      * Defines the UI of the connector

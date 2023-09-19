@@ -462,11 +462,11 @@ describe('Gantt connector line support', () => {
         });
         it('Update Predecessor with valid TaskID and invalid connector type', () => {
             ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '4KS,2');
-            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
+            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS+12 days');
         });
         it('Update Predecessor with cyclic dependency', () => {
             ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '3FS');
-            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
+            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS+12 days');
         });
         it('Aria-label testing - SS', (done: Function) => {
             ganttObj.dataSource = connectorLineSSDatasource;

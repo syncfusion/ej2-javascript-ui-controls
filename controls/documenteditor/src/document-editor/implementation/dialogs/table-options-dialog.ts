@@ -177,9 +177,9 @@ export class TableOptionsDialog {
      * @param {WTableFormat} tableFormat Specifies table format.
      * @returns {void}
      */
-    public applySubTableOptions(tableFormat: WTableFormat): void {
+    public applySubTableOptions(tableFormat: WTableFormat, sourceTable?: TableWidget): void {
         this.documentHelper.owner.editorHistory.initComplexHistory(this.documentHelper.selection, 'TableMarginsSelection');
-        this.applyTableOptionsHistory(tableFormat);
+        this.applyTableOptionsHistory(tableFormat, sourceTable);
         if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
             this.documentHelper.owner.editorHistory.updateComplexHistory();
         }
@@ -190,17 +190,19 @@ export class TableOptionsDialog {
      * @returns {void}
      */
     public applyTableOptionsHelper(tableFormat: WTableFormat): void {
-        this.applySubTableOptionsHelper(tableFormat);
+        this.applySubTableOptionsHelper(tableFormat, undefined);
     }
 
-    private applyTableOptionsHistory(tableFormat: WTableFormat): void {
+    private applyTableOptionsHistory(tableFormat: WTableFormat, sourceTable: TableWidget): void {
         this.documentHelper.owner.editorModule.initHistory('TableOptions');
-        this.applySubTableOptionsHelper(tableFormat);
+        this.applySubTableOptionsHelper(tableFormat, sourceTable);
     }
 
-    private applySubTableOptionsHelper(tableFormat: WTableFormat): void {
-        let ownerTable: TableWidget = this.documentHelper.selection.start.currentWidget.paragraph.associatedCell.ownerTable;
-        ownerTable = ownerTable.combineWidget(this.documentHelper.owner.viewer) as TableWidget;
+    private applySubTableOptionsHelper(tableFormat: WTableFormat, ownerTable: TableWidget): void {
+        if(isNullOrUndefined(ownerTable)) {
+            ownerTable = this.documentHelper.selection.start.currentWidget.paragraph.associatedCell.ownerTable;
+            ownerTable = ownerTable.combineWidget(this.documentHelper.owner.viewer) as TableWidget;
+        }
         const currentTableFormat: WTableFormat = ownerTable.tableFormat;
         if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentBaseHistoryInfo)) {
             this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.addModifiedTableOptions(currentTableFormat);

@@ -269,7 +269,7 @@ export interface NotifyArgs {
     range?: Range
     /** Defines the action. */
     action?: string
-    callBack?(args?: string | IImageCommandsArgs): void
+    callBack?(args?: string | IImageCommandsArgs, cropImageData?: { [key: string]: string | boolean | number }[]): void
     file?: Blob
     insertElement?: Element
     touchData?: ITouchData
@@ -833,20 +833,20 @@ export interface IShowQuickTBarOptions {
 /**
  * @deprecated
  */
+export interface IPositionChanged {
+    x: boolean
+    y: boolean
+}
+
+/**
+ * @deprecated
+ */
 export interface IQuickToolbarOptions {
     popupType: string
     mode: OverflowMode
     renderType: RenderType
     toolbarItems: (string | IToolbarItems)[],
     cssClass: string
-}
-
-/**
- * @deprecated
- */
-export interface IPositionChanged {
-    x: Boolean
-    y: Boolean
 }
 
 /**
@@ -1164,8 +1164,6 @@ export interface ImageSuccessEventArgs {
     e?: object
     /**
      * Returns the details about upload file.
-     *
-     * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
      */
     file: FileInfo
     /**
@@ -1178,8 +1176,6 @@ export interface ImageSuccessEventArgs {
     operation: string
     /**
      * Returns the upload event operation.
-     *
-     * @blazorType ResponseEventArgs
      */
     response?: ResponseEventArgs
     /**
@@ -1202,8 +1198,6 @@ export interface ImageFailedEventArgs {
     e?: object
     /**
      * Returns the details about upload file.
-     *
-     * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
      */
     file: FileInfo
     /**
@@ -1216,8 +1210,6 @@ export interface ImageFailedEventArgs {
     operation: string
     /**
      * Returns the upload event operation.
-     *
-     * @blazorType ResponseEventArgs
      */
     response?: ResponseEventArgs
     /**
@@ -1308,8 +1300,6 @@ export interface ToolbarClickEventArgs {
     cancel: boolean
     /**
      * Defines the current Toolbar Item Object.
-     *
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel
      */
     item: ItemModel
     /**
@@ -1379,14 +1369,10 @@ export interface ImageUploadingEventArgs {
     cancel: boolean
     /**
      * Defines the additional data in key and value pair format that will be submitted to the upload action.
-     *
-     * @blazorType object
      */
     customFormData: { [key: string]: Object; }[];
     /**
      * Returns the XMLHttpRequest instance that is associated with upload action.
-     *
-     * @blazorType object
      */
     currentRequest?: { [key: string]: string }[]
     /**

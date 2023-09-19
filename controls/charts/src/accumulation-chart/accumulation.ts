@@ -9,7 +9,7 @@
 /**
  * AccumulationChart file
  */
-import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
+import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged, animationMode } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';
 import { remove, extend, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { AccumulationChartModel } from './accumulation-model';
@@ -688,7 +688,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * @private
      */
     public animate(duration?: number): void {
-        this.duration = duration ? duration : 700;
+        this.duration = (duration === 0 && animationMode === 'Enable') ? 700 : duration;
         this.animateselected = true;
         this.animateSeries = false;
         let temIndex: number = 0;
@@ -1968,7 +1968,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         const options: TextOption = new TextOption(
             this.element.id + '_centerLabel',
-            (this.series[0].animation.enable && isanimate) ? this.pieSeriesModule.center.x - 1 : this.pieSeriesModule.center.x,
+            (((this.series[0].animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && isanimate) ? this.pieSeriesModule.center.x - 1 : this.pieSeriesModule.center.x,
             ypos,
             getAnchor, '', '', 'auto'
         );
@@ -1986,7 +1986,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             tspanElement.textContent = labelCollection[i as number].replace(/<\/?b>/g, '');
             element.appendChild(tspanElement);
         }
-        if (isanimate && this.series[0].animation.enable && this.animateSeries) {
+        if (isanimate && ((this.series[0].animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && this.animateSeries) {
             this.centerLabelDelay(element);
         }
     }
@@ -2261,6 +2261,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 this.animateselected = false;
                 this.redraw = false;
                 break;
+            case 'enableRtl':
             case 'locale':
             case 'currencyCode':
                 super.refresh(); break;

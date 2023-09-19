@@ -67,14 +67,14 @@ export class MarkerExplode extends ChartData {
     /**
      * @hidden
      */
-    private mouseMoveHandler(): void {
+    public mouseMoveHandler(): void {
         const chart: Chart = this.chart;
         if ((chart.highlightMode !== 'None' || (chart.tooltip.enable)) && (!chart.isTouch || chart.startMove) && !this.isSelected(chart)) {
             this.markerMove(false);
         }
     }
 
-    private markerMove(remove: boolean): void {
+    public markerMove(remove: boolean): void {
         const chart: Chart = this.chart;
         this.currentPoints = [];
         let data: PointData;
@@ -106,26 +106,30 @@ export class MarkerExplode extends ChartData {
             }
             if (chart.tooltip.enable) {
                 const pointData: PointData = chart.chartAreaType === 'PolarRadar' ? this.getData() : null;
-                for (const chartSeries of chart.visibleSeries) {
-                    if (!chartSeries.enableTooltip || chartSeries.category === 'Indicator') {
-                        continue;
-                    }
-                    if (chart.chartAreaType === 'Cartesian' && chartSeries.visible) {
-                        data = this.getClosestX(chart, chartSeries, this.commonXValue(this.chart.visibleSeries));
-                    } else if (chart.chartAreaType === 'PolarRadar' && chartSeries.visible && pointData.point !== null) {
-                        data = new PointData(chartSeries.points[pointData.point.index], chartSeries);
-                    }
-                    if (data) {
-                        (<PointData[]>this.currentPoints).push(data);
-                        data = null;
+                if (!this.chart.tooltip.showNearestPoint) {
+                    this.currentPoints = this.chart.tooltipModule.currentPoints;
+                } else {
+                    for (const chartSeries of chart.visibleSeries) {
+                        if (!chartSeries.enableTooltip || chartSeries.category === 'Indicator') {
+                            continue;
+                        }
+                        if (chart.chartAreaType === 'Cartesian' && chartSeries.visible) {
+                            data = this.getClosestX(chart, chartSeries, this.commonXValue(this.chart.visibleSeries));
+                        } else if (chart.chartAreaType === 'PolarRadar' && chartSeries.visible && pointData.point !== null) {
+                            data = new PointData(chartSeries.points[pointData.point.index], chartSeries);
+                        }
+                        if (data) {
+                            (<PointData[]>this.currentPoints).push(data);
+                            data = null;
+                        }
                     }
                 }
             }
         }
         const length: number = this.previousPoints.length;
-        if (this.currentPoints.length > 0) {
-            if (length === 0 || chart.isPointMouseDown || (length > 0 && this.previousPoints[0].point !== this.currentPoints[0].point)) {
-                if (this.previousPoints.length > 0) {
+        if (this.currentPoints.length > 0 || (length > 0 && chart.tooltip.shared)) {
+            if (length === 0 || chart.isPointMouseDown || (length > 0 && (this.currentPoints.length == 0 || (this.previousPoints[0].point !== this.currentPoints[0].point)))) {
+                if (length > 0) {
                     for (const previousPoint of this.previousPoints) {
                         if (!isNullOrUndefined(previousPoint)) {
                             this.removeHighlightedMarker(previousPoint.series as Series, previousPoint.point as Points);
@@ -234,7 +238,7 @@ export class MarkerExplode extends ChartData {
                                                this.chart.svgRenderer, series.clipRect);
             // incident: 252450 point click selection not working while maker explode
             //symbol.setAttribute('style', 'pointer-events:none');
-            symbol.setAttribute('class', 'EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
+            symbol.setAttribute('class', this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
             const selectionId: string = element.id.indexOf('Symbol') !== -1 ? '_Symbol' : '';
             const seletionElem: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
                 point.index + selectionId);
@@ -263,7 +267,7 @@ export class MarkerExplode extends ChartData {
     public doAnimation(series: Series, point: Points, endAnimate: boolean = false): void {
         const duration: number = this.animationDuration();
         const delay: number = series.animation.delay;
-        const rectElements: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
+        const rectElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
         for (let i: number = 0, len: number = rectElements.length; i < len; i++) {
             this.trackballAnimate(
                 <HTMLElement>rectElements[i as number], delay, duration, series,
@@ -287,7 +291,7 @@ export class MarkerExplode extends ChartData {
         const clipX: number = (series.type !== 'Polar' && series.type !== 'Radar') ? series.clipRect.x : 0;
         const clipY: number = (series.type !== 'Polar' && series.type !== 'Radar') ? series.clipRect.y : 0;
         let height: number = 0;
-        (<HTMLElement>elements).style.visibility = 'hidden';
+        //(<HTMLElement>elements).style.visibility = 'hidden';
         const reducedHeight: number = endAnimate ? -8 : 1;
         const transform: string = elements.getAttribute('transform');
         new Animation({}).animate(<HTMLElement>elements, {
@@ -297,8 +301,8 @@ export class MarkerExplode extends ChartData {
                 if (args.timeStamp > args.delay) {
                     args.element.style.visibility = 'visible';
                     height = ((args.timeStamp - args.delay) / args.duration);
-                    elements.setAttribute('transform', 'translate(' + (centerX + clipX)
-                        + ' ' + (centerY + clipY) + ') scale(' + (height / reducedHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                     elements.setAttribute('transform', 'translate(' + (centerX + clipX)
+                         + ' ' + (centerY + clipY) + ') scale(1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
                 }
             },
             end: () => {
@@ -332,7 +336,7 @@ export class MarkerExplode extends ChartData {
         if (!isNullOrUndefined(series) && !isNullOrUndefined(point)) {
             const markerElement: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
                 point.index + '_Symbol');
-            const trackballElements: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
+            const trackballElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
             for (let i: number = 0, len: number = trackballElements.length; i < len; i++) {
                 remove(trackballElements[0]);
             }
@@ -342,7 +346,7 @@ export class MarkerExplode extends ChartData {
         }
         else {
             for (const point of series.points) {
-                const elements: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
+                const elements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
                 const markerElement: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
                     point.index + '_Symbol');
                 for (let i: number = 0, len: number = elements.length; i < len; i++) {

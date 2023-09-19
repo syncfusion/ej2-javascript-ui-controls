@@ -2,7 +2,7 @@
  * Gantt expand collapse spec
  */
 import { Gantt } from '../../src/index';
-import { projectData1 } from '../base/data-source.spec';
+import { projectData1, multiResources, multiTaskbarData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 describe('Gantt expand collapse support', () => {
     describe('Gantt expand collapse', () => {
@@ -135,4 +135,121 @@ describe('Gantt expand collapse support', () => {
             done();
         });
     });
+    // describe('Gantt expand collapse', () => {
+//     let ganttObj: Gantt;
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt(
+//             {
+//                 dataSource: multiTaskbarData,
+//                 resources: multiResources,
+//                 viewType: 'ResourceView',
+//                 showOverAllocation: true,
+//                 enableMultiTaskbar: true,
+//                 enableContextMenu: true,
+//                 allowSorting: true,
+//                 allowReordering: true,
+//                 taskFields: {
+//                     id: 'TaskID',
+//                     name: 'TaskName',
+//                     startDate: 'StartDate',
+//                     endDate: 'EndDate',
+//                     duration: 'Duration',
+//                     progress: 'Progress',
+//                     dependency: 'Predecessor',
+//                     resourceInfo: 'resources',
+//                     expandState: 'isExpand',
+//                     work: 'work',
+//                     child: 'subtasks'
+//                 },
+//                 resourceFields: {
+//                     id: 'resourceId',
+//                     name: 'resourceName',
+//                     unit: 'resourceUnit',
+//                     group: 'resourceGroup'
+//                 },
+//                 editSettings: {
+//                     allowAdding: true,
+//                     allowEditing: true,
+//                     allowDeleting: true,
+//                     allowTaskbarEditing: true,
+//                     showDeleteConfirmDialog: true
+//                 },
+//                 columns: [
+//                     { field: 'TaskID', visible: false },
+//                     { field: 'TaskName', headerText: 'Name', width: 250 },
+//                     { field: 'work', headerText: 'Work' },
+//                     { field: 'Progress' },
+//                     { field: 'resourceGroup', headerText: 'Group' },
+//                     { field: 'StartDate' },
+//                     { field: 'Duration' },
+//                 ],
+//                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+//                     { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+//                 labelSettings: {
+//                     rightLabel: 'resources',
+//                     taskLabel: 'Progress'
+//                 },
+//                 splitterSettings: {
+//                     columnIndex: 3
+//                 },
+//                 selectionSettings: {
+//                     mode: 'Row',
+//                     type: 'Single',
+//                     enableToggle: false
+//                 },
+//                 tooltipSettings: {
+//                     showTooltip: true
+//                 },
+//                 timelineSettings: {
+//                     showTooltip: true,
+//                     topTier: {
+//                         unit: 'Week',
+//                         format: 'dd/MM/yyyy'
+//                     },
+//                     bottomTier: {
+//                         unit: 'Day',
+//                         count: 1
+//                     }
+//                 },
+//                 eventMarkers: [
+//                     {
+//                         day: '04/17/2019',
+//                         cssClass: 'e-custom-event-marker',
+//                         label: 'Project approval and kick-off'
+//                     }
+//                 ],
+//                 holidays: [{
+//                     from: "04/04/2019",
+//                     to: "04/05/2019",
+//                     label: " Public holidays",
+//                     cssClass: "e-custom-holiday"
+//                 }],
+//                 readOnly: false,
+//                 allowRowDragAndDrop: true,
+//                 allowResizing: true,
+//                 allowFiltering: true,
+//                 allowSelection: true,
+//                 highlightWeekends: true,
+//                 treeColumnIndex: 1,
+//                 taskbarHeight: 20,
+//                 rowHeight: 40,
+//                 height: '550px',
+//                 projectStartDate: new Date('03/28/2019'),
+//                 projectEndDate: new Date('05/18/2019')
+//             }, done);
+//     });
+//     afterAll(() => {
+//         if (ganttObj) {
+//             destroyGantt(ganttObj);
+//         }
+//     });
+//     it('Collapse all tasks in resource view', (done: Function) => {
+//         ganttObj.collapsed = () => {
+//             expect(ganttObj.treeGrid.getRows()[16].getElementsByClassName('e-treegridexpand').length).toBe(1);
+//         }
+//         ganttObj.dataBind();
+//         ganttObj.collapseAll();
+//         done();
+//     });
+// });
 });

@@ -1,0 +1,198 @@
+@include export-module('h-scroll') {
+
+  /*! h-scroll layout */
+
+  .e-bigger #{&}.e-hscroll,
+  #{&}.e-hscroll.e-bigger {
+    min-height: $hscroll-nav-bgr-minheight;
+
+    &:not(.e-scroll-device) {
+      padding: $hscroll-bgr-padding;
+    }
+
+    &.e-scroll-device {
+      padding-right: $hscroll-nav-bgr-width;
+    }
+
+    &.e-rtl.e-scroll-device {
+      padding-left: $hscroll-nav-bgr-width;
+      padding-right: initial;
+    }
+
+    .e-nav-arrow.e-icons {
+      font-size: $hscroll-device-arrow-size-bigger;
+    }
+
+    &.e-rtl .e-scroll-overlay.e-scroll-right-overlay {
+      left: $hscroll-nav-bgr-width;
+    }
+
+    .e-scroll-overlay {
+
+      &.e-scroll-right-overlay {
+        right: $hscroll-nav-bgr-width;
+      }
+    }
+
+    .e-scroll-nav {
+      min-height: $hscroll-nav-bgr-minheight;
+      width: $hscroll-nav-bgr-width;
+    }
+  }
+
+  #{&}.e-hscroll {
+    display: block;
+    position: relative;
+    width: inherit;
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+        padding-left: $hscroll-mob-nav-nrml-width;
+        padding-right: initial;
+
+        .e-scroll-nav {
+          transform: skewX(-16deg) translateX(-6px);
+        }
+
+        .e-scroll-overlay {
+
+          &.e-scroll-right-overlay {
+            left: $hscroll-device-arrow-width;
+            right: auto;
+            transform: skewX(-16deg) translateX(-6px);
+          }
+
+          &.e-scroll-left-overlay {
+            left: auto;
+            right: 0;
+          }
+        }
+      }
+    }
+
+    &:not(.e-scroll-device) {
+      padding: $hscroll-nrml-padding;
+    }
+
+    &.e-scroll-device {
+      padding-right: $hscroll-mob-nav-nrml-width;
+
+      .e-scroll-nav {
+        transform: skewX(-16deg) translateX(6px);
+        width: $hscroll-device-arrow-width;
+
+        .e-nav-arrow {
+          font-size: $hscroll-device-arrow-size;
+          transform: skewX(16deg);
+        }
+      }
+
+      .e-scroll-overlay {
+        opacity: $hscroll-overlay-opacity;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        z-index: 100;
+
+        &.e-scroll-right-overlay {
+          left: auto;
+          right: $hscroll-device-arrow-width;
+          transform: skewX(-16deg) translateX(6px);
+        }
+
+        &.e-scroll-left-overlay {
+          left: 0;
+          right: auto;
+        }
+      }
+    }
+
+    &.e-overlay {
+
+      .e-hscroll-content {
+
+        > * {
+          pointer-events: none;
+        }
+      }
+    }
+
+    > * {
+      height: inherit;
+      line-height: normal;
+    }
+
+    .e-hscroll-content {
+      display: inline-block;
+      height: inherit;
+      position: relative;
+
+      > * {
+        pointer-events: auto;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+
+        &.e-scroll-right-nav {
+          left: 0;
+          right: auto;
+        }
+
+        &.e-scroll-left-nav {
+          left: auto;
+          right: 0;
+        }
+      }
+    }
+
+    .e-scroll-nav  {
+      align-items: center;
+      bottom: 0;
+      cursor: pointer;
+      display: flex;
+      min-height: $hscroll-nav-nrml-minheight;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      width: $hscroll-nav-nrml-width;
+
+      &.e-scroll-left-nav {
+        left: 0;
+      }
+
+      &.e-scroll-right-nav {
+        right: 0;
+      }
+
+      &.e-ie-align {
+        display: table;
+      }
+    }
+
+    .e-nav-arrow {
+      position: relative;
+    }
+
+    .e-nav-arrow.e-icons {
+      display: table-cell;
+      text-align: center;
+      vertical-align: middle;
+      width: 100%;
+      font-size: $hscroll-device-arrow-icon-size;
+    }
+
+    .e-hscroll-bar {
+
+      .e-hscroll-content {
+
+        .e-overlay {
+          pointer-events: none;
+        }
+      }
+    }
+  }
+}

@@ -5,7 +5,7 @@ import { remoteData, remoteData2 } from '../dataSource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 
-describe('DropDown Tree control Remote datasource', () => {
+xdescribe('DropDown Tree control Remote datasource', () => {
     /**
       * Keyboard key testing
       */

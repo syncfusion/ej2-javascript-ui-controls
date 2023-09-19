@@ -8,18 +8,18 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='./node-base-model.d.ts'/>
 import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor, compile as baseTemplateCompiler } from '@syncfusion/ej2-base';
-import { ShapeStyle, StrokeStyle } from '../core/appearance';
+import { Margin, ShapeStyle, StrokeStyle } from '../core/appearance';
 import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { TextElement } from '../core/elements/text-element';
 import { PointModel } from '../primitives/point-model';
-import { Segments, DecoratorShapes, Transform, ConnectorConstraints, ControlPointsVisibility, BezierSegmentEditOrientation, Orientation } from '../enum/enum';
+import { Segments, DecoratorShapes, Transform, ConnectorConstraints, ControlPointsVisibility, BezierSegmentEditOrientation, Orientation, SegmentThumbShapes, PortVisibility, ElementAction } from '../enum/enum';
 import { Direction, LayoutOrientation, Status, PortConstraints, BezierSmoothness } from '../enum/enum';
 import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, DiagramConnectorShapeModel, BezierSettingsModel } from './connector-model';
 import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
-import { getAnnotationPosition, alignLabelOnSegments, updateConnector } from '../utility/diagram-util';
+import { getAnnotationPosition, alignLabelOnSegments, updateConnector, checkPortRestriction, updatePortEdges, getPortsPosition } from '../utility/diagram-util';
 import { setUMLActivityDefaults, initfixedUserHandlesSymbol } from '../utility/diagram-util';
 import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
@@ -27,13 +27,13 @@ import { flipConnector } from './../utility/diagram-util';
 import { PathElement } from '../core/elements/path-element';
 import { PathAnnotation } from './annotation';
 import { Canvas } from '../core/containers/canvas';
-import { getDecoratorShape } from './dictionary/common';
+import { getDecoratorShape, getPortShape } from './dictionary/common';
 import { IElement } from './interface/IElement';
 import { Container } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity, DiagramAction } from '../enum/enum';
 import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';
-import { SegmentInfo, Alignment, IReactDiagram } from '../rendering/canvas-interface';
+import { SegmentInfo, Alignment,IReactDiagram } from '../rendering/canvas-interface';
 import { PathAnnotationModel } from './annotation-model';
 import { NodeBase } from './node-base';
 import { DiagramTooltipModel } from './tooltip-model';
@@ -49,6 +49,8 @@ import { SymbolSize } from './preview';
 import { ConnectorFixedUserHandle } from './fixed-user-handle';
 import { ConnectorFixedUserHandleModel } from './fixed-user-handle-model';
 import { ResizeTool } from '../interaction/tool';
+import { PathPort, Port } from './port';
+import { PathPortModel } from './port-model';
 const getConnectorType: Function = (obj: ConnectorShape): Object => {
     if (isBlazor()) {
         return DiagramConnectorShape;
@@ -1237,7 +1239,27 @@ export class Connector extends NodeBase implements IElement {
      */
     @Property('Straight')
     public type: Segments;
-
+    
+    /**
+     * Defines the shape for the connector segmentThumb
+     * Rhombus - Sets the segmentThumb shape as Rhombus
+     * Square - Sets the segmentThumb shape as Square
+     * Rectangle - Sets the segmentThumb shape as Rectangle
+     * Ellipse - Sets the segmentThumb shape as Ellipse
+     * Arrow - Sets the segmentThumb shape as Arrow
+     * Diamond - Sets the segmentThumb shape as Diamond
+     * OpenArrow - Sets the segmentThumb shape as OpenArrow
+     * Circle - Sets the segmentThumb shape as Circle
+     * Fletch - Sets the segmentThumb shape as Fletch
+     * OpenFetch - Sets the segmentThumb shape as OpenFetch
+     * IndentedArrow - Sets the segmentThumb shape as Indented Arrow
+     * OutdentedArrow - Sets the segmentThumb shape as Outdented Arrow
+     * DoubleArrow - Sets the segmentThumb shape as DoubleArrow
+     * 
+     * @default 'Circle'
+     */
+    @Property('Circle')
+    public segmentThumbShape: SegmentThumbShapes;
     /**
      * Sets the corner radius of the connector
      *
@@ -1365,6 +1387,15 @@ export class Connector extends NodeBase implements IElement {
     public parentId: string = '';
 
     /**
+     * Defines the behavior of connection ports
+     *
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Collection<PathPortModel>([], PathPort)
+    public ports: PathPortModel[];
+
+    /**
      * Defines the UI of the connector
      *
      * @default null
@@ -1390,6 +1421,10 @@ export class Connector extends NodeBase implements IElement {
     public isBezierEditing: boolean;
     /** @private */
     public selectedSegmentIndex: number;
+     /** @private */
+     public outEdges: string[] = [];
+     /** @private */
+     public inEdges: string[] = [];
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
@@ -1525,9 +1560,100 @@ export class Connector extends NodeBase implements IElement {
             container.children.push(
                 this.getfixedUserHandle(this.fixedUserHandles[parseInt(i.toString(), 10)] as ConnectorFixedUserHandle, this.intermediatePoints, bounds));
         }
+        // Feature 826644: Support to add ports to the connector. 
+        this.initPorts(getDescription, container,bounds);
         this.wrapper = container;
         return container;
     }
+
+      /** @private */
+      public initPorts(accessibilityContent: Function | string, container: Container, bounds: Rect): void {
+        for (let i: number = 0; this.ports !== undefined, i < this.ports.length; i++) {
+            container.children.push(this.initPort(this.ports[parseInt(i.toString(), 10)] as Port,this.intermediatePoints,bounds,accessibilityContent));
+        }
+    }
+     // Feature 826644: Support to add ports to the connector. Added below method to init the connector port. 
+    /** @private */
+    public initPort( ports: Port, points: PointModel[],
+        bounds: Rect, accessibilityContent: Function | string): PathElement | DiagramElement {
+        let portWrapper: PathElement| DiagramElement = new PathElement();
+        portWrapper.height = ports.height;  
+        portWrapper.width = ports.width;
+        portWrapper.margin = ports.margin as Margin;
+        const pathdata: string = (ports.shape === 'Custom') ? ports.pathData : getPortShape(ports.shape);
+        (portWrapper as any).data = pathdata;
+        portWrapper.horizontalAlignment = ports.horizontalAlignment;
+        portWrapper.verticalAlignment = ports.verticalAlignment;
+        // eslint-disable-next-line prefer-const
+        portWrapper = this.initPortWrapper(ports, points, bounds, portWrapper, this);
+        // tslint:disable-next-line:no-any
+        let wrapperContent: any;
+        const contentAccessibility: Function = getFunction(accessibilityContent);
+        if (contentAccessibility) {
+            wrapperContent = contentAccessibility(portWrapper, this);
+        }
+        portWrapper.description = wrapperContent ? wrapperContent : portWrapper.id;
+        portWrapper.elementActions = portWrapper.elementActions | ElementAction.ElementIsPort;
+        (portWrapper as any).isPathPort = true;
+       return portWrapper;
+    };
+     // Feature 826644: Support to add ports to the connector. Added below method to init the connector portwrapper. 
+    /** @private */
+    public initPortWrapper(ports: Port, points: PointModel[], bounds: Rect, portContent : PathElement | DiagramElement | DiagramHtmlElement, Connector?: ConnectorModel | PathElement): DiagramElement {
+        ports.id = ports.id || randomId();
+        // Creates port element
+        const pivotPoint: PointModel = { x: 0, y: 0 };
+        const getPointloop: SegmentInfo = getPortsPosition(points, ports, bounds);
+        const newPoint: PointModel = getPointloop.point;
+        portContent.id = this.id + '_' + (ports.id);
+
+        const style: ShapeStyleModel = ports.style;
+        portContent.style = {
+            fill: style.fill, strokeColor: style.strokeColor, gradient: null,
+            opacity: style.opacity, strokeDashArray: style.strokeDashArray, strokeWidth: style.strokeWidth
+        };
+        if (bounds.width === 0) { bounds.width = this.style.strokeWidth; }
+        if (bounds.height === 0) { bounds.height = this.style.strokeWidth; }
+        const offsetPoint: PointModel = { x: ((newPoint.x - bounds.x) / bounds.width), y: ((newPoint.y - bounds.y) / bounds.height) };
+        pivotPoint.x = bounds.width * offsetPoint.x;
+        pivotPoint.y = bounds.height * offsetPoint.y;
+        const align: Alignment = alignLabelOnSegments((ports as PathPort), getPointloop.angle, points);
+        const hAlign: string = align.hAlign; const vAlign: string = align.vAlign;
+        let horizor: HorizontalAlignment; let verzor: VerticalAlignment;
+        if (hAlign === 'left') {
+            horizor = 'Left';
+            pivotPoint.x += (ports as PathPort).displacement.x;
+        } else if (hAlign === 'right') {
+            horizor = 'Right';
+            pivotPoint.x -= (ports as PathPort).displacement.x;
+        } else if (hAlign === 'center') {
+            horizor = 'Center';
+        }
+        if (vAlign === 'top') {
+            verzor = 'Top';
+            pivotPoint.y += (ports as PathPort).displacement.y;
+        } else if (vAlign === 'bottom') {
+            verzor = 'Bottom';
+            pivotPoint.y -= (ports as PathPort).displacement.y;
+        } else if (vAlign === 'center') {
+            verzor = 'Center';
+        }
+        portContent.horizontalAlignment = horizor;
+        portContent.verticalAlignment = verzor;
+        if (Connector && (Connector as ConnectorModel).flipMode !== 'Label' && (Connector as ConnectorModel).flipMode !== 'None') {
+            portContent = updatePortEdges(portContent, this.flip, ports);
+        } else {
+            portContent = updatePortEdges(portContent, 'None', ports);
+        }
+        portContent.float = true;
+        portContent.setOffsetWithRespectToBounds(pivotPoint.x, pivotPoint.y, 'Absolute');
+        portContent.relativeMode = 'Point';
+        portContent.visible = checkPortRestriction(ports, PortVisibility.Visible) &&
+            !checkPortRestriction(ports, PortVisibility.Hover) && !checkPortRestriction(ports, PortVisibility.Connect) ? true : false;
+        portContent.elementActions = portContent.elementActions | ElementAction.ElementIsPort;
+        return portContent;
+    }
+
     private getConnectorRelation(): void {
         const shape: RelationShip = (this.shape as RelationShip);
         if (shape.relationship === 'Association') {
@@ -1586,7 +1712,7 @@ export class Connector extends NodeBase implements IElement {
             shape.multiplicity.source.optional = false;
             targetText = text1 ? text1 : '*'; sourceText = '1';
         }
-        ///831806 -Added ManyToMany relationship for UML class connector annotation label
+        //831806 -Added ManyToMany relationship for UML class connector annotation label
         if (shape.multiplicity.type === 'ManyToMany') {
             sourceText = text ? text : '*'; targetText = text1 ? text1 : '*';
         }

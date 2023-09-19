@@ -14,7 +14,7 @@ import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
 import { FilterCellRenderer } from '../renderer/filter-cell-renderer';
-import { parentsUntil } from '../base/util';
+import { parentsUntil, addFixedColumnBorder, applyStickyLeftRightPosition } from '../base/util';
 import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
 import { CheckBoxFilter } from '../actions/checkbox-filter';
 import { ExcelFilter } from '../actions/excel-filter';
@@ -109,8 +109,7 @@ export class Filter implements IAction {
      * @hidden
      */
     public render(e?: NotifyArgs): void {
-        if (DataUtil.getObject('args.isFrozen', e) || (this.parent.getFrozenMode() === literals.leftRight &&
-            DataUtil.getObject('args.renderFrozenRightContent', e))) {
+        if (DataUtil.getObject('args.isFrozen', e)) {
             return;
         }
         const gObj: IGrid = this.parent;
@@ -129,20 +128,28 @@ export class Filter implements IAction {
                 rowRenderer.element = this.parent.createElement('tr', { className: 'e-filterbar'});
                 const row: Row<Column> = this.generateRow();
                 row.data = this.values;
-                if (gObj.getFrozenMode() === 'Right') {
-                    const thead: Element = gObj.getFrozenRightHeader().querySelector('thead');
-                    thead.appendChild(rowRenderer.element);
-                } else {
-                    this.parent.getHeaderContent().querySelector('thead:not(.e-masked-thead)').appendChild(rowRenderer.element);
-                }
+                this.parent.getHeaderContent().querySelector('thead:not(.e-masked-thead)').appendChild(rowRenderer.element);
                 const rowdrag: Element = this.parent.element.querySelector('.e-rowdragheader');
                 this.element = rowRenderer.render(row, <Column[]>gObj.getColumns(), null, null, rowRenderer.element);
+                if (this.element.querySelectorAll('.e-leftfreeze').length &&
+                    (this.element.querySelectorAll('.e-indentcell').length || this.element.querySelectorAll('.e-grouptopleftcell').length)) {
+                    const td: NodeListOf<Element> = this.element.querySelectorAll('.e-indentcell, .e-grouptopleftcell');
+                    for (let i: number = 0; i < td.length; i++) {
+                        td[parseInt(i.toString(), 10)].classList.add('e-leftfreeze');
+                        applyStickyLeftRightPosition(td[parseInt(i.toString(), 10)] as HTMLElement, i * 30, this.parent.enableRtl, 'Left');
+                    }
+                }
+                addFixedColumnBorder(this.element);
                 const detail: Element = this.element.querySelector('.e-detailheadercell');
                 if (detail) {
                     detail.className = 'e-filterbarcell e-mastercell';
                 }
                 if (rowdrag) {
-                    rowdrag.className = 'e-dragheadercell e-mastercell';
+                    if ( rowdrag.classList.contains('e-leftfreeze')) {
+                        rowdrag.className = 'e-dragheadercell e-mastercell e-leftfreeze';
+                    } else {
+                        rowdrag.className = 'e-filterbarcell e-mastercell';
+                    }
                 }
                 const gCells: Element[] = [].slice.call(this.element.getElementsByClassName('e-grouptopleftcell'));
                 if (gCells.length) {
@@ -210,7 +217,7 @@ export class Filter implements IAction {
                 remove(this.element);
             }
             const filterBarElement: Element = this.parent.getHeaderContent().querySelector('.e-filterbar');
-            if (this.parent.isFrozenGrid() && filterBarElement) {
+            if (filterBarElement) {
                 remove(filterBarElement);
             }
         }
@@ -246,7 +253,7 @@ export class Filter implements IAction {
         for (const dummy of this.parent.getColumns() as Column[]) {
             cells.push(this.generateCell(dummy));
         }
-        if (this.parent.getFrozenMode() === 'Right') {
+        if (this.parent.isRowDragable() && this.parent.getFrozenMode() === 'Right') {
             cells.push(this.generateCell({} as Column, CellType.RowDragHIcon));
         }
         return cells;
@@ -1014,7 +1021,7 @@ export class Filter implements IAction {
     private onTimerTick(): void {
         const selector: string = '[id=\'' + this.column.field + '_filterBarcell\']';
         let filterElement: HTMLInputElement = (this.element.querySelector(selector) as HTMLInputElement);
-        if (!filterElement && this.parent.isFrozenGrid()) {
+        if (!filterElement) {
             filterElement = (this.parent.getHeaderContent().querySelector(selector) as HTMLInputElement);
         }
         let filterValue: string;

@@ -3,7 +3,7 @@ import { ITreeData, TreeGridPdfExportProperties } from '../base/interface';
 import { getObject, PdfExport as GridPdf, Grid, BeforeDataBoundArgs, PdfExportProperties} from '@syncfusion/ej2-grids';
 import { PdfQueryCellInfoEventArgs, PdfStyle } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline } from '../utils';
-import { isNullOrUndefined, setValue, Ajax, extend, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, Fetch, extend, getValue } from '@syncfusion/ej2-base';
 import { DataManager, Query, ReturnOption } from '@syncfusion/ej2-data';
 import * as event from '../base/constant';
 import { PdfDocument } from '@syncfusion/ej2-pdf-export';
@@ -88,7 +88,7 @@ export class PdfExport {
                 if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
                     customsData = pdfExportProperties.dataSource;
                 }
-                pdfExportProperties = this.manipulatePdfProperties(pdfExportProperties, dtSrc, <Ajax>e);
+                pdfExportProperties = this.manipulatePdfProperties(pdfExportProperties, dtSrc, <Fetch>e);
                 return this.parent.grid.pdfExportModule.Map(
                     this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob).then((document: PdfDocument) => {
                     if (customsData != null) {
@@ -111,7 +111,7 @@ export class PdfExport {
         }
         return query;
     }
-    protected manipulatePdfProperties(prop?: PdfExportProperties, dtSrc?: Object, queryResult?: Ajax) : Object {
+    protected manipulatePdfProperties(prop?: PdfExportProperties, dtSrc?: Object, queryResult?: Fetch) : Object {
         let args: Object = {};
         //count not required for this query
         const isLocal: boolean = !isRemoteData(this.parent) && isOffline(this.parent);

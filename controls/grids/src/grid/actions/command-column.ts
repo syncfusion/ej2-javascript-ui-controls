@@ -1,4 +1,4 @@
-import { closest, KeyboardEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { closest, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { click, keyPressed, commandClick, initialEnd, destroy } from '../base/constant';
 import { CellType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
@@ -68,7 +68,7 @@ export class CommandColumn {
             cancel: false,
             target: target,
             commandColumn: commandColumn,
-            rowData: isNullOrUndefined(row) ? undefined : row.data
+            rowData: row.data
         };
         this.parent.trigger(commandClick, args, (commandclickargs: CommandClickEventArgs) => {
             if (buttonObj.disabled || !gObj.editModule || commandclickargs.cancel) {

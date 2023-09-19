@@ -112,7 +112,7 @@ export interface CellFormatArgs {
     style: CellStyleModel;
     rowIdx: number;
     colIdx: number;
-    cell?: HTMLElement;
+    td?: HTMLElement;
     pCell?: HTMLElement;
     row?: HTMLElement;
     hRow?: HTMLElement;

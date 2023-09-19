@@ -1,8 +1,7 @@
 import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
-import { isNullOrUndefined, addClass, extend, closest } from '@syncfusion/ej2-base';
-import * as events from '../base/constant';
-import { appendChildren, alignFrozenEditForm, getMovableTbody, getFrozenRightTbody, setStyleAndAttributes } from '../base/util';
+import { isNullOrUndefined, addClass, extend } from '@syncfusion/ej2-base';
+import { appendChildren, setStyleAndAttributes, addFixedColumnBorder, addStickyColumnPosition } from '../base/util';
 import * as literals from '../base/string-literals';
 
 /**
@@ -29,26 +28,17 @@ export class InlineEditRender {
     public addNew(elements: Object, args: { row?: Element, rowData?: Object, isScroll?: boolean }): void {
         this.isEdit = false;
         let tbody: Element;
-        const mTbody: Element = getMovableTbody(this.parent);
-        const frTbody: Element = getFrozenRightTbody(this.parent);
-        const isFrozenGrid: boolean = this.parent.isFrozenGrid();
-        const isVirtualFrozen: boolean = isFrozenGrid && this.parent.enableColumnVirtualization && args.isScroll;
         if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
-            tbody = isVirtualFrozen ? this.parent.getMovableHeaderTbody() : this.parent.getHeaderTable().querySelector( literals.tbody);
+            tbody = this.parent.getHeaderTable().querySelector( literals.tbody);
         } else {
-            tbody = isVirtualFrozen ? this.parent.getMovableContentTbody() : this.parent.getContentTable().querySelector( literals.tbody);
+            tbody = this.parent.getContentTable().querySelector( literals.tbody);
         }
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
-        if (tbody.querySelector('.e-emptyrow')) {
-            const emptyRow: Element = tbody.querySelector('.e-emptyrow');
+        if (this.parent.getContentTable().querySelector('.e-emptyrow')) {
+            const emptyRow: Element = this.parent.getContentTable().querySelector('.e-emptyrow');
             emptyRow.parentNode.removeChild(emptyRow);
-            if (isFrozenGrid && !isVirtualFrozen) {
-                const moveTbody: Element = this.parent.getContent().querySelector('.' + literals.movableContent).querySelector( literals.tbody);
-                (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
-                if (this.parent.getFrozenMode() === literals.leftRight) {
-                    const frTbody: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector( literals.tbody);
-                    (frTbody.firstElementChild).parentNode.removeChild(frTbody.firstElementChild);
-                }
+            if (this.parent.frozenRows && this.parent.element.querySelector('.e-frozenrow-empty')) {
+                this.parent.element.querySelector('.e-frozenrow-empty').classList.remove('e-frozenrow-empty');
             }
         }
         if (this.parent.editSettings.newRowPosition === 'Top') {
@@ -58,230 +48,15 @@ export class InlineEditRender {
         }
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
         this.parent.editModule.checkLastRow(args.row, args);
-        if (isFrozenGrid && !isVirtualFrozen) {
-            const mEle: Element = this.renderMovableform(args.row, args);
-            if (this.parent.editSettings.newRowPosition === 'Top') {
-                mTbody.insertBefore(mEle, mTbody.firstChild);
-            } else {
-                mTbody.appendChild(mEle);
-            }
-            args.row.querySelector('.e-normaledit').setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
-            mEle.querySelector('.e-normaledit').setAttribute('colspan', '' + (this.parent.getVisibleColumns().length - this.parent.getVisibleFrozenColumns()));
-            if (frTbody) {
-                const frEle: Element = this.renderFrozenRightForm(args.row, args);
-                if (this.parent.editSettings.newRowPosition === 'Top') {
-                    frTbody.insertBefore(frEle, frTbody.firstChild);
-                } else {
-                    frTbody.appendChild(frEle);
-                }
-                const colSpan: number = this.parent.getVisibleFrozenColumns() - this.parent.getFrozenRightColumnsCount();
-                args.row.querySelector('.e-normaledit').setAttribute('colspan', colSpan + '');
-                frEle.querySelector('.e-normaledit').setAttribute('colspan', '' + this.parent.getFrozenRightColumnsCount());
-            }
-            if (this.parent.height === 'auto') {
-                this.parent.notify(events.frozenHeight, {});
-            }
-        }
-    }
-
-    private renderFrozenRightForm(ele: Element, args: { rowData?: Object, frozenRightForm?: HTMLFormElement }): Element {
-        const frEle: Element = ele.cloneNode(true) as Element;
-        const form: HTMLFormElement = args.frozenRightForm = frEle.querySelector('form');
-        if (this.parent.editSettings.template) {
-            form.innerHTML = '';
-            this.appendChildren(form, args.rowData, false);
-            return frEle;
-        }
-        this.renderRightFrozen(ele, frEle);
-        frEle.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent()
-            .querySelector('.e-frozen-right-header').querySelector(literals.colGroup).innerHTML;
-        return frEle;
-    }
-
-    private renderMovableform(ele: Element, args: {rowData?: Object, movableForm?: HTMLFormElement }): Element {
-        const mEle: Element = ele.cloneNode(true) as Element;
-        const form: HTMLFormElement = args.movableForm = mEle.querySelector('form');
-        if (this.parent.editSettings.template) {
-            form.innerHTML = '';
-            this.appendChildren(form, args.rowData, false);
-            return mEle;
-        }
-        this.renderMovable(ele, mEle);
-        mEle.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent()
-            .querySelector('.' + literals.movableHeader).querySelector(literals.colGroup).innerHTML;
-        return mEle;
-    }
-
-    private updateFreezeEdit(row: Element, td: HTMLElement[]): HTMLElement[] {
-        td = td.concat([].slice.call(this.getFreezeRow(row).querySelectorAll('td.e-rowcell')));
-        if (this.parent.getFrozenMode() === literals.leftRight) {
-            td = td.concat([].slice.call(this.getFreezeRightRow(row).querySelectorAll('td.e-rowcell')));
-        }
-        return td;
-    }
-
-    private getFreezeRightRow(row: Element): Element {
-        const idx: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
-        const fCont: Element = this.parent.getFrozenLeftContentTbody();
-        const fHdr: Element = this.parent.getFrozenHeaderTbody();
-        const frHdr: Element = this.parent.getFrozenRightHeaderTbody();
-        const frCont: Element = this.parent.getFrozenRightContentTbody();
-        if (fCont.contains(row) || fHdr.contains(row)) {
-            return this.parent.getFrozenRightRowByIndex(idx);
-        } else if (frCont.contains(row) || frHdr.contains(row)) {
-            return this.parent.getRowByIndex(idx);
-        }
-        return row;
-    }
-
-    private getFreezeRow(row: Element): Element {
-        if (this.parent.isFrozenGrid()) {
-            const idx: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
-            const fCont: Element = this.parent.getFrozenLeftContentTbody();
-            const mCont: Element = this.parent.getMovableContentTbody();
-            const fHdr: Element = this.parent.getFrozenHeaderTbody();
-            const mHdr: Element = this.parent.getMovableHeaderTbody();
-            if (fCont.contains(row) || fHdr.contains(row)) {
-                return this.parent.getMovableRowByIndex(idx);
-            } else if (mCont.contains(row) || mHdr.contains(row)) {
-                return this.parent.getRowByIndex(idx);
-            }
-        }
-        return row;
     }
 
     public update(elements: Object, args: { row?: Element, rowData?: Object }): void {
         this.isEdit = true;
-        const isCustomFormValidation: boolean = (<{ isCustomFormValidation?: boolean }>args).isCustomFormValidation;
-        const isScroll: boolean = (<{ isScroll?: boolean }>args).isScroll;
-        if (!isScroll && (closest(args.row, '.' + literals.movableContent) || closest(args.row, '.' + literals.movableHeader))) {
-            args.row = this.getFreezeRow(args.row);
-        }
-        if (closest(args.row, '.e-frozen-right-content') || closest(args.row, '.e-frozen-right-header')) {
-            args.row = this.getFreezeRightRow(args.row);
-        }
-        const isVirtualFrozen: boolean = this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization && isScroll;
-        let tdElement: HTMLElement[] = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
+        const tdElement: HTMLElement[] = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
         args.row.innerHTML = '';
-        if (!isVirtualFrozen && !isCustomFormValidation) {
-            tdElement = this.updateFreezeEdit(args.row, tdElement);
-        }
         args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
         args.row.classList.add(literals.editedRow);
         this.parent.editModule.checkLastRow(args.row, args);
-        if (!isVirtualFrozen && !isCustomFormValidation) {
-            this.refreshFreezeEdit(args.row, args);
-        }
-    }
-
-    private refreshFreezeEdit(
-        row: Element, args: {
-            rowData?: Object, form?: HTMLFormElement, movableForm?: HTMLFormElement,
-            frozenRightForm?: HTMLFormElement
-        }): void {
-        const td: Element = row.firstChild as Element;
-        if (this.parent.getVisibleFrozenColumns() && this.parent.editSettings.template) {
-            td.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent().querySelector('.' + literals.frozenHeader).
-                querySelector(literals.colGroup).innerHTML;
-        }
-        let fCls: string;
-        let cont: Element;
-        const idx: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
-        if (this.parent.isFrozenGrid()) {
-            if (idx < this.parent.frozenRows) {
-                cont = this.parent.getHeaderContent();
-                fCls = '.' + literals.frozenHeader;
-            } else {
-                cont = this.parent.getContent();
-                fCls = '.' + literals.frozenContent;
-            }
-            const mTd: Element = td.cloneNode(true) as Element;
-            const frTd: Element = td.cloneNode(true) as Element;
-            const form: HTMLFormElement = args.movableForm  = mTd.querySelector('form');
-            if (this.parent.editSettings.template) {
-                this.refreshEditForm(form, args.rowData);
-            }
-            let fRows: Element;
-            let frRows: Element;
-            if (cont.querySelector(fCls).contains(row)) {
-                fRows = this.parent.getMovableRowByIndex(idx);
-                this.updateFrozenCont(fRows, td, mTd);
-                if (this.parent.getFrozenMode() === literals.leftRight) {
-                    args.frozenRightForm = frTd.querySelector('form');
-                    this.refreshEditForm(args.frozenRightForm, args.rowData);
-                    frRows = this.parent.getFrozenRightRowByIndex(idx);
-                    this.updateFrozenRightCont(frRows, td, frTd);
-                }
-            } else {
-                fRows = this.parent.getRowByIndex(idx);
-                this.updateFrozenCont(fRows, mTd, td);
-                if (this.parent.getFrozenMode() === literals.leftRight) {
-                    args.frozenRightForm = frTd.querySelector('form');
-                    this.refreshEditForm(args.frozenRightForm, args.rowData);
-                    frRows = this.parent.getFrozenRightRowByIndex(idx);
-                    this.updateFrozenRightCont(frRows, frTd, td);
-                }
-            }
-            fRows.appendChild(mTd);
-            fRows.classList.add(literals.editedRow);
-            if (this.parent.getFrozenMode() === literals.leftRight) {
-                frRows.appendChild(frTd);
-                frRows.classList.add(literals.editedRow);
-                alignFrozenEditForm(args.frozenRightForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
-            }
-            alignFrozenEditForm(args.movableForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
-        }
-    }
-
-    private refreshEditForm(form: HTMLFormElement, data: object): void {
-        if (this.parent.editSettings.template) {
-            form.innerHTML = '';
-            this.appendChildren(form, data, false);
-        }
-    }
-
-    private updateFrozenRightCont(row: Element, ele: Element, frEle: Element): void {
-        row.innerHTML = '';
-        this.renderRightFrozen(ele, frEle);
-        frEle.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent()
-            .querySelector('.e-frozen-right-header').querySelector(literals.colGroup).innerHTML;
-        ele.setAttribute('colspan', this.parent.getVisibleFrozenColumns() - this.parent.getFrozenRightColumnsCount() + '');
-        frEle.setAttribute('colspan', this.parent.getFrozenRightColumnsCount() + '');
-    }
-
-    private updateFrozenCont(row: Element, ele: Element, mEle: Element): void {
-        row.innerHTML = '';
-        this.renderMovable(ele, mEle);
-        mEle.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent()
-            .querySelector('.' + literals.movableHeader).querySelector(literals.colGroup).innerHTML;
-        ele.setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
-        mEle.setAttribute('colspan', this.parent.getCurrentVisibleColumns(this.parent.enableColumnVirtualization).length - this.parent.getVisibleFrozenColumns() + '');
-    }
-
-    private renderRightFrozen(ele: Element, frEle: Element): void {
-        frEle.querySelector('tr').innerHTML = '';
-        const cols: Column[] = this.parent.getColumns();
-        let k: number = 0;
-        for (let i: number = 0; i < cols.length; i++ , k++) {
-            if (cols[parseInt(i.toString(), 10)].getFreezeTableName() === literals.frozenRight) {
-                const index: number = k - this.parent.getMovableColumnsCount();
-                frEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[parseInt(index.toString(), 10)]));
-                k--;
-            }
-        }
-    }
-
-    private renderMovable(ele: Element, mEle: Element): void {
-        mEle.querySelector('tr').innerHTML = '';
-        const cols: Column[] = this.parent.getColumns();
-        let k: number = this.parent.isRowDragable() ? 1 : 0;
-        for (let i: number = 0; i < cols.length; i++, k++) {
-            if (cols[parseInt(i.toString(), 10)].getFreezeTableName() === 'movable') {
-                mEle.querySelector('tr').appendChild(ele.querySelector('tr')
-                    .removeChild(ele.querySelector('tr').children[parseInt(k.toString(), 10)]));
-                k--;
-            }
-        }
     }
 
     // eslint-disable-next-line max-len
@@ -296,8 +71,8 @@ export class InlineEditRender {
         const td: HTMLTableCellElement = this.parent.createElement('td', {
             className: 'e-editcell e-normaledit',
             attrs: {
-                colspan: (gObj.getCurrentVisibleColumns(this.parent.enableColumnVirtualization).length - gObj.getVisibleFrozenColumns()
-                    + this.parent.getIndentCount()).toString()
+                colspan: (gObj.getCurrentVisibleColumns(this.parent.enableColumnVirtualization).length +
+                this.parent.getIndentCount()).toString()
             }
         }) as HTMLTableCellElement;
         const form: HTMLFormElement = (<{form: HTMLFormElement}>args).form =
@@ -324,16 +99,10 @@ export class InlineEditRender {
         }
         let m: number = 0;
         i = 0;
-        const isVirtualFrozen: boolean = gObj.isFrozenGrid() && gObj.enableColumnVirtualization && args.isScroll;
         const cols: Column[] = args.isCustomFormValidation ? (<{ columnModel?: Column[] }>this.parent).columnModel : gObj.getColumns();
         while ((isEdit && m < tdElement.length && i < cols.length) || i < cols.length) {
             const span: string = isEdit ? tdElement[parseInt(m.toString(), 10)].getAttribute('colspan') : null;
             const col: Column = cols[parseInt(i.toString(), 10)] as Column;
-            if ((isVirtualFrozen && col.getFreezeTableName() !== 'movable')
-                || (args.isCustomFormValidation && (col.commands || col.commandsTemplate || !col.field))) {
-                i++;
-                continue;
-            }
             const td: HTMLElement = this.parent.createElement(
                 'td',
                 {
@@ -356,10 +125,24 @@ export class InlineEditRender {
             } else {
                 td.classList.add('e-hide');
             }
+            if (this.parent.isFrozenGrid()) {
+                addStickyColumnPosition(this.parent, col, td);
+                if (this.parent.enableColumnVirtualization) {
+                    if (col.freeze === 'Left' && !isNullOrUndefined((<{ valueX?: number }>col).valueX)) {
+                        td.style.left = ((<{ valueX?: number }>col).valueX - this.parent.translateX) + 'px';
+                    } else if (col.freeze === 'Right' && !isNullOrUndefined((<{ valueX?: number }>col).valueX)) {
+                        td.style.right = ((<{ valueX?: number }>col).valueX + this.parent.translateX) + 'px';
+                    } else if (col.freeze === 'Fixed') {
+                        td.style.left = (this.parent.leftrightColumnWidth('left') - this.parent.translateX) + 'px';
+                        td.style.right = (this.parent.leftrightColumnWidth('right') + this.parent.translateX) + 'px';
+                    }
+                }
+            }
             tr.appendChild(td);
             i = span ? i + parseInt(span, 10) : i + 1;
             m++;
         }
+        addFixedColumnBorder(tr);
         tbody.appendChild(tr);
         table.appendChild(tbody);
         form.appendChild(table);

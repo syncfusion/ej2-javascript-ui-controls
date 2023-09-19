@@ -1,4 +1,4 @@
-import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append, select } from '@syncfusion/ej2-base';import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, prepend, detach, classList } from '@syncfusion/ej2-base';import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { incrementalSearch, resetIncrementalSearchValues } from '../common/incremental-search';import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, ResultData, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
+import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append, select, ModuleDeclaration } from '@syncfusion/ej2-base';import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, prepend, detach, classList } from '@syncfusion/ej2-base';import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { incrementalSearch, resetIncrementalSearchValues } from '../common/incremental-search';import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, ResultData, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { DataManager, Query, Predicate, DataOptions } from '@syncfusion/ej2-data';import {VirtualScroll, Offsets, ScrollDirection, SentinelType, VirtualInfo} from '../common/virtual-scroll';import { Skeleton } from '@syncfusion/ej2-notifications';
 import {ChangeEventArgs} from "./drop-down-list";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -151,6 +151,13 @@ export interface DropDownListModel extends DropDownBaseModel{
      * @default false
      */
     readonly?: boolean;
+
+    /**
+     * Defines whether to enable virtual scrolling in the component. 
+     *
+     * @default false
+     */
+    enableVirtualization?: boolean;
 
     /**
      * Gets or sets the display text of the selected item in the component.

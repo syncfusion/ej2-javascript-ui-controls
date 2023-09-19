@@ -82,6 +82,9 @@ export interface RibbonComboBoxSettingsModel {
      * Specifies the template content for the footer container of the popup list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     footerTemplate?: string | Function;
@@ -90,6 +93,9 @@ export interface RibbonComboBoxSettingsModel {
      * Specifies the template content for the group headers present in the popup list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     groupTemplate?: string | Function;
@@ -98,6 +104,9 @@ export interface RibbonComboBoxSettingsModel {
      * Specifies the template content for the header container of the popup list.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     headerTemplate?: string | Function;
@@ -113,6 +122,9 @@ export interface RibbonComboBoxSettingsModel {
      * Specifies the template content for each list item present in the popup.
      *
      * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     itemTemplate?: string | Function;
@@ -121,6 +133,9 @@ export interface RibbonComboBoxSettingsModel {
      * Specifies the template content for the popup list of combobox when no data is available.
      *
      * @default 'No records found'
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     noRecordsTemplate?: string | Function;

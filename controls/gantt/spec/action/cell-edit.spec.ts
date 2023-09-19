@@ -578,9 +578,9 @@ describe('Gantt Edit module', () => {
             let input4: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
             input4.value = '4SS+50M';
             triggerMouseEvent(update, 'click');
-            expect(ganttObj.currentViewData[2].ganttProperties.predecessorsName).toBe(null);
+            expect(ganttObj.currentViewData[2].ganttProperties.predecessorsName).toBe('');
             expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe('2FF+3 days');
-            expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('3SF+5 hours');
+            expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('3SF');
             expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toBe('4SS+50 minutes');
         });
         it('Editing task name with dialog close arguments', () => {

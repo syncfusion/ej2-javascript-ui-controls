@@ -1,7 +1,6 @@
-import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
-import { formatUnit } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { formatUnit, removeClass } from '@syncfusion/ej2-base';
 import { IRenderer, IGrid } from '../base/interface';
-import { Browser } from '@syncfusion/ej2-base';
 import { colGroupRefresh, columnWidthChanged, scroll, columnVisibilityChanged, refreshFooterRenderer } from '../base/constant';
 import { Column } from '../models/column';
 import { AggregateRowModel, AggregateColumnModel } from '../models/models';
@@ -10,7 +9,7 @@ import { ContentRender } from './content-renderer';
 import { RowRenderer } from './row-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { SummaryModelGenerator } from '../services/summary-model-generator';
-import { renderMovable, calculateAggregate, iterateExtend, addRemoveEventListener } from '../base/util';
+import { calculateAggregate, iterateExtend, addRemoveEventListener, applyStickyLeftRightPosition } from '../base/util';
 import { AggregateRow } from '../models/aggregate';
 import { DataUtil } from '@syncfusion/ej2-data';
 import * as literals from '../base/string-literals';
@@ -25,11 +24,6 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     private locator: ServiceLocator;
     protected modelGenerator: SummaryModelGenerator;
     private aggregates: Object = {};
-    private freezeTable: HTMLTableElement;
-    private frTable: HTMLTableElement;
-    private frozenContent: Element;
-    private movableContent: Element;
-    private frozenRightContent: Element;
     private evtHandlers: { event: string, handler: Function }[];
     constructor(gridModule?: IGrid, serviceLocator?: ServiceLocator) {
         super(gridModule, serviceLocator);
@@ -47,24 +41,6 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     public renderPanel(): void {
         const div: Element = this.parent.createElement('div', { className: literals.gridFooter });
         const innerDiv: Element = this.parent.createElement('div', { className: 'e-summarycontent' });
-        let movableContent: Element = innerDiv;
-        if (this.parent.isFrozenGrid()) {
-            const fDiv: Element = this.parent.createElement('div', { className: 'e-frozenfootercontent e-frozen-left-footercontent' });
-            const mDiv: Element = this.parent.createElement('div', { className: 'e-movablefootercontent' });
-            const frDiv: Element = this.parent.createElement('div', { className: 'e-frozenfootercontent e-frozen-right-footercontent' });
-            if (this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()) {
-                innerDiv.appendChild(fDiv);
-                this.frozenContent = fDiv;
-            }
-            innerDiv.appendChild(mDiv);
-            this.movableContent = mDiv;
-            movableContent = mDiv;
-            if (this.parent.getFrozenRightColumnsCount()) {
-                innerDiv.appendChild(frDiv);
-                this.frozenRightContent = frDiv;
-            }
-        }
-        if (Browser.isDevice) { (<HTMLElement>movableContent).style.overflowX = 'scroll'; }
         div.appendChild(innerDiv);
         this.setPanel(div);
         if (this.parent.getPager() != null) {
@@ -79,33 +55,10 @@ export class FooterRenderer extends ContentRender implements IRenderer {
      * @returns {void}
      */
     public renderTable(): void {
-        const frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
         const innerDiv: Element = this.createContentTable('_footer_table');
         const table: HTMLTableElement = <HTMLTableElement>innerDiv.querySelector('.' + literals.table);
         const tFoot: HTMLTableSectionElement = <HTMLTableSectionElement>this.parent.createElement('tfoot');
         table.appendChild(tFoot);
-        if (this.parent.isFrozenGrid()) {
-            const freezeTable: HTMLTableElement = table.cloneNode(true) as HTMLTableElement;
-            const frTable: HTMLTableElement = table.cloneNode(true) as HTMLTableElement;
-            if (frzCols) {
-                this.frozenContent.appendChild(freezeTable);
-                this.freezeTable = freezeTable;
-            }
-            if (this.parent.getFrozenRightColumnsCount()) {
-                remove(frTable.querySelector(literals.colGroup));
-                const hdr: Element = this.parent.getHeaderContent().querySelector('.e-frozen-right-header');
-                const frCol: Element = (hdr.querySelector(literals.colGroup).cloneNode(true)) as Element;
-                frTable.insertBefore(frCol, frTable.querySelector( literals.tbody));
-                this.frozenRightContent.appendChild(frTable);
-                this.frTable = frTable;
-            }
-            this.movableContent.appendChild(table);
-            remove(table.querySelector(literals.colGroup));
-            const colGroup: Element
-                = ((this.parent.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector(literals.colGroup)).cloneNode(true)) as Element;
-            table.insertBefore(colGroup, table.querySelector( literals.tbody));
-            this.setColGroup(colGroup);
-        }
         this.setTable(table);
     }
 
@@ -114,7 +67,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             this.parent.parentDetails ? this.getData() : this.parent.dataSource : this.parent.currentViewData;
         const summaries: AggregateRowModel[] = <AggregateRowModel[]>this.modelGenerator.getData();
         const dummies: Column[] = isNullOrUndefined(cStart) ? this.modelGenerator.getColumns() :
-            this.modelGenerator.getColumns(cStart, cEnd);
+            this.modelGenerator.getColumns(cStart);
         // eslint-disable-next-line max-len
         const rows: Row<AggregateColumnModel>[] = isNullOrUndefined(cStart) ? this.modelGenerator.generateRows(input, e || this.aggregates) :
             this.modelGenerator.generateRows(input, e || this.aggregates, cStart, cEnd);
@@ -127,6 +80,16 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             const row: Row<AggregateColumnModel> = rows[parseInt(srow.toString(), 10)];
             if (!row) { continue; }
             const tr: Element = rowrenderer.render(row, dummies);
+            if (tr.querySelectorAll('.e-leftfreeze').length && tr.querySelectorAll('.e-indentcell').length) {
+                const td: NodeListOf<Element> = tr.querySelectorAll('.e-indentcell');
+                for (let i: number = 0; i < td.length; i++) {
+                    td[parseInt(i.toString(), 10)].classList.add('e-leftfreeze');
+                    applyStickyLeftRightPosition(td[parseInt(i.toString(), 10)] as HTMLElement, i * 30, this.parent.enableRtl, 'Left');
+                }
+            }
+            if (this.parent.isFrozenGrid() && tr.querySelectorAll('.e-summarycell').length) {
+                removeClass([].slice.call(tr.querySelectorAll('.e-summarycell')), ['e-freezeleftborder', 'e-freezerightborder']);
+            }
             fragment.appendChild(tr);
         }
 
@@ -135,92 +98,17 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     }
 
     public refresh(e?: { aggregates?: Object }): void {
-        const frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
-        const movable: number = this.parent.getMovableColumnsCount();
-        const right: number = this.parent.getFrozenRightColumnsCount();
-        if (this.parent.isFrozenGrid()) {
-            remove(this.getPanel());
-            this.renderPanel();
-            this.renderTable();
-            if (frzCols) {
-                this.freezeTable.tFoot.innerHTML = '';
-                this.renderSummaryContent(e, this.freezeTable, 0, frzCols);
-            }
-        }
         (<HTMLTableElement>this.getTable()).tFoot.innerHTML = '';
-        this.renderSummaryContent(e, <HTMLTableElement>this.getTable(), frzCols, right ? frzCols + movable : undefined);
-        if (this.parent.getFrozenRightColumnsCount()) {
-            this.frTable.tFoot.innerHTML = '';
-            this.renderSummaryContent(e, this.frTable, frzCols + movable, frzCols + movable + right);
-            const movableLastCell: Element[] = [].slice.call(this.getTable().getElementsByClassName('e-lastsummarycell'));
-            if (movableLastCell.length) {
-                for (let i: number = 0; i < movableLastCell.length; i++) {
-                    (movableLastCell[parseInt(i.toString(), 10)] as HTMLElement).style.borderRight = '0px';
-                }
-            }
-        }
-        // check freeze content have no row case
-        if (this.parent.isFrozenGrid()) {
-            const movableCnt: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.e-movablefootercontent')
-                .getElementsByClassName('e-summaryrow'));
-            let frozenCnt: HTMLElement[];
-            if (frzCols) {
-                frozenCnt = [].slice.call(this.parent.element.querySelector('.e-frozen-left-footercontent')
-                    .getElementsByClassName('e-summaryrow'));
-                this.refreshHeight(frozenCnt, movableCnt);
-                const frozenDiv: HTMLElement = <HTMLElement>this.frozenContent;
-                if (!frozenDiv.offsetHeight) {
-                    frozenDiv.style.height = (<HTMLElement>this.getTable()).offsetHeight + 'px';
-                }
-            }
-            if (right) {
-                const frCnt: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.e-frozen-right-footercontent')
-                    .getElementsByClassName('e-summaryrow'));
-                this.refreshHeight(frCnt, movableCnt);
-                if (frozenCnt) {
-                    this.refreshHeight(frCnt, frozenCnt);
-                }
-                const frDiv: HTMLElement = <HTMLElement>this.frTable;
-                if (!frDiv.offsetHeight) {
-                    frDiv.style.height = (<HTMLElement>this.getTable()).offsetHeight + 'px';
-                }
-            }
-            if (this.parent.allowResizing) { this.updateFooterTableWidth(this.getTable() as HTMLElement); }
-        }
+        this.renderSummaryContent(e, <HTMLTableElement>this.getTable(), undefined, undefined);
         if (isNullOrUndefined(e) && this.parent.isAutoFitColumns) {
             this.parent.autoFitColumns();
         }
         this.onScroll();
     }
 
-    private refreshHeight(frozenCnt: HTMLElement[], movableCnt: HTMLElement[]): void {
-        for (let i: number = 0; i < frozenCnt.length; i++) {
-            const frozenHeight: number = frozenCnt[parseInt(i.toString(), 10)].getBoundingClientRect().height;
-            const movableHeight: number = movableCnt[parseInt(i.toString(), 10)].getBoundingClientRect().height;
-            if (frozenHeight < movableHeight) {
-                frozenCnt[parseInt(i.toString(), 10)].classList.remove('e-hide');
-                frozenCnt[parseInt(i.toString(), 10)].style.height = movableHeight + 'px';
-            } else if (frozenHeight > movableHeight) {
-                movableCnt[parseInt(i.toString(), 10)].classList.remove('e-hide');
-                movableCnt[parseInt(i.toString(), 10)].style.height = frozenHeight + 'px';
-            }
-        }
-    }
-
     public refreshCol(): void {
         // frozen table
-        let mheaderCol: Node;
-        const fheaderCol: Node = mheaderCol = this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
-        if (this.parent.getFrozenColumns()) {
-            // eslint-disable-next-line max-len
-            const isXaxis: boolean = this.parent.enableColumnVirtualization && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis();
-            if (isXaxis) {
-                mheaderCol = this.parent.getMovableVirtualHeader().querySelector(literals.colGroup).cloneNode(true);
-            } else {
-                mheaderCol = renderMovable(<Element>fheaderCol, this.parent.getFrozenColumns(), this.parent);
-                this.freezeTable.replaceChild(fheaderCol, this.freezeTable.querySelector(literals.colGroup));
-            }
-        }
+        const mheaderCol: Node = this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
         this.getTable().replaceChild(mheaderCol, this.getColGroup());
         this.setColGroup(<Element>mheaderCol);
     }
@@ -232,24 +120,13 @@ export class FooterRenderer extends ContentRender implements IRenderer {
 
     private onScroll(e: { left: number } =
     {
-        left: this.parent.isFrozenGrid() ? (<HTMLElement>this.parent.getContent().querySelector('.' + literals.movableContent)).scrollLeft :
-            (<HTMLElement>this.parent.getContent().firstChild).scrollLeft
+        left: (<HTMLElement>this.parent.getContent().firstChild).scrollLeft
     }): void {
         (<HTMLElement>this.getTable().parentElement).scrollLeft = e.left;
     }
 
     public getColFromIndex(index?: number): HTMLElement {
-        const left: number = this.parent.getFrozenLeftColumnsCount() || this.parent.getFrozenColumns();
-        const movable: number = this.parent.getMovableColumnsCount();
-        const right: number = this.parent.getFrozenRightColumnsCount();
-        const isDrag: number = this.parent.isRowDragable() && !(this.parent.getFrozenMode() === 'Right') ? 1 : 0;
-        if (left && index < (left + isDrag)) {
-            return this.freezeTable.querySelector(literals.colGroup).children[parseInt(index.toString(), 10)] as HTMLElement;
-        } else if (right && (index >= (left + movable + isDrag))) {
-            return this.frTable.querySelector(literals.colGroup).children[index - (left ? (left + movable + isDrag) :
-                (left + movable))] as HTMLElement;
-        }
-        return this.getColGroup().children[index - (left ? (left + isDrag) : left)] as HTMLElement;
+        return this.getColGroup().children[parseInt(index.toString(), 10)] as HTMLElement;
     }
 
     private columnVisibilityChanged(): void {

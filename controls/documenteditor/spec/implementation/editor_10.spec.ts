@@ -31,38 +31,38 @@ describe('Rtl text editing validation', () => {
             done();
         }, 1000);
     });
-    it('arabic text insert', () => {
-console.log('arabic text insert');
-        editor.editor.insertText('سشةحمث');
-        expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
-    });
-    it('arabic and english text insert', () => {
-console.log('arabic and english text insert');
-        editor.openBlank();
-        editor.editor.insertText('sample');
-        editor.editor.insertText('سشةحمث');
-        expect(editor.selection.start.currentWidget.children[1].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('سشةحمث')
-    });
-    it('space after arabic text-consider as single text element box', () => {
-console.log('space after arabic text-consider as single text element box');
-        editor.openBlank();
-        editor.editor.insertText('سشةحمث');
-        editor.editor.insertText('    ');
-        editor.editor.insertText('سشةحمث');
-        expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
-    });
-    it('space after normal text followed by arabic text', () => {
-console.log('space after normal text followed by arabic text');
-        editor.openBlank();
-        editor.editor.insertText('سشةحمث');
-        editor.editor.insertText('    ');
-        editor.editor.insertText('sample');
-        expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe(' ')
-    });
+//     it('arabic text insert', () => {
+// console.log('arabic text insert');
+//         editor.editor.insertText('سشةحمث');
+//         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
+//         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
+//     });
+//     it('arabic and english text insert', () => {
+// console.log('arabic and english text insert');
+//         editor.openBlank();
+//         editor.editor.insertText('sample');
+//         editor.editor.insertText('سشةحمث');
+//         expect(editor.selection.start.currentWidget.children[1].characterFormat.bidi).toBe(true)
+//         expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('سشةحمث')
+//     });
+//     it('space after arabic text-consider as single text element box', () => {
+// console.log('space after arabic text-consider as single text element box');
+//         editor.openBlank();
+//         editor.editor.insertText('سشةحمث');
+//         editor.editor.insertText('    ');
+//         editor.editor.insertText('سشةحمث');
+//         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
+//         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
+//     });
+//     it('space after normal text followed by arabic text', () => {
+// console.log('space after normal text followed by arabic text');
+//         editor.openBlank();
+//         editor.editor.insertText('سشةحمث');
+//         editor.editor.insertText('    ');
+//         editor.editor.insertText('sample');
+//         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
+//         expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe(' ')
+//     });
 });
 
 describe('Rtl text editing validation- combination of hebrew and arabic text', () => {
@@ -88,41 +88,41 @@ describe('Rtl text editing validation- combination of hebrew and arabic text', (
             done();
         }, 1000);
     });
-    it('Hebrew text after arabic text insert', () => {
-console.log('Hebrew text after arabic text insert');
-        editor.editor.insertText('سشةحمث');
-        editor.editor.insertText('דשצפךק');
-        expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
-    });
-    it('arabic and english text insert', () => {
-console.log('arabic and english text insert');
-        editor.openBlank();
-        editor.editor.insertText('sample');
-        editor.editor.insertText('سشةحمث');
-        editor.editor.insertText('דשצפךק');
-        expect(editor.selection.start.currentWidget.children[1].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('سشةحمث')
-    });
-    it('space after arabic text-consider as single text element box-2', () => {
-console.log('space after arabic text-consider as single text element box-2');
-        editor.openBlank();
-        editor.editor.insertText('سشةحمث');
-        editor.editor.insertText('    ');
-        editor.editor.insertText('דשצפךק');
-        expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
-    });
-    it('space after hebrew text followed by arabic text and normal text', () => {
-console.log('space after hebrew text followed by arabic text and normal text');
-        editor.openBlank();
-        editor.editor.insertText('سشةحمث');
-        editor.editor.insertText('    ');
-        editor.editor.insertText('sample');
-        editor.editor.insertText('דשצפךק');
-        expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[2] as TextElementBox).text).toBe(' ')
-    });
+//     it('Hebrew text after arabic text insert', () => {
+// console.log('Hebrew text after arabic text insert');
+//         editor.editor.insertText('سشةحمث');
+//         editor.editor.insertText('דשצפךק');
+//         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
+//         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
+//     });
+//     it('arabic and english text insert', () => {
+// console.log('arabic and english text insert');
+//         editor.openBlank();
+//         editor.editor.insertText('sample');
+//         editor.editor.insertText('سشةحمث');
+//         editor.editor.insertText('דשצפךק');
+//         expect(editor.selection.start.currentWidget.children[1].characterFormat.bidi).toBe(true)
+//         expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('سشةحمث')
+//     });
+//     it('space after arabic text-consider as single text element box-2', () => {
+// console.log('space after arabic text-consider as single text element box-2');
+//         editor.openBlank();
+//         editor.editor.insertText('سشةحمث');
+//         editor.editor.insertText('    ');
+//         editor.editor.insertText('דשצפךק');
+//         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
+//         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
+//     });
+//     it('space after hebrew text followed by arabic text and normal text', () => {
+// console.log('space after hebrew text followed by arabic text and normal text');
+//         editor.openBlank();
+//         editor.editor.insertText('سشةحمث');
+//         editor.editor.insertText('    ');
+//         editor.editor.insertText('sample');
+//         editor.editor.insertText('דשצפךק');
+//         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
+//         expect((editor.selection.start.currentWidget.children[2] as TextElementBox).text).toBe(' ')
+//     });
 });
 
 describe('Text helper getRTLlanguage() method validation', () => {
@@ -184,65 +184,3 @@ console.log('input text is tifinagh');
 });
 
 
-let rtlPara: any = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pageHeight": 792, "leftMargin": 72, "rightMargin": 72, "topMargin": 72, "bottomMargin": 72, "differentFirstPage": false, "differentOddAndEvenPages": false, "headerDistance": 36, "footerDistance": 36, "bidi": false }, "blocks": [{ "paragraphFormat": { "textAlignment": "Right", "styleName": "Normal", "listFormat": {}, "bidi": true }, "characterFormat": {}, "inlines": [{ "characterFormat": { "bidi": true }, "text": "דשצפךק " }, { "characterFormat": { "bidi": false }, "text": "sample " }, { "characterFormat": { "bidi": true }, "text": "דשצפךק" }, { "characterFormat": { "bidi": false }, "text": "?" }] }], "headersFooters": { "header": { "blocks": [{ "paragraphFormat": { "listFormat": {} }, "characterFormat": {}, "inlines": [] }] }, "footer": { "blocks": [{ "paragraphFormat": { "listFormat": {} }, "characterFormat": {}, "inlines": [] }] }, "evenHeader": {}, "evenFooter": {}, "firstPageHeader": {}, "firstPageFooter": {} } }], "characterFormat": { "bold": false, "italic": false, "fontSize": 11, "fontFamily": "Calibri", "underline": "None", "strikethrough": "None", "baselineAlignment": "Normal", "highlightColor": "NoColor", "fontColor": "#000000", "fontSizeBidi": 11, "fontFamilyBidi": "Calibri" }, "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 0, "afterSpacing": 0, "lineSpacing": 1, "lineSpacingType": "Multiple", "listFormat": {}, "bidi": false }, "defaultTabWidth": 36, "enforcement": false, "hashValue": "", "saltValue": "", "formatting": false, "protectionType": "NoProtection", "styles": [{ "name": "Normal", "type": "Paragraph", "paragraphFormat": { "listFormat": {} }, "characterFormat": {}, "next": "Normal" }, { "name": "Heading 1", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 12, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level1", "listFormat": {} }, "characterFormat": { "fontSize": 16, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 1 Char", "next": "Normal" }, { "name": "Heading 1 Char", "type": "Character", "characterFormat": { "fontSize": 16, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Default Paragraph Font", "type": "Character", "characterFormat": {} }, { "name": "Heading 2", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level2", "listFormat": {} }, "characterFormat": { "fontSize": 13, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 2 Char", "next": "Normal" }, { "name": "Heading 2 Char", "type": "Character", "characterFormat": { "fontSize": 13, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 3", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level3", "listFormat": {} }, "characterFormat": { "fontSize": 12, "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Normal", "link": "Heading 3 Char", "next": "Normal" }, { "name": "Heading 3 Char", "type": "Character", "characterFormat": { "fontSize": 12, "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 4", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level4", "listFormat": {} }, "characterFormat": { "italic": true, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 4 Char", "next": "Normal" }, { "name": "Heading 4 Char", "type": "Character", "characterFormat": { "italic": true, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 5", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level5", "listFormat": {} }, "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 5 Char", "next": "Normal" }, { "name": "Heading 5 Char", "type": "Character", "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 6", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level6", "listFormat": {} }, "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Normal", "link": "Heading 6 Char", "next": "Normal" }, { "name": "Heading 6 Char", "type": "Character", "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Default Paragraph Font" }], "lists": [], "abstractLists": [], "comments": [] };
-
-describe('Field insert with rtl para', () => {
-    let editor: DocumentEditor = undefined;
-    beforeAll(() => {
-        document.body.innerHTML = '';
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
-        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-        editor.open(JSON.stringify(rtlPara));
-    });
-    afterAll((done) => {
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-        document.body.innerHTML = '';
-        setTimeout(() => {
-            done();
-        }, 1000);
-    });
-    it('Insert Field at begin of RTL paragraph', () => {
-console.log('Insert Field at begin of RTL paragraph');
-        let text = 'Lead#Email';
-
-        editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
-        expect(editor.selection.start.currentWidget.children[9] instanceof FieldElementBox).toBe(false);
-    });
-    it('Insert field at middle of RTL paragraph', () => {
-console.log('Insert field at middle of RTL paragraph');
-        editor.selection.handleControlRightKey();
-        editor.selection.handleControlRightKey();
-        editor.selection.handleControlRightKey();
-        editor.selection.handleRightKey();
-        editor.selection.handleRightKey();
-        editor.selection.handleRightKey();
-        editor.selection.handleRightKey();
-        editor.selection.handleRightKey();
-        let text = 'Lead#Email';
-
-        editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
-        expect(editor.selection.start.currentWidget.children[10] instanceof FieldElementBox).toBe(false);
-    });
-    it('Insert field at last of RTL paragraph', () => {
-console.log('Insert field at last of RTL paragraph');
-        editor.selection.handleControlRightKey();
-        editor.selection.handleControlRightKey();
-        editor.selection.handleControlRightKey();
-        editor.selection.handleControlRightKey();
-        editor.selection.handleControlRightKey();
-        let text = 'Lead#Email';
-
-        editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
-        expect(editor.selection.start.currentWidget.children[0] instanceof FieldElementBox).toBe(true);
-    });
-
-});

@@ -249,7 +249,7 @@ describe('Chart Control', () => {
                 x = series.points[2].regions[0].x + series.points[2].regions[0].width / 2 + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
                 trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
 
-                let crosshair: Element = <Element>document.getElementById('container_svg').childNodes[4];
+                let crosshair: Element = <Element>document.getElementById('container_svg').childNodes[5];
                 let element1: HTMLElement;
                 expect(crosshair.childNodes.length == 3).toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[0];

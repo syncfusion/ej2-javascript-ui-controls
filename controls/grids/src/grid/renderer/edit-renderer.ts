@@ -68,40 +68,14 @@ export class EditRender {
         let isFocused: boolean;
         let cell: HTMLElement;
         let value: string;
-        let fForm: Element;
-        let frForm: Element;
-        const frzCols: boolean = gObj.isFrozenGrid();
-        const index: number = gObj.getFrozenMode() === 'Right' && gObj.editSettings.mode === 'Normal' ? 1 : 0;
         const form: Element = gObj.editSettings.mode === 'Dialog' ?
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
-            gObj.element.getElementsByClassName('e-gridform')[parseInt(index.toString(), 10)];
-        const isVirtualFrozen: boolean = frzCols && this.parent.enableColumnVirtualization && args.isScroll;
-        if (frzCols && gObj.editSettings.mode === 'Normal') {
-            const rowIndex: number = parseInt(args.row.getAttribute(literals.dataRowIndex), 10);
-            if (gObj.frozenRows && ((args.requestType === 'add' && gObj.editSettings.newRowPosition === 'Top')
-                || rowIndex < gObj.frozenRows)) {
-                fForm = gObj.element.querySelector('.' + literals.movableHeader).querySelector('.e-gridform');
-                if (this.parent.getFrozenMode() === literals.leftRight) {
-                    frForm = args.frozenRightForm;
-                }
-            } else {
-                fForm = gObj.element.querySelector('.' + literals.movableContent).querySelector('.e-gridform');
-                if (this.parent.getFrozenMode() === literals.leftRight) {
-                    frForm = args.frozenRightForm;
-                }
-            }
-        }
+            gObj.element.getElementsByClassName('e-gridform')[0];
         const cols: Column[] = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() as Column[] : [gObj.getColumnByField(args.columnName)];
         for (const col of cols) {
-            if (isVirtualFrozen && col.getFreezeTableName() !== 'movable') {
-                continue;
-            }
             if (this.parent.editSettings.template && !isNullOrUndefined(col.field)) {
                 const cellArgs: Object = extend({}, args);
                 (<{element: Element}>cellArgs).element = form.querySelector('[name=' + getComplexFieldID(col.field) + ']');
-                if (isNullOrUndefined((<{element: Element}>cellArgs).element) && frzCols) {
-                    (<{element: Element}>cellArgs).element = fForm.querySelector('[name=' + getComplexFieldID(col.field) + ']');
-                }
                 if (typeof col.edit.write === 'string') {
                     getObject(col.edit.write, window)(cellArgs);
                 } else {
@@ -114,13 +88,7 @@ export class EditRender {
             }
             // eslint-disable-next-line
             value = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
-            if (fForm && col.getFreezeTableName() === 'movable' && gObj.editSettings.mode === 'Normal') {
-                cell = fForm.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
-            } else if (frForm && col.getFreezeTableName() === literals.frozenRight && gObj.editSettings.mode === 'Normal') {
-                cell = frForm.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
-            } else {
-                cell = form.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
-            }
+            cell = form.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
             let temp: Function = col.edit.write as Function;
             if (!isNullOrUndefined(cell)) {
                 if (typeof temp === 'string') {
@@ -141,24 +109,6 @@ export class EditRender {
                 }
             }
         }
-        if (frzCols && !this.parent.allowTextWrap && ((args.requestType === 'add') || args.requestType === 'beginEdit')
-            && this.parent.editSettings.mode !== 'Dialog' && !isNullOrUndefined(form) && !isNullOrUndefined(fForm)) {
-            const mTdElement: Element = (fForm.querySelector('tr').children[0]);
-            const fTdElement: Element = (form.querySelector('tr').children[0]);
-            if ((<HTMLElement>fTdElement).offsetHeight > (<HTMLElement>mTdElement).offsetHeight) {
-                (<HTMLElement>mTdElement).style.height = (<HTMLElement>fTdElement).offsetHeight + 'px';
-                if (frForm) {
-                    const frTdElement: Element = fForm.querySelector('tr').children[0];
-                    (<HTMLElement>frTdElement).style.height = (<HTMLElement>fTdElement).offsetHeight + 'px';
-                }
-            } else {
-                (<HTMLElement>fTdElement).style.height = (<HTMLElement>mTdElement).offsetHeight + 'px';
-                if (frForm) {
-                    const frTdElement: Element = fForm.querySelector('tr').children[0];
-                    (<HTMLElement>frTdElement).style.height = (<HTMLElement>mTdElement).offsetHeight + 'px';
-                }
-            }
-        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -170,8 +120,8 @@ export class EditRender {
         if (this.parent.editSettings.mode === 'Batch') {
             this.focus.onClick({ target: closest(elem, 'td') }, true);
         } else {
-            const isFocus: boolean = this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' ? false : true;
-            if (isFocus || (this.parent.enableVirtualization && this.parent.editSettings.newRowPosition === 'Bottom'
+            const isFocus: boolean = (this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.mode === 'Normal' ? false : true;
+            if (isFocus || ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.newRowPosition === 'Bottom'
                 && parentsUntil(elem, literals.addedRow))) {
                 elem.focus();
             } else {
@@ -197,13 +147,8 @@ export class EditRender {
         if (this.parent.editSettings.template) {
             return {};
         }
-        const isVirtualFrozen: boolean = gObj.isFrozenGrid() && gObj.enableColumnVirtualization && args.isScroll;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             const col: Column = cols[parseInt(i.toString(), 10)];
-            if (this.parent.editModule.checkColumnIsGrouped(col) || (isVirtualFrozen && cols[parseInt(i.toString(), 10)].getFreezeTableName() !== 'movable')
-                || (args.isCustomFormValidation && (col.commands || col.commandsTemplate || !col.field))) {
-                continue;
-            }
             if (col.commands || col.commandsTemplate) {
                 const cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
                 const model: IModelGenerator<Column> = new RowModelGenerator(this.parent);

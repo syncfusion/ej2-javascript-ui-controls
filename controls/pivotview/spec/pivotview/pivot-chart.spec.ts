@@ -10,7 +10,6 @@ import { PivotChart } from '../../src/pivotchart/index';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { ILoadedEventArgs } from '@syncfusion/ej2-charts';
-import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 
 describe('Chart - ', () => {
     beforeAll(() => {
@@ -60,10 +59,10 @@ describe('Chart - ', () => {
                     },
                 });
                 pivotGridObj.appendTo('#PivotView');
-            }, 2000);
+            }, 1000);
         });
         beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 2000);
+            setTimeout(() => { done(); }, 1000);
         });
         it('Check initial render', (done: Function) => {
             setTimeout(() => {
@@ -79,7 +78,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005');
                 expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2008');
                 done();
-            }, 2000);
+            }, 1000);
         });
 
         it('chart type changed to stackingcolumn100', () => {
@@ -93,7 +92,7 @@ describe('Chart - ', () => {
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart1_AxisLabel_5').textContent).toBe('$500.00');
                 done();
-            }, 2000);
+            }, 1000);
         });
 
         it('sort descending -> Country', (done: Function) => {
@@ -102,7 +101,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('United States:400, FY 2005');
                 expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4').textContent).toBe(' + Canada');
                 done();
-            }, 2000);
+            }, 1000);
         })
 
         it('remove Date from column', (done: Function) => {
@@ -113,7 +112,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('Bike');
                 expect(document.getElementById('PivotView_chart_chart_legend_text_2').textContent).toBe('Van');
                 done();
-            }, 2000);
+            }, 1000);
         })
 
         it('empty column', (done: Function) => {
@@ -122,7 +121,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('United States:1450, ');
                 expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4').textContent).toBe(' + Canada');
                 done();
-            }, 2000);
+            }, 1000);
         })
 
         it('remove Country from row', function (done) {
@@ -130,7 +129,7 @@ describe('Chart - ', () => {
             setTimeout(function () {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Alabama:250, ');
                 done();
-            }, 2000);
+            }, 1000);
         })
 
         it('empty row', (done: Function) => {
@@ -140,7 +139,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_0').textContent).toBe('Total Sum of Amount');
                 expect(document.getElementById('PivotView_chart_chart_legend_text_0')).toBe(null);
                 done();
-            }, 2000);
+            }, 1000);
         })
 
         it('expand all', function (done) {
@@ -154,7 +153,7 @@ describe('Chart - ', () => {
             };
             setTimeout(function () {
                 done();
-            }, 2000);
+            }, 1000);
         });
 
         it('multi measure => Amount * Quantity', () => {
@@ -198,21 +197,21 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005 - Bike | Amount');
                 expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2005 - Van | Quantity');
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('chart type changed to stackingarea100', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'StackingArea100';
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart1_AxisLabel_1').textContent).toBe('$50.00');
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('chart type changed to column', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Column';
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart1_AxisLabel_1').textContent).toBe('$500.00');
                 done();
-            }, 2000);
+            }, 1000);
         });
 
         it('load y axis properties', () => {
@@ -248,14 +247,14 @@ describe('Chart - ', () => {
             setTimeout(function () {
                 expect(true).toBeTruthy();
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('Set display option view as both, primary as chart', (done: Function) => {
             pivotGridObj.displayOption.primary = 'Chart';
             setTimeout(function () {
                 expect(true).toBeTruthy();
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('Set display option view as both, primary as table', (done: Function) => {
             pivotGridObj.chartSeriesCreated = function (args: ChartSeriesCreatedEventArgs) {
@@ -265,7 +264,7 @@ describe('Chart - ', () => {
             setTimeout(function () {
                 expect(document.querySelectorAll('.e-grid,.e-chart')[0].classList.contains('e-pivotchart')).toBeFalsy();
                 done();
-            }, 2000);
+            }, 1000);
         });
     });
 
@@ -332,10 +331,10 @@ describe('Chart - ', () => {
                     },
                 });
                 pivotGridObj.appendTo('#PivotView');
-            }, 2000);
+            }, 1000);
         });
         beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 2000);
+            setTimeout(() => { done(); }, 1000);
         });
         it('Check initial render', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries = {
@@ -354,7 +353,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005');
                 expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2008');
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('change width to  800px', (done: Function) => {
             pivotGridObj.width = '800px';
@@ -362,14 +361,14 @@ describe('Chart - ', () => {
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis')).toBe(null);
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('change width to 500', (done: Function) => {
             pivotGridObj.width = 500;
             pivotGridObj.pivotChartModule.loadChart(pivotGridObj, pivotGridObj.chartSettings);
             setTimeout(() => {
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('current measure set to amt(false case)', (done: Function) => {
             pivotGridObj.chartSettings.value = 'Amt';
@@ -379,21 +378,21 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_1').getAttribute('aria-label')).toBe('France:200, FY 2005');
                 expect(document.getElementById('PivotView_chart_Series_3_Point_4').getAttribute('aria-label')).toBe('United States:400, FY 2008');
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('chart type changed to polar', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Polar';
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis')).toBe(null);
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('chart type changed to radar', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Radar';
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis')).toBe(null);
                 done();
-            }, 2000);
+            }, 1000);
         });
         it('onResize', (done: Function) => {
             (pivotGridObj.pivotChartModule as any).resized({
@@ -405,7 +404,7 @@ describe('Chart - ', () => {
             setTimeout(() => {
                 expect(true).toBeTruthy();
                 done();
-            }, 2000);
+            }, 1000);
         })
     });
 
@@ -453,7 +452,7 @@ describe('Chart - ', () => {
             setTimeout(() => {
                 expect((pivotGridObj.chart as Chart).primaryXAxis.zoomFactor === 1).toBeTruthy();
                 done();
-            }, 2000);
+            }, 1000);
         });
     });
 
@@ -517,7 +516,7 @@ describe('Chart - ', () => {
             pivotGridObj.appendTo('#PivotGrid');
         });
         beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 2000);
+            setTimeout(() => { done(); }, 1000);
         });
         it('Chart Events Check', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -528,57 +527,7 @@ describe('Chart - ', () => {
                 expect(legendRenderEvent).toBe("LegendRender");
                 expect(seriesRenderEvent).toBe("SeriesRender");
                 done();
-            }, 2000);
-        });
-    });
-
-    describe('Remote Data', () => {
-        let pivotGridObj: PivotView;
-        let originalTimeout: number;
-        let elem: HTMLElement = createElement('div', { id: 'PivotView', styles: 'height:500px; width:100%' });
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 25000;
-            if (!document.getElementById(elem.id)) {
-                document.body.appendChild(elem);
-            }
-            let dataBound: EmitType<Object> = () => { done(); };
-            PivotView.Inject(PivotChart, FieldList, GroupingBar);
-            let remoteData: DataManager = new DataManager({
-                url: 'https://bi.syncfusion.com/northwindservice/api/orders',
-                adaptor: new WebApiAdaptor,
-                crossDomain: true
-            });
-            pivotGridObj = new PivotView({
-                dataSourceSettings: {
-                    dataSource: remoteData,
-                    expandAll: true,
-                    filters: [],
-                    columns: [{ name: 'ProductName', caption: 'Product Name' }],
-                    rows: [{ name: 'ShipCountry', caption: 'Ship Country' }, { name: 'ShipCity', caption: 'Ship City' }],
-                    formatSettings: [{ name: 'UnitPrice', format: 'C0' }],
-                    values: [{ name: 'Quantity' }, { name: 'UnitPrice', caption: 'Unit Price' }]
-                },
-                height: '50%',
-                width: '100%',
-                dataBound: dataBound,
-                showGroupingBar: true,
-                showFieldList: true,
-                displayOption: { view: 'Both' },
-            });
-            pivotGridObj.appendTo('#PivotView');
-        });
-        it('Initial Check', (done: Function) => {
-            setTimeout(function () {
-                expect(document.querySelectorAll('td[aria-colindex="5"]')[0].textContent).toBe("$19");
-                done();
-            }, 15000);
+            }, 1000);
         });
     });
 

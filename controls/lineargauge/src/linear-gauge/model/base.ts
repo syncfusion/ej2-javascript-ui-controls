@@ -16,7 +16,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Sets and gets the font color for text.
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -30,7 +30,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Sets and gets the font weight of the text.
-     * 
+     *
      * @default 'Regular'
      */
     @Property('Regular')
@@ -38,7 +38,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Sets and gets the font style for the text.
-     * 
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -135,7 +135,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets and gets the x position for the annotation in linear gauge.
-     * 
+     *
      * @default 0
      */
     @Property(0)
@@ -143,7 +143,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Sets and gets the y position for the annotation in linear gauge.
-     * 
+     *
      * @default 0
      */
     @Property(0)
@@ -239,7 +239,7 @@ export class Container extends ChildProperty<Container> {
 
     /**
      * Sets and gets the background color of the container in linear gauge.
-     * 
+     *
      * @default 'transparent'
      */
     @Property('transparent')

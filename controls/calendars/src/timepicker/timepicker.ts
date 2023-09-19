@@ -1422,7 +1422,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private inputHandler(event: KeyboardEventArgs): void {
         if (!this.readonly && this.enabled) {
-            if (!((event.action == 'right' || event.action == 'left' || event.action == 'tab') || ((event.action == 'home' || event.action == 'end'  || event.action == 'up' || event.action == 'down') && !this.isPopupOpen() && !this.enableMask))) {
+            if (!((event.action == 'right' || event.action == 'left' || event.action == 'tab') || ((event.action == 'home' || event.action == 'end' || event.action == 'up' || event.action == 'down') && !this.isPopupOpen() && !this.enableMask))) {
                 event.preventDefault();
             }
             switch (event.action) {

@@ -44,6 +44,7 @@ export class Selection {
     private shapeResizingArgs: ShapeChangeEventArgs;
     private shapeMovingArgs: ShapeChangeEventArgs;
     private selectionResizingArgs: SelectionChangeEventArgs;
+    private isImageClarity: boolean = true;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -258,6 +259,18 @@ export class Selection {
         case 'updPtCollForShpRot':
             this.updPtCollForShpRot(args.value['obj']);
             break;
+        case 'findImageRatio':
+            this.findImageRatio(args.value['width'], args.value['height'], args.value['obj']);
+            break;
+        case 'getNumTextValue':
+            this.getNumTextValue(args.value['obj']);
+            break;
+        case 'setImageClarity':
+            this.isImageClarity = args.value['bool'];
+            break;
+        case 'upgradeImageQuality':
+            this.upgradeImageQuality();
+            break;
         }
     }
 
@@ -283,7 +296,7 @@ export class Selection {
         this.textRow = 1; this.mouseDownPoint = {x: 0, y: 0}; this.previousPoint = {x: 0, y: 0};
         this.zoomType = 'Toolbar'; this.isInitialTextEdited = false; this.dragCanvas = false;
         this.isFhdCustomized = false; this.touchEndPoint = {} as Point; this.panDown = null;
-        this.isFhdEditing = false; this.pathAdjustedIndex = null; this.touchTime = 0;
+        this.isFhdEditing = false; this.pathAdjustedIndex = null; this.touchTime = 0; this.isImageClarity = true;
         this.currentDrawingShape = ''; this.initialPrevObj = {} as CurrentObject; this.resizedElement = '';
     }
 
@@ -374,6 +387,9 @@ export class Selection {
 
     private setCursor(x: number, y: number): void {
         const parent: ImageEditor = this.parent;
+        const frameObject: Object = {bool: null };
+        parent.notify('toolbar', { prop: 'getFrameToolbar', onPropertyChange: false, value: {obj: frameObject }});
+        if (parent.isResize || frameObject['bool']) {parent.upperCanvas.style.cursor = 'default'; return; }
         const lowerCanvas: HTMLCanvasElement = document.querySelector('#' + parent.element.id + '_lowerCanvas');
         const upperCanvas: HTMLCanvasElement = document.querySelector('#' + parent.element.id + '_upperCanvas');
         let isCropSelection: boolean = false; let splitWords: string[];
@@ -812,7 +828,7 @@ export class Selection {
         const parent: ImageEditor = this.parent;
         const obj: Object = {width: 0, height: 0 };
         parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
-            value: {width: parent.activeObj.activePoint.width, height: parent.activeObj.activePoint.height, obj: obj}});
+            value: {width: parent.activeObj.activePoint.width, height: parent.activeObj.activePoint.height, obj: obj, isImgShape: null}});
         const maxDimension: Dimension = obj as Dimension;
         const previousShapeSettings: ShapeSettings = this.updatePrevShapeSettings();
         const shapeResizingArgs: ShapeChangeEventArgs = {action: 'resize',  previousShapeSettings: previousShapeSettings};
@@ -953,10 +969,10 @@ export class Selection {
                             parent.activeObj.pointColl[i as number].y += height;
                         }
                     }
-                    if (!this.isPreventDragging && (parent.activeObj.activePoint.startX < parent.img.destLeft ||
+                    if (!this.isPreventDragging && parent.activeObj.shape !== 'line' && (parent.activeObj.rotatedAngle === 0 && (parent.activeObj.activePoint.startX < parent.img.destLeft ||
                         parent.activeObj.activePoint.startY < parent.img.destTop || parent.activeObj.activePoint.endX >
                         parent.img.destLeft + parent.img.destWidth || parent.activeObj.activePoint.endY > parent.img.destTop
-                        + parent.img.destHeight)) {
+                        + parent.img.destHeight))) {
                         parent.activeObj.activePoint.startX -= width;
                         parent.activeObj.activePoint.endX -= width;
                         parent.activeObj.activePoint.startY -= height;
@@ -1131,6 +1147,7 @@ export class Selection {
 
     private preventDraggingInvertly(): void {
         const parent: ImageEditor = this.parent;
+        if (parent.activeObj.shape === 'image') {return; }
         if (!this.isPreventDragging && parent.activeObj.rotatedAngle === 0) {
             this.limitDrag(true);
             if (parent.activeObj.shape === 'line' || parent.activeObj.shape === 'arrow' ||
@@ -1171,14 +1188,30 @@ export class Selection {
         const parent: ImageEditor = this.parent; const point: Point = {x: scale, y: scale};
         if (parent.activeObj.shape && parent.activeObj.shape !== 'crop-custom' &&
             parent.activeObj.shape !== 'crop-circle' && parent.activeObj.shape !== 'crop-square') {
-            let ratio: string[] = parent.activeObj.shape.split('-');
-            if (ratio.length > 1) {
-                ratio = ratio[1].split(':');
+            let ratio: string[] = parent.activeObj.shape === 'image' ?
+                this.findImageRatio(parent.activeObj.activePoint.width, parent.activeObj.activePoint.height).split('-') :
+                parent.activeObj.shape.split('-');
+            if (ratio.length > 1 || parent.activeObj.shape === 'image') {
+                ratio = parent.activeObj.shape === 'image' ? ratio[0].split(':') : ratio[1].split(':');
                 const newScale: number = scale / (parseInt(ratio[1], 10));
                 point.x = newScale * (parseInt(ratio[0], 10)); point.y = newScale * (parseInt(ratio[1], 10));
             }
         }
         return point;
+    }
+
+    private findImageRatio(width: number, height: number, obj?: Object): string {
+        // eslint-disable-next-line @typescript-eslint/tslint/config
+        const gcd = (a: number, b: number): number => {
+            if (b === 0) {
+                return a;
+            }
+            return gcd(b, a % b);
+        };
+        const divisor: number = gcd(width, height);
+        const ratio: string = `${width / divisor}:${height / divisor}`;
+        if (obj) {obj['ratio'] = ratio; }
+        return ratio;
     }
 
     private updateNWPoints(x: number, y: number, maxDimension: Dimension): void {
@@ -1211,7 +1244,11 @@ export class Selection {
             let splitWords: string[];
             if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
             if (parent.activeObj.shape === 'crop-custom' || (parent.activeObj.shape !== undefined && splitWords[0] !== 'crop')) {
-                this.adjustNWPoints(parent.activeObj.activePoint, x, y, parent.activeObj.rotatedAngle);
+                if (parent.activeObj.shape === 'image') {
+                    this.resizeImg(x, y, 'nw-resize', tempActiveObj);
+                } else {
+                    this.adjustNWPoints(parent.activeObj.activePoint, x, y, parent.activeObj.rotatedAngle);
+                }
                 if (parent.activeObj.activePoint.startX > parent.activeObj.activePoint.endX) {
                     const temp: number = parent.activeObj.activePoint.startX;
                     parent.activeObj.activePoint.startX = parent.activeObj.activePoint.endX;
@@ -1339,7 +1376,11 @@ export class Selection {
             let splitWords: string[];
             if (parent.activeObj.shape) {splitWords = parent.activeObj.shape.split('-'); }
             if (parent.activeObj.shape === 'crop-custom' || (parent.activeObj.shape !== undefined && splitWords[0] !== 'crop')) {
-                this.adjustNEPoints(parent.activeObj.activePoint, x, y, parent.activeObj.rotatedAngle);
+                if (parent.activeObj.shape === 'image') {
+                    this.resizeImg(x, y, 'ne-resize', tempActiveObj);
+                } else {
+                    this.adjustNEPoints(parent.activeObj.activePoint, x, y, parent.activeObj.rotatedAngle);
+                }
                 if (parent.activeObj.activePoint.endX < parent.activeObj.activePoint.startX) {
                     const temp: number = parent.activeObj.activePoint.endX;
                     parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX;
@@ -1545,7 +1586,11 @@ export class Selection {
             let splitWords: string[];
             if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
             if (parent.activeObj.shape === 'crop-custom' || (parent.activeObj.shape !== undefined && splitWords[0] !== 'crop')) {
-                this.adjustSWPoints(parent.activeObj.activePoint, x, y, parent.activeObj.rotatedAngle);
+                if (parent.activeObj.shape === 'image') {
+                    this.resizeImg(x, y, 'sw-resize', tempActiveObj);
+                } else {
+                    this.adjustSWPoints(parent.activeObj.activePoint, x, y, parent.activeObj.rotatedAngle);
+                }
                 if (parent.activeObj.activePoint.startX > parent.activeObj.activePoint.endX) {
                     const temp: number = parent.activeObj.activePoint.startX;
                     parent.activeObj.activePoint.startX = parent.activeObj.activePoint.endX;
@@ -1675,10 +1720,14 @@ export class Selection {
             parent.notify('shape', { prop: 'updateFontSize', onPropertyChange: false,
                 value: {obj: parent.activeObj}});
         } else {
-            let splitWords: string[];
+            let splitWords: string[]; let newScale: Point;
             if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
             if (parent.activeObj.shape === 'crop-custom' || (parent.activeObj.shape !== undefined && splitWords[0] !== 'crop')) {
-                this.adjustSEPoints(parent.activeObj.activePoint, x, y, parent.activeObj.rotatedAngle);
+                if (parent.activeObj.shape === 'image') {
+                    this.resizeImg(x, y, 'se-resize', tempActiveObj);
+                } else {
+                    this.adjustSEPoints(parent.activeObj.activePoint, x, y, parent.activeObj.rotatedAngle);
+                }
                 if (parent.activeObj.activePoint.endX < parent.activeObj.activePoint.startX) {
                     const temp: number = parent.activeObj.activePoint.endX;
                     parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX;
@@ -1696,7 +1745,7 @@ export class Selection {
                 if (parent.activeObj.activePoint.endX > x && parent.activeObj.activePoint.endY > y) {
                     width = parent.activeObj.activePoint.endX - x; height = parent.activeObj.activePoint.endY - y;
                     scale = Math.min(width, height);
-                    const newScale: Point = this.getScaleRatio(scale);
+                    newScale = this.getScaleRatio(scale);
                     parent.activeObj.activePoint.endX -= newScale.x; parent.activeObj.activePoint.endY -= newScale.y;
                     const endX: number = parent.img.destLeft + parent.img.destWidth < parent.lowerCanvas.width ?
                         parent.img.destLeft + parent.img.destWidth : parent.lowerCanvas.width;
@@ -1708,7 +1757,7 @@ export class Selection {
                 } else {
                     width = x - parent.activeObj.activePoint.endX; height = y - parent.activeObj.activePoint.endY;
                     scale = Math.max(width, height);
-                    const newScale: Point = this.getScaleRatio(scale);
+                    newScale = this.getScaleRatio(scale);
                     parent.activeObj.activePoint.endX += newScale.x; parent.activeObj.activePoint.endY += newScale.y;
                     const endX: number = parent.img.destLeft + parent.img.destWidth < parent.lowerCanvas.width ? parent.img.destLeft +
                                          parent.img.destWidth : parent.lowerCanvas.width;
@@ -1723,6 +1772,114 @@ export class Selection {
             parent.activeObj.activePoint.height = parent.activeObj.activePoint.endY - parent.activeObj.activePoint.startY;
             this.preventInverseResize(tempActiveObj);
         }
+    }
+
+    private resizeImg(x: number, y: number, elem: string, tempActiveObj: SelectionPoint): void {
+        const parent: ImageEditor = this.parent;
+        let width: number; let height: number; let scale: number; let newScale: Point;
+        if (this.previousPoint.x !== 0 && this.previousPoint.y !== 0) {
+            switch (parent.upperCanvas.style.cursor) {
+            case 'se-resize':
+            case 's-resize':
+                if (this.previousPoint.x > x || this.previousPoint.y > y) {
+                    width = (this.previousPoint.x - x);
+                    height = (this.previousPoint.y - y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, -Math.abs(newScale.x), -Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                else if (this.previousPoint.x !== 0 && this.previousPoint.y !== 0) {
+                    width = (x - this.previousPoint.x);
+                    height = (y - this.previousPoint.y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, Math.abs(newScale.x), Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                break;
+            case 'sw-resize':
+                if (this.previousPoint.x < x || this.previousPoint.y > y) {
+                    width = (x - this.previousPoint.x);
+                    height = (this.previousPoint.y - y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, -Math.abs(newScale.x), -Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                else if (this.previousPoint.x !== 0 && this.previousPoint.y !== 0) {
+                    width = (this.previousPoint.x - x);
+                    height = (y - this.previousPoint.y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, Math.abs(newScale.x), Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                break;
+            case 'w-resize':
+            case 'nw-resize':
+                if (this.previousPoint.x < x || this.previousPoint.y < y) {
+                    width = (x - this.previousPoint.x);
+                    height = (y - this.previousPoint.y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, -Math.abs(newScale.x), -Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                else if (this.previousPoint.x !== 0 && this.previousPoint.y !== 0) {
+                    width = (this.previousPoint.x - x);
+                    height = (this.previousPoint.y - y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, Math.abs(newScale.x), Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                break;
+            case 'n-resize':
+            case 'ne-resize':
+                if (this.previousPoint.x > x || this.previousPoint.y < y) {
+                    width = (this.previousPoint.x - x);
+                    height = (y - this.previousPoint.y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, -Math.abs(newScale.x), -Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                else if (this.previousPoint.x !== 0 && this.previousPoint.y !== 0) {
+                    width = (x - this.previousPoint.x);
+                    height = (this.previousPoint.y - y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, Math.abs(newScale.x), Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                break;
+            case 'e-resize':
+                if (this.previousPoint.x > x || this.previousPoint.y > y) {
+                    width = (this.previousPoint.x - x);
+                    height = (this.previousPoint.y - y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, -Math.abs(newScale.x), -Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                else if (this.previousPoint.x !== 0 && this.previousPoint.y !== 0) {
+                    width = (x - this.previousPoint.x);
+                    height = (y - this.previousPoint.y);
+                    scale = (width + height) / 2;
+                    newScale = this.getScaleRatio(scale);
+                    this.adjustRotationPoints(parent.activeObj.activePoint, Math.abs(newScale.x), Math.abs(newScale.y),
+                                              parent.activeObj.rotatedAngle, 'img-resize', elem);
+                }
+                break;
+            }
+            parent.activeObj.activePoint.width = parent.activeObj.activePoint.endX - parent.activeObj.activePoint.startX;
+            parent.activeObj.activePoint.height = parent.activeObj.activePoint.endY - parent.activeObj.activePoint.startY;
+            if (parent.activeObj.activePoint.width < 10 || parent.activeObj.activePoint.height < 10) {
+                parent.activeObj = extend({}, tempActiveObj, null, true) as SelectionPoint;
+            }
+        }
+        this.previousPoint = { x: x, y: y };
     }
 
     private adjustNWPoints(rectangle: ActivePoint, x: number, y: number, angle: number): ActivePoint {
@@ -1789,10 +1946,11 @@ export class Selection {
         return rectangle;
     }
 
-    private adjustRotationPoints(rectangle: ActivePoint, x: number, y: number, angle: number): ActivePoint {
+    private adjustRotationPoints(rectangle: ActivePoint, x: number, y: number, angle: number, type?: string,
+                                 elem?: string): ActivePoint {
         const cx: number = rectangle.startX + rectangle.width / 2;
         const cy: number = rectangle.startY + rectangle.height / 2;
-        this.getResizeDirection(rectangle, x, y , angle);
+        this.getResizeDirection(rectangle, x, y , angle, type, elem);
         const rotatedA: number[] = this.rotatePoints(rectangle.startX, rectangle.startY, cx, cy, angle);
         const rotatedB: number[] = this.rotatePoints(rectangle.endX, rectangle.startY, cx, cy, angle);
         const rotatedC: number[] = this.rotatePoints(rectangle.endX, rectangle.endY, cx, cy, angle);
@@ -1843,11 +2001,17 @@ export class Selection {
         case 'x-y':
             value += (x + (y / 2));
             break;
+        case 'img-resize-x':
+            value += x;
+            break;
+        case 'img-resize-y':
+            value += y;
+            break;
         }
         return value;
     }
 
-    private getResizeDirection(rectangle: ActivePoint, x: number, y: number, angle: number): void {
+    private getResizeDirection(rectangle: ActivePoint, x: number, y: number, angle: number, type?: string, elem?: string): void {
         const rotatedAngle: number = angle * (180 / Math.PI);
         const element: string = this.getResizedElement(rotatedAngle, this.resizedElement);
         if (this.resizedElement === 'e-resize') {
@@ -1862,6 +2026,22 @@ export class Selection {
         } else if (this.resizedElement === 's-resize') {
             rectangle.height = this.setResizedValue(element, rectangle.height, x, y);
             rectangle.endY = rectangle.height + rectangle.startY;
+        } else if (type && type === 'img-resize') {
+            rectangle.width = this.setResizedValue('img-resize-x', rectangle.width, x, y);
+            rectangle.height = this.setResizedValue('img-resize-y', rectangle.height, x, y);
+            if (elem === 'se-resize') {
+                rectangle.endX = rectangle.width + rectangle.startX;
+                rectangle.endY = rectangle.height + rectangle.startY;
+            } else if (elem === 'sw-resize') {
+                rectangle.startX = rectangle.endX - rectangle.width;
+                rectangle.endY = rectangle.height + rectangle.startY;
+            } else if (elem === 'ne-resize') {
+                rectangle.endX = rectangle.width + rectangle.startX;
+                rectangle.startY = rectangle.endY - rectangle.height;
+            } else if (elem === 'nw-resize') {
+                rectangle.startX = rectangle.endX - rectangle.width;
+                rectangle.startY = rectangle.endY - rectangle.height;
+            }
         }
     }
 
@@ -2266,7 +2446,7 @@ export class Selection {
             const textWidth: number = startX ? startX : 0;
             const textHeight: number = startY ? startY : parent.activeObj.textSettings.fontSize;
             if (parent.activeObj.textSettings.fontSize === undefined) {
-                parent.activeObj.textSettings.fontSize = (Math.abs(parent.baseImg.width - parent.baseImg.height)) * 0.1;
+                parent.activeObj.textSettings.fontSize = (Math.abs(parent.baseImgCanvas.width - parent.baseImgCanvas.height)) * 0.1;
             }
             this.setTextSelection(textWidth, textHeight);
             this.mouseDownPoint.x = parent.activeObj.activePoint.endX; this.mouseDownPoint.y = parent.activeObj.activePoint.endY;
@@ -2339,7 +2519,13 @@ export class Selection {
         const x: number = imageEditorClickEventArgs.point.x; const y: number = imageEditorClickEventArgs.point.y;
         const cursor: string = parent.activeObj.shape && parent.activeObj.shape === 'text' ?
             parent.cursor : 'default';
-        if (this.currentDrawingShape !== '') {
+        if (parent.isResize) {
+            // parent.okBtn();
+            this.performEnterAction();
+            return;
+        } else if (JSON.stringify(parent.frameObj) !== JSON.stringify(parent.tempFrameObj)) {
+            parent.okBtn();
+        } else if (this.currentDrawingShape !== '') {
             const object: Object = {currObj: {} as CurrentObject };
             parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
             this.initialPrevObj = object['currObj'];
@@ -2365,6 +2551,7 @@ export class Selection {
             parent.currObjType.isDragging = true;
             return;
         }
+        parent.notify('draw', { prop: 'resetFrameZoom', onPropertyChange: false });
         if (this.isCropSelection && this.dragCanvas) {
             this.setCursor(x, y);
             if (parent.cursor !== 'move' && parent.cursor !== 'crosshair' &&
@@ -2426,7 +2613,8 @@ export class Selection {
             }
             if (parent.activeObj.shape && (parent.activeObj.shape === 'rectangle' ||
                 parent.activeObj.shape === 'ellipse' || parent.activeObj.shape === 'line' ||
-                parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path' || parent.activeObj.shape === 'text')) {
+                parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path' || parent.activeObj.shape === 'text' ||
+                parent.activeObj.shape === 'image')) {
                 parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
                     value: {x: null, y: null, isMouseDown: null}});
                 parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
@@ -2478,6 +2666,8 @@ export class Selection {
                 parent.notify('freehand-draw', {prop: 'getFreehandSelectedIndex', onPropertyChange: false, value: {obj: indexObj }});
                 if (!isNullOrUndefined(obj['index']) && obj['index'] > -1) {
                     parent.notify('freehand-draw', {prop: 'selectFhd', value: {type: 'ok' }});
+                    parent.notify('freehand-draw', { prop: 'hoverFhd', onPropertyChange: false,
+                        value: { strokeColor: null, strokeWidth: null } });
                     if (!isBlazor()) {
                         parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
                     } else {
@@ -2489,6 +2679,8 @@ export class Selection {
                     const strokeColor: string = parent.pointColl[indexObj['freehandSelectedIndex']].strokeColor;
                     parent.notify('freehand-draw', { prop: 'hoverFhd', onPropertyChange: false,
                         value: {strokeColor: strokeColor, strokeWidth: parent.pointColl[indexObj['freehandSelectedIndex']].strokeWidth}});
+                } else if (this.findTargetObj(x, y, false)) {
+                    this.findTarget(x, y, e.type);
                 }
             } else {
                 if (this.isFhdEditing) {
@@ -2532,10 +2724,7 @@ export class Selection {
                     this.dragPoint.startX = this.dragPoint.startY = this.dragPoint.endX = this.dragPoint.endY = 0;
                 }
                 if ((parent.cursor !== 'crosshair' && e.type.toLowerCase() === 'touchstart') ||
-                (parent.currObjType.isActiveObj && parent.cursor !== 'default' && !parent.togglePen)) {
-                    if (parent.currObjType.isUndoAction) {
-                        parent.notify('undo-redo', {prop: 'refreshUrc', value: {bool: null }});
-                    }
+                    (parent.currObjType.isActiveObj && parent.cursor !== 'default' && !parent.togglePen)) {
                     this.findTarget(x, y, e.type);
                 }
                 else if ((parent.currObjType.shape === '' || parent.currObjType.isCustomCrop) && !parent.togglePen  && parent.cursor !== 'default') {
@@ -2729,9 +2918,20 @@ export class Selection {
             this.parent.eventType = null;
         }
         if (this.currentDrawingShape === 'path') {
+            const elem: any = e.srcElement;
+            if (e.currentTarget !== parent.upperCanvas && e.currentTarget !== parent.lowerCanvas &&
+                (elem.classList.contains('e-upload-icon') || elem.parentElement.id === parent.element.id + '_zoomIn' ||
+                elem.parentElement.id === parent.element.id + '_zoomOut' || elem.parentElement.id === parent.element.id + '_annotationBtn' ||
+                elem.parentElement.id === parent.element.id + '_borderColorBtn' || elem.parentElement.id === parent.element.id + '_borderWidthBtn' ||
+                elem.parentElement.id === parent.element.id + '_saveBtn')) {
+                this.parent.notify('shape', { prop: 'stopPathDrawing', onPropertyChange: false, value: {e: e, isApply: true }});
+                this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+                parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: parent.activeObj, isCropRatio: null,
+                    points: null, isPreventDrag: true, saveContext: null, isPreventSelection: true} });
+            }
             return;
         }
-        if (e.currentTarget === parent.upperCanvas) {
+        if (e.currentTarget === parent.upperCanvas && !parent.isResize) {
             this.pathAdjustedIndex = null;
             if (this.currentDrawingShape !== '') {
                 if (this.currentDrawingShape === 'text') {
@@ -2810,7 +3010,8 @@ export class Selection {
                     parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
                 } else {
                     if ((parent.activeObj.shape === 'rectangle') || (parent.activeObj.shape === 'ellipse')
-                    || (parent.activeObj.shape === 'line' || parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path')) {
+                    || (parent.activeObj.shape === 'line' || parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path'
+                    || parent.activeObj.shape === 'image')) {
                         parent.updateToolbar(parent.element, parent.activeObj.shape);
                     } else if (parent.activeObj.shape === 'text' && parent.textArea.style.display === 'none') {
                         parent.updateToolbar(parent.element, 'text');
@@ -2958,6 +3159,10 @@ export class Selection {
             isShape = this.findTargetObj(x, y, isCropSelection);
             if (!isCropSelection) {
                 this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+                if (isShape) {
+                    parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
+                        value: { x: null, y: null, isMouseDown: true } });
+                }
             }
             if (isTextArea) {
                 parent.textArea.value = parent.objColl[parent.objColl.length - 1].keyHistory;
@@ -3072,7 +3277,7 @@ export class Selection {
         let isApply: boolean = false;
         if (parent.activeObj.shape && (parent.activeObj.shape === 'rectangle' || parent.activeObj.shape === 'ellipse' ||
             parent.activeObj.shape === 'text' || parent.activeObj.shape === 'line' || parent.activeObj.shape === 'arrow' ||
-            parent.activeObj.shape === 'path')) {
+            parent.activeObj.shape === 'path' || parent.activeObj.shape === 'image')) {
             if (x >= (parent.activeObj.activePoint.startX - (parent.activeObj.topLeftCircle.radius * 2)) &&
                         x <= (parent.activeObj.activePoint.endX + (parent.activeObj.topLeftCircle.radius * 2)) &&
                         y >= (parent.activeObj.activePoint.startY - (parent.activeObj.topLeftCircle.radius * 2)) &&
@@ -3167,6 +3372,9 @@ export class Selection {
 
     private canvasMouseMoveHandler(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent;
+        const frameObject: Object = {bool: null };
+        parent.notify('toolbar', { prop: 'getFrameToolbar', onPropertyChange: false, value: {obj: frameObject }});
+        if (parent.isResize || frameObject['bool']) {parent.upperCanvas.style.cursor = 'default'; return; }
         if (this.dragCanvas) {parent.lowerCanvas.style.cursor = 'grab'; }
         else {this.dragCanvas = parent.togglePan = false;
             parent.lowerCanvas.style.cursor = parent.upperCanvas.style.cursor = parent.cursor = 'default'; }
@@ -3215,7 +3423,7 @@ export class Selection {
             this.touchTime = new Date().getTime();
         } else {
             if (((new Date().getTime()) - this.touchTime) < 400) {
-                this.parent.notify('shape', { prop: 'stopPathDrawing', onPropertyChange: false, value: {e: e }});
+                this.parent.notify('shape', { prop: 'stopPathDrawing', onPropertyChange: false, value: {e: e, isApply: null }});
                 this.touchTime = 0;
             } else {
                 this.touchTime = new Date().getTime();
@@ -3247,7 +3455,6 @@ export class Selection {
         const obj: Object = { fileName: '', fileType: null };
         parent.notify('draw', { prop: 'getFileName', onPropertyChange: false, value: {obj: obj }});
         const beforeSave: BeforeSaveEventArgs = {fileName: obj['fileName'], fileType: obj['fileType'], cancel: false};
-        let splitWords: string[];
         switch (e.key) {
         case (e.ctrlKey && 's'):
             if (isBlazor() && parent.events && parent.events.saving.hasDelegate === true) {
@@ -3274,14 +3481,14 @@ export class Selection {
             if ((parent.zoomSettings.zoomTrigger & ZoomTrigger.Commands) === ZoomTrigger.Commands) {
                 this.zoomType = 'Commands';
                 parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                    value: {zoomFactor: .1, zoomPoint: null}});
+                    value: {zoomFactor: .1, zoomPoint: null}, isResize: null});
             }
             break;
         case (e.ctrlKey && '-'):
             if ((parent.zoomSettings.zoomTrigger & ZoomTrigger.Commands) === ZoomTrigger.Commands) {
                 this.zoomType = 'Commands';
                 parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                    value: {zoomFactor: -.1, zoomPoint: null}});
+                    value: {zoomFactor: -.1, zoomPoint: null}, isResize: null});
             }
             break;
         case 'Delete':
@@ -3291,11 +3498,7 @@ export class Selection {
             parent.notify('draw', {prop: 'performCancel', value: {isContextualToolbar: null}});
             break;
         case 'Enter':
-            if (parent.activeObj.shape) {splitWords = parent.activeObj.shape.split('-'); }
-            if (this.isKeyBoardCrop(e) &&
-                parent.activeObj.horTopLine && (parent.activeObj.shape && splitWords[0] === 'crop')) {
-                parent.crop();
-            }
+            this.performEnterAction(e);
             break;
         case 'Tab':
             this.performTabAction();
@@ -3305,6 +3508,30 @@ export class Selection {
                 setTimeout(this.textKeyDown.bind(this), 1, e);
             }
             break;
+        }
+    }
+
+    private performEnterAction(e?: KeyboardEvent): void {
+        const parent: ImageEditor = this.parent;
+        if (parent.isResize) {
+            const point: Point = this.getNumTextValue();
+            const aspectRatioElement: HTMLInputElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_aspectratio') as HTMLInputElement);
+            const blrAspRatElem: HTMLInputElement = (this.parent.element.querySelector('.e-ie-toolbar-aspect-ratio-btn') as HTMLInputElement);
+            if (point && point.x && point.y) {
+                if (aspectRatioElement || (blrAspRatElem && !blrAspRatElem.classList.contains('e-hidden'))) {
+                    parent.notify('transform', {prop: 'resize', value: {width: point.x, height: null, isAspectRatio: true }});
+                }
+                else {
+                    parent.notify('transform', {prop: 'resize', value: {width: point.x, height: point.y, isAspectRatio: false }});
+                }
+            }
+        } else {
+            let splitWords: string[];
+            if (parent.activeObj.shape) {splitWords = parent.activeObj.shape.split('-'); }
+            if (e && this.isKeyBoardCrop(e) &&
+                parent.activeObj.horTopLine && (parent.activeObj.shape && splitWords[0] === 'crop')) {
+                parent.crop();
+            }
         }
     }
 
@@ -3526,14 +3753,20 @@ export class Selection {
                             x <= actObj.pointColl[j as number].x + (actObj.topLeftCircle.radius * 2) &&
                             y >= actObj.pointColl[j as number].y - (actObj.topLeftCircle.radius * 2) &&
                             y <= actObj.pointColl[j as number].y + (actObj.topLeftCircle.radius * 2)) {
-                            if (this.isTouch || parent.cursor === 'move' ||
-                                parent.cursor === 'grab' || this.isShapeInserted) {
-                                if (diffX === 0 || diffX > x - actObj.activePoint.startX) {
-                                    diffX = x - parent.objColl[index as number].activePoint.startX;
-                                    i = index;
-                                }
-                            } else if (parent.objColl[index as number].currIndex === this.tempActiveObj.currIndex) {
+                            if (this.tempActiveObj && this.tempActiveObj.activePoint &&
+                                JSON.stringify(this.tempActiveObj.activePoint) === JSON.stringify(actObj.activePoint)) {
                                 i = index;
+                                break;
+                            } else {
+                                if (this.isTouch || parent.cursor === 'move' ||
+                                    parent.cursor === 'grab' || this.isShapeInserted) {
+                                    if (diffX === 0 || diffX > x - actObj.activePoint.startX) {
+                                        diffX = x - parent.objColl[index as number].activePoint.startX;
+                                        i = index;
+                                    }
+                                } else if (parent.objColl[index as number].currIndex === this.tempActiveObj.currIndex) {
+                                    i = index;
+                                }   
                             }
                             break;
                         }
@@ -3541,25 +3774,37 @@ export class Selection {
                 } else if (actObj.shape === 'path') {
                     const cursor: string = this.setCursorForPath(actObj, x, y, parent.upperCanvas);
                     if (cursor !== 'default' && cursor !== 'grab') {
-                        if (this.isTouch || parent.cursor === 'move' || parent.cursor === 'grab' || this.isShapeInserted) {
-                            if (diffX === 0 || diffX > x - actObj.activePoint.startX) {
-                                diffX = x - parent.objColl[index as number].activePoint.startX;
+                        if (this.tempActiveObj && this.tempActiveObj.activePoint &&
+                            JSON.stringify(this.tempActiveObj.activePoint) === JSON.stringify(actObj.activePoint)) {
+                            i = index;
+                            break;
+                        } else {
+                            if (this.isTouch || parent.cursor === 'move' || parent.cursor === 'grab' || this.isShapeInserted) {
+                                if (diffX === 0 || diffX > x - actObj.activePoint.startX) {
+                                    diffX = x - parent.objColl[index as number].activePoint.startX;
+                                    i = index;
+                                }
+                            } else if (parent.objColl[index as number].currIndex === this.tempActiveObj.currIndex) {
                                 i = index;
                             }
-                        } else if (parent.objColl[index as number].currIndex === this.tempActiveObj.currIndex) {
-                            i = index;
                         }
                     }
                 } else if (actObj.rotatedAngle !== 0) {
                     const cursor: string = this.setCursorForRotatedObject(actObj, x, y, parent.upperCanvas);
                     if (cursor !== 'default' && cursor !== 'grab') {
-                        if (this.isTouch || parent.cursor === 'move' || parent.cursor === 'grab' || this.isShapeInserted) {
-                            if (diffX === 0 || diffX > x - actObj.activePoint.startX) {
-                                diffX = x - parent.objColl[index as number].activePoint.startX;
+                        if (this.tempActiveObj && this.tempActiveObj.activePoint &&
+                            JSON.stringify(this.tempActiveObj.activePoint) === JSON.stringify(actObj.activePoint)) {
+                            i = index;
+                            break;
+                        } else {
+                            if (this.isTouch || parent.cursor === 'move' || parent.cursor === 'grab' || this.isShapeInserted) {
+                                if (diffX === 0 || diffX > x - actObj.activePoint.startX) {
+                                    diffX = x - parent.objColl[index as number].activePoint.startX;
+                                    i = index;
+                                }
+                            } else if (parent.objColl[index as number].currIndex === this.tempActiveObj.currIndex) {
                                 i = index;
                             }
-                        } else if (parent.objColl[index as number].currIndex === this.tempActiveObj.currIndex) {
-                            i = index;
                         }
                     }
                 } else {
@@ -3573,14 +3818,20 @@ export class Selection {
                         x <= (rotationCirclePoint.x + (actObj.topLeftCircle.radius * 2)) &&
                         y >= (rotationCirclePoint.y - (actObj.topLeftCircle.radius * 2)) &&
                         y <= (rotationCirclePoint.y + (actObj.topLeftCircle.radius * 2)))) {
-                        if (this.isTouch || cursor === 'move' || cursor === 'grabbing' || this.isShapeInserted
-                            || parent.cursor === 'move' || parent.cursor === 'grabbing') {
-                            if (diffX === 0 || diffX > x - actObj.activePoint.startX) {
-                                diffX = x - parent.objColl[index as number].activePoint.startX;
+                        if (this.tempActiveObj && this.tempActiveObj.activePoint &&
+                            JSON.stringify(this.tempActiveObj.activePoint) === JSON.stringify(actObj.activePoint)) {
+                            i = index;
+                            break;
+                        } else {
+                            if (this.isTouch || cursor === 'move' || cursor === 'grabbing' || this.isShapeInserted
+                                || parent.cursor === 'move' || parent.cursor === 'grabbing') {
+                                if (diffX === 0 || diffX > x - actObj.activePoint.startX) {
+                                    diffX = x - parent.objColl[index as number].activePoint.startX;
+                                    i = index;
+                                }
+                            } else if (parent.objColl[index as number].currIndex === this.tempActiveObj.currIndex) {
                                 i = index;
                             }
-                        } else if (parent.objColl[index as number].currIndex === this.tempActiveObj.currIndex) {
-                            i = index;
                         }
                     }
                 }
@@ -3597,10 +3848,7 @@ export class Selection {
                 if (parent.transform.degree === 0) {
                     const temp: string = this.lowerContext.filter;
                     this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
-                    parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-                    this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
-                                                parent.img.srcHeight, parent.img.destLeft, parent.img.destTop, parent.img.destWidth,
-                                                parent.img.destHeight);
+                    parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
                     this.lowerContext.filter = 'none';
                     parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
                     parent.activeObj = extend({}, temp, {}, true) as SelectionPoint;
@@ -3618,6 +3866,7 @@ export class Selection {
                     parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
                         value: {context: this.lowerContext, isSave: null, isFlip: null}});
                 }
+                parent.activeObj = extend({}, temp, {}, true) as SelectionPoint;
                 this.setActivePoint();
                 parent.activeObj = extend({}, temp, {}, true) as SelectionPoint;
                 const tempStrokeSettings: StrokeSettings = extend({}, parent.activeObj.strokeSettings, {}, true) as StrokeSettings;
@@ -3693,6 +3942,10 @@ export class Selection {
                 parent.notify('draw', { prop: 'setPrevActObj', onPropertyChange: false,
                     value: { prevActObj: extend({}, parent.activeObj, {}, true) }});
             }
+            if (parent.activeObj.shape === 'image' && !this.isImageClarity) {
+                this.upgradeImageQuality();
+                this.isImageClarity = true;
+            }
             parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: parent.activeObj, isCropRatio: null,
                 points: null, isPreventDrag: true, saveContext: null, isPreventSelection: true} });
             if (!this.isShapeInserted) {
@@ -3702,6 +3955,20 @@ export class Selection {
                 else if (parent.activeObj.activePoint.endY > parent.img.destTop + parent.img.destHeight) {this.isPreventDragging = true; }
             }
         }
+    }
+
+    private upgradeImageQuality(): void {
+        const parent: ImageEditor = this.parent;
+        const activeObj: SelectionPoint = extend({}, parent.activeObj, null, true) as SelectionPoint;
+        const ctx: CanvasRenderingContext2D = parent.activeObj.imageCanvas.getContext('2d');
+        let dimObj: Object = {width: 0, height: 0 };
+        parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
+            value: {width: parent.activeObj.imageElement.width, height: parent.activeObj.imageElement.height, obj: dimObj, isImgShape: null }});
+        parent.notify('shape', { prop: 'updateObj', onPropertyChange: false, value: { dimObj: dimObj, x: null, y: null }});
+        ctx.clearRect(0, 0, parent.activeObj.imageCanvas.width, parent.activeObj.imageCanvas.height);
+        parent.notify('draw', { prop: 'downScaleImgCanvas', onPropertyChange: false,
+            value: { ctx: ctx, isImgAnnotation: true, isHFlip: null, isVFlip: null } });
+        parent.activeObj = activeObj;
     }
 
     // eslint-disable-next-line
@@ -3788,7 +4055,7 @@ export class Selection {
             isInside = true;
             this.tempActiveObj = { activePoint: { startX: 0, startY: 0, endX: 0, endY: 0, width: 0, height: 0 },
                 flipObjColl: [], triangle: [], triangleRatio: [] } as SelectionPoint;
-        } else if (actObj.shape === 'text' && this.dragElement !== '') {
+        } else if ((actObj.shape === 'text' || actObj.shape === 'image') && this.dragElement !== '') {
             isInside = true;
         } else if (actObj.shape === 'line' || actObj.shape === 'arrow') {
             const smallPoint: Point = {x: actObj.activePoint.startX < actObj.activePoint.endX ? actObj.activePoint.startX :
@@ -3827,7 +4094,8 @@ export class Selection {
                 parent.objColl.push(extend({}, parent.activeObj, {}, true) as SelectionPoint);
             }
             if (parent.activeObj.shape === 'text' || (parent.currObjType.shape === 'ellipse' || parent.currObjType.shape === 'rectangle' ||
-               parent.currObjType.shape === 'line' || parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path')) {
+               parent.currObjType.shape === 'line' || parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path' ||
+               parent.activeObj.shape === 'image')) {
                 const tempFilter: string = this.lowerContext.filter;
                 this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
                     'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' +
@@ -3876,8 +4144,8 @@ export class Selection {
         const parent: ImageEditor = this.parent;
         parent.activeObj.textSettings.fontFamily = parent.textArea.style.fontFamily;
         parent.activeObj.strokeSettings.strokeColor = parent.textArea.style.color !== '' &&
-            parent.textArea.style.color.split('(')[1] && parent.textArea.style.color.split('(')[1].split(',')[0] &&
-            parent.textArea.style.color.split('(')[1].split(',')[1] && parent.textArea.style.color.split('(')[1].split(',')[2] ?
+        parent.textArea.style.color.split('(')[1] && parent.textArea.style.color.split('(')[1].split(',')[0] &&
+        parent.textArea.style.color.split('(')[1].split(',')[1] && parent.textArea.style.color.split('(')[1].split(',')[2] ?
             this.rgbToHex(parseFloat(parent.textArea.style.color.split('(')[1].split(',')[0]),
                           parseFloat(parent.textArea.style.color.split('(')[1].split(',')[1]),
                           parseFloat(parent.textArea.style.color.split('(')[1].split(',')[2])) :
@@ -3905,8 +4173,7 @@ export class Selection {
     }
 
     private deleteItem(): void {
-        const parent: ImageEditor = this.parent;
-        let shapeChangingArgs: ShapeChangeEventArgs = {};
+        const parent: ImageEditor = this.parent; let shapeChangingArgs: ShapeChangeEventArgs = {};
         let previousShapeSettings: ShapeSettings = {} as ShapeSettings;
         if (this.isFhdEditing) {
             this.updateFreehandDrawColorChange();
@@ -4003,8 +4270,7 @@ export class Selection {
     }
 
     private updateFreehandDrawColorChange(): void {
-        const parent: ImageEditor = this.parent;
-        const indexObj: Object = {freehandSelectedIndex: null };
+        const parent: ImageEditor = this.parent; const indexObj: Object = {freehandSelectedIndex: null };
         parent.notify('freehand-draw', {prop: 'getFreehandSelectedIndex', onPropertyChange: false, value: {obj: indexObj }});
         if (!isNullOrUndefined(indexObj['freehandSelectedIndex']) && !isNullOrUndefined(parent.pointColl[indexObj['freehandSelectedIndex']])
             && parent.pointColl[indexObj['freehandSelectedIndex']].strokeColor === '#42a5f5') {
@@ -4015,8 +4281,7 @@ export class Selection {
     }
 
     private updatePrevShapeSettings(obj?: Object): ShapeSettings {
-        const parent: ImageEditor = this.parent;
-        const fontStyle: string[] = [];
+        const parent: ImageEditor = this.parent; const fontStyle: string[] = [];
         if (parent.activeObj.shape === 'text' && parent.activeObj.textSettings) {
             if (parent.activeObj.textSettings.bold) {
                 fontStyle.push('bold');
@@ -4043,7 +4308,10 @@ export class Selection {
             fontSize: parent.activeObj.shape === 'text' ? (parent.activeObj.textSettings ? parent.activeObj.textSettings.fontSize : null) : null,
             fontFamily: parent.activeObj.shape === 'text' ? (parent.activeObj.textSettings ? parent.activeObj.textSettings.fontFamily : null) : null,
             fontStyle: parent.activeObj.shape === 'text' ? fontStyle : null,
-            color: parent.activeObj.shape === 'text' ? (parent.activeObj.strokeSettings ? parent.activeObj.strokeSettings.strokeColor : null) : null
+            color: parent.activeObj.shape === 'text' ? (parent.activeObj.strokeSettings ? parent.activeObj.strokeSettings.strokeColor : null) : null,
+            degree: parent.activeObj.shape === 'ellipse' || parent.activeObj.shape === 'rectangle' || parent.activeObj.shape === 'image' ?
+                parent.activeObj.rotatedAngle * (180 / Math.PI) : null,
+            imageData: parent.activeObj.shape === 'image' ? parent.activeObj.imageElement.src : null
         };
         if (obj) { obj['shapeSettingsObj'] = shapeSettingsObj; }
         return shapeSettingsObj;
@@ -4051,17 +4319,11 @@ export class Selection {
 
     private getRectanglePoints(rectX: number, rectY: number, rectWidth: number, rectHeight: number, rectAngle: number,
                                pointX: number, pointY: number): boolean {
-        const centerX: number = rectX + rectWidth / 2;
-        const centerY: number = rectY + rectHeight / 2;
-        const angleRad: number = rectAngle * (Math.PI / 180);
-        const cosAngle: number = Math.cos(angleRad);
-        const sinAngle: number = Math.sin(angleRad);
-        const localX: number = pointX - centerX;
-        const localY: number = pointY - centerY;
-        const rotatedX: number = localX * cosAngle + localY * sinAngle;
-        const rotatedY: number = -localX * sinAngle + localY * cosAngle;
-        const halfWidth: number = rectWidth / 2;
-        const halfHeight: number = rectHeight / 2;
+        const centerX: number = rectX + rectWidth / 2; const centerY: number = rectY + rectHeight / 2;
+        const angleRad: number = rectAngle * (Math.PI / 180); const cosAngle: number = Math.cos(angleRad);
+        const sinAngle: number = Math.sin(angleRad); const localX: number = pointX - centerX; const localY: number = pointY - centerY;
+        const rotatedX: number = localX * cosAngle + localY * sinAngle; const rotatedY: number = -localX * sinAngle + localY * cosAngle;
+        const halfWidth: number = rectWidth / 2; const halfHeight: number = rectHeight / 2;
         // Check if the rotated point is within the bounds of the rectangle
         if (rotatedX >= -halfWidth && rotatedX <= halfWidth && rotatedY >= -halfHeight &&
             rotatedY <= halfHeight) {
@@ -4126,5 +4388,26 @@ export class Selection {
         }
         if (object) { object['rotationCirclePoint'] = rotationCirclePoint; }
         return rotationCirclePoint;
+    }
+
+    private getNumTextValue(obj?: Object): Point {
+        let height: number; let width: number; let widthElement: HTMLInputElement; let heightElement: HTMLInputElement;
+        if (!isBlazor()) {
+            widthElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_resizeWidth') as HTMLInputElement);
+            heightElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_resizeHeight') as HTMLInputElement);
+        } else {
+            widthElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-width-input .e-numerictextbox');
+            heightElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-height-input .e-numerictextbox');
+        }
+        if (widthElement && heightElement) {
+            const heightString: string = heightElement.value.replace(/,/g, '');
+            const widthString: string = widthElement.value.replace(/,/g, '');
+            height = parseFloat(heightString);
+            width  = parseFloat(widthString);
+        }
+        if (obj) {
+            obj['width'] = width; obj['height'] = height;
+        }
+        return {x: width, y: height };
     }
 }

@@ -151,13 +151,20 @@ export class DragAndDrop {
         !isNoU((e.target as HTMLElement).previousElementSibling.querySelector('.e-target-dropped-clone')) ) {
             cardElement = (e.target as HTMLElement).previousElementSibling.querySelector('.e-target-dropped-clone').nextElementSibling as HTMLElement;
         }
-        let targetEle: HTMLElement = e.target as HTMLElement;
+        let targetEle: HTMLElement =  e.target as HTMLElement;
+        const firstCloneCard: HTMLElement = this.parent.element.querySelector('.e-target-dropped-clone');
+        let previousSiblingCard: HTMLElement = null;
+        if(!isNoU(firstCloneCard)) {
+            previousSiblingCard = firstCloneCard.previousSibling as HTMLElement;
+        }
         if (!isNoU((e.target as HTMLElement).parentElement)) {
             if ((e.target as HTMLElement).nodeName === 'SPAN' && (e.target as HTMLElement).classList.contains('e-empty-card')) {
                 targetEle = (e.target as HTMLElement).parentElement;
             }
             else if ((e.target as HTMLElement).nodeName === 'DIV' && (e.target as HTMLElement).classList.contains('e-kanban-border')) {
-                targetEle = (e.target as HTMLElement).parentElement;
+                if (!isNoU(previousSiblingCard) || !isNoU((e.target as HTMLElement).parentElement.querySelector('.e-empty-card'))) {
+                    targetEle = (e.target as HTMLElement).parentElement;
+                }
             }
         }
         const target: HTMLElement = cardElement || targetEle;

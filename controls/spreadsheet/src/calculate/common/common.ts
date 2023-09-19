@@ -43,13 +43,9 @@ export function getSkeletonVal(value: string): string {
     case 'dd MMM yyyy':
         value = 'medium';
         break;
-    case 'MMM-yyyy':
     case 'MMM yyyy':
         value = 'yMMM';
         break;
-    case 'MM-dd-yyyy': //short
-    case 'dd-MM-yyyy':
-    case 'dd-MM-yy':
     case 'MM/dd/yyyy':
     case 'dd/MM/yyyy':
     case 'dd/MM/yy':

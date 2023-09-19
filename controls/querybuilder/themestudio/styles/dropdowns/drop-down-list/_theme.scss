@@ -1,0 +1,10 @@
+@include export-module('dropdownlist-theme') {
+  #{&}.e-popup {
+    border-color: $ddl-default-border-color;
+  }
+
+  .e-float-input.e-input-group.e-ddl.e-control.e-icon-anim > .e-float-text,
+  .e-float-input.e-input-focus.e-input-group.e-ddl.e-control.e-keyboard > .e-float-text {
+    color: $ddl-active-font-color;
+  }
+}

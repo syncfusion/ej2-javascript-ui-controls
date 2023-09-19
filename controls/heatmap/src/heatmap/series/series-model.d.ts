@@ -1,9 +1,18 @@
-import { Property, ChildProperty, extend, merge, Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';import { HeatMap } from '../heatmap';import { Rect, TextBasic, Path, PathAttributes, RectOption, CircleOption, TextOption, CurrentRect, DrawSvgCanvas } from '../utils/helper';import { convertHexToColor, colorNameToHex, formatValue } from '../utils/helper';import { CellColor, RgbColor } from '../utils/colorMapping';import { BorderModel, FontModel, BubbleSizeModel } from '../model/base-model';import { Border, Font, BubbleTooltipData, BubbleSize } from '../model/base';import { ICellEventArgs } from '../model/interface';import { Theme} from '../model/theme';import { CellType, BubbleType } from '../utils/enum';import { DataModel } from '../datasource/adaptor-model';import { Axis } from '../axis/axis';
+import { Property, ChildProperty, extend, merge, Complex, Browser, isNullOrUndefined, createElement} from '@syncfusion/ej2-base';import { HeatMap } from '../heatmap';import { Rect, TextBasic, Path, PathAttributes, RectOption, CircleOption, TextOption, CurrentRect, DrawSvgCanvas, createLabelTemplate} from '../utils/helper';import { convertHexToColor, colorNameToHex, formatValue, removeElement} from '../utils/helper';import { CellColor, RgbColor } from '../utils/colorMapping';import { BorderModel, FontModel, BubbleSizeModel } from '../model/base-model';import { Border, Font, BubbleTooltipData, BubbleSize } from '../model/base';import { ICellEventArgs } from '../model/interface';import { Theme} from '../model/theme';import { CellType, BubbleType } from '../utils/enum';import { DataModel } from '../datasource/adaptor-model';import { Axis } from '../axis/axis';
 
 /**
  * Interface for a class CellSettings
  */
 export interface CellSettingsModel {
+
+    /**
+     * Gets or sets the template that will be used to render custom elements for cell values.
+     *
+     * @default null
+     * @aspType string
+     */
+
+    labelTemplate?: string | Function;
 
     /**
      * Enables or disables the visibility of data label over the heatmap cells.

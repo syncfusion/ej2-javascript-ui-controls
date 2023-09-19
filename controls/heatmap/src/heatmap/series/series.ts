@@ -1,7 +1,7 @@
-import { Property, ChildProperty, extend, merge, Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, extend, merge, Complex, Browser, isNullOrUndefined, createElement} from '@syncfusion/ej2-base';
 import { HeatMap } from '../heatmap';
-import { Rect, TextBasic, Path, PathAttributes, RectOption, CircleOption, TextOption, CurrentRect, DrawSvgCanvas } from '../utils/helper';
-import { convertHexToColor, colorNameToHex, formatValue } from '../utils/helper';
+import { Rect, TextBasic, Path, PathAttributes, RectOption, CircleOption, TextOption, CurrentRect, DrawSvgCanvas, createLabelTemplate} from '../utils/helper';
+import { convertHexToColor, colorNameToHex, formatValue, removeElement} from '../utils/helper';
 import { CellColor, RgbColor } from '../utils/colorMapping';
 import { BorderModel, FontModel, BubbleSizeModel } from '../model/base-model';
 import { Border, Font, BubbleTooltipData, BubbleSize } from '../model/base';
@@ -16,6 +16,17 @@ import { Axis } from '../axis/axis';
  * Sets and gets the options to configure the cells of the heatmap.
  */
 export class CellSettings extends ChildProperty<CellSettings> {
+
+    /**
+     * Gets or sets the template that will be used to render custom elements for cell values.
+     *
+     * @default null
+     * @aspType string
+     */
+
+    @Property('')
+    public labelTemplate: string | Function;
+
     /**
      * Enables or disables the visibility of data label over the heatmap cells.
      *
@@ -145,9 +156,18 @@ export class Series {
             (cellSetting.border.width / 2)) / heatMap.yLength) * 100) / 100;
         let tempVal: number = 0;
         let tempRectPosition: CurrentRect[] = [];  const tempBorder: BorderModel = cellSetting.border; let borderColor: string;
+        let templateElement: HTMLElement = null;
         let displayText: string; this.rectPositionCollection = []; this.color = ''; this.bubbleColorValue = [];
         if (heatMap.yAxis.opposedPosition) {
             tempX = Math.round((heatMap.initialClipRect.x + (parseFloat(tempBorder.width.toString()) / 2)) * 100) / 100;
+        }
+        if (!isNullOrUndefined(this.heatMap.cellSettings.labelTemplate) && this.heatMap.cellSettings.labelTemplate !== '') {
+            if (document.getElementById(this.heatMap.element.id + '_LabelTemplate_Group')) {
+                removeElement(this.heatMap.element.id + '_LabelTemplate_Group');
+            }
+            templateElement = createElement('div', {
+                id: heatMap.element.id + '_LabelTemplate_Group'
+            });
         }
         const circleRadius: number = this.getBubbleRadius(tempWidth, tempHeight);
         for (let x: number = 0; x < (heatMap.xLength * heatMap.yLength); x++) {
@@ -169,7 +189,15 @@ export class Series {
                 this.updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, this.text, x, dataYIndex, dataXIndex);
             }
             if (cellSetting.showLabel) {
-                displayText = this.getFormatedText(this.text, cellSetting.format);
+                if (isNullOrUndefined(this.heatMap.cellSettings.labelTemplate) || this.heatMap.cellSettings.labelTemplate === '') {
+                    displayText = this.getFormatedText(this.text, cellSetting.format);
+                } else {
+                    let rectValue = heatMap.dataSourceSettings.bubbleDataMapping && heatMap.dataSourceSettings.isJsonData && heatMap.dataSourceSettings.adaptorType === 'Cell' && !isNullOrUndefined(rectPosition.value[0]) ? rectPosition.value[0].bubbleData : rectPosition.value;
+                    if (typeof rectValue == 'number' && this.cellColor.getColorByValue(rectValue) !== '#ffffff') {
+                        createLabelTemplate(this.heatMap.cellSettings.labelTemplate, heatMap, templateElement, rectPosition,
+                            heatMap.axisCollections[0].axisLabels, heatMap.axisCollections[1].axisLabels.slice().reverse(), x);
+                    }
+                }
             } else {
                 displayText = '';
             }
@@ -245,6 +273,9 @@ export class Series {
                 dataYIndex++;
             }
         }
+        if (!isNullOrUndefined(templateElement)) {
+            document.getElementById(this.heatMap.element.id + '_Secondary_Element').appendChild(templateElement);
+        } 
         if (!heatMap.enableCanvasRendering) {
             heatMap.svgObject.appendChild(this.containerRectObject as HTMLElement);
             if (cellSetting.showLabel && !(cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
@@ -559,7 +590,7 @@ export class Series {
      */
 
     private updateLabelVisibleStatus(tempWidth: number, tempHeight: number, displayText: string): void {
-        if (this.heatMap.cellSettings.showLabel) {
+        if (this.heatMap.cellSettings.showLabel && (isNullOrUndefined(this.heatMap.cellSettings.labelTemplate) || this.heatMap.cellSettings.labelTemplate === '')) {
             this.checkLabelYDisplay = tempHeight > parseInt(
                 this.heatMap.cellSettings.textStyle.size, 10) ? true : false;
             this.checkLabelXDisplay = tempWidth > (displayText.length *

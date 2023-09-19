@@ -127,6 +127,7 @@ export class ViewSource {
      * @deprecated
      */
     public sourceCode(args?: ClickEventArgs | IHtmlKeyboardEvent): void {
+        this.parent.notify(events.hidePopup, {});
         this.parent.isBlur = false;
         this.parent.trigger(events.actionBegin, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
         const tbItems: HTMLElement[] = selectAll('.' + CLS_TB_ITEM, this.parent.element);

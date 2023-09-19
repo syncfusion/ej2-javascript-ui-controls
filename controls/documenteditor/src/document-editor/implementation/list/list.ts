@@ -6,6 +6,7 @@ import { WListLevel } from './list-level';
  * @private
  */
 export class WList {
+    public nsid: number = -1;
     public listId: number = -1;
     public sourceListId: number = -1;
     public abstractListId: number = -1;

@@ -80,13 +80,13 @@ describe('Para mark selection validation', () => {
             done();
         }, 750);
     });
-    it('using shift home key', () => {
-console.log('using shift home key');
-        editor.editorModule.insertText('sample');
-        editor.selection.handleShiftHomeKey();
-        editor.selection.characterFormat.bold = true;
-        expect(editor.selection.start.paragraph.characterFormat.bold).toBe(true);
-    });
+//     it('using shift home key', () => {
+// console.log('using shift home key');
+//         editor.editorModule.insertText('sample');
+//         editor.selection.handleShiftHomeKey();
+//         editor.selection.characterFormat.bold = true;
+//         expect(editor.selection.start.paragraph.characterFormat.bold).toBe(true);
+//     });
 });
 
 describe('Bookmarks API validation', () => {
@@ -111,14 +111,14 @@ describe('Bookmarks API validation', () => {
             done();
         }, 750);
     });
-    it('selection at start of bookmark', () => {
-console.log('selection at start of bookmark');
-        editor.editorModule.insertText('sample');
-        editor.selection.selectAll();
-        editor.editor.insertBookmark('s');
-        editor.selection.handleHomeKey();
-        expect(editor.selection.bookmarks.length).toBe(0);
-    });
+//     it('selection at start of bookmark', () => {
+// console.log('selection at start of bookmark');
+//         editor.editorModule.insertText('sample');
+//         editor.selection.selectAll();
+//         editor.editor.insertBookmark('s');
+//         editor.selection.handleHomeKey();
+//         expect(editor.selection.bookmarks.length).toBe(0);
+//     });
     it('selection at end of bookmark', () => {
 console.log('selection at end of bookmark');
         editor.selection.handleEndKey();

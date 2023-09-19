@@ -1532,6 +1532,11 @@ export function colorNameToHex(color: string): string {
     );
 }
 /** @private */
+export function checkColorFormat(color: string): boolean {
+    // eslint-disable-next-line security/detect-unsafe-regex
+    return /(rgba?\((?:\d{1,3}[,)]){3}(?:\d+\.\d+\))?)|(^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$)/gmi.test(color);
+}
+/** @private */
 export function getSaturationColor(color: string, factor: number): string {
     color = colorNameToHex(color);
     color = color.replace(/[^0-9a-f]/gi, '');
@@ -1548,6 +1553,14 @@ export function getSaturationColor(color: string, factor: number): string {
         rgb += ('00' + colorCode.toString(16)).substr(colorCode.toString(16).length);
     }
     return rgb;
+}
+/** @private */
+export function applyZLight(color: string, value: number): string {
+    const RGB: ColorValue = convertHexToColor(color);
+    RGB.r = parseInt(Math.floor(RGB.r * value).toString(), 10);
+    RGB.g = parseInt(Math.floor(RGB.g * value).toString(), 10);
+    RGB.b = parseInt(Math.floor(RGB.b * value).toString(), 10);
+    return '#' + componentToHex(RGB.r).toUpperCase() + componentToHex(RGB.g).toUpperCase() + componentToHex(RGB.b).toUpperCase();
 }
 /** @private */
 export function getMedian(values: number[]): number {

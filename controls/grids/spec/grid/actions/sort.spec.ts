@@ -6,7 +6,6 @@ import { Grid } from '../../../src/grid/base/grid';
 import { SortSettingsModel } from '../../../src/grid/base/grid-model';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Filter } from '../../../src/grid/actions/filter';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { Page } from '../../../src/grid/actions/page';
 import { Group } from '../../../src/grid/actions/group';
 import { data } from '../base/datasource.spec';
@@ -15,7 +14,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Column } from '../../../src/grid/models/column';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Sort, Page, Filter, Group, Freeze);
+Grid.Inject(Sort, Page, Filter, Group);
 
 describe('Sorting module => ', () => {
 
@@ -637,7 +636,7 @@ describe('Sorting module => ', () => {
                 done();
             };
             gridObj.actionComplete = actionComplete;
-            col2 = gridObj.getHeaderContent().querySelector('.e-movableheader').querySelectorAll('.e-headercell')[0];
+            col2 = gridObj.getHeaderContent().querySelectorAll('.e-headercell')[2];
             (gridObj as any).mouseClickHandler(getClickObj(col2));
         });
 
@@ -649,7 +648,7 @@ describe('Sorting module => ', () => {
                 done();
             };
             gridObj.actionComplete = actionComplete;
-            col2 = gridObj.getHeaderContent().querySelector('.e-movableheader').querySelectorAll('.e-headercell')[0];
+            col2 = gridObj.getHeaderContent().querySelectorAll('.e-headercell')[2];
             (gridObj as any).mouseClickHandler(getClickObj(col2));
         });
 
@@ -661,8 +660,7 @@ describe('Sorting module => ', () => {
                 expect(sortSettings.columns[0].direction).toBe('Ascending');
                 expect(sortSettings.columns[1].field).toBe('EmployeeID');
                 expect(sortSettings.columns[1].direction).toBe('Ascending');
-                expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(1);
-                expect(gridObj.getHeaderContent().querySelector('.e-movableheader').querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(1);
+                expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(2);
                 done();
             };
             gridObj.actionComplete = actionComplete;

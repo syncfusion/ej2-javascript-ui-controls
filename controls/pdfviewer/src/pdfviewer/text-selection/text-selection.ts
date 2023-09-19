@@ -14,6 +14,7 @@ export interface IRectangle {
     top: number
     right: number
     width: number
+    rotation?: number
 }
 
 /**
@@ -1439,7 +1440,27 @@ export class TextSelection {
                         newRange.setStart(node, startOffset);
                         newRange.setEnd(node, endOffset);
                     }
-                    const boundingRect: IRectangle = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
+                    let boundingRect: IRectangle;
+                    if (this.pdfViewerBase.clientSideRendering) {
+                        boundingRect = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
+                        let pageDetails: any = this.pdfViewerBase.pageSize[pageNumber];
+                        let textRotate: number = 0;
+                        let pageRotation: number = this.getAngle(pageDetails.rotation);
+                        if (textElement && textElement.style.transform !== '') {
+                            if (textElement.style.transform.startsWith('rotate(90deg)')) {
+                                textRotate = 90;
+                            } else if (textElement.style.transform.startsWith('rotate(180deg)')) {
+                                textRotate = 180;
+                            } else if (textElement.style.transform.startsWith('rotate(-90deg)') || textElement.style.transform.startsWith('rotate(270deg)')) {
+                                textRotate = 270;
+                            } else {
+                                textRotate = 0;
+                            }
+                        }
+                        boundingRect.rotation = textRotate;
+                    } else {
+                        boundingRect = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
+                    }
                     selectionBounds.push(boundingRect);
                     let textselection = newRange.toString();
                     selectionTexts.push(textselection);
@@ -1465,11 +1486,49 @@ export class TextSelection {
         }
         else {
             bounds = this.normalizeBounds(range.getBoundingClientRect(), pageNumber);
+            if (this.pdfViewerBase.clientSideRendering) {
+                let pageDetails: any = this.pdfViewerBase.pageSize[pageNumber];
+                let textRotate: number = 0;
+                let pageRotation: number = this.getAngle(pageDetails.rotation);
+                if (startElement && startElement.style.transform !== '') {
+                    if (startElement.style.transform.startsWith('rotate(90deg)')) {
+                        textRotate = 90;
+                    } else if (startElement.style.transform.startsWith('rotate(180deg)')) {
+                        textRotate = 180;
+                    } else if (startElement.style.transform.startsWith('rotate(-90deg)') || startElement.style.transform.startsWith('rotate(270deg)')) {
+                        textRotate = 270;
+                    } else {
+                        textRotate = 0;
+                    }
+                }
+                bounds.rotation = textRotate;
+            }
             this.allTextContent = range.toString();
             selectionBounds.push(bounds);
         }
         return selectionBounds;
     }
+
+    private getAngle(rotation: number): number { // eslint-disable-next-line
+        let angle: number = 0;
+        if (rotation) {
+            switch (rotation) {
+                case 0:
+                    angle = 0;
+                    break;
+                case 1:
+                    angle = 90;
+                    break;
+                case 2:
+                    angle = 180;
+                    break;
+                case 3:
+                    angle = 270;
+                    break;
+            }
+        }
+        return angle;
+    };
 
     private getTextId(elementId: string): number {
         const index: number = elementId.lastIndexOf('_');

@@ -38,6 +38,7 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-inputs/**/*.js", included: false }, 
       { pattern: "node_modules/@syncfusion/ej2-layouts/**/*.js", included: false }, 
+      { pattern: "node_modules/@syncfusion/ej2-notifications/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },      
       { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },

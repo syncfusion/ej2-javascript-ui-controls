@@ -1,6 +1,7 @@
 import {
     IGrid, ExcelExportProperties, ExcelHeader, ExcelFooter, ExcelRow,
-    ExcelCell, ExcelTheme, ExcelHeaderQueryCellInfoEventArgs, ExcelStyle, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs,
+    ExcelCell, ExcelTheme, ExcelHeaderQueryCellInfoEventArgs, ExcelStyle, ExportDetailDataBoundEventArgs,
+    ExportDetailTemplateEventArgs, DetailTemplateCell, DetailTemplateRow, ExportGroupCaptionEventArgs,
     AggregateQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs
 } from '../base/interface';
 import * as events from '../base/constant';
@@ -128,7 +129,7 @@ export class ExcelExport {
         const workbk: string = 'workbook';
         const isMultiEx: string = 'isMultipleExport';
         this.gridPool = {};
-        if (grid.childGrid && !(!isNullOrUndefined(exportProperties) && exportProperties.hierarchyExportMode === 'None')) {
+        if ((grid.childGrid || grid.detailTemplate) && !(!isNullOrUndefined(exportProperties) && exportProperties.hierarchyExportMode === 'None')) {
             grid.expandedRows = getPrintGridModel(grid).expandedRows;
         }
         const args: Object = {
@@ -161,7 +162,7 @@ export class ExcelExport {
 
     private exportingSuccess(resolve: Function): void {
         this.isExporting = false;
-        this.parent.trigger(events.excelExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
+        this.parent.trigger(events.excelExportComplete, this.isBlob ? { promise: this.blobPromise } : { gridInstance: this.parent });
         this.parent.log('exporting_complete', this.getModuleName());
         resolve(this.book);
     }
@@ -378,17 +379,16 @@ export class ExcelExport {
 
     private processGridExport(gObj: IGrid, exportProperties: ExcelExportProperties, r: ReturnType | Object[]): ExcelRow[] {
         let excelRows: ExcelRow[] = [];
-        const isFrozen: boolean = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.theme)) {
             this.theme = exportProperties.theme;
         }
-        if (gObj.childGrid && !isNullOrUndefined(exportProperties)) {
+        if ((gObj.childGrid || gObj.detailTemplate) && !isNullOrUndefined(exportProperties)) {
             gObj.hierarchyPrintMode = exportProperties.hierarchyExportMode || 'Expanded';
         }
         const helper: ExportHelper = new ExportHelper(gObj, this.helper.getForeignKeyData());
         const gColumns: Column[] = isExportColumns(exportProperties) ?
             prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) :
-            helper.getGridExportColumns(isFrozen ? gObj.getColumns() : gObj.columns as Column[]);
+            helper.getGridExportColumns(gObj.columns as Column[]);
         const headerRow: IHeader = helper.getHeaders(gColumns, this.includeHiddenColumn);
         const groupIndent: number = gObj.groupSettings.columns.length ? gObj.groupSettings.columns.length - 1 : 0;
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);
@@ -655,29 +655,171 @@ export class ExcelExport {
             } else {
                 excelRows.push(excelRow);
             }
-            if ((row.isExpand || this.isChild) && !isNullOrUndefined(gObj.childGrid)) {
-                gObj.isPrinting = true;
-                const exportType: ExportType = (!isNullOrUndefined(excelExportProperties) && excelExportProperties.exportType) ?
-                    excelExportProperties.exportType : 'AllPages';
-                const returnVal: { childGrid: IGrid, element: HTMLElement } = this.helper.createChildGrid(
-                    gObj, row, exportType, this.gridPool
-                );
-                const childGridObj: IGrid = returnVal.childGrid;
-                const element: HTMLElement = returnVal.element;
-                (<{actionFailure?: Function}>childGridObj).actionFailure =
-                helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
-                (<{childGridLevel?: number}>childGridObj).childGridLevel = (<{childGridLevel?: number}>gObj).childGridLevel + 1;
-                const args: ExportDetailDataBoundEventArgs = {childGrid: childGridObj, row, exportProperties: excelExportProperties };
-                this.parent.trigger(events.exportDetailDataBound, args);
-                (<Grid>childGridObj).beforeDataBound = this.childGridCell(excelRow, childGridObj, excelExportProperties, row);
-                childGridObj.appendTo(element);
+            if ((row.isExpand || this.isChild) && (!isNullOrUndefined(gObj.childGrid) || !isNullOrUndefined(gObj.detailTemplate))) {
+                if (!isNullOrUndefined(gObj.childGrid)) {
+                    gObj.isPrinting = true;
+                    const exportType: ExportType = (!isNullOrUndefined(excelExportProperties) && excelExportProperties.exportType) ?
+                        excelExportProperties.exportType : 'AllPages';
+                    const returnVal: { childGrid: IGrid, element: HTMLElement } = this.helper.createChildGrid(
+                        gObj, row, exportType, this.gridPool
+                    );
+                    const childGridObj: IGrid = returnVal.childGrid;
+                    const element: HTMLElement = returnVal.element;
+                    (<{ actionFailure?: Function }>childGridObj).actionFailure =
+                        helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
+                    (<{ childGridLevel?: number }>childGridObj).childGridLevel = (<{ childGridLevel?: number }>gObj).childGridLevel + 1;
+                    const args: ExportDetailDataBoundEventArgs = { childGrid: childGridObj, row, exportProperties: excelExportProperties };
+                    this.parent.trigger(events.exportDetailDataBound, args);
+                    (<Grid>childGridObj).beforeDataBound = this.childGridCell(excelRow, childGridObj, excelExportProperties, row);
+                    childGridObj.appendTo(element);
+                } else {
+                    const args: ExportDetailTemplateEventArgs = { parentRow: row, row: excelRow, value: {}, action: 'excelexport', gridInstance: gObj };
+                    this.parent.trigger(events.exportDetailTemplate, args);
+                    (<{childRows?: ExcelRow[] }>excelRow).childRows = this.processDetailTemplate(args);
+                }
             }
             gObj.notify(events.exportRowDataBound, { rowObj: row, type: 'excel',  excelRows: excelRows });
         }
         return startIndex;
     }
 
-    private setImage(args: ExcelHeaderQueryCellInfoEventArgs | ExcelQueryCellInfoEventArgs, idx: number): number {
+    private processDetailTemplate(templateData: ExportDetailTemplateEventArgs): ExcelRow[] {
+        const rows: ExcelRow[] = [];
+        let templateRowHeight: number;
+        const detailIndent: number = 2;
+        let detailCellIndex: number;
+        if (templateData.value.columnHeader || templateData.value.rows) {
+            const processCell: Function = (currentCell: DetailTemplateCell, isHeader?: boolean) => {
+                const cell: ExcelCell = {};
+                if (isNullOrUndefined(currentCell.index)){
+                    currentCell.index = detailCellIndex;
+                    detailCellIndex++;
+                }
+                cell.index = currentCell.index + detailIndent;
+                if (!isNullOrUndefined(currentCell.value)) {
+                    cell.value = (currentCell.value as string | boolean | number | Date);
+                }
+                if (!isNullOrUndefined(currentCell.colSpan)) {
+                    cell.colSpan = currentCell.colSpan;
+                }
+                if (!isNullOrUndefined(currentCell.rowSpan)) {
+                    cell.rowSpan = currentCell.rowSpan;
+                }
+                if (isHeader){
+                    cell.style = this.getHeaderThemeStyle(this.theme) as ExcelStyle;
+                } else {
+                    cell.style = this.getRecordThemeStyle(this.theme) as ExcelStyle;
+                }
+                if (!isNullOrUndefined(currentCell.style)) {
+                    const cellStyle: ExcelStyle = {
+                        fontColor: currentCell.style.fontColor,
+                        fontName: currentCell.style.fontName,
+                        fontSize: currentCell.style.fontSize,
+                        hAlign: currentCell.style.excelHAlign,
+                        vAlign: currentCell.style.excelVAlign,
+                        rotation: currentCell.style.excelRotation,
+                        bold: currentCell.style.bold,
+                        indent: currentCell.style.indent,
+                        italic: currentCell.style.italic,
+                        underline: currentCell.style.underline,
+                        backColor: currentCell.style.backColor,
+                        wrapText: currentCell.style.wrapText,
+                        borders: currentCell.style.excelBorders,
+                        numberFormat: currentCell.style.excelNumberFormat,
+                        type: currentCell.style.excelType,
+                        strikeThrough: currentCell.style.strikeThrough
+                    };
+                    cell.style = this.mergeOptions(cellStyle, cell.style);
+                }
+                if (!isNullOrUndefined(currentCell.image) && !isNullOrUndefined(currentCell.image.base64)) {
+                    if (currentCell.rowSpan > 1) {
+                        this.setImage(currentCell, cell.index);
+                    }
+                    else {
+                        templateRowHeight = this.setImage(currentCell, cell.index);
+                        if (currentCell.image.height && currentCell.value !== '') {
+                            templateRowHeight += 30;
+                        }
+                    }
+                }
+                if (!isNullOrUndefined(currentCell.hyperLink)) {
+                    cell.hyperlink = { target: currentCell.hyperLink.target };
+                    cell.value = currentCell.hyperLink.displayText;
+                }
+                return cell;
+            };
+            const processRow: Function = (currentRow: DetailTemplateRow, isHeader?: boolean) => {
+                const excelDetailCells: ExcelCell[] = [];
+                detailCellIndex = 0;
+                for (let j: number = 0; j < currentRow.cells.length; j++) {
+                    const currentCell: DetailTemplateCell = currentRow.cells[parseInt(j.toString(), 10)];
+                    const detailCell: ExcelCell = processCell(currentCell, isHeader);
+                    excelDetailCells.push(detailCell);
+                }
+                const row: ExcelRow = { index: this.rowLength++, cells: excelDetailCells };
+                if (!isNullOrUndefined(templateRowHeight)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (row as any).height = templateRowHeight;
+                    templateRowHeight = null;
+                }
+                rows.push(row);
+            };
+            if (templateData.value.columnHeader) {
+                for (let i: number = 0; i < templateData.value.columnHeader.length; i++) {
+                    processRow(templateData.value.columnHeader[parseInt(i.toString(), 10)], true);
+                }
+            }
+            if (templateData.value.rows) {
+                for (let i: number = 0; i < templateData.value.rows.length; i++) {
+                    processRow(templateData.value.rows[parseInt(i.toString(), 10)]);
+                }
+            }
+        } else if (templateData.value.image) {
+            templateRowHeight = this.setImage(templateData.value, detailIndent);
+            const row: ExcelRow = {
+                index: this.rowLength++,
+                cells: [{
+                    index: detailIndent,
+                    style: this.getRecordThemeStyle(this.theme) as ExcelStyle
+                }]
+            };
+            if (!isNullOrUndefined(templateRowHeight)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (row as any).height = templateRowHeight;
+                templateRowHeight = null;
+            }
+            rows.push(row);
+        } else if (templateData.value.text) {
+            const row: ExcelRow = {
+                index: this.rowLength++,
+                cells: [{
+                    index: detailIndent,
+                    value: templateData.value.text,
+                    style: this.getRecordThemeStyle(this.theme) as ExcelStyle
+                }]
+            };
+            rows.push(row);
+        } else if (templateData.value.hyperLink) {
+            const row: ExcelRow = {
+                index: this.rowLength++,
+                cells: [{
+                    index: 2,
+                    hyperlink: { target: templateData.value.hyperLink.target },
+                    value: templateData.value.hyperLink.displayText,
+                    style: this.getRecordThemeStyle(this.theme) as ExcelStyle
+                }]
+            };
+            rows.push(row);
+        }
+        for (let i: number = 0; i < rows.length; i++) {
+            rows[parseInt(i.toString(), 10)].grouping = {
+                outlineLevel: 1, isCollapsed: !templateData.parentRow.isExpand, isHidden: !templateData.parentRow.isExpand
+            };
+        }
+        return rows;
+    }
+
+    private setImage(args: ExcelHeaderQueryCellInfoEventArgs | ExcelQueryCellInfoEventArgs | DetailTemplateCell, idx: number): number {
         if (isNullOrUndefined(this.sheet.images)) {
             this.sheet.images = [];
         }
@@ -877,7 +1019,7 @@ export class ExcelExport {
         let txt: NodeList | string;
         const data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
         if ((this.parent.isReact || this.parent.isVue || this.parent.isVue3 || this.parent.isAngular) &&
-        !(typeof cell.column.footerTemplate === 'string' || typeof cell.column.groupFooterTemplate === 'string' || typeof cell.column.groupCaptionTemplate === 'string')) {
+            !(typeof cell.column.footerTemplate === 'string' || typeof cell.column.groupFooterTemplate === 'string' || typeof cell.column.groupCaptionTemplate === 'string')) {
             txt = data[(cell.column.type) as string];
             return !isNullOrUndefined(txt) ? (txt) : '';
         }

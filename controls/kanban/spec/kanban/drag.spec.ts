@@ -1488,7 +1488,7 @@ describe('Drag module', () => {
             expect(ele.classList.contains('e-selection')).toEqual(true);
         });
     });
-    
+
     describe('EJ2-62190 - Drag and Drop is not working in Kanban when enabling ShowAddButton ', () => {
         let kanbanObj: Kanban;
         let key: string;
@@ -1572,111 +1572,112 @@ describe('Drag module', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
-    describe('835740 - The drop is not working on the empty column in the Kanban component.', () => {
-        let kanbanObj: Kanban;
-        beforeAll((done: DoneFn) => {
-            let kanbanData: Record<string, any>[] = [{
-                'Id': 1,
-                'Status': 'InProgress',
-                'Summary': 'Arrange a web meeting with the customer to get the login page requirements.',
-                'Type': 'Others',
-                'Priority': 'Low',
-                'Tags': 'Meeting',
-                'Estimate': 2,
-                'Assignee': 'Andrew Fuller',
-                'AssigneeName': 'Andrew',
-                'RankId': 1
+});
+describe('835740 - The drop is not working on the empty column in the Kanban component.', () => {
+    let kanbanObj: Kanban;
+    beforeAll((done: DoneFn) => {
+        let kanbanData: Record<string, any>[] = [{
+            'Id': 1,
+            'Status': 'InProgress',
+            'Summary': 'Arrange a web meeting with the customer to get the login page requirements.',
+            'Type': 'Others',
+            'Priority': 'Low',
+            'Tags': 'Meeting',
+            'Estimate': 2,
+            'Assignee': 'Andrew Fuller',
+            'AssigneeName': 'Andrew',
+            'RankId': 1
+        },
+        {
+            'Id': 2,
+            'Status': 'close',
+            'Summary': 'Validate new requirements',
+            'Type': 'Improvement',
+            'Priority': 'Low',
+            'Tags': 'Validation',
+            'Estimate': 1.5,
+            'Assignee': 'Robert King',
+            'AssigneeName': 'Robert',
+            'RankId': 1
+        },
+        {
+            'Id': 3,
+            'Status': 'Close',
+            'Summary': 'Login page validation',
+            'Type': 'Story',
+            'Priority': 'Release Breaker',
+            'Tags': 'Validation,Fix',
+            'Estimate': 2.5,
+            'Assignee': 'Janet Leverling',
+            'AssigneeName': 'Janet',
+            'RankId': 2
+        },
+        {
+            'Id': 4,
+            'Status': 'InProgress',
+            'Summary': 'Fix the issues reported in Safari browser.',
+            'Type': 'Bug',
+            'Priority': 'Release Breaker',
+            'Tags': 'Fix,Safari',
+            'Estimate': 1.5,
+            'Assignee': 'Nancy Davloio',
+            'AssigneeName': 'Nancy',
+            'RankId': 2
+        },
+        {
+            'Id': 5,
+            'Status': 'Close',
+            'Summary': 'Test the application in the IE browser.',
+            'Type': 'Story',
+            'Priority': 'Low',
+            'Tags': 'Testing,IE',
+            'Estimate': 5.5,
+            'Assignee': 'Janet Leverling',
+            'AssigneeName': 'Janet',
+            'RankId': 3
+        }];
+        const model: KanbanModel = {
+            dataSource: kanbanData,
+            keyField: 'Status',
+            columns: [
+                { headerText: 'Backlog', keyField: 'Open' },
+                { headerText: 'In Progress', keyField: 'InProgress' },
+                { headerText: 'Done', keyField: 'Close' }
+            ],
+            externalDropId: ['#Kanban2'],
+            cardSettings: {
+                showHeader: true,
+                contentField: 'RankId',
+                headerField: 'Id',
+                selectionType: 'Multiple'
             },
-            {
-                'Id': 2,
-                'Status': 'close',
-                'Summary': 'Validate new requirements',
-                'Type': 'Improvement',
-                'Priority': 'Low',
-                'Tags': 'Validation',
-                'Estimate': 1.5,
-                'Assignee': 'Robert King',
-                'AssigneeName': 'Robert',
-                'RankId': 1
-            },
-            {
-                'Id': 3,
-                'Status': 'Close',
-                'Summary': 'Login page validation',
-                'Type': 'Story',
-                'Priority': 'Release Breaker',
-                'Tags': 'Validation,Fix',
-                'Estimate': 2.5,
-                'Assignee': 'Janet Leverling',
-                'AssigneeName': 'Janet',
-                'RankId': 2
-            },
-            {
-                'Id': 4,
-                'Status': 'InProgress',
-                'Summary': 'Fix the issues reported in Safari browser.',
-                'Type': 'Bug',
-                'Priority': 'Release Breaker',
-                'Tags': 'Fix,Safari',
-                'Estimate': 1.5,
-                'Assignee': 'Nancy Davloio',
-                'AssigneeName': 'Nancy',
-                'RankId': 2
-            },
-            {
-                'Id': 5,
-                'Status': 'Close',
-                'Summary': 'Test the application in the IE browser.',
-                'Type': 'Story',
-                'Priority': 'Low',
-                'Tags': 'Testing,IE',
-                'Estimate': 5.5,
-                'Assignee': 'Janet Leverling',
-                'AssigneeName': 'Janet',
-                'RankId': 3
-            }];
-            const model: KanbanModel = {
-                dataSource: kanbanData,
-                keyField: 'Status',
-                columns: [
-                    { headerText: 'Backlog', keyField: 'Open' },
-                    { headerText: 'In Progress', keyField: 'InProgress' },
-                    { headerText: 'Done', keyField: 'Close' }
-                ],
-                externalDropId: ['#Kanban2'],
-                cardSettings: {
-                    showHeader: true,
-                    contentField: 'RankId',
-                    headerField: 'Id',
-                    selectionType: 'Multiple'
-                },
-    
-            };
-            kanbanObj = util.createKanban(model, kanbanData, done, createElement('div', { id: 'Kanban1' }));
-        });
-    
-        afterAll(() => {
-            util.destroy(kanbanObj);
-        });
-        it('- Dragging the card from the second column (to drop on empty column) - ', (done: Function) => {
-            setTimeout(() => {
-                const dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="4"]') as NodeListOf<Element>).item(0) as HTMLElement;
-                util.triggerMouseEvent(dragElement, 'mousedown');
-                util.triggerMouseEvent(dragElement, 'mousemove', 20, 80);
-                expect(dragElement.closest('.e-content-cells').classList.contains('e-dragged-column')).toBe(true);
-                done();
-            }, 1000);
-        });
-        it(' - Dropping the dragged card in the empty column - ', (done: Function) => {
-            setTimeout(() => {
-                const element: Element = kanbanObj.element.querySelectorAll('.e-empty-card').item(0);
-                util.triggerMouseEvent(element, 'mousemove', 20, 70);
-                util.triggerMouseEvent(element, 'mouseup', 20, 70);
-                const droppedElem: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="4"]') as NodeListOf<Element>).item(0) as HTMLElement;
-                expect(droppedElem.parentElement.parentElement.getAttribute('data-key')).toEqual('Open');
-                done();
-            }, 1000);
-        });
+
+        };
+        kanbanObj = util.createKanban(model, kanbanData, done, createElement('div', { id: 'Kanban1' }));
+    });
+
+    afterAll(() => {
+        util.destroy(kanbanObj);
+    });
+    it('- Dragging the card from the second column (to drop on empty column) - ', (done: Function) => {
+        setTimeout(() => {
+            const dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="4"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 20, 80);
+            expect(dragElement.closest('.e-content-cells').classList.contains('e-dragged-column')).toBe(true);
+            done();
+        }, 1000);
+    });
+
+    it(' - Dropping the dragged card in the empty column - ', (done: Function) => {
+        setTimeout(() => {
+            const element: Element = kanbanObj.element.querySelectorAll('.e-empty-card').item(0);
+            util.triggerMouseEvent(element, 'mousemove', 20, 70);
+            util.triggerMouseEvent(element, 'mouseup', 20, 70);
+            const droppedElem: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="4"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            expect(droppedElem.parentElement.parentElement.getAttribute('data-key')).toEqual('Open');
+            done();
+        }, 1000);
     });
 });
 describe('840166 - Kanban should allow the whole station as dropdown', () => {

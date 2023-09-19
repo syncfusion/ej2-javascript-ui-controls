@@ -97,7 +97,7 @@ export class TableCommand {
     private calculateStyleValue(value: string | number): string {
         let styleValue: string;
         if (typeof (value) === 'string') {
-            if (value.indexOf('px') || value.indexOf('%') || value.indexOf('auto')) {
+            if (value.indexOf('px') >= 0 || value.indexOf('%') >= 0 || value.indexOf('auto') >= 0) {
                 styleValue = value;
             } else {
                 styleValue = value + 'px';

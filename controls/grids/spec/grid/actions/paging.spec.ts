@@ -814,7 +814,7 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
                 actionComplete: actionComplete,
             }, done);
         });
-    
+        
     it('Add first record', (done: Function) => {
         (<any>gridObj.editModule).editModule.addRecord({ OrderID: 10246, CustomerID: 'updated' });
         done();
@@ -826,7 +826,7 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
                 expect(gridObj.currentViewData.length).toBe(5);
                 done();
             }
-        };
+        };       
         gridObj.actionComplete = actionComplete;
         (<any>gridObj.editModule).editModule.addRecord({ OrderID: 10247, CustomerID: 'New updated' });
     });
@@ -836,6 +836,7 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
         gridObj = actionComplete = null;
     });
 
+    
     describe('Cancelling paging action not working properly with Pager Dropdown', () => {
         let gridObj: Grid;
         let pagerElements: NodeListOf<HTMLElement>;

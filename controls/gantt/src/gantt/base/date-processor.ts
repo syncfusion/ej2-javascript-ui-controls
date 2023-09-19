@@ -302,7 +302,7 @@ export class DateProcessor {
             tDuration = this.parent.editModule.taskbarEditModule.sumOfDuration(ganttProperties.segments);
         } else {
             if ((!isNullOrUndefined(this.parent.taskFields.milestone)) && (!isNullOrUndefined(ganttProperties.startDate)) && !isNullOrUndefined(ganttProperties.endDate) && 
-                (ganttProperties.startDate).getTime() === (ganttProperties.endDate).getTime() && !isNullOrUndefined(ganttData.taskData[this.parent.taskFields.milestone])) {
+                (ganttProperties.startDate).getTime() === (ganttProperties.endDate).getTime() && (ganttData.taskData[this.parent.taskFields.milestone] === false)) {
                 tDuration = 1;  
             } else {
                 tDuration = this.getDuration(
@@ -1286,7 +1286,6 @@ export class DateProcessor {
             this.prevProjectStartDate = this.parent.cloneProjectStartDate;
             this.parent.cloneProjectStartDate = minStartDate ? (!this.parent.timelineModule.isZoomToFit) ? (!isNullOrUndefined(projectStartDate)) ? new Date(projectStartDate.getTime()) : minStartDate : minStartDate : new Date(projectStartDate.getTime());
             this.parent.cloneProjectEndDate = maxEndDate ? (!this.parent.timelineModule.isZoomToFit) ? (!isNullOrUndefined(projectEndDate)) ? new Date(projectEndDate.getTime()) : maxEndDate : maxEndDate : new Date(projectEndDate.getTime());
-
         } else {
             setValue('minStartDate', minStartDate, editArgs);
             setValue('maxEndDate', maxEndDate, editArgs);

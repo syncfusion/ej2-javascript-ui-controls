@@ -4,7 +4,7 @@ import { Cell } from '../models/cell';
 import { ICellRenderer } from '../base/interface';
 import { CellRenderer } from './cell-renderer';
 import { headerCellInfo } from '../base/constant';
-import { setStyleAndAttributes, appendChildren } from '../base/util';
+import { setStyleAndAttributes, appendChildren, frozenDirection, isChildColumn, applyStickyLeftRightPosition } from '../base/util';
 
 /**
  * StackedHeaderCellRenderer class which responsible for building stacked header cell content.
@@ -73,6 +73,81 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
             node.classList.add(cell.className);
         }
         this.parent.trigger(headerCellInfo, {cell, node});
+        if (frozenDirection(column) === 'Left' ) {
+            node.classList.add('e-leftfreeze');
+            if ((<{ border?: string }>column).border === 'Left') {
+                node.classList.add('e-freezeleftborder');
+            }
+            if (column.index === 0) {
+                applyStickyLeftRightPosition(node as HTMLElement, (this.parent.getIndentCount() * 30) , this.parent.enableRtl, 'Left');
+            } else {
+                const cols: Column[] = this.parent.getColumns();
+                let width: number = this.parent.getIndentCount() * 30;
+                for (let i: number = 0; i < cols.length; i++) {
+                    if (column.index < cols[parseInt(i.toString(), 10)].index) {
+                        break;
+                    }
+                    if (cols[parseInt(i.toString(), 10)].visible) {
+                        width += parseFloat(cols[parseInt(i.toString(), 10)].width.toString());
+                    }
+                }
+                applyStickyLeftRightPosition(node as HTMLElement, width, this.parent.enableRtl, 'Left');
+            }
+        } else if (frozenDirection(column) === 'Right') {
+            node.classList.add('e-rightfreeze');
+            const cols: Column[] = this.parent.getColumns();
+            let width: number = this.parent.getFrozenMode() === 'Right' && this.parent.isRowDragable() ? 30 : 0;
+            for (let i: number = cols.length - 1; i >= 0; i--) {
+                if (isChildColumn(column, cols[parseInt(i.toString(), 10)].uid) || column.index > cols[parseInt(i.toString(), 10)].index) {
+                    break;
+                }
+                if (cols[parseInt(i.toString(), 10)].visible) {
+                    width += parseFloat(cols[parseInt(i.toString(), 10)].width.toString());
+                }
+            }
+            applyStickyLeftRightPosition(node as HTMLElement, width, this.parent.enableRtl, 'Right');
+            if ((<{ border?: string }>column).border === 'Right') {
+                node.classList.add('e-freezerightborder');
+            }
+        } else if (frozenDirection(column) === 'Fixed') {
+            node.classList.add('e-fixedfreeze');
+            const cols: Column[] = this.parent.getColumns();
+            let width: number = 0;
+            if (this.parent.getVisibleFrozenLeftCount()) {
+                width = this.parent.getIndentCount() * 30;
+            } else if (this.parent.getFrozenMode() === 'Right') {
+                width = this.parent.groupSettings.columns.length * 30;
+            }
+            for (let i: number = 0; i < cols.length; i++) {
+                if (column.index > cols[parseInt(i.toString(), 10)].index) {
+                    if ((cols[parseInt(i.toString(), 10)].freeze === 'Left' || cols[parseInt(i.toString(), 10)].isFrozen) ||
+                        cols[parseInt(i.toString(), 10)].freeze === 'Fixed') {
+                        if (cols[parseInt(i.toString(), 10)].visible) {
+                            width += parseFloat(cols[parseInt(i.toString(), 10)].width.toString());
+                        }
+                    }
+                }
+            }
+            applyStickyLeftRightPosition(node as HTMLElement, width - 1, this.parent.enableRtl, 'Left');
+            width = this.parent.getFrozenMode() === 'Right' && this.parent.isRowDragable() ? 30 : 0;
+            for (let i: number = cols.length - 1; i >= 0; i--) {
+                if (column.index < cols[parseInt(i.toString(), 10)].index) {
+                    if (isChildColumn(column, cols[parseInt(i.toString(), 10)].uid) ||
+                        column.index > cols[parseInt(i.toString(), 10)].index) {
+                        break;
+                    }
+                    if (cols[parseInt(i.toString(), 10)].freeze === 'Right' || cols[parseInt(i.toString(), 10)].freeze === 'Fixed') {
+                        if (cols[parseInt(i.toString(), 10)].visible) {
+                            width += parseFloat(cols[parseInt(i.toString(), 10)].width.toString());
+                        }
+                    }
+                }
+            }
+            applyStickyLeftRightPosition(node as HTMLElement, width - 1, this.parent.enableRtl, 'Right');
+        }
+        else {
+            node.classList.add('e-unfreeze');
+        }
         return node;
     }
 }

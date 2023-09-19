@@ -53,7 +53,9 @@ export class KanbanTooltip {
             append(tooltipTemplate, tooltipContent);
             this.parent.renderTemplates();
         } else {
-            tooltipContent = initializeCSPTemplate(function(): string { return `<div class="e-card-header-caption">${args.target.innerText}</div>`});
+            tooltipContent = initializeCSPTemplate(function(): string {
+                return `<div class="e-card-header-caption">${args.target.innerText}</div>`;
+            });
         }
         this.tooltipObj.setProperties({ content: tooltipContent }, true);
     }

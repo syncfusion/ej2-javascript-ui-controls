@@ -409,6 +409,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * * Extended - Hide the overflowing toolbar items in the next row.  Show the overflowing toolbar items when you click the expand icons.
      * * If the popup content overflows the height of the page, the rest of the elements will be hidden.
      *
+     * {% codeBlock src='toolbar/scrollStep/index.md' %}{% endcodeBlock %}
+     * 
      * @default null
      */
     @Property()
@@ -964,6 +966,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.renderControl();
         this.wireEvents();
         this.renderComplete();
+        if ((this as any).isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
+            this.renderReactTemplates(function () {
+                this.refreshOverflow();
+            });
+        }
     }
     private initialize(): void {
         const width: Str = formatUnit(this.width);
@@ -2068,7 +2075,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             let tempArray: HTEle[];
             if (!isNOU(templateFn)) {
                 const toolbarTemplateID: string = this.element.id + index + '_template';
-                tempArray = templateFn({}, this, 'template', toolbarTemplateID, this.isStringTemplate);
+                tempArray = templateFn({}, this, 'template', toolbarTemplateID, this.isStringTemplate, undefined, undefined, this.root);
             }
             if (!isNOU(tempArray) && tempArray.length > 0) {
                 [].slice.call(tempArray).forEach((ele: HTEle): void => {

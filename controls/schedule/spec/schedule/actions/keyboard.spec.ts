@@ -3946,6 +3946,34 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('ES-845365 - Checking showQuickinfoOnSelectionEnd property without resources', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                currentView: 'Week',
+                selectedDate: new Date(2023, 8, 1),
+                quickInfoOnSelectionEnd: true,
+                allowMultiRowSelection: false
+            };
+            schObj = util.createSchedule(schOptions, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking on unselected Resource cell', () => {
+            const workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            util.triggerMouseEvent(workCells[142], 'mousedown');
+            util.triggerMouseEvent(workCells[170], 'mousemove');
+            util.triggerMouseEvent(workCells[172], 'mousemove');
+            util.triggerMouseEvent(workCells[172], 'mouseup');
+            const quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper');
+            expect(quickPopup.classList).toContain('e-popup-open');
+            expect((quickPopup.querySelector('.e-date-time-details') as HTMLElement).innerText).toBe('August 29, 2023 (10:00 AM - 12:30 PM)');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -1,4 +1,5 @@
-import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined, closest } from '@syncfusion/ej2-base';
+
+import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined } from '@syncfusion/ej2-base';
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
 import { isObject, IKeyValue, select, selectAll } from '@syncfusion/ej2-base';
@@ -11,12 +12,11 @@ import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { ColumnModel, AggregateColumnModel } from '../models/models';
-import { AggregateType, HierarchyGridPrintMode, freezeTable, freezeMode } from './enum';
+import { AggregateType, HierarchyGridPrintMode } from './enum';
 import { Dialog, calculateRelativeBasedPosition, Popup } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { FilterStateObj, IXLFilter } from '../common/filter-interface';
-import { Cell } from '../models/cell';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { GroupedData } from '../services/group-model-generator';
 import * as literals from '../base/string-literals';
@@ -1062,25 +1062,6 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string, is
 }
 
 /**
- * @param {Element} ele - Defines the element
- * @param {number} frzCols - Defines the frozen columns
- * @param {IGrid} gObj - Defines the IGrid
- * @returns {Element} Returns the element
- * @hidden
- */
-export function renderMovable(ele: Element, frzCols: number, gObj?: IGrid): Element {
-    frzCols = frzCols && gObj && gObj.isRowDragable() ? frzCols + 1 : frzCols;
-    const mEle: Element = ele.cloneNode(true) as Element;
-    for (let i: number = 0; i < frzCols; i++) {
-        mEle.removeChild(mEle.children[0]);
-    }
-    for (let i: number = frzCols, len: number = ele.childElementCount; i < len; i++) {
-        ele.removeChild(ele.children[ele.childElementCount - 1]);
-    }
-    return mEle;
-}
-
-/**
  * @param {IGrid} grid - Defines the IGrid
  * @returns {boolean} Returns true if group adaptive is true
  * @hidden
@@ -1152,8 +1133,10 @@ export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridP
                 (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
             obj[parseInt(index.toString(), 10)] = {};
             obj[parseInt(index.toString(), 10)].isExpand = true;
-            obj[parseInt(index.toString(), 10)].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
-            (<{ query: Query }>obj[parseInt(index.toString(), 10)].gridModel).query = gObj.childGrid.query;
+            if (gObj.childGrid) {
+                obj[parseInt(index.toString(), 10)].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
+                (<{ query: Query }>obj[parseInt(index.toString(), 10)].gridModel).query = gObj.childGrid.query;
+            }
         }
     }
     return obj;
@@ -1170,10 +1153,9 @@ export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGrid
     if (!gObj) {
         return printGridModel;
     }
-    const isFrozen: boolean = gObj.isFrozenGrid() && !gObj.getFrozenColumns();
     for (const key of Print.printGridProp) {
         if (key === 'columns') {
-            printGridModel[`${key}`] = getActualPropFromColl(isFrozen ? gObj.getColumns() : gObj[`${key}`]);
+            printGridModel[`${key}`] = getActualPropFromColl(gObj.getColumns());
         } else if (key === 'allowPaging') {
             printGridModel[`${key}`] = gObj.printMode === 'CurrentPage';
         } else {
@@ -1181,7 +1163,7 @@ export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGrid
         }
     }
     printGridModel['enableHover'] = false;
-    if (gObj.childGrid && hierarchyPrintMode !== 'None') {
+    if ((gObj.childGrid || gObj.detailTemplate) && hierarchyPrintMode !== 'None') {
         (<IGrid>printGridModel).expandedRows = getExpandedState(gObj, hierarchyPrintMode);
     }
     return printGridModel;
@@ -1333,19 +1315,88 @@ export function applyBiggerTheme(rootElement: Element, element: Element): void {
 }
 
 /**
- * @param {HTMLElement} mTD - Defines the movable TD
- * @param {HTMLElement} fTD  - Defines the Frozen TD
+ * @param {IGrid} gObj - Defines grid object
+ * @returns {number}  - Returns scroll width
+ * @hidden
+ */
+export function getScrollWidth(gObj: IGrid): number {
+    const scrollElem: HTMLElement = gObj.getContent().firstElementChild as HTMLElement;
+    return scrollElem.scrollWidth > scrollElem.offsetWidth ? getScrollBarWidth() : 0;
+}
+
+/**
+ * @param {IGrid} gObj - Defines grid object
+ * @param {number} idx - Defines the index
+ * @returns {number} Returns colSpan index
+ * @hidden
+ */
+export function resetColspanGroupCaption(gObj: IGrid, idx: number): number {
+    let colspan: number = 0;
+    const cols: Column[] = gObj.getColumns();
+    let width: number = idx * 30;
+    if (gObj.isRowDragable()) {
+        colspan++;
+        width += 30;
+    }
+    colspan += (gObj.groupSettings.columns.length - idx);
+    width += (30 * (gObj.groupSettings.columns.length - idx));
+    for (let i: number = 0; i < cols.length; i++) {
+        if (cols[parseInt(i.toString(), 10)].visible) {
+            width += parseInt(cols[parseInt(i.toString(), 10)].width.toString(), 10);
+            colspan++;
+        }
+        if (width > (parseInt(gObj.width.toString(), 10) - getScrollWidth(gObj))) {
+            colspan--;
+            break;
+        }
+    }
+    return colspan;
+}
+
+/**
+ * @param {HTMLElement} tr - Defines the tr Element
+ * @param {IGrid} gObj - Defines grid object
  * @returns {void}
  * @hidden
  */
-export function alignFrozenEditForm(mTD: HTMLElement, fTD: HTMLElement): void {
-    if (mTD && fTD) {
-        const mHeight: number = closest(mTD, '.' + literals.row).getBoundingClientRect().height;
-        const fHeight: number = closest(fTD, '.' + literals.row).getBoundingClientRect().height;
-        if (mHeight > fHeight) {
-            fTD.style.height = mHeight + 'px';
-        } else {
-            mTD.style.height = fHeight + 'px';
+export function groupCaptionRowLeftRightPos(tr: Element, gObj: IGrid): void {
+    let width: number = 0;
+    for (let j: number = 0; j < tr.childNodes.length; j++) {
+        const td: HTMLElement = tr.childNodes[parseInt(j.toString(), 10)] as HTMLElement;
+        td.classList.add('e-leftfreeze');
+        applyStickyLeftRightPosition(td, width, gObj.enableRtl, 'Left');
+        if (td.classList.contains('e-indentcell') || td.classList.contains('e-recordplusexpand') ||
+            td.classList.contains('e-recordpluscollapse')) {
+            width += 30;
+        }
+        if (td.classList.contains('e-groupcaption')) {
+            let colspan: number = parseInt(td.getAttribute('colspan'), 10);
+            if (gObj.isRowDragable()) {
+                colspan--;
+                width += 30;
+            }
+            colspan = colspan - (gObj.groupSettings.columns.length - j);
+            width = width + (30 * (gObj.groupSettings.columns.length - j));
+            const cols: Column[] = gObj.getColumns();
+            for (let i: number = 0; i < cols.length; i++) {
+                if ((parseInt(td.getAttribute('colspan'), 10) > 1) &&
+                    (parseInt(cols[parseInt(i.toString(), 10)].width.toString(), 10)
+                    + width) > (parseInt(gObj.width.toString(), 10) - getScrollWidth(gObj))) {
+                    const newColspan: number = resetColspanGroupCaption(gObj, j);
+                    td.setAttribute('colspan', newColspan.toString());
+                    break;
+                }
+                if (cols[parseInt(i.toString(), 10)].visible) {
+                    width += parseInt(cols[parseInt(i.toString(), 10)].width.toString(), 10);
+                    colspan--;
+                }
+                if (colspan === 0) { break; }
+            }
+        }
+        if (td.classList.contains('e-summarycell')) {
+            const uid: string = td.getAttribute('e-mappinguid');
+            const column: Column = gObj.getColumnByUid(uid);
+            width += parseInt(column.width.toString(), 10);
         }
     }
 }
@@ -1516,124 +1567,8 @@ export function compareChanges(gObj: IGrid, changes: Object, type: string, keyFi
  * @hidden
  */
 export function setRowElements(gObj: IGrid): void {
-    if (gObj.isFrozenGrid()) {
-        (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
-            [].slice.call(gObj.element.querySelectorAll('.e-movableheader .e-row, .e-movablecontent .e-row'));
-        const cls: string = gObj.getFrozenMode() === literals.leftRight ? '.e-frozen-left-header .e-row, .e-frozen-left-content .e-row'
-            : '.e-frozenheader .e-row, .e-frozencontent .e-row';
-        (<{ freezeRowElements?: Element[] }>(gObj).contentModule).freezeRowElements =
-            [].slice.call(gObj.element.querySelectorAll(cls));
-        if (gObj.getFrozenMode() === literals.leftRight) {
-            (<{ frozenRightRowElements?: Element[] }>gObj.contentModule).frozenRightRowElements =
-                [].slice.call(gObj.element.querySelectorAll('.e-frozen-right-header .e-row, .e-frozen-right-content .e-row'));
-        }
-    } else {
-        (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
-            [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow)'));
-    }
-}
-
-/**
- * @param {IGrid} gObj - Defines the grid object
- * @param {Cell<Column>} cells - Defines the callback function
- * @param {freezeTable} tableName - Defines the row
- * @returns {Cell<Column>[]} Returns the cell
- * @hidden
- */
-export function splitFrozenRowObjectCells(gObj: IGrid, cells: Cell<Column>[], tableName: freezeTable): Cell<Column>[] {
-    const left: number = gObj.getFrozenLeftCount();
-    const movable: number = gObj.getMovableColumnsCount();
-    const right: number = gObj.getFrozenRightColumnsCount();
-    const frozenMode: freezeMode = gObj.getFrozenMode();
-    const drag: number = gObj.isRowDragable() ? 1 : 0;
-    const rightIndex: number = frozenMode === 'Right' ? left + movable : left + movable + drag;
-    const mvblIndex: number = frozenMode === 'Right' ? left : left + drag;
-    const mvblEndIdx: number = frozenMode === 'Right' ? cells.length - right - drag
-        : right ? cells.length - right : cells.length;
-    if (tableName === literals.frozenLeft) {
-        cells = cells.slice(0, left ? left + drag : cells.length);
-    } else if (tableName === literals.frozenRight) {
-        cells = cells.slice(rightIndex, cells.length);
-    } else if (tableName === 'movable') {
-        cells = cells.slice(mvblIndex, mvblEndIdx);
-    }
-    return cells;
-}
-
-/**
- * @param {IGrid} gObj - Defines the grid object.
- * @param {boolean} visibleOnly - Defines to return only visible columns.
- * @returns {{frozenLeft: Column[], movable: Column[], frozenRight: Column[]}} - Returns all frozenLeft, movable and frozenRight Columns as object.
- * @hidden
- */
-export function getExactFrozenMovableColumn(gObj: IGrid, visibleOnly?: boolean): {
-    frozenLeft: Column[], movable: Column[], frozenRight: Column[] } {
-    const columnModel: Column[] = gObj.getColumns();
-    const movableColumns: Column[] = [];
-    const frozenLeftColumns: Column[] = [];
-    const frozenRightColumns: Column[] = [];
-    for (let i: number = 0; i < columnModel.length; i++) {
-        if (isNullOrUndefined(visibleOnly) || !visibleOnly || visibleOnly === columnModel[parseInt(i.toString(), 10)].visible) {
-            if (columnModel[parseInt(i.toString(), 10)].freeze === 'Left' || columnModel[parseInt(i.toString(), 10)].freezeTable === 'frozen-left') {
-                frozenLeftColumns.push(columnModel[parseInt(i.toString(), 10)]);
-            }
-            else if (columnModel[parseInt(i.toString(), 10)].freeze === 'Right' || columnModel[parseInt(i.toString(), 10)].freezeTable === 'frozen-right') {
-                frozenRightColumns.push(columnModel[parseInt(i.toString(), 10)]);
-            }
-            else {
-                movableColumns.push(columnModel[parseInt(i.toString(), 10)]);
-            }
-        }
-    }
-    return { frozenLeft: frozenLeftColumns, movable: movableColumns, frozenRight: frozenRightColumns };
-}
-
-// eslint-disable-next-line
-/** @hidden */
-export function gridActionHandler(
-    gObj: IGrid, callBack: Function, rows: Row<Column>[][] | Element[][], force?: boolean, rowObj?: Row<Column>[][]): void {
-    if (rows[0].length || force) {
-        if (rowObj) {
-            callBack(literals.frozenLeft, rows[0], rowObj[0]);
-        } else {
-            callBack(literals.frozenLeft, rows[0]);
-        }
-    }
-    if (gObj.isFrozenGrid() && (rows[1].length || force)) {
-        if (rowObj) {
-            callBack('movable', rows[1], rowObj[1]);
-        } else {
-            callBack('movable', rows[1]);
-        }
-    }
-    if ((gObj.getFrozenMode() === literals.leftRight || gObj.getFrozenMode() === 'Right') && (rows[2].length || force)) {
-        if (rowObj) {
-            callBack(literals.frozenRight, rows[2], rowObj[2]);
-        } else {
-            callBack(literals.frozenRight, rows[2]);
-        }
-    }
-}
-
-/**
- * @param {IGrid} gObj - Defines the grid
- * @returns {Row<Column>} Returns the row
- * @hidden
- */
-export function getGridRowObjects(gObj: IGrid): Row<Column>[][] {
-    return [gObj.getFrozenMode() !== 'Right' ? gObj.getRowsObject() : [], gObj.getMovableRowsObject(), gObj.getFrozenRightRowsObject()];
-}
-
-/**
- * @param {IGrid} gObj - Defines the grid
- * @returns {Element} Returns the element
- * @hidden
- */
-export function getGridRowElements(gObj: IGrid): Element[][] {
-    return [
-        gObj.getFrozenMode() !== 'Right' ? gObj.getAllDataRows(true) : [],
-        gObj.getAllMovableDataRows(true), gObj.getAllFrozenRightDataRows(true)
-    ];
+    (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
+        [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow)'));
 }
 
 /**
@@ -1657,6 +1592,212 @@ export function sliceElements(row: Element, start: number, end: number): void {
 }
 
 /**
+ * @param {Column} column - Defines the column
+ * @param {string} uid - Defines the uid
+ * @returns {boolean} Returns is child column
+ * @hidden
+ */
+export function isChildColumn(column: Column, uid: string): boolean {
+    const uids: string[] = [];
+    uids.push(column.uid);
+    pushuid(column, uids);
+    if (uids.indexOf(uid) > -1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * @param {Column} column - Defines the column
+ * @param {string[]} uids - Defines the uid
+ * @returns {void}
+ * @hidden
+ */
+export function pushuid(column: Column, uids: string[]): void {
+    for (let i: number = 0; i < column.columns.length; i++) {
+        if ((column.columns[parseInt(i.toString(), 10)] as Column).uid) {
+            uids.push((column.columns[parseInt(i.toString(), 10)] as Column).uid);
+        }
+        if ((column.columns[parseInt(i.toString(), 10)] as Column).columns &&
+            (column.columns[parseInt(i.toString(), 10)] as Column).columns.length) {
+            pushuid((column.columns[parseInt(i.toString(), 10)] as Column), uids);
+        }
+    }
+}
+
+/**
+ * @param {Column} column - Defines the column
+ * @returns {string} Returns the direction
+ * @hidden
+ */
+export function frozenDirection(column: Column): string {
+    if ((column.columns[0] as Column).freeze || (column.columns[0] as Column).isFrozen) {
+        if ((column.columns[0] as Column).freeze === 'Left' || (column.columns[0] as Column).isFrozen) {
+            return 'Left';
+        } else if ((column.columns[0] as Column).freeze === 'Right') {
+            return 'Right';
+        } else if ((column.columns[0] as Column).freeze === 'Fixed') {
+            return 'Fixed';
+        } else {
+            return 'None';
+        }
+    } else {
+        if ((column.columns[0] as Column).columns && (column.columns[0] as Column).columns.length) {
+            return frozenDirection(column.columns[0] as Column);
+        } else {
+            return 'None';
+        }
+    }
+}
+
+/**
+ * @param {Element} row - Defines the row
+ * @returns {void}
+ * @hidden
+ */
+export function addFixedColumnBorder(row: Element): void {
+    if (row.querySelector('.e-fixedfreeze')) {
+        let cells: HTMLElement[] = [].slice.call(row.querySelectorAll(
+            '.e-filterbarcell:not(.e-hide),.e-summarycell:not(.e-hide),.e-headercell:not(.e-hide),.e-rowcell:not(.e-hide)'));
+        for (let j: number = 0; j < cells.length; j++) {
+            if ((cells[parseInt(j.toString(), 10)] as Element).classList.contains('e-fixedfreeze') && (!(cells[j - 1]) ||
+                (cells[j - 1] && !(cells[j - 1] as Element).classList.contains('e-fixedfreeze')))) {
+                (cells[parseInt(j.toString(), 10)] as Element).classList.add('e-freezeleftborder');
+            }
+            if ((cells[parseInt(j.toString(), 10)] as Element).classList.contains('e-fixedfreeze') && (!(cells[j + 1]) ||
+                (cells[j + 1] && !(cells[j + 1] as Element).classList.contains('e-fixedfreeze')))) {
+                (cells[parseInt(j.toString(), 10)] as Element).classList.add('e-freezerightborder');
+            }
+        }
+    }
+}
+
+/**
+ * @param {HTMLElement} node - Defines the row
+ * @param {number} width - Defines the width
+ * @param {boolean} isRtl - Boolean property
+ * @param {string} position - Defines the position
+ * @returns {void}
+ * @hidden
+ */
+export function applyStickyLeftRightPosition(node: HTMLElement, width: number, isRtl: boolean, position: string): void {
+    if (position === 'Left') {
+        if (isRtl) {
+            (node as HTMLElement).style.right = width + 'px';
+        } else {
+            (node as HTMLElement).style.left = width + 'px';
+        }
+    }
+    if (position === 'Right') {
+        if (isRtl) {
+            (node as HTMLElement).style.left = width + 'px';
+        } else {
+            (node as HTMLElement).style.right = width + 'px';
+        }
+    }
+}
+
+/**
+ * @param {IGrid} gObj - Defines the grid
+ * @param {Column} column - Defines the column
+ * @param {Element} node - Defines the Element
+ * @returns {void}
+ * @hidden
+ */
+export function addStickyColumnPosition(gObj: IGrid, column: Column, node: Element): void {
+    if (column.freeze === 'Left' || column.isFrozen) {
+        node.classList.add('e-leftfreeze');
+        if ((<{ border?: string }>column).border === 'Left') {
+            node.classList.add('e-freezeleftborder');
+        }
+        if (column.index === 0) {
+            applyStickyLeftRightPosition(node as HTMLElement,  (gObj.getIndentCount() * 30), gObj.enableRtl, 'Left');
+            if (gObj.enableColumnVirtualization) {
+                (<{ valueX?: number }>column).valueX = (gObj.getIndentCount() * 30);
+            }
+        } else {
+            const cols: Column[] = gObj.getColumns();
+            let width: number = gObj.getIndentCount() * 30;
+            for (let i: number = 0; i < cols.length; i++) {
+                if (column.uid === cols[parseInt(i.toString(), 10)].uid) {
+                    break;
+                }
+                if (cols[parseInt(i.toString(), 10)].visible) {
+                    width += parseFloat(cols[parseInt(i.toString(), 10)].width.toString());
+                }
+            }
+            applyStickyLeftRightPosition(node as HTMLElement, width, gObj.enableRtl, 'Left');
+            if (gObj.enableColumnVirtualization) {
+                (<{ valueX?: number }>column).valueX = width;
+            }
+        }
+    } else if (column.freeze === 'Right') {
+        node.classList.add('e-rightfreeze');
+        const cols: Column[] = gObj.getColumns();
+        if ((<{ border?: string }>column).border === 'Right') {
+            node.classList.add('e-freezerightborder');
+        }
+        if (column.index === cols[cols.length - 1].index) {
+            const width: number = gObj.getFrozenMode() === 'Right' && gObj.isRowDragable() ? 30 : 0;
+            applyStickyLeftRightPosition(node as HTMLElement, width, gObj.enableRtl, 'Right');
+            if (gObj.enableColumnVirtualization) {
+                (<{ valueX?: number }>column).valueX = width;
+            }
+        } else {
+            let width: number =  gObj.getFrozenMode() === 'Right' && gObj.isRowDragable() ? 30 : 0;
+            for (let i: number = cols.length - 1; i >= 0; i--) {
+                if (column.uid === cols[parseInt(i.toString(), 10)].uid) {
+                    break;
+                }
+                if (cols[parseInt(i.toString(), 10)].visible) {
+                    width += parseFloat(cols[parseInt(i.toString(), 10)].width.toString());
+                }
+            }
+            applyStickyLeftRightPosition(node as HTMLElement, width, gObj.enableRtl, 'Right');
+            if (gObj.enableColumnVirtualization) {
+                (<{ valueX?: number }>column).valueX = width;
+            }
+        }
+    } else if (column.freeze === 'Fixed') {
+        node.classList.add('e-fixedfreeze');
+        const cols: Column[] = gObj.getColumns();
+        let width: number = 0;
+        if (gObj.getVisibleFrozenLeftCount()) {
+            width = gObj.getIndentCount() * 30;
+        } else if (gObj.getFrozenMode() === 'Right') {
+            width = gObj.groupSettings.columns.length * 30;
+        }
+        for (let i: number = 0; i < cols.length; i++) {
+            if (column.uid === cols[parseInt(i.toString(), 10)].uid) {
+                break;
+            }
+            if ((cols[parseInt(i.toString(), 10)].freeze === 'Left' || cols[parseInt(i.toString(), 10)].isFrozen) ||
+                cols[parseInt(i.toString(), 10)].freeze === 'Fixed') {
+                if (cols[parseInt(i.toString(), 10)].visible) {
+                    width += parseFloat(cols[parseInt(i.toString(), 10)].width.toString());
+                }
+            }
+        }
+        applyStickyLeftRightPosition(node as HTMLElement, (width - 1), gObj.enableRtl, 'Left');
+        width = gObj.getFrozenMode() === 'Right' && gObj.isRowDragable() ? 30 : 0;
+        for (let i: number = cols.length - 1; i >= 0; i--) {
+            if (column.uid === cols[parseInt(i.toString(), 10)].uid) {
+                break;
+            }
+            if (cols[parseInt(i.toString(), 10)].freeze === 'Right' || cols[parseInt(i.toString(), 10)].freeze === 'Fixed') {
+                if (cols[parseInt(i.toString(), 10)].visible) {
+                    width += parseFloat(cols[parseInt(i.toString(), 10)].width.toString());
+                }
+            }
+        }
+        applyStickyLeftRightPosition(node as HTMLElement, (width - 1), gObj.enableRtl, 'Right');
+    } else {
+        node.classList.add('e-unfreeze');
+    }
+}
+
+/**
  * @param {IGrid} gObj - Defines the grid Object
  * @param {Column} col - Defines the column
  * @param {number} rowIndex - Defines the rowindex
@@ -1664,13 +1805,7 @@ export function sliceElements(row: Element, start: number, end: number): void {
  * @hidden
  */
 export function getCellsByTableName(gObj: IGrid, col: Column, rowIndex: number): Element[] {
-    if (col.getFreezeTableName() === 'movable') {
-        return [].slice.call(gObj.getMovableDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
-    } else if (col.getFreezeTableName() === literals.frozenRight) {
-        return [].slice.call(gObj.getFrozenRightDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
-    } else {
-        return [].slice.call(gObj.getDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
-    }
+    return [].slice.call(gObj.getDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
 }
 
 /**
@@ -1682,10 +1817,6 @@ export function getCellsByTableName(gObj: IGrid, col: Column, rowIndex: number):
  * @hidden
  */
 export function getCellByColAndRowIndex(gObj: IGrid, col: Column, rowIndex: number, index: number): Element {
-    const left: number = gObj.getFrozenLeftCount();
-    const movable: number = gObj.getMovableColumnsCount();
-    index = col.getFreezeTableName() === 'movable' ? index - left : col.getFreezeTableName() === literals.frozenRight
-        ? index - (left + movable) : index;
     return getCellsByTableName(gObj, col, rowIndex)[parseInt(index.toString(), 10)];
 }
 
@@ -1715,59 +1846,6 @@ export function setValidationRuels(
         } else if (col.getFreezeTableName() === literals.frozenRight) {
             frRules[getComplexFieldID(col.field)] = col.validationRules;
         }
-    }
-}
-
-/**
- * @param {IGrid} gObj - Defines the grid object
- * @returns {Element} Returns the Element
- * @hidden
- */
-export function getMovableTbody(gObj: IGrid): Element {
-    let tbody: Element;
-    if (gObj.isFrozenGrid()) {
-        tbody = gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top' ? gObj.getMovableHeaderTbody()
-            : gObj.getMovableContentTbody();
-    }
-    return tbody;
-}
-
-/**
- * @param {IGrid} gObj - Defines the grid object
- * @returns {Element} Returns the Element
- * @hidden
- */
-export function getFrozenRightTbody(gObj: IGrid): Element {
-    let tbody: Element;
-    if (gObj.getFrozenMode() === literals.leftRight) {
-        tbody = gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top' ? gObj.getFrozenRightHeaderTbody()
-            : gObj.getFrozenRightContentTbody();
-    }
-    return tbody;
-}
-
-/**
- * @param {Element} tbody - Table body
- * @param {Element} mTbody - Movanle table body
- * @param {Element} frTbody - Frozen right table body
- * @param {Element[]} tr - Table rows
- * @param {Element[]} mTr - Movable table rows
- * @param {Element[]} frTr - Frozen right table rows
- * @param {Function} callBack - Callback function
- * @returns {void}
- * @hidden
- */
-export function setRowsInTbody(
-    tbody: Element, mTbody: Element, frTbody: Element, tr: Element[], mTr: Element[], frTr: Element[], callBack: Function
-): void {
-    if (tbody && tr) {
-        callBack(tbody, tr);
-    }
-    if (mTbody && mTr) {
-        callBack(mTbody, mTr);
-    }
-    if (frTbody && frTr) {
-        callBack(frTbody, frTr);
     }
 }
 
@@ -1871,7 +1949,8 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
                 continue;
             }
             else {
-                idx = td.cellIndex;
+                idx = (parent.getContentTable().querySelector('.e-detailrowcollapse, .e-detailrowexpand')) ?
+                    (td.cellIndex - 1) : td.cellIndex;
             }
         }
         if (tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell').length && td) {
@@ -1880,7 +1959,7 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
                 removeClass([tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)]], ['e-hide']);
             }
             if (isContent && parent.isRowDragable()) {
-                const index: number = parent.getFrozenColumns() ? idx : idx + 1;
+                const index: number = idx + 1;
                 rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(index.toString(), 10)].visible = displayVal === '' ? true : false;
             } else {
                 rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible = displayVal === '' ? true : false;

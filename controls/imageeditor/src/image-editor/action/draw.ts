@@ -1,6 +1,6 @@
 import { extend, isNullOrUndefined, Browser, isBlazor, getComponent } from '@syncfusion/ej2-base';
 import { ActivePoint, Dimension } from '@syncfusion/ej2-inputs';
-import { ImageEditor, Point, SelectionPoint, OpenEventArgs, Direction, CurrentObject, ShapeSettings, FileType, StrokeSettings, Transition, TextSettings, CropSelectionSettings, SelectionChangeEventArgs } from '../index';
+import { ImageEditor, Point, SelectionPoint, OpenEventArgs, Direction, CurrentObject, ShapeSettings, FileType, StrokeSettings, Transition, TextSettings, CropSelectionSettings, SelectionChangeEventArgs, FrameValue, FrameChangeEventArgs, FrameSettings, FrameType, FrameLineStyle } from '../index';
 import { Dialog, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 export class Draw {
     private parent: ImageEditor;
@@ -43,9 +43,13 @@ export class Draw {
     private inputElem: HTMLInputElement;
     private isFileChanged: boolean = false;
     private isNewPath: boolean = false;
+    private isResizeSelect: boolean = false;
     private arrowDimension: Object = {bar: {width: 10, height: 32, ratioX: null, ratioY: null},
         arrow: {width: 24, height: 24, ratioX: null, ratioY: null}, arrowSolid: {width: 32, height: 32, ratioX: null, ratioY: null},
         circle: {width: 10, height: 10, ratioX: null, ratioY: null}, square: {width: 20, height: 20, ratioX: null, ratioY: null }};
+    private tempFrame: string = 'none';
+    private origDim: Dimension = {width: 0, height: 0 };
+    private isImageApply: boolean = false;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -96,7 +100,7 @@ export class Draw {
             this.setTransform(args.value['context'], args.value['value'], args.value['isReverse']);
             break;
         case 'render-image':
-            this.renderImage(args.value['isMouseWheel']);
+            this.renderImage(args.value['isMouseWheel'], args.value['isPreventClearRect'], args.value['isFrame']);
             break;
         case 'draw-image-to-canvas':
             this.drawImgToCanvas(args.value['dimension'] as Dimension);
@@ -232,6 +236,36 @@ export class Draw {
         case 'moveToSelectionRange':
             this.moveToSelectionRange(args.value['type'], args.value['activeObj']);
             break;
+        case 'setResizeSelect':
+            this.isResizeSelect = args.value['bool'];
+            break;
+        case 'applyFrame':
+            this.applyFrame(args.value['ctx'], args.value['frame'], args.value['preventImg']);
+            break;
+        case 'getTempFrame':
+            args.value['obj']['tempFrame'] = this.tempFrame;
+            break;
+        case 'drawImage':
+            this.drawImage();
+            break;
+        case 'setTempFrame':
+            this.tempFrame = args.value['frame'];
+            break;
+        case 'downScaleImgCanvas':
+            this.downScaleImgCanvas(args.value['ctx'], args.value['isImgAnnotation'], args.value['isHFlip'], args.value['isVFlip']);
+            break;
+        case 'downScale':
+            this.downScale(args.value['canvas'], args.value['width'], args.value['height']);
+            break;
+        case 'resetFrameZoom':
+            this.resetFrameZoom();
+            break;
+        case 'triggerFrameChange':
+            args.value['obj']['frameChangeEventArgs'] = this.triggerFrameChange(args.value['prevFrameSettings']);
+            break;
+        case 'setImageApply':
+            this.isImageApply = args.value['bool'];
+            break;
         }
     }
 
@@ -249,9 +283,9 @@ export class Draw {
     }
 
     private reset(): void {
-        this.isInitialLoading = this.isErrorImage = this.isNewPath = false;
-        this.isShapeTextInserted = false;
-        this.initZoomValue = null; this.tempFilter = '';
+        this.isInitialLoading = this.isErrorImage = this.isNewPath = this.isResizeSelect = false;
+        this.isShapeTextInserted = false; this.tempFrame = 'none'; this.isImageApply = false;
+        this.initZoomValue = null; this.tempFilter = ''; this.origDim = {width: 0, height: 0 };
         this.currSelPoint = null; this.isRotateZoom = false; this.tempAdjValue = '';
         this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
         this.tempTextSettings =
@@ -261,6 +295,10 @@ export class Draw {
         this.arrowDimension = {bar: {width: 10, height: 32, ratioX: null, ratioY: null},
             arrow: {width: 24, height: 24, ratioX: null, ratioY: null}, arrowSolid: {width: 32, height: 32, ratioX: null, ratioY: null},
             circle: {width: 10, height: 10, ratioX: null, ratioY: null}, square: {width: 20, height: 20, ratioX: null, ratioY: null }};
+    }
+
+    private drawImage(): void {
+        this.applyFrame(this.lowerContext, this.parent.frameObj.type);
     }
 
     private drawObject(canvas: string, obj?: SelectionPoint, isCropRatio?: boolean, points?: ActivePoint,
@@ -341,7 +379,7 @@ export class Draw {
 
     private setDragLimit(): void {
         const parent: ImageEditor = this.parent; const actPoint: ActivePoint = parent.activeObj.activePoint;
-        if (actPoint && parent.activeObj.rotatedAngle === 0) {
+        if (actPoint && parent.activeObj.shape !== 'image' && parent.activeObj.shape !== 'line' && parent.activeObj.rotatedAngle === 0) {
             if (actPoint.startX < parent.img.destLeft) {
                 actPoint.startX = parent.img.destLeft;
                 actPoint.endX = actPoint.startX + actPoint.width;
@@ -474,20 +512,20 @@ export class Draw {
         parent.activeObj.activePoint.startX += diffX; parent.activeObj.activePoint.endX += diffX;
         parent.activeObj.activePoint.startY += diffY; parent.activeObj.activePoint.endY += diffY;
         if (parent.activeObj.activePoint.startX < (parent.img.destLeft >= 7.5 ? parent.img.destLeft : 7.5)) {
-            const diff: number = ((parent.img.destLeft >= 7.5 ? parent.img.destLeft : 0) - parent.activeObj.activePoint.startX) + 7.5;
+            const diff: number = ((parent.img.destLeft >= 7.5 ? parent.img.destLeft : 0) - parent.activeObj.activePoint.startX);
             parent.activeObj.activePoint.startX += diff;
             parent.activeObj.activePoint.endX += diff;
         } else if (parent.activeObj.activePoint.endX > parent.img.destLeft + parent.img.destWidth) {
-            const diff: number = (parent.activeObj.activePoint.endX - (parent.img.destLeft + parent.img.destWidth)) + 7.5;
+            const diff: number = (parent.activeObj.activePoint.endX - (parent.img.destLeft + parent.img.destWidth));
             parent.activeObj.activePoint.startX -= diff;
             parent.activeObj.activePoint.endX -= diff;
         }
-        if (parent.activeObj.activePoint.startY < (parent.img.destTop > 7.5 ? parent.img.destTop : 7.5)) {
-            const diff: number = ((parent.img.destTop > 7.5 ? parent.img.destTop : 0) - parent.activeObj.activePoint.startY) + 7.5;
+        if (parent.activeObj.activePoint.startY < (parent.img.destTop >= 7.5 ? parent.img.destTop : 7.5)) {
+            const diff: number = ((parent.img.destTop >= 7.5 ? parent.img.destTop : 0) - parent.activeObj.activePoint.startY);
             parent.activeObj.activePoint.startY += diff;
             parent.activeObj.activePoint.endY += diff;
         } else if (parent.activeObj.activePoint.endY > parent.img.destTop + parent.img.destHeight) {
-            const diff: number = (parent.activeObj.activePoint.endY - (parent.img.destTop + parent.img.destHeight)) + 7.5;
+            const diff: number = (parent.activeObj.activePoint.endY - (parent.img.destTop + parent.img.destHeight));
             parent.activeObj.activePoint.startY -= diff;
             parent.activeObj.activePoint.endY -= diff;
         }
@@ -678,7 +716,7 @@ export class Draw {
         else if (saveContext) {canvasDraw = saveContext; }
         if (parent.currObjType.shape.toLowerCase() === 'rectangle' || parent.currObjType.shape.toLowerCase() === 'ellipse'
          || parent.currObjType.shape.toLowerCase() === 'line' || parent.activeObj.shape === 'arrow' ||
-         parent.activeObj.shape === 'path') {
+         parent.activeObj.shape === 'path' || parent.activeObj.shape === 'image') {
             parent.activeObj.shape = parent.currObjType.shape;
         }
         canvasDraw.strokeStyle = parent.activeObj.strokeSettings.strokeColor;
@@ -797,6 +835,12 @@ export class Draw {
             break;
         case 'text':
             this.shapeText(canvasDraw);
+            break;
+        case 'image':
+            this.shapeImage(canvasDraw);
+            if (isNullOrUndefined(isPreventSelection) && canvasDraw === this.upperContext) {
+                this.drawOuterSelection(canvasDraw);
+            }
             break;
         case 'crop-square':
         case 'crop-3:4':
@@ -1453,7 +1497,62 @@ export class Draw {
         }
     }
 
+    private shapeImage(canvasDraw: CanvasRenderingContext2D): void {
+        const parent: ImageEditor = this.parent;
+        const ctx: CanvasRenderingContext2D = parent.activeObj.imageCanvas.getContext('2d');
+        if (canvasDraw === this.lowerContext && this.isImageApply) {
+            let dimObj: Object = {width: 0, height: 0 };
+            parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
+                value: {width: parent.activeObj.imageElement.width, height: parent.activeObj.imageElement.height, obj: dimObj, isImgShape: null }});
+            if (parent.activeObj.activePoint.width < (dimObj['width'] / 5) || parent.activeObj.activePoint.height < (dimObj['height'] / 5)) {
+                ctx.clearRect(0, 0, parent.activeObj.imageCanvas.width, parent.activeObj.imageCanvas.height);
+                parent.notify('draw', { prop: 'downScaleImgCanvas', onPropertyChange: false,
+                    value: { ctx: ctx, isImgAnnotation: true, isHFlip: null, isVFlip: null } });
+                parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate' }});
+                this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+                parent.notify('selection', { prop: 'setImageClarity', onPropertyChange: false, value: {bool: false }});
+                this.isImageApply = false;
+            }
+        }
+        const imgPoint: ActivePoint = {startX: 0, startY: 0, width: 0, height: 0 };
+        imgPoint.width = parent.activeObj.activePoint.width; imgPoint.height = parent.activeObj.activePoint.height;
+        if (parent.activeObj.flipObjColl.length === 4) {
+            parent.activeObj.flipObjColl = []; parent.activeObj.shapeFlip = '';
+        }
+        for (let j: number = 0, len: number = parent.activeObj.flipObjColl.length; j < len; j++) {
+            if (parent.activeObj.flipObjColl[j as number].toLowerCase() === 'horizontal') {
+                canvasDraw.translate(canvasDraw.canvas.width, 0); canvasDraw.scale(-1, 1);
+                parent.activeObj.activePoint = this.updateActPoint('horizontal', canvasDraw);
+            } else if (parent.activeObj.flipObjColl[j as number].toLowerCase() === 'vertical') {
+                canvasDraw.translate(0, canvasDraw.canvas.height); canvasDraw.scale(1, -1);
+                parent.activeObj.activePoint = this.updateActPoint('vertical', canvasDraw);
+            }
+        }
+        imgPoint.startX = ((parent.activeObj.activePoint.width - imgPoint.width) / 2) + parent.activeObj.activePoint.startX;
+        imgPoint.startY = ((parent.activeObj.activePoint.height - imgPoint.height) / 2) + parent.activeObj.activePoint.startY;
+        const temp: number = canvasDraw.globalAlpha;
+        canvasDraw.globalAlpha = parent.activeObj.imageTransparency;
+        if (parent.activeObj.shapeDegree !== parent.transform.degree) {
+            this.rotateImage(canvasDraw);
+        } else {
+            canvasDraw.drawImage(parent.activeObj.imageCanvas, imgPoint.startX, imgPoint.startY, imgPoint.width, imgPoint.height);
+        }
+        canvasDraw.globalAlpha = temp;
+        for (let k: number = 0, len: number = parent.activeObj.flipObjColl.length; k < len; k++) {
+            if (parent.activeObj.flipObjColl[k as number].toLowerCase() === 'horizontal') {
+                canvasDraw.translate(canvasDraw.canvas.width, 0); canvasDraw.scale(-1, 1);
+                parent.activeObj.activePoint = this.updateActPoint('horizontal', canvasDraw);
+            } else if (parent.activeObj.flipObjColl[k as number].toLowerCase() === 'vertical') {
+                canvasDraw.translate(0, canvasDraw.canvas.height); canvasDraw.scale(1, -1);
+                parent.activeObj.activePoint = this.updateActPoint('vertical', canvasDraw);
+            }
+        }
+        parent.currObjType.isText = false;
+    }
+
     private shapeText(canvasDraw: CanvasRenderingContext2D): void {
+        const filter: string = canvasDraw.filter;
+        canvasDraw.filter = 'none';
         const parent: ImageEditor = this.parent; let actPoint: ActivePoint = parent.activeObj.activePoint;
         const rows: string[] = parent.activeObj.keyHistory.split('\n');
         const height: number = parent.activeObj.textSettings.fontSize + parent.activeObj.textSettings.fontSize * 0.25;
@@ -1510,6 +1609,7 @@ export class Draw {
                 }
             }
         }
+        canvasDraw.filter = filter;
         parent.currObjType.isText = false;
     }
 
@@ -1541,6 +1641,59 @@ export class Draw {
             }
         }
         return actPoint;
+    }
+
+    private rotateImage(canvasDraw: CanvasRenderingContext2D): void {
+        const parent: ImageEditor = this.parent;
+        let degree: number;
+        if (parent.activeObj.shapeDegree === 0) {degree = parent.transform.degree; }
+        else {degree = parent.transform.degree - parent.activeObj.shapeDegree; }
+        if (degree === -450) {degree = -90; }
+        if (degree < 0) {degree = 360 + degree; }
+        const imgPoint: ActivePoint = {startX: 0, startY: 0, width: 0, height: 0 };
+        imgPoint.width = degree % 90 === 0 && degree % 180 !== 0 ? parent.activeObj.activePoint.height : parent.activeObj.activePoint.width;
+        imgPoint.height = degree % 90 === 0 && degree % 180 !== 0 ? parent.activeObj.activePoint.width :
+            parent.activeObj.activePoint.height;
+        imgPoint.startX = parent.activeObj.activePoint.startX;
+        imgPoint.startY = parent.activeObj.activePoint.startY;
+        let startX: number = imgPoint.startX;
+        let startY: number = imgPoint.startY;
+        if (degree % 360 === 0 && (parent.transform.degree !== -360 || parent.transform.currFlipState === '')) {
+            canvasDraw.drawImage(parent.activeObj.imageCanvas, imgPoint.startX, imgPoint.startY, imgPoint.width, imgPoint.height);
+        }
+        else if (degree % 90 === 0 && degree % 180 !== 0) {
+            canvasDraw.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
+            canvasDraw.rotate(Math.PI / 180 * degree);
+            canvasDraw.translate(-parent.lowerCanvas.height / 2, -parent.lowerCanvas.width / 2);
+            if (degree % 90 === 0 && degree % 270 !== 0) {
+                startY = parent.lowerCanvas.width - (parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width);
+                startY += ((parent.activeObj.activePoint.width - imgPoint.height) / 2);
+                startX = imgPoint.startY;
+            }
+            else if (degree % 270 === 0) {
+                startX = parent.lowerCanvas.height - (parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height);
+                startX += ((parent.activeObj.activePoint.height - imgPoint.width) / 2);
+                startY = imgPoint.startX;
+            }
+            canvasDraw.drawImage(parent.activeObj.imageCanvas, startX, startY, imgPoint.width, imgPoint.height);
+            canvasDraw.translate(parent.lowerCanvas.height / 2, parent.lowerCanvas.width / 2);
+            canvasDraw.rotate(Math.PI / 180 * -degree);
+            canvasDraw.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
+        }
+        else {
+            canvasDraw.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
+            canvasDraw.rotate(Math.PI / 180 * degree);
+            startX = parent.lowerCanvas.width - (imgPoint.startX + imgPoint.width);
+            startY = parent.lowerCanvas.height - (imgPoint.startY + imgPoint.height);
+            canvasDraw.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
+            canvasDraw.drawImage(parent.activeObj.imageCanvas, startX, startY, imgPoint.width, imgPoint.height);
+            canvasDraw.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
+            canvasDraw.rotate(Math.PI / 180 * -degree);
+            canvasDraw.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
+        }
+        if (parent.transform.degree === 360 || parent.transform.degree === -360) {
+            parent.transform.degree = 0;
+        }
     }
 
     private rotateText(canvasDraw: CanvasRenderingContext2D): void {
@@ -1639,7 +1792,7 @@ export class Draw {
         if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
             const obj: Object = {width: 0, height: 0 };
             parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
-                value: {width: parent.img.srcHeight, height: parent.img.srcWidth, obj: obj}});
+                value: {width: parent.img.srcHeight, height: parent.img.srcWidth, obj: obj, isImgShape: null}});
             maxDimension = obj as Dimension;
             if (this.isRotateZoom) {
                 maxDimension.width += (maxDimension.width * parent.transform.zoomFactor);
@@ -1652,7 +1805,7 @@ export class Draw {
         } else {
             const obj: Object = {width: 0, height: 0 };
             parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
-                value: {width: parent.img.srcWidth, height: parent.img.srcHeight, obj: obj}});
+                value: {width: parent.img.srcWidth, height: parent.img.srcHeight, obj: obj, isImgShape: null}});
             maxDimension = obj as Dimension;
             if (this.isRotateZoom) {
                 maxDimension.width += (maxDimension.width * parent.transform.zoomFactor);
@@ -1672,11 +1825,11 @@ export class Draw {
             this.lowerContext.setTransform(1, 0, 0, 1, 0, 0);
             if (isNullOrUndefined(isPreventDestination)) {this.setDestPoints(); }
         }
-        this.currTransState(type, null, null, isRotatePan);
-        if (parent.transform.degree === 0 && parent.transform.currFlipState === '') {
-            parent.img.destLeft = destLeft; parent.img.destTop = destTop;
-        }
         if (parent.isCircleCrop || (parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle')) {
+            this.currTransState(type, true, null, isRotatePan);
+            if (parent.transform.degree === 0 && parent.transform.currFlipState === '') {
+                parent.img.destLeft = destLeft; parent.img.destTop = destTop;
+            }
             if (isRotatePan) {
                 parent.img.destLeft += parent.panPoint.totalPannedClientPoint.x; parent.img.destTop +=
                 parent.panPoint.totalPannedClientPoint.y;
@@ -1686,6 +1839,11 @@ export class Draw {
             if (isRotatePan) {
                 parent.img.destLeft -= parent.panPoint.totalPannedClientPoint.x; parent.img.destTop -=
                 parent.panPoint.totalPannedClientPoint.y;
+            }
+        } else {
+            this.currTransState(type, null, null, isRotatePan);
+            if (parent.transform.degree === 0 && parent.transform.currFlipState === '') {
+                parent.img.destLeft = destLeft; parent.img.destTop = destTop;
             }
         }
     }
@@ -1769,10 +1927,8 @@ export class Draw {
             this.isInitialLoading = false;
         }
         const temp: string = this.lowerContext.filter;
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
-        this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
-                                    parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+        this.drawImage();
         if ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop) {
             parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
                 value: {context: this.lowerContext, isSave: null, isFlip: null}});
@@ -1780,31 +1936,37 @@ export class Draw {
         this.lowerContext.filter = temp;
     }
 
-    private renderImage(isMouseWheel?: boolean): void {
+    private renderImage(isMouseWheel?: boolean, isPreventClearRect?: boolean, isFrame?: boolean): void {
         const parent: ImageEditor = this.parent;
         const temp: string = this.lowerContext.filter;
         parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: null}});
-        this.upperContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
-        this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
+        if (isNullOrUndefined(isPreventClearRect)) {
+            this.upperContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
+            this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
+        }
         if (isMouseWheel) {this.setTransformColl(this.lowerContext, 'initial'); }
         else {
-            if (parent.transform.zoomFactor > 0) {this.isRotateZoom = true; }
+            if (parent.transform.zoomFactor !== 0) {this.isRotateZoom = true; }
             this.updateCurrTransState('initial');
         }
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
         parent.notify('transform', { prop: 'setDestPointsForFlipState', onPropertyChange: false});
-        this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
-                                    parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+        this.drawImage();
         parent.notify('transform', { prop: 'setDestPointsForFlipState', onPropertyChange: false});
         if (isMouseWheel) {this.setTransformColl(this.lowerContext, 'reverse'); }
         else {
             this.updateCurrTransState('reverse'); this.isRotateZoom = false;
         }
         this.lowerContext.filter = 'none';
-        parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
-        parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-            value: {context: this.lowerContext, points: null} });
+        if (isFrame) {
+            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: { isPreventApply: null }});
+            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: { isPreventApply: null }});
+        } else {
+            parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
+            parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
+                value: {context: this.lowerContext, points: null} });
+        }
         this.lowerContext.filter = temp;
+        this.clearOuterCanvas(this.lowerContext);
         if (parent.isCircleCrop || (parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle')) {
             parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
                 value: {context: this.lowerContext, isSave: null, isFlip: null}});
@@ -1819,7 +1981,7 @@ export class Draw {
         parent.baseImg.onload = () => {
             parent.notify('filter', { prop: 'update-finetunes', onPropertyChange: false });
             proxy.lowerContext.drawImage(parent.baseImg, 0, 0, proxy.parent.lowerCanvas.width, proxy.parent.lowerCanvas.height);
-            hideSpinner(parent.element); parent.element.style.opacity = '1'; proxy.updateCanvas();
+            hideSpinner(parent.element); parent.element.style.opacity = '1'; proxy.updateBaseImgCanvas(); proxy.updateCanvas();
             if (parent.currObjType.isUndoZoom) {
                 parent.currObjType.isUndoZoom = false; proxy.parent.lowerCanvas.style.display = 'block';
             }
@@ -1864,17 +2026,24 @@ export class Draw {
         }
     }
 
+    private updateBaseImgCanvas(): void {
+        const parent: ImageEditor = this.parent;
+        parent.baseImgCanvas.width = parent.baseImg.width; parent.baseImgCanvas.height = parent.baseImg.height;
+        parent.baseImgCanvas.getContext('2d').drawImage(parent.baseImg, 0, 0);
+    }
+
     private updateCanvas(): void {
         const parent: ImageEditor = this.parent;
         const fileOpened: OpenEventArgs = {fileName: this.fileName, fileType: this.fileType, isValidImage: true };
-        parent.img.srcWidth = parent.baseImg.width; parent.img.srcHeight = parent.baseImg.height;
+        parent.img.srcWidth = parent.baseImgCanvas.width; parent.img.srcHeight = parent.baseImgCanvas.height;
         const obj: Object = {width: 0, height: 0 };
         parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
-            value: {width: parent.img.srcWidth, height: parent.img.srcHeight, obj: obj}});
+            value: {width: parent.img.srcWidth, height: parent.img.srcHeight, obj: obj, isImgShape: null}});
         const maxDimension: Dimension = obj as Dimension;
         parent.img.destLeft = (parent.lowerCanvas.clientWidth - maxDimension.width) / 2;
         parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height) / 2;
         this.drawImgToCanvas(maxDimension);
+        this.origDim.width = parent.img.destWidth; this.origDim.height = parent.img.destHeight;
         this.zoomCrop.width = parent.img.destWidth; this.zoomCrop.height = parent.img.destHeight;
         parent.notify('transform', { prop: 'setCropDimension', onPropertyChange: false,
             value: {width: parent.img.destWidth, height: parent.img.destHeight}});
@@ -1908,11 +2077,28 @@ export class Draw {
         this.isImageEdited = false;
     }
 
+    private resetFrameZoom(): void {
+        const parent: ImageEditor = this.parent;
+        if (!isNullOrUndefined(parent.tempFrameZoomLevel)) {
+            const temp: number = parent.tempFrameZoomLevel;
+            parent.tempFrameZoomLevel = null;
+            parent.notify('transform', { prop: 'resetZoom', onPropertyChange: false});
+            parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
+                value: { zoomFactor: temp, zoomPoint: null, isResize: true } });
+        }
+    }
+
     private performCancel(isContextualToolbar?: boolean): void {
         const parent: ImageEditor = this.parent;
         isContextualToolbar = isContextualToolbar ? isContextualToolbar : false;
         const obj: Object = {bool: false };
+        parent.allowDownScale = true;
         parent.notify('selection', { prop: 'getFreehandDrawEditing', onPropertyChange: false, value: {obj: obj }});
+        if (JSON.stringify(parent.frameObj) !== JSON.stringify(parent.tempFrameObj)) {
+            extend(parent.frameObj, parent.tempFrameObj);
+            this.renderImage(null, null, true);
+        }
+        this.resetFrameZoom();
         if (obj['bool']) {
             parent.notify('freehand-draw', {prop: 'cancelFhd', onPropertyChange: false});
             if (!isBlazor()) {
@@ -1979,8 +2165,14 @@ export class Draw {
                     parent.updateToolbar(parent.element, 'imageLoaded');
                 }
             } else {
-                this.cancelItems(); parent.togglePan = false;
-                parent.notify('selection', {prop: 'setDragCanvas', value: {bool: false }});
+                this.cancelItems();
+                if (parent.transform.zoomFactor > 0) {
+                    parent.togglePan = true;
+                    parent.notify('selection', {prop: 'setDragCanvas', value: {bool: true }});
+                } else {
+                    parent.togglePan = false;
+                    parent.notify('selection', {prop: 'setDragCanvas', value: {bool: false }});
+                }
             }
         }
         this.isShapeTextInserted = false;
@@ -1993,13 +2185,61 @@ export class Draw {
 
     private cancelItems(): void {
         const parent: ImageEditor = this.parent; let isCropSelection: boolean = false;
-        let splitWords: string[]; const shapes: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path'];
+        const ascpectIcon: HTMLInputElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_aspectratio') as HTMLInputElement);
+        const nonAspectIcon: HTMLInputElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_nonaspectratio') as HTMLInputElement);
+        let splitWords: string[]; const shapes: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path', 'image'];
         if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
         if (splitWords === undefined && parent.currObjType.isCustomCrop) {isCropSelection = true; }
         else if (splitWords !== undefined && splitWords[0] === 'crop'){isCropSelection = true; }
         if (isCropSelection && parent.isCropTab) {
             parent.isCropTab = false;
             parent.transform.zoomFactor = parent.transform.defaultZoomFactor;
+        }
+        if (parent.isResize) {
+            if (ascpectIcon || nonAspectIcon || (parent as any).currentToolbar == "resize-toolbar") {
+                const obj: Object = {width: null, height: null };
+                parent.notify('selection', { prop: 'getNumTextValue', onPropertyChange: false, value: { obj: obj } });
+                const point: Point = {x: obj['width'], y: obj['height'] };
+                const aspectRatioElement: HTMLInputElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_aspectratio') as HTMLInputElement);
+                const blrAspRatElem: HTMLInputElement = (this.parent.element.querySelector(".e-ie-toolbar-aspect-ratio-btn") as HTMLInputElement);
+                if (point && point.x && point.y && !isNullOrUndefined(this.parent.aspectWidth)) {
+                    if (aspectRatioElement || (blrAspRatElem && !blrAspRatElem.classList.contains("e-hidden"))) {
+                        parent.notify('transform', { prop: 'resizeImage', value: { width: parent.aspectWidth, height: parent.aspectHeight } });
+                    }
+                    else {
+                        const bool: boolean = parent.currObjType.isUndoAction;
+                        parent.currObjType.isUndoAction = false;
+                        parent.notify('transform', { prop: 'resizeCrop', value: { width: parent.aspectWidth, height: parent.aspectHeight }});
+                        parent.currObjType.isUndoAction = bool;
+                    }
+                }
+                const obj1: object = {prevCropObj: parent.prevCropObj};
+                const obj2: object = {prevObj: parent.prevObj};
+                this.parent.notify('toolbar', { prop: 'getPrevCropObj', onPropertyChange: false, value: { obj: obj1 } });
+                this.parent.notify('toolbar', { prop: 'getPrevObj', onPropertyChange: false, value: { obj: obj2 } });
+                if (obj1['prevCropObj'] && obj2['prevObj']) {
+                    if (!aspectRatioElement) {
+                        parent.objColl = []; parent.pointColl = []; parent.freehandCounter = 0;
+                        parent.cropObj = extend({}, obj1['prevCropObj'], {}, true) as CurrentObject;
+                        this.setCurrentObj(obj2['prevObj']);
+                        parent.objColl = obj2['prevObj']['objColl'];
+                        parent.pointColl = obj2['prevObj']['pointColl'];
+                        parent.freehandCounter = parent.pointColl.length;
+                        parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
+                        parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+                    }
+                    this.parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
+                        value: { zoomFactor: -this.parent.transform.zoomFactor, zoomPoint: null, isResize: true } });
+                    this.parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
+                        value: { zoomFactor: obj2['prevObj']['defaultZoom'], zoomPoint: null, isResize: true } });
+                    if (obj2['prevObj'].zoomFactor) {
+                        parent.setProperties({zoomSettings: { zoomFactor: obj2['prevObj'].zoomFactor}}, true);
+                    }
+                    parent.notify('transform', { prop: 'setPreviousZoomValue', onPropertyChange: false,
+                        value: { previousZoomValue: parent.zoomSettings.zoomFactor }});
+                }
+                parent.isResize = false;
+            }
         }
         if (parent.togglePen) {
             this.cancelPen();
@@ -2102,10 +2342,17 @@ export class Draw {
         } else {
             const object: Object = {appliedUndoRedoColl: [] as Transition[] };
             parent.notify('undo-redo', {prop: 'getAppliedUndoRedoColl', value: {obj: object }});
-            const len: number = object['appliedUndoRedoColl'].length;
-            if (this.prevActObj && object['appliedUndoRedoColl'][len - 1] &&
-            object['appliedUndoRedoColl'][len - 1].currentObjColl[object['appliedUndoRedoColl'][len - 1].currentObjColl.length - 1].currIndex
-                === this.prevActObj.currIndex) {
+            let obj: SelectionPoint;
+            for (let i: number = 0; i < object['appliedUndoRedoColl'].length; i++) {
+                for (let j: number = 0; j < object['appliedUndoRedoColl'][i as number].currentObjColl.length; j++) {
+                    if (this.prevActObj && this.prevActObj.currIndex &&
+                        object['appliedUndoRedoColl'][i as number].currentObjColl[j as number].currIndex === this.prevActObj.currIndex) {
+                        obj = object['appliedUndoRedoColl'][i as number].currentObjColl[0];
+                        break;
+                    }
+                }
+            }
+            if (this.prevActObj && obj) {
                 parent.activeObj = this.prevActObj;
                 this.prevActObj = null;
                 parent.notify('selection', { prop: 'redrawShape', onPropertyChange: false, value: {obj: parent.activeObj}});
@@ -2162,6 +2409,7 @@ export class Draw {
     private select(type: string, startX?: number, startY?: number, width?: number, height?: number): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
+            parent.allowDownScale = false;
             const object: Object = {currObj: {} as CurrentObject };
             parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
             const previousObj: CurrentObject = object['currObj'];
@@ -2173,7 +2421,8 @@ export class Draw {
                 value: {obj: selPointCollObj }});
             previousObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
             parent.notify('crop', { prop: 'setPreviousCropCurrentObj', onPropertyChange: false, value: {obj: previousObj }});
-            if (parent.transform.zoomFactor > 0 && parent.activeObj.shape && parent.activeObj.shape.split('-')[0] === 'crop' && isNullOrUndefined(this.currSelPoint)) {
+            if (parent.transform.zoomFactor > 0 && parent.activeObj.shape &&
+                parent.activeObj.shape.split('-')[0] === 'crop' && isNullOrUndefined(this.currSelPoint)) {
                 this.currSelPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
             }
             let isPrevent: boolean = false; let splitWords: string[];
@@ -2199,14 +2448,16 @@ export class Draw {
                 (parent.transform.degree !== 0 && parent.panPoint.totalPannedInternalPoint.x !== 0 &&
                     parent.panPoint.totalPannedInternalPoint.y !== 0 && !isPrevent)) {
                 parent.isCircleCrop = false;
-                if (parent.transform.defaultZoomFactor !== 0) {
+                if (parent.transform.defaultZoomFactor !== 0 && !this.isResizeSelect) {
                     const isCropTab: boolean = parent.isCropTab; parent.isCropTab = false;
                     parent.notify('transform', { prop: 'resetZoom', onPropertyChange: false});
                     parent.isCropTab = isCropTab; this.resetPanPoints();
                 }
                 parent.notify('freehand-draw', { prop: 'updateFHDColl', onPropertyChange: false});
                 parent.isCropTab = true; parent.isCircleCrop = false;
-                parent.notify('crop', { prop: 'setCurrSelPoints', onPropertyChange: false, value: {isSetDimension: true}});
+                if (!this.isResizeSelect) {
+                    parent.notify('crop', { prop: 'setCurrSelPoints', onPropertyChange: false, value: {isSetDimension: true}});
+                }
                 parent.transform.zoomFactor = parent.transform.cropZoomFactor;
                 if (isNullOrUndefined(parent.cropObj.activeObj.shape)) {
                     parent.currObjType.shape = 'crop-' + type.toLowerCase();
@@ -2373,9 +2624,7 @@ export class Draw {
         if (parent.transform.degree === 0) {
             parent.notify('transform', { prop: 'setDestPointsForFlipState', onPropertyChange: false});
         }
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-        this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
-                                    parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+        this.drawImage();
         this.updateCurrTransState('reverse');
         if (parent.transform.degree === 0 && parent.rotateFlipColl.length > 0) {
             parent.img.destLeft += parent.panPoint.totalPannedPoint.x;
@@ -2431,20 +2680,18 @@ export class Draw {
             parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
                 value: {context: this.lowerContext, isSave: null, isFlip: null}});
         }
-        const tempFilter: string = this.lowerContext.filter;
-        this.lowerContext.filter = parent.getDefaultFilter();
-        parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
-        parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
-            value: {context: this.lowerContext, points: null} });
-        this.lowerContext.filter = tempFilter;
     }
 
     private setCurrentObj(obj?: CurrentObject): void {
         const parent: ImageEditor = this.parent;
         const isObj: boolean = obj ? true : false;
+        if (!isObj) {
+            parent.cropObj.aspectWidth = parent.aspectWidth; parent.cropObj.aspectHeight = parent.aspectHeight;
+            parent.cropObj.frame = parent.frameObj.type;
+        }
         obj = obj ? obj : parent.cropObj;
         parent.transform.cropZoomFactor = obj.cropZoom; parent.transform.defaultZoomFactor = obj.defaultZoom;
-        if (!isObj) {parent.transform.zoomFactor = obj.cropZoom; }
+        if (!isObj) { parent.transform.zoomFactor = obj.cropZoom; }
         else {
             if (obj.activeObj.shape && obj.activeObj.shape.split('-')[0] === 'crop' ) {
                 parent.transform.zoomFactor = obj.cropZoom;
@@ -2460,15 +2707,16 @@ export class Draw {
         const point: Point = extend({}, obj.tempFlipPanPoint, {}, true) as Point;
         parent.notify('crop', { prop: 'setTempFlipPanPoint', onPropertyChange: false, value: {point: point}});
         parent.rotateFlipColl = extend([], obj.rotateFlipColl, [], true) as string[] | number[];
-        parent.transform.degree = obj.degree;
+        parent.transform.degree = obj.degree; parent.frameObj.type = obj.frame;
         parent.transform.currFlipState = obj.currFlipState;
         parent.img.destLeft = obj.destPoints.startX; parent.img.destTop = obj.destPoints.startY;
         parent.img.destWidth = obj.destPoints.width; parent.img.destHeight = obj.destPoints.height;
         parent.img.srcLeft = obj.srcPoints.startX; parent.img.srcTop = obj.srcPoints.startY;
         parent.img.srcWidth = obj.srcPoints.width; parent.img.srcHeight = obj.srcPoints.height;
+        parent.aspectWidth = obj.aspectWidth; parent.aspectHeight = obj.aspectHeight;
         if (obj.afterCropActions) {parent.afterCropActions = obj.afterCropActions; }
         this.lowerContext.filter = obj.filter;
-        parent.notify('filter', { prop: 'setBrightnessAdjusted', onPropertyChange: false, value: {isBrightnessAdjusted: obj.isBrightAdjust}});
+        parent.notify('filter', { prop: 'setBrightnessAdjusted', onPropertyChange: false, value: {isBrightnessAdjusted: obj.isBrightAdjust }});
         const isCircleCrop: boolean = parent.isCircleCrop;
         let currSelectionPoint: SelectionPoint;
         if (isNullOrUndefined(parent.currSelectionPoint)) {currSelectionPoint = null; }
@@ -2546,9 +2794,7 @@ export class Draw {
         if (isObj) {this.updateCurrTransState('initial'); }
         else {this.setTransformColl(this.lowerContext, 'initial'); }
         parent.notify('transform', { prop: 'setDestPointsForFlipState', onPropertyChange: false});
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-        this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
-                                    parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+        this.drawImage();
         if (isObj) {this.updateCurrTransState('reverse'); }
         else {this.setTransformColl(this.lowerContext, 'reverse'); }
         parent.img.destLeft = parent.cropObj.destPoints.startX;
@@ -2563,14 +2809,16 @@ export class Draw {
             parent.img.destWidth = obj.destPoints.width; parent.img.destHeight = obj.destPoints.height;
             parent.img.srcLeft = obj.srcPoints.startX; parent.img.srcTop = obj.srcPoints.startY;
             parent.img.srcWidth = obj.srcPoints.width; parent.img.srcHeight = obj.srcPoints.height;
-            const destPoints: ActivePoint = {startX: parent.img.destLeft, startY: parent.img.destTop, width: parent.img.destWidth,
-                height: parent.img.destHeight};
-            parent.img.destLeft = obj.activeObj.activePoint.startX; parent.img.destTop = obj.activeObj.activePoint.startY;
-            parent.img.destWidth = obj.activeObj.activePoint.width; parent.img.destHeight = obj.activeObj.activePoint.height;
-            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
-            parent.img.destLeft = destPoints.startX; parent.img.destTop = destPoints.startY;
-            parent.img.destWidth = destPoints.width; parent.img.destHeight = destPoints.height;
+            if (obj.activeObj.activePoint.width !== 0 && obj.activeObj.activePoint.height !== 0) {
+                const destPoints: ActivePoint = {startX: parent.img.destLeft, startY: parent.img.destTop, width: parent.img.destWidth,
+                    height: parent.img.destHeight};
+                parent.img.destLeft = obj.activeObj.activePoint.startX; parent.img.destTop = obj.activeObj.activePoint.startY;
+                parent.img.destWidth = obj.activeObj.activePoint.width; parent.img.destHeight = obj.activeObj.activePoint.height;
+                parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
+                parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+                parent.img.destLeft = destPoints.startX; parent.img.destTop = destPoints.startY;
+                parent.img.destWidth = destPoints.width; parent.img.destHeight = destPoints.height;
+            }
         }
         parent.activeObj = activeObj; this.lowerContext.filter = temp;
     }
@@ -2583,10 +2831,10 @@ export class Draw {
         parent.setProperties({zoomSettings: { zoomPoint: {x: x, y: y}}}, true);
         if (type === 'zoomIn') {
             parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                value: {zoomFactor: .1, zoomPoint: null}});
+                value: {zoomFactor: .1, zoomPoint: null}, isResize: null});
         } else if (type === 'zoomOut') {
             parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                value: {zoomFactor: -.1, zoomPoint: null}});
+                value: {zoomFactor: -.1, zoomPoint: null}, isResize: null});
         }
         parent.isUndoRedo = isUndoRedo;
         if (parent.transform.zoomFactor > 0) {
@@ -2682,7 +2930,7 @@ export class Draw {
         this.renderImage(true);
         const obj: Object = {width: 0, height: 0 };
         parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
-            value: {width: parent.img.srcWidth, height: parent.img.srcHeight, obj: obj}});
+            value: {width: parent.img.srcWidth, height: parent.img.srcHeight, obj: obj, isImgShape: null}});
         const maxDimension: Dimension = obj as Dimension;
         maxDimension.width += (maxDimension.width * parent.transform.zoomFactor);
         maxDimension.height += (maxDimension.height * parent.transform.zoomFactor);
@@ -2775,11 +3023,19 @@ export class Draw {
     }
 
     private showDialogPopup(): void {
+        const headerObj: Object = { key: 'ConfirmDialogHeader' };
+        this.parent.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: headerObj }});
+        const contentObj: Object = { key: 'ConfirmDialogContent' };
+        this.parent.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: contentObj }});
+        const yesObj: Object = { key: 'Yes' };
+        this.parent.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: yesObj }});
+        const noObj: Object = { key: 'No' };
+        this.parent.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: noObj }});
         (this.parent.element.querySelector('#' + this.parent.element.id + '_dialog') as HTMLElement).style.display = 'block';
         const dialog: Dialog = new Dialog({
-            header: 'Confirm Save Changes',
+            header: headerObj['value'],
             closeOnEscape: true,
-            content: '<span>Do you want to save the changes you made to the image?</span>',
+            content: '<span>' + contentObj['value'] +'</span>',
             target: document.getElementById('target'),
             width: '285px',
             isModal: true,
@@ -2787,10 +3043,10 @@ export class Draw {
             close: this.dlgCloseBtnClick.bind(this),
             buttons: [
                 { click: this.dlgCloseBtnClick.bind(this),
-                    buttonModel: { content: 'No', iconCss: 'e-icons e-close' }
+                    buttonModel: { content: noObj['value'], iconCss: 'e-icons e-close' }
                 },
                 { click: this.dlgBtnClick.bind(this),
-                    buttonModel: { content: 'Yes', isPrimary: true, iconCss: 'e-icons e-check' }}
+                    buttonModel: { content: yesObj['value'], isPrimary: true, iconCss: 'e-icons e-check' }}
             ]
         });
         dialog.appendTo('#' + this.parent.element.id + '_dialog');
@@ -2816,6 +3072,7 @@ export class Draw {
     }
 
     private open(data: string | ImageData): void {
+        document.getElementById(this.parent.element.id + '_dropArea').style.display = 'none';
         if (!this.parent.disabled) {
             this.openURL = data; this.restoreOldImage();
         }
@@ -2835,11 +3092,19 @@ export class Draw {
 
     private fileSelect(inputElement: HTMLInputElement, args: Event): void {
         const parent: ImageEditor = this.parent;
+        document.getElementById(parent.element.id + '_dropArea').style.display = 'none';
         if (!parent.disabled) {
+            let filesData: FileList;
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const filesData: FileList = (args.target as any).files[0];
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const fileData: any = filesData;
+            let fileData: any;
+            if (args.target) {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                filesData = (args.target as any).files[0];
+                fileData = filesData;
+            } else {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                filesData = fileData = (args as any).filesData[0].rawFile;
+            }
             let fileExtension: string = fileData.name && fileData.name.split('.')[1].toLowerCase();
             if (fileExtension && ['jpg', 'jpeg', 'png', 'svg'].indexOf(fileExtension) === -1) {
                 this.errorLoading();
@@ -2864,7 +3129,7 @@ export class Draw {
             if (parent.isImageLoaded && (this.isImageEdited || parent.pointColl.length > 0 || parent.objColl.length > 0)) {
                 this.isFileChanged = true;
                 if (!isBlazor()) {this.showDialogPopup(); }
-                else {parent.dotNetRef.invokeMethodAsync('UpdateDialog'); }
+                else {parent.dotNetRef.invokeMethodAsync('UpdateDialog', true); }
             } else {this.checkToolbarTemplate(inputElement, url); }
         }
     }
@@ -2889,6 +3154,7 @@ export class Draw {
                 }
             }
             if (isRotated) {
+                if (parent.transform.degree === 0) {return; }
                 let zoomFactor: number = parent.transform.zoomFactor;
                 parent.objColl.push(parent.activeObj);
                 parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
@@ -2901,13 +3167,13 @@ export class Draw {
                                     this.isSelectionOutsideCanvas(parent.objColl[parent.objColl.length - 1])) {
                                     if (!isNullOrUndefined(zoomFactor)) {
                                         parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                                            value: {zoomFactor: -0.1, zoomPoint: null}});
+                                            value: {zoomFactor: -0.1, zoomPoint: null}, isResize: null});
                                     }
                                     break;
                                 }
                                 zoomFactor += 0.1;
                                 parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                                    value: {zoomFactor: zoomFactor, zoomPoint: null}});
+                                    value: {zoomFactor: zoomFactor, zoomPoint: null}, isResize: null});
                             }
                         } else {
                             for (let i: number = 2; i < parent.zoomSettings.maxZoomFactor; i++) {
@@ -2916,13 +3182,13 @@ export class Draw {
                                     this.isSelectionOutsideCanvas(parent.objColl[parent.objColl.length - 1])) {
                                     if (!isNullOrUndefined(zoomFactor)) {
                                         parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                                            value: {zoomFactor: 0.1, zoomPoint: null}});
+                                            value: {zoomFactor: 0.1, zoomPoint: null, isResize: null}});
                                     }
                                     break;
                                 }
                                 zoomFactor -= .1;
                                 parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                                    value: {zoomFactor: zoomFactor, zoomPoint: null}});
+                                    value: {zoomFactor: zoomFactor, zoomPoint: null}, isResize: null});
                             }
                         }
                     } else {
@@ -2933,13 +3199,13 @@ export class Draw {
                                     this.isSelectionOutsideCanvas(parent.objColl[parent.objColl.length - 1])) {
                                     if (!isNullOrUndefined(zoomFactor)) {
                                         parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                                            value: {zoomFactor: -0.1, zoomPoint: null}});
+                                            value: {zoomFactor: -0.1, zoomPoint: null}, isResize: null});
                                     }
                                     break;
                                 }
                                 zoomFactor += 0.1;
                                 parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                                    value: {zoomFactor: zoomFactor, zoomPoint: null}});
+                                    value: {zoomFactor: zoomFactor, zoomPoint: null}, isResize: null});
                             }
                         } else {
                             for (let i: number = 2; i < parent.zoomSettings.maxZoomFactor; i++) {
@@ -2948,13 +3214,13 @@ export class Draw {
                                     this.isSelectionOutsideCanvas(parent.objColl[parent.objColl.length - 1])) {
                                     if (!isNullOrUndefined(zoomFactor)) {
                                         parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                                            value: {zoomFactor: 0.1, zoomPoint: null}});
+                                            value: {zoomFactor: 0.1, zoomPoint: null}, isResize: null});
                                     }
                                     break;
                                 }
                                 zoomFactor -= .1;
                                 parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                                    value: {zoomFactor: zoomFactor, zoomPoint: null}});
+                                    value: {zoomFactor: zoomFactor, zoomPoint: null}, isResize: null});
                             }
                         }
                     }
@@ -2999,5 +3265,411 @@ export class Draw {
             isOutside = true;
         }
         return isOutside;
+    }
+
+    private downScaleImgCanvas(ctx: CanvasRenderingContext2D, isImgAnnotation: boolean, isHFlip: boolean, isVFlip: boolean): void {
+        const parent: ImageEditor = this.parent;
+        const canvas: HTMLCanvasElement = isImgAnnotation ? parent.activeObj.imageCanvas : parent.baseImgCanvas;
+        const img: HTMLImageElement = isImgAnnotation ? parent.activeObj.imageElement : parent.baseImg;
+        const width: number = isImgAnnotation ? parent.activeObj.activePoint.width : parent.img.destWidth;
+        const height: number = isImgAnnotation ? parent.activeObj.activePoint.height : parent.img.destHeight;
+        const obj: Object = {width: 0, height: 0 };
+        if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
+            parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
+                value: {width: img.height, height: img.width, obj: obj, isImgShape: isImgAnnotation }});
+        } else {
+            parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
+                value: {width: img.width, height: img.height, obj: obj, isImgShape: isImgAnnotation }});
+        }
+        if (isImgAnnotation || (parent.allowDownScale && !parent.isCropTab && !parent.isCropToolbar && img.width !== 0 && img.height !== 0
+            && obj['width'] * 0.75 > width && obj['height'] * 0.75 > height)) {
+            const tempCanvas: HTMLCanvasElement = parent.createElement('canvas', {
+                id: parent.element.id + '_downScaleCanvas', attrs: { name: 'canvasImage' }
+            });
+            tempCanvas.width = isImgAnnotation ? img.width : this.parent.img.srcWidth;
+            tempCanvas.height = isImgAnnotation ? img.height : this.parent.img.srcHeight;
+            if (isImgAnnotation) {
+                tempCanvas.getContext('2d').drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
+            } else {
+                tempCanvas.getContext('2d').drawImage(canvas, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
+                                                      parent.img.srcHeight, 0, 0, tempCanvas.width, tempCanvas.height);
+            }
+            this.downScale(tempCanvas, width, height, isImgAnnotation);
+            if (isImgAnnotation) {
+                ctx.canvas.width = tempCanvas.width; ctx.canvas.height = tempCanvas.height;
+                if (isHFlip && isVFlip) {
+                    ctx.translate(parent.activeObj.imageCanvas.width, 0); ctx.scale(-1, 1);
+                    ctx.translate(0, parent.activeObj.imageCanvas.height); ctx.scale(1, -1);
+                } else {
+                    if (isHFlip) {
+                        if (isNullOrUndefined(parent.activeObj.isHorImageFlip) || !parent.activeObj.isHorImageFlip) {
+                            parent.activeObj.isHorImageFlip = true;
+                            ctx.translate(parent.activeObj.imageCanvas.width, 0); ctx.scale(-1, 1);
+                        } else if (parent.activeObj.isHorImageFlip) {
+                            parent.activeObj.isHorImageFlip = false;
+                        }
+                        if (parent.activeObj.isVerImageFlip) {
+                            ctx.translate(0, parent.activeObj.imageCanvas.height); ctx.scale(1, -1);
+                        }
+                    } else if (isVFlip) {
+                        if (isNullOrUndefined(parent.activeObj.isVerImageFlip) || !parent.activeObj.isVerImageFlip) {
+                            parent.activeObj.isVerImageFlip = true;
+                            ctx.translate(0, parent.activeObj.imageCanvas.height); ctx.scale(1, -1);
+                        } else if (parent.activeObj.isVerImageFlip) {
+                            parent.activeObj.isVerImageFlip = false;
+                        }
+                        if (parent.activeObj.isHorImageFlip) {
+                            ctx.translate(parent.activeObj.imageCanvas.width, 0); ctx.scale(-1, 1);
+                        }
+                    }
+                }
+                ctx.drawImage(tempCanvas, 0, 0);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+            } else {
+                ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height,
+                              parent.img.destLeft, parent.img.destTop, tempCanvas.width, tempCanvas.height);
+            }
+        } else {
+            if (isNullOrUndefined(isImgAnnotation) || !isImgAnnotation) {
+                ctx.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
+                              parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+            }
+        }
+    }
+
+    private downScale(canvas: HTMLCanvasElement, width: number, height: number, isImgAnnotation?: boolean): void {
+        const widthSource: number = canvas.width;
+        const heightSource: number = canvas.height;
+        width = Math.round(width);
+        height = Math.round(height);
+        const widthRatio: number = widthSource / width; const heightRatio: number = heightSource / height;
+        const halfWidthRatio: number = Math.ceil(widthRatio / 2); const halfHeightRatio: number = Math.ceil(heightRatio / 2);
+        const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+        const img: ImageData = ctx.getImageData(0, 0, widthSource, heightSource);
+        const img2: ImageData = ctx.createImageData(width, height);
+        const data: Uint8ClampedArray = img.data; const data2: Uint8ClampedArray = img2.data;
+        for (let j: number = 0; j < height; j++) {
+            for (let i: number = 0; i < width; i++) {
+                const x2: number = (i + j * width) * 4; let weight: number = 0;
+                let weights: number = 0; let alphaWeights: number = 0;
+                let r: number = 0; let g: number = 0; let b: number = 0; let a: number = 0;
+                const centerY: number = (j + 0.5) * heightRatio;
+                const startY: number = Math.floor(j * heightRatio); const stopY: number = Math.ceil((j + 1) * heightRatio);
+                for (let y: number = startY; y < stopY; y++) {
+                    const dy: number = Math.abs(centerY - (y + 0.5)) / halfHeightRatio;
+                    const centerX: number = (i + 0.5) * widthRatio;
+                    const w0: number = dy * dy; //pre-calc part of w
+                    const startX: number = Math.floor(i * widthRatio); const stopX: number = Math.ceil((i + 1) * widthRatio);
+                    for (let x: number = startX; x < stopX; x++) {
+                        const dx: number = Math.abs(centerX - (x + 0.5)) / halfWidthRatio;
+                        const w: number = Math.sqrt(w0 + dx * dx);
+                        if (w >= 1) {continue; }
+                        weight = 2 * w * w * w - 3 * w * w + 1;
+                        const xPos: number = 4 * (x + y * widthSource);
+                        a += weight * data[xPos + 3];
+                        alphaWeights += weight;
+                        weight = weight * data[xPos + 3] / 250;
+                        r += weight * data[xPos as number];
+                        g += weight * data[xPos + 1];
+                        b += weight * data[xPos + 2];
+                        weights += weight;
+                    }
+                }
+                data2[x2 as number] = r / weights; data2[x2 + 1] = g / weights; data2[x2 + 2] = b / weights; data2[x2 + 3] = a / alphaWeights;
+            }
+        }
+        canvas.width = isImgAnnotation ? this.parent.activeObj.activePoint.width : this.parent.lowerCanvas.width;
+        canvas.height = isImgAnnotation ? this.parent.activeObj.activePoint.height : this.parent.lowerCanvas.height;
+        ctx.putImageData(img2, 0, 0);
+    }
+
+    private drawImgToCtx(ctx: CanvasRenderingContext2D, preventImg: boolean): void {
+        const parent: ImageEditor = this.parent;
+        if (ctx.canvas.id !== parent.element.id + '_tempCanvas' && isNullOrUndefined(preventImg)) {
+            this.downScaleImgCanvas(ctx, null, null, null);
+        }
+    }
+
+    private getFrameColor(frameObj: FrameValue, ctx: CanvasRenderingContext2D, points: ActivePoint): string | CanvasGradient | CanvasPattern {
+        const parent: ImageEditor = this.parent;
+        let color: string | CanvasGradient | CanvasPattern = parent.frameObj.color;
+        if (frameObj.gradientColor) {
+            const gradient = ctx.createLinearGradient(points.startX, points.startY, points.startX + points.width, points.startY + points.height);
+            gradient.addColorStop(0, frameObj.color);
+            gradient.addColorStop(1, frameObj.gradientColor);
+            color = gradient;
+        } else {
+            color = frameObj.color;
+        }
+        return color;
+    }
+
+    private applyFrame(ctx: CanvasRenderingContext2D, frame: string, preventImg?: boolean): void {
+        const parent: ImageEditor = this.parent; parent.frameObj.type = frame;
+        let tempLineWidth: number; let ratio: Dimension = {width: 1, height: 1 };
+        let points: ActivePoint = {startX: parent.img.destLeft - ctx.lineWidth, startY: parent.img.destTop - ctx.lineWidth,
+            width: parent.img.destWidth + (2 * ctx.lineWidth), height: parent.img.destHeight + (2 * ctx.lineWidth) };
+        const frameObj: FrameValue = {type: parent.frameObj.type, color: parent.frameObj.color, size: parent.frameObj.size,
+            inset: parent.frameObj.inset, offset: parent.frameObj.offset / 2, radius: parent.frameObj.radius,
+            amount: parent.frameObj.amount, border: parent.frameObj.border, gradientColor: parent.frameObj.gradientColor };
+        if (ctx.canvas.id === parent.element.id + '_tempCanvas') {
+            let newWidth: number; let newHeight: number;
+            newWidth = ctx.canvas.width; newHeight = ctx.canvas.height;
+            const obj: Object = {width: 0, height: 0 };
+            parent.notify('crop', { prop: 'calcRatio', onPropertyChange: false,
+                value: {obj: obj, dimension: {width: newWidth, height: newHeight }}});
+            ratio = obj as Dimension;
+            frameObj.size *= ((ratio.width + ratio.height) / 2);
+            frameObj.inset *= ((ratio.width + ratio.height) / 2);
+            frameObj.offset *= ((ratio.width + ratio.height) / 2);
+            frameObj.radius *= ((ratio.width + ratio.height) / 2);
+            points = {startX: 0, startY: 0, width: ctx.canvas.width, height: ctx.canvas.height };
+        } else if (isNullOrUndefined(preventImg)) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+        let valueForty: number = (40 * ((ratio.width + ratio.height) / 2));
+        let valueFifty: number = (50 * ((ratio.width + ratio.height) / 2));
+        frameObj.size += (frameObj.size * parent.transform.zoomFactor);
+        frameObj.inset += (frameObj.inset * parent.transform.zoomFactor);
+        frameObj.offset += (frameObj.offset * parent.transform.zoomFactor);
+        frameObj.radius += (frameObj.radius * parent.transform.zoomFactor);
+        valueForty += (valueForty * parent.transform.zoomFactor);
+        valueFifty += (valueFifty * parent.transform.zoomFactor);
+        const filter: string = ctx.filter;
+        if ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop) {
+            this.drawImgToCtx(ctx, preventImg);
+        } else {
+            switch (frame) {
+            case 'none':
+                this.drawImgToCtx(ctx, preventImg);
+                break;
+            case 'mat':
+                this.drawImgToCtx(ctx, preventImg);
+                ctx.filter = 'none';
+                ctx.fillStyle = this.getFrameColor(frameObj, ctx, points);
+                ctx.beginPath();
+                ctx.rect(points.startX, points.startY, points.width, points.height);
+                ctx.rect(points.startX + frameObj.size, points.startY + frameObj.size, points.width -
+                    (2 * frameObj.size), points.height - (2 * frameObj.size));
+                ctx.fill('evenodd');
+                ctx.closePath();
+                break;
+            case 'bevel':
+                ctx.filter = 'none';
+                ctx.fillStyle = this.getFrameColor(frameObj, ctx, points);
+                ctx.beginPath();
+                ctx.fillRect(points.startX, points.startY, points.width, points.height);
+                ctx.closePath();
+                points.startX += frameObj.size; points.startY += frameObj.size;
+                points.width -= (2 * frameObj.size); points.height -= (2 * frameObj.size);
+                ctx.fillStyle = this.getFrameColor(frameObj, ctx, points);
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(points.startX + valueForty, points.startY);
+                ctx.lineTo(points.startX + points.width - valueForty, points.startY);
+                ctx.quadraticCurveTo(points.startX + points.width, points.startY, points.startX + points.width, points.startY + valueForty);
+                ctx.lineTo(points.startX + points.width, points.startY + points.height - valueForty);
+                ctx.quadraticCurveTo(points.startX + points.width, points.startY + points.height, points.startX + points.width - valueForty,
+                                        points.startY + points.height);
+                ctx.lineTo(points.startX + valueForty, points.startY + points.height);
+                ctx.quadraticCurveTo(points.startX, points.startY + points.height, points.startX, points.startY + points.height - valueForty);
+                ctx.lineTo(points.startX, points.startY + valueForty);
+                ctx.quadraticCurveTo(points.startX, points.startY, points.startX + valueForty, points.startY);
+                ctx.closePath();
+                ctx.clip();
+                ctx.filter = filter === 'none' ? parent.canvasFilter : filter;
+                if (ctx.canvas.id === parent.element.id + '_tempCanvas') {
+                    if (preventImg) {
+                        preventImg = null;
+                        ctx.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
+                                      0, 0, ctx.canvas.width, ctx.canvas.height);
+                        parent.frameObj.type = 'none'; ctx.filter = 'none';
+                        parent.notify('export', { prop: 'drawAnnotation', onPropertyChange: false,
+                            value: {context: ctx, ratio: ratio }});
+                        parent.frameObj.type = 'bevel'; ctx.filter = filter === 'none' ? parent.canvasFilter : filter;
+                    } else {
+                        ctx.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
+                                      0, 0, ctx.canvas.width, ctx.canvas.height);
+                    }
+                } else {
+                    if (preventImg) {
+                        preventImg = null;
+                        if (parent.transform.zoomFactor !== 0) {this.isRotateZoom = true; }
+                        this.updateCurrTransState('initial');
+                        this.drawImgToCtx(ctx, preventImg);
+                        this.updateCurrTransState('reverse'); this.isRotateZoom = false;
+                        parent.frameObj.type = 'none'; ctx.filter = 'none';
+                        parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false });
+                        parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
+                            value: {context: ctx, points: null} });
+                        parent.frameObj.type = 'bevel'; ctx.filter = filter === 'none' ? parent.canvasFilter : filter;
+                    } else {
+                        this.drawImgToCtx(ctx, preventImg);   
+                    }
+                }
+                ctx.restore();
+                break;
+            case 'line':
+                this.drawImgToCtx(ctx, preventImg);
+                tempLineWidth = ctx.lineWidth;
+                ctx.lineWidth = frameObj.size / 10;
+                for (let i: number = 0; i < parent.frameObj.amount; i++) {
+                    if (i > 0) {
+                        points.startX += frameObj.offset; points.startY += frameObj.offset;
+                        points.width -= (2 * frameObj.offset); points.height -= (2 * frameObj.offset);
+                    }
+                    const arcY2: number = points.startY + points.height - frameObj.inset - frameObj.radius;
+                    const lineY: number = points.startY + frameObj.inset + frameObj.radius;
+                    const arcX2: number = points.startX + points.width - frameObj.inset - frameObj.radius;
+                    const lineX: number = points.startX + frameObj.inset + frameObj.radius;
+                    const arcX1: number = points.startX + frameObj.inset + frameObj.radius;
+                    const lineX2: number = points.startX + points.width - frameObj.inset - frameObj.radius;
+                    const arcY1: number = points.startY + frameObj.inset + frameObj.radius;
+                    const lineY2: number = points.startY + points.height - frameObj.inset - frameObj.radius;
+                    if (arcY2 >= lineY && arcX2 >= lineX && arcX1 <= lineX2 && arcY1 <= lineY2) {
+                        ctx.filter = 'none';
+                        ctx.strokeStyle = this.getFrameColor(frameObj, ctx, points);
+                        if (frameObj.border === 'dashed') {
+                            ctx.setLineDash([ctx.lineWidth * 2.5, ctx.lineWidth * 1.5]);
+                        }
+                        else if (frameObj.border === 'dotted') {
+                            ctx.setLineDash([ctx.lineWidth, ctx.lineWidth]);
+                        }
+                        ctx.beginPath();
+                        ctx.moveTo(points.startX + frameObj.inset + frameObj.radius, points.startY + frameObj.inset);
+                        ctx.lineTo(points.startX + points.width - frameObj.inset - frameObj.radius, points.startY + frameObj.inset);
+                        ctx.arcTo(points.startX + points.width - frameObj.inset, points.startY + frameObj.inset,
+                                points.startX + points.width - frameObj.inset, points.startY + frameObj.inset + frameObj.radius,
+                                frameObj.radius);
+                        ctx.lineTo(points.startX + points.width - frameObj.inset, points.startY + points.height - frameObj.inset -
+                            frameObj.radius);
+                        ctx.arcTo(points.startX + points.width - frameObj.inset, points.startY + points.height - frameObj.inset,
+                                points.startX + points.width - frameObj.inset - frameObj.radius, points.startY + points.height
+                                - frameObj.inset, frameObj.radius);
+                        ctx.lineTo(points.startX + frameObj.inset + frameObj.radius, points.startY + points.height - frameObj.inset);
+                        ctx.arcTo(points.startX + frameObj.inset, points.startY + points.height - frameObj.inset,
+                                points.startX + frameObj.inset, points.startY + points.height - frameObj.inset - frameObj.radius,
+                                frameObj.radius);
+                        ctx.lineTo(points.startX + frameObj.inset, points.startY + frameObj.inset + frameObj.radius);
+                        ctx.arcTo(points.startX + frameObj.inset, points.startY + frameObj.inset,
+                                points.startX + frameObj.inset + frameObj.radius, points.startY + frameObj.inset, frameObj.radius);
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                }
+                ctx.lineWidth = tempLineWidth;
+                break;
+            case 'inset':
+                this.drawImgToCtx(ctx, preventImg);
+                ctx.filter = 'none';
+                ctx.strokeStyle = this.getFrameColor(frameObj, ctx, points);
+                tempLineWidth = ctx.lineWidth;
+                ctx.lineWidth = frameObj.size / 10;
+                ctx.beginPath();
+                ctx.moveTo(points.startX + frameObj.offset, points.startY + frameObj.inset);
+                ctx.lineTo(points.startX + points.width - frameObj.offset, points.startY + frameObj.inset);
+                ctx.moveTo(points.startX + points.width - frameObj.inset, points.startY + frameObj.offset);
+                ctx.lineTo(points.startX + points.width - frameObj.inset, points.startY + points.height - frameObj.offset);
+                ctx.moveTo(points.startX + points.width - frameObj.offset, points.startY + points.height - frameObj.inset);
+                ctx.lineTo(points.startX + frameObj.offset, points.startY + points.height - frameObj.inset);
+                ctx.moveTo(points.startX + frameObj.inset, points.startY + points.height - frameObj.offset);
+                ctx.lineTo(points.startX + frameObj.inset, points.startY + frameObj.offset);
+                ctx.stroke();
+                ctx.closePath();
+                ctx.lineWidth = tempLineWidth;
+                break;
+            case 'hook':
+                this.drawImgToCtx(ctx, preventImg);
+                ctx.filter = 'none';
+                ctx.strokeStyle = this.getFrameColor(frameObj, ctx, points);
+                tempLineWidth = ctx.lineWidth;
+                ctx.lineWidth = frameObj.size / 10;
+                ctx.beginPath();
+                ctx.moveTo(points.startX + frameObj.inset + valueFifty, points.startY + frameObj.inset);
+                ctx.lineTo(points.startX + frameObj.inset, points.startY + frameObj.inset);
+                ctx.lineTo(points.startX + frameObj.inset, points.startY + frameObj.inset + valueFifty);
+                ctx.moveTo(points.startX + points.width - frameObj.inset - valueFifty, points.startY + frameObj.inset);
+                ctx.lineTo(points.startX + points.width - frameObj.inset, points.startY + frameObj.inset);
+                ctx.lineTo(points.startX + points.width - frameObj.inset, points.startY + frameObj.inset + valueFifty);
+                ctx.moveTo(points.startX + points.width - frameObj.inset - valueFifty, points.startY + points.height - frameObj.inset);
+                ctx.lineTo(points.startX + points.width - frameObj.inset, points.startY + points.height - frameObj.inset);
+                ctx.lineTo(points.startX + points.width - frameObj.inset, points.startY + points.height - frameObj.inset - valueFifty);
+                ctx.moveTo(points.startX + frameObj.inset + valueFifty, points.startY + points.height - frameObj.inset);
+                ctx.lineTo(points.startX + frameObj.inset, points.startY + points.height - frameObj.inset);
+                ctx.lineTo(points.startX + frameObj.inset, points.startY + points.height - frameObj.inset - valueFifty);
+                ctx.stroke();
+                ctx.lineWidth = tempLineWidth;
+                break;
+            }
+            if (parent.isCircleCrop || (parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle')) {
+                parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
+                    value: {context: ctx, isSave: ctx.canvas.id === parent.element.id + '_tempCanvas' ? true : null, isFlip: null}});
+            }
+            ctx.filter = filter;
+        }
+    }
+
+    private triggerFrameChange(prevFrameSettings: FrameSettings): FrameChangeEventArgs {
+        const parent: ImageEditor = this.parent;
+        const currFrameSettings: FrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
+            gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
+            offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
+            lineCount: parent.frameObj.amount};
+        const frameChange: FrameChangeEventArgs = {cancel: false, previousFrameSetting: prevFrameSettings, currentFrameSetting: currFrameSettings };
+        if (isBlazor()) {
+            if (parent.events && parent.events.frameChanging.hasDelegate === true) {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                (parent.dotNetRef.invokeMethodAsync('OnFrameChangingAsync', frameChange) as any).then((args: FrameChangeEventArgs) => {
+                    if (!args.cancel) {
+                        this.setFrameObj(args.currentFrameSetting);
+                        const obj: Object = {currObj: {} as CurrentObject };
+                        parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: obj }});
+                        parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                                operation: 'frame', previousObj: obj['currObj'], previousObjColl: obj['currObj']['objColl'],
+                                    previousPointColl: obj['currObj']['pointColl'], previousSelPointColl: obj['currObj']['selPointColl'],
+                                    previousCropObj: extend({},parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                                    previousFilter: null, isCircleCrop: null }});
+                        const fillColorDiv: HTMLElement = parent.element.querySelector('.e-ie-toolbar-e-frame-color');
+                        if (fillColorDiv) {
+                            (parent.element.querySelector('.e-ie-toolbar-e-frame-color' + (parent as any).DDBPREVIEW) as HTMLElement).style.background = parent.frameObj.color;
+                        }
+                        const graColorDiv: HTMLElement = parent.element.querySelector('.e-ie-toolbar-e-frame-gradient');
+                        if (graColorDiv) {
+                            const noColorDiv: HTMLElement = document.querySelector('.e-dropdown-popup.e-frame-gradient-dd-btn');
+                            if (noColorDiv) {
+                                noColorDiv.querySelector('.e-nocolor-item').classList.remove('e-selected');
+                            }
+                            parent.element.querySelector('.e-ie-toolbar-e-frame-gradient' + (parent as any).DDBPREVIEW).classList.remove('e-nocolor-item');
+                            if (parent.frameObj.gradientColor == '') {
+                                parent.element.querySelector('.e-ie-toolbar-e-frame-gradient' + (parent as any).DDBPREVIEW).classList.add('e-nocolor-item');
+                            } else {
+                                (parent.element.querySelector('.e-ie-toolbar-e-frame-gradient' + (parent as any).DDBPREVIEW) as HTMLElement).style.background = parent.frameObj.gradientColor;
+                            }
+                        }
+                        parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null } });
+                    }
+                });
+            } else {
+                if (!frameChange.cancel) {this.setFrameObj(frameChange.currentFrameSetting); }
+            }
+        } else {
+            parent.trigger('frameChange', frameChange);
+            if (!frameChange.cancel) {this.setFrameObj(frameChange.currentFrameSetting); }
+        }
+        return frameChange;
+    }
+
+    private setFrameObj(currFrameSettings: FrameSettings): void {
+        const parent: ImageEditor = this.parent;
+        parent.frameObj.type = currFrameSettings.type.toLowerCase();
+        parent.frameObj.color = currFrameSettings.color;
+        parent.frameObj.gradientColor = currFrameSettings.gradientColor;
+        parent.frameObj.size = currFrameSettings.size;
+        parent.frameObj.inset = currFrameSettings.inset;
+        parent.frameObj.offset = currFrameSettings.offset;
+        parent.frameObj.radius = currFrameSettings.borderRadius;
+        parent.frameObj.border = currFrameSettings.frameLineStyle.toLowerCase();
+        parent.frameObj.amount = currFrameSettings.lineCount;
     }
 }

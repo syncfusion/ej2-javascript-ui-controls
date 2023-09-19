@@ -1,0 +1,11 @@
+@include export-module('numerictextbox-fabric-icons') {
+  .e-input-group-icon.e-spin-up::before {
+    content: '\e85e';
+    font-family: 'e-icons';
+  }
+
+  .e-input-group-icon.e-spin-down::before {
+    content: '\e84f';
+    font-family: 'e-icons';
+  }
+}

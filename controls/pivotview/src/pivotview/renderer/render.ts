@@ -1,7 +1,7 @@
 import { IAxisSet, IGridValues, IValueSortSettings, IGroupSettings } from '../../base/engine';
 import { PivotEngine, IFieldOptions, IFormatSettings, IMatrix2D } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
-import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs } from '@syncfusion/ej2-grids';
+import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs, getScrollBarWidth } from '@syncfusion/ej2-grids';
 import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu, ResizeArgs, Freeze } from '@syncfusion/ej2-grids';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
@@ -96,7 +96,7 @@ export class Render {
         this.parent.gridCellCollection = {};
         this.injectGridModules(this.parent);
         this.rowStartPos = this.getRowStartPos();
-        if (this.parent.grid && this.parent.grid.element && this.parent.element.querySelector('.e-grid')) {
+        if (this.parent.grid && this.parent.grid.element && this.parent.element.querySelector('.' + cls.GRID_CLASS)) {
             this.parent.notEmpty = true;
             if (!this.engine.isEngineUpdated) {
                 this.engine.headerContent = this.frameDataSource('header');
@@ -113,14 +113,6 @@ export class Render {
                     this.parent.dataSourceSettings.values.length > 0)) && !this.engine.isEmptyData ? this.engine.valueContent :
                     this.frameDataSource('value')
             }, true);
-            if (this.parent.grid.height === 'auto') {
-                const mCntHeight: number = (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).offsetHeight;
-                const dataHeight: number = (this.parent.grid.dataSource as []).length * this.parent.gridSettings.rowHeight;
-                if (mCntHeight > 50 && mCntHeight < dataHeight) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this.parent.grid.contentModule as any).setHeightToContent(dataHeight);
-                }
-            }
             this.parent.grid.notify('datasource-modified', {});
             if (this.parent.isScrolling) {
                 this.parent.resizeInfo = {};
@@ -130,9 +122,8 @@ export class Render {
                 this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                 this.parent.groupingBarModule.setGridRowWidth();
             }
-            const e: HTMLElement = this.parent.element.querySelector('.e-movablecontent') as HTMLElement;
-            e.querySelector('colGroup').innerHTML =
-                this.parent.grid.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup').innerHTML;
+            const e: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_CLASS) as HTMLElement;
+            e.querySelector('colGroup').innerHTML = this.parent.grid.getHeaderContent().querySelector('colgroup').innerHTML;
             this.parent.grid.width = this.calculateGridWidth();
             if (!this.gridSettings.allowAutoResizing && this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                 this.parent.groupingBarModule.refreshUI();
@@ -179,7 +170,7 @@ export class Render {
     private refreshHeader(): void {
         if (this.parent.enableVirtualization) {
             const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
-            const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
+            const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) as HTMLElement;
             const vtr: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
             this.parent.virtualHeaderDiv = mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
             if (mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV)) {
@@ -191,12 +182,21 @@ export class Render {
             if (vtr) {
                 setStyleAttribute(this.parent.virtualHeaderDiv, { height: 0, width: vtr.style.width });
             }
-            if (mHdr.querySelector('.e-table')) {
-                setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
-                    transform: ((mCont.querySelector('.e-table') as HTMLElement).style.transform).split(',')[0] + ',' + 0 + 'px)'
+            if (mHdr.querySelector('.' + cls.TABLE)) {
+                setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
+                    transform: ((mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform).split(',')[0] + ',' + 0 + 'px)'
                 });
+                const freezedCellValue: number  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    = (mHdr.querySelector('.' + cls.TABLE) as any).style.transform.split('(')[1].split(',')[0].split('px')[0];
+                if (this.parent.enableRtl) {
+                    (this.parent.element.querySelector('.' + cls.FREEZED_CELL) as HTMLElement).style.right
+                        = Number(freezedCellValue) + 'px';
+                } else {
+                    (this.parent.element.querySelector('.' + cls.FREEZED_CELL) as HTMLElement).style.left
+                        = Number(-freezedCellValue) + 'px';
+                }
             }
-            const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.VIRTUALTABLE_DIV);
             mHdr.scrollLeft = ele.scrollLeft;
         }
     }
@@ -269,7 +269,7 @@ export class Render {
 
     private headerRefreshed(): void {
         const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
-        if (this.parent.lastGridSettings && Object.keys(this.parent.lastGridSettings).indexOf('allowResizing') > -1 && !isNullOrUndefined(mHdr) && mHdr.querySelector('.e-table') &&
+        if (this.parent.lastGridSettings && Object.keys(this.parent.lastGridSettings).indexOf('allowResizing') > -1 && !isNullOrUndefined(mHdr) && mHdr.querySelector('.' + cls.TABLE) &&
             this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
             this.parent.lastGridSettings = undefined;
             this.parent.groupingBarModule.setGridRowWidth();
@@ -404,9 +404,6 @@ export class Render {
         //         (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderLeft = 'none';
         //     }
         // }
-        if (!this.isAutoFitEnabled && this.parent.grid && this.parent.grid.widthService) {
-            this.parent.grid.widthService.setWidthToTable();
-        }
         if (this.parent.notEmpty) {
             this.calculateGridHeight(true);
         }
@@ -420,6 +417,10 @@ export class Render {
         if (this.parent.isInitial) {
             this.parent.isInitial = false;
             this.parent.refreshData();
+            if (this.parent.enableVirtualization) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this.parent as any).onContentReady();
+            }
         }
         this.parent.notify(events.contentReady, {});
     }
@@ -735,8 +736,9 @@ export class Render {
                 pdfExportProperties: { fileName: 'Export.pdf' }
             };
             this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                this.parent.pdfExport(observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc,
-                                      observedArgs.isBlob);
+                this.parent.pdfExport(
+                    observedArgs.pdfExportProperties, observedArgs.isMultipleExport, observedArgs.pdfDoc, observedArgs.isBlob
+                );
             });
             break;
         case this.parent.element.id + '_excel':
@@ -747,8 +749,9 @@ export class Render {
                 excelExportProperties: { fileName: 'Export.xlsx' }
             };
             this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                this.parent.excelExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook,
-                                        observedArgs.isBlob);
+                this.parent.excelExport(
+                    observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
+                );
             });
             break;
         case this.parent.element.id + '_csv':
@@ -759,8 +762,9 @@ export class Render {
                 excelExportProperties: { fileName: 'Export.csv' }
             };
             this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                this.parent.csvExport(observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook,
-                                      observedArgs.isBlob);
+                this.parent.csvExport(
+                    observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
+                );
             });
             break;
         case this.parent.element.id + '_drillthrough_menu':
@@ -1011,9 +1015,9 @@ export class Render {
             if (this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) && Number(args.column.width.toString().split('px')[0]) < 250) {
                 args.cancel = true;
             }
-            else {
-                (this.parent.element.querySelector('.e-frozenscrollbar') as HTMLElement).style.width = args.column.width.toString().split('px')[0] + 'px';
-            }
+            // else {
+            //     (this.parent.element.querySelector('.e-frozenscrollbar') as HTMLElement).style.width = args.column.width.toString().split('px')[0] + 'px';
+            // }
         }
         if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
             this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
@@ -1024,13 +1028,13 @@ export class Render {
                 if (gridColumn && gridColumn.length > 0) {
                     gridColumn[0].width = this.resColWidth;
                 }
-                this.parent.element.querySelector('.e-frozenheader').querySelector('col').style.width = (this.resColWidth + 'px');
-                this.parent.element.querySelector('.e-frozencontent').querySelector('col').style.width = (this.resColWidth + 'px');
+                this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('col').style.width = (this.resColWidth + 'px');
+                this.parent.element.querySelector('.' + cls.CONTENT_CLASS).querySelector('col').style.width = (this.resColWidth + 'px');
             }
             (this.parent.element.querySelector('.e-group-rows') as HTMLElement).style.height = 'auto';
             (this.parent.element.querySelector('.e-group-values') as HTMLElement).style.width =
                 (this.parent.element.querySelector('.e-group-row') as HTMLElement).offsetWidth + 'px';
-            const firstRowHeight: number = (this.parent.element.querySelector('.e-headercontent') as HTMLElement).offsetHeight;
+            const firstRowHeight: number = (this.parent.element.querySelector('.' + cls.HEADERCONTENT) as HTMLElement).offsetHeight;
             (this.parent.element.querySelector('.e-group-rows') as HTMLElement).style.height = firstRowHeight + 'px';
         }
         if (args.cancel) {
@@ -1652,6 +1656,15 @@ export class Render {
         parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
         colCount = colCount - 1;
         this.isOverflows = !((colCount * this.gridSettings.columnWidth) < parWidth);
+        if (!this.isOverflows) {
+            const parentHeight: number = this.parent.getHeightAsNumber();
+            const headersLength: number = (this.engine && this.engine.headerContent) ? Object.keys(this.engine.headerContent).length : 1;
+            const height: number = parentHeight > this.parent.minHeight ? parentHeight :
+                (this.parent.minHeight - (this.gridSettings.rowHeight * headersLength));
+            if (this.engine && this.engine.valueContent && ((this.gridSettings.rowHeight * this.engine.valueContent.length) > height)) {
+                parWidth = parWidth - getScrollBarWidth();
+            }
+        }
         const colWidth: number =
             (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
         return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : Math.floor(colWidth);
@@ -1700,10 +1713,16 @@ export class Render {
     /** @hidden */
 
     public calculateGridHeight(elementCreated?: boolean): number | string {
+        const contentElement: HTMLElement = (
+            this.parent.element.querySelector('.' + cls.GRID_CLASS + ' .' + cls.CONTENT_CLASS) as HTMLElement
+        );
         let gridHeight: number | string = this.parent.height;
         let parHeight: number = this.parent.getHeightAsNumber();
         if (isNaN(parHeight)) {
             parHeight = parHeight > this.parent.minHeight ? parHeight : this.parent.minHeight;
+        } else {
+            parHeight = (contentElement.offsetWidth < (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth) ?
+                parHeight - getScrollBarWidth() : parHeight;
         }
         if ((this.parent.showToolbar && this.parent.currentView !== 'Chart') || (!this.parent.showToolbar && this.parent.displayOption.view !== 'Chart')) {
             if (this.gridSettings.height === 'auto' && parHeight && this.parent.element.querySelector('.' + cls.GRID_HEADER)) {
@@ -1715,15 +1734,17 @@ export class Render {
                 gridHeight = parHeight - (gBarHeight + toolBarHeight + pagerHeight) - 1;
                 gridHeight = gridHeight < 40 ? 40 : gridHeight;
                 if (elementCreated) {
-                    const tableHeight: number =
-                        (this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetHeight;
-                    const contentHeight: number =
-                        (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).offsetHeight;
-                    const tableWidth: number =
-                        (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetWidth;
-                    const contentWidth: number =
-                        (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).offsetWidth;
-                    const horizontalOverflow: boolean = contentWidth < tableWidth;
+                    const tableHeight: number = (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetHeight;
+                    const contentHeight: number = (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetHeight;
+                    const tableWidth: number = (contentElement.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth;
+                    const contentWidth: number = contentElement.offsetWidth;
+                    const horizontalOverflow: boolean = contentWidth <= tableWidth;
+                    // if (horizontalOverflow && ((contentWidth + 2) < tableWidth) && !this.parent.enableVirtualization) {
+                    //     contentElement.style.overflowX = 'scroll';
+                    // } else {
+                    //     contentElement.style.overflowX = 'hidden';
+                    //     horizontalOverflow = false;
+                    // }
                     //let verticalOverflow: boolean = contentHeight < tableHeight;
                     const commonOverflow: boolean = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
                     if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
@@ -1733,7 +1754,7 @@ export class Render {
                         this.parent.grid.height = gridHeight;
                         this.parent.grid.dataBind();
                     }
-                    this.parent.grid.widthService.refreshFrozenScrollbar();
+                    // this.parent.grid.widthService.refreshFrozenScrollbar();
                 } else {
                     if (gridHeight > (this.engine.valueContent.length * this.gridSettings.rowHeight)) {
                         gridHeight = 'auto';

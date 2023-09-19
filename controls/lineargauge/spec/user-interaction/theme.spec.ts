@@ -690,6 +690,86 @@ describe('Linear gauge control', () => {
             gauge.axes[0].pointers[0].value = 50;
             gauge.theme ='Material3Dark';
             gauge.refresh();
+        });
+        it('Major tick FluentDark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#484644');
+            };
+            gauge.theme ='FluentDark';
+            gauge.refresh();
+        });
+        it('Minor FluentDark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MinorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#484644');
+            };
+            gauge.theme ='FluentDark';
+            gauge.refresh();
+        });
+        it('AxisLine FluentDark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                expect(svg.getAttribute('fill')).toBe('#292827');
+            };
+            gauge.theme ='FluentDark';
+            gauge.refresh();
+        });
+        it('Major tick Fluent theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#C8C6C4');
+            };
+            gauge.theme ='Fluent';
+            gauge.refresh();
+        });
+        it('Minor Fluent theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MinorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#C8C6C4');
+            };
+            gauge.theme ='Fluent';
+            gauge.refresh();
+        });
+        it('AxisLine Fluent theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                expect(svg.getAttribute('fill')).toBe('#EDEBE9');
+            };
+            gauge.theme ='Fluent';
+            gauge.refresh();
+        });
+        it('Major tick Tailwind theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#9CA3AF');
+            };
+            gauge.theme = 'Tailwind'
+            gauge.refresh();
+        });
+        it('Major tick TailwindDark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#6B7280');
+            };
+            gauge.theme = 'TailwindDark'
+            gauge.refresh();
+        });
+        it('Major tick Bootstrap5 theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#9CA3AF');
+            };
+            gauge.theme = 'Bootstrap5'
+            gauge.refresh();
+        });
+        it('Major tick Bootstrap5Dark theme', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toBe('#6C757D');
+            };
+            gauge.theme = 'Bootstrap5Dark'
+            gauge.refresh();
         }); 
     });
     });

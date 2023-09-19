@@ -75,7 +75,7 @@ export class UpcA extends OneDimension {
         // eslint-disable-next-line
         const codes: object = this.getBinaries();
         for (let i: number = 0; i < leftString.length; i++) {
-            tempValue = codes[structure[i]];
+            tempValue = codes[structure[parseInt(i.toString(), 10)]];
             if (i === 0) {
                 code = tempValue[leftString[parseInt(i.toString(), 10)]];
             } else {

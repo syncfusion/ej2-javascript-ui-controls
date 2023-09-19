@@ -10,7 +10,7 @@ import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLi
 import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';
 import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';
 import { ConnectorType } from '../../accumulation-chart/model/enum';
-import { CornerRadius } from '../../common/model/base';
+import { CornerRadius, Animation } from '../../common/model/base';
 import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';
 import { Theme } from '../../common/model/theme';
 import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, IChartEventArgs, Font, FontModel } from '../../chart/index';
@@ -381,36 +381,6 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
     public textStyle: StockChartFontModel;
 
 
-}
-
-class Animation extends ChildProperty<Animation> {
-
-    /**
-     * The option to delay animation of the series.
-     *
-     * @default 0
-     */
-
-    @Property(0)
-    public delay: number;
-
-    /**
-     * If set to true, series gets animated on initial loading.
-     *
-     * @default false
-     */
-
-    @Property(false)
-    public enable: boolean;
-
-    /**
-     * The duration of animation in milliseconds.
-     *
-     * @default 1000
-     */
-
-    @Property(1000)
-    public duration: number;
 }
 
 export class StockEmptyPointSettings extends ChildProperty<StockEmptyPointSettings> {
@@ -1402,11 +1372,12 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
     public enableAutoIntervalOnZooming: boolean;
 
     /**
-     * Specifies the type of data the axis is handling.
-     * * Double:  Renders a numeric axis.
-     * * DateTime: Renders a dateTime axis.
-     * * Category: Renders a category axis.
-     * * Logarithmic: Renders a log axis.
+     * Specifies the data types that the axis can handle:
+     * * Double: This type is used for rendering a numeric axis to accommodate numeric data.
+     * * DateTime: This type is utilized for rendering a date-time axis to manage date-time data.
+     * * Category: This type is employed for rendering a category axis to manage categorical data.
+     * * Logarithmic: This type is applied for rendering a logarithmic axis to handle a wide range of values.
+     * * DateTimeCategory: This type is used to render a date time category axis for managing business days.
      *
      * @default 'Double'
      * @blazorType Syncfusion.EJ2.Blazor.Charts.ValueType

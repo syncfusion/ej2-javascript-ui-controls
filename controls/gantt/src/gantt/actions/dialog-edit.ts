@@ -943,7 +943,7 @@ export class DialogEdit {
             if (!isNullOrUndefined(tasks.endDate) && tasks.endDate !== colName) {
                 this.updateScheduleFields(dialog, ganttProp, 'endDate');
             }
-            if (!isNullOrUndefined(tasks.duration) && tasks.duration !== colName) {
+            if (!isNullOrUndefined(tasks.duration) && tasks.duration !== colName || ganttProp.duration>=0) {
                 this.updateScheduleFields(dialog, ganttProp, 'duration');
             }
             if (!isNullOrUndefined(tasks.work) && tasks.work !== colName) {
@@ -1089,17 +1089,32 @@ export class DialogEdit {
         const ganttProp: ITaskData = currentData.ganttProperties;
         const taskSettings: TaskFieldsModel = ganttObj.taskFields;
         if (taskSettings.duration === columnName) {
-            if (!isNullOrUndefined(value) && value !== '') {
+            if (!isNullOrUndefined(value) && value !== '' && parseInt(value) >= 0) {
                 ganttObj.dataOperation.updateDurationValue(value, ganttProp);
                 this.parent.setRecordValue(taskSettings.duration, value, currentData);
                 this.parent.setRecordValue('taskData.' + taskSettings.duration, ganttProp.duration, currentData);
-
+                this.validateDuration(currentData);
             } else {
                 if (ganttObj.allowUnscheduledTasks) {
-                    this.parent.setRecordValue('duration', null, ganttProp, true);
+                    if ((ganttProp.startDate && ganttProp.endDate && ganttProp.startDate.getTime() > ganttProp.endDate.getTime()) || value.indexOf('-') !== -1) {
+                        this.parent.setRecordValue('duration', 0, ganttProp, true);
+                        if (ganttProp.endDate) {
+                            this.parent.setRecordValue('startDate', ganttProp.endDate, ganttProp, true);
+                        }
+                    }
+                    else {
+                        if (value === "") {
+                           this.parent.setRecordValue('duration', null, ganttProp, true);
+                           if (ganttProp.endDate) {
+                              this.parent.setRecordValue('endDate', null, ganttProp, true);
+                           }
+                        }
+                        else {
+                           this.parent.setRecordValue('duration', ganttProp.duration, ganttProp, true);
+                        }
+                    }
                 }
             }
-            this.validateDuration(currentData);
             this.parent.editModule.updateResourceRelatedFields(currentData, 'duration');
         }
         if (taskSettings.startDate === columnName) {
@@ -1107,12 +1122,14 @@ export class DialogEdit {
                 let startDate: Date = this.parent.dateValidationModule.getDateFromFormat(value);
                 startDate = this.parent.dateValidationModule.checkStartDate(startDate, ganttProp);
                 this.parent.setRecordValue('startDate', startDate, ganttProp, true);
+		this.validateStartDate(currentData);
             } else {
                 if (ganttObj.allowUnscheduledTasks && !(currentData.hasChildRecords)) {
                     this.parent.setRecordValue('startDate', null, ganttProp, true);
+		    this.parent.setRecordValue('duration', null, ganttProp, true);
+                    this.parent.setRecordValue('isMilestone', false, ganttProp, true);
                 }
             }
-            this.validateStartDate(currentData);
         }
         if (taskSettings.endDate === columnName) {
             if (value !== '') {
@@ -1127,12 +1144,14 @@ export class DialogEdit {
                 if (isNullOrUndefined(ganttProp.startDate) || endDate.getTime() > (ganttProp.startDate).getTime()) {
                     this.parent.setRecordValue('endDate', endDate, ganttProp, true);
                 }
+	        this.validateEndDate(currentData);
             } else {
                 if (ganttObj.allowUnscheduledTasks) {
                     this.parent.setRecordValue('endDate', null, ganttProp, true);
+		    this.parent.setRecordValue('duration', null, ganttProp, true);
+                    this.parent.setRecordValue('isMilestone', false, ganttProp, true);
                 }
             }
-            this.validateEndDate(currentData);
         }
         if (taskSettings.work === columnName) {
             if (!isNullOrUndefined(value) && value !== '') {
@@ -1536,7 +1555,7 @@ export class DialogEdit {
                     let eDate: Date = getValue('endDate', selectedItem);
                     let duration: number = getValue('duration', selectedItem);
                     const startDate: Date = !isNullOrUndefined(gridData) && gridData.length > 0 ?
-                        !isNullOrUndefined(taskFields.endDate) ? new Date((getValue('endDate', gridData[0]) as Date).getTime()) :
+                        (!isNullOrUndefined(taskFields.endDate) && !isNullOrUndefined(gridData[0].endDate as Date)) ? new Date((getValue('endDate', gridData[0]) as Date).getTime()) :
                             new Date((getValue('startDate', gridData[0]) as Date).getTime()) :
                         !isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate) &&
                         new Date((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate.getTime());

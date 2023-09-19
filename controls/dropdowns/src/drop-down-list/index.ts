@@ -4,3 +4,4 @@
 
 export * from './drop-down-list';
 export * from './drop-down-list-model';
+export * from '../common/virtual-scroll';

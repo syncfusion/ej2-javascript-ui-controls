@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, classList, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { DocumentEditor, HelperMethods, WAbstractList, WListLevel } from '../../document-editor/index';
+import { DocumentEditor, WAbstractList, WListLevel } from '../../document-editor/index';
 import { ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -503,7 +503,7 @@ export class Paragraph {
     private updateOptions(args: any): void {
         args.popup.element.getElementsByClassName('e-de-ctnr-dropdown-ftr')[0].addEventListener('click', this.createStyle.bind(this));
     }
-    /* eslint-disable  */
+    /* eslint-disable */
     public updateStyleNames(): void {
         this.styleName = !isNullOrUndefined((this.style as any).itemData) ? (this.style as any).itemData.StyleName : undefined;
         const stylesMap: any = this.documentEditor.documentHelper.stylesMap;

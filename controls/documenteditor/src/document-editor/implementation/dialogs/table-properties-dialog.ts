@@ -14,6 +14,8 @@ import { HelperMethods } from '../editor/editor-helper';
 import { EditorHistory } from '../editor-history/index';
 import { TextPosition } from '../selection';
 import { DocumentHelper } from '../viewer';
+import { TextBox } from '@syncfusion/ej2-inputs';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * The Table properties dialog is used to modify properties of selected table.
@@ -46,6 +48,10 @@ export class TablePropertiesDialog {
     private cellCenterAlign: HTMLDivElement;
     private cellBottomAlign: HTMLDivElement;
     private indentingLabel: HTMLLabelElement;
+    public titleTextBox: TextBox;
+    public descriptionTextBox: TextBox;
+    private altTab: HTMLDivElement;
+
 
     private hasTableWidth: boolean = false;
     private hasCellWidth: boolean = false;
@@ -156,6 +162,9 @@ export class TablePropertiesDialog {
         this.cellTab = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_CellPropertiesDialogTab', className: 'e-de-table-ppty-dlg-tabs'
         });
+        this.altTab = <HTMLDivElement>createElement('div', {
+            id: this.target.id + '_AltPropertiesDialogTab', className: 'e-de-table-ppty-dlg-tabs'
+        });
         const separatorLine: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dialog-separator-line' });
         const ejtab: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_TablePropertiesDialogTab', className: 'e-de-table-ppty-tab' });
         const headerContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-tab-header' });
@@ -168,22 +177,30 @@ export class TablePropertiesDialog {
         const cellHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_cellHeader', innerHTML: localValue.getConstant('Cell')
         });
+        const altHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            id: this.target.id + '_altHeader', innerHTML: localValue.getConstant('Alt Text')
+        });
         headerContainer.appendChild(tableHeader); headerContainer.appendChild(rowHeader);
         headerContainer.appendChild(cellHeader);
+        headerContainer.appendChild(altHeader);
         const tableContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_tableContent' });
         const rowContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_rowContent' });
         const cellContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_cellContent' });
+        const altContent : HTMLDivElement = <HTMLDivElement>createElement('div',{ id: this.target.id + '_altContent' });
         const items: TabItemModel[] = [
             { header: { text: tableHeader }, content: tableContent },
             { header: { text: rowHeader }, content: rowContent },
-            { header: { text: cellHeader }, content: cellContent }];
+            { header: { text: cellHeader }, content: cellContent },
+            { header: { text: altHeader }, content: altContent }];
         tableContent.appendChild(this.tableTab);
         rowContent.appendChild(this.rowTab);
         cellContent.appendChild(this.cellTab);
+        altContent.appendChild(this.altTab);
         ejtabContainer.appendChild(ejtab);
         this.initTableProperties(this.tableTab, localValue, this.documentHelper.owner.enableRtl);
         this.initTableRowProperties(this.rowTab, localValue, this.documentHelper.owner.enableRtl);
         this.initTableCellProperties(this.cellTab, localValue, this.documentHelper.owner.enableRtl);
+        this.initTableAltProperties(this.altTab, localValue, this.documentHelper.owner.enableRtl);
         this.tabObj = new Tab({ items: items, enableRtl: isRtl }, ejtab);
         this.tabObj.isStringTemplate = true;
         this.target.appendChild(separatorLine);
@@ -195,6 +212,7 @@ export class TablePropertiesDialog {
         for (let i: number = 0; i < cellAlignment.length; i++) {
             cellAlignment[parseInt(i.toString(), 10)].addEventListener('click', this.changeCellAlignment);
         }
+        
     }
     /**
      * @private
@@ -256,6 +274,18 @@ export class TablePropertiesDialog {
      */
     public applyTableProperties = (): void => {
         const selection: Selection = this.documentHelper.selection;
+        if (selection.tableFormat.title != this.titleTextBox.value) {
+            if(!isNullOrUndefined(this.titleTextBox.value))
+            {
+                this.tableFormat.title = SanitizeHtmlHelper.sanitize((this.titleTextBox).value);
+            }
+        }
+        if (selection.tableFormat.description != this.descriptionTextBox.value) {
+            if(!isNullOrUndefined(this.descriptionTextBox.value))
+            {
+                this.tableFormat.description = SanitizeHtmlHelper.sanitize((this.descriptionTextBox).value);
+            }   
+        }
         if (!this.preferCheckBox.checked && !this.preferCheckBox.indeterminate) {
             if (isNullOrUndefined(selection.tableFormat.preferredWidth) || selection.tableFormat.preferredWidth !== 0) {
                 this.tableFormat.preferredWidth = 0;
@@ -370,6 +400,7 @@ export class TablePropertiesDialog {
         this.setTableProperties();
         this.setTableRowProperties();
         this.setTableCellProperties();
+        this.setTableAltProperties();
         if (!this.documentHelper.owner.bordersAndShadingDialogModule) {
             this.bordersAndShadingButton.disabled = true;
         } else {
@@ -686,6 +717,25 @@ export class TablePropertiesDialog {
      */
     public onLeftIndentChange(): void {
         this.tableFormat.leftIndent = this.leftIndentBox.value;
+    }
+    public setTableAltProperties(): void {
+        const tableFormat: SelectionTableFormat = this.documentHelper.selection.tableFormat;
+        if(isNullOrUndefined(tableFormat.title))
+        {
+            this.titleTextBox.value = ""; 
+        }
+        else
+        {
+            this.titleTextBox.value = tableFormat.title;
+        }
+        if(isNullOrUndefined(tableFormat.description))
+        {
+            this.descriptionTextBox.value = "";
+        }
+        else
+        {
+            this.descriptionTextBox.value = tableFormat.description;
+        }
     }
     private setTableProperties(): void {
         //instance of Table Property values
@@ -1025,6 +1075,44 @@ export class TablePropertiesDialog {
     }
     //#endregion
 
+    private initTableAltProperties(element: HTMLDivElement, localValue: L10n, isRtl?: boolean): void {
+        const altDiv = createElement('div', { className: 'e-de-table-dialog-size-label' });        
+        
+        element.appendChild(altDiv);
+        const titleDiv =  createElement('div', {
+            innerHTML: localValue.getConstant('Title'), className: 'e-de-para-dlg-heading',
+        });
+        altDiv.appendChild(titleDiv);     
+        const childdiv1 =  createElement('div', {
+            className: 'e-de-table-ppty-options-break'
+        });
+        const titleTextBox1 =  createElement('input', { 
+            
+        });
+        this.titleTextBox = new  TextBox({
+            floatLabelType: 'Never'
+        });
+        altDiv.appendChild(childdiv1);
+        childdiv1.appendChild(titleTextBox1);
+        this.titleTextBox.appendTo(titleTextBox1);
+        const descriptionDiv =  createElement('div', {
+            innerHTML: localValue.getConstant('Description'), className: 'e-de-para-dlg-heading',
+        });
+        altDiv.appendChild(descriptionDiv);
+        const childdiv2 =  createElement('div', {
+            className: 'e-de-table-ppty-options-break'
+        });
+        const descriptionText =  createElement('textarea', { 
+            
+        });
+        this.descriptionTextBox = new  TextBox({
+            floatLabelType: 'Never'
+        });
+        childdiv2.appendChild(descriptionText);
+        this.descriptionTextBox.appendTo(descriptionText);
+        altDiv.appendChild(childdiv2);
+    };
+
     //#region Cell Format
     private initTableCellProperties(element: HTMLDivElement, localValue: L10n, isRtl?: boolean): void {
         const sizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {className: 'e-de-table-dialog-size-label'});
@@ -1360,6 +1448,9 @@ export class TablePropertiesDialog {
         this.cellTopAlign = undefined;
         this.cellCenterAlign = undefined;
         this.cellBottomAlign = undefined;
+        this.titleTextBox = undefined;
+        this.descriptionTextBox = undefined;
+        this.altTab = undefined;
         if (this.paraFormatIn) {
             this.paraFormatIn.destroy();
             this.paraFormatIn  = undefined;

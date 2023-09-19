@@ -815,6 +815,6 @@ export class InkAnnotation {
  * @hidden
  */
 export interface IInkPathDataCollection {
-    pathData: any;
-    zoomFactor: number;
-}
+    pathData:any;
+    zoomFactor:number;
+    }

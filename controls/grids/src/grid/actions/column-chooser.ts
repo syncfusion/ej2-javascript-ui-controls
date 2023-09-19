@@ -86,7 +86,7 @@ export class ColumnChooser implements IAction {
 
     private destroy(): void {
         const gridElement: Element = this.parent.element;
-        if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
+        if (!gridElement.querySelector( '.' + literals.gridContent) && (!gridElement.querySelector('.' + literals.gridHeader)) || !gridElement) { return; }
         this.removeEventListener();
         this.unWireEvents();
         if (!isNullOrUndefined(this.dlgObj) && this.dlgObj.element && !this.dlgObj.isDestroyed) {
@@ -141,7 +141,7 @@ export class ColumnChooser implements IAction {
     private clickHandler(e: MouseEvent): void {
         const targetElement: Element = e.target as Element;
         if (!this.isCustomizeOpenCC) {
-            if (!isNullOrUndefined(closest(targetElement, '.e-cc')) || !isNullOrUndefined(closest(targetElement, '.e-cc-toolbar'))) {
+            if (!isNullOrUndefined(closest(targetElement, '.e-cc-toolbar')) || !isNullOrUndefined(closest(targetElement, '.e-cc'))) {
                 if (targetElement.classList.contains('e-columnchooser-btn') || targetElement.classList.contains('e-cc-toolbar')) {
                     if ((this.initialOpenDlg && this.dlgObj.visible) || !this.isDlgOpen) {
                         this.isDlgOpen = true;
@@ -564,8 +564,6 @@ export class ColumnChooser implements IAction {
             } else if (elem.querySelector('.e-uncheck')) {
                 checkstate = false;
                 (elem.firstChild as HTMLElement).setAttribute('aria-checked', 'false');
-            } else {
-                return;
             }
             this.updateIntermediateBtn();
             const columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
@@ -788,7 +786,7 @@ export class ColumnChooser implements IAction {
         const openCC: Element[] = [].slice.call(document.getElementsByClassName('e-ccdlg')).filter((dlgEle: Element) =>
             dlgEle.classList.contains('e-popup-open'));
         for (let i: number = 0, dlgLen: number = openCC.length; i < dlgLen; i++) {
-            if (openCC[parseInt(i.toString(), 10)].classList.contains('e-dialog') || this.parent.element.id + '_ccdlg' !== openCC[parseInt(i.toString(), 10)].id) {
+            if (this.parent.element.id + '_ccdlg' !== openCC[parseInt(i.toString(), 10)].id || openCC[parseInt(i.toString(), 10)].classList.contains('e-dialog')) {
                 (openCC[parseInt(i.toString(), 10)] as EJ2Intance).ej2_instances[0].hide();
             }
         }

@@ -49,7 +49,7 @@ export class Toolbar {
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         model.updateDropDownLocale(this.parent);
         updateDropDownFontFormatLocale(this.parent);
-        this.renderFactory.addRenderer(RenderType.Toolbar, new ToolbarRenderer(this.parent));
+        this.renderFactory.addRenderer(RenderType.Toolbar, new ToolbarRenderer(this.parent, this.locator));
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.baseToolbar = new BaseToolbar(this.parent, this.locator);
         this.addEventListener();

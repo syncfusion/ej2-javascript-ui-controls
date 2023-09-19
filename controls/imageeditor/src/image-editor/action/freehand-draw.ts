@@ -464,36 +464,42 @@ export class FreehandDrawing {
             parent.pointColl[parent.freehandCounter].flipState = parent.transform.currFlipState;
             parent.freehandCounter++;
         }
-        for (let n: number = 0; n < parent.freehandCounter; n++) {
-            parent.points = extend([], parent.pointColl[n as number].points) as Point[];
-            this.pointCounter = 0;
-            const len: number = parent.points.length;
-            let controlPoint1: Point; let controlPoint2: Point; let startPoint: Point; let endPoint: Point;
-            let minStrokeWidth: number; let maxStrokeWidth: number;
-            if (len > 0) {
-                context.fillStyle = parent.pointColl[n as number].strokeColor;
-                minStrokeWidth = maxStrokeWidth = this.penStrokeWidth = parent.pointColl[n as number].strokeWidth;
-            }
-            if (len === 1) {
-                controlPoint1 = controlPoint2 = startPoint = endPoint = parent.points[0];
-                this.startDraw(context, controlPoint1, controlPoint2, startPoint, endPoint, minStrokeWidth, maxStrokeWidth);
-            }
-            for (let l: number = 0; l < len - 3; l++) {
-                if (parent.points[l + 1] && parent.points[l + 2] && parent.points[l + 2]) {
-                    controlPoint1 = (this.calcCurveCP(parent.points[l + 0],
-                                                      parent.points[l + 1], parent.points[l + 2])).controlPoint2;
-                    controlPoint2 = (this.calcCurveCP(parent.points[l + 1], parent.points[l + 2],
-                                                      parent.points[l + 3])).controlPoint1;
-                    if (l === 0) {
-                        startPoint = parent.points[l as number];
-                    } else {
-                        startPoint = parent.points[l + 1];
-                    }
-                    endPoint = parent.points[l + 2];
+        if (parent.freehandCounter > 0) {
+            for (let n: number = 0; n < parent.freehandCounter; n++) {
+                parent.points = extend([], parent.pointColl[n as number].points) as Point[];
+                this.pointCounter = 0;
+                const len: number = parent.points.length;
+                let controlPoint1: Point; let controlPoint2: Point; let startPoint: Point; let endPoint: Point;
+                let minStrokeWidth: number; let maxStrokeWidth: number;
+                if (len > 0) {
+                    context.fillStyle = parent.pointColl[n as number].strokeColor;
+                    minStrokeWidth = maxStrokeWidth = this.penStrokeWidth = parent.pointColl[n as number].strokeWidth;
+                }
+                if (len === 1) {
+                    controlPoint1 = controlPoint2 = startPoint = endPoint = parent.points[0];
                     this.startDraw(context, controlPoint1, controlPoint2, startPoint, endPoint, minStrokeWidth, maxStrokeWidth);
                 }
+                for (let l: number = 0; l < len - 3; l++) {
+                    if (parent.points[l + 1] && parent.points[l + 2] && parent.points[l + 2]) {
+                        controlPoint1 = (this.calcCurveCP(parent.points[l + 0],
+                                                          parent.points[l + 1], parent.points[l + 2])).controlPoint2;
+                        controlPoint2 = (this.calcCurveCP(parent.points[l + 1], parent.points[l + 2],
+                                                          parent.points[l + 3])).controlPoint1;
+                        if (l === 0) {
+                            startPoint = parent.points[l as number];
+                        } else {
+                            startPoint = parent.points[l + 1];
+                        }
+                        endPoint = parent.points[l + 2];
+                        this.startDraw(context, controlPoint1, controlPoint2, startPoint, endPoint, minStrokeWidth, maxStrokeWidth);
+                    }
+                }
+                context.closePath();
             }
-            context.closePath();
+            if (context !== this.upperContext) {
+                parent.notify('draw', {prop: 'applyFrame', value: {ctx: this.lowerContext, frame: parent.frameObj.type, preventImg: true}});
+                this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+            }
         }
         context.filter = temp;
     }
@@ -574,7 +580,11 @@ export class FreehandDrawing {
         parent.activeObj.strokeSettings.strokeColor = this.tempFHDStyles.strokeColor;
         parent.activeObj.strokeSettings.strokeWidth = this.penStrokeWidth = this.tempFHDStyles.strokeWidth;
         this.tempFHDStyles = {strokeColor: null, strokeWidth: null, fillColor: null};
-        if (!isBlazor()) { parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false}); }
+        if (!isBlazor()) { 
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false}); 
+        } else {
+            parent.updateToolbar(parent.element, 'imageLoaded');
+        }
     }
 
     private selectFhd(index?: number): void {
@@ -616,7 +626,8 @@ export class FreehandDrawing {
                         shapeChangingArgs.currentShapeSettings.strokeWidth;
                     parent.pointColl[this.fhdSelIdx].points = shapeChangingArgs.currentShapeSettings.points;
                     this.freehandRedraw(this.upperContext);
-                    parent.updateToolbar(parent.element, 'colorToolbar');
+                    parent.updateToolbar(parent.element, 'imageLoaded');
+                    parent.updateToolbar(parent.element, 'pen');
                 });
             } else {
                 parent.trigger('shapeChanging', shapeChangingArgs);
@@ -662,7 +673,7 @@ export class FreehandDrawing {
             }
             parent.freehandCounter -= 1; this.fhdHovIdx = this.fhdSelIdx = null;
             parent.notify('selection', {prop: 'resetFreehandDrawVariables'});
-            parent.notify('draw', {prop: 'render-image', value: {isMouseWheel: true } });
+            parent.notify('draw', {prop: 'render-image', value: {isMouseWheel: null } });
             if (!isBlazor()) {
                 parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
             }

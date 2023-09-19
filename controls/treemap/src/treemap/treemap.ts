@@ -135,14 +135,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public margin: MarginModel;
     /**
      * Sets and gets the background color of the treemap.
-     * 
+     *
      * @default null
      */
     @Property(null)
     public background: string;
     /**
      * Sets and gets the theme styles supported for treemap. When the theme is set, the styles associated with the theme will be set in the treemap.
-     * 
+     *
      * @default Material
      */
     @Property('Material')
@@ -154,7 +154,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public titleSettings: TitleSettingsModel;
     /**
      * Specifies the rendering type for the layout of the treemap.
-     * 
+     *
      * @default 'Squarified'
      */
     @Property('Squarified')
@@ -178,7 +178,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public query: Query;
     /**
      * Sets and gets the value path of the weight from the data source, based on which the treemap item is rendered.
-     * 
+     *
      * @default null
      */
     @Property(null)
@@ -186,7 +186,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
      * This property is used when range color mapping is set in the treemap.
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -194,21 +194,21 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
      * This property is used when equal color mapping is set in the treemap.
-     * 
+     *
      * @default ''
      */
     @Property('')
     public equalColorValuePath: string;
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
-     * 
+     *
      * @default null
      */
     @Property(null)
     public colorValuePath: string;
     /**
      * Sets and gets a set of colors to apply in the treemap items.
-     * 
+     *
      * @default []
      */
     @Property([])
@@ -222,28 +222,28 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public renderDirection: RenderingMode;
     /**
      * Enables or disables the drill down functionality in treemap.
-     * 
+     *
      * @default false
      */
     @Property(false)
     public enableDrillDown: boolean;
     /**
      * Enables or disables the connection text in the header of the treemap when drill down is enabled.
-     * 
+     *
      * @default false
      */
     @Property(false)
     public enableBreadcrumb: boolean;
     /**
      * Specifies the symbol to show connection between the two words in the header of the treemap during drill down.
-     * 
+     *
      * @default ' - '
      */
     @Property(' - ')
     public breadcrumbConnector: string;
     /**
      * Enables or disables the initial drill in the treemap.
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -577,9 +577,21 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         } else if (this.dataSource instanceof TreeMapAjax) {
             localAjax = this.dataSource as TreeMapAjax;
             fetchApiModule = new Fetch(localAjax.dataOptions, localAjax.type, localAjax.contentType);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fetchApiModule.onSuccess = (args: any) => {
-                this.dataSource =  args;
-                this.renderTreeMapElements();
+                if (!isNullOrUndefined(args.type) && args.type === 'application/octet-stream') {
+                    let reader: FileReader = new FileReader();
+                    let treemap: TreeMap = this;
+                    reader.onload = function (data) {
+                        args = JSON.parse(reader.result.toString());
+                        treemap.dataSource = args;
+                        treemap.renderTreeMapElements();
+                    };
+                    reader.readAsText(args);
+                } else {
+                    this.dataSource = args;
+                    this.renderTreeMapElements();
+                }
             };
             fetchApiModule.send(localAjax.sendData);
         } else {
@@ -954,7 +966,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         currentData['isDrilled'] = false;
                         currentData['groupName'] = groupPath;
                         currentData['data'] = this.dataSource[j as number];
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any, max-len
                         (<any[]>this.treemapLevelData.levelsData[(this.treemapLevelData.levelsData.length - 1) as number][groupPath as string]).push(currentData);
                         orderNames.push((childName) ? childName : name);
                     }
@@ -1098,8 +1110,13 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private addTabIndex(): void {
         this.element.setAttribute('aria-label', this.description || 'TreeMap Element');
-        this.element.setAttribute('role', '');
-        this.element.setAttribute('tabindex', this.tabIndex.toString());
+        if (this.enableDrillDown || (this.selectionSettings.enable || this.highlightSettings.enable)) {
+            this.element.setAttribute('role', 'button');
+            this.element.setAttribute('tabindex', this.tabIndex.toString());
+            this.element.style.cursor = this.highlightSettings.enable && !this.selectionSettings.enable && !this.enableDrillDown ? 'default' : 'pointer';
+        } else {
+            this.element.setAttribute('role', 'region');
+        }  
     }
 
     /**

@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, ModuleDeclaration, extend, isBlazor, BlazorDotnetObject } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, isNullOrUndefined, getUniqueID } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { createSpinner } from '@syncfusion/ej2-popups';import { Complex, Browser, ChildProperty, compile as templateCompiler, compile } from '@syncfusion/ej2-base';import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType } from './../index';import { ZoomEventArgs, PanEventArgs, CropEventArgs, RotateEventArgs, FlipEventArgs, ShapeChangeEventArgs } from './../index';import { ToolbarEventArgs, OpenEventArgs, SaveEventArgs, BeforeSaveEventArgs, Point, ShapeSettings, ImageFilterEventArgs } from './../index';import { FinetuneEventArgs, QuickAccessToolbarEventArgs, CurrentObject, ImageDimension, TransformValue, PanPoint } from './../index';import { Interaction, SelectionPoint, ImageFinetuneValue, Dimension, ActivePoint, ImageEditorClickEventArgs } from './../index';import { Direction, ZoomTrigger, Theme, ImageEditorCommand, ImageFilterOption, ImageFinetuneOption } from './../index';import { ItemModel as DropDownButtonItemModel } from '@syncfusion/ej2-splitbuttons';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, ModuleDeclaration, extend, isBlazor, BlazorDotnetObject } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, isNullOrUndefined, getUniqueID } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { Dialog, createSpinner } from '@syncfusion/ej2-popups';import { Complex, Browser, ChildProperty, compile as templateCompiler, compile } from '@syncfusion/ej2-base';import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings } from './../index';import { ZoomEventArgs, PanEventArgs, CropEventArgs, RotateEventArgs, FlipEventArgs, ShapeChangeEventArgs } from './../index';import { ToolbarEventArgs, OpenEventArgs, SaveEventArgs, BeforeSaveEventArgs, Point, ShapeSettings, ImageFilterEventArgs } from './../index';import { FinetuneEventArgs, QuickAccessToolbarEventArgs, CurrentObject, ImageDimension, TransformValue, PanPoint } from './../index';import { Interaction, SelectionPoint, ImageFinetuneValue, Dimension, ActivePoint, ImageEditorClickEventArgs, FrameValue } from './../index';import { Direction, ZoomTrigger, Theme, ImageEditorCommand, ImageFilterOption, ImageFinetuneOption } from './../index';import { ItemModel as DropDownButtonItemModel } from '@syncfusion/ej2-splitbuttons';import { ChangeEventArgs, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -261,7 +261,7 @@ export interface ImageEditorModel extends ComponentModel{
      * If the property is defined as empty collection, the toolbar will not be rendered.
      * The preconfigured toolbar commands are
      * - Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
-     * - Annotate: help to insert a shape on image that supports rectangle, ellipse, line, arrow, path, text and freehand drawing with resize, drag and drop, and customize its appearance.
+     * - Annotate: help to insert a shape on image that supports rectangle, ellipse, line, arrow, path, text, image and freehand drawing with resize, drag and drop, and customize its appearance.
      * - Transform: helps to rotate and flip an image.
      * - Finetunes: helps to perform adjustments on an image.
      * - Filters: helps to perform predefined color filters.
@@ -616,11 +616,25 @@ export interface ImageEditorModel extends ComponentModel{
     quickAccessToolbarOpen?: EmitType<QuickAccessToolbarEventArgs>
 
     /**
+     * Event callback that is raised while resizing an image. 
+     *
+     * @event resizing 
+     */ 
+    resizing?: EmitType<ResizeEventArgs>
+
+    /**
      * Event callback that is raised once the quick access toolbar item is clicked.
      *
      * @event quickAccessToolbarItemClick
      *
      */
     quickAccessToolbarItemClick?: EmitType<ClickEventArgs>
+
+    /**
+     *  Event callback that is raised while applying frames on an image. 
+     *
+     * @event frameChange
+     */ 
+    frameChange?: EmitType<FrameChangeEventArgs>
 
 }

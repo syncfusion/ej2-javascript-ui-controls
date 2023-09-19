@@ -49,7 +49,7 @@ export class XhtmlValidation {
      */
     public selfEncloseValidation(currentValue: string, valueLength?: number): string {
         if (valueLength === 0 && currentValue.indexOf('table') < 0 && currentValue.indexOf('img') < 0 &&
-            currentValue !== '<p><br></p>' && currentValue !== '<div><br></div>' && currentValue !== '<br>') {
+            currentValue.includes('&nbsp;')) {
             const arrayValue: string[] = currentValue.split('&nbsp;');
             arrayValue[arrayValue.length - 1] = '&#8203;' + arrayValue[arrayValue.length - 1];
             currentValue = arrayValue.join('');

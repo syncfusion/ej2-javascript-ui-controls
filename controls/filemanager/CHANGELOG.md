@@ -2,90 +2,15 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I492168` - The Scrollbar repositioning issue when opening context menu in the File Manager component has been resolved.
-
-## 22.2.10 (2023-08-22)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I492594` - The issue related to the console error that occurred when moving between folders after performing a search operation within the File Manager component has been resolved.
-
-## 22.1.39 (2023-07-18)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I472742` - The exception that occurred when using the File Manager download button multiple times in the Amazon File Provider has been resolved.
-
-## 22.1.38 (2023-07-11)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I473871` - The issue with renaming folders or files in the Navigation Pane of the File Manager component has been resolved.
-
-## 22.1.34 (2023-06-21)
-
-### File Manager
+### FileManager
 
 #### Features
 
-- Provided the `ShowItemCheckBoxes` property to control the visibility of checkboxes.
+- `#FB44788` - Provided template support to customize toolbar items. In earlier versions, Toolbar item customization was limited to a predefined set of options. With this new feature, you can now define your own templates to completely customize the appearance and functionality of toolbar items.
 
-## 21.2.5 (2023-05-16)
+#### Bug Fixes
 
-### File Manager
-
-#### Bug fixes
-
-- `#I458668` - The issue, replace dialog shows when uploading the same file to different directories in File Manager with the SQL File Provider has been resolved.
-- `#I464322` - The issue with `fileOpen` event in the File Manager component has been resolved.
-
-## 21.2.3 (2023-05-03)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I439193` - The data disappears in the DetailsView when dynamically setting columns in the File Manager component has been resolved.
-- `#I458884` - The issue with the `fileSelect` event in the File Manager component details view has been resolved.
-
-## 21.1.41 (2023-04-18)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I445512` - The issue with the `fileSelection` and `fileSelect` events argument in the File Manager component large icon view has been resolved.
-
-## 21.1.37 (2023-03-29)
-
-### File Manager
-
-#### Bug fixes
-
-- `#I442564` - The issue with `fileOpen` event in File Manager component has been resolved.
-
-## 21.1.35 (2023-03-23)
-
-### File Manager
-
-#### New Features
-
-- Provided the folder (directory) upload support for Physical File Provider.
-- Provided the folder (directory) upload support for Azure File Provider.
-- Provided the folder (directory) upload support for NodeJS File System Provider.
-- Provided the folder (directory) upload support for Amazon S3 File Provider.
+- `#I493055` - The issue arising from the `expandOn` property set to `Click` in the Navigation Pane of the File Manager component has been resolved.
 
 ## 19.2.56 (2021-08-17)
 

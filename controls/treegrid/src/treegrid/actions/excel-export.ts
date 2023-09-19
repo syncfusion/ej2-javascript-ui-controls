@@ -4,7 +4,7 @@ import { getObject, Grid, ExcelExport as GridExcel, ExcelExportProperties, Befor
 import { ExcelStyle, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelRow, Row, Column } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline, getParentData, getExpandStatus } from '../utils';
-import { isNullOrUndefined, setValue, Ajax, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, Fetch, extend } from '@syncfusion/ej2-base';
 import { DataManager, Query, ReturnOption } from '@syncfusion/ej2-data';
 import * as event from '../base/constant';
 /**
@@ -97,7 +97,7 @@ export class ExcelExport {
                 if (!isNullOrUndefined(excelExportProperties) && !isNullOrUndefined(excelExportProperties.dataSource)) {
                     customData = excelExportProperties.dataSource;
                 }
-                excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, <Ajax>e);
+                excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, <Fetch>e);
                 return this.parent.grid.excelExportModule.Map(
                     this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob).then((book: Object) => {
                     if (customData != null) {
@@ -120,7 +120,7 @@ export class ExcelExport {
         }
         return query;
     }
-    protected manipulateExportProperties(property?: ExcelExportProperties, dtSrc?: Object, queryResult?: Ajax) : Object {
+    protected manipulateExportProperties(property?: ExcelExportProperties, dtSrc?: Object, queryResult?: Fetch) : Object {
         //count not required for this query
         let args: BeforeDataBoundArgs = Object();
         setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);

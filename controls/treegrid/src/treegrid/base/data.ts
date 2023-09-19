@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined, setValue, getValue, Ajax, addClass, removeClass } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, setValue, getValue, Fetch, addClass, removeClass } from '@syncfusion/ej2-base';
 import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption, ParamOption } from '@syncfusion/ej2-data';
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
@@ -119,9 +119,12 @@ export class DataManipulation {
                     qry.isCountRequired = true;
                     dm.executeQuery(qry).then((e: ReturnOption) => {
                         this.parentItems = DataUtil.distinct(<Object[]>e.result, this.parent.parentIdMapping, false);
-                        const req: number = getObject('dataSource.requests', this.parent).filter((e: Ajax) => {
-                            return e.httpRequest.statusText !== 'OK'; }
-                        ).length;
+                        let req: number;
+                        if (<Object[]>e.result) {
+                            req = 0;
+                        } else {
+                            req = 1;
+                        }
                         if (req === 0) {
                             setValue('grid.contentModule.isLoaded', true, this.parent);
                             if (!isNullOrUndefined(this.zerothLevelData)) {
@@ -378,7 +381,19 @@ export class DataManipulation {
             const remoteCollapsedData: string = 'remoteCollapsedData';
             const level: string = 'level';
             let datas: ITreeData[] = this.parent.grid.currentViewData.slice();
-            let inx: number = datas.indexOf(rowDetails.record);
+            let inx: number;
+            const idMapping: string = this.parent.idMapping;
+            if (this.parent['isGantt'] && !this.parent.loadChildOnDemand && this.parent.hasChildMapping) {
+                for (let i: number = 0; i < this.parent.grid.currentViewData.length; i++) {
+                    if (rowDetails.record[idMapping as string] === this.parent.grid.currentViewData[i as number][idMapping as string]) {
+                        inx = i;
+                        break;
+                    }
+                }
+            }
+            else {
+                inx = datas.indexOf(rowDetails.record);
+            }
             if (this.parent.enableVirtualization && (rowDetails.action === 'collapse' || rowDetails.action === 'remoteExpand')) {
                 datas = [];
                 for (let i: number = 0; i < inx; i++) {

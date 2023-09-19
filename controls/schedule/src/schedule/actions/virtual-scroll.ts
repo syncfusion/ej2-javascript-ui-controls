@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { append, addClass, remove, isNullOrUndefined, setStyleAttribute, createElement, prepend } from '@syncfusion/ej2-base';
-import { TdData } from '../base/interface';
+import { TdData, ScrollEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -101,6 +102,16 @@ export class VirtualScroll {
 
     private renderEvents(): void {
         this.setTabIndex();
+        const dynamicData: Record<string, any>[] = this.triggerScrollEvent(events.virtualScrollStop);
+        if (this.parent.activeViewOptions && this.parent.activeViewOptions.enableLazyLoading && this.parent.crudModule) {
+            if (dynamicData.length > 0) {
+                this.parent.crudModule.refreshProcessedData(true, dynamicData);
+                this.parent.hideSpinner();
+                return;
+            }
+            this.parent.crudModule.refreshDataManager();
+            return;
+        }
         if (this.parent.crudModule) {
             this.parent.crudModule.refreshProcessedData(true);
         }
@@ -135,7 +146,7 @@ export class VirtualScroll {
                 resCollection = this.downScroll(conWrap, firstTDIndex);
             }
             if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
-                this.parent.showSpinner();
+                this.triggerScrollEvent(events.virtualScrollStart);
                 const selectedEle: Element[] = this.parent.getSelectedCells();
                 this.focusedEle = selectedEle[selectedEle.length - 1] || this.focusedEle;
                 this.updateContent(resWrap, conWrap, eventWrap, resCollection);
@@ -162,7 +173,7 @@ export class VirtualScroll {
                 this.parent.resourceBase.expandedResources[0] !== resCollection[0] ||
                 this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1] !==
                     resCollection[resCollection.length - 1]) {
-                this.parent.showSpinner();
+                this.triggerScrollEvent(events.virtualScrollStart);
                 const colLevels: TdData[][] = this.parent.activeView.colLevels.slice(0);
                 this.updateHorizontalContent(conWrap, resCollection);
                 setStyleAttribute(conWrap.querySelector('table') as HTMLElement, { transform: `translateX(${this.translateY}px)` });
@@ -174,6 +185,30 @@ export class VirtualScroll {
             window.clearTimeout(this.timeValue);
             this.timeValue = window.setTimeout(() => { this.renderEvents(); }, 250);
         }
+    }
+
+    private triggerScrollEvent(action: string): Record<string, any>[] {
+        let dynamicData: Record<string, any>[] = [];
+        if (!this.parent.activeView){
+            return dynamicData;
+        }
+        const eventArgs: ScrollEventArgs = {
+            startDate: this.parent.activeView.startDate(),
+            endDate: this.parent.activeView.endDate(),
+            startIndex: this.parent.resourceBase.renderedResources[0].groupIndex,
+            endIndex: this.parent.resourceBase.renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex,
+            resourceData: this.parent.resourceBase.renderedResources.map((x: TdData) => x.resourceData),
+            name: action
+        };
+        this.parent.trigger(action, eventArgs, (args: ScrollEventArgs) => {
+            if (action === events.virtualScrollStart) {
+                this.parent.showSpinner();
+            }
+            else if (action === events.virtualScrollStop && !isNullOrUndefined(args.eventData) && args.eventData.length > 0) {
+                dynamicData = args.eventData;
+            }
+        });
+        return dynamicData;
     }
 
     private upScroll(conWrap: HTMLElement, firstTDIndex: number): TdData[] {

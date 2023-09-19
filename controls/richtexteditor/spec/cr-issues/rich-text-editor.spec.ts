@@ -883,14 +883,14 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.innerHTML).toEqual('<p>RTE</p>');
             rteObj.disableToolbarItem(['Bold']);
             expect(document.querySelectorAll('.e-toolbar-item.e-overlay').length).toEqual(3);
-            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Bold (Ctrl + B)');
-            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Undo (Ctrl + Z)');
-            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[2].getAttribute('title')).toEqual('Redo (Ctrl + Y)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Bold (Ctrl+B)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Undo (Ctrl+Z)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[2].getAttribute('title')).toEqual('Redo (Ctrl+Y)');
             rteObj.refresh();
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-toolbar-item.e-overlay').length).toEqual(2);
-                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Undo (Ctrl + Z)');
-                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Redo (Ctrl + Y)');
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Undo (Ctrl+Z)');
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Redo (Ctrl+Y)');
                 done();
             }, 200)
         });
@@ -1439,8 +1439,8 @@ describe('RTE CR issues', () => {
         });
         it('check the tooltip', () => {
             expect(document.querySelectorAll('.e-toolbar-item.e-template').length).toEqual(2);
-            expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List');
-            expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List');
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List (Ctrl+Shift+O)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List (Ctrl+Alt+O)');
         });
     });
 
@@ -2087,7 +2087,7 @@ describe('RTE CR issues', () => {
             undoEle.dispatchEvent(mouseEve);
             setTimeout(() => {
                 // expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
-                // expect((document.querySelector('.e-tooltip-wrap').childNodes[0] as HTMLElement).innerHTML === 'Undo (Ctrl + Z)').toBe(true);
+                // expect((document.querySelector('.e-tooltip-wrap').childNodes[0] as HTMLElement).innerHTML === 'Undo (Ctrl+Z)').toBe(true);
                 dispatchEvent(undoEle, 'mouseleave');
                 done();
             }, 1000);
@@ -2173,6 +2173,55 @@ describe('RTE CR issues', () => {
             (rteObj as any).keyDown(keyBoardEvent);
             expect((rteObj as any).inputElement.innerHTML === `<p>Testing</p>`).toBe(true);
             done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    
+    describe('844614 - The enableHtmlSanitizer property is not working properly in the Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done)=> {
+            rteObj = renderRTE({
+                value : "Rich Text Editor"
+            });
+            done();
+        });
+        it('Sanitize the value if update dynamically ', (done: Function) => {
+            rteObj.value = '<p><img src=x onerror=alert(document.domain)></p>';
+            rteObj.dataBind();
+            expect((rteObj as any).inputElement.innerHTML === `<p><img src="x" class="e-rte-image e-imginline"></p>`).toBe(true);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('844717 - The toolbar Button Tooltip not get destroyed when the dialog is opened and closed issue resolved', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done)=> {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'FullScreen']
+                },
+                value : "Rich Text Editor"
+            });
+            done();
+        });
+        it('Tooltip hide while click fullscreen', (done: Function) => {
+            let event = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+            let toolbarEle = document.querySelector('[title="Maximize (Ctrl+Shift+F)"]')
+            toolbarEle.dispatchEvent(event);
+            expect(!isNullOrUndefined(document.querySelector('.e-tooltip-wrap'))).toBe(true);
+            (document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).click();
+            setTimeout( function () {
+                (document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).click();
+                setTimeout( function () {
+                    expect(document.querySelector('.data-tooltip-id') === null).toBe(true);
+                    done();
+                },100)
+            },100)
         });
         afterAll(() => {
             destroy(rteObj);

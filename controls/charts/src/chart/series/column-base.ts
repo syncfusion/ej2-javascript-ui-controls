@@ -3,9 +3,9 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
-import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, animationMode, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { DoubleRange } from '../utils/double-range';
-import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient, getVisiblePoints } from '../../common/utils/helper';
+import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient, getVisiblePoints, colorNameToHex, checkColorFormat, applyZLight } from '../../common/utils/helper';
 import { getAnimationFunction, getPoint, ChartLocation, getMinPointsDelta } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
@@ -14,6 +14,7 @@ import { Series, Points } from './chart-series';
 import { AnimationModel, BorderModel } from '../../common/model/base-model';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { pointRender } from '../../common/model/constants';
+import { CylinderSeriesOption } from './column-series';
 
 
 /**
@@ -28,6 +29,8 @@ export class ColumnBase {
      * @returns {DoubleRange} doubleRange
      * @private
      */
+    public options: PathOption;
+    public element: HTMLElement;
     protected getSideBySideInfo(series: Series): DoubleRange {
 
         if (series.chart.enableSideBySidePlacement && !series.position) {
@@ -77,6 +80,222 @@ export class ColumnBase {
             Math.min(point1.x, point2.x), Math.min(point1.y, point2.y),
             Math.abs(point2.x - point1.x), Math.abs(point2.y - point1.y)
         );
+    }
+    /**
+     * To draw the cylindrical shape for points.
+     *
+     * @returns {void}
+     * @private
+     */
+    protected drawCylinder(options: PathOption, element: HTMLElement, cylinderSeriesOption: CylinderSeriesOption, rect: Rect, series: Series): void {
+        const width: number = rect.width; const height: number = rect.height;
+        if (series.chart.enableCanvas) {
+            let ctx: CanvasRenderingContext2D = series.chart.canvasRender.ctx;
+            const canvasCtx = ctx;
+            ctx.save();
+            const gradientColor: string = colorNameToHex(options.fill);
+            const x: number = rect.x + series.clipRect.x; const y: number = rect.y + series.clipRect.y; let arc: number = 2 * Math.PI + 0.1;
+            let rx, ry, cx1, cx2, cy1, cy2, x1, x2, y1, y2, cx, cy, xl, yl, xPos, yPos, step, rxt, ryt: number; let gx1: number = 0; let gx2: number = 0; let gy1: number = 0; let gy2: number = 0; let ini: number = 0;
+            ctx.fillStyle = applyZLight(gradientColor, 0.9);
+            ctx.lineWidth = 0;
+            ctx.strokeStyle = applyZLight(gradientColor, 0.9);
+            ctx.globalAlpha = options.opacity;
+            if (cylinderSeriesOption.isColumn) {
+                gx1 = x;
+                gx2 = width + x;
+                rx = width / 2;
+                ry = rx / 4;
+                cx2 = cx1 = x + rx;
+                y2 = cy1 = y - ry;
+                x2 = x;
+                x1 = x + width;
+                cy2 = y1 = y + height - ry;
+                step = Math.PI;
+                rxt = -rx;
+                ryt = ry;
+                if (cylinderSeriesOption.stacking) {
+                    if (!cylinderSeriesOption.isLastSeries) {
+                        y2 = cy1 = y + ry;
+
+                    }
+                }
+            }
+            else {
+                gy2 = height + y;
+                gy1 = y;
+                ry = height / 2;
+                rx = ry / 4;
+                x2 = cx1 = x + rx;
+                x1 = cx2 = x + width + rx;
+                y1 = y + height;
+                y2 = y;
+                cy2 = cy1 = y + ry;
+                ini = Math.PI / 2;
+                step = Math.PI * 1.5;
+                if (cylinderSeriesOption.stacking) {
+                    if (!cylinderSeriesOption.isLastSeries) {
+                        x1 = cx2 = x + width - rx;
+                    }
+                }
+                ry = -ry;
+                rx = -rx;
+                rxt = rx;
+                ryt = -ry;
+            }
+            const color: string = applyZLight(gradientColor, 0.7);
+            const gradient = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
+            gradient.addColorStop(0, gradientColor);
+            gradient.addColorStop(0.3, color);
+            gradient.addColorStop(0.7, color);
+            gradient.addColorStop(1, gradientColor);
+            for (let j: number = 1; j <= 4; j++) {
+                let i: number = 0;
+                if (j < 4) {
+                    ctx.beginPath();
+                }
+                if (j % 2 === 0) {
+                    cx = cx2; cy = cy2; xl = x2; yl = y2;
+                }
+                else {
+                    cx = cx1; cy = cy1; xl = x1; yl = y1;
+                }
+                if (j === 4) {
+                    rx = rxt;
+                    ry = ryt;
+                    ctx.fillStyle = gradient;
+                }
+                if (j > 2) {
+                    i = ini;
+                    arc = step;
+                }
+                for (; i <= arc; i += 0.1) {
+                    xPos = cx - (rx * Math.cos(i));
+                    yPos = cy + (ry * Math.sin(i));
+                    if (i === 0) {
+                        ctx.moveTo(xPos, yPos);
+                    } else {
+                        ctx.lineTo(xPos, yPos);
+                    }
+                }
+                if (j > 2) {
+                    ctx.lineTo(xl, yl);
+                }
+                if (j !== 3) {
+                    ctx.stroke();
+                    ctx.fill();
+                }
+            }
+            if (options.id.indexOf('Series') >= 0) {
+                ctx.clip();
+                ctx.restore();
+                ctx = canvasCtx;
+            }
+        }
+        else {
+            const chart: Chart = series.chart;
+            const x: number = rect.x;
+            const y: number = rect.y;
+            const id: string = options.id;
+            let gradientColor: string = options.fill;
+            const fillColor: string = gradientColor;
+            const format: boolean = checkColorFormat(gradientColor);
+            if (!format) {
+                gradientColor = colorNameToHex(gradientColor);
+            }
+            let AEx: number = 0; let AEy: number = 0; let LX: number = 0; let LY: number = 0; let GX: number = 0; let GY: number = 0; let X, Y, X1, Y1, X2, Y2, rx, ry: number; let i: number = 2;
+            if (cylinderSeriesOption.isColumn) {
+                rx = width / 2;
+                ry = rx / 4;
+                X = X1 = x;
+                Y = ry < y ? y - ry : cylinderSeriesOption.stacking ? y + ry : (y - ry);
+                Y1 = Y;
+                AEx = 2 * rx;
+                LY = ry < y ? height : (height < 2 * ry ? height : cylinderSeriesOption.stacking ? height - (2 * ry) : height);
+                X2 = X;
+                Y2 = ry < y ? Y + height : (height < Y ? height + Y : cylinderSeriesOption.stacking ? height + (y - ry) : height + Y);
+                GX = 100;
+                if (cylinderSeriesOption.stacking) {
+                    if (!cylinderSeriesOption.isLastSeries) {
+                        Y = Y1 = y + ry;
+                        LY = height < rx / 2 ? height : height - rx / 2;
+                    }
+                }
+            }
+            else {
+                ry = height / 2;
+                rx = ry / 4;
+                Y = Y1 = y;
+                X = X1 = Math.abs(x - rx);
+                AEy = 2 * ry;
+                LX = width;
+                X2 = X + width;
+                Y2 = Y;
+                GY = 100;
+                if (cylinderSeriesOption.stacking) {
+                    if (!cylinderSeriesOption.isLastSeries) {
+                        X2 = (X + width - rx * 2);
+                        LX = width - rx * 2;
+                    }
+                }
+            }
+            remove(this.element);
+            while (i--) {
+                options.d = 'M' + X.toString() + ',' + Y.toString() + 'a' + rx.toString() + ',' + ry.toString() + ' 0 1,0 ' + AEx.toString() + ',' + AEy.toString() + 'a' + rx.toString() + ',' + ry.toString() + ' 0 1,0 ' + (-1 * AEx).toString() + ',' + (-1 * AEy).toString();
+                options.id = id + '_' + 'Region_' + i;
+                options.fill = applyZLight(gradientColor, 0.9);
+                if ( i % 2 === 0 ) {
+                    options.fill = options.fill + '10';
+                }
+                this.element = chart.renderer.drawPath(
+                    this.options, new Int32Array([series.clipRect.x, series.clipRect.y])
+                ) as HTMLElement;
+                appendChildElement(series.chart.enableCanvas, series.seriesElement, this.element, chart.redraw);
+                X = X2;
+                Y = Y2;
+            }
+            options.d = 'M' + X1.toString() + ',' + Y1.toString() + 'a' + rx.toString() + ',' + ry.toString() + ' 0 1,0 ' + AEx.toString() + ',' + AEy.toString() + 'l' + LX.toString() + ' ' + LY.toString() + 'a' + rx.toString() + ',' + ry.toString() + ' 0 1,1 ' + (-1 * AEx).toString() + ',' + (-1 * AEy).toString() + ' z';
+            options.id = id + '_' + 'Region_2';
+            options.fill = applyZLight(gradientColor, 0.7);
+            let optiong: OptionGradient;
+            if (fillColor.indexOf('url') === -1) {
+                if (!document.getElementById(id)) {
+                    optiong = { 'id': id, x1: '0%', y1: '0%', x2: GX.toString() + '%', y2: GY.toString() + '%' };
+                    const gradientElement: GradientStop[] = [{ colorStop: '0%', color: gradientColor }, { colorStop: '30%', color: applyZLight(gradientColor, 0.7) }, { colorStop: '70%', color: applyZLight(gradientColor, 0.7) }, { colorStop: '100%', color: gradientColor }];
+                    this.drawGradient(optiong, gradientElement, series);
+                }
+                options.fill = 'url(#' + optiong.id + ')';
+            }
+            this.element = chart.renderer.drawPath(
+                this.options, new Int32Array([series.clipRect.x, series.clipRect.y])
+            ) as HTMLElement;
+            appendChildElement(series.chart.enableCanvas, series.seriesElement, this.element, chart.redraw);
+        }
+    }
+    /**
+     * To get the gradient of each points.
+     *
+     * @returns {void}
+     * @private
+     */
+    private drawGradient(optiong: OptionGradient, gradientElement: Object, series: Series): void {
+        const chart: Chart = series.chart;
+        const defElement: Element = chart.renderer.createDefs();
+        const xmlns: string = 'http://www.w3.org/2000/svg';
+        const linearGradientElement: Element = document.createElementNS(xmlns, 'linearGradient');
+        linearGradientElement.setAttribute('id', optiong.id);
+        linearGradientElement.setAttribute('x1', optiong.x1);
+        linearGradientElement.setAttribute('y1', optiong.y1);
+        linearGradientElement.setAttribute('x2', optiong.x2);
+        linearGradientElement.setAttribute('y2', optiong.y2);
+        for (let i: number = 0; i < (gradientElement as GradientStop[]).length; i++) {
+            const stopElement: Element = document.createElementNS(xmlns, 'stop');
+            stopElement.setAttribute('offset', gradientElement[i as number].colorStop);
+            stopElement.setAttribute('stop-color', gradientElement[i as number].color);
+            stopElement.setAttribute('stop-opacity', '1');
+            linearGradientElement.appendChild(stopElement);
+        }
+        series.seriesElement.appendChild(defElement);
+        defElement.appendChild(linearGradientElement);
     }
 
     /**
@@ -259,24 +478,24 @@ export class ColumnBase {
             '_Point_' + point.index : chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
         const previousElement: Element = redrawElement(chart.redraw, name);
         const previousDirection: string = previousElement ? previousElement.getAttribute('d') : '';
-        const options: PathOption = new PathOption(
-            name, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
-        const element: HTMLElement = chart.renderer.drawPath(
-            options, new Int32Array([series.clipRect.x, series.clipRect.y])
+        this.options = new PathOption(
+            name, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, (series.columnFacet === 'Cylinder') ? '' : direction);
+        this.element = chart.renderer.drawPath(
+            this.options, new Int32Array([series.clipRect.x, series.clipRect.y])
         ) as HTMLElement;
         switch (series.seriesType) {
         case 'XY':
-            element.setAttribute('role', 'img');
-            element.setAttribute('aria-label', point.x + ':' + point.yValue + ', ' + series.name);
+            this.element.setAttribute('role', 'img');
+            this.element.setAttribute('aria-label', point.x + ':' + point.yValue + ', ' + series.name);
             break;
         case 'HighLow':
-            element.setAttribute('role', 'img');
-            element.setAttribute('aria-label', point.x + ':' + point.high + ', ' + point.low + ', ' + series.name);
+            this.element.setAttribute('role', 'img');
+            this.element.setAttribute('aria-label', point.x + ':' + point.high + ', ' + point.low + ', ' + series.name);
             break;
         }
-        appendChildElement(series.chart.enableCanvas, series.seriesElement, element, chart.redraw);
+        appendChildElement(series.chart.enableCanvas, series.seriesElement, this.element, chart.redraw);
         if (!series.chart.enableCanvas) {
-            pathAnimation(element, direction, chart.redraw, previousDirection, chart.duration);
+            pathAnimation(this.element, (series.columnFacet === 'Cylinder') ? '' : direction, chart.redraw, previousDirection, chart.duration);
         }
     }
     /**
@@ -293,8 +512,15 @@ export class ColumnBase {
             if (!point.symbolLocations.length && !(series.type === 'BoxAndWhisker' && point.regions.length)) {
                 continue;
             }
-            this.animateRect(<HTMLElement>rectElements[count as number], series, point);
-            count++;
+            if ((series.type === 'Column' || series.type === 'Bar' || series.type === 'StackingColumn' || series.type === 'StackingColumn100' || series.type === 'StackingBar' || series.type === 'StackingBar100') && series.columnFacet === 'Cylinder') {
+                for (let j: number = 0; j < rectElements.length; j++) {
+                    this.animateRect(<HTMLElement>rectElements[j as number], series, point);
+                }
+            }
+            else {
+                this.animateRect(<HTMLElement>rectElements[count as number], series, point);
+                count++;
+            }
         }
     }
     /**
@@ -344,7 +570,7 @@ export class ColumnBase {
         if (!isNullOrUndefined(element)) {
             element.style.visibility = 'hidden';
             new Animation({}).animate(element, {
-                duration: duration,
+                duration: (duration === 0 && animationMode === 'Enable') ? 1000 : duration,
                 delay: option.delay,
                 progress: (args: AnimationOptions): void => {
                     if (args.timeStamp >= args.delay) {
@@ -405,4 +631,17 @@ export class ColumnBase {
 export interface RectPosition {
     position: number;
     rectCount: number;
+}
+
+export interface OptionGradient {
+    id: string;
+    x1: string;
+    y1: string;
+    x2: string;
+    y2: string;
+}
+
+export interface GradientStop {
+    colorStop: string;
+    color: string;
 }

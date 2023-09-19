@@ -1,0 +1,9 @@
+@include export-module('color-picker-highcontrast-light-icons') {
+  .e-container {
+    & .e-value-switch-btn {
+      &::before {
+        content: '\e429';
+      }
+    }
+  }
+}

@@ -56,6 +56,14 @@ export class RibbonDropDownSettings extends ChildProperty<RibbonDropDownSettings
     public target: string | HTMLElement;
 
     /**
+     * Specifies whether to create popup element on open.
+     *
+     * @default false
+     */
+    @Property(false)
+    public createPopupOnClick: boolean;
+
+    /**
      * Triggers before closing the DropDownButton popup.
      *
      * @event beforeClose

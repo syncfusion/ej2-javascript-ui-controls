@@ -2,6 +2,7 @@ import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '
 import { closest, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { IRichTextEditor } from '../base/interface';
 import * as events from '../base/constant';
+import { KeyboardEventArgs } from '../actions';
 /**
  * Dialog Renderer
  */
@@ -49,20 +50,19 @@ export class DialogRenderer {
         return dlgObj;
     }
     private beforeOpen(args: BeforeOpenEventArgs): void {
-        if(args.element.classList.contains('e-dialog')) {
-            const formEle = closest(args.target as HTMLElement,'form');
-            if(!isNOU(formEle)) {
+        if (args.element.classList.contains('e-dialog')) {
+            const formEle: Element = closest(args.target as HTMLElement, 'form');
+            if (!isNOU(formEle)) {
                 this.dialogEle = args.element;
-                this.dialogEle.addEventListener('keydown',this.handleEnterKeyDown)
+                this.dialogEle.addEventListener('keydown', this.handleEnterKeyDown);
             }
         }
         this.parent.trigger(events.beforeDialogOpen, args, this.beforeOpenCallback.bind(this, args));
     }
-    private handleEnterKeyDown(args: any) {
-        if (args.code === "Enter") {
+    private handleEnterKeyDown(args: KeyboardEventArgs): void {
+        if (args.code === 'Enter') {
             args.preventDefault();
         }
-
     }
     private beforeOpenCallback(args: BeforeOpenEventArgs): void {
         if (args.cancel) {

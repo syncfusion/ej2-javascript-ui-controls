@@ -18,7 +18,6 @@ import { Annotation, PathAnnotation } from '../objects/annotation';
 import { templateCompiler } from '../utility/base-util';
 import { SelectorModel } from '../objects/node-model';
 import { UserHandleModel } from '../interaction/selector-model';
-import { Diagram } from '../diagram';
 
 
 /**

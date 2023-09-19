@@ -40,7 +40,7 @@ import { ITextEditEventArgs, IHistoryChangeArgs, IScrollChangeEventArgs } from '
 import { IMouseEventArgs, IBlazorHistoryChangeArgs } from './objects/interface/IElement';
 import { IBlazorCustomHistoryChangeArgs, IImageLoadEventArgs } from './objects/interface/IElement';
 import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interface/IElement';
-import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel } from './objects/interface/interfaces';
+import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, IEditSegmentOptions } from './objects/interface/interfaces';
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape } from './objects/node';
@@ -49,7 +49,7 @@ import { checkBrowserInfo } from './utility/diagram-util';
 import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
-import { Connector, BezierSegment } from './objects/connector';
+import { Connector, BezierSegment, StraightSegment } from './objects/connector';
 import { ConnectorModel, BpmnFlowModel, OrthogonalSegmentModel } from './objects/connector-model';
 import { SnapSettings } from './diagram/grid-lines';
 import { RulerSettings } from './diagram/ruler-settings';
@@ -73,7 +73,7 @@ import { setSwimLaneDefaults } from './utility/diagram-util';
 import { checkPortRestriction, serialize, deserialize, updateHyperlink, getObjectType, removeGradient, getChild } from './utility/diagram-util';
 import { Rect } from './primitives/rect';
 import { getPortShape } from './objects/dictionary/common';
-import { PointPortModel, PortModel } from './objects/port-model';
+import { PathPortModel, PointPortModel, PortModel } from './objects/port-model';
 import { ShapeAnnotationModel, AnnotationModel, PathAnnotationModel } from './objects/annotation-model';
 import { ShapeAnnotation, PathAnnotation, Annotation } from './objects/annotation';
 import { PointModel } from './primitives/point-model';
@@ -89,7 +89,7 @@ import { SelectorModel } from './objects/node-model';
 import { DiagramEventHandler } from './interaction/event-handlers';
 import { CommandHandler } from './interaction/command-manager';
 import { DiagramScroller } from './interaction/scroller';
-import { Actions, isSelected } from './interaction/actions';
+import { Actions, contains, isSelected } from './interaction/actions';
 import { ToolBase } from './interaction/tool';
 import { BpmnDiagrams } from './objects/bpmn';
 import { DiagramContextMenu } from './objects/context-menu';
@@ -124,7 +124,7 @@ import { MindMap } from './layout/mind-map';
 import { DiagramTooltip, initTooltip } from './objects/tooltip';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { PrintAndExport } from './print-settings';
-import { Port, PointPort } from './objects/port';
+import { Port, PointPort, PathPort } from './objects/port';
 import { SymmetricLayout, IGraphObject } from './layout/symmetrical-layout';
 import { LayoutAnimation } from './objects/layout-animation';
 import { canShadow } from './utility/constraints-util';
@@ -348,9 +348,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Defines the segmentThumbShape
      *
-     * @default 'Rhombus'
+     * @default 'Circle'
      */
-    @Property('Rhombus')
+    @Property('Circle')
     public segmentThumbShape: SegmentThumbShapes;
 
     /**
@@ -1348,6 +1348,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Event()
     public expandStateChange: EmitType<IExpandStateChangeEventArgs>;
+
     
     /**
      * This event triggers before the diagram load.
@@ -1580,6 +1581,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private blazorAddorRemoveCollection: (NodeModel | ConnectorModel)[] = [];
     private blazorRemoveIndexCollection: number[] = [];
     private diagramid: number = 88123;
+    private portCenterPoint:any = [];
     /** @private */
     public selectedObject: { helperObject: NodeModel, actualObject: NodeModel } = { helperObject: undefined, actualObject: undefined };
     /**
@@ -1716,10 +1718,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.clearObjects(collection);
     }
     /**
-     * Updates the diagram control when the objects are changed
+     * Updates the diagram control when the objects are changed by comparing new and old property values. 
      *
-     * @param {DiagramModel} newProp - Lists the new values of the changed properties
-     * @param {DiagramModel} oldProp - Lists the old values of the changed properties
+     * @param {DiagramModel} newProp - A object that lists the new values of the changed properties.
+     * @param {DiagramModel} oldProp - A object that lists the old values of the changed properties.
      */
     /* tslint:disable */
     public onPropertyChanged(newProp: DiagramModel, oldProp: DiagramModel): void {
@@ -1729,7 +1731,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let isPropertyChanged: boolean = true;
         let refreshLayout: boolean = false;
         let refereshColelction: boolean = false;
-        // Bug 842506: After multiple group node rotations, the undo functionality is not working.
+         // Bug 842506: After multiple group node rotations, the undo functionality is not working.
         // Below condition is used to remove width and height of nodes in props when we perform group node rotate using button.
         if ((this as any).rotateUsingButton && !(this as any).fromUndo) {
             if (newProp.nodes && Object.keys(newProp.nodes).length > 0) {
@@ -1897,7 +1899,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.layout.type === 'None') {
                         refereshColelction = true;
                     } else {
-                        //EJ2-837322 - Duplicate nodes and connectors are created after reset for layout type 'None'
+                        //EJ2-837322- Duplicate nodes and connectors are created after reset for layout type 'None'
                         this.initObjects();
                         refreshLayout = true;
                     }
@@ -2252,7 +2254,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 diagram: this, name: 'load',
             };
             this.trigger('load', loadEventData);
-        }
+        } 
         // Bug 832897: Need to improve performance while rendering layout with large number of nodes.
         this.isRefreshed = false;
         this.ignoreCollectionWatch = true;
@@ -2360,8 +2362,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         // Bug 832897: Need to improve performance while rendering layout with large number of nodes.
         // If diagram not refreshed, then we will refresh the diagram.
         if(!this.isRefreshed){
-        this.refreshDiagramLayer();
+            this.refreshDiagramLayer();
         }
+        this.refreshDiagramLayer();
         if (this.scrollSettings.verticalOffset > 0 || this.scrollSettings.horizontalOffset > 0) {
             this.updateScrollOffset();
         }
@@ -2508,9 +2511,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Returns the module name of the diagram
+     * Retrieves the module name associated with the diagram.
      *
-     * @returns {string}  Returns the module name of the diagram
+     * @returns {string}  Retrieves the module name associated with the diagram.
      */
 
     public getModuleName(): string {
@@ -2655,9 +2658,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     *To destroy the diagram
+     *Destroys the diagram, freeing up its resources.
      *
-     * @returns {void} To destroy the diagram
+     * @returns {void} Destroys the diagram, freeing up its resources.
      */
     public destroy(): void {
         clearInterval(this.renderTimer as number);
@@ -2754,11 +2757,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Selects the given collection of objects \
+     * Select a specified collection of nodes and connectors in the diagram. You can specify whether to clear the existing selection and provide an old value if needed. \
      *
-     * @returns { void } Selects the given collection of objects .\
-     * @param {NodeModel | ConnectorModel} objects - Defines the collection of nodes and connectors to be selected
-     * @param {boolean} multipleSelection -Defines whether the existing selection has to be cleared or not
+     * @returns { void } Select a specified collection of nodes and connectors in the diagram. You can specify whether to clear the existing selection and provide an old value if needed.\
+     * @param {NodeModel | ConnectorModel} objects - An array containing the collection of nodes and connectors to be selected.
+     * @param {boolean} multipleSelection - Determines whether the existing selection should be cleared (default is false).
      * @param {NodeModel | ConnectorModel} oldValue - Defines the old value
      *
      */
@@ -2774,8 +2777,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     /**
-    * this method returns diagramAction as a string
+    * Returns the diagram action as a string representation.
     * @returns { string }
+    * @param { DiagramAction } diagramAction - The diagram action to be converted to a string.
     */
     //Feature (EJ2-18451) : For all client side events, cause argument data type should be string instead of flag enum and value should be easier to understand.
     public getDiagramAction(diagramAction: DiagramAction): string {
@@ -2820,9 +2824,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     *  Selects the all the objects. \
+     *  Select all objects, including nodes and connectors, in the diagram. \
      *
-     * @returns { void }  Selects the all the objects. .\
+     * @returns { void }  Select all objects, including nodes and connectors, in the diagram.\
      *
      */
     public selectAll(): void {
@@ -2833,10 +2837,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Removes the given object from selection list \
+     * Remove a specific object from the current selection in the diagram. \
      *
-     * @returns { void } Selects the given collection of objects .\
-     * @param {NodeModel | ConnectorModel} obj -  Removes the given object from selection list
+     * @returns { void } Remove a specific object from the current selection in the diagram.\
+     * @param {NodeModel | ConnectorModel} obj -  The object to remove from the selection.
      *
      */
     public unSelect(obj: NodeModel | ConnectorModel): void {
@@ -2852,9 +2856,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Removes all elements from the selection list\
+     * Removes all elements from the selection list, clearing the current selection.\
      *
-     * @returns { void } Removes all elements from the selection list .\
+     * @returns { void } Removes all elements from the selection list, clearing the current selection.\
      *
      */
     public clearSelection(): void {
@@ -2863,9 +2867,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *  Update the diagram clipboard dimension \
+     *  Updates the dimensions of the diagram viewport. \
      *
-     * @returns { void }  Update the diagram clipboard dimension .\
+     * @returns { void }  Updates the dimensions of the diagram viewport.\
      *
      */
     public updateViewPort(): void {
@@ -2881,9 +2885,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *  Removes the selected nodes and connectors from diagram and moves them to diagram clipboard \
+     *  Removes the selected nodes and connectors from the diagram and moves them to the diagram clipboard for cutting. \
      *
-     * @returns { void }  Removes the selected nodes and connectors from diagram and moves them to diagram clipboard .\
+     * @returns { void }  Removes the selected nodes and connectors from the diagram and moves them to the diagram clipboard for cutting. \
      *
      */
     public cut(): void {
@@ -2892,11 +2896,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *   Add a process into the sub-process \
+     *   Adds a process into the sub-process. \
      *
-     * @returns { void }  Add a process into the sub-process.\
-     * @param {NodeModel | ConnectorModel} process - provide the process value.
-     * @param {boolean} parentId - provide the parentId value.
+     * @returns { void }  Adds a process into the sub-process. \
+     * @param {NodeModel | ConnectorModel} process - A NodeModel representing the process to be added.
+     * @param {boolean} parentId - A string representing the parent ID where the process will be added.
      *
      */
     public addProcess(process: NodeModel, parentId: string): void {
@@ -2907,10 +2911,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *  Remove a process from the sub-processs \
+     *  Removes a process from the BPMN sub-process. \
      *
-     * @returns { void }  Remove a process from the sub-process.\
-     * @param {string} id - provide the id value.
+     * @returns { void }  Removes a process from the BPMN sub-process.\
+     * @param {string} id - The ID of the process to be removed. 
      *
      */
     public removeProcess(id: string): void {
@@ -2924,10 +2928,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *  Adds the given objects/ the objects in the diagram clipboard to diagram control \
+     * Adds the given objects or the objects in the diagram clipboard to the diagram control. \
      *
-     * @returns { void }  Remove a process from the sub-process.\
-     * @param {NodeModel[] | ConnectorModel[]} obj - Defines the objects to be added to diagram
+     * @returns { void }  Adds the given objects or the objects in the diagram clipboard to the diagram control. \
+     * @param {NodeModel[] | ConnectorModel[]} obj - An array of nodes or connectors objects to be added to diagram.
      * @deprecated
      *
      */
@@ -2936,11 +2940,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     *  fit the diagram to the page with respect to mode and region \
+     *  Fits the diagram to the page with respect to mode and region. \
      *
-     * @returns { void }  fit the diagram to the page with respect to mode and region.\
-     * @param {IFitOptions} options - provide the options value.
-     *
+     * @returns { void }  Fits the diagram to the page with respect to mode and region.\
+     * @param {IFitOptions} options - specify the options for fitting the diagram to the page.
      */
     public fitToPage(options?: IFitOptions): void {
         const attribute: string[] = this.getZoomingAttribute();
@@ -2951,10 +2954,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * bring the specified bounds into the viewport \
+     * Brings the specified bounds into view within the diagram's viewport. \
      *
-     * @returns { void }  bring the specified bounds into the viewport.\
-     * @param {Rect} bound - provide the bound value.
+     * @returns { void }  Brings the specified bounds into view within the diagram's viewport.\
+     * @param {Rect} bound - Representing the bounds to be brought into view.
      *
      */
     public bringIntoView(bound: Rect): void {
@@ -2967,10 +2970,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * bring the specified bounds to the center of the viewport \
+     * Brings the specified bounds to the center of the viewport. \
      *
-     * @returns { void }  bring the specified bounds to the center of the viewport.\
-     * @param {Rect} bound - provide the bound value.
+     * @returns { void }  Brings the specified bounds to the center of the viewport.\
+     * @param {Rect} bound - representing the bounds to be centered in the viewport.
      *
      */
     public bringToCenter(bound: Rect): void {
@@ -2986,9 +2989,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Copies the selected nodes and connectors to diagram clipboard \
+     * Copies the selected nodes and connectors from the diagram to the diagram clipboard for copying. \
      *
-     * @returns { Object } Copies the selected nodes and connectors to diagram clipboard.\
+     * @returns { Object } Copies the selected nodes and connectors from the diagram to the diagram clipboard for copying.\
      *
      */
     public copy(): Object {
@@ -2998,9 +3001,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *  Group the selected nodes and connectors in diagram \
+     *  Groups the selected nodes and connectors in the diagram. \
      *
-     * @returns { void }   Group the selected nodes and connectors in diagram.\
+     * @returns { void }   Groups the selected nodes and connectors in the diagram.\
      *
      */
     public group(): void {
@@ -3034,9 +3037,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *  send the selected nodes or connectors back \
+     *  Use this method to move the currently selected nodes or connectors to the back of the drawing order. This effectively places them behind other elements in the diagram. \
      *
-     * @returns { void }   send the selected nodes or connectors back.\
+     * @returns { void }   Use this method to move the currently selected nodes or connectors to the back of the drawing order. This effectively places them behind other elements in the diagram.\
      *
      */
     public sendToBack(): void {
@@ -3045,10 +3048,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * set the active layer\
+     * Specify which layer in the diagram should be considered the active layer. The active layer is the one where new elements will be added and where user interactions are primarily focused. \
      *
-     * @returns { void } set the active layer.\
-     * @param {string} layerName - defines the name of the layer which is to be active layer.
+     * @returns { void } Specify which layer in the diagram should be considered the active layer. The active layer is the one where new elements will be added and where user interactions are primarily focused. \
+     * @param {string} layerName - The name of the layer to set as the active layer.
      *
      */
     public setActiveLayer(layerName: string): void {
@@ -3059,9 +3062,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * add the layer into diagram\
      *
-     * @returns { void } add the layer into diagram.\
-     * @param {LayerModel} layer - defines the layer model which is to be added
-     * @param {Object[]} layerObject - defines the object of the layer
+     * @returns { void } Adds the specified layer to the diagram control along with its associated objects.\
+     * @param {LayerModel} layer - representing the layer to be added to the diagram.
+     * @param {Object[]} layerObject -  An optional array of objects associated with the layer.
      * @blazorArgsType layer|DiagramLayer
      * @deprecated
      *
@@ -3100,12 +3103,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * move objects from the layer to another layer from diagram\
+     *Moves objects from one layer to another layer within the diagram. \
      *
-     * @returns { void } move objects from the layer to another layer from diagram.\
-     * @param {string[]} objects - define the objects id of string array
-     * @param {string} targetLayer - define the objects id of string array
-     *
+     * @returns { void } Moves objects from one layer to another layer within the diagram. \
+     * @param {string[]} objects - An array of object IDs represented as strings to be moved.
+     * @param {string} targetLayer - The ID of the target layer to which the objects should be moved. 
      */
     public moveObjects(objects: string[], targetLayer?: string): void {
         const oldValues: object = cloneObject(this.layers);
@@ -3134,10 +3136,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * move the layer backward \
+     * Use this method to change the order of layers in the diagram. This moves the specified layer behind the layer that comes after it in the layer order. \
      *
-     * @returns { void } move the layer backward .\
-     * @param {string} layerName - define the name of the layer
+     * @returns { void } Use this method to change the order of layers in the diagram. This moves the specified layer behind the layer that comes after it in the layer order.\
+     * @param {string} layerName - The name of the layer to be moved.
      * @param {string} targetLayer - define the objects id of string array
      *
      */
@@ -3149,10 +3151,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * move the layer forward \
+     * Moves the specified layer forward in the drawing order. \
      *
-     * @returns { void } move the layer forward.\
-     * @param {string} layerName - define the name of the layer
+     * @returns { void } Moves the specified layer forward in the drawing order.\
+     * @param {string} layerName - A string representing the name of the layer to be moved forward.
      *
      */
     public bringLayerForward(layerName: string): void {
@@ -3164,10 +3166,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *clone a layer with its object \
+     * Clones a layer along with its objects.\
      *
-     * @returns { void } move the layer forward.\
-     * @param {string} layerName - define the name of the layer
+     * @returns { void } Clones a layer along with its objects.\
+     * @param {string} layerName - A string representing the name of the layer to be cloned.
      *
      */
     public cloneLayer(layerName: string): void {
@@ -3176,9 +3178,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *bring the selected nodes or connectors to front \
+     *Brings the selected nodes or connectors to the front of the drawing order. \
      *
-     * @returns { void } move the layer forward.\
+     * @returns { void } Brings the selected nodes or connectors to the front of the drawing order. \
      *
      */
     public bringToFront(): void {
@@ -3187,9 +3189,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *send the selected nodes or connectors forward \
+     *Sends the selected nodes or connectors forward in the visual order.  \
      *
-     * @returns { void } send the selected nodes or connectors forward.\
+     * @returns { void } Sends the selected nodes or connectors forward in the visual order. \
      *
      */
     public moveForward(): void {
@@ -3198,9 +3200,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *send the selected nodes or connectors back\
+     *Sends the selected nodes or connectors one step backward in the z-order.\
      *
-     * @returns { void } send the selected nodes or connectors back.\
+     * @returns { void } Sends the selected nodes or connectors one step backward in the z-order.\
      *
      */
     public sendBackward(): void {
@@ -3221,10 +3223,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * gets the node object for the given node ID \
+     *Retrieves the node object for the given node ID.  \
      *
-     * @returns { void } gets the node object for the given node ID.\
-     * @param {string} id - define the name of the layer
+     * @returns { void } Retrieves the node object for the given node ID. \
+     * @param {string} id - The ID of the node for which the node object is to be retrieved.
      *
      */
     public getNodeObject(id: string): NodeModel {
@@ -3233,10 +3235,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *gets the connector object for the given node ID \
+     *Retrieves the connector object for the given node ID. \
      *
-     * @returns { void } gets the connector object for the given node ID.\
-     * @param {string} id - define the name of the layer
+     * @returns { void } Retrieves the connector object for the given node ID.\
+     * @param {string} id - The ID of the node for which the connector object is to be retrieved.
      *
      */
     public getConnectorObject(id: string): ConnectorModel {
@@ -3245,9 +3247,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * gets the active layer back \
+     * Retrieves the active layer. \
      *
-     * @returns { void } gets the active layer back.\
+     * @returns { void } Retrieves the active layer.\
      *
      */
     public getActiveLayer(): LayerModel {
@@ -3265,12 +3267,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Moves the selected objects towards the given direction
+     * Moves the selected objects towards the given direction by a specified distance.  
      *
-     * @returns { void }  Moves the selected objects towards the given direction .\
-     * @param {NudgeDirection} direction -  Defines the direction by which the objects have to be moved
-     * @param {number} x - Defines the distance by which the selected objects have to be horizontally moved
-     * @param {number} y -  Defines the distance by which the selected objects have to be vertically moved
+     * @returns { void }  Moves the selected objects towards the given direction by a specified distance.  \
+     * @param {NudgeDirection} direction -  Defines the direction in which the objects should be moved.
+     * @param {number} x - The horizontal distance by which the selected objects should be moved.
+     * @param {number} y -  The vertical distance by which the selected objects should be moved.
+     * @param {string} type -  A string that defines the type of nudge action.
      */
     public nudge(direction: NudgeDirection, x?: number, y?: number, type?: string): void {
         let tx: number = 0; let ty: number = 0;
@@ -3329,12 +3332,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Drags the given object by the specified pixels
+     * Drags the given object (nodes, connectors, or selector) by the specified horizontal and vertical distances.
      *
-     * @returns { void }  Drags the given object by the specified pixels .\
-     * @param {NodeModel | ConnectorModel | SelectorModel} obj - Defines the nodes/connectors to be dragged
-     * @param {number} tx - Defines the distance by which the given objects have to be horizontally moved
-     * @param {number} ty - Defines the distance by which the given objects have to be vertically moved
+     * @returns { void }  Drags the given object (nodes, connectors, or selector) by the specified horizontal and vertical distances.\
+     * @param {NodeModel | ConnectorModel | SelectorModel} obj - representing the nodes, connectors, or selector to be dragged.
+     * @param {number} tx - A number representing the horizontal distance by which the given objects should be moved.
+     * @param {number} ty - A number representing the vertical distance by which the given objects should be moved.
      */
     public drag(obj: NodeModel | ConnectorModel | SelectorModel, tx: number, ty: number): void {
         this.insertBlazorDiagramObjects(obj);
@@ -3413,13 +3416,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     }
     /**
-     * Scales the given objects by the given ratio
+     * Use this method to scale one or more objects in the diagram by specifying the horizontal and vertical scaling ratios. You can also provide a pivot point as a reference for scaling.
      *
-     * @returns { void } Scales the given objects by the given ratio .\
-     * @param {NodeModel | ConnectorModel | SelectorModel} obj - Defines the objects to be resized
-     * @param {number} sx - Defines the ratio by which the objects have to be horizontally scaled
-     * @param {number} sy - Defines the ratio by which the objects have to be vertically scaled
-     * @param {PointModel} pivot - Defines the reference point with respect to which the objects will be resized
+     * @returns { void } Use this method to scale one or more objects in the diagram by specifying the horizontal and vertical scaling ratios. You can also provide a pivot point as a reference for scaling.\
+     * @param {NodeModel | ConnectorModel | SelectorModel} obj - The objects to be resized.
+     * @param {number} sx - The horizontal scaling ratio. 
+     * @param {number} sy - The vertical scaling ratio.
+     * @param {PointModel} pivot - The reference point with respect to which the objects will be resized. 
      */
     public scale(obj: NodeModel | ConnectorModel | SelectorModel, sx: number, sy: number, pivot: PointModel): boolean {
         this.disableStackContainerPadding(obj.wrapper as Container, false);
@@ -3466,15 +3469,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         return checkBoundaryConstraints;
     }
     /**
-     * Rotates the given nodes/connectors by the given angle
+     * Rotates the specified nodes, connectors, or selector by the given angle.
      *
-     * @returns { void } Rotates the given nodes/connectors by the given angle .\
-     * @param {NodeModel | ConnectorModel | SelectorModel} obj - Defines the objects to be rotated
-     * @param {number} angle - Defines the angle by which the objects have to be rotated
-     * @param {PointModel} pivot - Defines the reference point with reference to which the objects have to be rotated
+     * @returns { void } Rotates the specified nodes, connectors, or selector by the given angle.\
+     * @param {NodeModel | ConnectorModel | SelectorModel} obj - The objects to be rotated
+     * @param {number} angle - The angle by which the objects should be rotated (in degrees).
+     * @param {PointModel} pivot - The reference point with respect to which the objects will be rotated.
      */
     public rotate(obj: NodeModel | ConnectorModel | SelectorModel, angle: number, pivot?: PointModel, rotateUsingHandle?: boolean): boolean {
-        // Bug 842506: After multiple group node rotations, the undo functionality is not working.
+         // Bug 842506: After multiple group node rotations, the undo functionality is not working.
         // Added below condition to change the negative angle to positive angle and assign button angle value if we rotate using button.
         if(!rotateUsingHandle){
             (this as any).buttonAngle = angle;
@@ -3519,12 +3522,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         return checkBoundaryConstraints;
     }
     /**
-     * Moves the source point of the given connector
+     * Moves the source point of the given connector by the specified horizontal and vertical distances.
      *
-     * @returns { void }  Moves the source point of the given connector .\
-     * @param {ConnectorModel} obj - Defines the connector, the end points of which has to be moved
-     * @param {number} tx - Defines the distance by which the end point has to be horizontally moved
-     * @param {number} ty - Defines the distance by which the end point has to be vertically moved
+     * @returns { void }  Moves the source point of the given connector by the specified horizontal and vertical distances.\
+     * @param {ConnectorModel} obj - representing the connector whose source point needs to be moved.
+     * @param {number} tx - A number representing the horizontal distance by which the source point should be moved.
+     * @param {number} ty - A number representing the vertical distance by which the source point should be moved.
      */
     public dragSourceEnd(obj: ConnectorModel, tx: number, ty: number): void {
         this.insertBlazorDiagramObjects(obj);
@@ -3535,12 +3538,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Moves the target point of the given connector
+     * Moves the target point of the given connector by the specified horizontal and vertical distances.
      *
-     * @returns { void }   Moves the target point of the given connector.\
-     * @param {ConnectorModel} obj - Defines the connector, the end points of which has to be moved
-     * @param {number} tx - Defines the distance by which the end point has to be horizontally moved
-     * @param {number} ty - Defines the distance by which the end point has to be vertically moved
+     * @returns { void }   Moves the target point of the given connector by the specified horizontal and vertical distances.\
+     * @param {ConnectorModel} obj - representing the connector whose target point needs to be moved.
+     * @param {number} tx - A number representing the horizontal distance by which the target point should be moved.
+     * @param {number} ty - A number representing the vertical distance by which the target point should be moved.
      */
     public dragTargetEnd(obj: ConnectorModel, tx: number, ty: number): void {
         this.insertBlazorDiagramObjects(obj);
@@ -3551,23 +3554,23 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Finds all the objects that is under the given mouse position
+     * Finds all the objects that are under the given mouse position based on specified criteria.
      *
-     * @returns { void }   Finds all the objects that is under the given mouse position.\
-     * @param {PointModel} position - Defines the position, the objects under which has to be found
-     * @param {IElement} source - Defines the object, the objects under which has to be found
+     * @returns { void }   Finds all the objects that are under the given mouse position based on specified criteria.\
+     * @param {PointModel} position - The PointModel that defines the position. The objects under this position will be found.
+     * @param {IElement} source - Representing the source object. The objects under this source will be found.
      */
     public findObjectsUnderMouse(position: PointModel, source?: IElement): IElement[] {
         return this.eventHandler.findObjectsUnderMouse(position, source);
     }
 
     /**
-     * Finds the object that is under the given mouse position
+     * Finds the object that is under the given mouse position based on specified criteria. 
      *
-     * @returns { void }   Finds the object that is under the given mouse position.\
-     * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
-     * @param {Actions} action - Defines the action, using which the relevant object has to be found.
-     * @param {boolean} inAction - Defines the active state of the action.
+     * @returns { void }   Finds the object that is under the given mouse position based on specified criteria. \
+     * @param {NodeModel[] | ConnectorModel[]}objects - A collection of NodeModel or ConnectorModel objects, from which the target object has to be found.
+     * @param {Actions} action - Defines the action used to find the relevant object.
+     * @param {boolean} inAction - A boolean indicating the active state of the action. 
      */
     public findObjectUnderMouse(
         objects: (NodeModel | ConnectorModel)[], action: Actions, inAction: boolean): IElement {
@@ -3575,14 +3578,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Finds the object that is under the given active object (Source)
+     * Finds the object that is under the given active object (source) based on specified criteria.
      *
-     * @returns { void } Finds the object that is under the given active object (Source) .\
-     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
-     * @param {Actions} action - Defines the action, using which the relevant object has to be found.
-     * @param {boolean} inAction - Defines the active state of the action.
-     * @param {PointModel} position - Defines the position.
-     * @param {IElement} source - Defines the source.
+     * @returns { void } Finds the object that is under the given active object (source) based on specified criteria.\
+     * @param {NodeModel[] | ConnectorModel[]} objects - A collection of node or connector objects, from which the target object has to be found.
+     * @param {Actions} action - defines the action used to find the relevant object.
+     * @param {boolean} inAction - A boolean indicating the active state of the action.
+     * @param {PointModel} position - The PointModel that defines the position
+     * @param {IElement} source - Representing the source element.
      */
     public findTargetObjectUnderMouse(
         objects: (NodeModel | ConnectorModel)[], action: Actions, inAction: boolean, position: PointModel, source?: IElement): IElement {
@@ -3590,12 +3593,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Finds the child element of the given object at the given position
+     * Finds the child element of the given object at the given position based on specified criteria.
      *
-     * @returns { void } Finds the child element of the given object at the given position .\
-     * @param {IElement} obj - Defines the object, the child element of which has to be found
-     * @param {PointModel} position - Defines the position, the child element under which has to be found
-     * @param {number} padding - Defines the padding, the child element under which has to be found
+     * @returns { void } Finds the child element of the given object at the given position based on specified criteria.\
+     * @param {IElement} obj - representing the object, the child element of which has to be found.
+     * @param {PointModel} position - defines the position. The child element under this position will be found.
+     * @param {number} padding - A number representing the padding for the search area around the position.
      */
     public findElementUnderMouse(obj: IElement, position: PointModel, padding?: number): DiagramElement {
         return this.eventHandler.findElementUnderMouse(obj, position, padding);
@@ -3613,15 +3616,27 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public findActionToBeDone(
         obj: NodeModel | ConnectorModel, wrapper: DiagramElement, position: PointModel,
-        target?: NodeModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel): Actions {
+        target?: NodeModel | ConnectorModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel): Actions {
         return this.eventHandler.findActionToBeDone(obj, wrapper, position, target);
+    };
+    // Feature 826644: Support to add ports to the connector. Added below method to update connector port on property change.
+    private updateConnectorPort(connector : Connector): void{
+        if(connector.ports.length){
+            let portContent : PathElement;
+            for(const port of connector.ports){
+                portContent = this.getWrapper(connector.wrapper, port.id) as PathElement;
+                connector.initPortWrapper((port as Port), connector.intermediatePoints, connector.wrapper.bounds, portContent);
+            }
+        }
+        connector.wrapper.measure(new Size(connector.wrapper.width, connector.wrapper.height));
+        connector.wrapper.arrange(connector.wrapper.desiredSize);
     }
 
     /**
-     * Returns the tool that handles the given action
+     * Returns the tool that handles the given action.
      *
-     * @returns { ToolBase } Returns the tool that handles the given action \
-     * @param {string} action - Defines the action that is going to be performed
+     * @returns { ToolBase } Returns the tool that handles the given action. \
+     * @param {string} action - A string that defines the action that is going to be performed. 
      */
     public getTool(action: string): ToolBase {
         let tool: ToolBase;
@@ -3636,11 +3651,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Defines the cursor that corresponds to the given action
+     * Defines the cursor that corresponds to the given action.
      *
-     * @returns { string } Defines the cursor that corresponds to the given action \
-     * @param {string} action - Defines the action that is going to be performed
-     * @param {boolean} active - Defines the active
+     * @returns { string } Defines the cursor that corresponds to the given action. \
+     * @param {string} action - The action for which the cursor is defined.
+     * @param {boolean} active - Indicates whether the action is active.
      */
     public getCursor(action: string, active: boolean): string {
         let cursor: string;
@@ -3675,11 +3690,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Adds the given change in the diagram control to the track
+     * Adds a history entry for a change in the diagram control to the track.
      *
-     * @returns { void } Adds the given change in the diagram control to the track \
-     * @param {HistoryEntry} entry - Defines the entry/information about a change in diagram
-     * @param {string[]} sourceId - Defines the source id
+     * @returns { void } Adds a history entry for a change in the diagram control to the track. \
+     * @param {HistoryEntry} entry - The history entry that describes a change in the diagram.
+     * @param {string[]} sourceId - An optional array of source IDs associated with the change. 
      */
     public addHistoryEntry(entry: HistoryEntry, sourceId?: string[]): void {
         if (this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo)
@@ -3835,9 +3850,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Starts grouping the actions that will be undone/restored as a whole
+     * Use this method to start a group action, allowing multiple actions to be treated as a single unit during undo/redo operations. This is useful when you want to group related actions together. 
      *
-     * @returns { void } Starts grouping the actions that will be undone/restored as a whole\
+     * @returns { void } Use this method to start a group action, allowing multiple actions to be treated as a single unit during undo/redo operations. This is useful when you want to group related actions together. \
      */
     public startGroupAction(): void {
         const entry: HistoryEntry = { type: 'StartGroup', category: 'Internal' };
@@ -3847,9 +3862,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Closes grouping the actions that will be undone/restored as a whole
+     * Closes the grouping of actions that will be undone/restored as a whole.
      *
-     * @returns { void } Closes grouping the actions that will be undone/restored as a whole .\
+     * @returns { void } Closes the grouping of actions that will be undone/restored as a whole.\
      */
     public endGroupAction(): void {
         const entry: HistoryEntry = { type: 'EndGroup', category: 'Internal' };
@@ -3859,9 +3874,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Restores the last action that is performed
+     * Restores the last action that was performed. 
      *
-     * @returns { void } Restores the last action that is performed .\
+     * @returns { void } Restores the last action that was performed. \
      */
     public undo(): void {
         this.canEnableBlazorObject = true;
@@ -3875,9 +3890,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Restores the last undone action
+     * Reverse an undo action, essentially restoring the state of the component to a previous state after an undo operation has been performed.
      *
-     * @returns { void } Restores the last undone action .\
+     * @returns { void } Reverse an undo action, essentially restoring the state of the component to a previous state after an undo operation has been performed.\
      */
     public redo(): void {
         this.canEnableBlazorObject = true;
@@ -3903,11 +3918,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Aligns the group of objects to with reference to the first object in the group
+     * Aligns a group of objects with reference to the first object in the group.
      *
-     * @returns { void } Aligns the group of objects to with reference to the first object in the group .\
-     * @param {AlignmentOptions}option - Defines the factor, by which the objects have to be aligned
-     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the objects that have to be aligned
+     * @returns { void } Aligns a group of objects with reference to the first object in the group.\
+     * @param {AlignmentOptions}option - Defining the factor by which the objects have to be aligned.
+     * @param {NodeModel[] | ConnectorModel[]} objects - A collection of node or connector objects to be aligned.
      * @param {AlignmentMode} type - Defines the type to be aligned
      */
     public align(option: AlignmentOptions, objects?: (NodeModel | ConnectorModel)[], type?: AlignmentMode): void {
@@ -3924,11 +3939,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Arranges the group of objects with equal intervals, but within the group of objects
+     * Arranges a group of objects with equal intervals within the group.
      *
-     * @returns { void } Arranges the group of objects with equal intervals, but within the group of objects .\
-     * @param {NodeModel[] | ConnectorModel[]} option - Defines the factor to distribute the shapes
-     * @param {DistributeOptions} objects - Defines the objects that have to be equally spaced
+     * @returns { void } Arranges a group of objects with equal intervals within the group.\
+     * @param {NodeModel[] | ConnectorModel[]} option - Objects that have to be equally spaced within the group.
+     * @param {DistributeOptions} objects - Object defining the factor to distribute the shapes.
      */
     public distribute(option: DistributeOptions, objects?: (NodeModel | ConnectorModel)[]): void {
         this.getBlazorDiagramObjects(objects);
@@ -3944,11 +3959,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Scales the given objects to the size of the first object in the group
+     * Scales the specified objects to match the size of the first object in the group.
      *
-     * @returns { void } Scales the given objects to the size of the first object in the group .\
-     * @param {SizingOptions} option - Defines whether the node has to be horizontally scaled, vertically scaled or both
-     * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects that have to be scaled
+     * @returns { void } Scales the specified objects to match the size of the first object in the group.\
+     * @param {SizingOptions} option - Specifies whether the objects should be horizontally scaled, vertically scaled, or both.
+     * @param {NodeModel[] | ConnectorModel[]}objects - The collection of objects to be scaled.
      */
     public sameSize(option: SizingOptions, objects?: (NodeModel | ConnectorModel)[]): void {
         this.getBlazorDiagramObjects(objects);
@@ -3985,11 +4000,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Scales the diagram control by the given factor
+     * Scales the diagram control based on the provided zoom factor. You can optionally specify a focused point around which the diagram will be zoomed.
      *
-     * @returns { void } Scales the diagram control by the given factor .\
-     * @param {number} factor - Defines the factor by which the diagram is zoomed
-     * @param {PointModel} focusedPoint - Defines the point with respect to which the diagram has to be zoomed
+     * @returns { void } Scales the diagram control based on the provided zoom factor. You can optionally specify a focused point around which the diagram will be zoomed.\
+     * @param {number} factor - Defines the factor by which the diagram is zoomed.
+     * @param {PointModel} focusedPoint - Defines the point with respect to which the diagram will be zoomed.
      */
     public zoom(factor: number, focusedPoint?: PointModel): void {
         const attribute: string[] = this.getZoomingAttribute();
@@ -4001,10 +4016,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Scales the diagram control by the given factor
+     * Scales the diagram control based on the provided options, which include the desired zoom factor, focus point, and zoom type.
      *
-     * @returns { void }  Scales the diagram control by the given factor .\
-     * @param {ZoomOptions} options - used to define the zoom factor, focus point and zoom type.
+     * @returns { void }  Scales the diagram control based on the provided options, which include the desired zoom factor, focus point, and zoom type.\
+     * @param {ZoomOptions} options - An object specifying the zoom factor, focus point, and zoom type. 
      *
      */
     public zoomTo(options: ZoomOptions): void {
@@ -4017,13 +4032,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Pans the diagram control to the given horizontal and vertical offsets
+     * Pans the diagram control to the given horizontal and vertical offsets.
      *
-     * @returns { void } Pans the diagram control to the given horizontal and vertical offsets .\
-     * @param {number} horizontalOffset - Defines the horizontal distance to which the diagram has to be scrolled
-     * @param {number} verticalOffset - Defines the vertical distance to which the diagram has to be scrolled
-     * @param {PointModel} focusedPoint - Provide the focusedPoint value
-     * @param {boolean} isInteractiveZoomPan - Provide the isInteractiveZoomPan value
+     * @returns { void } Pans the diagram control to the given horizontal and vertical offsets.\
+     * @param {number} horizontalOffset - The horizontal distance to which the diagram should be scrolled.
+     * @param {number} verticalOffset - The vertical distance to which the diagram should be scrolled.
+     * @param {PointModel} focusedPoint - representing the focused point during panning.
+     * @param {boolean} isInteractiveZoomPan - A boolean indicating whether the panning is interactive zoom pan. 
      */
     public pan(horizontalOffset: number, verticalOffset: number, focusedPoint?: PointModel, isInteractiveZoomPan?: boolean): void {
         const attribute: string[] = this.getZoomingAttribute();
@@ -4034,9 +4049,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Resets the zoom and scroller offsets to default values
+     * Resets the zoom and scroller offsets to their default values.
      *
-     * @returns { void } Resets the zoom and scroller offsets to default values .\
+     * @returns { void } Resets the zoom and scroller offsets to their default values.\
      */
     public reset(): void {
         const attribute: string[] = this.getZoomingAttribute();
@@ -4048,9 +4063,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Resets the segments of the connectors
+     * Resets the segments of the connectors to their default state. This removes any custom segments and restores the connectors to their original configuration. 
      *
-     * @returns { void } Resets the segments of the connectors .\
+     * @returns { void } Resets the segments of the connectors to their default state. This removes any custom segments and restores the connectors to their original configuration. \
      */
     public resetSegments(): void {
         const previousConnectorObject: Object[] = [];
@@ -4137,12 +4152,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Adds the given node to the lane
+     * Adds the specified node to a lane within a swimlane. 
      *
-     * @returns { void }     Adds the given node to the lane .\
-     * @param {NodeModel} node - provide the node value.
-     * @param {string} swimLane - provide the swimLane value.
-     * @param {string} lane - provide the lane value.
+     * @returns { void }     Adds the specified node to a lane within a swimlane. \
+     * @param {NodeModel} node - representing the node to be added to the lane.
+     * @param {string} swimLane - A string representing the ID of the swimlane containing the lane.
+     * @param {string} lane - A string representing the ID of the lane where the node will be added. 
      * @deprecated
      */
     public addNodeToLane(node: NodeModel, swimLane: string, lane: string): void {
@@ -4201,9 +4216,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.updateDiagramElementQuad();
     }
     /**
-     * Shows tooltip for corresponding diagram object
+     * Displays a tooltip for the specified diagram object.
      *
-     * @param {NodeModel | ConnectorModel} obj - Defines the object for that tooltip has to be shown
+     * @param {NodeModel | ConnectorModel} obj - The object for which the tooltip will be shown.
      */
 
     public showTooltip(obj: NodeModel | ConnectorModel): void {
@@ -4224,9 +4239,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * hides tooltip for corresponding diagram object
+     * Hides the tooltip for the corresponding diagram object. 
      *
-     * @param {NodeModel | ConnectorModel} obj - Defines the object for that tooltip has to be hide
+     * @param {NodeModel | ConnectorModel} obj - The node or connector object for which the tooltip should be hidden. 
      */
 
     public hideTooltip(obj: NodeModel | ConnectorModel): void {
@@ -4236,11 +4251,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Adds the given node to diagram control
+     * Adds the specified node to the diagram control.
      *
-     * @returns { Node }     getDirection method .\
-     * @param {NodeModel} obj - Defines the node that has to be added to diagram
-     * @param {boolean} group - Defines the node that has to be added to diagram
+     * @returns { Node }     Adds the specified node to the diagram control.\
+     * @param {NodeModel} obj - representing the node to be added to the diagram.
+     * @param {boolean} group - A boolean value indicating whether the node should be added to a group.
      * @blazorArgsType obj|DiagramNode
      */
     public addNode(obj: NodeModel, group?: boolean): Node {
@@ -4248,11 +4263,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Adds the given diagram object to the group.
+     * Adds the specified diagram object to the specified group node.
      *
-     * @returns { void }     Adds the given diagram object to the group.\
-     * @param {NodeModel} group - defines where the diagram object to be added.
-     * @param {string | NodeModel | ConnectorModel} child - defines the diagram object to be added to the group
+     * @returns { void }     Adds the specified diagram object to the specified group node.\
+     * @param {NodeModel} group - The group node to which the diagram object will be added.
+     * @param {string | NodeModel | ConnectorModel} child - The diagram object to be added to the group.
      * @blazorArgsType obj|DiagramNode
      */
     public addChildToGroup(group: NodeModel, child: string | NodeModel | ConnectorModel): void {
@@ -4283,10 +4298,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (isBlazor() && isHistoryAdded) { this.commandHandler.getBlazorOldValues(); }
     }
     /**
-     * Will return the history stack values
+     * Retrieves the history stack values for either undo or redo actions.
      *
-     * @returns { void } Will return the history stack values .\
-     * @param {boolean} isUndoStack - returns the history stack values
+     * @returns { void } Retrieves the history stack values for either undo or redo actions.\
+     * @param {boolean} isUndoStack - If `true`, retrieves the undo stack values; if `false`, retrieves the redo stack values. 
      */
     public getHistoryStack(isUndoStack: boolean): HistoryEntry[] {
         //let temp: HistoryEntry[];
@@ -4307,11 +4322,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /* tslint:disable */
     /**
-     * Return the edges for the given node
+     * Returns the edges connected to the given node. 
      *
-     * @returns { string[] } Return the edges for the given node .\
+     * @returns { string[] } Returns the edges connected to the given node. \
      * @deprecated
-     * @param {Object} args - return the edge of the given node
+     * @param {Object} args - An object containing information about the node for which edges are to be retrieved. 
      */
     public getEdges(args: Object): string[] {
         return args['outEdge'] ? this.nameTable[args['id']].outEdges : this.nameTable[args['id']].inEdges;
@@ -4542,11 +4557,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /* tslint:disable */
     /**
-     * Adds the given object to diagram control
+     * Adds the provided object, which can be a node, group, or connector, onto the diagram canvas.
      *
-     * @returns { Node | Connector }     getDirection method .\
-     * @param {NodeModel | ConnectorModel} obj - Defines the object that has to be added to diagram
-     * @param {boolean} group - provide the group value.
+     * @returns { Node | Connector }     Adds the provided object, which can be a node, group, or connector, onto the diagram canvas.\
+     * @param {NodeModel | ConnectorModel} obj - Specifies the object to be added to the diagram.
+     * @param {boolean} group - If a group object is passed, set it to true.
      */
     public add(obj: NodeModel | ConnectorModel, group?: boolean): Node | Connector {
         let newObj: Node | Connector; const propertyChangeValue: boolean = this.isProtectedOnChange; this.protectPropertyChange(true);
@@ -4770,11 +4785,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Adds the given annotation to the given node
+     * Adds the given annotation to the specified node. 
      *
-     * @returns { void } Adds the given annotation to the given node .\
-     * @param {BpmnAnnotationModel} annotation - Defines the annotation to be added
-     * @param {NodeModel} node - Defines the node to which the annotation has to be added
+     * @returns { void } Adds the given annotation to the specified node.\
+     * @param {BpmnAnnotationModel} annotation - Object representing the annotation to be added.
+     * @param {NodeModel} node - object representing the node to which the annotation will be added. 
      */
     public addTextAnnotation(annotation: BpmnAnnotationModel, node: NodeModel): void {
         if (this.bpmnModule) {
@@ -4828,15 +4843,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Remove the dependent connectors if the node is deleted
      * @returns { void } Remove the dependent connectors if the node is deleted .\
-     * @param {Node} node - provide the node value.
+     * @param {Node} obj - provide the node value.
      *
      * @private
      */
-    public removeDependentConnector(node: Node): void {
-        if (node) {
+    public removeDependentConnector(obj: Node | Connector): void {
+        if (obj) {
             let connector: ConnectorModel;
             let edges: string[] = [];
-            edges = edges.concat(node.outEdges, node.inEdges);
+            edges = edges.concat(obj.outEdges, obj.inEdges);
             for (let i: number = edges.length - 1; i >= 0; i--) {
                 connector = this.nameTable[edges[parseInt(i.toString(), 10)]];
                 if (connector) {
@@ -4953,9 +4968,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.remove();
     }
     /**
-     * Removes the given object from diagram
+     * Removes the specified object from the diagram.
      *
-     * @param {NodeModel | ConnectorModel} obj - Defines the object that has to be removed from diagram
+     * @param {NodeModel | ConnectorModel} obj - The node or connector object to be removed from the diagram. 
      */
     /* tslint:disable */
     public remove(obj?: NodeModel | ConnectorModel): void {
@@ -5001,7 +5016,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 groupAction = true;
                             }
                         }
-                        if (obj instanceof Node) {
+                        if (obj instanceof Node || obj instanceof Connector ) {
                             this.removeDependentConnector(obj);
                         }
                         if (!(obj as Node).isLane && !(obj as Node).isPhase) {
@@ -5015,7 +5030,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.deleteGroup(obj as Node);
                     }
                     if ((obj as Node | Connector).parentId) {
-                        this.deleteChild(obj, undefined, true);
+                        this.deleteChild(obj,undefined, true);
                         if (this.nameTable[(obj as Node | Connector).parentId] && this.nameTable[(obj as Node | Connector).parentId].shape.type === 'UmlClassifier') {
                             this.updateDiagramObject(this.nameTable[(obj as Node | Connector).parentId]);
                             this.updateConnectorEdges(this.nameTable[(obj as Node | Connector).parentId]);
@@ -5341,9 +5356,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Clears all nodes and objects in the diagram
+     * Clears all nodes and objects in the diagram, effectively resetting the diagram to an empty state.
      *
-     * @returns { void }     getDirection method .\
+     * @returns { void }     Clears all nodes and objects in the diagram, effectively resetting the diagram to an empty state.\
      * @deprecated
      */
     public clear(): void {
@@ -5400,11 +5415,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /* tslint:disable */
     /**
-     * Specified annotation to edit mode
+     * Initiate the editing mode for a specific annotation within a node or connector. 
      *
-     * @returns { void }  Specified annotation to edit mode .\
-     * @param {NodeModel | ConnectorModel} node - Defines node/connector that contains the annotation to be edited
-     * @param {string} id - Defines annotation id to be edited in the node
+     * @returns { void }  Initiate the editing mode for a specific annotation within a node or connector. \
+     * @param {NodeModel | ConnectorModel} node - The node or connector containing the annotation to be edited.
+     * @param {string} id - The ID of the annotation to be edited within the node or connector.
      */
     public startTextEdit(node?: NodeModel | ConnectorModel, id?: string): void {
         if ((!canZoomPan(this) && !canMultiSelect(this)) || canSingleSelect(this)) {
@@ -5437,8 +5452,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                     if (!id && ((node.shape.type !== 'Text' && node.annotations.length > 0) || (node.shape.type === 'Text'))) {
-                        //(EJ2-840331)-Double click on node annotation will open the edit of invisible annotation
-                        if(node.shape.type === 'Text'){
+                          //(EJ2-840331)-Double click on node annotation will open the edit of invisible annotation
+                          if(node.shape.type === 'Text'){
                             id = (node.wrapper.children[0].id).split('_')[1];
                          }
                          else{
@@ -5591,8 +5606,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /* tslint:disable */
     /**
-     * Automatically updates the diagram objects based on the type of the layout
-     * @returns { ILayout | boolean }  Automatically updates the diagram objects based on the type of the layout .\
+     * Automatically updates the diagram objects based on the type of the layout.
+     * @returns { ILayout | boolean }  Automatically updates the diagram objects based on the type of the layout.\
      */
     public doLayout(): ILayout | boolean {
         let update: boolean = false; let layout: ILayout;
@@ -5718,8 +5733,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /* tslint:enable */
     /**
-     * Serializes the diagram control as a string
-     * @returns { string }     Serializes the diagram control as a string .\
+     * Serializes the diagram control as a string. 
+     * @returns { string }     Serializes the diagram control as a string. \
      */
     public saveDiagram(): string {
         let children: string[] = []; let node: Node; let grid: GridPanel; let childTable: DiagramElement[];
@@ -5744,11 +5759,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         return serialize(this);
     }
     /**
-     * Converts the given string as a Diagram Control
+     * Converts the given string into a Diagram Control. 
      *
-     * @returns { Object }      Converts the given string as a Diagram Control .\
-     * @param {string} data - Defines the behavior of the diagram to be loaded
-     * @deprecated
+     * @returns { Object }      Converts the given string into a Diagram Control. \
+     * @param {string} data - The string representing the diagram model JSON to be loaded.
+     * @param {boolean} data - A boolean indicating whether the JSON data is EJ1 data. 
      */
     public loadDiagram(data: string, isEJ1Data?: boolean): Object {
         if(isEJ1Data && this.modelProperties){
@@ -5773,11 +5788,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To export diagram native/html image
+     * Exports a diagram as a image.
      *
-     * @returns { void } To export diagram native/html image .\
-     * @param {string} image - defines image content to be exported.
-     * @param {IExportOptions} options - defines the image properties.
+     * @returns { void } Exports a diagram as a image.\
+     * @param {string} image - A string representing the image content to be exported.
+     * @param {IExportOptions} options -An object defining the properties of the image export.
      */
     public exportImage(image: string, options: IExportOptions): void {
         if (this.printandExportModule) {
@@ -5786,11 +5801,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To print native/html nodes of diagram
+     * Prints the native or HTML nodes of the diagram as an image. 
      *
-     * @returns { void } To print native/html nodes of diagram .\
-     * @param {string} image - defines image content.
-     * @param {IExportOptions} options - defines the properties of the image
+     * @returns { void } Prints the native or HTML nodes of the diagram as an image. \
+     * @param {string} image - A string that defines the image content to be printed.
+     * @param {IExportOptions} options - An IExportOptions object that defines the properties of the image and printing options. 
      */
     public printImage(image: string, options: IExportOptions): void {
         if (this.printandExportModule) {
@@ -5800,10 +5815,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To limit the history entry of the diagram
+     * Define a limit on the number of history entries that the diagram's history manager can store. This can help manage memory usage and control the undo/redo history size. Or
+    Sets the limit for the history entries in the diagram.
+
      *
-     * @returns { void }  To limit the history entry of the diagram.\
-     * @param {number} stackLimit - defines stackLimit of the history manager.
+     * @returns { void }  Define a limit on the number of history entries that the diagram's history manager can store. This can help manage memory usage and control the undo/redo history size. Or Sets the limit for the history entries in the diagram.
+\
+     * @param {number} stackLimit - The limit for the history manager's stack. 
      */
     public setStackLimit(stackLimit: number): void {
         if (this.undoRedoModule && stackLimit) {
@@ -5813,8 +5831,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To clear history of the diagram
-     * @returns { void } To clear history of the diagram .\
+     * Clears the history of the diagram, removing all the recorded actions from the undo and redo history.
+     * @returns { void } Clears the history of the diagram, removing all the recorded actions from the undo and redo history.\
      */
     public clearHistory(): void {
         if (this.undoRedoModule) {
@@ -5823,8 +5841,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To get the bound of the diagram
-     * @returns { void } To get the bound of the diagram .\
+     * Retrieves the bounding rectangle that encloses the entire diagram. 
+     * @returns { void } TRetrieves the bounding rectangle that encloses the entire diagram. \
      */
     public getDiagramBounds(): Rect {
         if (this.printandExportModule) {
@@ -5841,10 +5859,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To export Diagram
+     * Exports the diagram as an image or SVG element based on the specified options.
      *
-     * @returns { void } To export Diagram .\
-     * @param {IExportOptions} options - defines the how the image to be exported.
+     * @returns { void } Exports the diagram as an image or SVG element based on the specified options.\
+     * @param {IExportOptions} options - An object defining how the diagram image should be exported.
      */
     public exportDiagram(options: IExportOptions): string | SVGElement {
         if (this.printandExportModule) {
@@ -5855,10 +5873,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To print Diagram
+     * Prints the diagram.
      *
-     * @returns { void }     To print Diagram .\
-     * @param {IPrintOptions} optons - defines how the image to be printed.
+     * @returns { void }     Prints the diagram.\
+     * @param {IPrintOptions} optons - An IPrintOptions object that defines how the diagram is to be printed.
      */
 
     public print(options: IPrintOptions): void {
@@ -5869,40 +5887,52 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Add ports at the run time \
+     * Adds ports to a node or connector at runtime. \
      *
-     * @returns { void }    Remove Labels at the run time .\
-     * @param { Node | ConnectorModel} obj - provide the obj value.
-     * @param {ShapeAnnotationModel[] | PathAnnotationModel[]} ports - provide the ports value.
+     * @returns { void }    Adds ports to a node or connector at runtime.\
+     * @param { Node | ConnectorModel} obj - object representing the node or connector to which ports will be added.
+     * @param {ShapeAnnotationModel[] | PathAnnotationModel[]} ports - objects representing the ports to be added.
      * @blazorArgsType obj|DiagramNode
      */
-    public addPorts(obj: NodeModel, ports: PointPortModel[]): void {
+    public addPorts(obj: NodeModel| ConnectorModel, ports: PointPortModel[] | PathPortModel []): void {
         this.protectPropertyChange(true);
-        const portCollection: PointPort[] = [];
+        const portCollection: PointPort[] | PathPort [] = [];
         let isAddPortInServer: boolean = true;
         if (isBlazor() && obj !== null && (obj.ports.length > 0 && !(this.diagramActions & DiagramAction.UndoRedo))) {
-            const index: number = Number(findObjectIndex(obj, (ports[0] as PointPortModel).id, false));
+            const index: number = Number(findObjectIndex(obj, (ports[0] as PointPortModel | PathPortModel).id, false));
             if (index !== -1) {
                 isAddPortInServer = false;
             }
         }
         obj = this.nameTable[obj.id] || obj;
-        let newObj: PointPort;
+        let newObj: PointPort | PathPort;
         if (ports.length > 1) {
             this.startGroupAction();
         }
         for (let i: number = 0; i < ports.length; i++) {
-            newObj = new PointPort(obj, 'ports', ports[parseInt(i.toString(), 10)], true);
-            obj.ports.push(newObj);
-            if (isBlazor() && isAddPortInServer) {
-                portCollection.push(newObj);
+            if(obj instanceof Node){
+                newObj = new PointPort(obj, 'ports', ports[parseInt(i.toString(), 10)], true);
+                obj.ports.push(newObj);
+            }else if(obj instanceof Connector){
+                newObj = new PathPort(obj, 'ports', ports[parseInt(i.toString(), 10)], true);
+                obj.ports.push(newObj);
             }
-            if (obj.children) {
+            if (isBlazor() && isAddPortInServer) {
+                portCollection.push(newObj as any);
+            }
+            if ((obj as NodeModel).children) {
                 const container: Container = obj.wrapper;
                 (obj as Node).initPort(this.getDescription, (obj.wrapper.children[container.children.length - 1] as Container), newObj);
             } else {
                 const canvas: Container = obj.wrapper;
-                canvas.children.push((obj as Node).initPortWrapper(obj.ports[obj.ports.length - 1] as Port));
+                if(obj instanceof Node){
+                    canvas.children.push((obj as Node).initPortWrapper(obj.ports[obj.ports.length - 1] as Port));
+                }else if(obj instanceof Connector){
+                    var points = obj.type === 'Bezier' ? obj.intermediatePoints : obj.getConnectorPoints(obj.type);
+                    points = obj.clipDecorators(obj, points);
+                    const bounds: Rect = Rect.toBounds(points);
+                    canvas.children.push((obj as Connector).initPort(obj.ports[obj.ports.length - 1] as Port,points,bounds,undefined));
+                }
             }
             if (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group)) {
                 const entry: HistoryEntry = {
@@ -5916,9 +5946,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.endGroupAction();
         }
         if (isBlazor() && isAddPortInServer) {
-            this.UpdateBlazorLabelOrPortObjects(portCollection, 'Port', undefined, this.nodes.indexOf(obj));
+            this.UpdateBlazorLabelOrPortObjects(portCollection, 'Port', undefined, this.nodes.indexOf(obj as NodeModel));
         }
-        obj.wrapper.measure(new Size(obj.width, obj.height));
+        obj.wrapper.measure(new Size((obj as Node).width, (obj as Node).height));
         obj.wrapper.arrange(obj.wrapper.desiredSize);
         this.updateDiagramObject(obj);
         this.protectPropertyChange(false);
@@ -5926,11 +5956,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Add constraints at run time \
+     * Adds constraints at run time. \
      *
      * @returns { void }Add constraints at run time .\
-     * @param {number} constraintsType - provide the source value.
-     * @param {number} constraintsValue - provide the target value.
+     * @param {number} constraintsType - The source value for constraints.
+     * @param {number} constraintsValue - The target value for constraints. 
      *
      */
     public addConstraints(constraintsType: number, constraintsValue: number): number {
@@ -5939,11 +5969,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Remove constraints at run time \
+     * Remove constraints at run time. \
      *
-     * @returns { void }Remove constraints at run time .\
-     * @param {number} constraintsType - provide the source value.
-     * @param {number} constraintsValue - provide the target value.
+     * @returns { void }Remove constraints at run time.\
+     * @param {number} constraintsType - The type of constraints to be removed. 
+     * @param {number} constraintsValue - The value of constraints to be removed. 
      *
      */
     public removeConstraints(constraintsType: number, constraintsValue: number): number {
@@ -5952,9 +5982,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Add labels in node at the run time in the blazor platform \
+     * Add labels in node at the run time in the blazor platform  \
      *
-     * @returns { void } Add labels in node at the run time in the blazor platform .\
+     * @returns { void } Add labels in node at the run time in the blazor platform  \
      * @param {NodeModel} obj - provide the obj value.
      * @param {ShapeAnnotationModel[]} labels - provide the labels value.
      *
@@ -5965,11 +5995,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Add labels in connector at the run time in the blazor platform\
+     * Adds labels to a connector at runtime in the Blazor platform.\
      *
-     * @returns { void } Add labels in connector at the run time in the blazor platform .\
-     * @param {ConnectorModel} obj - provide the obj value.
-     * @param {PathAnnotationModel[]} labels - provide the labels value.
+     * @returns { void } Adds labels to a connector at runtime in the Blazor platform.\
+     * @param {ConnectorModel} obj - The connector to which labels will be added.
+     * @param {PathAnnotationModel[]} labels - An array of labels to add to the connector.
      *
      */
     public addConnectorLabels(obj: ConnectorModel, labels: PathAnnotationModel[]): void {
@@ -5978,11 +6008,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Add Labels at the run time \
+     * Adds labels to a node or connector at runtime. \
      *
-     * @returns { void } Add Labels at the run time .\
-     * @param {NodeModel | ConnectorModel} obj - provide the obj value.
-     * @param {ShapeAnnotationModel[] | PathAnnotation[] | PathAnnotationModel[]} labels - provide the labels value.
+     * @returns { void } Adds labels to a node or connector at runtime.\
+     * @param {NodeModel | ConnectorModel} obj - The node or connector to which labels will be added.
+     * @param {ShapeAnnotationModel[] | PathAnnotation[] | PathAnnotationModel[]} labels - An array of label objects to be added.
      *
      */
     public addLabels(obj: NodeModel | ConnectorModel, labels: ShapeAnnotationModel[] | PathAnnotation[] | PathAnnotationModel[]): void {
@@ -6061,12 +6091,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Add dynamic Lanes to swimLane at runtime \
+     * Dynamically add lanes to a swimlane at runtime. You can specify the swimlane (node), the lanes to be added (lane), and an optional index to determine where the lanes should be inserted. \
      *
-     * @returns { void } Add dynamic Lanes to swimLane at runtime .\
-     * @param {NodeModel} node - provide the obj value.
-     * @param {LaneModel[]} lane - provide the labels value.
-     * @param {number} index - provide the labels value.
+     * @returns { void } Dynamically add lanes to a swimlane at runtime. You can specify the swimlane (node), the lanes to be added (lane), and an optional index to determine where the lanes should be inserted.\
+     * @param {NodeModel} node - The swimlane to which lanes will be added.
+     * @param {LaneModel[]} lane -An array of LaneModel objects representing the lanes to be added.
+     * @param {number} index - The index at which the lanes should be inserted. 
      *
      */
     public addLanes(node: NodeModel, lane: LaneModel[], index?: number): void {
@@ -6082,11 +6112,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Add a phase to a swimLane at runtime \
+     * Adds phases to a swimlane at runtime.  \
      *
-     * @returns { void } Add a phase to a swimLane at runtime .\
-     * @param {NodeModel} node - provide the obj value.
-     * @param {PhaseModel[]} phases - provide the labels value.
+     * @returns { void } Adds phases to a swimlane at runtime. \
+     * @param {NodeModel} node - object representing the swimlane to which phases will be added.
+     * @param {PhaseModel[]} phases - objects representing the phases to be added. 
      *
      */
     public addPhases(node: NodeModel, phases: PhaseModel[]): void {
@@ -6099,11 +6129,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *Remove dynamic Lanes to swimLane at runtime \
+     *Removes a dynamic lane from a swimlane at runtime. \
      *
-     * @returns { void } Remove dynamic Lanes to swimLane at runtime .\
-     * @param {NodeModel} node - provide the node value.
-     * @param {LaneModel} lane - provide the lane value.
+     * @returns { void } Removes a dynamic lane from a swimlane at runtime.\
+     * @param {NodeModel} node - representing the swimlane to remove the lane from.
+     * @param {LaneModel} lane - representing the dynamic lane to be removed. 
      *
      */
     public removeLane(node: NodeModel, lane: LaneModel): void {
@@ -6113,18 +6143,45 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     *Remove a phase to a swimLane at runtime \
+     *Removes a phase from a swimlane at runtime.\
      *
-     * @returns { void } Remove a phase to a swimLane at runtime .\
-     * @param {NodeModel} node - provide the node value.
-     * @param {PhaseModel} phase - provide the phase value.
+     * @returns { void } Removes a phase from a swimlane at runtime.\
+     * @param {NodeModel} node - representing the swimlane to remove the phase from.
+     * @param {PhaseModel} phase - representing the phase to be removed. 
      *
      */
     public removePhase(node: NodeModel, phase: PhaseModel): void {
         removePhase(this, undefined, node, phase);
         this.updateDiagramElementQuad();
     }
-
+    //827745-support to edit Segment for Straight connector at runtime.
+    /**
+     * Used to add or remove intermediate segments to the straight connector. 
+     *
+     * @returns { void }  Used to add or remove intermediate segments to the straight connector. 
+     * @param {IEditSegmentOptions} editOptions - An object containing various options for adding/removing segments.
+     *
+     */
+    public editSegment(editOptions: IEditSegmentOptions):void {
+        if (editOptions.connector.type == 'Straight') {
+            let connector = editOptions.connector;
+            const mode: string = editOptions && editOptions.SegmentEditing ? editOptions.SegmentEditing : 'Toggle';
+            let point = editOptions.point;
+            let hasPoint: boolean; let allowEdit: boolean;
+            for (let i: number = 0; i < connector.segments.length; i++) {
+                const segment: StraightSegment = (connector.segments)[parseInt(i.toString(), 10)] as StraightSegment;
+                if (contains(point, segment.point, connector.hitPadding)) {
+                    hasPoint = true;
+                    break;}
+            }
+            if ((hasPoint && mode == 'Remove') || (!hasPoint && mode == 'Add')) {
+                allowEdit = true;
+            }
+            if ((connector.type === 'Straight') && (allowEdit || mode == 'Toggle')) {
+                this.connectorEditingToolModule.addOrRemoveSegment(connector, point, this.commandHandler);
+            }
+        }
+    }
     private removelabelExtension(
         obj: Node | ConnectorModel, labels: ShapeAnnotationModel[] | PathAnnotationModel[],
         j: number, wrapper: DiagramElement):
@@ -6171,11 +6228,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Remove Labels at the run time \
+     * Removes labels from a node or connector at runtime. \
      *
-     * @returns { string }    Remove Labels at the run time .\
-     * @param { Node | ConnectorModel} obj - provide the obj value.
-     * @param {ShapeAnnotationModel[] | PathAnnotationModel[]} labels - provide the labels value.
+     * @returns { string }    Removes labels from a node or connector at runtime. \
+     * @param { Node | ConnectorModel} obj - Representing the node or connector to remove labels from.
+     * @param {ShapeAnnotationModel[] | PathAnnotationModel[]} labels - objects representing the labels to be removed.
      *
      */
     public removeLabels(obj: Node | ConnectorModel, labels: ShapeAnnotationModel[] | PathAnnotationModel[]): void {
@@ -6219,7 +6276,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     private removePortsExtenion(
-        obj: Node, ports: PointPortModel[],
+        obj: Node | Connector, ports: PointPortModel[] | PathPortModel[],
         j: number, wrapper: DiagramElement):
         void {
         for (let i: number = 0; i < (wrapper as Container).children.length; i++) {
@@ -6252,14 +6309,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Remove Ports at the run time \
+     * Removes Ports at run time. \
      *
-     * @returns { void } checkSourcePointInTarget method .\
-     * @param {Node} obj - provide the Connector value.
-     * @param {PointPortModel[]} ports - provide the Connector value.
+     * @returns { void } Removes Ports at run time.\
+     * @param {Node} obj - The node or connector to remove ports from.
+     * @param {PointPortModel[]} ports - An array of ports to be removed.
      *
      */
-    public removePorts(obj: Node, ports: PointPortModel[]): void {
+    public removePorts(obj: Node | Connector, ports: PointPortModel[] | PathPortModel[]): void {
         let isAddPortInServer: boolean = true;
         if (isBlazor() && obj !== null && !(this.diagramActions & DiagramAction.UndoRedo)) {
             const index: number = (obj.ports.length > 0) ? Number(findObjectIndex(obj, (ports[0] as PointPortModel).id, false)) : -1;
@@ -6276,7 +6333,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 removalIndexCollection.push(index);
                 portCollection.push(ports[parseInt(j.toString(), 10)] as PortModel);
             }
-            this.UpdateBlazorLabelOrPortObjects(portCollection, 'Port', removalIndexCollection, this.nodes.indexOf(obj));
+            this.UpdateBlazorLabelOrPortObjects(portCollection, 'Port', removalIndexCollection, this.nodes.indexOf(obj as Node));
         }
         if (ports.length > 1) {
             this.startGroupAction();
@@ -6407,17 +6464,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (checkBrowserInfo()) {
             //EJ2-832888-To remove the black grid lines appearing in the safari browser.
             const url = new URL(window.location.href); 
-           // Check if the URL contains a query string 
-           if (url.search !== '')
-           {
-            rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
-           }
-           else{
-            rect.setAttribute('fill', 'url(' + location.protocol + '//' + location.host + location.pathname +
-            '#' + this.element.id + '_pattern)');}
-           } else {
-            rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
+            // Check if the URL contains a query string 
+            if (url.search !== '')
+            {
+             rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
             }
+            else{
+             rect.setAttribute('fill', 'url(' + location.protocol + '//' + location.host + location.pathname +
+             '#' + this.element.id + '_pattern)');}
+        } else {
+            rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
+        }
         svgGrid.appendChild(rect);
         svgGridSvg.appendChild(svgGrid);
         this.diagramCanvas.appendChild(svgGridSvg);
@@ -7603,15 +7660,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public updateEdges(obj: Connector): void {
         if (obj.sourceID !== undefined && obj.sourceID !== '') {
-            const node: Node = this.nameTable[obj.sourceID];
-            if (node && node.outEdges && node.outEdges.length === 0) { node.outEdges = []; }
-            if (node && node.outEdges && node.outEdges.indexOf(obj.id) === -1) {
-                node.outEdges.push(obj.id);
+            const object: Node | Connector = this.nameTable[obj.sourceID];
+            if (object && object.outEdges && object.outEdges.length === 0) { object.outEdges = []; }
+            if (object && object.outEdges && object.outEdges.indexOf(obj.id) === -1) {
+                object.outEdges.push(obj.id);
             }
-            this.updatePortEdges(node, obj, false);
+            this.updatePortEdges(object, obj, false);
         }
         if (obj.targetID !== undefined && obj.targetID !== '') {
-            const node: Node = this.nameTable[obj.targetID];
+            const node: Node | Connector = this.nameTable[obj.targetID];
             if (node && node.inEdges && node.inEdges.length === 0) { node.inEdges = []; }
             if (node && node.inEdges && node.inEdges.indexOf(obj.id) === -1) {
                 node.inEdges.push(obj.id);
@@ -7619,7 +7676,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.updatePortEdges(node, obj, true);
             if (node && node.visible && node.outEdges) {
                 const value: boolean = node.outEdges.length === 0 ? false : true;
-                this.updateIconVisibility(node, value);
+                this.updateIconVisibility(node as Node, value);
             }
         }
     }
@@ -7633,10 +7690,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
-    public updatePortEdges(node: NodeModel, obj: ConnectorModel, isInEdges: boolean): void {
+    public updatePortEdges(node: NodeModel | ConnectorModel, obj: ConnectorModel, isInEdges: boolean): void {
         if (node) {
             for (let i: number = 0; i < node.ports.length; i++) {
-                const port: PointPortModel = node.ports[parseInt(i.toString(), 10)];
+                const port: PointPortModel | PortModel = node.ports[parseInt(i.toString(), 10)];
                 const portId: string = (isInEdges) ? obj.targetPortID : obj.sourcePortID;
                 if (port.id === portId) {
                     const portEdges: string[] = (isInEdges) ? port.inEdges : port.outEdges;
@@ -7761,7 +7818,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         const centerPoint = this.getMidPoint(obj);
                         this.diagramRenderer.updateNode(
                             obj.wrapper as DiagramElement, diagramElementsLayer,
-                            htmlLayer, undefined, canIgnoreIndex ? undefined : this.getZindexPosition(obj, view.element.id), centerPoint);
+                            htmlLayer, undefined, canIgnoreIndex ? undefined : this.getZindexPosition(obj, view.element.id), centerPoint, this.portCenterPoint);
                         this.updateCanupdateStyle(obj.wrapper.children, true);
                     }
                 }
@@ -7794,7 +7851,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.applyMarginBezier(obj, finalPoint);
             // EJ2-64114 -Horizontal and Vertical alignment not applied properly for the bezier connector annotation
             this.applyAlignment(obj, finalPoint);
-
+            // Bug 835525: Connector Port feature. Below code is used to get the port position for bezier connector.
+            for(let i: number = 0; i < obj.ports.length; i++) {
+                let portOffset = obj.ports[parseInt(i.toString(), 10)].offset ? obj.ports[parseInt(i.toString(), 10)].offset : 0.5;
+                let length = portOffset * totalLength;
+                let portPosition = this.commandHandler.getPointAtLength(length, totalPoints, 0);
+                let portPoint = { cx: portPosition.x, cy: portPosition.y };
+                for(var j = 0; j < obj.wrapper.children.length; j++) {
+                    if(obj.wrapper && obj.wrapper.children[parseInt(j.toString(), 10)] instanceof PathElement &&
+                    (obj.wrapper.children[parseInt(j.toString(), 10)] as any).isPathPort){
+                        if(obj.wrapper.children[parseInt(j.toString(), 10)].id === obj.id + '_' + obj.ports[parseInt(i.toString(), 10)].id){
+                            this.portCenterPoint[obj.id + '_' + obj.ports[parseInt(i.toString(), 10)].id] = this.applyPortAlignment(obj.wrapper.children[parseInt(j.toString(), 10)] as PathElement, portPoint,obj.ports[parseInt(i.toString(), 10)].displacement);
+                        }
+                    }
+                }
+            }
         }
         return finalPoint;
     }
@@ -7837,6 +7908,45 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+     /**
+     * Apply alignment to bezier port
+     * @param {PathElement} child - provide the obj value.
+     * @param finalPoint
+     */
+     private applyPortAlignment(child: PathElement, finalPoint: any, displacement: PointModel) {
+                switch (child.horizontalAlignment) {
+                case 'Auto':
+                case 'Left':
+                    finalPoint.cx = child.inversedAlignment ? finalPoint.cx : (finalPoint.cx - child.desiredSize.width);
+                    finalPoint.cx += displacement.x; 
+                    break;
+                case 'Stretch':
+                case 'Center':
+                    finalPoint.cx -= child.desiredSize.width * child.pivot.x;
+                    break;
+                case 'Right':
+                    finalPoint.cx = child.inversedAlignment ? (finalPoint.cx - child.desiredSize.width) : finalPoint.cx;
+                    finalPoint.cx -= displacement.x;
+                    break;
+                }
+                switch (child.verticalAlignment) {
+                case 'Auto':
+                case 'Top':
+                    finalPoint.cy = child.inversedAlignment ? finalPoint.cy : (finalPoint.cy - child.desiredSize.height);
+                    finalPoint.cy += displacement.y;
+                    break;
+                case 'Stretch':
+                case 'Center':
+                    finalPoint.cy -= child.desiredSize.height * child.pivot.y;
+                    break;
+                case 'Bottom':
+                    finalPoint.cy = child.inversedAlignment ? (finalPoint.cy - child.desiredSize.height) : finalPoint.cy;
+                    finalPoint.cy -= displacement.y;
+                    break;
+                }
+            return finalPoint;
+     };
+
     //(EJ2-62683) Method used to get total points in bezier connector
     private getBezierPoints(obj: ConnectorModel) {
         const points: PointModel[] = [];
@@ -7875,10 +7985,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     *getObjectsOfLayer method \
+     *Retrieves the node or connector with the given id. \
      *
-     * @returns { (NodeModel | ConnectorModel)[] } getObjectsOfLayer method .\
-     * @param { string[] } objectArray - provide the objectArray value.
+     * @returns { (NodeModel | ConnectorModel)[] } Retrieves the node or connector with the given id.\
+     * @param { string[] } objectArray - The id of the node or connector to be retrieved.
      *
      * @private
      */
@@ -8017,14 +8127,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
-    public updatePortVisibility(node: Node, portVisibility: PortVisibility, inverse?: Boolean): void {
+    public updatePortVisibility(obj: Node | Connector, portVisibility: PortVisibility, inverse?: Boolean): void {
         let portElement: DiagramElement;
         const drawingObject: boolean = !(this.drawingObject && this.drawingObject.shape) ? true : false;
-        if (node instanceof Node && drawingObject && canMove(node)) {
-            const ports: PointPortModel[] = node.ports;
+        if ((obj instanceof Node || obj instanceof Connector)  && drawingObject && canMove(obj)) {
+            const ports: PointPortModel[]| PortModel[]  = obj.ports;
             let changed: boolean = false;
             for (let i: number = 0; i < ports.length; i++) {
-                portElement = this.getWrapper(node.wrapper, ports[parseInt(i.toString(), 10)].id);
+                portElement = this.getWrapper(obj.wrapper, ports[parseInt(i.toString(), 10)].id);
                 if ((portVisibility & PortVisibility.Hover || portVisibility & PortVisibility.Connect)) {
                     if (checkPortRestriction(ports[parseInt(i.toString(), 10)], portVisibility)) {
                         portElement.visible = !inverse;
@@ -8033,7 +8143,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             if (changed) {
-                this.updateDiagramObject(node);
+                this.updateDiagramObject(obj);
             }
             //EJ2-59672 - Added the below code to render the ports while hovering over the node
             if (this.mode === 'Canvas') {
@@ -8255,7 +8365,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     renderer.renderElement(
                         renderNode.wrapper, canvas, htmlLayer,
                         (!renderer.isSvgMode && transform) ? transformValue : undefined,
-                        undefined, undefined, status && (!this.diagramActions || isOverView), undefined, undefined, getCenterPoint);
+                        undefined, undefined, status && (!this.diagramActions || isOverView), undefined, undefined, getCenterPoint,this.portCenterPoint);
                 }
             }
         }
@@ -9064,10 +9174,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
-    public getEndNodeWrapper(node: NodeModel, connector: ConnectorModel, source: boolean): DiagramElement {
+    public getEndNodeWrapper(node: NodeModel | ConnectorModel, connector: ConnectorModel, source: boolean): DiagramElement {
         if (node.shape.type === 'Bpmn' && node.wrapper.children[0] instanceof Canvas) {
             if ((!isBlazor() && (node.shape as BpmnShape).shape === 'Activity') ||
-                (isBlazor() && (node.shadow as DiagramShape).bpmnShape === 'Activity')) {
+                (isBlazor() && ((node as Node).shadow as DiagramShape).bpmnShape === 'Activity')) {
                 if (source && (node.shape as BpmnShape).activity.subProcess.type === 'Transaction'
                     && connector.sourcePortID) {
                     const portId: string = connector.sourcePortID;
@@ -9085,7 +9195,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             return (node.wrapper.children[0] as Canvas).children[0];
         }
         if (!this.containsMargin(node.wrapper.children[0])) {
-            if (!node.children) {
+            if (!(node as Node).children) {
                 return node.wrapper.children[0];
             }
         }
@@ -9902,7 +10012,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (node.expandIcon !== undefined || node.collapseIcon !== undefined || node.isExpanded !== undefined) {
             this.updateIcon(actualObject); this.updateDefaultLayoutIcons(actualObject);
-            if (node.isExpanded !== undefined) { this.canExpand = true; this.commandHandler.expandNode(actualObject, this); }
+            if (node.isExpanded !== undefined) {
+                this.canExpand = true; 
+                //EJ2-844814 - Expand and collapse not working properly at runtime
+                this.diagramActions |= DiagramAction.PreventIconsUpdate;
+                this.commandHandler.expandNode(actualObject, this); 
+                this.diagramActions = this.diagramActions & ~DiagramAction.PreventIconsUpdate;
+            }
             update = true;
             this.canExpand = false;
         }
@@ -10132,7 +10248,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
-    public updateConnectorEdges(actualObject: Node): void {
+    public updateConnectorEdges(actualObject: Node | Connector): void {
         if (actualObject.inEdges.length > 0) {
             for (let j: number = 0; j < actualObject.inEdges.length; j++) {
                 this.updateConnectorProperties(this.nameTable[actualObject.inEdges[parseInt(j.toString(), 10)]]);
@@ -10278,6 +10394,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
                 // eslint-disable-next-line max-len
                 this.updateConnectorAnnotation(actualObject);
+                this.updateConnectorPort(actualObject);
                 this.updateConnectorfixedUserHandles(actualObject); 
                 this.updateObject(actualObject, oldProp, newProp);
             } //work-around to update intersected connector bridging
@@ -10289,7 +10406,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         // eslint-disable-next-line max-len
         if (!disableBridging) { this.updateBridging(); } 
-        this.updateAnnotations(newProp, actualObject); 
+        this.updateAnnotations(newProp, actualObject);
+        this.updateConnectorPorts(newProp,actualObject); 
         this.updatefixedUserHandle(newProp, actualObject);
         actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
@@ -10307,6 +10425,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
+        this.updateConnectorEdges(actualObject);
         if (this.diagramActions && actualObject.status !== 'New') { actualObject.status = 'Update'; }
         this.triggerPropertyChange(propertyChange, actualObject, oldProp, newProp);
     }
@@ -10323,10 +10442,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
-    public removePortEdges(node: NodeModel, portId: string, item: string, isInEdges: boolean): void {
+    public removePortEdges(node: NodeModel | ConnectorModel, portId: string, item: string, isInEdges: boolean): void {
         if (node) {
             for (let i: number = 0; i < node.ports.length; i++) {
-                const port: PointPortModel = node.ports[parseInt(i.toString(), 10)];
+                const port: PointPortModel | PortModel = node.ports[parseInt(i.toString(), 10)];
                 if (port.id === portId) {
                     const portEdge: string[] = (isInEdges) ? port.inEdges : port.outEdges;
                     removeItem(portEdge, item);
@@ -10342,6 +10461,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         (args as IBlazorPropertyChangeEventArgs).newValue = { connector: cloneBlazorObject(newProp) };
         return args;
     }
+    // Feature 826644: Support to add ports to the connector. Added below method to update connector ports
+    // on connector property change.
+    private updateConnectorPorts(newProp: Connector, actualObject: Connector): void {
+        if (newProp.ports !== undefined) {
+            for (const key of Object.keys(newProp.ports)) {
+                const index: number = Number(key);
+                const changedObject: PortModel = newProp.ports[`${key}`];
+                const actualPort: PortModel = actualObject.ports[parseInt(index.toString(), 10)];
+                this.updatePort(changedObject, actualPort, actualObject.wrapper, actualObject);
+            }
+        }
+    };
 
     private triggerPropertyChange(propertyChange: boolean, actualObject: Connector, oldProp: Connector, newProp: Connector): void {
         if (!propertyChange) {
@@ -10357,7 +10488,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    private findInOutConnectPorts(node: NodeModel, isInconnect: boolean): PointPortModel {
+    private findInOutConnectPorts(node: NodeModel | ConnectorModel, isInconnect: boolean): PointPortModel {
         let port: PointPortModel = {};
         if (node) {
             port = getInOutConnectPorts(node, isInconnect);
@@ -10919,19 +11050,26 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
-    public updatePort(changedObject: PointPortModel, actualPort: PointPortModel, nodes: Container): void {
+    public updatePort(changedObject: PointPortModel, actualPort: PointPortModel, nodes: Container, actualObject?: Connector): void {
         let isMeasure: boolean = false;
         const portWrapper: DiagramElement = this.getWrapper(nodes, actualPort.id);
         if (portWrapper !== undefined) {
 
             if (changedObject.offset !== undefined) {
                 isMeasure = true;
-                const offsetX: number = changedObject.offset.x !== undefined ? changedObject.offset.x :
-                    actualPort.offset.x;
-                const offsetY: number = changedObject.offset.y !== undefined ? changedObject.offset.y :
-                    actualPort.offset.y;
-                portWrapper.setOffsetWithRespectToBounds(offsetX, offsetY, 'Fraction');
-                portWrapper.relativeMode = 'Point';
+                if(!actualObject){
+                    const offsetX: number = changedObject.offset.x !== undefined ? changedObject.offset.x :
+                        actualPort.offset.x;
+                    const offsetY: number = changedObject.offset.y !== undefined ? changedObject.offset.y :
+                        actualPort.offset.y;
+                    portWrapper.setOffsetWithRespectToBounds(offsetX, offsetY, 'Fraction');
+                    portWrapper.relativeMode = 'Point';
+                }
+                else{
+                    if (changedObject.offset !== undefined) {
+                        actualObject.updateAnnotation(actualPort as any, actualObject.intermediatePoints, actualObject.wrapper.bounds, portWrapper);
+                    }
+                }
             }
             if (changedObject.width !== undefined) {
                 isMeasure = true;
@@ -11870,11 +12008,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * moves the node or connector forward within given layer \
+     * Moves the node or connector forward within the given layer. \
      *
-     * @returns { void }  moves the node or connector forward within given layer .\
-     * @param {Node | Connector} node - provide the source value.
-     * @param {LayerModel} currentLayer - provide the source value.
+     * @returns { void }  Moves the node or connector forward within the given layer.\
+     * @param {Node | Connector} node - The node or connector to be moved forward within the layer.
+     * @param {LayerModel} currentLayer - representing the layer in which the node or connector should be moved. 
      *
      */
     public moveObjectsUp(node: NodeModel | ConnectorModel, currentLayer: LayerModel): void {
@@ -11895,10 +12033,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Inserts newly added element into the database \
+     * Inserts a newly added element into the database. \
      *
-     * @returns { void }  Inserts newly added element into the database .\
-     * @param {Node | Connector} node - provide the source value.
+     * @returns { void }  Inserts a newly added element into the database.\
+     * @param {Node | Connector} node - The node or connector to be inserted into the database.
      *
      */
     public insertData(node?: Node | Connector): object {
@@ -11907,10 +12045,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * updates the user defined element properties into the existing database \
+     * Updates user-defined element properties in the existing database. \
      *
-     * @returns { void }     Removes the user deleted element from the existing database .\
-     * @param {Node | Connector} node - provide the source value.
+     * @returns { void }     Updates user-defined element properties in the existing database.\
+     * @param {Node | Connector} node - The source value representing the element to update. 
      *
      */
     public updateData(node?: Node | Connector): object {
@@ -11919,10 +12057,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     /**
-     * Removes the user deleted element from the existing database \
+     * Removes the user-deleted element from the existing database.\
      *
-     * @returns { void }     Removes the user deleted element from the existing database .\
-     * @param {Node | Connector} node - provide the source value.
+     * @returns { void }     Removes the user-deleted element from the existing database.\
+     * @param {Node | Connector} node - The node or connector to be removed from the database.
      *
      */
     public removeData(node?: Node | Connector): object {

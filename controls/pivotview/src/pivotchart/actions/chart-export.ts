@@ -15,8 +15,6 @@ import { PdfExportProperties } from '@syncfusion/ej2-grids';
  */
 export class ChartExport {
     private parent: PivotView;
-    private pdfDocument: PdfDocument;
-    private blobPromise: Promise<{ blobData: Blob }>;
     /** @hidden */
     public exportProperties: BeforeExportEventArgs;
     /**
@@ -49,9 +47,9 @@ export class ChartExport {
      * @hidden
      */
 
-    public pdfChartExport(pdfExportProperties?: PdfExportProperties, pdfDoc?: Object, isMultipleExport?: boolean, isBlob?:
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    boolean): Promise<any> {
+    public pdfChartExport(
+        pdfExportProperties?: PdfExportProperties, pdfDoc?: Object, isMultipleExport?: boolean, isBlob?: boolean
+    ): Promise<any> {   // eslint-disable-line @typescript-eslint/no-explicit-any
         const controls: (Chart | AccumulationChart)[] = [this.parent.chart];
         const chartInfo: IChartInfo = this.getChartInfo(controls);
         const width: number = chartInfo.width;
@@ -74,15 +72,16 @@ export class ChartExport {
         // eslint-disable-next-line @typescript-eslint/tslint/config
         return new Promise((resolve) => {
             image.onload = (() => {
+                let pdfDocument: PdfDocument;
                 if (!isNullOrUndefined(pdfDoc)) {
-                    this.pdfDocument = <PdfDocument>pdfDoc;
+                    pdfDocument = <PdfDocument>pdfDoc;
                 } else {
-                    this.pdfDocument = new PdfDocument();
+                    pdfDocument = new PdfDocument();
                 }
                 ctx.drawImage(image, 0, 0);
                 window.URL.revokeObjectURL(url);
-                this.exportPdf(element, isMultipleExport, isBlob, width, height, pdfExportProperties);
-                resolve(this.pdfDocument);
+                this.exportPdf(element, pdfDocument, isMultipleExport, isBlob, width, height, pdfExportProperties);
+                resolve(pdfDocument);
             });
         });
     }
@@ -131,35 +130,36 @@ export class ChartExport {
         };
     }
 
-    private exportPdf(element: HTMLCanvasElement, isMultipleExport?: boolean, isBlob?: boolean, width?: number, height?: number,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      pdfExportProperties?: PdfExportProperties): Promise<any> {
-        const documentSection: PdfSection = this.pdfDocument.sections.add() as PdfSection;
-        const documentWidth: number = this.pdfDocument.pageSettings.width;
-        let documentHeight: number = this.pdfDocument.pageSettings.height;
-        const margin: PdfMargins = this.pdfDocument.pageSettings.margins;
+    private exportPdf(
+        element: HTMLCanvasElement, pdfDocument: PdfDocument, isMultipleExport?: boolean, isBlob?: boolean, width?: number,
+        height?: number, pdfExportProperties?: PdfExportProperties
+    ): Promise<any> {   // eslint-disable-line @typescript-eslint/no-explicit-any
+        const documentSection: PdfSection = pdfDocument.sections.add() as PdfSection;
+        const documentWidth: number = pdfDocument.pageSettings.width;
+        let documentHeight: number = pdfDocument.pageSettings.height;
+        const margin: PdfMargins = pdfDocument.pageSettings.margins;
         const chartWidth: number = (width + margin.left + margin.right);
-        this.pdfDocument.pageSettings.size = new SizeF(chartWidth, documentHeight);
+        pdfDocument.pageSettings.size = new SizeF(chartWidth, documentHeight);
         const fileName: string = this.exportProperties.fileName ? this.exportProperties.fileName :
             (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.fileName)) ?
                 pdfExportProperties.fileName : 'default';
         if (this.exportProperties.width || this.exportProperties.height) {
-            this.pdfDocument.pageSettings.orientation = ((this.exportProperties.width > this.exportProperties.height) ||
+            pdfDocument.pageSettings.orientation = ((this.exportProperties.width > this.exportProperties.height) ||
                 (!this.exportProperties.height && (this.exportProperties.width > documentHeight)) || (!this.exportProperties.width &&
                     (documentWidth > this.exportProperties.height))) ? PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
-            this.pdfDocument.pageSettings.size = new SizeF(this.exportProperties.width ? this.exportProperties.width
+            pdfDocument.pageSettings.size = new SizeF(this.exportProperties.width ? this.exportProperties.width
                 : documentWidth, this.exportProperties.height ? this.exportProperties.height : documentHeight);
         } else {
-            this.pdfDocument.pageSettings.orientation = (this.exportProperties.orientation === 0 || this.exportProperties.orientation)
+            pdfDocument.pageSettings.orientation = (this.exportProperties.orientation === 0 || this.exportProperties.orientation)
                 ? this.exportProperties.orientation : (!isNullOrUndefined(pdfExportProperties) &&
                     !isNullOrUndefined(pdfExportProperties.pageOrientation)) ? (pdfExportProperties.pageOrientation === 'Landscape' ?
                         PdfPageOrientation.Landscape : PdfPageOrientation.Portrait) : PdfPageOrientation.Landscape;
             if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.pageSize)) {
-                this.pdfDocument.pageSettings.size = PivotUtil.getPageSize(pdfExportProperties.pageSize);
+                pdfDocument.pageSettings.size = PivotUtil.getPageSize(pdfExportProperties.pageSize);
             }
         }
         if (!isNullOrUndefined(this.exportProperties.pdfMargins)) {
-            const margins: PdfMargins = this.pdfDocument.pageSettings.margins;
+            const margins: PdfMargins = pdfDocument.pageSettings.margins;
             margins.top = !isNullOrUndefined(this.exportProperties.pdfMargins.top) ? this.exportProperties.pdfMargins.top : margins.top;
             margins.bottom = !isNullOrUndefined(this.exportProperties.pdfMargins.bottom) ? this.exportProperties.pdfMargins.bottom :
                 margins.bottom;
@@ -167,31 +167,32 @@ export class ChartExport {
             margins.right = !isNullOrUndefined(this.exportProperties.pdfMargins.right) ? this.exportProperties.pdfMargins.right :
                 margins.right;
         }
-        documentSection.setPageSettings(this.pdfDocument.pageSettings);
-        documentHeight = this.pdfDocument.pageSettings.height;
+        documentSection.setPageSettings(pdfDocument.pageSettings);
+        documentHeight = pdfDocument.pageSettings.height;
         let imageString: string = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
         imageString = imageString.slice(imageString.indexOf(',') + 1);
         const image: PdfBitmap = new PdfBitmap(imageString);
         const pdfPage: PdfPage = documentSection.pages.add();
         pdfPage.graphics.drawImage(image, 0, 0, (documentHeight < height || this.exportProperties.width
-            || this.pdfDocument.pageSettings.size) ? pdfPage.getClientSize().width : chartWidth, documentHeight < height
+            || pdfDocument.pageSettings.size) ? pdfPage.getClientSize().width : chartWidth, documentHeight < height
             ? pdfPage.getClientSize().height : height);
+        let blobPromise: Promise<{ blobData: Blob }>;
         if (isBlob || isMultipleExport) {
             if (isBlob) {
-                this.blobPromise = this.pdfDocument.save();
+                blobPromise = pdfDocument.save();
             }
         } else {
-            this.pdfDocument.save(fileName + '.pdf');
-            this.pdfDocument.destroy();
+            pdfDocument.save(fileName + '.pdf');
+            pdfDocument.destroy();
         }
         const exportCompleteEventArgs: ExportCompleteEventArgs = {
             type: 'PDF',
-            promise: isBlob ? this.blobPromise : null
+            promise: isBlob ? blobPromise : null
         };
         this.parent.trigger(events.exportComplete, exportCompleteEventArgs);
         return new Promise(() => {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            this.pdfDocument;
+            pdfDocument;
         });
     }
 
@@ -202,13 +203,6 @@ export class ChartExport {
      * @hidden
      */
     public destroy(): void {
-        if (this.pdfDocument) {
-            this.pdfDocument.destroy();
-            this.pdfDocument = null;
-        }
-        if (this.blobPromise) {
-            this.blobPromise = null;
-        }
         if (this.exportProperties) {
             this.exportProperties = null;
         }

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### HeatMap
+
+#### New Features
+
+- `#I450186` - HeatMap's axis labels can now include line break characters.
+- `#I287338` - Label templates can be displayed in place of cell labels to provide additional information.
+
 ## 22.2.10 (2023-08-22)
 
 ### HeatMap
@@ -25,7 +32,7 @@
 
 #### Bug fixes
 
-- `#F182203` - The data points in the JSON data will now be properly mapped in the HeatMap using the cell adapter with `maximum` and `minimum` properties set in the x-axis.
+- `#F182203` - The data points in the JSON data will now be properly mapped in the HeatMap using the cell adapter with `maximum` and `minimum` properties set in the x-axis.
 
 ## 21.2.4 (2023-05-09)
 
@@ -41,7 +48,7 @@
 
 #### Bug Fixes
 
-- `#I452356` - When the x-axis labels are trimmed and rotated, the HeatMap cell area now renders properly.
+- `#I452356` - When the x-axis labels are trimmed and rotated, the HeatMap cell area now renders properly.
 
 ## 21.1.35 (2023-03-23)
 

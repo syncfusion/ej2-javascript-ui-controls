@@ -18,7 +18,7 @@ import { Gridlines } from '../../diagram/diagram/grid-lines';
 import { BackgroundModel } from '../../diagram/diagram/page-settings-model';
 import { PathAttributes, TextAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
-import { WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection, ControlPointsVisibility } from '../enum/enum';
+import { WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection, ControlPointsVisibility, ConnectorConstraints, SegmentThumbShapes } from '../enum/enum';
 import { ThumbsConstraints, SelectorConstraints, ElementAction } from '../enum/enum';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { SelectorModel } from '../objects/node-model';
@@ -190,18 +190,18 @@ export class DiagramRenderer {
      */
     public renderElement(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement, transform?: Transforms,
-        parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number, isPreviewNode?: boolean, centerPoint?: object):
+        parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number, isPreviewNode?: boolean, centerPoint?: object, portCenterPoint?: object):
         void {
         let isElement: boolean = true;
         if (element instanceof Container) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             isElement = false;
             element.id = element.id ? element.id : randomId();
-            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode, centerPoint);
+            this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode, centerPoint, portCenterPoint);
         } else if (element instanceof ImageElement) {
             this.renderImageElement(element, canvas, transform, parentSvg, fromPalette);
         } else if (element instanceof PathElement) {
-            this.renderPathElement(element, canvas, transform, parentSvg, fromPalette, isPreviewNode);
+            this.renderPathElement(element, canvas, transform, parentSvg, fromPalette, isPreviewNode, portCenterPoint);
         } else if (element instanceof TextElement) {
             this.renderTextElement(element, canvas, transform, parentSvg, fromPalette, centerPoint);
         } else if (element instanceof DiagramNativeElement) {
@@ -571,15 +571,25 @@ export class DiagramRenderer {
             undefined, { 'aria-label': 'Thumb to move the target point of the connector' }, undefined,
             'e-diagram-endpoint-handle e-targetend', handleSize);
         if (isSegmentEditing) {
-            if ((selector.type === 'Straight' || selector.type === 'Bezier') && selector.segments.length > 0) {
+            if ((selector.type === 'Straight') && selector.segments.length > 0) {
                 for (i = 0; i < selector.segments.length - 1; i++) {
                     segment = selector.segments[parseInt(i.toString(), 10)] as StraightSegment | BezierSegment;
-                    const className: string = selector.type === 'Bezier' ? 'e-diagram-bezier-segment-handle' : 'e-diagram-straight-segment-handle';
+                    const className: string = 'e-diagram-straight-segment-handle';
                     this.renderCircularHandle(
                         ('segementThumb_' + (i + 1)), wrapper, segment.point.x, segment.point.y, canvas, true,
                         constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, className, handleSize);
                 }
-            } else {
+            }//824805-Support to modify bezier connector segment thumb shape and style
+            else if ((selector.type === 'Bezier') && selector.segments.length > 0) {
+                for (i = 0; i < selector.segments.length - 1; i++) {
+                    segment = selector.segments[parseInt(i.toString(), 10)] as BezierSegment;
+                    const className: string = 'e-diagram-bezier-segment-handle';
+                    this.renderBezierHandle(
+                        ('segementThumb_' + (i + 1)), wrapper, segment.point.x, segment.point.y, canvas, true,
+                        selector, transform, connectedSource, null, i, className, handleSize);
+                }
+            }
+            else {
                 // (EJ2-57115) - Added below code to check if maxSegmentThumb is zero or not
                 if (!selector.maxSegmentThumb) {
                     for (i = 0; i < selector.segments.length; i++) {
@@ -686,7 +696,7 @@ export class DiagramRenderer {
                 visible = (length >= 50 && segment.allowDrag) ? true : false;
                 this.renderOrthogonalThumb(
                     (id + '_' + (j + 1)), selector, (((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2)),
-                    (((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
+                    (((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t, connector);
             }
         } else {
             // (EJ2-57115) - Added below code to check if maxSegmentThumb greater then 3 means then we have ignore the rendering of
@@ -703,7 +713,7 @@ export class DiagramRenderer {
                 visible = (length >= 50 && segment.allowDrag) ? true : false;
                 this.renderOrthogonalThumb(
                     (id + '_' + (j + 1)), selector, (((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2)),
-                    (((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
+                    (((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t, connector);
             }
         }
     }
@@ -721,11 +731,12 @@ export class DiagramRenderer {
      * @param { boolean } visible - Provide the visible boolean value.
      * @param { string } orientation - Provide the orientation value.
      * @param { Transforms } t - Provide the Transforms value.
+     * @param { ConnectorModel } connector - Provide the connector value.
      * @private
      */
     public renderOrthogonalThumb(
         id: string, selector: DiagramElement, x: number, y: number, canvas: HTMLCanvasElement | SVGElement,
-        visible: boolean, orientation: string, t: Transforms): void {
+        visible: boolean, orientation: string, t: Transforms, connector: ConnectorModel): void {
         let path: string; let h: number; let v: number;
         const diagramElement = document.getElementById(this.diagramId);
         const instance = 'ej2_instances';
@@ -733,9 +744,12 @@ export class DiagramRenderer {
         if (diagramElement) {
             diagram = diagramElement[`${instance}`][0];
         }
+        //824805-Support to modify connector segment thumb shape and style based on constraints
+        const inheritsegmentThumbShape: number = (connector.constraints & ConnectorConstraints.InheritSegmentThumbShape);
+        let segmentThumbShape: SegmentThumbShapes = inheritsegmentThumbShape ? diagram.segmentThumbShape : connector.segmentThumbShape;
         if (orientation === 'horizontal') {
-            path = getSegmentThumbShapeHorizontal(diagram.segmentThumbShape);
-            switch (diagram.segmentThumbShape)
+            path = getSegmentThumbShapeHorizontal(segmentThumbShape);
+            switch (segmentThumbShape)
             {
             case 'Arrow':
             case 'OpenArrow':
@@ -768,8 +782,8 @@ export class DiagramRenderer {
             }
         }
         else {
-            path = getSegmentThumbShapeVertical(diagram.segmentThumbShape);
-            switch (diagram.segmentThumbShape)
+            path = getSegmentThumbShapeVertical(segmentThumbShape);
+            switch (segmentThumbShape)
             {
             case 'Arrow':
             case 'OpenArrow':
@@ -959,7 +973,108 @@ export class DiagramRenderer {
         const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
         this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true, parentSvg, ariaLabel, true, enableSelector);
     }
-
+    //824805-Support to modify bezier connector segmentThumbShape 
+     /**
+     * Method used to render the segment thumb shape for Bezier connector  \
+     *
+     * @returns {void } Method used to render the segment thumb shape for Bezier connector .\
+     *
+     * @param {string} id - Provide the id value.
+     * @param { DiagramElement } selector - Provide the selector element value.
+     * @param { number } cx - Provide cx value  .
+     * @param { number } cy - Provide cx value.
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element.
+     * @param { boolean } visible - Provide the visible property for the handle .
+     * @param { ConnectorModel } connector - Provide the value for the connector .
+     * @param { Transforms } t - Provide the transform value .
+     * @param { boolean } connected - Provide the connected boolean value .
+     * @param { boolean } canMask - Provide the canMask boolean value .
+     * @param { number } count - Provide the count value  .
+     * @param { string } className - Provide the class name for this element .
+     * @param { number } handleSize - Provide the handle size value .
+     * 
+     * @private
+     */
+    public renderBezierHandle(
+        id: string, selector: DiagramElement, cx: number, cy: number, canvas: HTMLCanvasElement | SVGElement,
+        visible: boolean, connector?: ConnectorModel, t?: Transforms, connected?: boolean, canMask?: boolean,
+        count?: number, className?: string, handleSize?: number)
+        :
+        void {
+        let path: string; let h: number = 0; let v: number = 0;
+        const diagramElement = document.getElementById(this.diagramId);
+        const instance = 'ej2_instances';
+        let diagram;
+        if (diagramElement) {
+            diagram = diagramElement[`${instance}`][0];
+        }
+        const wrapper: DiagramElement = selector;
+        let newPoint: PointModel = { x: cx, y: cy };
+        if (wrapper.rotateAngle !== 0 || wrapper.parentTransform !== 0) {
+            const matrix: Matrix = identityMatrix();
+            rotateMatrix(matrix, wrapper.rotateAngle + wrapper.parentTransform, wrapper.offsetX, wrapper.offsetY);
+            newPoint = transformPointByMatrix(matrix, newPoint);
+        }
+        const inheritsegmentThumbShape: number = (connector.constraints & ConnectorConstraints.InheritSegmentThumbShape);
+        let segmentThumbShape: SegmentThumbShapes = inheritsegmentThumbShape ? diagram.segmentThumbShape : connector.segmentThumbShape;
+        path = getSegmentThumbShapeVertical(segmentThumbShape);
+        switch (segmentThumbShape) {
+            case 'Arrow':
+            case 'OpenArrow':
+            case 'DoubleArrow':
+                h = -10;
+                v = -5;
+                break;
+            case 'Circle':
+                h = 2;
+                v = 1;
+                break;
+            case 'Square':
+            case 'IndentedArrow':
+            case 'OutdentedArrow':
+            case 'Fletch':
+            case 'OpenFetch':
+            case 'Rhombus':
+            case 'Diamond':
+                h = 1;
+                v = 1;
+                break;
+            case 'Rectangle':
+            case 'Ellipse':
+                h = -1;
+                v = 1;
+                break;
+        }
+        const options: PathAttributes = this.getBaseAttributes(wrapper) as PathAttributes;
+        options.stroke = 'black';
+        options.strokeWidth = 1;
+        if (count !== undefined) {
+            options.id = 'segmentEnd_' + count;
+            options.fill = '#e2e2e2';
+        } else {
+            options.fill = connected ? '#8CC63F' : 'white';
+        }
+        options.angle = selector.rotateAngle;
+        options.id = id;
+        options.visible = visible;
+        options.class = className;
+        options.width = handleSize;
+        options.height = handleSize;
+        // EJ2-65895 - Added below code to calculate the rect x and y if node pivot is not equal to 0.5
+        options.data = path;
+        options.x = ((newPoint.x + t.tx) * t.scale) + h;
+        options.y = ((newPoint.y + t.ty) * t.scale) + v;
+        options.x = options.x - options.width / 2;
+        options.y = options.y - options.height / 2;
+        if (connected) {
+            options.class += ' e-connected';
+        }
+        if (canMask) {
+            options.visible = false;
+        }
+        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
+        this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId, true, parentSvg);
+    }
     /**
      * Method used to render border for the node element  \
      *
@@ -1201,11 +1316,28 @@ export class DiagramRenderer {
      */
     public renderPathElement(
         element: PathElement, canvas: HTMLCanvasElement | SVGElement,
-        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean, isPreviewNode?: boolean):
+        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean, isPreviewNode?: boolean, portCenterPoint?: object):
         void {
         const options: BaseAttributes = this.getBaseAttributes(element, transform, isPreviewNode);
         (options as PathAttributes).data = element.absolutePath;
         (options as PathAttributes).data = element.absolutePath;
+        // Feature 826644: Support to add ports to the connector. Added below condition to position port based on its alignment and offset.
+        if((element as any).isPathPort && portCenterPoint){
+            options.x = portCenterPoint[element.id] ? portCenterPoint[element.id].cx: options.x;
+            options.y = portCenterPoint[element.id] ? portCenterPoint[element.id].cy: options.y;
+            (element as PathElement).bounds.x = options.x;
+            (element as PathElement).bounds.y = options.y;
+            var diagramElement = document.getElementById(this.diagramId);
+            var instance = 'ej2_instances';
+            var diagram;
+            if (diagramElement) {
+                diagram = diagramElement[`${instance}`][0];
+                if(diagram.eventHandler.currentAction !== 'PortDrag'){
+                    element.offsetX = options.x + (element.width / 2);
+                    element.offsetY = options.y + (element.height / 2);
+                }
+            }
+        }
         const ariaLabel: Object = element.description ? element.description : element.id;
         if (!this.isSvgMode) {
             options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
@@ -1750,7 +1882,7 @@ export class DiagramRenderer {
     public renderContainer(
         group: Container, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean,
-        indexValue?: number, isPreviewNode?: boolean, centerPoint?: object):
+        indexValue?: number, isPreviewNode?: boolean, centerPoint?: object, portCenterPoint?: object):
         void {
         const svgParent: SvgParent = { svg: parentSvg, g: canvas };
         const diagramElement: Object = document.getElementById(this.diagramId);
@@ -1798,7 +1930,7 @@ export class DiagramRenderer {
                 if (!this.isSvgMode) {
                     child.flip = group.flip;
                 }
-                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue, isPreviewNode, centerPoint);
+                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue, isPreviewNode, centerPoint, portCenterPoint);
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
                     this.renderFlipElement(child, parentG, child.flip);
                 }
@@ -2055,8 +2187,8 @@ export class DiagramRenderer {
         const options: BaseAttributes = {
             width: element.actualSize.width, height: element.actualSize.height,
             //EJ2-840163-Draw highlighter not rendered properly while hovering ports
-            x: element.offsetX - element.actualSize.width * element.pivot.x,
-            y: element.offsetY - element.actualSize.height * element.pivot.y,
+            x: element.offsetX - element.actualSize.width * element.pivot.x + 0.5,
+            y: element.offsetY - element.actualSize.height * element.pivot.y + 0.5,
             fill: element.style.fill, stroke: element.style.strokeColor, angle: element.rotateAngle + element.parentTransform,
             pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: element.style.strokeWidth,
             dashArray: element.style.strokeDashArray || '', opacity: element.style.opacity, shadow: element.shadow,
@@ -2211,10 +2343,10 @@ export class DiagramRenderer {
      */
     public updateNode(
         element: DiagramElement, diagramElementsLayer: HTMLCanvasElement, htmlLayer: HTMLElement,
-        transform?: Transforms, insertIndex?: number, centerPoint?: object): void {
+        transform?: Transforms, insertIndex?: number, centerPoint?: object, portCenterPoint?: object): void {
         this.renderElement(
             element as Container, diagramElementsLayer, htmlLayer, transform,
-            this.getParentSvg(element), undefined, undefined, insertIndex, null, centerPoint);
+            this.getParentSvg(element), undefined, undefined, insertIndex, null, centerPoint, portCenterPoint);
     }
 
 

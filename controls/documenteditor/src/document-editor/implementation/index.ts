@@ -18,3 +18,4 @@ export * from './track-changes/index';
 export * from './viewer/index';
 export * from './writer/index';
 export * from './themes/index';
+export * from './collaboration/index';

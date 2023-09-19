@@ -25,7 +25,7 @@ import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { Revision } from '../track-changes/track-changes';
 import { AutoShapeType, BaselineAlignment, BiDirectionalOverride, BreakClearType, CellVerticalAlignment, CheckBoxSizeType, CompatibilityMode, ContentControlType, FollowCharacterType, FootEndNoteNumberFormat, FootnoteRestartIndex, FootnoteType, HeightType, HighlightColor, HorizontalAlignment, HorizontalOrigin, LineDashing, LineFormatType, LineSpacingType, LineStyle, ListLevelPattern, OutlineLevel, ProtectionType, RevisionType, Strikethrough, StyleType, TabJustification, TabLeader, TableAlignment, TextAlignment, TextFormFieldType, TextureStyle, TextWrappingStyle, TextWrappingType, Underline, VerticalAlignment, VerticalOrigin, WidthType } from '../../base/types';
 import { Themes, FontSchemeStruct, MajorMinorFontScheme } from '../index';
-import { sectionsProperty, imagesProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, heightRelativePercentProperty, widthRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, isAfterParagraphMarkProperty, isAfterRowMarkProperty, isAfterCellMarkProperty , isAfterTableMarkProperty, belowTextProperty, breakClearTypeProperty, characterSpacingProperty, scalingProperty } from '../../index';
+import { sectionsProperty, imagesProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, heightRelativePercentProperty, widthRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, isAfterParagraphMarkProperty, isAfterRowMarkProperty, isAfterCellMarkProperty , isAfterTableMarkProperty, belowTextProperty, breakClearTypeProperty, characterSpacingProperty, scalingProperty, nsidProperty } from '../../index';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 /**
  * @private
@@ -262,9 +262,13 @@ export class SfdtReader {
             this.documentHelper.saltValue = data[saltValueProperty[this.keywordIndex]];
         }
     }
-    private parseStyles(data: any, styles: WStyles): void {
+    /**
+     * @private
+     */
+    public parseStyles(data: any, styles: WStyles): void {
         for (let i: number = 0; i < data[stylesProperty[this.keywordIndex]].length; i++) {
-            if (isNullOrUndefined(this.documentHelper.styles.findByName(data[stylesProperty[this.keywordIndex]][i][nameProperty[this.keywordIndex]]))) {
+            var editor = this.documentHelper.owner.editor;
+            if ((!isNullOrUndefined(editor) && editor.isRemoteAction) || isNullOrUndefined(this.documentHelper.styles.findByName(data[stylesProperty[this.keywordIndex]][i][nameProperty[this.keywordIndex]]))) {
                 this.parseStyle(data, data[stylesProperty[this.keywordIndex]][i], styles);
             }
         }
@@ -277,6 +281,10 @@ export class SfdtReader {
                 let revisionCheck: boolean = true;
                 if (!this.documentHelper.owner.sfdtExportModule.copyWithTrackChange && this.isPaste) {
                     if (this.getRevisionType(revisionData[revisionTypeProperty[this.keywordIndex]]) === 'Insertion' && this.isPaste && this.documentHelper.owner.enableTrackChanges) {
+                        var editor = this.documentHelper.owner.editor;
+                        if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
+                            this.documentHelper.owner.editor.revisionData.push(this.documentHelper.owner.editor.getMarkerData(undefined, undefined, revision));
+                        }
                         continue;
                     } else {
                         if (!this.revisionCollection.containsKey(revisionData[revisionIdProperty[this.keywordIndex]])) {
@@ -370,6 +378,7 @@ export class SfdtReader {
     public parseStyle(data: any, style: any, styles: WStyles, resetKeyIndex?: boolean): void {
         let wStyle: any;
         let keyIndex: number = 0;
+        var editor = this.documentHelper.owner.editor;
         if (!isNullOrUndefined(resetKeyIndex) && resetKeyIndex) {
             keyIndex = this.keywordIndex;
             this.keywordIndex = 0;
@@ -388,7 +397,12 @@ export class SfdtReader {
             }
             styles.push(wStyle);
             if (!isNullOrUndefined(style[basedOnProperty[this.keywordIndex]])) {
-                const basedOn: Object = styles.findByName(style[basedOnProperty[this.keywordIndex]]);
+                let basedOn: Object;
+                if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
+                    basedOn = this.documentHelper.styles.findByName(style[basedOnProperty[this.keywordIndex]]);
+                } else {
+                    basedOn = styles.findByName(style[basedOnProperty[this.keywordIndex]]);
+                }
                 if (!isNullOrUndefined(basedOn)) {
                     if ((basedOn as WStyle).type === wStyle.type && (basedOn as WStyle).name !== wStyle.name) {
                         wStyle.basedOn = basedOn;
@@ -406,12 +420,19 @@ export class SfdtReader {
                         }
                     }
                     this.parseStyle(data, styleString, styles);
-                    wStyle.basedOn = styles.findByName(styleString[nameProperty[this.keywordIndex]]);
+                    if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
+                        wStyle.basedOn = this.documentHelper.styles.findByName(styleString[nameProperty[this.keywordIndex]]);
+                    } else {
+                        wStyle.basedOn = styles.findByName(styleString[nameProperty[this.keywordIndex]]);
+                    }
                 }
             }
             if (!isNullOrUndefined(style[linkProperty[this.keywordIndex]])) {
-                const link: Object = styles.findByName(style[linkProperty[this.keywordIndex]]);
+                let link: Object = styles.findByName(style[linkProperty[this.keywordIndex]]);
                 const linkStyle: any = this.getStyle(style[linkProperty[this.keywordIndex]], data);
+                if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
+                    link = this.documentHelper.styles.findByName(style[linkProperty[this.keywordIndex]]);
+                }
                 let styleString: any;
                 if (isNullOrUndefined(link)) {
                     if (isNullOrUndefined(linkStyle)) {
@@ -427,7 +448,11 @@ export class SfdtReader {
                         styleString = linkStyle;
                     }
                     this.parseStyle(data, styleString, styles);
-                    wStyle.link = isNullOrUndefined(styles.findByName(styleString.name)) ? style[linkProperty[this.keywordIndex]] : styles.findByName(styleString.name);
+                    if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
+                        wStyle.link = isNullOrUndefined(this.documentHelper.styles.findByName(styleString.name)) ? style[linkProperty[this.keywordIndex]] : this.documentHelper.styles.findByName(styleString.name);
+                    } else {
+                        wStyle.link = isNullOrUndefined(styles.findByName(styleString.name)) ? style[linkProperty[this.keywordIndex]] : styles.findByName(styleString.name);
+                    }
                 } else {
                     wStyle.link = link;
                 }
@@ -443,14 +468,23 @@ export class SfdtReader {
                 if (style[nextProperty[this.keywordIndex]] === style[nameProperty[this.keywordIndex]]) {
                     wStyle.next = wStyle;
                 } else {
-                    const next: Object = styles.findByName(style[nextProperty[this.keywordIndex]]);
+                    let next: Object;
+                    if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
+                        next = this.documentHelper.styles.findByName(style[nextProperty[this.keywordIndex]]);
+                    } else {
+                        next = styles.findByName(style[nextProperty[this.keywordIndex]]);
+                    }
                     if (!isNullOrUndefined(next) && (next as WStyle).type === wStyle.type) {
                         wStyle.next = next;
                     } else {
                         const nextStyleString: any = this.getStyle(style[nextProperty[this.keywordIndex]], data);
                         if (!isNullOrUndefined(nextStyleString)) {
                             this.parseStyle(data, nextStyleString, styles);
-                            wStyle.next = styles.findByName(nextStyleString.name);
+                            if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
+                                wStyle.next = this.documentHelper.styles.findByName(nextStyleString.name);
+                            } else {
+                                wStyle.next = styles.findByName(nextStyleString.name);
+                            }
                         } else {
                             wStyle.next = wStyle;
                         }
@@ -477,10 +511,15 @@ export class SfdtReader {
         for (let i: number = 0; i < data[abstractListsProperty[this.keywordIndex]].length; i++) {
             const abstractList: WAbstractList = new WAbstractList();
             const abstract: any = data[abstractListsProperty[this.keywordIndex]][i];
-            abstractLists.push(abstractList);
             if (!isNullOrUndefined(abstract)) {
                 if (!isNullOrUndefined(abstract[abstractListIdProperty[this.keywordIndex]])) {
                     abstractList.abstractListId = abstract[abstractListIdProperty[this.keywordIndex]];
+                }
+                if (!isNullOrUndefined(abstract[nsidProperty])) {
+                    abstractList.nsid = abstract[nsidProperty];
+                } else {
+                    // Backward compatibility
+                    abstractList.nsid = HelperMethods.generateUniqueId(undefined, abstractLists);
                 }
                 if (!isNullOrUndefined(abstract[levelsProperty[this.keywordIndex]])) {
                     for (let j: number = 0; j < abstract[levelsProperty[this.keywordIndex]].length; j++) {
@@ -492,6 +531,7 @@ export class SfdtReader {
                     }
                 }
             }
+            abstractLists.push(abstractList);
         }
     }
     private parseListLevel(data: any, owner: any): WListLevel {
@@ -525,6 +565,11 @@ export class SfdtReader {
             listCollection.push(list);
             if (!isNullOrUndefined(lists[listIdProperty[this.keywordIndex]])) {
                 list.listId = lists[listIdProperty[this.keywordIndex]];
+            }
+            if (!isNullOrUndefined(lists[nsidProperty])) {
+                list.nsid = lists[nsidProperty];
+            } else {
+                list.nsid = list.abstractList.nsid;
             }
             if (lists.hasOwnProperty(levelOverridesProperty[this.keywordIndex])) {
                 this.parseLevelOverride(lists[levelOverridesProperty[this.keywordIndex]], list);
@@ -708,10 +753,10 @@ export class SfdtReader {
         const table: TableWidget = new TableWidget();
         table.index = index;
         if (!isNullOrUndefined(block[tableFormatProperty[this.keywordIndex]])) {
-            this.parseTableFormat(block[tableFormatProperty[this.keywordIndex]], table.tableFormat);
+            this.parseTableFormat(block[tableFormatProperty[this.keywordIndex]], table.tableFormat, this.keywordIndex);
         }
-        table.title = block[titleProperty[this.keywordIndex]];
-        table.description = block[descriptionProperty[this.keywordIndex]];
+        table.tableFormat.title = block[titleProperty[this.keywordIndex]];
+        table.tableFormat.description = block[descriptionProperty[this.keywordIndex]];
         this.parseTablePositioning(block, table);
         for (let i: number = 0; i < block[rowsProperty[this.keywordIndex]].length; i++) {
             const row: TableRowWidget = new TableRowWidget();
@@ -722,7 +767,7 @@ export class SfdtReader {
                 this.parseContentControlProperties(tableRow[contentControlPropertiesProperty[this.keywordIndex]], row.contentControlProperties);
             }
             if (tableRow.hasOwnProperty(rowFormatProperty[this.keywordIndex])) {
-                this.parseRowFormat(tableRow[rowFormatProperty[this.keywordIndex]], row.rowFormat);
+                this.parseRowFormat(tableRow[rowFormatProperty[this.keywordIndex]], row.rowFormat, this.keywordIndex);
                 this.parseRowGridValues(tableRow, row.rowFormat);
                 this.parseRowGridValues(tableRow[rowFormatProperty[this.keywordIndex]], row.rowFormat);
                 row.index = i;
@@ -740,7 +785,7 @@ export class SfdtReader {
                     cell.rowIndex = i;
                     cell.columnIndex = j;
                     if (tableCell.hasOwnProperty(cellFormatProperty[this.keywordIndex])) {
-                        this.parseCellFormat(tableCell[cellFormatProperty[this.keywordIndex]], cell.cellFormat);
+                        this.parseCellFormat(tableCell[cellFormatProperty[this.keywordIndex]], cell.cellFormat, this.keywordIndex);
                     }
                     let item: any = tableCell[blocksProperty[this.keywordIndex]];
                     for (let k: number = 0; k < item.length; k++) {
@@ -1165,27 +1210,7 @@ export class SfdtReader {
                 fieldBegin.hasFieldEnd = inline[hasFieldEndProperty[this.keywordIndex]];
                 if (inline.hasOwnProperty(formFieldDataProperty[this.keywordIndex])) {
                     let formFieldData: FormField;
-                    if (inline[formFieldDataProperty[this.keywordIndex]].hasOwnProperty(textInputProperty[this.keywordIndex])) {
-                        formFieldData = new TextFormField();
-                        (formFieldData as TextFormField).type = this.getTextFormFieldType(inline[formFieldDataProperty[this.keywordIndex]][textInputProperty[this.keywordIndex]][typeProperty[this.keywordIndex]]);
-                        (formFieldData as TextFormField).maxLength = inline[formFieldDataProperty[this.keywordIndex]][textInputProperty[this.keywordIndex]][maxLengthProperty[this.keywordIndex]];
-                        (formFieldData as TextFormField).defaultValue = inline[formFieldDataProperty[this.keywordIndex]][textInputProperty[this.keywordIndex]][defaultValueProperty[this.keywordIndex]];
-                        (formFieldData as TextFormField).format = this.getTextFormFieldFormat(inline[formFieldDataProperty[this.keywordIndex]][textInputProperty[this.keywordIndex]][formatProperty[this.keywordIndex]]);
-                    } else if (inline[formFieldDataProperty[this.keywordIndex]].hasOwnProperty(checkBoxProperty[this.keywordIndex])) {
-                        formFieldData = new CheckBoxFormField();
-                        (formFieldData as CheckBoxFormField).sizeType = this.getCheckBoxSizeType(inline[formFieldDataProperty[this.keywordIndex]][checkBoxProperty[this.keywordIndex]][sizeTypeProperty[this.keywordIndex]]);
-                        (formFieldData as CheckBoxFormField).size = inline[formFieldDataProperty[this.keywordIndex]][checkBoxProperty[this.keywordIndex]][sizeProperty[this.keywordIndex]];
-                        (formFieldData as CheckBoxFormField).defaultValue = HelperMethods.parseBoolValue(inline[formFieldDataProperty[this.keywordIndex]][checkBoxProperty[this.keywordIndex]][defaultValueProperty[this.keywordIndex]]);
-                        (formFieldData as CheckBoxFormField).checked = HelperMethods.parseBoolValue(inline[formFieldDataProperty[this.keywordIndex]][checkBoxProperty[this.keywordIndex]][checkedProperty[this.keywordIndex]]);
-                    } else {
-                        formFieldData = new DropDownFormField();
-                        (formFieldData as DropDownFormField).dropdownItems = inline[formFieldDataProperty[this.keywordIndex]][dropDownListProperty[this.keywordIndex]][dropDownItemsProperty[this.keywordIndex]];
-                        (formFieldData as DropDownFormField).selectedIndex = inline[formFieldDataProperty[this.keywordIndex]][dropDownListProperty[this.keywordIndex]][selectedIndexProperty[this.keywordIndex]];
-                    }
-                    formFieldData.name = inline[formFieldDataProperty[this.keywordIndex]][nameProperty[this.keywordIndex]];
-                    formFieldData.enabled = HelperMethods.parseBoolValue(inline[formFieldDataProperty[this.keywordIndex]][enabledProperty[this.keywordIndex]]);
-                    formFieldData.helpText = inline[formFieldDataProperty[this.keywordIndex]][helpTextProperty[this.keywordIndex]];
-                    formFieldData.statusText = inline[formFieldDataProperty[this.keywordIndex]][statusTextProperty[this.keywordIndex]];
+                    formFieldData = this.parseFormFieldData(this.keywordIndex, inline, formFieldData);
                     fieldBegin.formFieldData = formFieldData;
                     this.documentHelper.formFields.push(fieldBegin);
                 }
@@ -1464,6 +1489,54 @@ export class SfdtReader {
         }
         return hasValidElmts;
     }
+    /**
+     * @private
+     */
+    public parseFormFieldData(keywordIndex: number, sourceData: any, formFieldData: FormField): FormField {
+        if (formFieldData instanceof TextFormField || formFieldData instanceof CheckBoxFormField || formFieldData instanceof DropDownFormField) {
+            if (formFieldData instanceof CheckBoxFormField) {
+                (formFieldData as CheckBoxFormField).sizeType = sourceData.sizeType;
+                (formFieldData as CheckBoxFormField).size = sourceData.size;
+                (formFieldData as CheckBoxFormField).defaultValue = sourceData.defaultValue;
+                (formFieldData as CheckBoxFormField).checked = sourceData.checked;
+            } else if (formFieldData instanceof TextFormField) {
+                (formFieldData as TextFormField).type = sourceData.type;
+                (formFieldData as TextFormField).maxLength = sourceData.maxLength;
+                (formFieldData as TextFormField).defaultValue = sourceData.defaultValue;
+                (formFieldData as TextFormField).format = sourceData.format;
+            } else {
+                (formFieldData as DropDownFormField).dropdownItems = sourceData.dropdownItems;
+                (formFieldData as DropDownFormField).selectedIndex = sourceData.selectedIndex;
+            }
+            formFieldData.name = sourceData.name;
+            formFieldData.enabled = sourceData.enabled;
+            formFieldData.helpText = sourceData.helpText;
+            formFieldData.statusText = sourceData.statusText;
+        } else {
+            if (sourceData[formFieldDataProperty[keywordIndex]].hasOwnProperty(textInputProperty[keywordIndex])) {
+                formFieldData = new TextFormField();
+                (formFieldData as TextFormField).type = this.getTextFormFieldType(sourceData[formFieldDataProperty[keywordIndex]][textInputProperty[keywordIndex]][typeProperty[keywordIndex]]);
+                (formFieldData as TextFormField).maxLength = sourceData[formFieldDataProperty[keywordIndex]][textInputProperty[keywordIndex]][maxLengthProperty[keywordIndex]];
+                (formFieldData as TextFormField).defaultValue = sourceData[formFieldDataProperty[keywordIndex]][textInputProperty[keywordIndex]][defaultValueProperty[keywordIndex]];
+                (formFieldData as TextFormField).format = this.getTextFormFieldFormat(sourceData[formFieldDataProperty[keywordIndex]][textInputProperty[keywordIndex]][formatProperty[keywordIndex]]);
+            } else if (sourceData[formFieldDataProperty[keywordIndex]].hasOwnProperty(checkBoxProperty[keywordIndex])) {
+                formFieldData = new CheckBoxFormField();
+                (formFieldData as CheckBoxFormField).sizeType = this.getCheckBoxSizeType(sourceData[formFieldDataProperty[keywordIndex]][checkBoxProperty[keywordIndex]][sizeTypeProperty[keywordIndex]]);
+                (formFieldData as CheckBoxFormField).size = sourceData[formFieldDataProperty[keywordIndex]][checkBoxProperty[keywordIndex]][sizeProperty[keywordIndex]];
+                (formFieldData as CheckBoxFormField).defaultValue = HelperMethods.parseBoolValue(sourceData[formFieldDataProperty[keywordIndex]][checkBoxProperty[keywordIndex]][defaultValueProperty[keywordIndex]]);
+                (formFieldData as CheckBoxFormField).checked = HelperMethods.parseBoolValue(sourceData[formFieldDataProperty[keywordIndex]][checkBoxProperty[keywordIndex]][checkedProperty[keywordIndex]]);
+            } else {
+                formFieldData = new DropDownFormField();
+                (formFieldData as DropDownFormField).dropdownItems = sourceData[formFieldDataProperty[keywordIndex]][dropDownListProperty[keywordIndex]][dropDownItemsProperty[keywordIndex]];
+                (formFieldData as DropDownFormField).selectedIndex = sourceData[formFieldDataProperty[keywordIndex]][dropDownListProperty[keywordIndex]][selectedIndexProperty[keywordIndex]];
+            }
+            formFieldData.name = sourceData[formFieldDataProperty[keywordIndex]][nameProperty[keywordIndex]];
+            formFieldData.enabled = HelperMethods.parseBoolValue(sourceData[formFieldDataProperty[keywordIndex]][enabledProperty[keywordIndex]]);
+            formFieldData.helpText = sourceData[formFieldDataProperty[keywordIndex]][helpTextProperty[keywordIndex]];
+            formFieldData.statusText = sourceData[formFieldDataProperty[keywordIndex]][statusTextProperty[keywordIndex]];
+        }
+        return formFieldData;
+    }
     private applyCharacterStyle(inline: any, elementbox: ElementBox): void {
         if (!isNullOrUndefined(inline[characterFormatProperty[this.keywordIndex]]) && !isNullOrUndefined(inline[characterFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]])) {
             let charStyle: Object = this.documentHelper.styles.findByName(inline[characterFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]], 'Character');
@@ -1654,128 +1727,137 @@ export class SfdtReader {
             series.trendLines.push(trendLine);
         }
     }
-    private parseTableFormat(sourceFormat: any, tableFormat: WTableFormat): void {
-        this.parseBorders(this.keywordIndex, sourceFormat[bordersProperty[this.keywordIndex]], tableFormat.borders);
-        if (!isNullOrUndefined(sourceFormat[allowAutoFitProperty[this.keywordIndex]])) {
-            tableFormat.allowAutoFit = HelperMethods.parseBoolValue(sourceFormat[allowAutoFitProperty[this.keywordIndex]]);
+    /**
+     * @private
+     */
+    public parseTableFormat(sourceFormat: any, tableFormat: WTableFormat, keywordIndex: number): void {
+        this.parseBorders(keywordIndex, sourceFormat[bordersProperty[keywordIndex]], tableFormat.borders);
+        if (!isNullOrUndefined(sourceFormat[allowAutoFitProperty[keywordIndex]])) {
+            tableFormat.allowAutoFit = HelperMethods.parseBoolValue(sourceFormat[allowAutoFitProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(sourceFormat[cellSpacingProperty[this.keywordIndex]])) {
-            tableFormat.cellSpacing = sourceFormat[cellSpacingProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[cellSpacingProperty[keywordIndex]])) {
+            tableFormat.cellSpacing = sourceFormat[cellSpacingProperty[keywordIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[leftMarginProperty[this.keywordIndex]])) {
-            tableFormat.leftMargin = sourceFormat[leftMarginProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[leftMarginProperty[keywordIndex]])) {
+            tableFormat.leftMargin = sourceFormat[leftMarginProperty[keywordIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[topMarginProperty[this.keywordIndex]])) {
-            tableFormat.topMargin = sourceFormat[topMarginProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[topMarginProperty[keywordIndex]])) {
+            tableFormat.topMargin = sourceFormat[topMarginProperty[keywordIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[rightMarginProperty[this.keywordIndex]])) {
-            tableFormat.rightMargin = sourceFormat[rightMarginProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[rightMarginProperty[keywordIndex]])) {
+            tableFormat.rightMargin = sourceFormat[rightMarginProperty[keywordIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[bottomMarginProperty[this.keywordIndex]])) {
-            tableFormat.bottomMargin = sourceFormat[bottomMarginProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[bottomMarginProperty[keywordIndex]])) {
+            tableFormat.bottomMargin = sourceFormat[bottomMarginProperty[keywordIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[leftIndentProperty[this.keywordIndex]])) {
-            tableFormat.leftIndent = sourceFormat[leftIndentProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[leftIndentProperty[keywordIndex]])) {
+            tableFormat.leftIndent = sourceFormat[leftIndentProperty[keywordIndex]];
         }
-        this.parseShading(sourceFormat[shadingProperty[this.keywordIndex]], tableFormat.shading);
-        if (!isNullOrUndefined(sourceFormat[tableAlignmentProperty[this.keywordIndex]])) {
-            tableFormat.tableAlignment = this.getTableAlignment(sourceFormat[tableAlignmentProperty[this.keywordIndex]]);
+        this.parseShading(sourceFormat[shadingProperty[keywordIndex]], tableFormat.shading, keywordIndex);
+        if (!isNullOrUndefined(sourceFormat[tableAlignmentProperty[keywordIndex]])) {
+            tableFormat.tableAlignment = this.getTableAlignment(sourceFormat[tableAlignmentProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(sourceFormat[preferredWidthProperty[this.keywordIndex]])) {
-            tableFormat.preferredWidth = sourceFormat[preferredWidthProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[preferredWidthProperty[keywordIndex]])) {
+            tableFormat.preferredWidth = sourceFormat[preferredWidthProperty[keywordIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[preferredWidthTypeProperty[this.keywordIndex]])) {
-            tableFormat.preferredWidthType = this.getWidthType(sourceFormat[preferredWidthTypeProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(sourceFormat[preferredWidthTypeProperty[keywordIndex]])) {
+            tableFormat.preferredWidthType = this.getWidthType(sourceFormat[preferredWidthTypeProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(sourceFormat[bidiProperty[this.keywordIndex]])) {
-            tableFormat.bidi = HelperMethods.parseBoolValue(sourceFormat[bidiProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(sourceFormat[bidiProperty[keywordIndex]])) {
+            tableFormat.bidi = HelperMethods.parseBoolValue(sourceFormat[bidiProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(sourceFormat[horizontalPositionAbsProperty[this.keywordIndex]])) {
-            tableFormat.horizontalPositionAbs = this.getHorizontalPositionAbs(sourceFormat[horizontalPositionAbsProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(sourceFormat[horizontalPositionAbsProperty[keywordIndex]])) {
+            tableFormat.horizontalPositionAbs = this.getHorizontalPositionAbs(sourceFormat[horizontalPositionAbsProperty[keywordIndex]]);
         }
-        if (!isNullOrUndefined(sourceFormat[horizontalPositionProperty[this.keywordIndex]])) {
-            tableFormat.horizontalPosition = sourceFormat[horizontalPositionProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[horizontalPositionProperty[keywordIndex]])) {
+            tableFormat.horizontalPosition = sourceFormat[horizontalPositionProperty[keywordIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[styleNameProperty[this.keywordIndex]])) {
-            tableFormat.styleName = sourceFormat[styleNameProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[styleNameProperty[keywordIndex]])) {
+            tableFormat.styleName = sourceFormat[styleNameProperty[keywordIndex]];
         }
     }
-    private parseCellFormat(sourceFormat: any, cellFormat: WCellFormat): void {
+    /**
+     * @private
+     */
+    public parseCellFormat(sourceFormat: any, cellFormat: WCellFormat, keyIndex: number): void {
         if (!isNullOrUndefined(sourceFormat)) {
-            this.parseBorders(this.keywordIndex, sourceFormat[bordersProperty[this.keywordIndex]], cellFormat.borders);
+            this.parseBorders(keyIndex, sourceFormat[bordersProperty[keyIndex]], cellFormat.borders);
             if (!sourceFormat.isSamePaddingAsTable) {
                 //    cellFormat.ClearMargins();
                 //else
-                this.parseCellMargin(sourceFormat, cellFormat);
+                this.parseCellMargin(sourceFormat, cellFormat, keyIndex);
             }
-            if (!isNullOrUndefined(sourceFormat[cellWidthProperty[this.keywordIndex]])) {
-                cellFormat.cellWidth = sourceFormat[cellWidthProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[cellWidthProperty[keyIndex]])) {
+                cellFormat.cellWidth = sourceFormat[cellWidthProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[columnSpanProperty[this.keywordIndex]])) {
-                cellFormat.columnSpan = sourceFormat[columnSpanProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[columnSpanProperty[keyIndex]])) {
+                cellFormat.columnSpan = sourceFormat[columnSpanProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[rowSpanProperty[this.keywordIndex]])) {
-                cellFormat.rowSpan = sourceFormat[rowSpanProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[rowSpanProperty[keyIndex]])) {
+                cellFormat.rowSpan = sourceFormat[rowSpanProperty[keyIndex]];
             }
-            this.parseShading(sourceFormat[shadingProperty[this.keywordIndex]], cellFormat.shading);
-            if (!isNullOrUndefined(sourceFormat[verticalAlignmentProperty[this.keywordIndex]])) {
-                cellFormat.verticalAlignment = this.getCellVerticalAlignment(sourceFormat[verticalAlignmentProperty[this.keywordIndex]]);
+            this.parseShading(sourceFormat[shadingProperty[keyIndex]], cellFormat.shading, keyIndex);
+            if (!isNullOrUndefined(sourceFormat[verticalAlignmentProperty[keyIndex]])) {
+                cellFormat.verticalAlignment = this.getCellVerticalAlignment(sourceFormat[verticalAlignmentProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[preferredWidthTypeProperty[this.keywordIndex]])) {
-                cellFormat.preferredWidthType = this.getWidthType(sourceFormat[preferredWidthTypeProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[preferredWidthTypeProperty[keyIndex]])) {
+                cellFormat.preferredWidthType = this.getWidthType(sourceFormat[preferredWidthTypeProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[preferredWidthProperty[this.keywordIndex]])) {
-                cellFormat.preferredWidth = sourceFormat[preferredWidthProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[preferredWidthProperty[keyIndex]])) {
+                cellFormat.preferredWidth = sourceFormat[preferredWidthProperty[keyIndex]];
             }
         }
     }
-    private parseCellMargin(sourceFormat: any, cellFormat: WCellFormat): void {
-        if (!isNullOrUndefined(sourceFormat[leftMarginProperty[this.keywordIndex]])) {
-            cellFormat.leftMargin = sourceFormat[leftMarginProperty[this.keywordIndex]];
+    private parseCellMargin(sourceFormat: any, cellFormat: WCellFormat, keyIndex: number): void {
+        if (!isNullOrUndefined(sourceFormat[leftMarginProperty[keyIndex]])) {
+            cellFormat.leftMargin = sourceFormat[leftMarginProperty[keyIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[rightMarginProperty[this.keywordIndex]])) {
-            cellFormat.rightMargin = sourceFormat[rightMarginProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[rightMarginProperty[keyIndex]])) {
+            cellFormat.rightMargin = sourceFormat[rightMarginProperty[keyIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[topMarginProperty[this.keywordIndex]])) {
-            cellFormat.topMargin = sourceFormat[topMarginProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[topMarginProperty[keyIndex]])) {
+            cellFormat.topMargin = sourceFormat[topMarginProperty[keyIndex]];
         }
-        if (!isNullOrUndefined(sourceFormat[bottomMarginProperty[this.keywordIndex]])) {
-            cellFormat.bottomMargin = sourceFormat[bottomMarginProperty[this.keywordIndex]];
+        if (!isNullOrUndefined(sourceFormat[bottomMarginProperty[keyIndex]])) {
+            cellFormat.bottomMargin = sourceFormat[bottomMarginProperty[keyIndex]];
         }
     }
-    private parseRowFormat(sourceFormat: any, rowFormat: WRowFormat): void {
+    /**
+     * @private
+     */
+    public parseRowFormat(sourceFormat: any, rowFormat: WRowFormat, keyIndex: number): void {
         if (!isNullOrUndefined(sourceFormat)) {
-            if (!isNullOrUndefined(sourceFormat[allowBreakAcrossPagesProperty[this.keywordIndex]])) {
+            if (!isNullOrUndefined(sourceFormat[allowBreakAcrossPagesProperty[keyIndex]])) {
                 rowFormat.allowBreakAcrossPages = HelperMethods.parseBoolValue(sourceFormat[allowBreakAcrossPagesProperty[this.keywordIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[isHeaderProperty[this.keywordIndex]])) {
-                rowFormat.isHeader = HelperMethods.parseBoolValue(sourceFormat[isHeaderProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[isHeaderProperty[keyIndex]])) {
+                rowFormat.isHeader = HelperMethods.parseBoolValue(sourceFormat[isHeaderProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[heightTypeProperty[this.keywordIndex]])) {
-                rowFormat.heightType = this.getHeightType(sourceFormat[heightTypeProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceFormat[heightTypeProperty[keyIndex]])) {
+                rowFormat.heightType = this.getHeightType(sourceFormat[heightTypeProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceFormat[heightProperty[this.keywordIndex]])) {
-                rowFormat.height = sourceFormat[heightProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[heightProperty[keyIndex]])) {
+                rowFormat.height = sourceFormat[heightProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[leftMarginProperty[this.keywordIndex]])) {
-                rowFormat.leftMargin = sourceFormat[leftMarginProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[leftMarginProperty[keyIndex]])) {
+                rowFormat.leftMargin = sourceFormat[leftMarginProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[topMarginProperty[this.keywordIndex]])) {
-                rowFormat.topMargin = sourceFormat[topMarginProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[topMarginProperty[keyIndex]])) {
+                rowFormat.topMargin = sourceFormat[topMarginProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[rightMarginProperty[this.keywordIndex]])) {
-                rowFormat.rightMargin = sourceFormat[rightMarginProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[rightMarginProperty[keyIndex]])) {
+                rowFormat.rightMargin = sourceFormat[rightMarginProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[bottomMarginProperty[this.keywordIndex]])) {
-                rowFormat.bottomMargin = sourceFormat[bottomMarginProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[bottomMarginProperty[keyIndex]])) {
+                rowFormat.bottomMargin = sourceFormat[bottomMarginProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[leftIndentProperty[this.keywordIndex]])) {
-                rowFormat.leftIndent = sourceFormat[leftIndentProperty[this.keywordIndex]];
+            if (!isNullOrUndefined(sourceFormat[leftIndentProperty[keyIndex]])) {
+                rowFormat.leftIndent = sourceFormat[leftIndentProperty[keyIndex]];
             }
-            if (!isNullOrUndefined(sourceFormat[revisionIdsProperty[this.keywordIndex]]) && sourceFormat[revisionIdsProperty[this.keywordIndex]].length > 0) {
-                this.checkAndApplyRevision(this.keywordIndex, sourceFormat, rowFormat);
+            if (!isNullOrUndefined(sourceFormat[revisionIdsProperty[keyIndex]]) && sourceFormat[revisionIdsProperty[keyIndex]].length > 0) {
+                this.checkAndApplyRevision(keyIndex, sourceFormat, rowFormat);
             }
-            this.parseBorders(this.keywordIndex, sourceFormat[bordersProperty[this.keywordIndex]], rowFormat.borders);
+            this.parseBorders(keyIndex, sourceFormat[bordersProperty[keyIndex]], rowFormat.borders);
         }
     }
     private parseBorders(keyIndex: number, sourceBorders: any, destBorder: WBorders): void {
@@ -1814,16 +1896,16 @@ export class SfdtReader {
             }
         }
     }
-    private parseShading(sourceShading: any, destShading: WShading): void {
+    private parseShading(sourceShading: any, destShading: WShading, keyIndex: number): void {
         if (!isNullOrUndefined(sourceShading)) {
-            if (!isNullOrUndefined(sourceShading[backgroundColorProperty[this.keywordIndex]])) {
-                destShading.backgroundColor = this.getColor(sourceShading[backgroundColorProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceShading[backgroundColorProperty[keyIndex]])) {
+                destShading.backgroundColor = this.getColor(sourceShading[backgroundColorProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceShading[foregroundColorProperty[this.keywordIndex]])) {
-                destShading.foregroundColor = this.getColor(sourceShading[foregroundColorProperty[this.keywordIndex]]);
+            if (!isNullOrUndefined(sourceShading[foregroundColorProperty[keyIndex]])) {
+                destShading.foregroundColor = this.getColor(sourceShading[foregroundColorProperty[keyIndex]]);
             }
-            if (!isNullOrUndefined(sourceShading[textureProperty[this.keywordIndex]]) || !isNullOrUndefined(sourceShading.textureStyle)) {
-                destShading.textureStyle = !isNullOrUndefined(sourceShading[textureProperty[this.keywordIndex]]) ? this.getTextureStyle(sourceShading[textureProperty[this.keywordIndex]]) : this.getTextureStyle(sourceShading.textureStyle);
+            if (!isNullOrUndefined(sourceShading[textureProperty[keyIndex]]) || !isNullOrUndefined(sourceShading.textureStyle)) {
+                destShading.textureStyle = !isNullOrUndefined(sourceShading[textureProperty[keyIndex]]) ? this.getTextureStyle(sourceShading[textureProperty[keyIndex]]) : this.getTextureStyle(sourceShading.textureStyle);
             }
         }
     }
@@ -2061,6 +2143,12 @@ export class SfdtReader {
                 listFormat.listId = block[listFormatProperty[keyIndex]][listIdProperty[keyIndex]];
                 listFormat.list = this.documentHelper.getListById(block[listFormatProperty[keyIndex]][listIdProperty[keyIndex]]);
             }
+            if (!isNullOrUndefined(block[listFormatProperty[keyIndex]][nsidProperty])) {
+                listFormat.nsid = block[listFormatProperty[keyIndex]][nsidProperty];
+            } else if (!isNullOrUndefined(listFormat.list)) {
+                // Backward compatibility
+                listFormat.nsid = listFormat.list.nsid;
+            }
             if (!isNullOrUndefined(block[listFormatProperty[keyIndex]][listLevelNumberProperty[keyIndex]])) {
                 listFormat.listLevelNumber = block[listFormatProperty[keyIndex]][listLevelNumberProperty[keyIndex]];
             }
@@ -2098,7 +2186,7 @@ export class SfdtReader {
             sectionFormat.differentOddAndEvenPages = HelperMethods.parseBoolValue(data[differentOddAndEvenPagesProperty[keyIndex]]);
         }
         if (!isNullOrUndefined(data[bidiProperty[keyIndex]])) {
-            sectionFormat.bidi = HelperMethods.parseBoolValue(data[bidiProperty[keyIndex]].toString());
+            sectionFormat.bidi = HelperMethods.parseBoolValue(data[bidiProperty[keyIndex]]);
         }
         if (!isNullOrUndefined(data[restartPageNumberingProperty[keyIndex]])) {
             sectionFormat.restartPageNumbering = HelperMethods.parseBoolValue(data[restartPageNumberingProperty[keyIndex]]);

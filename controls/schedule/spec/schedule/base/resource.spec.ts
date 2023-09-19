@@ -683,8 +683,15 @@ describe('Schedule Resources', () => {
     describe('actionFailure testing for resource datasource', () => {
         let schObj: Schedule;
         const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
-        beforeAll(() => {
-            jasmine.Ajax.install();
+        beforeAll((done: DoneFn) => {
+            spyOn(window, 'fetch').and.returnValue(Promise.resolve({
+                ok: false,
+                status: 404,
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                statusText: 'Page not found',
+            }));
             const model: ScheduleModel = {
                 selectedDate: new Date(2019, 11, 5),
                 group: { resources: ['Owners'] },
@@ -695,18 +702,13 @@ describe('Schedule Resources', () => {
                 actionFailure: actionFailedFunction
             };
             schObj = util.createSchedule(model, resourceData);
-        });
-        beforeEach((done: DoneFn) => {
-            const request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
-            request.respondWith({ 'status': 404, 'contentType': 'application/json', 'responseText': 'Page not found' });
-            setTimeout(() => { done(); }, 100);
+            done();
         });
         it('actionFailure testing', () => {
             expect(actionFailedFunction).toHaveBeenCalled();
         });
         afterAll(() => {
             util.destroy(schObj);
-            jasmine.Ajax.uninstall();
         });
     });
 

@@ -185,6 +185,22 @@ describe('Tooltip Control', () => {
             expect(element.classList.contains('e-rtl')).toEqual(false);
             tooltip.close();
         });
+	it('isSticky at property change', () => {
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                content: 'Tooltip Content'
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            tooltip.isSticky = true;
+            tooltip.dataBind();
+            let element: HTMLElement = document.querySelector('.e-tooltip-wrap .e-tooltip-close') as HTMLElement;
+            expect(element.classList.contains('e-tooltip-close')).toEqual(true);
+            tooltip.isSticky = false;
+            tooltip.dataBind();
+            let element1: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(element1.classList.contains('e-tooltip-close')).toEqual(false);
+            tooltip.close();
+        });
         it('enableHtmlSanitizer as false and content as string', () => {
             tooltip = new Tooltip({
                 enableHtmlSanitizer: false, content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>'

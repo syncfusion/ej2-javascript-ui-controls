@@ -5,7 +5,7 @@ import { ShapeStyle, Margin } from '../core/appearance';
 import { ShapeStyleModel, MarginModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { PointModel } from '../primitives/point-model';
-import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility } from '../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, PortShapes, PortConstraints, PortVisibility, PortAlignment } from '../enum/enum';
 import { DiagramTooltip } from './tooltip';
 import { DiagramTooltipModel } from './tooltip-model';
 
@@ -207,5 +207,55 @@ export class PointPort extends Port {
      */
     public getClassName(): string {
         return 'PointPort';
+    }
+}
+
+/**
+ * Defines the behavior of a port, that sticks to a point
+ */
+export class PathPort extends Port {
+
+    /**
+     * Sets the segment offset of port
+     *
+     * @default 0.5
+     */
+    @Property(0.5)
+    public offset: number;
+
+        /**
+     * Sets the displacement of an ports from its actual position
+     *
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<PointModel>({ x: 0, y: 0 }, Point)
+    public displacement: PointModel;
+
+    /**
+     * Sets the segment alignment of ports
+     *  * Center - Aligns the ports at the center of a connector segment
+     *  * Before - Aligns the ports before a connector segment
+     *  * After - Aligns the ports after a connector segment
+     *
+     * @default Center
+     */
+    @Property('Center')
+    public alignment: PortAlignment;
+
+    constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
+        super(parent, propName, defaultValue, isArray);
+    }
+
+    /**
+     * getClassName method \
+     *
+     * @returns { string } toBounds method .\
+     *
+     * @private
+     */
+    public getClassName(): string {
+        return 'PathPort';
     }
 }

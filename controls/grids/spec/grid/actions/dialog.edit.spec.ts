@@ -633,4 +633,67 @@ describe('Dialog Editing module', () => {
             gridObj = null;
         });
     });
+    describe('Coverage Imrovement => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog' },
+                    allowPaging: true,
+                    pageSettings: { pageCount: 5 },
+                    toolbar: ['Add', 'Edit', 'Delete'],
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 140, validationRules: { required: true } },
+                        { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2' },
+                        { field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit', format: 'yMd', width: 170 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                            edit: { params: { popupHeight: '300px' } } }
+                    ]
+                }, done);
+        });
+        it('End edit', () => {
+            (<any>gridObj.editModule).editModule.endEdit();
+        });
+        it('Edit Start', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            let tr: Element = gridObj.getContent().querySelectorAll('.e-row')[0];
+            (<any>gridObj.editModule).editModule.startEdit(tr);
+        });
+        it('Close edit', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'cancel') {
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.editModule).editModule.closeEdit();
+        });
+        it('addRecord', () => {
+            (<any>gridObj.editModule).editModule.addRecord({ OrderID: 10247, CustomerID: 'updated' });
+            (<any>gridObj.editModule).editModule.deleteRecord();
+        });
+
+        it('called updateRow method', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                gridObj.actionComplete = undefined;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.editModule).editModule.updateRow(2, { OrderID: 10250, CustomerID: 'ALFKI' });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

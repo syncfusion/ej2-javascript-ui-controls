@@ -639,6 +639,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
 
     private initialize(): void {
         const carouselClasses: string[] = [];
+        carouselClasses.push(CLS_CAROUSEL);
         if (this.cssClass) {
             carouselClasses.push(this.cssClass);
         }
@@ -653,7 +654,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         }
         addClass([this.element], carouselClasses);
         setStyleAttribute(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
-        attributes(this.element, { 'tabindex': '0', 'aria-roledescription': 'carousel', 'aria-label': this.localeObj.getConstant('slideShow') });
+        attributes(this.element, { 'tabindex': '0', 'role': 'group', 'aria-roledescription': 'carousel', 'aria-label': this.localeObj.getConstant('slideShow') });
         if (!isNullOrUndefined(this.htmlAttributes)) {
             this.setHtmlAttributes(this.htmlAttributes, this.element);
         }
@@ -727,7 +728,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             className: `${CLS_ITEM} ${item.cssClass ? item.cssClass : ''} ${this.selectedIndex === index && !isClone ? CLS_ACTIVE : ''}`,
             attrs: {
                 'aria-hidden': this.selectedIndex === index && !isClone ? 'false' : 'true', 'data-index': index.toString(),
-                'aria-role': 'group', 'aria-roledescription': 'slide'
+                'role': 'group', 'aria-roledescription': 'slide'
             }
         });
         if (isClone) {

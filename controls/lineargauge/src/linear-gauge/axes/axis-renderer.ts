@@ -1,4 +1,4 @@
-import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, remove, animationMode } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Tick, Pointer, Range } from './axis';
 import { AxisModel } from './axis-model';
@@ -265,7 +265,7 @@ export class AxisRenderer extends Animations {
                 if (isNullOrUndefined(pointer.startValue)) {
                     pointer.startValue = axis.visibleRange.min;
                 }
-                if (pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && !this.gauge.gaugeResized) {
+                if ((animationMode === 'Enable' || pointer.animationDuration > 0) && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && !this.gauge.gaugeResized) {
                     pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.startValue;
                     if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0) {
                         pointerClipRectGroup.setAttribute('clip-path', clipId);
@@ -314,7 +314,7 @@ export class AxisRenderer extends Animations {
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
                 this.gauge.renderer.drawPath(options) as SVGAElement));
         parentElement.appendChild(pointerElement);
-        if ((pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.gaugeResized) {
+        if (((pointer.animationDuration > 0 || animationMode === 'Enable') && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.gaugeResized) {
             pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.startValue;
             pointer.animationComplete = false;
             this.performMarkerAnimation(pointerElement, axis, pointer);
@@ -323,6 +323,7 @@ export class AxisRenderer extends Animations {
             pointer.startValue = pointer.currentValue;
         }
         pointerElement.setAttribute('aria-label', pointer.description || 'Pointer:' + Number(pointer.currentValue).toString());
+        pointerElement.setAttribute('role', 'region');
     }
 
     public drawBarPointer(axis: Axis, axisIndex: number, pointer: Pointer, pointerIndex: number, parentElement: Element): void {
@@ -374,7 +375,8 @@ export class AxisRenderer extends Animations {
             parentElement.appendChild(pointerElement);
         }
         pointerElement.setAttribute('aria-label', pointer.description || 'Pointer:' + Number(pointer.currentValue).toString());
-        if ((pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.gaugeResized) {
+        pointerElement.setAttribute('role', 'region');
+        if (((pointer.animationDuration > 0 || animationMode === 'Enable') && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.gaugeResized) {
             pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.startValue;
             if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0 && this.gauge.container.width > 0) {
                 clipRectElement = this.gauge.renderer.drawClipPath(

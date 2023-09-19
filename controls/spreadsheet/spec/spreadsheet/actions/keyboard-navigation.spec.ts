@@ -1,6 +1,7 @@
 import { getRangeAddress, SheetModel, Spreadsheet, focus } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
+import { closest } from '@syncfusion/ej2-base';
 
 describe('Spreadsheet cell navigation module ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -383,8 +384,149 @@ describe('Spreadsheet cell navigation module ->', () => {
                 helper.setAnimationToNone('.e-spreadsheet-function-dlg.e-dialog');
                 helper.click('.e-spreadsheet-function-dlg.e-dialog .e-footer-content .e-primary');
                 expect(spreadsheet.isEdit).toBeTruthy();
+                helper.invoke('closeEdit');
                 done();
             });
+        });
+        it('Ctrl + F6 to navigate between each part in spreadsheet', (done: Function) => {
+            focus(helper.getInstance().element);
+            helper.triggerKeyNativeEvent(117, true, false);
+            expect(document.activeElement.classList.contains('e-sheets-list')).toBeTruthy();
+            helper.triggerKeyNativeEvent(117, true, false, null, 'keydown', false, <HTMLElement>document.activeElement);
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
+            expect(closest(document.activeElement, '.e-ribbon')).not.toBeNull();
+            helper.triggerKeyNativeEvent(117, true, false, null, 'keydown', false, <HTMLElement>document.activeElement);
+            expect(document.activeElement.classList.contains('e-combobox')).toBeTruthy();
+            expect(closest(document.activeElement, '.e-name-box')).not.toBeNull();
+            helper.triggerKeyNativeEvent(117, true, false, null, 'keydown', false, <HTMLElement>document.activeElement);
+            expect(document.activeElement.classList.contains('e-selectall')).toBeTruthy();
+            done();
+        });
+        it('Ctrl + Shift + F6 to navigate between each part in spreadsheet', (done: Function) => {
+            helper.triggerKeyNativeEvent(117, true, true);
+            expect(document.activeElement.classList.contains('e-combobox')).toBeTruthy();
+            expect(closest(document.activeElement, '.e-name-box')).not.toBeNull();
+            helper.triggerKeyNativeEvent(117, true, true, null, 'keydown', false, <HTMLElement>document.activeElement);
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
+            expect(closest(document.activeElement, '.e-ribbon')).not.toBeNull();
+            helper.triggerKeyNativeEvent(117, true, true, null, 'keydown', false, <HTMLElement>document.activeElement);
+            expect(document.activeElement.classList.contains('e-sheets-list')).toBeTruthy();
+            helper.triggerKeyNativeEvent(117, true, true, null, 'keydown', false, <HTMLElement>document.activeElement);
+            expect(document.activeElement.classList.contains('e-selectall')).toBeTruthy();
+            done();
+        });
+        it('Tab and Shift + Tab navigation inside sheet tabs', (done: Function) => {
+            helper.invoke('insertSheet', [1, 5]);
+            (helper.getElementFromSpreadsheet('.e-add-sheet-tab') as HTMLButtonElement).disabled = false;
+            focus(helper.getInstance().element);
+            helper.triggerKeyNativeEvent(117, true);
+            expect(document.activeElement.classList.contains('e-add-sheet-tab')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            focus(helper.getElement('.e-sheet-tab-panel .e-sheets-list'));
+            const sheetTabs: HTMLElement[] = [].slice.call(helper.getElements('.e-sheet-tab-panel .e-toolbar-item'));
+            const firstTab: HTMLElement = sheetTabs.splice(0, 1)[0];
+            focus(firstTab.querySelector('.e-tab-wrap'));
+            sheetTabs.forEach((sheetTab: HTMLElement, index: number): void => {
+                helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+                expect(sheetTabs.indexOf(document.activeElement.parentElement)).toBe(index);
+            });
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-add-sheet-tab')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(sheetTabs.indexOf(document.activeElement.parentElement)).toBe(sheetTabs.length - 1);
+            sheetTabs.unshift(firstTab);
+            sheetTabs.splice(sheetTabs.length - 1, 1);
+            sheetTabs.reverse().forEach((sheetTab: HTMLElement, index: number): void => {
+                helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+                expect(sheetTabs.indexOf(document.activeElement.parentElement)).toBe(index);
+            });
+            done();
+        });
+        it('Tab and Shift + Tab navigation inside the scrollable sheet tabs', (done: Function) => {
+            helper.invoke('insertSheet', [6, 9]);
+            const sheetTabs: HTMLElement[] = [].slice.call(helper.getElements('.e-sheet-tab-panel .e-toolbar-item'));
+            focus(sheetTabs[sheetTabs.length - 1].querySelector('.e-tab-wrap'));
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-scroll-left-nav')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-scroll-right-nav')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-add-sheet-tab')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-scroll-right-nav')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-scroll-left-nav')).toBeTruthy();
+            helper.invoke('selectRange', ['D2:E4']);
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-scroll-right-nav')).toBeTruthy();
+            focus(helper.getElementFromSpreadsheet('.e-aggregate-list'));
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-add-sheet-tab')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-aggregate-list')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-scroll-right-nav')).toBeTruthy();
+            done();
+        });
+        it('Enter key action in scoll nav button in the sheet tabs', (done: Function) => {
+            const scrollNav: HTMLElement = helper.getElementFromSpreadsheet('.e-sheet-tab-panel .e-scroll-left-nav');
+            expect(scrollNav.getAttribute('tabindex')).toBe('0');
+            focus(scrollNav);
+            helper.triggerKeyNativeEvent(13, false, true, null, 'keyup', false, document.activeElement);
+            scrollNav.removeAttribute('tabindex');
+            setTimeout((): void => {
+                expect(document.activeElement.classList.contains('e-scroll-left-nav')).toBeTruthy();
+                expect(scrollNav.getAttribute('tabindex')).toBe('0');
+                done();
+            });
+        });
+        it('Tab and Shift + Tab navigation inside the ribbon', (done: Function) => {
+            helper.triggerKeyNativeEvent(18, false, false, null, 'keydown', true);
+            expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Home');
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_undo`);
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-drop-icon')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Home');
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-drop-icon')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_undo`);
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Home');
+            done();
+        });
+        it('Left and right navigation inside the ribbon toolbar', (done: Function) => {
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_undo`);
+            const ele: HTMLElement = helper.getElementFromSpreadsheet('.e-content .e-toolbar');
+            helper.triggerKeyNativeEvent(39, false, false, ele, 'keyup', false, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_cut`);
+            helper.triggerKeyNativeEvent(39, false, false, ele, 'keyup', false, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_copy`);
+            helper.triggerKeyNativeEvent(39, false, false, ele, 'keyup', false, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_number_format`);
+            helper.triggerKeyNativeEvent(40, false, false, document.activeElement, 'keydown', true, document.activeElement);
+            expect(document.activeElement.getAttribute('ARIA-label')).toBe('Number Format');
+            expect(document.activeElement.parentElement.id).toBe(`${helper.id}_number_format-popup`);
+            helper.triggerKeyNativeEvent(38, false, false, document.activeElement.parentElement, 'keydown', true, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_number_format`);
+            helper.triggerKeyNativeEvent(37, false, false, ele, 'keyup', false, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_copy`);
+            focus(helper.getElementFromSpreadsheet(`#${helper.id}_underline`));
+            helper.triggerKeyNativeEvent(39, false, false, ele, 'keyup', false, document.activeElement);
+            helper.triggerKeyNativeEvent(39, false, false, null, 'keyup', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-split-colorpicker')).toBeTruthy();
+            helper.triggerKeyNativeEvent(39, false, false, ele, 'keyup', false, document.activeElement);
+            helper.triggerKeyNativeEvent(39, false, false, null, 'keyup', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-split-colorpicker')).toBeTruthy();
+            expect(document.activeElement.getAttribute('ARIA-label')).toBe('Fill Color #ffff00');
+            helper.triggerKeyNativeEvent(37, false, false, ele, 'keyup', false, document.activeElement);
+            helper.triggerKeyNativeEvent(37, false, false, null, 'keyup', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-split-colorpicker')).toBeTruthy();
+            expect(document.activeElement.getAttribute('ARIA-label')).toBe('Text Color #000000');
+            done();
         });
     });
 

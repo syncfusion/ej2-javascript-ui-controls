@@ -1008,7 +1008,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.serverProcess['request']++;
         const fetchApiModule: Fetch = new Fetch(localAjax.dataOptions, localAjax.type, localAjax.contentType);
         fetchApiModule.onSuccess = (args: any) => {
-            this.processResponseJsonData('Fetch', args, layer, type);
+            if (!isNullOrUndefined(args.type) && args.type === 'application/octet-stream') {
+                let reader: FileReader = new FileReader();
+                let map: Maps = this;
+                reader.onload = function (data) {
+                    args = JSON.parse(reader.result.toString());
+                    map.processResponseJsonData('Fetch', args, layer, type);
+                };
+                reader.readAsText(args);
+            } else {
+                this.processResponseJsonData('Fetch', args, layer, type);
+            }
         };
         fetchApiModule.send(localAjax.sendData);
     }
@@ -2030,7 +2040,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (e.type.indexOf('touch') !== - 1 && (e as any).changedTouches) {
             this.mouseDownEvent = { x: (e as any).changedTouches[0].pageX, y: (e as any).changedTouches[0].pageY };
         }
-        if (this.isDevice) {
+        if (this.isDevice && !isNullOrUndefined(this.mapsTooltipModule)) {
             this.mapsTooltipModule.renderTooltip(e);
         }
         const rect: ClientRect = this.element.getBoundingClientRect();

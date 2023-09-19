@@ -53,14 +53,14 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Sets and gets the background color of the treemap.
-     * 
+     *
      * @default null
      */
     background?: string;
 
     /**
      * Sets and gets the theme styles supported for treemap. When the theme is set, the styles associated with the theme will be set in the treemap.
-     * 
+     *
      * @default Material
      */
     theme?: TreeMapTheme;
@@ -72,7 +72,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Specifies the rendering type for the layout of the treemap.
-     * 
+     *
      * @default 'Squarified'
      */
     layoutType?: LayoutMode;
@@ -96,7 +96,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Sets and gets the value path of the weight from the data source, based on which the treemap item is rendered.
-     * 
+     *
      * @default null
      */
     weightValuePath?: string;
@@ -104,7 +104,7 @@ export interface TreeMapModel extends ComponentModel{
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
      * This property is used when range color mapping is set in the treemap.
-     * 
+     *
      * @default ''
      */
     rangeColorValuePath?: string;
@@ -112,21 +112,21 @@ export interface TreeMapModel extends ComponentModel{
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
      * This property is used when equal color mapping is set in the treemap.
-     * 
+     *
      * @default ''
      */
     equalColorValuePath?: string;
 
     /**
      * Sets and gets the value path from the data source, based on it color is filled in treemap.
-     * 
+     *
      * @default null
      */
     colorValuePath?: string;
 
     /**
      * Sets and gets a set of colors to apply in the treemap items.
-     * 
+     *
      * @default []
      */
     palette?: string[];
@@ -140,28 +140,28 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Enables or disables the drill down functionality in treemap.
-     * 
+     *
      * @default false
      */
     enableDrillDown?: boolean;
 
     /**
      * Enables or disables the connection text in the header of the treemap when drill down is enabled.
-     * 
+     *
      * @default false
      */
     enableBreadcrumb?: boolean;
 
     /**
      * Specifies the symbol to show connection between the two words in the header of the treemap during drill down.
-     * 
+     *
      * @default ' - '
      */
     breadcrumbConnector?: string;
 
     /**
      * Enables or disables the initial drill in the treemap.
-     * 
+     *
      * @default false
      */
     drillDownView?: boolean;

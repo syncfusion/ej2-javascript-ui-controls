@@ -392,16 +392,6 @@ export class BlazorAction {
             const headerTable: Element =  gObj.getHeaderContent().querySelector('.e-table');
             headerTable.insertBefore(headerTable.querySelector(`#${gObj.element.id}colGroup`), headerTable.querySelector('tbody'));
         }
-        if (gObj.getFrozenColumns() !== 0) {
-            const movableContentTable: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('.e-table');
-            movableContentTable.insertBefore(movableContentTable.querySelector(`#${gObj.element.id}colGroup`),
-                                             movableContentTable.querySelector('tbody'));
-            if (gObj.frozenRows) {
-                const movableHeaderTable: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('.e-table');
-                movableHeaderTable.insertBefore(movableHeaderTable.querySelector(`#${gObj.element.id}colGroup`),
-                                                movableHeaderTable.querySelector('tbody'));
-            }
-        }
     }
 
     public dataFailure(args: { result: Object[] }): void {

@@ -154,8 +154,13 @@ export class Container extends DiagramElement {
                     }
                     if (arrange || this.measureChildren || (child instanceof Container && child.measureChildren !== undefined)) {
                         child.arrange(child.desiredSize);
-                        //EJ2-839298 - Connector draw cursor is not enabled while hover the group node port
+                    }
+                    //EJ2-839298 - Connector draw cursor is not enabled while hover the group node port
+                    if(i==0){
                         this.outerBounds = child.outerBounds;
+                    }
+                    else{
+                        this.outerBounds.uniteRect(child.outerBounds);
                     }
                 }
             }

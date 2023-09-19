@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance, isNullOrUndefined } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { getRandomId, SanitizeHtmlHelper, Draggable, DragEventArgs as DragArgs, DropEventArgs } from '@syncfusion/ej2-base';import { Base } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
+import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance, isNullOrUndefined, animationMode } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { getRandomId, SanitizeHtmlHelper, Draggable, DragEventArgs as DragArgs, DropEventArgs } from '@syncfusion/ej2-base';import { Base } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import {HeaderPosition,HeightStyles,ContentLoad,AddEventArgs,SelectingEventArgs,SelectEventArgs,RemoveEventArgs,DragEventArgs} from "./tab";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -304,13 +304,15 @@ export interface TabModel extends ComponentModel{
 
     /**
      * Defines the area in which the draggable element movement will be occurring. Outside that area will be restricted
-     * for the draggable element movement. By default, the draggable element movement occurs in the toolbar. 
+     * for the draggable element movement. By default, the draggable element movement occurs in the toolbar.
+     * 
      * @default null
      */
     dragArea?: string;
 
     /**
      * Sets true to allow drag and drop the Tab items
+     * 
      * @default false
      */
     allowDragAndDrop?: boolean;

@@ -1,0 +1,148 @@
+$selection-bg: #400074 !default;
+$selection-font: #fff !default;
+$selection-border: #400074 !default;
+$hover-bg: #ecf !default;
+$hover-font: #000 !default;
+$hover-border: #000 !default;
+$border-default: #757575 !default;
+$border-alt: #4d4d4d !default;
+$border-fg: #000 !default;
+$border-fg-alt: #400074 !default;
+$bg-base-0: #fff !default;
+$bg-base-5: #f1f1f1 !default;
+$bg-base-10: #e4e4e4 !default;
+$bg-base-15: #d8d8d8 !default;
+$bg-base-20: #ccc !default;
+$bg-base-75: #3d3d3d !default;
+$bg-base-100: #000 !default;
+$header-font: #23726c !default;
+$header-font-alt: #000 !default;
+$content-font: #000 !default;
+$content-font-alt: #4f4f4f !default;
+$link: #8a8aff !default;
+$invert-font: #fff !default;
+$success-bg: #166600 !default;
+$error-bg: #b30900 !default;
+$message-font: #000 !default;
+$alert-bg: #944000 !default;
+$info-bg: #0056b3 !default;
+$success-alt: #2bc700 !default;
+$error-alt: #ff6161 !default;
+$alert-alt: #ff7d1a !default;
+$info-alt: #66b0ff !default;
+$disable: #757575 !default;
+$shadow: #000 !default;
+$skin-name: 'highcontrast-light' !default;
+$theme-name: 'highcontrast-light' !default;
+
+//Message Default
+$msg-color: $bg-base-100 !default;
+$msg-bg-color: $bg-base-0 !default;
+$msg-border-color: $bg-base-100 !default;
+$msg-color-alt1: $selection-bg !default;
+$msg-bg-color-alt1: transparent !default;
+$msg-border-color-alt1: $selection-bg !default;
+$msg-color-alt2: $bg-base-0 !default;
+$msg-bg-color-alt2: $selection-bg !default;
+$msg-border-color-alt2: $selection-bg !default;
+
+$msg-icon-color: $bg-base-100 !default;
+$msg-icon-color-alt1: $bg-base-100 !default;
+$msg-icon-color-alt2: $bg-base-0 !default;
+
+$msg-close-icon-color: $bg-base-100 !default;
+$msg-close-icon-color-alt1: $selection-bg !default;
+$msg-close-icon-color-alt2: $bg-base-0 !default;
+
+//Message success
+$msg-success-color: #fd0000 !default;
+$msg-success-bg-color: $bg-base-0 !default;
+$msg-success-border-color: $msg-success-color !default;
+$msg-success-color-alt1: $msg-success-color !default;
+$msg-success-bg-color-alt1: transparent !default;
+$msg-success-border-color-alt1: $bg-base-100 !default;
+$msg-success-color-alt2: $bg-base-0 !default;
+$msg-success-bg-color-alt2: $msg-success-color !default;
+$msg-success-border-color-alt2: $msg-success-color !default;
+
+$msg-success-icon-color: #fd0000 !default;
+$msg-success-icon-color-alt1: #fd0000 !default;
+$msg-success-icon-color-alt2: $bg-base-0 !default;
+
+$msg-success-close-icon-color: #fd0000 !default;
+$msg-success-close-icon-color-alt1: $content-font !default;
+$msg-success-close-icon-color-alt2: $bg-base-0 !default;
+
+//Message warning
+$msg-warning-color: #ff5b04 !default;
+$msg-warning-bg-color: $bg-base-0 !default;
+$msg-warning-border-color: $msg-warning-color !default;
+$msg-warning-color-alt1: $msg-warning-color !default;
+$msg-warning-bg-color-alt1: transparent !default;
+$msg-warning-border-color-alt1: $bg-base-100 !default;
+$msg-warning-color-alt2: $bg-base-0;
+$msg-warning-bg-color-alt2: $msg-warning-color !default;
+$msg-warning-border-color-alt2: $msg-warning-color !default;
+
+$msg-warning-icon-color: #ff5b04 !default;
+$msg-warning-icon-color-alt1: #ff5b04 !default;
+$msg-warning-icon-color-alt2: $bg-base-0 !default;
+
+$msg-warning-close-icon-color: #ff5b04 !default;
+$msg-warning-close-icon-color-alt1: $content-font !default;
+$msg-warning-close-icon-color-alt2: $bg-base-0 !default;
+
+//Message Danger
+$msg-danger-color: #fd0000 !default;
+$msg-danger-bg-color: $bg-base-0 !default;
+$msg-danger-border-color: $msg-danger-color !default;
+$msg-danger-color-alt1: $msg-danger-color !default;
+$msg-danger-bg-color-alt1: transparent !default;
+$msg-danger-border-color-alt1: $bg-base-100 !default;
+$msg-danger-color-alt2: $bg-base-0 !default;
+$msg-danger-bg-color-alt2: $msg-danger-color !default;
+$msg-danger-border-color-alt2: $msg-danger-color !default;
+
+$msg-danger-icon-color: #fd0000 !default;
+$msg-danger-icon-color-alt1: #fd0000 !default;
+$msg-danger-icon-color-alt2: $bg-base-0 !default;
+
+$msg-danger-close-icon-color: #fd0000 !default;
+$msg-danger-close-icon-color-alt1: $content-font !default;
+$msg-danger-close-icon-color-alt2: $bg-base-0 !default;
+
+//Message Info
+$msg-info-color: #22f8ff !default;
+$msg-info-bg-color: $bg-base-0 !default;
+$msg-info-border-color: $msg-info-color !default;
+$msg-info-color-alt1: $msg-info-color !default;
+$msg-info-bg-color-alt1: transparent !default;
+$msg-info-border-color-alt1: $bg-base-100 !default;
+$msg-info-color-alt2: $bg-base-0 !default;
+$msg-info-bg-color-alt2: $msg-info-color !default;
+$msg-info-border-color-alt2: $msg-info-color !default;
+
+$msg-info-icon-color: #22f8ff !default;
+$msg-info-icon-color-alt1: #22f8ff !default;
+$msg-info-icon-color-alt2: $bg-base-0 !default;
+
+$msg-info-close-icon-color: #22f8ff !default;
+$msg-info-close-icon-color-alt1: $content-font !default;
+$msg-info-close-icon-color-alt2: $bg-base-0 !default;
+
+//App bar
+//Light
+$appbar-bg-color-alt1: #fff !default;
+$appbar-color-alt1: #000 !default;
+$appbar-border-color-alt1: #000 !default;
+$appbar-hover-bg-color-alt1: rgba(255, 255, 255, .08) !default;
+
+//Dark
+$appbar-bg-color-alt2: #fff !default;
+$appbar-color-alt2: #000 !default;
+$appbar-border-color-alt2: #000 !default;
+$appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08) !default;
+
+//shadow
+$appbar-bottom-shadow: none !default;
+$appbar-top-shadow: none !default;

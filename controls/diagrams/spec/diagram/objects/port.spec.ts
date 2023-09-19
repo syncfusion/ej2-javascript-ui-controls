@@ -767,7 +767,7 @@ describe('Port Hover for group node', () => {
         ele.remove();
     });
 
-    it('Checking port hover for group node', (done: Function) => {
+    it('Checking port collections after arg.cancel is true', (done: Function) => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 330, 100);

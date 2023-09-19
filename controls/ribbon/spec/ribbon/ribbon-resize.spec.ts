@@ -1121,6 +1121,44 @@ describe('Ribbon', () => {
             ribbon.refreshLayout();
             expect(document.querySelectorAll('button.e-ribbon-group-overflow-ddb').length).toBe(0);
         });
+
+        let tabs3: RibbonTabModel[] = [{
+            id: "tab1",
+            header: "tab1",
+            groups: [{
+                header: "group1Header",
+                collections: [{
+                    items: [
+                        { id: "cutItem", type: RibbonItemType.Button, allowedSizes: (RibbonItemSize.Small | RibbonItemSize.Medium | RibbonItemSize.Large), buttonSettings: { content: 'cut', iconCss: 'e-icons e-cut', } },
+                    ]
+                }, {
+                    items: [
+                        { id: "copyItem", type: RibbonItemType.Button, allowedSizes: (RibbonItemSize.Large | RibbonItemSize.Medium), buttonSettings: { content: 'copy', iconCss: 'e-icons e-copy', } },
+                    ]
+                }, {
+                    items: [
+                        { id: "pasteItem", type: RibbonItemType.Button, allowedSizes: (RibbonItemSize.Large | RibbonItemSize.Medium), buttonSettings: { content: 'Paste options', iconCss: 'e-icons e-paste', } }
+                    ]
+                }]
+            }]
+        }]
+
+        it('check the order of items', () => {
+            containerEle.style.width = '500px';
+            ribbon = new Ribbon({
+                tabs: tabs3
+            }, ribbonEle);
+            containerEle.style.width = '100px';
+            ribbon.refreshLayout();
+            expect(document.querySelectorAll('.e-ribbon-item')[0].id).toBe('cutItem_container');
+            expect(document.querySelectorAll('.e-ribbon-item')[1].id).toBe('copyItem_container');
+            expect(document.querySelectorAll('.e-ribbon-item')[2].id).toBe('pasteItem_container');
+            containerEle.style.width = '500px';
+            ribbon.refreshLayout();
+            expect(document.querySelectorAll('.e-ribbon-item')[0].id).toBe('cutItem_container');
+            expect(document.querySelectorAll('.e-ribbon-item')[1].id).toBe('copyItem_container');
+            expect(document.querySelectorAll('.e-ribbon-item')[2].id).toBe('pasteItem_container');
+        });
     });
 
     it('memory leak', () => {

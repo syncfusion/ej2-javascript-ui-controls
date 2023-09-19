@@ -318,8 +318,17 @@ export class ConnectorEditing extends ToolBase {
             }
         }
     }
-
-    private addOrRemoveSegment(connector: ConnectorModel, point: PointModel): void {
+   
+    /**
+     * addOrRemoveSegment method Used to add or remove intermediate segments to the straight connector. \
+     *
+     * @returns {void} addOrRemoveSegment method Used to add or remove intermediate segments to the straight connector.
+     * @param {ConnectorModel} connector - provide the connector value in which segment to be added/removed.
+     * @param {PointModel} point - provide the mouse clicked position as a point of the segment 
+     * @param {CommandHandler} commandHandler - provide the CommandHandler value that defines the behavior of commands
+     * @private
+     */
+    public addOrRemoveSegment(connector: ConnectorModel, point: PointModel, commandHandler?: CommandHandler): void {
         let updateSeg: boolean; let segmentIndex: number;
         const oldValues: Connector = { segments: connector.segments } as Connector;
         for (let i: number = 0; i < connector.segments.length; i++) {
@@ -328,6 +337,10 @@ export class ConnectorEditing extends ToolBase {
                 segmentIndex = i;
                 updateSeg = true;
             }
+        }
+        //827745-support to edit Segment for Straight connector at runtime
+        if (!this.commandHandler) {
+            this.commandHandler = commandHandler;
         }
         if (updateSeg && segmentIndex !== undefined) {
             if (connector.segments && connector.segments[parseInt(segmentIndex.toString(), 10)] && connector.segments[parseInt(segmentIndex.toString(), 10)].type === 'Straight') {

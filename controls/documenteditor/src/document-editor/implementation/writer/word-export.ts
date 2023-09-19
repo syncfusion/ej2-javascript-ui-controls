@@ -589,7 +589,10 @@ export class WordExport {
         this.clearDocument();
     }
     // Sets the document
-    private setDocument(document: any): void {
+    private setDocument(document: any,keyindex?:number): void {
+        if (isNullOrUndefined(this.keywordIndex)) {
+            this.keywordIndex = keyindex
+        }
         this.document = document;
         this.mSections = document[sectionsProperty[this.keywordIndex]];
         this.mLists = document[listsProperty[this.keywordIndex]];
@@ -737,7 +740,9 @@ export class WordExport {
     // Serializes the Section.
     private serializeSection(writer: XmlWriter, section: any, last: boolean): void {
         this.blockOwner = section;
-        this.serializeBodyItems(writer, section[blocksProperty[this.keywordIndex]], last);
+        if (!isNullOrUndefined(section[blocksProperty[this.keywordIndex]])) {
+            this.serializeBodyItems(writer, section[blocksProperty[this.keywordIndex]], last);
+        }
         if (last) {
             this.serializeSectionProperties(writer, section);
         }
@@ -912,6 +917,9 @@ export class WordExport {
     }
     // Serialize the section properties.
     private serializeSectionProperties(writer: XmlWriter, section: any): void {
+        if(!isNullOrUndefined(this.document.optimizeSfdt)){
+            this.keywordIndex = this.document.optimizeSfdt ? 1 : 0;
+        }
         writer.writeStartElement('w', 'sectPr', this.wNamespace);
         if (section[headersFootersProperty[this.keywordIndex]]) {
             this.serializeHFReference(writer, section[headersFootersProperty[this.keywordIndex]]);
@@ -1563,7 +1571,9 @@ export class WordExport {
         //     paragraph.InsertBreak(BreakType.ColumnBreak);
         //Splits the paragraph based on the newline character
         // paragraph.SplitTextRange();
-
+        if(!isNullOrUndefined(this.document.optimizeSfdt)){
+            this.keywordIndex = this.document.optimizeSfdt ? 1 : 0 ;
+        }
         writer.writeStartElement('w', 'p', this.wNamespace);
         if (this.isInsideComment) {
             writer.writeAttributeString('w14', 'paraId', undefined, this.commentParaID.toString());
@@ -1626,6 +1636,9 @@ export class WordExport {
     }
     // Serialize the paragraph items
     private serializeParagraphItems(writer: XmlWriter, paraItems: any,keyindex?:number): void {
+        if(isNullOrUndefined(paraItems)){
+            throw new Error('Paragraph should not be undefined');
+        }
         let inlines: boolean;
         let previousNode: any = undefined;
         let isContinueOverride: boolean = false;
@@ -2032,6 +2045,9 @@ export class WordExport {
     }
     // Serialize the Other Wrapping picture & Shape.
     private serializeWrappingPictureAndShape(writer: XmlWriter, picture: any): void {
+        if(!isNullOrUndefined(this.document.optimizeSfdt)){
+            this.keywordIndex = this.document.optimizeSfdt ? 1 : 0;
+        }
         writer.writeStartElement('wp', 'anchor', this.wpNamespace);
         this.serializePictureAndShapeDistance(writer, picture);
         writer.writeAttributeString(undefined, 'simplePos', undefined, '0');
@@ -3967,6 +3983,9 @@ export class WordExport {
     }
     // Serialize the table
     private serializeTable(writer: XmlWriter, table: any): void {
+        if(isNullOrUndefined(this.keywordIndex)){
+            this.keywordIndex = 0;
+        }
         if (table[rowsProperty[this.keywordIndex]].length <= 0) {
             return;
         }
@@ -4676,7 +4695,7 @@ export class WordExport {
                 writer.writeAttributeString('w', 'bottomFromText', this.wNamespace, bottom);
             }
             if (!isNullOrUndefined(table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]])) {
-                let verticalOrigin: string = table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Paragraph') ? 'text' : this.getTableVerticalRelation(table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]]).toLowerCase();
+                let verticalOrigin: string = table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Paragraph') ? 'text' : this.keywordIndex == 1 ? this.getTableVerticalRelation(table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]]).toLowerCase() : this.getTableVerticalRelation(this.getTableVerticalRelationEnumValue(table[positioningProperty[this.keywordIndex]][verticalOriginProperty[this.keywordIndex]])).toLowerCase();
                 writer.writeAttributeString('w', 'vertAnchor', this.wNamespace, verticalOrigin);
             }
             if (!isNullOrUndefined(table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]]) && table[positioningProperty[this.keywordIndex]][horizontalOriginProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 0 : 'Column')) {
@@ -4708,6 +4727,18 @@ export class WordExport {
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'never');
                 writer.writeEndElement();
             }
+        }
+        if(!isNullOrUndefined(table[descriptionProperty[this.keywordIndex]]))
+        {
+            writer.writeStartElement('w', 'tblDescription', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, table[descriptionProperty[this.keywordIndex]]);
+            writer.writeEndElement();
+        }
+        if(!isNullOrUndefined(table[titleProperty[this.keywordIndex]]))
+        {
+            writer.writeStartElement('w', 'tblCaption', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, table[titleProperty[this.keywordIndex]]);
+            writer.writeEndElement();
         }
     }
     // serialize the table margin
@@ -4939,6 +4970,9 @@ export class WordExport {
     //serialize the paragraph border
     private serializeParagraphBorders(writer: XmlWriter, formatPara: any): void {
         let borders: any = formatPara[bordersProperty[this.keywordIndex]];
+        if (isNullOrUndefined(borders)){
+            return;
+        }
         writer.writeStartElement(undefined, 'pBdr', this.wNamespace);
         this.serializeBorders(writer, formatPara[bordersProperty[this.keywordIndex]], 8, true);
         writer.writeEndElement();
@@ -4946,8 +4980,9 @@ export class WordExport {
     // Serialize the table borders
     private serializeTableBorders(writer: XmlWriter, format: any): void {
         let borders: any = format[bordersProperty[this.keywordIndex]];
-        // if (IsNoneBorder(borders))
-        //     return;
+        if (isNullOrUndefined(borders)){
+            return;
+        }
         writer.writeStartElement(undefined, 'tblBorders', this.wNamespace);
         this.serializeBorders(writer, format[bordersProperty[this.keywordIndex]], 8, false);
         writer.writeEndElement();
@@ -5130,7 +5165,8 @@ export class WordExport {
 
         writer.writeStartElement(undefined, 'tblW', this.wNamespace);
         if (table[tableFormatProperty[this.keywordIndex]][preferredWidthTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 1 : 'Percent')) {
-            writer.writeAttributeString(undefined, 'w', this.wNamespace, (table[tableFormatProperty[this.keywordIndex]][preferredWidthProperty[this.keywordIndex]] * this.percentageFactor).toString());
+            let tableWidth: number = Math.round(table[tableFormatProperty[this.keywordIndex]][preferredWidthProperty[this.keywordIndex]] * this.percentageFactor);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, tableWidth.toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'pct');
         } else if (table[tableFormatProperty[this.keywordIndex]][preferredWidthTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 2 : 'Point')) {
             let tableWidth: number = Math.round(table[tableFormatProperty[this.keywordIndex]][preferredWidthProperty[this.keywordIndex]]* this.twipsInOnePoint);
@@ -5370,7 +5406,7 @@ export class WordExport {
     private getOutlineLevelValue(outlineLvl: any): number {
         if(this.keywordIndex == 1){
             if (outlineLvl > 0) {
-                return outlineLvl;
+                return outlineLvl - 1;
             }
         }else {
             if (outlineLvl.toString().indexOf('Level') !== -1) {
@@ -5581,6 +5617,18 @@ export class WordExport {
                 return 'right';
             default:
                 return 'left';
+        }
+    }
+    private getTableVerticalRelationEnumValue(tableRelation: string): number {
+        switch (tableRelation) {
+            case 'Paragraph':
+                return 0;
+            case 'Margin':
+                return 1;
+            case 'Page':
+                return 2;
+            default:
+                return 0;
         }
     }
     private getTableVerticalRelation(tableRelation: number): string {
@@ -6098,6 +6146,9 @@ export class WordExport {
     }
     // Serializes the Character format
     private serializeCharacterFormat(writer: XmlWriter, characterFormat: any): void {
+        if(isNullOrUndefined(this.keywordIndex)){
+            this.keywordIndex = 0 ;
+        }
         writer.writeStartElement(undefined, 'rPr', this.wNamespace);
         if (!isNullOrUndefined(characterFormat[styleNameProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'rStyle', this.wNamespace);
@@ -6140,7 +6191,7 @@ export class WordExport {
             writer.writeStartElement(undefined, 'rtl', this.wNamespace);
             writer.writeEndElement();
         }
-        if (HelperMethods.parseBoolValue(characterFormat[allCapsProperty[this.keywordIndex]])) {
+        if (!isNullOrUndefined(characterFormat[allCapsProperty[this.keywordIndex]])) {
             this.serializeBoolProperty(writer, 'caps', HelperMethods.parseBoolValue(characterFormat[allCapsProperty[this.keywordIndex]]));
         }
         if (HelperMethods.parseBoolValue(characterFormat[complexScriptProperty[this.keywordIndex]])) {
@@ -6744,7 +6795,7 @@ export class WordExport {
         writer.writeStartElement(undefined, 'compatSetting', this.wNamespace);
         writer.writeAttributeString(undefined, 'name', this.wNamespace, 'compatibilityMode');
         writer.writeAttributeString(undefined, 'uri', this.wNamespace, 'http://schemas.microsoft.com/office/word');
-        let compatValue: string = HelperMethods.getCompatibilityModeValue(this.compatibilityMode);
+        let compatValue: string = this.keywordIndex===1? HelperMethods.getCompatibilityModeValue(this.compatibilityMode):HelperMethods.getCompatibilityModeValue(this.getCompatibilityModeEnumValue(this.compatibilityMode.toString() as CompatibilityMode));
         writer.writeAttributeString(undefined, 'val', this.wNamespace, compatValue);
         writer.writeEndElement();
         writer.writeEndElement();
@@ -6785,6 +6836,18 @@ export class WordExport {
     }
     private serializeSettingsRelation(): void {
         //implementation
+    }
+    private getCompatibilityModeEnumValue(compatibilityMode: CompatibilityMode): number {
+        switch (compatibilityMode) {
+            case 'Word2013':
+                return 0;
+            case 'Word2003':
+                return 1;
+            case 'Word2007':
+                return 2;
+            case 'Word2010':
+                return 3;
+        }
     }
     private serializeHeaderFooters(): void {
         this.isHeaderFooter = true;

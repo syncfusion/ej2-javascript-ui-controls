@@ -1265,7 +1265,7 @@ export class DataValidation {
             if (!isHiddenRow(sheet, args.range[0])) {
                 this.parent.notify(applyCellFormat, <CellFormatArgs>{
                     style: style, rowIdx: args.range[0], colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
-                    onActionUpdate: true, cell: args.td
+                    onActionUpdate: true, td: args.td
                 });
             }}
         return { isValidate: isValidate, errorMsg: errorMsg };
@@ -1378,13 +1378,13 @@ export class DataValidation {
         const isRemoveHighlightedData: boolean = args.isRemoveHighlightedData;
         if (!isRemoveHighlightedData) {
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx, cell: args.td
+                style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx, td: args.td
             });
         } else if (isRemoveHighlightedData) {
             const style: CellStyleModel =
                 this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]);
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: style, rowIdx: rowIdx, colIdx: colIdx, cell: args.td
+                style: style, rowIdx: rowIdx, colIdx: colIdx, td: args.td
             });
         }
 

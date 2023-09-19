@@ -1585,6 +1585,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (!elementOver) {
             //set the collision target element to given position if enabled
             (this.symbolTooltipObject as Tooltip).windowCollision = true;
+            //840454 - support to provide isSticky property for tooltip in diagram control
+            if (this.hoverElement.tooltip.isSticky) {
+                (this.symbolTooltipObject as Tooltip).isSticky = true;
+            }
             if (this.hoverElement instanceof Node) {
                 if (!(this.hoverElement.constraints & (NodeConstraints.Default && NodeConstraints.Tooltip))) {
                     this.hoverElement.tooltip.content = this.hoverElement.id;
@@ -1657,7 +1661,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 this.elementEnter(this.currentPosition, false);
             }
         }
-        if (obj === undefined && this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto') {
+        if (obj === undefined && this.hoverElement && !this.hoverElement.tooltip.isSticky && this.hoverElement.tooltip.openOn === 'Auto') {
             this.hoverElement = null;
             this.elementLeave();
         }

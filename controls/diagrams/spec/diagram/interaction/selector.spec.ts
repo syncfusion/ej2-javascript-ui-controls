@@ -1,11 +1,11 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { MouseEvents } from './mouseevents.spec';
-import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
+import { ConnectorModel, BpmnFlowModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { SelectorModel } from '../../../src/diagram/objects/node-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-import { NodeConstraints } from '../../../src/diagram/enum/enum';
+import { NodeConstraints, SnapConstraints } from '../../../src/diagram/enum/enum';
 import { IDraggingEventArgs } from '../../../src/diagram/objects/interface/IElement'
 
 /**
@@ -1103,4 +1103,539 @@ describe('Diagram Control', () => {
         });
         
     });
+});
+describe('834641-Support to unselect the diagram element that is already selected ', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramSelect' });
+        document.body.appendChild(ele);
+        let nodeA: NodeModel = {
+            id: 'nodeA', offsetX: 200, offsetY: 100, height: 100, width: 100
+        };
+        let con: ConnectorModel = { id: 'connectorA', sourcePoint: { x: 400, y: 100 }, targetPoint: { x: 500, y: 200 } }
+        diagram = new Diagram({
+            width: 750, height: 750,
+            nodes: [nodeA], connectors: [con],
+            snapSettings: { constraints: SnapConstraints.ShowLines }
+        });
+        diagram.selectedItems.canToggleSelection = true;
+        diagram.appendTo('#diagramSelect');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('select and unselect node and connector', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 200, 100);
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 200, 100);
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 480, 180);
+        expect(diagram.selectedItems.connectors.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 480, 180);
+        expect(diagram.selectedItems.connectors.length == 0).toBe(true)
+        done();
+    });
+    it('select and unselect group', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.add({ id: 'group', children: ['nodeA', 'connectorA'] });//group a node and connector
+        mouseEvents.clickEvent(diagramCanvas, 350, 150);//select group
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 250, 150);//select node in that group
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 250, 150);//unselect node in that group
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true)//now nothing is selected
+        mouseEvents.clickEvent(diagramCanvas, 480, 180);//select the group
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 480, 180);//select the connector in group
+        expect(diagram.selectedItems.connectors.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 480, 180);//unselct the connector in group
+        expect(diagram.selectedItems.connectors.length == 0).toBe(true)//no selected objects
+        mouseEvents.clickEvent(diagramCanvas, 480, 180);//again can select the  group
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        done();
+    });
+    it('selection change', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 200, 100);
+        diagram.selectionChange = function (args) {
+            expect(args.oldValue == '' && args.newValue[0].id === 'NodeA').toBe(true);
+            done();
+        }
+        mouseEvents.clickEvent(diagramCanvas, 200, 100);
+        diagram.selectionChange = function (args) {
+            expect(args.oldValue[0].id == 'NodeA' && args.newValue == '').toBe(true);
+            done();
+        }
+    });
+});
+describe('834641-Support to unselect the diagram element that is already selected in swimlane ', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramSwimlane' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'ONLINE' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'paymentondebitcreditcard',
+                                    annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            header: {
+                                annotation: { content: 'SHOP' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'getmaildetailaboutorder',
+                                    annotations: [{ content: 'Get mail detail\nabout order' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'pakingitem',
+                                    annotations: [{ content: 'Paking item' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas4',
+                            header: {
+                                annotation: { content: 'DELIVERY' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'sendcourieraboutaddress',
+                                    annotations: [{ content: 'Send Courier\n about Address' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'deliveryonthataddress',
+                                    annotations: [{ content: 'Delivery on that\n Address' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'getitItem',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                    margin: { left: 500, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 170,
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                        {
+                            id: 'phase2', offset: 450,
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'Order',
+                targetID: 'selectItemaddcart'
+            },
+            {
+                id: 'connector2', sourceID: 'selectItemaddcart',
+                targetID: 'paymentondebitcreditcard'
+            },
+            {
+                id: 'connector3', sourceID: 'paymentondebitcreditcard',
+                targetID: 'getmaildetailaboutorder'
+            },
+            {
+                id: 'connector4', sourceID: 'getmaildetailaboutorder',
+                targetID: 'pakingitem'
+            },
+            {
+                id: 'connector5', sourceID: 'pakingitem',
+                targetID: 'sendcourieraboutaddress'
+            },
+            {
+                id: 'connector6', sourceID: 'sendcourieraboutaddress',
+                targetID: 'deliveryonthataddress'
+            },
+            {
+                id: 'connector7', sourceID: 'deliveryonthataddress',
+                targetID: 'getitItem'
+            },
+        ];
+        diagram = new Diagram({
+            width: 1000, height: 1000,
+            getConnectorDefaults: function getConnectorDefaults(connector: ConnectorModel) {
+                connector.type = 'Orthogonal';
+            },
+            nodes: nodes, connectors: connectors,
+        });
+        diagram.selectedItems.canToggleSelection = true;
+        diagram.appendTo('#diagramSwimlane');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('select and unselect node and connector in Swimlane', (done: Function) => {
+        debugger
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 220, 150);//select node in swimlane
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 220, 150);
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 422, 286);//select connector in swimlane
+        expect(diagram.selectedItems.connectors.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 422, 286);
+        expect(diagram.selectedItems.connectors.length == 0).toBe(true)
+        done();
+    });
+    it('select and unselect lane phase and header in Swimlane', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 200, 63);//select header
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 200, 62);
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 236, 95);//select phase
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 236, 95);
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 120, 290);//select Lane
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 120, 290);
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true)
+        done();
+    });
+    it('select and unselect node and connector after selecting Lane', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 120, 290);//select Lane
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 220, 150);//select node in Lane
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 220, 150);//unselect node in Lane
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 120, 290);//select Lane
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 422, 286);//select connector in Lane
+        expect(diagram.selectedItems.connectors.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 422, 286);//unselect connector in Lane
+        expect(diagram.selectedItems.connectors.length == 0).toBe(true)
+        done();
+    });
+    it('select and unselect node and connector after selecting Phase', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 236, 95);//select phase
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 220, 150);//select node in phase
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 220, 150);//unselect node in phase
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 120, 290);//select phase
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 422, 286);//select connector in phase
+        expect(diagram.selectedItems.connectors.length == 1).toBe(true)
+        mouseEvents.clickEvent(diagramCanvas, 422, 286);//unselect connector in phase
+        expect(diagram.selectedItems.connectors.length == 0).toBe(true)
+        done();
+    });
+});
+describe('834641-Support to unselect the diagram element that is already selected in BPMN editor', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        ele = createElement('div', { id: 'diagrambpmn' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'start', width: 40, height: 40, offsetX: 35, offsetY: 180, shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'Start' }
+                }
+            },
+            {
+                id: 'subProcess', width: 520, height: 250, offsetX: 355, offsetY: 180,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                shape: {
+                    shape: 'Activity', type: 'Bpmn',
+                    activity: {
+                        activity: 'SubProcess', subProcess: {
+                            type: 'Transaction', collapsed: false,
+                            processes: ['processesStart', 'service', 'compensation', 'processesTask',
+                                'error', 'processesEnd', 'user', 'subProcessesEnd']
+                        }
+                    }
+                }
+            },
+            {
+                id: 'hazardEnd', width: 40, height: 40, offsetX: 305, offsetY: 370, shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'End' },
+                }, annotations: [{
+                    id: 'label2', content: 'Hazard',
+                    style: { fill: 'white', color: 'black' }, verticalAlignment: 'Top', margin: { top: 20 }
+                }]
+            },
+            {
+                id: 'cancelledEnd', width: 40, height: 40, offsetX: 545, offsetY: 370, shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'End' },
+                }, annotations: [{
+                    id: 'cancelledEndLabel2', content: 'Cancelled',
+                    style: { fill: 'white', color: 'black' }, verticalAlignment: 'Top', margin: { top: 20 }
+                }]
+            },
+            {
+                id: 'end', width: 40, height: 40, offsetX: 665, offsetY: 180, shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'End' }
+                },
+            },
+            {
+                id: 'processesStart', width: 30, height: 30, shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'Start' }
+                }, margin: { left: 40, top: 80 }
+            },
+            {
+                id: 'service', style: { fill: '#6FAAB0' }, width: 95, height: 70,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'Task', task: {
+                            type: 'Service',
+                            loop: 'ParallelMultiInstance',
+                        },
+                    },
+                }, annotations: [{
+                    id: 'serviceLabel2', content: 'Book hotel', offset: { x: 0.50, y: 0.50 },
+                    style: { color: 'white', }
+                }], margin: { left: 110, top: 20 },
+            },
+            {
+                id: 'compensation', width: 30, height: 30,
+                shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'Intermediate', trigger: 'Compensation' }
+                }, margin: { left: 170, top: 100 }
+            },
+            {
+                id: 'processesTask', style: { fill: '#F6B53F' }, width: 95, height: 70,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'Task', task: {
+                            type: 'Service',
+                        },
+                    },
+                }, annotations: [{
+                    id: 'serviceLabel2', content: 'Charge credit card', offset: { x: 0.50, y: 0.60 },
+                    style: { color: 'white' }
+                }], margin: { left: 290, top: 20 },
+            },
+            {
+                id: 'error', width: 30, height: 30,
+                shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: {
+                        event: 'Intermediate', trigger: 'Error'
+                    }
+                }, margin: { left: 350, top: 100 }
+            },
+            {
+                id: 'processesEnd', width: 30, height: 30, shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'End' }
+                }, margin: { left: 440, top: 80 }
+            },
+            {
+                id: 'user', style: { fill: '#E94649' }, width: 90, height: 80,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'Task', task: { type: 'User', compensation: true },
+                    },
+                }, annotations: [{
+                    id: 'serviceLabel2', content: 'Cancel hotel reservation', offset: { x: 0.50, y: 0.60 },
+                    style: { color: 'white' }
+                }], margin: { left: 240, top: 160 },
+            },
+            {
+                id: 'subProcessesEnd', width: 30, height: 30, shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'End' }
+                }, margin: { left: 440, top: 210 }
+            },
+        ];
+        let shape: BpmnFlowModel = {
+            type: 'Bpmn',
+            flow: 'Association',
+            association: 'Directional'
+        };
+        let connectors: ConnectorModel[] = [
+            { id: 'connector1', sourceID: 'start', targetID: 'subProcess' },
+            { id: 'connector2', sourceID: 'subProcess', sourcePortID: 'success', targetID: 'end' },
+            {
+                id: 'connector3', sourceID: 'subProcess', sourcePortID: 'failure', targetID: 'hazardEnd', type: 'Orthogonal',
+                segments: [{ type: 'Orthogonal', length: 50, direction: 'Bottom' }],
+                annotations: [{
+                    id: 'connector3Label2', content: 'Booking system failure', offset: 0.50,
+                    style: { fill: 'white' }
+                }]
+            },
+            {
+                id: 'connector4', sourceID: 'subProcess', sourcePortID: 'cancel', targetID: 'cancelledEnd', type: 'Orthogonal',
+                segments: [{ type: 'Orthogonal', length: 50, direction: 'Bottom' }],
+            },
+            { id: 'connector5', sourceID: 'processesStart', targetID: 'service', type: 'Orthogonal', },
+            { id: 'connector6', sourceID: 'service', targetID: 'processesTask' },
+            { id: 'connector7', sourceID: 'processesTask', targetID: 'processesEnd', type: 'Orthogonal', },
+            {
+                id: 'connector8', sourceID: 'compensation', targetID: 'user', type: 'Orthogonal',
+                shape: shape,
+                style: {
+                    strokeDashArray: '2,2'
+                },
+                segments: [{ type: 'Orthogonal', length: 30, direction: 'Bottom' },
+                { type: 'Orthogonal', length: 80, direction: 'Right' }]
+            },
+            {
+                id: 'connector9', sourceID: 'error', targetID: 'subProcessesEnd', type: 'Orthogonal',
+                annotations: [{
+                    id: 'connector9Label2', content: 'Cannot charge card', offset: 0.50,
+                    style: { fill: 'white', color: 'black' }
+                }],
+                segments: [{ type: 'Orthogonal', length: 50, direction: 'Bottom' }]
+            }
+        ];
+       diagram = new Diagram({
+
+            width: 1000, height: 1000, nodes: nodes, connectors: connectors,
+        });
+        diagram.appendTo('#diagrambpmn');
+        diagram.selectedItems.canToggleSelection = true;
+        
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking unselect action working for BPMN nodes ', (done: Function) => {
+        debugger
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 400,325);
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 400,325);
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 475,255);
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 475,255);
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 475,255);
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 463,178);
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 463,178);
+        expect(diagram.selectedItems.nodes.length == 0).toBe(true);       
+        mouseEvents.clickEvent(diagramCanvas, 475,255);
+        expect(diagram.selectedItems.nodes.length == 1).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 529,202);
+        expect(diagram.selectedItems.connectors.length == 1).toBe(true);
+        mouseEvents.clickEvent(diagramCanvas, 529,202);
+        expect(diagram.selectedItems.connectors.length == 0).toBe(true);       
+        done();
+    });  
 });

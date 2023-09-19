@@ -113,9 +113,9 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with tree map data when item text is substring of another tree map item', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_20_Group');
-                expect(element.getAttribute('tabindex')).toBe('23');
+                expect(element.getAttribute('tabindex')).toBe(null);
                 element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_18_Group');
-                expect(element.getAttribute('tabindex')).toBe('21');
+                expect(element.getAttribute('tabindex')).toBe(null);
             };
             treemap.dataSource = countryData;
             treemap.weightValuePath = 'GDP';

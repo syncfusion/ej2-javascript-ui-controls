@@ -865,6 +865,20 @@ describe('Linear gauge control', () => {
             gauge.axes[0].majorTicks.interval = 10;
             gauge.refresh();
         });
+        it('checking with axis labels Trim', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Label_10');
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.edgeLabelPlacement = 'Trim';
+            gauge.axes[0].minimum = 100000;
+            gauge.axes[0].maximum = 200000;
+            gauge.axes[0].majorTicks.interval = 10000;
+            gauge.axes[0].isInversed = true;
+            gauge.axes[0].labelStyle.format = '{value} °C° C °C ';
+            gauge.axes[0].labelStyle.font.size = '15px';
+            gauge.refresh();
+        });
     });
     it('memory leak', () => {     
         profile.sample();

@@ -1,5 +1,5 @@
 import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile } from '@syncfusion/ej2-base';
-import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';
+import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation, animationMode } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getUniqueID, formatUnit, select, selectAll } from '@syncfusion/ej2-base';
 import { attributes, closest, removeClass, addClass, remove } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, Complex, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
@@ -537,14 +537,20 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         });
     }
 
-    private getScalingFactor(): { [key: string]: number } {
-        const eleRect = this.tooltipEle.getBoundingClientRect();
-        const xScalingFactor: number = (Math.round(eleRect.width) / this.tooltipEle.offsetWidth) || 1;
-        const yScalingFactor: number = (Math.round(eleRect.height) / this.tooltipEle.offsetHeight) || 1;
-        return {
-            x: isFinite(xScalingFactor) ? xScalingFactor : 1,
-            y: isFinite(yScalingFactor) ? yScalingFactor : 1
-        };
+    private getScalingFactor(target: HTMLElement): { [key: string]: number } {
+        if (!target) {
+            return { x: 1, y: 1 };
+        }
+        let scalingFactors: { [key: string]: number } = { x: 1, y: 1 };
+        const elementsWithTransform = target.closest('[style*="transform: scale"]');
+        if (elementsWithTransform && elementsWithTransform != this.tooltipEle && elementsWithTransform.contains(this.tooltipEle)) {
+            const computedStyle = window.getComputedStyle(elementsWithTransform);
+            const transformValue: string = computedStyle.getPropertyValue("transform");
+            const matrixValues = transformValue.match(/matrix\(([^)]+)\)/)[1].split(",").map(parseFloat);
+            scalingFactors.x = matrixValues[0];
+            scalingFactors.y = matrixValues[3];
+        }
+        return scalingFactors;
     }
 
     private getTooltipPosition(target: HTMLElement): OffsetPosition {
@@ -557,7 +563,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         const pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY, !this.isBodyContainer,
                                                       this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
-        const scalingFactors: { [key: string]: number } = this.getScalingFactor();
+        const scalingFactors: { [key: string]: number } = this.getScalingFactor(target);
         const offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position, scalingFactors.x, scalingFactors.y);
         const collisionPosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
         const collisionLeft: number = collisionPosition[0];
@@ -756,18 +762,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.enableHtmlSanitizer) {
                     this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
                 }
-                const tempFunction: Function = compile(this.content);
-                const tempArr: Element[] = tempFunction(
-                    {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
-                if (tempArr) {
-                    if (this.enableHtmlParse) {
-                        const nodeList: number = tempArr.length;
-                        for (let i = 0; i < nodeList; i++) {
-                            tooltipContent[append(tempArr, tooltipContent), 'innerHTML'] = this.content;
-                        }
-                    } else {
-                        tooltipContent['textContent'] = this.content;
+                if (this.enableHtmlParse) {
+                    const tempFunction: Function = compile(this.content);
+                    const tempArr: Element[] = tempFunction(
+                        {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent, this.root);
+                    if (tempArr) {
+                        append(tempArr, tooltipContent);
                     }
+                } else {
+                    tooltipContent['textContent'] = this.content;
                 }
             } else {
                 const templateFunction: Function = compile(this.content);
@@ -786,6 +789,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private renderCloseIcon(): void {
         if (!this.isSticky) {
+            const existingCloseIcon: HTMLElement = this.tooltipEle.querySelector('.' + ICON + '.' + CLOSE);
+            if (existingCloseIcon) {
+                remove(existingCloseIcon);
+            }
             return;
         }
         const tipClose: HTMLElement = this.createElement('div', { className: ICON + ' ' + CLOSE });
@@ -988,7 +995,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.restoreElement(target);
         } else {
             let openAnimation: Object = {
-                name: showAnimation.effect,
+                name: (showAnimation.effect === 'None' && animationMode === 'Enable') ? 'FadeIn': this.animation.open.effect,
                 duration: showAnimation.duration,
                 delay: showAnimation.delay,
                 timingFunction: 'easeOut'
@@ -1078,7 +1085,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 const pos: OffsetPosition = calculatePosition(target, elePosHorizontal, elePosVertical, !this.isBodyContainer,
                                                             this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
                 this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
-                const scalingFactors: { [key: string]: number } = this.getScalingFactor();
+                const scalingFactors: { [key: string]: number } = this.getScalingFactor(target);
                 const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos, scalingFactors.x, scalingFactors.y);
                 offsetPos.top -= this.getOffSetPosition('TopBottom', newpos, this.offsetY);
                 offsetPos.left -= this.getOffSetPosition('RightLeft', newpos, this.offsetX);
@@ -1160,7 +1167,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (target) { this.restoreElement(target); }
         this.isHidden = true;
         let closeAnimation: Object = {
-            name: hideAnimation.effect,
+            name: (hideAnimation.effect === 'None' && animationMode === 'Enable') ? 'FadeOut': this.animation.close.effect,
             duration: hideAnimation.duration,
             delay: hideAnimation.delay,
             timingFunction: 'easeIn'
@@ -1244,7 +1251,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         removeClass([this.tooltipEle], POPUP_CLOSE);
         addClass([this.tooltipEle], POPUP_OPEN);
         this.adjustArrow(event.target as HTMLElement, this.position, this.tooltipPositionX, this.tooltipPositionY);
-        const scalingFactors: { [key: string]: number } = this.getScalingFactor();
+        const scalingFactors: { [key: string]: number } = this.getScalingFactor(event.target as HTMLElement);
         const pos: OffsetPosition = this.calculateTooltipOffset(this.position, scalingFactors.x, scalingFactors.y);
         const x: number = eventPageX + pos.left + this.offsetX;
         const y: number = eventPageY + pos.top + this.offsetY;
@@ -1517,7 +1524,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.formatPosition();
                 if (this.tooltipEle && targetElement) {
                     const arrowInnerELe: HTMLElement = select('.' + ARROW_TIP_INNER, this.tooltipEle) as HTMLElement;
-                    arrowInnerELe.style.top = arrowInnerELe.style.left = null;
+                    if (arrowInnerELe) {
+                        arrowInnerELe.style.top = arrowInnerELe.style.left = null;
+                    }
                     this.reposition(targetElement);
                 }
                 break;
@@ -1551,6 +1560,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     } else {
                         removeClass([this.tooltipEle], RTL);
                     }
+                }
+                break;
+            case 'isSticky':
+                if (this.tooltipEle && targetElement) {
+                    this.renderCloseIcon();
+                    this.reposition(targetElement);
                 }
                 break;
             case 'container':

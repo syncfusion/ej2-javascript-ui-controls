@@ -1,0 +1,17 @@
+$spreadsheet-ribbon-skin: 'material' !default;
+$spreadsheet-ribbon-border-color: $grey-700 !default;
+$spreadsheet-ribbon-border: 1px solid $spreadsheet-ribbon-border-color !default;
+$tab-header-height: 36px !default;
+$bigger-tab-header-height: 48px !default;
+$spreadsheet-ribbon-header-bg-color: $grey-900 !default;
+$file-menu-wrap-padding: 0 !default;
+$spreadsheet-ribbon-hover-text-color: $grey-dark-font !default;
+$drop-icon-margin: 12.5px 4px !default;
+$bigger-drop-icon-margin: 14.5px 5px !default;
+$spreadsheet-ribbon-comb-icon-color: rgba($accent, 1) !default;
+$separator-border-color: rgba($grey-white, .24) !default;
+$expand-icon-color: $grey-dark-font !default;
+$spreadsheet-ribbon-focus-bg-color: rgba($accent, .12) !default;
+$spreadsheet-ribbon-focus-text-color: rgba($accent, 1) !default;
+$spreadsheet-ribbon-drop-icon-font-size: 10px !default;
+$bigger-spreadsheet-ribbon-drop-icon-font-size: 12px !default;

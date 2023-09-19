@@ -127,7 +127,7 @@ export class RibbonColorPicker {
         const splitBtn: SplitButton = (colorPickerObj['splitBtn'] as SplitButton);
         //Accessing the private property 'splitBtn' of ColorPicker component to get the colorpicker instance as there is no close event in colorpicker.
         splitBtn.close = null;
-        colorPickerObj.beforeClose = (e: BeforeOpenCloseMenuEventArgs) => {
+        colorPickerObj.beforeClose = () => {
             colorPickerObj.element.parentElement.classList.remove(RIBBON_POPUP_OPEN);
             if (item.colorPickerSettings.beforeClose) {
                 item.colorPickerSettings.beforeClose.call(this);

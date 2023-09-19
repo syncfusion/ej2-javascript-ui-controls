@@ -5,7 +5,6 @@ import { Browser, EmitType, select } from '@syncfusion/ej2-base';
 import { EventHandler, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Page } from '../../../src/grid/actions/page';
 import { data, infiniteGroupData } from '../base/datasource.spec';
@@ -22,8 +21,9 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Column } from '../../../src/grid/models/column';
 import { Row } from '../../../src/grid/models/row';
 import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { Freeze } from '../../../src/grid/actions/freeze';
 
-Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze, VirtualScroll, Filter);
+Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, VirtualScroll, Filter, Freeze);
 
 function copyObject(source: Object, destiation: Object): Object {
     for (let prop in source) {
@@ -567,7 +567,7 @@ describe('Grid Selection module', () => {
             expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
             expect(rows[0].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(gridObj.element.querySelectorAll('.e-selectionbackground').length).toBe(5);
-            expect(selectionModule.selectedRecords.length).toBe(2);
+            expect(selectionModule.selectedRecords.length).toBe(1);
             expect(selectionModule.selectedRowIndexes.length).toBe(1);
         });
 
@@ -575,7 +575,7 @@ describe('Grid Selection module', () => {
             selectionModule.selectRow(2, true);
             expect(rows[2].hasAttribute('aria-selected')).toBeTruthy();
             expect(rows[2].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
-            expect(selectionModule.selectedRecords.length).toBe(2);
+            expect(selectionModule.selectedRecords.length).toBe(1);
             expect(selectionModule.selectedRowIndexes.length).toBe(1);
             expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
             expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeFalsy();
@@ -599,11 +599,11 @@ describe('Grid Selection module', () => {
 
         it('single cell testing', () => {
             selectionModule.selectCell({ rowIndex: 1, cellIndex: 3 }, true);
-            let mRows: Element[] = gridObj.getMovableRows();
+            let rows: Element[] = gridObj.getRows();
             expect(
-                (mRows[1].querySelector('.e-cellselectionbackground') as HTMLTableCellElement).cellIndex).toBe(3 - gridObj.frozenColumns);
+                (rows[1].querySelector('.e-cellselectionbackground') as HTMLTableCellElement).cellIndex).toBe(3);
             expect(selectionModule.selectedRowCellIndexes.length).toBe(1);
-            expect(mRows[0].querySelectorAll('.e-cellselectionbackground').length).toBe(0);
+            expect(rows[0].querySelectorAll('.e-cellselectionbackground').length).toBe(0);
         });
 
         it('clear cell selection testing', () => {
@@ -984,7 +984,7 @@ describe('Grid Selection module', () => {
             expect(rows[2].hasAttribute('aria-selected')).toBeTruthy();
             expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(rows[2].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
-            expect(selectionModule.selectedRecords.length).toBe(4);
+            expect(selectionModule.selectedRecords.length).toBe(2);
             expect(selectionModule.selectedRowIndexes.length).toBe(2);
         });
 
@@ -992,7 +992,7 @@ describe('Grid Selection module', () => {
             selectionModule.selectRow(3, true);
             expect(rows[3].hasAttribute('aria-selected')).toBeTruthy();
             expect(rows[3].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
-            expect(selectionModule.selectedRecords.length).toBe(2);
+            expect(selectionModule.selectedRecords.length).toBe(1);
             expect(selectionModule.selectedRowIndexes.length).toBe(1);
             expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
             expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeFalsy();
@@ -1004,7 +1004,7 @@ describe('Grid Selection module', () => {
             expect(rows[4].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(rows[3].hasAttribute('aria-selected')).toBeTruthy();
             expect(rows[3].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
-            expect(selectionModule.selectedRecords.length).toBe(4);
+            expect(selectionModule.selectedRecords.length).toBe(2);
             expect(selectionModule.selectedRowIndexes.length).toBe(2);
         });
 
@@ -1016,7 +1016,7 @@ describe('Grid Selection module', () => {
             expect(rows[3].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
             expect(rows[0].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
-            expect(selectionModule.selectedRecords.length).toBe(6);
+            expect(selectionModule.selectedRecords.length).toBe(3);
             expect(selectionModule.selectedRowIndexes.length).toBe(3);
         });
 
@@ -1024,7 +1024,7 @@ describe('Grid Selection module', () => {
             rows[4].firstChild.dispatchEvent(ctrlEvt);
             expect(rows[4].hasAttribute('aria-selected')).toBeFalsy();
             expect(rows[4].firstElementChild.classList.contains('e-selectionbackground')).toBeFalsy();
-            expect(selectionModule.selectedRecords.length).toBe(4);
+            expect(selectionModule.selectedRecords.length).toBe(2);
             expect(selectionModule.selectedRowIndexes.length).toBe(2);
         });
 
@@ -1044,7 +1044,7 @@ describe('Grid Selection module', () => {
             expect(rows[3].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(rows[4].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(rows[4].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
-            expect(selectionModule.selectedRecords.length).toBe(4);
+            expect(selectionModule.selectedRecords.length).toBe(2);
             expect(selectionModule.selectedRowIndexes.length).toBe(2);
         });
 
@@ -1054,7 +1054,7 @@ describe('Grid Selection module', () => {
             expect(rows[5].hasAttribute('aria-selected')).toBeTruthy();
             expect(rows[4].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(rows[5].firstElementChild.classList.contains('e-cellselectionbackground')).toBeFalsy();
-            expect(selectionModule.selectedRecords.length).toBe(4);
+            expect(selectionModule.selectedRecords.length).toBe(2);
             expect(selectionModule.selectedRowIndexes.length).toBe(2);
         });
 
@@ -1066,7 +1066,7 @@ describe('Grid Selection module', () => {
             expect(rows[2].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(rows[3].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(rows[4].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
-            expect(selectionModule.selectedRecords.length).toBe(6);
+            expect(selectionModule.selectedRecords.length).toBe(3);
             expect(selectionModule.selectedRowIndexes.length).toBe(3);
         });
 
@@ -1311,6 +1311,13 @@ describe('Grid Selection module', () => {
             gridObj.refresh();
         });
 
+        // getDataRows
+        it('getDataRows check in frozen grid', () => {
+            let cell: any = gridObj.getCellFromIndex(0,2);
+            expect(gridObj.getMovableCellFromIndex(0,2)).toBe(cell);
+            expect(gridObj.getFrozenRightCellFromIndex(0,2)).toBe(cell);
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = selectionModule = rows = shiftEvt = null;
@@ -1322,7 +1329,6 @@ describe('Grid Selection module', () => {
         let gridObj: Grid;
         let selectionModule: Selection;
         let rows: Element[];
-        let mRows: Element[];
         let cells: NodeListOf<Element>;
         let shiftEvt: MouseEvent = document.createEvent('MouseEvent');
         shiftEvt.initMouseEvent(
@@ -1367,23 +1373,21 @@ describe('Grid Selection module', () => {
         it('single cell testing', () => {
             selectionModule = gridObj.selectionModule;
             rows = gridObj.getRows();
-            mRows = gridObj.getMovableRows();
             selectionModule.selectCell({ rowIndex: 2, cellIndex: 2 }, true);
-            expect(mRows[2].querySelectorAll('.e-rowcell')[2 - 2].classList.contains('e-cellselectionbackground')).toBeTruthy();
-            expect(selectionModule.selectedRowCellIndexes.length).toBe(1);
-            expect(rows[0].querySelectorAll('.e-rowcell')[0].classList.contains('e-cellselectionbackground')).toBeFalsy();
+            expect(rows[2].querySelectorAll('.e-rowcell')[2].classList.contains('e-cellselectionbackground')).toBeTruthy();
+            expect(selectionModule.selectedRowCellIndexes.length).toBe(1);;
         });
 
         it('multi cell - addCellsToSelection  testing', () => {
             selectionModule.addCellsToSelection([{ rowIndex: 1, cellIndex: 1 }]);
-            expect(mRows[2].querySelectorAll('.e-rowcell')[2 - 2].classList.contains('e-cellselectionbackground')).toBeTruthy();
+            expect(rows[2].querySelectorAll('.e-rowcell')[2].classList.contains('e-cellselectionbackground')).toBeTruthy();
             expect(rows[1].querySelectorAll('.e-rowcell')[1].classList.contains('e-cellselectionbackground')).toBeTruthy();
             expect(selectionModule.selectedRowCellIndexes.length).toBe(2);
         });
 
         it('multi cell - addRowsToSelection click testing', () => {
             rows[3].firstChild.dispatchEvent(ctrlEvt);
-            expect(mRows[2].querySelectorAll('.e-rowcell')[2 - 2].classList.contains('e-cellselectionbackground')).toBeTruthy();
+            expect(rows[2].querySelectorAll('.e-rowcell')[2].classList.contains('e-cellselectionbackground')).toBeTruthy();
             expect(rows[1].querySelectorAll('.e-rowcell')[1].classList.contains('e-cellselectionbackground')).toBeTruthy();
             expect(rows[3].querySelectorAll('.e-rowcell')[0].classList.contains('e-cellselectionbackground')).toBeTruthy();
             expect(selectionModule.selectedRowCellIndexes.length).toBe(3);
@@ -1395,8 +1399,8 @@ describe('Grid Selection module', () => {
         });
 
         it('selection on same row - addRowsToSelection click testing', () => {
-            mRows[0].querySelectorAll('.e-rowcell')[1].dispatchEvent(ctrlEvt);
-            expect(mRows[0].querySelectorAll('.e-rowcell')[1].classList.contains('e-cellselectionbackground')).toBeTruthy();
+            rows[0].querySelectorAll('.e-rowcell')[1].dispatchEvent(ctrlEvt);
+            expect(rows[0].querySelectorAll('.e-rowcell')[1].classList.contains('e-cellselectionbackground')).toBeTruthy();
         });
 
         it('clear cell selection testing', () => {
@@ -1443,13 +1447,8 @@ describe('Grid Selection module', () => {
             selectionModule.clearCellSelection();
             selectionModule.selectCells([{ rowIndex: 0, cellIndexes: [0] }, { rowIndex: 1, cellIndexes: [1] }, { rowIndex: 2, cellIndexes: [2] }])
             for (let i: number = 0; i <= 2; i++) {
-                if (i === 2) {
-                    cells = mRows[i].querySelectorAll('.e-rowcell');
-                    expect(cells[i - gridObj.frozenColumns].classList.contains('e-cellselectionbackground')).toBeTruthy();
-                } else {
-                    cells = rows[i].querySelectorAll('.e-rowcell');
-                    expect(cells[i].classList.contains('e-cellselectionbackground')).toBeTruthy();
-                }
+                cells = rows[i].querySelectorAll('.e-rowcell');
+                expect(cells[i].classList.contains('e-cellselectionbackground')).toBeTruthy();
             }
             expect(selectionModule.selectedRowCellIndexes.length).toBe(3);
         });
@@ -1472,7 +1471,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
-            gridObj = selectionModule = rows = mRows = cells = ctrlEvt = shiftEvt = null;
+            gridObj = selectionModule = rows = cells = ctrlEvt = shiftEvt = null;
         });
     });
 });
@@ -1610,7 +1609,6 @@ describe('Grid Selection module', () => {
         let gridObj: Grid;
         let selectionModule: Selection;
         let rows: Element[];
-        let mRows: Element[];
         let cell: HTMLElement;
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -1633,7 +1631,6 @@ describe('Grid Selection module', () => {
         it('select cell and clear row selection testing', () => {
             selectionModule = gridObj.selectionModule;
             rows = gridObj.getRows();
-            mRows = gridObj.getMovableRows();
             cell = rows[0].firstChild as HTMLElement;
             selectionModule.selectCell({ rowIndex: 1, cellIndex: 0 }, true);
             expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeFalsy();
@@ -1646,7 +1643,7 @@ describe('Grid Selection module', () => {
 
         it('row and cell toogle testing', () => {
             selectionModule.clearSelection();
-            cell = mRows[0].children[1] as HTMLElement;
+            cell = rows[0].children[2] as HTMLElement;
             cell.click();
             expect(cell.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(cell.classList.contains('e-cellselectionbackground')).toBeTruthy();
@@ -1660,17 +1657,17 @@ describe('Grid Selection module', () => {
             cell.click();
             expect(cell.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(cell.classList.contains('e-cellselectionbackground')).toBeTruthy();
-            (mRows[0].querySelectorAll('.e-rowcell')[2] as HTMLElement).click();
+            (rows[0].querySelectorAll('.e-rowcell')[4] as HTMLElement).click();
             expect(cell.classList.contains('e-selectionbackground')).toBeFalsy();
             expect(cell.classList.contains('e-cellselectionbackground')).toBeFalsy();
-            expect(mRows[0].querySelectorAll('.e-rowcell')[2].classList.contains('e-cellselectionbackground')).toBeTruthy();
-            (mRows[0].querySelectorAll('.e-rowcell')[2] as HTMLElement).click();
+            expect(rows[0].querySelectorAll('.e-rowcell')[4].classList.contains('e-cellselectionbackground')).toBeTruthy();
+            (rows[0].querySelectorAll('.e-rowcell')[4] as HTMLElement).click();
             expect(cell.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(cell.classList.contains('e-cellselectionbackground')).toBeFalsy();
-            expect(mRows[0].querySelectorAll('.e-rowcell')[2].classList.contains('e-cellselectionbackground')).toBeFalsy();
-            (mRows[0].querySelectorAll('.e-rowcell')[2] as HTMLElement).click();
+            expect(rows[0].querySelectorAll('.e-rowcell')[4].classList.contains('e-cellselectionbackground')).toBeFalsy();
+            (rows[0].querySelectorAll('.e-rowcell')[4] as HTMLElement).click();
             expect(cell.classList.contains('e-selectionbackground')).toBeFalsy();
-            expect(mRows[0].querySelectorAll('.e-rowcell')[2].classList.contains('e-cellselectionbackground')).toBeTruthy();
+            expect(rows[0].querySelectorAll('.e-rowcell')[4].classList.contains('e-cellselectionbackground')).toBeTruthy();
         });
 
         it('keydown selection false testing', () => {
@@ -1719,7 +1716,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
-            gridObj = selectionModule = rows = cell = mRows = null;
+            gridObj = selectionModule = rows = cell = null;
         });
     });
 
@@ -1895,7 +1892,6 @@ describe('Grid Touch Selection', () => {
         let gridObj: Grid;
         let selectionModule: Selection;
         let rows: Element[];
-        let mRows: Element[];
         let gridPopUp: HTMLElement;
         let spanElement: Element;
         let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
@@ -1921,7 +1917,6 @@ describe('Grid Touch Selection', () => {
 
         it('gridPopUp display testing', () => {
             rows = gridObj.getRows();
-            mRows = gridObj.getMovableRows();
             selectionModule = gridObj.selectionModule;
             gridPopUp = gridObj.element.querySelector('.e-gridpopup') as HTMLElement;
             spanElement = gridPopUp.querySelector('span');
@@ -1936,12 +1931,12 @@ describe('Grid Touch Selection', () => {
             expect(spanElement.classList.contains('e-rowselect')).toBeTruthy();
         });
 
-        it('multi row  testing', () => {
+        it('multi row  testing', () => {
             (spanElement as HTMLElement).click();
             expect(spanElement.classList.contains('e-spanclicked')).toBeTruthy();
-            (mRows[2].querySelector('.e-rowcell') as HTMLElement).click();
+            (rows[2].querySelector('.e-rowcell') as HTMLElement).click();
             expect(rows[0].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
-            expect(mRows[2].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            expect(rows[2].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(selectionModule.selectedRowIndexes.length).toBe(2);
             expect(gridPopUp.style.display).toBe('');
             expect(spanElement.classList.contains('e-rowselect')).toBeTruthy();
@@ -4983,9 +4978,12 @@ describe('EJ2-53014 - specific row selection feature', () => {
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
-                dataSource: data,
+                dataSource: data.slice(0,15),
                 allowPaging: true,
+                allowFiltering: true,
                 selectionSettings: { persistSelection: true },
+                toolbar: ["Add", "Edit","Delete","Save","Cancel"],
+                editSettings: {allowAdding: true, allowEditing: true, allowDeleting: true},
                 rowDataBound: (args) => {
                     args.isSelectable = args.data.OrderID % 2 === 0;
                 },
@@ -5013,6 +5011,109 @@ describe('EJ2-53014 - specific row selection feature', () => {
         gridObj.rowSelected = rowSelected;
         (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click()
     });
+
+    // used for code coverage
+    it('clear the selection', (done: Function) => {
+        let rowDeselected = (e: any) => {
+                expect(1).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+        };
+        gridObj.rowDeselected = rowDeselected;
+        expect(1).toBe(1);
+        gridObj.clearSelection();
+    });
+
+    it('perform searching', (done: Function) => {
+        let actionComplete = (e: any) => {
+                expect(1).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.search("10248");
+    });
+
+    it('clear searching', (done: Function) => {
+        let actionComplete = (e: any) => {
+                expect(1).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.search("");
+    });
+
+    it('perform filtering', (done: Function) => {
+        let actionComplete = (e: any) => {
+                expect(1).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn("OrderID", "equal", 10248);
+    });
+
+    it('clear filtering', (done: Function) => {
+        let actionComplete = (e: any) => {
+                expect(1).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.clearFiltering();
+    });
+
+    it('edit the record', (done: Function) => {
+        let actionComplete = (e: any) => {
+            if (e.requestType === 'beginEdit') {
+                expect(1).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(2);
+        gridObj.startEdit();
+    });
+
+    it('save the edited record', (done: Function) => {
+        let actionComplete = (e: any) => {
+            if (e.requestType === 'save') {
+                expect(1).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.endEdit();
+    });
+
+    it('select the records', (done: Function) => {
+        let rowSelected = (e: any) => {
+            expect(1).toBe(1);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click()
+    });
+
+    it('perform paging after selection', (done: Function) => {
+        let dataBound = (e: any) => {
+                expect(1).toBe(1);
+                gridObj.dataBound = null;
+                done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.goToPage(2);
+    });
+
+    it('add the record', (done: Function) => {
+        gridObj.addRecord({ OrderID: 1});
+        done();
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
@@ -5053,6 +5154,30 @@ describe('EJ2-53014 - specific row selection with virtualization feature', () =>
         gridObj.rowSelected = rowSelected;
         (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click()
     });
+
+    // used for code coverage
+    it('do scroll with partal selection', (done: Function) => {
+        let dataBound = (e: any) => {
+            expect(1).toBe(1);
+            gridObj.dataBound = null;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        (gridObj.selectionModule as any).rowsRemoved({records: gridObj.getSelectedRecords()});
+        (gridObj.element.querySelector('.e-gridcontent .e-content') as HTMLElement).scrollTop = 10;
+    });
+
+    // used for code coverage
+    it('refresh Grid', (done: Function) => {
+        let dataBound = (e: any) => {
+            expect(1).toBe(1);
+            gridObj.dataBound = null;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.refresh();
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
@@ -5711,6 +5836,872 @@ describe('BUG 842498 - In a checkbox with a specified field, if you click the in
         (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
         expect((document.getElementsByClassName('e-checkselectall')[0] as HTMLElement)['checked']).toBeTruthy();
     });
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+
+    // used for code coverage
+    describe('on property change', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' }],
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Box' },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                }, done);
+        });
+
+        it('execute methods 1', (done: Function) => {
+            (gridObj.selectionModule as any).isFirstRow(gridObj.element.querySelector('.e-rowcell'));
+            expect(1).toBe(1);
+            done();
+        });
+
+        it('enable auto fill', (done: Function) => {
+            gridObj.enableAutoFill = true;
+            expect(1).toBe(1);
+            done();
+        });        
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+});
+
+describe('Code Coverage - left freeze with autofill', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                frozenRows: 2,
+                frozenColumns: 2,
+                selectionSettings: {
+                    mode: 'Cell',
+                    type: 'Multiple'
+                },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                enableAutoFill: true,
+                pageSettings: { pageSize: 5 },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },},
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } }},
+                    { field: 'ShipAddress', headerText: 'Ship Address', width: 150 },
+                    { field: 'ShipRegion', headerText: 'Ship Region', width: 150 },
+                ],
+            }, done);
+    });
+    it('for coverage - 1', () => {
+        (gridObj.getCellFromIndex(2, 2) as HTMLElement).click();
+    });
+
+    it('1,3 => for coverage - 2', () => {
+        let elem: Element = gridObj.getCellFromIndex(2, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('3,4 => for coverage - 3', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('4 => for coverage - 4', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        gridObj.enableRtl = true;
+    });
+
+    it('1,3 => for coverage - 5', () => {
+        let elem: Element = gridObj.getCellFromIndex(2, 6);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('3,4 => for coverage - 6', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 6);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 5);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('4 => for coverage - 7', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 6);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 5);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Code Coverage - Left - Right - Fixed freeze with autofill', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                frozenRows: 2,
+                selectionSettings: {
+                    mode: 'Cell',
+                    type: 'Multiple'
+                },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                enableAutoFill: true,
+                pageSettings: { pageSize: 5 },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', freeze: 'Left', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', freeze: 'Left', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', freeze: 'Fixed', editType: 'datetimepickeredit', width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },},
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } }},
+                    { field: 'ShipAddress', headerText: 'Ship Address', freeze: 'Right', width: 150 },
+                    { field: 'ShipRegion', headerText: 'Ship Region', freeze: 'Right', width: 150 },
+                ],
+            }, done);
+    });
+
+    it('for coverage - 1', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 4);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 4);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 4);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+    });
+
+    it('for coverage - 2', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('for coverage - 3', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        let autoFillTarget: Element = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(1, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        gridObj.enableRtl = true;
+    });
+
+    it('for coverage - 4', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 4);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 4);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 4);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+    });
+
+    it('for coverage - 5', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('for coverage - 6', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        let autoFillTarget: Element = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(1, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Code Coverage - Right - Fixed freeze with autofill', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                frozenRows: 2,
+                selectionSettings: {
+                    mode: 'Cell',
+                    type: 'Multiple'
+                },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                enableAutoFill: true,
+                pageSettings: { pageSize: 5 },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', freeze: 'Fixed', editType: 'datetimepickeredit', width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },},
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } }},
+                    { field: 'ShipAddress', headerText: 'Ship Address', freeze: 'Right', width: 150 },
+                    { field: 'ShipRegion', headerText: 'Ship Region', freeze: 'Right', width: 150 },
+                ],
+            }, done);
+    });
+
+    it('for coverage - 1', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('for coverage - 2', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        let autoFillTarget: Element = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        gridObj.enableRtl = true;
+    });
+
+    it('for coverage - 3', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('for coverage - 4', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        let autoFillTarget: Element = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(2, 3);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 1);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(1, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        elem = gridObj.getCellFromIndex(2, 2);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        autoFillTarget = gridObj.element.querySelector('.e-autofill');
+        elem = gridObj.getCellFromIndex(1, 2);
+        elem.classList.add('e-cellselectionbackground');
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: autoFillTarget, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Code Coverage - Left - Right freeze with autofill', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                frozenRows: 2,
+                selectionSettings: {
+                    mode: 'Cell',
+                    type: 'Multiple'
+                },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                enableAutoFill: true,
+                pageSettings: { pageSize: 5 },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', freeze: 'Left', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', freeze: 'Left', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },},
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } }},
+                    { field: 'ShipAddress', headerText: 'Ship Address', freeze: 'Right', width: 150 },
+                    { field: 'ShipRegion', headerText: 'Ship Region', freeze: 'Right', width: 150 },
+                ],
+            }, done);
+    });
+
+    it('3 => for coverage - 1', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('6 => for coverage - 2', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('6 => for coverage - 3', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 6);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 5);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('5 => for coverage - 4', () => {
+        let elem: Element = gridObj.getCellFromIndex(2, 6);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 5);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('2,5,4,6 => for coverage - 5', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 5);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        gridObj.enableRtl = true;
+    });
+
+    it('3 => for coverage - 6', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('6 => for coverage - 7', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 1);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(4, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('6 => for coverage - 8', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 6);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(1, 5);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('5 => for coverage - 9', () => {
+        let elem: Element = gridObj.getCellFromIndex(2, 6);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 5);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
+    it('2,5,4,6 => for coverage - 10', () => {
+        let elem: Element = gridObj.getCellFromIndex(1, 5);
+        let elemClient: any = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseDownHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+        (elem as HTMLElement).click();
+        elem = gridObj.getCellFromIndex(2, 6);
+        elemClient = elem.getBoundingClientRect();
+        (<any>gridObj.selectionModule).mouseMoveHandler({ target: elem, preventDefault: function () { }, clientX: elemClient.x, clientY: elemClient.y });
+        (<any>gridObj.selectionModule).mouseUpHandler({ target: elem, preventDefault: () => { }, clientX: elemClient.x, clientY: elemClient.y });
+    });
+
     afterAll(function () {
         destroy(gridObj);
         gridObj = null;

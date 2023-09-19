@@ -5,7 +5,7 @@ import { NavigationPaneSettingsModel, SearchSettings, SearchSettingsModel, SortO
 import { ToolbarSettingsModel as FileToolbarSettingsModel, ToolbarSettings as FileToolbarSettings } from '@syncfusion/ej2-filemanager';
 import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-filemanager';
 import { SaveFormat, DisplayLayoutOptions } from '../../common';
-import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';
+import { ToolbarType, ActionOnScroll, ToolbarItems, ToolbarConfigItems } from '../base/enum';
 import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IListDropDownModel, EmojiIconsSet } from '../base/interface';
 import { backgroundColor, fontColor, fontFamily, fontSize, formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList, defaultEmojiIcons } from './items';
 
@@ -48,7 +48,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
      */
     @Property(predefinedItems)
-    public items: (string | IToolbarItems)[];
+    public items: (string |ToolbarConfigItems | IToolbarItems)[];
 
     /**
      * Using this property, Modify the default toolbar item configuration like icon class.
@@ -582,11 +582,10 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     /**
      * Specifies the items to render in quick toolbar, when text selected.
      *
-     * @default ['Cut', 'Copy', 'Paste']
-     * @deprecated
+     * @default null
      */
-    @Property(['Cut', 'Copy', 'Paste'])
-    public text: (string | IToolbarItems)[];
+    @Property(null)
+    public text: (string | ToolbarConfigItems | IToolbarItems)[];
 
     /**
      * Specifies the items to render in quick toolbar, when table selected.

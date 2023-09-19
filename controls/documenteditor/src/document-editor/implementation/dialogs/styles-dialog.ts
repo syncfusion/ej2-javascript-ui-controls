@@ -187,6 +187,10 @@ export class StylesDialog {
             styleName = 'Heading 6';
         } else if (localValue.getConstant('Normal') === styleName) {
             styleName = 'Normal';
+        } else if (localValue.getConstant('Header') === styleName) {
+            styleName = 'Header';
+        } else if (localValue.getConstant('Footer') === styleName) {
+            styleName = 'Footer';
         }
         return styleName;
     }

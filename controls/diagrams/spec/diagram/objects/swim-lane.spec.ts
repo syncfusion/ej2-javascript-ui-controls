@@ -12489,3 +12489,126 @@ describe('841227- Copy paste of lane working properly', () => {
         done();
     });
 });
+describe('83597-Delete Lane and Perform undo and redo', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+        let node: NodeModel[] = [
+            {
+                constraints: NodeConstraints.Default || NodeConstraints.AllowDrop,
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    //Intialize header to swimlane
+                    header: {
+                        annotation: { content: 'SwimLane Header', },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node1',
+                                    annotations: [
+                                        {
+                                            content: 'Consumer learns \n of product',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'PRODUCT' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node2',
+                                    annotations: [
+                                        {
+                                            content: 'product',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            height: 100,
+                            header: {
+                                annotation: { content: 'SALES' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'node3',
+                                    annotations: [
+                                        {
+                                            content: 'sales',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100,
+                                },
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 120,
+                            // set the phase info
+                            addInfo: { name: 'phase1' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 300, offsetY: 250,
+                height: 200,
+                width: 350
+            },];
+
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            nodes: node,
+        });
+        diagram.appendTo('#diagram');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Delete the  Lane and perform undo redo commands', (done: Function) => {
+        let swimlane = diagram.nodes[0];
+        let laneId: string = (swimlane.shape as SwimLaneModel).lanes[0].id;
+        let targetElement = diagram.nameTable[swimlane.id + laneId + '0'];
+        diagram.select([targetElement]);
+        diagram.remove();
+        diagram.undo();
+        diagram.redo();
+        diagram.undo();
+        expect(diagram.nodes.length == 12).toBe(true);
+        done();
+    });
+});

@@ -1241,7 +1241,9 @@ export class DateRangePicker extends CalendarBase {
             this.show(null, e);
             if (!this.isMobile) {
                 if (!isNullOrUndefined(this.leftCalendar)) {
+                    this.isRangeIconClicked = false;
                     this.calendarFocus();
+                    this.isRangeIconClicked = true;
                 }
             }
             addClass([this.inputWrapper.container], [INPUTFOCUS]);
@@ -2367,11 +2369,15 @@ export class DateRangePicker extends CalendarBase {
         if (event) {
             leftCalendar = <HTMLElement>closest(<HTMLElement>event.target, '.' + LEFTCALENDER);
         }
-        if (event && isNullOrUndefined(leftCalendar)) {
-            rightCalendar = event && <HTMLElement>closest(<HTMLElement>event.target, '.' + RIGHTCALENDER);
-        }
-        if (!isNullOrUndefined(leftCalendar) || !isNullOrUndefined(rightCalendar)) {
-            (<HTMLElement>this.inputWrapper.container).focus();
+        if (!isNullOrUndefined(leftCalendar)) {
+            (<HTMLElement>this.leftCalendar.children[1].firstElementChild).focus();
+        } else {
+            if (event) {
+                rightCalendar = event && <HTMLElement>closest(<HTMLElement>event.target, '.' + RIGHTCALENDER);
+            }
+            if (!isNullOrUndefined(rightCalendar)) {
+                (<HTMLElement>this.rightCalendar.children[1].firstElementChild).focus();
+            }
         }
         addClass([ele], SELECTED);
         this.calendarIconEvent();
@@ -3586,7 +3592,8 @@ export class DateRangePicker extends CalendarBase {
                     EventHandler.remove(document, 'keydown', this.popupCloseHandler);
                 }
             }, targetExitViewport: () => {
-                if (!Browser.isDevice) {
+                let popupEle: HTMLElement = this.popupObj && this.popupObj.element;
+                if (!Browser.isDevice && popupEle &&  popupEle.getBoundingClientRect().height < popupEle.parentElement.getBoundingClientRect().height) {
                     this.hide();
                 }
             }

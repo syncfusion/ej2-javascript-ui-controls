@@ -17,14 +17,15 @@ import { BarSeries } from '../../../src/chart/series/bar-series';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { MouseEvents } from '../base/events.spec';
 import { unbindResizeEvents } from '../base/data.spec';
-import { tooltipData1, tooltipData2, datetimeData, categoryData, categoryData1, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
+import { tooltipData1, tooltipData2, datetimeData, categoryData, categoryData1, negativeDataPoint, rotateData1, rotateData2, stackedBarData } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { IAnimationCompleteEventArgs, ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, StackingBarSeries, ColumnSeries, DateTime, Category, BarSeries, DataLabel);
 let data: any = tooltipData1;
 let data2: any = tooltipData2;
 let dateTime: any = datetimeData;
+let stackBar: any = stackedBarData;
 export interface Arg {
     chart: Chart;
 }
@@ -913,6 +914,161 @@ describe('Chart Control', () => {
             };
             chart.loaded = loaded;
             chart.tooltip.shared = true;
+            chart.refresh();
+        });
+    });
+    describe('StackingBar and StackingBar100 Series in Cyliderical shape', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animate: EmitType<IAnimationCompleteEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', interval: 1, majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 } },
+                    primaryYAxis: { title: 'Medal Count', maximum: 100, interval: 10, majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelFormat: '{value}' },
+                    series: [
+                        {
+                            animation: { enable: false }, name: 'Gold',
+                            dataSource: stackBar,
+                            xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                            type: 'StackingBar', fill: 'skyblue'
+                        },
+                        {
+                            animation: { enable: false }, name: 'Silver',
+                            dataSource: stackBar,
+                            xName: 'x', yName: 'y1', columnFacet: 'Cylinder',
+                            type: 'StackingBar', fill: 'orange'
+                        },
+                        {
+                            animation: { enable: false }, name: 'Bronze',
+                            dataSource: stackBar,
+                            xName: 'x', yName: 'y2', columnFacet: 'Cylinder',
+                            type: 'StackingBar', fill: 'pink'
+                        }
+                    ],
+                    width: '800', tooltip: { enable: true }, legendSettings: { visible: true },
+                    title: 'Olympic Medal Counts - RIO', loaded: loaded
+                });
+            chartObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('StackingBar Series type with ColumnFacet property as Cylinder', (done: Function) => {
+            loaded = (args: Object): void => {
+                let region1: string = document.getElementById('container_Series_1_Point_2_Region_1').getAttribute('d');
+                let region2: string = document.getElementById('container_Series_1_Point_2_Region_0').getAttribute('d');
+                let region3: string = document.getElementById('container_Series_1_Point_2_Region_2').getAttribute('d');
+                expect(region1 === 'M57.03244318181818,235.42386363636365a2.527556818181818,10.110227272727272 0 1,0 0,20.220454545454544a2.527556818181818,10.110227272727272 0 1,0 0,-20.220454545454544').toBe(true);
+                expect(region2 === 'M138.9274431818182,235.42386363636365a2.527556818181818,10.110227272727272 0 1,0 0,20.220454545454544a2.527556818181818,10.110227272727272 0 1,0 0,-20.220454545454544').toBe(true);
+                expect(region3 === 'M57.03244318181818,235.42386363636365a2.527556818181818,10.110227272727272 0 1,0 0,20.220454545454544l81.89500000000001 0a2.527556818181818,10.110227272727272 0 1,1 0,-20.220454545454544 z').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('StackingBar100 Series Type with ColumnFacet property as Cylinder', (done: Function) => {
+            loaded = (args: Object): void => {
+                let region1: string = document.getElementById('container_Series_0_Point_3_Region_1').getAttribute('d');
+                let region2: string = document.getElementById('container_Series_0_Point_3_Region_0').getAttribute('d');
+                let region3: string = document.getElementById('container_Series_0_Point_3_Region_2').getAttribute('d');
+                expect(region1 === 'M2.5275568181818215,206.53749999999997a2.5275568181818215,10.110227272727286 0 1,0 0,20.220454545454572a2.5275568181818215,10.110227272727286 0 1,0 0,-20.220454545454572').toBe(true);
+                expect(region2 === 'M263.1025568181818,206.53749999999997a2.5275568181818215,10.110227272727286 0 1,0 0,20.220454545454572a2.5275568181818215,10.110227272727286 0 1,0 0,-20.220454545454572').toBe(true);
+                expect(region3 === 'M2.5275568181818215,206.53749999999997a2.5275568181818215,10.110227272727286 0 1,0 0,20.220454545454572l260.575 0a2.5275568181818215,10.110227272727286 0 1,1 0,-20.220454545454572 z').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].type = 'StackingBar100';
+            chartObj.series[1].type = 'StackingBar100';
+            chartObj.series[2].type = 'StackingBar100';
+            chartObj.refresh();
+        });
+
+        it('Checking animation for stackingbar series in Cylindrical chart', (done: Function) => {
+            animate = (args: IAnimationCompleteEventArgs): void => {
+                let point = document.getElementById('container_Series_' + args.series.index + '_Point_4_Region_2');
+                expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
+                done();
+            };
+            chartObj.series[0].animation.enable = true;
+            chartObj.series[1].animation.enable = true;
+            chartObj.series[2].animation.enable = true;
+            chartObj.animationComplete = animate;
+            chartObj.refresh();
+        });
+
+        it('Checking animation for stackingbar100 series in Cylindrical chart', (done: Function) => {
+            animate = (args: IAnimationCompleteEventArgs): void => {
+                let point = document.getElementById('container_Series_' + args.series.index + '_Point_4_Region_2');
+                expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
+                done();
+            };
+            chartObj.series[0].type = 'StackingBar100';
+            chartObj.series[1].type = 'StackingBar100';
+            chartObj.series[2].type = 'StackingBar100';
+            chartObj.animationComplete = animate;
+            chartObj.refresh();
+        });
+
+    });
+
+    describe('Checking Cylindrical chart in Canvas Mode.', () => {
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'CanvasContainer' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chart = new Chart({
+                primaryXAxis: { valueType: 'Category', interval: 1, majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 } },
+                primaryYAxis: { title: 'Medal Count', maximum: 100, interval: 10, majorGridLines: { width: 0 }, minorGridLines: { width: 0 }, majorTickLines: { width: 0 }, minorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelFormat: '{value}' },
+                series: [
+                    {
+                        animation: { enable: false }, name: 'Gold',
+                        dataSource: stackBar,
+                        xName: 'x', yName: 'y', columnFacet: 'Cylinder',
+                        type: 'StackingBar', fill: 'skyblue'
+                    },
+                    {
+                        animation: { enable: false }, name: 'Bronze',
+                        dataSource: stackBar,
+                        xName: 'x', yName: 'y2', columnFacet: 'Cylinder',
+                        type: 'StackingBar', fill: 'pink'
+                    }
+                ],
+                width: '800', tooltip: { enable: true }, legendSettings: { visible: true },
+                title: 'Olympic Medal Counts - RIO', loaded: loaded
+            });
+            chart.appendTo('#CanvasContainer');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            element.remove();
+        });
+        it('Checking Cylindrical chart render in canvas mode to stackingbar series', (done: Function) => {
+            loaded = (args: Object): void => {
+                expect(document.getElementsByTagName('canvas')[0].id).toEqual('CanvasContainer_canvas');
+                done();
+            };
+            chart.enableCanvas = true;
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+
+        it('Checking Cylindrical chart render in canvas mode to stackingbar100 series', (done: Function) => {
+            loaded = (args: Object): void => {
+                expect(document.getElementsByTagName('canvas')[0].id).toEqual('CanvasContainer_canvas');
+                done();
+            };
+            chart.enableCanvas = true;
+            chart.series[0].type = 'StackingBar100';
+            chart.series[1].type = 'StackingBar100';
+            chart.loaded = loaded;
             chart.refresh();
         });
     });

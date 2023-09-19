@@ -1220,4 +1220,127 @@ describe('FileManager control Grid view', () => {
             }, 500);
         });
     });
+    describe('toolbar items testing', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                toolbarItems: [{ text: 'Create New Folder', name: 'NewFolder', prefixIcon: 'e-plus-small' },
+                    { id: 'fm_upload', text: 'File Upload', name: 'Upload', htmlAttributes: { 'class': 'e-tool' } },
+                    { text: 'SortBy', name: 'SortBy', cssClass: 'e-caret-hide', showTextOn: 'Toolbar' },
+                    { text: 'Cut', name: 'Cut', disabled: true },
+                    { text: 'Copy', name: 'Copy', align: 'Left', tooltipText: 'Copy Tooltip', showAlwaysInPopup: true },
+                    { text: 'Paste', name: 'Paste', tabIndex: 0 },
+                    { type: 'Separator', name: 'Separator' },
+                    { text: 'Delete', name: 'Delete', overflow: 'Show', tabIndex: 1 },
+                    { text: 'Download', name: 'Download', width: '50px' },
+                    { text: 'Rename', name: 'Rename', visible: false },
+                    { text: 'Details View', name: 'Details', suffixIcon: 'e-tb-details', align:'Right' },
+                    { text: 'Start Refresh', name: 'Refresh', showTextOn: 'Both' },
+                    { template: '<div><input type=\'checkbox\' id=\'check1\' checked=\'\'>Select All</input></div>',  name: 'select'}],
+                showThumbnail: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            setTimeout(function () {
+                done();
+            }, 500);
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('mouse click on create new folder & rename button', (done: Function) => {
+            //create new folder
+            let items: any = document.getElementsByClassName('e-toolbar-item');
+            items[0].click();
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
+            expect(li.length).toEqual(5);
+            expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+            expect((document.getElementById('file_dialog').querySelector('#newname') as any).value).toEqual("");
+            let ele: HTMLInputElement = document.getElementById('file_dialog').querySelector('#newname') as HTMLInputElement;
+            ele.value = "New folder";
+            (document.getElementById('file_dialog').querySelectorAll('.e-btn')[1] as HTMLElement).click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data4)
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data5)
+            });
+            setTimeout(function () {
+                let li1: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
+                expect(li1.length).toEqual(6);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(6);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].getAttribute('aria-selected')).toBe('true');
+                let items: any = document.getElementsByClassName('e-fe-rename');
+                items[0].click();
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(nli.length).toEqual(6);
+                expect(ntr.length).toEqual(6);
+                expect(nar.length).toEqual(1);
+                expect(ntr[4].textContent).toBe("New folder");
+                (<HTMLInputElement>document.getElementById('rename')).value = "My Folder";
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderRename)
+                });
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data5rename)
+                });
+                setTimeout(function () {
+                    let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                    let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+                    let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                    expect(nli.length).toEqual(6);
+                    expect(ntr.length).toEqual(6);
+                    expect(nar.length).toEqual(1);
+                    expect(ntr[3].textContent).toBe("My Folder");
+                    expect(nli[5].textContent).toBe("My Folder")
+                    done();
+                }, 500);
+            }, 500);
+        });
+    });
 });

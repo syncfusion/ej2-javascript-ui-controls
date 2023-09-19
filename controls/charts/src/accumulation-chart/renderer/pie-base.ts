@@ -4,7 +4,7 @@
 /**
  * Accumulation charts base file
  */
-import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, animationMode, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AccumulationChart } from '../accumulation';
 import { stringToNumber, ChartLocation, degreeToLocation, getAnimationFunction, getElement } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
@@ -220,7 +220,7 @@ export class PieBase extends AccumulationBase {
         radius += radius * (0.414); // formula r + r / 2 * (1.414 -1)
         const effect: Function = getAnimationFunction('Linear'); // need to check animation type
         new Animation({}).animate(<HTMLElement>slice, {
-            duration: duration,
+            duration: (duration === 0 && animationMode === 'Enable') ? 1000 : duration,
             delay: series.animation.delay,
             progress: (args: AnimationOptions): void => {
                 value = effect(args.timeStamp, startAngle, this.totalAngle, args.duration);

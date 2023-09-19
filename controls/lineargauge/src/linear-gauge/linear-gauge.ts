@@ -754,8 +754,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     private setStyle(element: HTMLElement): void {
-        element.style.touchAction = isPointerDrag(this.axes) ? 'none' : 'element';
-        element.style.msTouchAction = isPointerDrag(this.axes) ? 'none' : 'element';
+        element.style.touchAction = 'element';
+        element.style.msTouchAction = 'element';
         element.style.msContentZooming = 'none';
         element.style.msUserSelect = 'none';
         element.style.webkitUserSelect = 'none';
@@ -943,6 +943,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.trigger(gaugeMouseDown, args, () => {
             this.mouseX = args.x;
             this.mouseY = args.y;
+            if(this.isTouch){
+                e.preventDefault();
+            }
             if (args.target) {
                 if (!args.cancel && ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1))) {
                     current = this.moveOnPointer(args.target as HTMLElement);
@@ -1000,6 +1003,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                                 this.element.style.cursor = current.style;
                             }
                             this.isDrag = this.isCheckPointerDrag = true;
+                            if (this.isTouch) {
+                                e.preventDefault();
+                            }
                             dragArgs = {
                                 axis: this.activeAxis,
                                 pointer: this.activePointer,
@@ -1014,8 +1020,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                             } else {
                                 this.barDrag(this.activeAxis, (this.activeAxis.pointers[pointerIndex as number]) as Pointer);
                             }
-                            dragArgs.currentValue = this.axes[axisIndex as number].pointers[pointerIndex as number].value =
-                                this.activePointer.currentValue;
+                            dragArgs.currentValue = this.activePointer.currentValue;
                             this.trigger(dragMove, dragArgs);
                         }
                     }
@@ -1161,6 +1166,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     axisIndex: axisInd,
                     pointerIndex: pointerInd
                 } as IPointerDragEventArgs);
+                this.axes[axisInd as number].pointers[pointerInd as number].value = this.activePointer.currentValue;
                 this.activeAxis = null;
                 this.activePointer = null;
                 this.isDrag = false;
@@ -1257,9 +1263,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             } else {
                 pointer.bounds.x = this.mouseX + getExtraWidth(this.element);
             }
-            pointer.currentValue = pointer.value = value;
-            options = calculateShapes(
-                pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
+            pointer.currentValue = this.isTouch ? (pointer.startValue = value) : (pointer.value = value);
+            options = calculateShapes(pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
                 pointer.imageUrl, options, this.orientation, axis, pointer);
             if (pointer.markerType === 'Image') {
                 this.mouseElement.setAttribute('x', (pointer.bounds.x - (pointer.bounds.width / 2)).toString());
@@ -1324,7 +1329,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         }
         if (!isNullOrUndefined(this.mouseElement)) {
             const value: number = convertPixelToValue(this.element, this.mouseElement, this.orientation, axis, 'drag', new GaugeLocation(this.mouseX, this.mouseY));
-            pointer.currentValue = pointer.value = value;
+            pointer.currentValue = this.isTouch ? (pointer.startValue = value) : (pointer.value = value);
         }
         if (isDrag && !isNullOrUndefined(this.mouseElement) && this.mouseElement.tagName === 'path') {
             path = getBox(
@@ -1387,7 +1392,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                         pointer.currentValue, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer'
                     )
                 ) {
-                    pointer.value = this.pointerDrag ? value : pointer.value;
+                    pointer.value = this.pointerDrag ? this.isTouch ? pointer.startValue : value : pointer.value;
                     this.gaugeAxisLayoutPanel['calculate' + pointer.type + 'Bounds'](axis, pointer);
                     this.axisRenderer['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointer, pointerIndex, pointerElement.parentElement);
                 }

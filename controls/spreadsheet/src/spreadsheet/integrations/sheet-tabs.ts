@@ -1,7 +1,7 @@
 import { Tab, SelectingEventArgs, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
 import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, hideSheet, removeDesignChart, goToSheet, showSheet } from '../common/index';
-import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate, focus } from '../common/index';
+import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate, focus, getUpdateUsingRaf } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
 import { protectSheet, DialogBeforeOpenEventArgs, editOperation } from '../common/index';
 import { SheetModel, getSheetName, aggregateComputation, AggregateArgs, Workbook } from '../../workbook/index';
@@ -152,7 +152,7 @@ export class SheetTabs {
             this.parent.notify(completeAction, {
                 eventArgs: { previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex }, action: 'gotoSheet'
             });
-            focus(this.parent.element);
+            getUpdateUsingRaf(() => focus(this.parent.element));
         }
     }
 

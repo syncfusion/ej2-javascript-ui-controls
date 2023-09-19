@@ -9,7 +9,7 @@ import {
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
-    FirstElementInfo, HelperMethods, HyperlinkTextInfo, LineInfo, Point, ShapeInfo, FieldInfo
+    FirstElementInfo, HelperMethods, HyperlinkTextInfo, LineInfo, Point, ShapeInfo, FieldInfo, AbsolutePositionInfo, FieldResultInfo
 } from '../editor/editor-helper';
 import {
     SelectionCharacterFormat, SelectionCellFormat, SelectionParagraphFormat,
@@ -2783,6 +2783,30 @@ export class Selection {
         this.selectPosition(this.start, this.end);
     }
     /**
+     * @private
+     */
+    public getTableRevision(): number {
+        let start: TextPosition = this.start.clone();
+        let end: TextPosition = this.end.clone();
+        if (!this.isForward) {
+            start = this.end.clone();
+            end = this.start.clone();
+        }
+        if (!isNullOrUndefined(start) && !isNullOrUndefined(end) && !isNullOrUndefined(this.getTable(start, end))) {
+            const containerCell: TableCellWidget = this.getContainerCellOf(start.paragraph.associatedCell, end.paragraph.associatedCell);
+            const table: TableWidget = containerCell.ownerTable;
+            const firstPara: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(table);
+            const lastPara: ParagraphWidget = this.documentHelper.getLastParagraphBlock(table);
+            const offset: number = (lastPara.lastChild as LineWidget).getEndOffset();
+            start.setPosition(firstPara.childWidgets[0] as LineWidget, true);
+            end.setPositionParagraph((lastPara.lastChild as LineWidget), offset + 1);
+        }
+        let startIndex: number = this.getAbsolutePositionFromRelativePosition(start);
+        let endIndex: number = this.getAbsolutePositionFromRelativePosition(end);
+        return endIndex - startIndex;
+        // this.selectPosition(this.start, this.end);
+    }
+    /**
      * Select single column
      *
      * @private
@@ -3910,7 +3934,7 @@ export class Selection {
      */
     public getFieldCode(fieldBegin: FieldElementBox): string {
         let fieldCode: string = '';
-        if (!(fieldBegin.fieldEnd instanceof FieldElementBox)) {
+        if (!isNullOrUndefined(fieldBegin) && !(fieldBegin.fieldEnd instanceof FieldElementBox)) {
             return fieldCode;
         }
         let paragraph: ParagraphWidget = fieldBegin.paragraph;
@@ -4487,15 +4511,17 @@ export class Selection {
      */
     public getParagraphLength(paragraph: ParagraphWidget, endLine?: LineWidget, elementInfo?: ElementInfo): number {
         let length: number = 0;
-        for (let j: number = 0; j < paragraph.childWidgets.length; j++) {
-            const line: LineWidget = paragraph.childWidgets[j] as LineWidget;
-            if (endLine instanceof LineWidget && endLine === line) {
-                if (elementInfo) {
-                    length += this.getLineLength(line, elementInfo);
+        if (!isNullOrUndefined(paragraph)) {
+            for (let j: number = 0; j < paragraph.childWidgets.length; j++) {
+                const line: LineWidget = paragraph.childWidgets[j] as LineWidget;
+                if (endLine instanceof LineWidget && endLine === line) {
+                    if (elementInfo) {
+                        length += this.getLineLength(line, elementInfo);
+                    }
+                    break;
                 }
-                break;
+                length += this.getLineLength(line);
             }
-            length += this.getLineLength(line);
         }
         return length;
     }
@@ -7807,8 +7833,8 @@ export class Selection {
         let tableAdv: TableWidget = this.getTable(start, end);
 
         if (!isNullOrUndefined(tableAdv)) {
-            this.tableFormat.copyFormat(tableAdv.tableFormat);
             this.tableFormat.table = tableAdv;
+            this.tableFormat.copyFormat(tableAdv.tableFormat);
             this.retrieveCellFormat(start, end);
             this.retrieveRowFormat(start, end);
         } else {
@@ -9235,6 +9261,61 @@ export class Selection {
             return node as BlockWidget;
         }
         return node as BlockWidget;
+    }
+     /**
+     * Return 3 if the table is selected else retrun 0.
+     * @private
+     */
+    public isTableSelectedFromStart(): number {
+        if (this.end.paragraph.isInsideTable ) {
+            let cellAdv: TableCellWidget = this.end.paragraph.associatedCell;
+            if (this.start.paragraph.isInsideTable) {
+                let containerCell: TableCellWidget = this.getContainerCellOf(cellAdv, this.start.paragraph.associatedCell);
+                if (containerCell.ownerTable.contains(this.start.paragraph.associatedCell)) {
+                    let startCell: TableCellWidget = this.start.paragraph.associatedCell;
+                    let endCell: TableCellWidget = this.end.paragraph.associatedCell;
+                    if (this.containsCell(containerCell, this.start.paragraph.associatedCell)) {
+                        return 0;
+                    } else {
+                        let startColumnIndex: number = startCell.columnIndex;
+                        let endColumnIndex: number = endCell.columnIndex + endCell.cellFormat.columnSpan - 1;
+                        let startRowIndex: number = startCell.rowIndex;
+                        let endRowIndex: number = endCell.rowIndex;
+                        let table: TableWidget = containerCell.ownerTable;
+                        let rowLength: number =0;
+                        for(let i: number =0; i < table.childWidgets.length; i++) {
+                            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                            if (row.index >= startRowIndex && row.index <= endRowIndex) {
+                                let cellLength: number = 0;
+                                for (let j: number = 0; j < row.childWidgets.length; j++) {
+                                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                                    if (cell.columnIndex >= startColumnIndex && cell.columnIndex <= endColumnIndex) {
+                                        cellLength++;
+                                    }
+                                }
+                                if(row.childWidgets.length == cellLength) {
+                                    rowLength++;
+                                }
+                            }
+                        }
+                        if(table.childWidgets.length == rowLength) {
+                            return 3;
+                        } else {
+                            return 0;
+                        }
+                    }
+                }
+            } else {
+                return 0;
+            }
+        } else {
+            if(this.start.paragraph.isInsideTable) {
+                if (this.containsRow(this.start.paragraph.associatedCell.ownerTable.firstChild as TableRowWidget, this.start.paragraph.associatedCell)) {
+                    return 3;
+                }
+            }
+        }
+        return 0;
     }
     /**
      * Return true if inline is in field result
@@ -11091,6 +11172,37 @@ export class Selection {
         }
         return false;
     }
+    /**
+     * @private
+     */
+    public isEditRangeCellSelected(start?: TextPosition, end?: TextPosition):boolean {
+        if (isNullOrUndefined(start) && isNullOrUndefined(end)) {
+            start = this.start;
+            end = this.end;
+            if (!this.isForward) {
+                start = this.end;
+                end = this.start;
+            }
+        }
+        for (var i = 0; i < this.editRangeCollection.length; i++) {
+            var editRangeStart = this.editRangeCollection[i];
+            if (editRangeStart.paragraph.isInsideTable && editRangeStart.editRangeEnd &&
+                editRangeStart.editRangeEnd.line.paragraph.isInsideTable) {
+                let startCell: TableCellWidget = start.paragraph.associatedCell;
+                let endCell: TableCellWidget = end.paragraph.associatedCell;
+                let editRangeCell: TableCellWidget = editRangeStart.paragraph.associatedCell;
+                if (!isNullOrUndefined(startCell) && !isNullOrUndefined(endCell)) {
+                    if (startCell.index >= editRangeStart.columnFirst && startCell.index <= editRangeStart.columnLast) {
+                        if (this.isCellSelected(editRangeCell, start, end)) {
+                            return true;
+                        }
+                    }
+                }
+
+            }
+        }
+        return false;
+    }
     private isSelectionInsideEditRange(editRangeStart: EditRangeStartElementBox, start: TextPosition, end: TextPosition): boolean {
         let positionInfo: PositionInfo = this.getPosition(editRangeStart);
         let startPosition: TextPosition = positionInfo.startPosition;
@@ -11312,6 +11424,282 @@ export class Selection {
                 }
             }
         }
+    }
+
+    /**
+     * Convert hierachical index to linear index;
+     * @private
+     */
+    public getAbsolutePositionFromRelativePosition(textPosition: TextPosition | string) {
+        let startPosition: TextPosition;
+        if (typeof textPosition == 'string') {
+            startPosition = this.getTextPosBasedOnLogicalIndex(textPosition);
+        } else {
+            startPosition = textPosition;
+        }
+        let paragraphInfo = this.getParagraphInfo(startPosition);
+
+        let positionInfo: AbsolutePositionInfo = { position: 0, done: false };
+        this.getPositionInfoForHeaderFooter(paragraphInfo, positionInfo);
+        if (!positionInfo.done) {
+            //Iterate Footnotes content;
+
+        }
+        return positionInfo.position;
+    }
+    /**
+     * @private 
+     */   
+    public getPositionInfoForBodyContent(paragraphInfo: ParagraphInfo, positionInfo: AbsolutePositionInfo, blockWidget?: BlockWidget, tableBlock?: BlockWidget): AbsolutePositionInfo {
+        let block: BlockWidget = !isNullOrUndefined(blockWidget)? blockWidget : this.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as BlockWidget;
+        //Iterate body content;
+        positionInfo.position += this.getBlockIndex(block, paragraphInfo, positionInfo, tableBlock);
+        return positionInfo;
+    }
+    /**
+     * @private 
+     */   
+    public getPositionInfoForHeaderFooter(paragraphInfo: ParagraphInfo, positionInfo: AbsolutePositionInfo, tableBlock?: BlockWidget): AbsolutePositionInfo {
+        positionInfo = this.getPositionInfoForBodyContent(paragraphInfo, positionInfo, undefined, tableBlock);
+        if (!positionInfo.done) {
+            //Iterate header/footer content;
+            this.getBlockIndexFromHeaderFooter(paragraphInfo, positionInfo, tableBlock);
+        }
+        return positionInfo;
+    }
+
+    private getBlockIndexFromHeaderFooter(paragraphInfo: ParagraphInfo, positionInfo: AbsolutePositionInfo, tableBlock?: BlockWidget): AbsolutePositionInfo {
+        //Iterate header/footer content;
+        const headersFooters = this.documentHelper.headersFooters;
+        for (const headerFooter of headersFooters) {
+            for (let i = 0; i < 6; i++) {
+                const currentHeaderFooter = headerFooter[i];
+                if (currentHeaderFooter) {
+                    positionInfo.position += this.getBlockIndex(currentHeaderFooter.childWidgets[0] as BlockWidget, paragraphInfo, positionInfo, tableBlock);
+                    if (positionInfo.done) {
+                        return positionInfo;
+                    }
+                } else {
+                    positionInfo.position += 1;
+                }
+            }
+        }
+        return positionInfo;
+    }
+
+    private getBlockIndex(block: BlockWidget, paragraphInfo: ParagraphInfo, positionInfo: AbsolutePositionInfo, tableBlock?: BlockWidget): number {
+        let position: number = 0;
+        let fieldResult: FieldResultInfo = {length: 0};
+        do {
+            if (block instanceof ParagraphWidget && !isNullOrUndefined(paragraphInfo) && !isNullOrUndefined(paragraphInfo.paragraph) && paragraphInfo.paragraph.equals(block)) {
+                //Paragraph start
+                position += 1;
+                let elementInfo = (block as ParagraphWidget).getInline(paragraphInfo.offset, 0);
+                position += this.getBlockOffsetByElement(paragraphInfo, block, elementInfo.element, elementInfo.index, fieldResult);
+                position -= fieldResult.length;
+                positionInfo.done = true;
+                break;
+            }
+
+            position = this.getBlockLength(paragraphInfo, block, position, positionInfo, true, tableBlock, fieldResult);
+            if (positionInfo.done) {
+                position -= fieldResult.length;
+                break;
+            }
+            if (!isNullOrUndefined(block)) {
+                if (block.containerWidget instanceof BodyWidget && (block.containerWidget as BodyWidget).containerWidget instanceof FootNoteWidget) {
+                    let nextBlock: BlockWidget = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+                    if (!isNullOrUndefined(nextBlock) && block.containerWidget !== nextBlock.containerWidget) {
+                        break;
+                    } else {
+                        block = nextBlock;
+                    }
+                } else {
+                    block = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+                }
+            }
+        } while (block);
+        //positionInfo.position = position;
+        return position;
+    }
+
+    private getBlockTotalLength(block: BlockWidget, targetBlock: ParagraphInfo, positionInfo: AbsolutePositionInfo, tableBlock: BlockWidget, fieldResult?: FieldResultInfo): number {
+        let offset: number = 0;
+        let isDropdown: boolean = false;
+        let splittedWidget: ParagraphWidget[] = block.getSplitWidgets() as ParagraphWidget[];
+        for (let i: number = 0; i < splittedWidget.length; i++) {
+            for (let j: number = 0; j < splittedWidget[i].childWidgets.length; j++) {
+                let line: LineWidget = splittedWidget[i].childWidgets[j] as LineWidget;
+                for (let k: number = 0; k < line.children.length; k++) {
+                    let element: ElementBox = line.children[k] as ElementBox;
+                    if (element instanceof ListTextElementBox) {
+                        continue;
+                    }
+                    if (element instanceof ShapeElementBox || element instanceof FootnoteElementBox) {
+                        if (element instanceof ShapeElementBox) {
+                            if (element.textFrame.childWidgets.length > 0) {
+                                offset += this.getBlockIndex(element.textFrame.childWidgets[0] as BlockWidget, targetBlock, positionInfo, undefined);
+                            }
+
+                        } else {
+                            offset += this.getBlockIndex(element.bodyWidget.childWidgets[0] as BlockWidget, targetBlock, positionInfo, undefined);
+                        }
+                        if (positionInfo.done) {
+                            return offset;
+                        }
+                    }
+                    if (element instanceof FieldElementBox && element.fieldType == 0 && element.formFieldData instanceof DropDownFormField) {
+                        isDropdown = true;
+                    }
+                    if (isDropdown && element instanceof FieldElementBox && element.fieldType == 1) {
+                        if (element.previousNode instanceof TextElementBox) {
+                            fieldResult.length += element.previousNode.length;
+                            isDropdown = false;
+                        } 
+                    }
+                    offset += element.length;
+                }
+            }
+        }
+        return offset;
+    }
+
+    /**
+     * @private 
+     */    
+    public getBlockLength(paragraphInfo: any, block: BlockWidget, position: number, completed: any, skipShapeElement: boolean, tableBlock: BlockWidget, fieldResult?: FieldResultInfo): number {
+        if (paragraphInfo && block instanceof ParagraphWidget && !isNullOrUndefined(paragraphInfo.paragraph) && paragraphInfo.paragraph.equals(block)) {
+            //Paragraph start
+            position += 1;
+            let elementInfo = (block as ParagraphWidget).getInline(paragraphInfo.offset, 0);
+            position += this.getBlockOffsetByElement(paragraphInfo, block, elementInfo.element, elementInfo.index, fieldResult);
+            completed.done = true;
+            return position;
+        }
+        if (block instanceof ParagraphWidget) {
+            //Add Paragraph start length;
+            position += 1;
+            if (!skipShapeElement) {
+                position += (block.getTotalLength());
+            } else {
+                position += this.getBlockTotalLength(block, paragraphInfo, completed, tableBlock, fieldResult);
+            }
+        } else if (block instanceof TableWidget) {
+            // Table start mark length
+            position += 1;
+            if(!isNullOrUndefined(tableBlock)) {
+                if(tableBlock instanceof TableWidget) {
+                    if(tableBlock.equals(block)) {
+                        completed.done = true;
+                        return position;
+                    }
+                }
+            }
+            let row: TableRowWidget = block.firstChild as TableRowWidget;
+            while (row) {
+                // Row mark length
+                position += 1;
+                if(!isNullOrUndefined(tableBlock)) {
+                    if(tableBlock instanceof TableRowWidget) {
+                        if(tableBlock.equals(row)) {
+                            completed.done = true;
+                            return position;
+                        }
+                    }
+                }
+                let cell: TableCellWidget = row.firstChild as TableCellWidget;
+                while (cell) {
+                    // Cell mark length
+                    position += 1;
+                    if(!isNullOrUndefined(tableBlock)) {
+                        if(tableBlock instanceof TableCellWidget) {
+                            if(tableBlock.equals(cell)) {
+                                completed.done = true;
+                                return position;
+                            }
+                        }
+                    }
+                    let childBlock: BlockWidget = cell.firstChild as BlockWidget;
+                    while (childBlock) {
+                        position = this.getBlockLength(paragraphInfo, childBlock as BlockWidget, position, completed, skipShapeElement, tableBlock, fieldResult);
+                        if (completed.done) {
+                            return position;
+                        }
+                        childBlock = childBlock.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+                    }
+                    cell = cell.nextWidget as TableCellWidget;
+                }
+                row = row.getSplitWidgets().pop().nextRenderedWidget as TableRowWidget;
+            }
+            // Table end mark length
+            // position += 1;
+        }
+        return position;
+    }
+    /**
+     * Calculate the cell length.
+     * @private
+     */
+    public calculateCellLength(cell: TableCellWidget): number {
+        let block: BlockWidget = cell.firstChild as BlockWidget;
+        let position: number = 0;
+        let completed = { "done": false };
+        let paragraphInfo: ParagraphInfo = { 'paragraph':  null, 'offset': 0 };
+        while(block) {
+            position = this.getBlockLength(paragraphInfo, block as BlockWidget, position, completed, true, undefined, undefined);
+            block = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+        }
+        return position;
+    }
+
+    private getBlockOffsetByElement(paragraphInfo: any, block: ParagraphWidget, targetElement: ElementBox, elementIndex: number, fieldResult?: FieldResultInfo): number {
+        let offset: number = 0;
+        let isDropdown: boolean = false;
+        let splittedWidget: ParagraphWidget[] = block.getSplitWidgets() as ParagraphWidget[];
+        for (let i: number = 0; i < splittedWidget.length; i++) {
+
+            for (let j: number = 0; j < splittedWidget[i].childWidgets.length; j++) {
+                let line: LineWidget = splittedWidget[i].childWidgets[j] as LineWidget;
+                for (let k: number = 0; k < line.children.length; k++) {
+                    let element: ElementBox = line.children[k] as ElementBox;
+                    if (element instanceof ListTextElementBox) {
+                        continue;
+                    }
+                    if (element instanceof FieldElementBox && element.fieldType == 0 && element.formFieldData instanceof DropDownFormField) {
+                        isDropdown = true;
+                    }
+                    if (isDropdown && element instanceof FieldElementBox && element.fieldType == 1) {
+                        if (element.previousNode instanceof TextElementBox) {
+                            fieldResult.length += element.previousNode.length;
+                            isDropdown = false;
+                        } 
+                    }
+                    if (element === targetElement) {
+                        return offset + elementIndex;
+                    }
+
+                    if (element instanceof ShapeElementBox || element instanceof FootnoteElementBox) {
+                        if (element instanceof ShapeElementBox) {
+                            if (element.textFrame.childWidgets.length > 0) {
+                                for (let m: number = 0; m < element.textFrame.childWidgets.length; m++) {
+                                    offset = this.getBlockLength(paragraphInfo, element.textFrame.childWidgets[m] as BlockWidget, offset, { done: false }, false, undefined, undefined);
+                                }
+                            }
+
+                        } else {
+                            if (element.bodyWidget.childWidgets.length > 0) {
+                                for (let m: number = 0; m < element.bodyWidget.childWidgets.length; m++) {
+                                    offset = this.getBlockLength(paragraphInfo, element.bodyWidget.childWidgets[m] as BlockWidget, offset, { done: false }, false, undefined, undefined);
+                                }
+                            }
+                        }
+                    }
+                    offset += element.length;
+
+                }
+            }
+        }
+        return offset;
     }
 }
 /**

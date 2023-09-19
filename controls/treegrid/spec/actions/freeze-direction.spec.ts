@@ -114,7 +114,6 @@ describe('Ensure freeze direction', () => {
             dataSource: sampleData,
             childMapping: 'subtasks',
             editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Above' },
-
             treeColumnIndex: 1,
             toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
               columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, freeze: 'Left' },
@@ -130,7 +129,7 @@ describe('Ensure freeze direction', () => {
     it('delete row - child parent row - 1', (done: Function) => {
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[1].querySelectorAll('.e-rowcell');
-        expect(cells[0].textContent === '3' ).toBeTruthy();
+        expect(cells[0].textContent === '3' ).toBeTruthy()
         done();
       };
       gridObj.actionComplete = actionComplete;
@@ -196,12 +195,12 @@ describe('Ensure freeze direction', () => {
 
     it('expand testing', (done: Function) => {
       actionComplete = (args?: Object): void => {
-         expect(gridObj.getMovableRows()[0].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
-         expect(gridObj.getMovableRows()[1].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Design complete").toBe(true);
-         expect(gridObj.getMovableRows()[8].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Implementation Module 1").toBe(true);
-         expect(gridObj.getMovableRows()[9].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Bug fix").toBe(true);
-         expect(gridObj.getMovableRows()[16].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Implementation Module 2").toBe(true);
-         expect(gridObj.getMovableRows()[31].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Planning").toBe(true);
+         expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
+         expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design complete").toBe(true);
+         expect(gridObj.getRows()[8].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Implementation Module 1").toBe(true);
+         expect(gridObj.getRows()[9].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Bug fix").toBe(true);
+         expect(gridObj.getRows()[16].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Implementation Module 2").toBe(true);
+         expect(gridObj.getRows()[31].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Planning").toBe(true);
          done();
       }
       gridObj.sortByColumn("taskName", "Ascending", false);
@@ -233,17 +232,17 @@ describe('Ensure freeze direction', () => {
 
     it('expand testing', (done: Function) => {
       actionComplete = (args?: Object): void => {
-         expect(gridObj.getMovableRows()[0].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
+         expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
          expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[0].innerHTML == "6").toBe(true);
-         expect(gridObj.getMovableRows()[1].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Design complete").toBe(true);
+         expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design complete").toBe(true);
          expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[0].innerHTML == "11").toBe(true);
-         expect(gridObj.getMovableRows()[8].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Implementation Module 1").toBe(true);
+         expect(gridObj.getRows()[8].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Implementation Module 1").toBe(true);
          expect(gridObj.getRows()[8].getElementsByClassName('e-rowcell')[0].innerHTML == "14").toBe(true);
-         expect(gridObj.getMovableRows()[9].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Bug fix").toBe(true);
+         expect(gridObj.getRows()[9].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Bug fix").toBe(true);
          expect(gridObj.getRows()[9].getElementsByClassName('e-rowcell')[0].innerHTML == "18").toBe(true);
-         expect(gridObj.getMovableRows()[16].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Implementation Module 2").toBe(true);
+         expect(gridObj.getRows()[16].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Implementation Module 2").toBe(true);
          expect(gridObj.getRows()[16].getElementsByClassName('e-rowcell')[0].innerHTML == "22").toBe(true);
-         expect(gridObj.getMovableRows()[31].getElementsByClassName('e-rowcell')[0].querySelector("div>.e-treecell").innerHTML == "Planning").toBe(true);
+         expect(gridObj.getRows()[31].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Planning").toBe(true);
          expect(gridObj.getRows()[31].getElementsByClassName('e-rowcell')[0].innerHTML == "1").toBe(true);
          done();
       }    
@@ -344,7 +343,7 @@ describe('Ensure freeze direction', () => {
         }
         gridObj.grid.actionComplete = actionComplete;
 
-      gridObj.filterByColumn("taskName","startswith","dev");     
+      gridObj.filterByColumn("taskName","startswith","dev");
     });
     afterAll(() => {
       destroy(gridObj);

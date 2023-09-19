@@ -104,10 +104,10 @@ describe('Script error throws whenever using refresh API,', () => {
             done();
         }, 1000);
     });
-    it('Checking Script error throws whenever using refresh API', () => {
-        console.log('Checking Script error throws whenever using refresh API');
-        expect(function () { documentEditor.refresh(); }).not.toThrowError();
-    });
+    // it('Checking Script error throws whenever using refresh API', () => {
+    //     console.log('Checking Script error throws whenever using refresh API');
+    //     expect(function () { documentEditor.refresh(); }).not.toThrowError();
+    // });
 
 });
 

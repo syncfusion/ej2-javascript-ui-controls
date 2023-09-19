@@ -249,6 +249,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected addedNewItem: boolean = false;
     protected isAddNewItemTemplate: boolean = false;
     private isRequesting: boolean = false;
+    private isVirtualizationEnabled: boolean = false;
+    private isAllowFiltering: boolean = false;
+    private virtualizedItemsCount: number = 0;
+    protected totalItemCount: number = 0;
+    protected dataCount: number = 0;
+
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -846,7 +852,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.isActive = true;
         const eventArgs: ActionBeginEventArgs = { cancel: false, data: dataSource, query: query };
         this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
-        if(!this.isRequesting) {
+        if (!this.isRequesting) {
             this.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginEventArgs) => {
                 if (!eventArgs.cancel) {
                     this.isRequesting = true;
@@ -861,11 +867,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                             this.trigger('actionComplete', e, (e: Object) => {
                                 if (!(e as { [key: string]: object }).cancel) {
-                                    this.isRequesting = false;
                                     const listItems: { [key: string]: Object }[] = (e as ResultData).result;
                                     if (listItems.length === 0) {
                                         this.isDataFetched = true;
                                     }
+                                    this.dataCount = (e as any).count;
+                                    this.totalItemCount = (e as any).count;
                                     ulElement = this.renderItems(listItems, fields);
                                     this.onActionComplete(ulElement, listItems, e);
                                     if (this.groupTemplate) {
@@ -874,6 +881,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     this.isRequested = false;
                                     this.bindChildItems(listItems, ulElement, fields, e);
                                 }
+                                this.isRequesting = false;
                             });
                         }).catch((e: Object) => {
                             this.isRequested = false;
@@ -882,15 +890,21 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             this.hideSpinner();
                         });
                     } else {
+                        this.isRequesting = false;
                         const dataManager: DataManager = new DataManager(eventArgs.data as DataOptions | JSON[]);
-                        const listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
+                        let listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
                             this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        this.dataCount = (listItems as any).count;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        this.totalItemCount = (listItems as any).count;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        listItems = this.isVirtualizationEnabled ? (listItems as any).result : listItems;
                         const localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
                         this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                         this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
                             if (!localDataArgs.cancel) {
-                                this.isRequesting = false;
-                                ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);                            
+                                ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);
                                 this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object }[], event);
                                 if (this.groupTemplate) {
                                     this.renderGroupTemplate(ulElement);
@@ -1004,6 +1018,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         e?: Object): void {
     /* eslint-enable @typescript-eslint/no-unused-vars */
         this.listData = list;
+        if (this.isVirtualizationEnabled) {
+            this.notify("setGeneratedData", {
+                module: "VirtualScroll",
+            });
+        }
         if (this.getModuleName() !== 'listbox') {
             ulElement.setAttribute('tabindex', '0'); }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1020,11 +1039,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         if (!isNullOrUndefined(this.list)) {
-            this.list.innerHTML = '';
-            this.list.appendChild(ulElement);
-            this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
-            this.ulElement = this.list.querySelector('ul');
-            this.postRender(this.list, list, this.bindEvent);    
+            if (!this.isVirtualizationEnabled) {
+                this.list.innerHTML = '';
+                this.list.appendChild(ulElement);
+                this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+                this.ulElement = this.list.querySelector('ul');
+                this.postRender(this.list, list, this.bindEvent);
+            } 
         }
     }
     /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -1054,6 +1075,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     protected getQuery(query: Query): Query {
         return query ? query : this.query ? this.query : new Query();
+    }
+
+    protected updateVirtualizationProperties(itemCount: number, filtering: boolean): void {
+        this.isVirtualizationEnabled = true;
+        this.virtualizedItemsCount = itemCount;
+        this.isAllowFiltering = filtering;
     }
     /**
      * To render the template content for group header element.
@@ -1205,8 +1232,46 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
+            if (this.isVirtualizationEnabled) {
+                var oldUlElement = this.list.querySelector('.e-list-parent');
+                var virtualUlElement = this.list.querySelector('.e-virtual-ddl-content');
+                if ((listData.length >= this.virtualizedItemsCount && oldUlElement && virtualUlElement) || (oldUlElement && virtualUlElement && this.isAllowFiltering) || (oldUlElement && virtualUlElement && this.getModuleName() === 'autocomplete')) {
+                    virtualUlElement.replaceChild(ulElement, oldUlElement);
+                    this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+                    this.ulElement = this.list.querySelector('ul');
+                    this.listData = listData;
+                    this.postRender(this.list, listData, this.bindEvent);
+                }
+                else if ((!virtualUlElement)) {
+                    this.list.innerHTML = '';
+                    this.list.appendChild(ulElement);
+                    this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+                    this.ulElement = this.list.querySelector('ul');
+                    this.listData = listData;
+                    this.postRender(this.list, listData, this.bindEvent);
+                }
+            }
         } else {
             ulElement = this.createListItems(listData, fields);
+            if (this.isVirtualizationEnabled) {
+                var oldUlElement = this.list.querySelector('.e-list-parent');
+                var virtualUlElement = this.list.querySelector('.e-virtual-ddl-content');
+                if ((listData.length >= this.virtualizedItemsCount && oldUlElement && virtualUlElement) || (oldUlElement && virtualUlElement && this.isAllowFiltering) || (oldUlElement && virtualUlElement && this.getModuleName() === 'autocomplete')) {
+                    virtualUlElement.replaceChild(ulElement, oldUlElement);
+                    this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+                    this.ulElement = this.list.querySelector('ul');
+                    this.listData = listData;
+                    this.postRender(this.list, listData, this.bindEvent);
+                }
+                else if ((!virtualUlElement)) {
+                    this.list.innerHTML = '';
+                    this.list.appendChild(ulElement);
+                    this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+                    this.ulElement = this.list.querySelector('ul');
+                    this.listData = listData;
+                    this.postRender(this.list, listData, this.bindEvent);
+                }
+            }
         }
         return ulElement;
     }
@@ -1356,7 +1421,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected updateSelectElementData(isFiltering: boolean): void {
-        if (isFiltering && isNullOrUndefined(this.selectData) && this.listData && this.listData.length > 0) {
+        if ((isFiltering || this.isVirtualizationEnabled) && isNullOrUndefined(this.selectData) && this.listData && this.listData.length > 0) {
             this.selectData = this.listData;
         }
     }
@@ -1371,6 +1436,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected updateDataSource(props?: DropDownBaseModel): void {
         this.resetList(this.dataSource);
+        this.totalItemCount = this.dataSource instanceof DataManager ? this.dataSource.dataSource.json.length : 0;
     }
     protected setUpdateInitial(props: string[], newProp: { [key: string]: string }): void {
         this.isDataFetched = false;
@@ -1742,21 +1808,21 @@ export interface FilteringEventArgs {
 }
 export interface PopupEventArgs {
     /**
-     * This property provides access to the Popup object associated with the dropdown list. The Popup object represents the actual popup element that is displayed when the dropdown list is expanded.
+     * Specifies the popup Object.
      *
      * @deprecated
      */
     popup: Popup
     /**
-     * This property indicates whether the current action should be prevented or not. By setting it to true, you can cancel the default action associated with the event.
+     * Illustrates whether the current action needs to be prevented or not.
      */
     cancel?: boolean
     /**
-     * This property allows you to specify the animation settings for the popup. It accepts an AnimationModel object that defines the animation behavior.
+     * Specifies the animation Object.
      */
     animation?: AnimationModel
     /**
-     * This property represents the event that triggers the popup. It can be of type MouseEvent, KeyboardEventArgs, TouchEvent, or a generic Object representing the event details.
+     * Specifies the event.
      */
     event?: MouseEvent | KeyboardEventArgs | TouchEvent | Object
 }

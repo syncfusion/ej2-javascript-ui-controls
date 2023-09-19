@@ -172,11 +172,12 @@ export class RangeTooltip {
         const format: string = tooltip.format || xAxis.labelFormat;
         const isCustom: boolean = format.match('{value}') !== null;
         const valueType: RangeValueType = xAxis.valueType as RangeValueType;
-        if (valueType === 'DateTime') {
+        value = (valueType === 'DateTimeCategory' ? parseInt(xAxis.labels[Math.floor(value)], 10) : value);
+        if (valueType.indexOf('DateTime') > -1) {
             text = (control.intl.getDateFormat({
                 format: format || 'MM/dd/yyyy',
                 type: firstToLowerCase(control.skeletonType),
-                skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null)
+                skeleton: valueType === 'DateTime' ? control.dateTimeModule.getSkeleton(xAxis, null, null) : control.dateTimeCategoryModule.getSkeleton(xAxis, null, null)
             }))(new Date(value));
         } else {
             xAxis.format = control.intl.getNumberFormat({

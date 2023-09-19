@@ -15,7 +15,7 @@ import { textRender } from '../../common/model/constants';
 import {
     createTemplate, getFontStyle, getElement, measureElementRect, templateAnimate, withIn, withInBounds
 } from '../../common/utils/helper';
-import { createElement, getValue, extend } from '@syncfusion/ej2-base';
+import { createElement, getValue, extend, animationMode } from '@syncfusion/ej2-base';
 import { Alignment } from '../../common/utils/enum';
 import { getPoint, getRotatedRectangleCoordinates, isRotatedRectIntersect } from '../../common/utils/helper';
 import { Axis } from '../../chart/axis/axis';

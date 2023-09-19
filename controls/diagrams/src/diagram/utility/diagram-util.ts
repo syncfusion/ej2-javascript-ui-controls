@@ -39,7 +39,7 @@ import { Intersection, findAngle } from './connector';
 import { SelectorModel } from '../objects/node-model';
 import { UserHandleModel } from '../interaction/selector-model';
 import { MarginModel } from '../core/appearance-model';
-import { PointPortModel } from './../objects/port-model';
+import { PointPortModel, PortModel } from './../objects/port-model';
 import { ShapeAnnotationModel, PathAnnotationModel, HyperlinkModel, AnnotationModel } from './../objects/annotation-model';
 import { getContent, removeElement, hasClass, getDiagramElement } from './dom-util';
 import { getBounds, cloneObject, rotatePoint, getFunction } from './base-util';
@@ -54,7 +54,7 @@ import { UserHandle } from '../interaction/selector';
 import { Selector } from '../objects/node';
 import { getUMLActivityShape } from '../objects/dictionary/umlactivity-shapes';
 import { Canvas } from '../core/containers/canvas';
-import { PointPort } from '../objects/port';
+import { PathPort, PointPort, Port } from '../objects/port';
 import { Command } from '../diagram/keyboard-commands';
 import { pasteSwimLane } from './swim-lane-util';
 import { GridPanel } from '../core/containers/grid';
@@ -657,7 +657,7 @@ export function isPointOverConnector(connector: ConnectorModel, reference: Point
             }
         }
     }
-    if (connector.annotations.length > 0) {
+    if (connector.annotations.length > 0 || connector.ports.length > 0) {
         const container: DiagramElement[] = connector.wrapper.children;
         for (let i: number = 3; i < container.length; i++) {
             const textElement: DiagramElement = container[parseInt(i.toString(), 10)];
@@ -964,6 +964,79 @@ export function getAnnotationPosition(pts: PointModel[], annotation: PathAnnotat
     getloop.point = point; getloop.angle = angle;
     return getloop;
 }
+
+/**
+ * getPortsPosition method \
+ *
+ * @returns {SegmentInfo } getPortsPosition method .\
+ * @param {PointModel[]} pts - provide the pts  value.
+ * @param { Port} ports - provide the ports  value.
+ * @param { Rect } bound - provide the bound  value.
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function getPortsPosition(pts: PointModel[], ports: Port, bound: Rect): SegmentInfo {	
+    const getloop: SegmentInfo = getOffsetOfPorts(pts, ports);	
+    const angle: number = Point.findAngle(pts[getloop.index], pts[getloop.index + 1]);	
+    const alignednumber: number = getAlignedPositionForPorts(ports);	
+    const point: PointModel = Point.transform(getloop.point, angle + 45, alignednumber);	
+    getloop.point = point; getloop.angle = angle;	
+    return getloop;	
+};
+
+/**
+ * getOffsetOfPorts method \
+ *
+ * @returns {SegmentInfo } getOffsetOfPorts method .\
+ * @param {PointModel[]} points - provide the pts  value.
+ * @param { PathAnnotation | ConnectorFixedUserHandle} ports - provide the ports  value.
+ * @private
+ */
+export function getOffsetOfPorts(points: PointModel[], ports: Port): SegmentInfo {
+    // eslint-disable-next-line
+    let distance: number = 0; let offset: number = (ports as PathPort).offset; let point: PointModel; let angle: number;
+    const pointDistance: number[] = []; let prevLength: number; let kCount: number;
+    for (let j: number = 0; j < points.length - 1; j++) {
+        distance += Point.distancePoints(points[parseInt(j.toString(), 10)], points[j + 1]);
+        pointDistance.push(distance);
+    }
+    const offsetLength: number = offset * distance;
+    for (let k: number = 0; k < pointDistance.length; k++) {
+        if (pointDistance[parseInt(k.toString(), 10)] >= offsetLength) {
+            angle = Point.findAngle(points[parseInt(k.toString(), 10)], points[k + 1]);
+            point = Point.transform(points[parseInt(k.toString(), 10)], angle, offsetLength - (prevLength || 0));
+            kCount = k;
+            return { point: point, index: kCount };
+        }
+        prevLength = pointDistance[parseInt(k.toString(), 10)];
+    }
+    return { point: point, index: kCount };
+};
+
+/**
+ * getAlignedPosition method . To get the port alignment position \
+ *
+ * @returns {number } getAlignedPosition method .\
+ * @param {PointModel[]} ports - provide the annotation value.
+ * @private
+ */
+export function getAlignedPositionForPorts(ports : Port): number {
+    let constant: number = 0;
+    let state: number = 0;
+    switch ((ports as PathPort).alignment) {
+    case 'Center':
+        state = 0;
+        break;
+    case 'Before':
+        state = -((0) / 2 + constant);
+        break;
+    case 'After':
+        state = ((0) / 2 + constant);
+        break;
+    }
+    return state;
+}
+
 /**
  * getOffsetOfConnector method \
  *
@@ -1029,7 +1102,7 @@ export function getAlignedPosition(annotation: PathAnnotation | ConnectorFixedUs
  * @param { PointModel[] } pts - provide the pts  value.
  * @private
  */
-export function alignLabelOnSegments(obj: PathAnnotation | ConnectorFixedUserHandle, ang: number, pts: PointModel[]): Alignment {
+export function alignLabelOnSegments(obj: PathAnnotation | ConnectorFixedUserHandle | PathPort, ang: number, pts: PointModel[]): Alignment {
     //let angle: number = ang % 360;
     ang %= 360;
     const fourty5: number = 45; const one35: number = 135; const two25: number = 225; const three15: number = 315;
@@ -2344,11 +2417,11 @@ export function findPort(node: NodeModel | ConnectorModel, id: string): PointPor
  * @param {boolean} isInConnect - provide the portVisibility  value.
  * @private
  */
-export function getInOutConnectPorts(node: NodeModel, isInConnect: boolean): PointPortModel {
+export function getInOutConnectPorts(node: NodeModel | ConnectorModel, isInConnect: boolean): PointPortModel {
     let port: PointPortModel = {};
     let i: number = 0;
     if (node.ports) {
-        const ports: PointPortModel[] = node.ports;
+        const ports: PointPortModel[] | PortModel[]  = node.ports;
         for (i = 0; i < ports.length; i++) {
             if (isInConnect) {
                 if ((ports[parseInt(i.toString(), 10)].constraints & PortConstraints.InConnect)) {
@@ -2385,6 +2458,28 @@ export function findObjectIndex(node: NodeModel | ConnectorModel, id: string, an
     }
     return '-1';
 }
+
+/**
+ * findPortIndex method \
+ *
+ * @returns {PointPortModel} findPortIndex method .\
+ * @param { NodeModel | ConnectorModel} node - provide the node  value.
+ * @param {string} id - provide the string  value.
+ * @param {boolean} port - provide the boolean  value.
+ * @private
+ */
+export function findPortIndex(node: NodeModel | ConnectorModel, id: string, port?: boolean): string {
+    //let index: number;
+    const collection: (PointPortModel | ShapeAnnotationModel | PathAnnotationModel)[]
+        = (node as NodeModel).ports;
+    for (let i: number = 0; i < collection.length; i++) {
+        if (collection[parseInt(i.toString(), 10)].id === id) {
+            return (i).toString();
+        }
+    }
+    return '-1';
+}
+
 
 /**
  * getObjectFromCollection method \
@@ -2861,8 +2956,8 @@ export let updatePathElement: Function = (anglePoints: PointModel[], connector: 
     return pathElement;
 };
 /** @private */
-export let checkPort: Function = (node: Node, element: DiagramElement): boolean => {
-    if (node instanceof Node) {
+export let checkPort: Function = (node: Node | Connector, element: DiagramElement): boolean => {
+    if (node instanceof Node || node instanceof Connector) {
         for (let i: number = 0; i < node.ports.length; i++) {
             if (node.ports[i].id === element.id.split('_')[1]) {
                 return true;

@@ -58,6 +58,13 @@ export interface GanttModel extends ComponentModel{
     enableVirtualMaskRow?: boolean;
 
     /**
+     * Gets or sets whether to load child record on demand in remote data binding. Initially parent records are rendered in collapsed state.  
+     *
+     * @default false
+     */
+    loadChildOnDemand?: boolean;
+
+    /**
      * Specifies whether to update offset value on a task for all the predecessor edit actions.
      *
      * @default true

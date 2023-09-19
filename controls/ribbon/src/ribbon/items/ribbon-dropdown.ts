@@ -51,6 +51,7 @@ export class RibbonDropDown {
             iconCss: dropDownSettings.iconCss,
             items: dropDownSettings.items,
             target: dropDownSettings.target,
+            createPopupOnClick: dropDownSettings.createPopupOnClick,
             beforeClose: (e: BeforeOpenCloseMenuEventArgs) => {
                 if (dropDownSettings.beforeClose) { dropDownSettings.beforeClose.call(this, e); }
             },
@@ -62,7 +63,7 @@ export class RibbonDropDown {
             created: dropDownSettings.created,
             open: dropDownSettings.open,
             select: dropDownSettings.select
-        }, buttonEle);
+        }).appendTo(buttonEle);
     }
     /**
      * Adds the additional event handlers as the item moved into overflow popup.

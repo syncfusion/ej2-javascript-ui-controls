@@ -80,6 +80,27 @@ export class ExportUtils {
         } else {
             div.appendChild(this.control.element.cloneNode(true) as Element);
         }
+        for (let index: number = 0; index < div.children.length; index++) {
+            let backgroundColor: string = (this.control.theme.indexOf('Dark') > -1 || this.control.theme === 'HighContrast') ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+            let svg: Element = div.children[index as number];
+            for (let childIndex: number = 0; childIndex < svg.children.length; childIndex++) {
+                let actualBackgroundColor: string;
+                let isSVG: boolean = false;
+                if (svg.id.indexOf('_stockChart_svg') > -1) {
+                    actualBackgroundColor = svg.children[0].getAttribute('fill');
+                    isSVG = true;
+                }
+                else if (svg.children[childIndex as number].id.indexOf('_svg') > -1) {
+                    actualBackgroundColor = svg.children[childIndex as number].children[0].getAttribute('fill');
+                    isSVG = true;
+                }
+                if (isSVG) {
+                    actualBackgroundColor = actualBackgroundColor === 'transparent' ? backgroundColor : actualBackgroundColor;
+                    svg.children[childIndex as number].children[0].setAttribute('fill', actualBackgroundColor);
+                }
+            }
+            div[index as number] = svg;
+        }
         return div;
     }
     /**
@@ -94,78 +115,89 @@ export class ExportUtils {
         orientation?: PdfPageOrientation,
         controls?: (Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart)[],
         width?: number, height?: number, isVertical?: boolean,
-        header?: IPDFArgs, footer?: IPDFArgs
+        header?: IPDFArgs, footer?: IPDFArgs, exportToMultiplePage?: boolean
     ): void {
-        const controlValue: IControlValue = this.getControlsValue(controls, isVertical);
-        width = width ? width : controlValue.width;
-        height = height ? height : controlValue.height;
-        let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
-        const isCanvas: boolean = (this.control as Chart).enableCanvas;
-        let image: string;
-        if (!isCanvas) {
-            element = <HTMLCanvasElement>createElement('canvas', {
-                id: 'ej2-canvas',
-                attrs: {
-                    'width': width.toString(),
-                    'height': height.toString()
-                }
-            });
-        }
+        const controlValue: IControlValue[] = this.getControlsValue(controls, isVertical, (exportToMultiplePage && type === 'PDF'), type);
+        const canvasElements: HTMLCanvasElement[] = [];
+        const controlWidth: number[] = [];
+        const controlHeight: number[] = [];
         const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
         orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-        const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            controlValue.svg.outerHTML +
-            '</svg>';
-        const url: string = window.URL.createObjectURL(
-            new Blob(
-                type === 'SVG' ? [svgData] :
-                    [(new XMLSerializer()).serializeToString(controlValue.svg)],
-                { type: 'image/svg+xml' }
-            )
-        );
-        if (type === 'SVG') {
-            if (Browser.info.name === 'msie') {
-                const svg: Blob = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
-                window.navigator.msSaveOrOpenBlob(svg, fileName + '.' + type.toLocaleLowerCase());
-            } else {
-                this.triggerDownload(fileName, type, url, isDownload);
-            }
-        } else if (Browser.info.name === 'msie') {
-            let canvas: HTMLCanvasElement = element;
+        for (let i: number = 0; i < controlValue.length; i++) {
+            controlWidth.push(width ? width : controlValue[i as number].width);
+            controlHeight.push(height ? height : controlValue[i as number].height);
+            let element: HTMLCanvasElement = controls[i as number].svgObject as HTMLCanvasElement;
+            const isCanvas: boolean = (controls[i as number] as Chart).enableCanvas;
+            let image: string;
             if (!isCanvas) {
-                canvas = this.createCanvas();
-            }
-            image = canvas.toDataURL();
-            if (type === 'PDF') {
-                this.exportPdf(canvas, orientation, width, height, isDownload, fileName, header, footer);
-            } else {
-                this.doexport(type, image, fileName);
-            }
-        } else {
-            const image: HTMLImageElement = new Image();
-            const ctx: CanvasRenderingContext2D = element.getContext('2d');
-            image.onload = (() => {
-                ctx.drawImage(image, 0, 0);
-                window.URL.revokeObjectURL(url);
-                if (type === 'PDF') {
-                    this.exportPdf(element, orientation, width, height, isDownload, fileName, header, footer);
-                } else {
-                    if (window.navigator.msSaveOrOpenBlob) {
-                        window.navigator.msSaveOrOpenBlob(element.toBlob(null), fileName + '.' + (type as string).toLocaleLowerCase());
-                    } else {
-                        this.triggerDownload(
-                            fileName, type,
-                            element.toDataURL('image/' + type.toLowerCase()),
-                            isDownload
-                        );
+                element = <HTMLCanvasElement>createElement('canvas', {
+                    id: 'ej2-canvas',
+                    attrs: {
+                        'width': controlWidth[i as number].toString(),
+                        'height': controlHeight[i as number].toString()
                     }
+                });
+            }
+            const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                controlValue[i as number].svg.outerHTML +
+                '</svg>';
+            const url: string = window.URL.createObjectURL(
+                new Blob(
+                    type === 'SVG' ? [svgData] :
+                        [(new XMLSerializer()).serializeToString(controlValue[i as number].svg)],
+                    { type: 'image/svg+xml' }
+                )
+            );
+            if (type === 'SVG') {
+                if (Browser.info.name === 'msie') {
+                    const svg: Blob = new Blob([(new XMLSerializer()).serializeToString(controlValue[i as number].svg)], { type: 'application/octet-stream' });
+                    window.navigator.msSaveOrOpenBlob(svg, fileName + '.' + type.toLocaleLowerCase());
+                } else {
+                    this.triggerDownload(fileName, type, url, isDownload);
                 }
-            });
-            image.src = url;
+            } else if (Browser.info.name === 'msie') {
+                let canvas: HTMLCanvasElement = element;
+                if (!isCanvas) {
+                    canvas = this.createCanvas();
+                }
+                image = canvas.toDataURL();
+                canvasElements.push(element);
+                if (type === 'PDF') {
+                    if (canvasElements.length === controlValue.length) {
+                        this.exportPdf(canvasElements, orientation, controlWidth, controlHeight, isDownload, fileName, header, footer);
+                    }
+                } else {
+                    this.doexport(type, image, fileName);
+                }
+            } else {
+                const image: HTMLImageElement = new Image();
+                const ctx: CanvasRenderingContext2D = element.getContext('2d');
+                image.onload = (() => {
+                    ctx.drawImage(image, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    canvasElements.push(element);
+                    if (type === 'PDF') {
+                        if (canvasElements.length === controlValue.length) {
+                            this.exportPdf(canvasElements, orientation, controlWidth, controlHeight, isDownload, fileName, header, footer);
+                        }
+                    } else {
+                        if (window.navigator.msSaveOrOpenBlob) {
+                            window.navigator.msSaveOrOpenBlob(element.toBlob(null), fileName + '.' + (type as string).toLocaleLowerCase());
+                        } else {
+                            this.triggerDownload(
+                                fileName, type,
+                                element.toDataURL('image/' + type.toLowerCase()),
+                                isDownload
+                            );
+                        }
+                    }
+                });
+                image.src = url;
 
-        }
-        if (!isCanvas) {
-            removeElement(document.getElementById(this.control.element.id + '_canvas'));
+            }
+            if (!isCanvas) {
+                removeElement(document.getElementById(controls[i as number].element.id + '_canvas'));
+            }
         }
     }
     /**
@@ -175,21 +207,21 @@ export class ExportUtils {
      */
 
     public getDataUrl(chart: Chart | AccumulationChart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string } {
-        const controlValue: IControlValue = this.getControlsValue([chart]);
+        const controlValue: IControlValue[] = this.getControlsValue([chart]);
         let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
         const isCanvas: boolean = (this.control as Chart).enableCanvas;
         if (!isCanvas) {
             element = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
-                    'width': controlValue.width.toString(),
-                    'height': controlValue.height.toString()
+                    'width': controlValue[0].width.toString(),
+                    'height': controlValue[0].height.toString()
                 }
             });
         }
         const url: string = window.URL.createObjectURL(
             new Blob(
-                [(new XMLSerializer()).serializeToString(controlValue.svg)],
+                [(new XMLSerializer()).serializeToString(controlValue[0].svg)],
                 { type: 'image/svg+xml' }
             )
         );
@@ -248,21 +280,22 @@ export class ExportUtils {
      */
 
     // eslint-disable-next-line max-len
-    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart)[], isVertical?: boolean): IControlValue {
+    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart)[], isVertical?: boolean, isMultiPages?: boolean, type?: ExportType): IControlValue[] {
         let width: number = 0;
         let height: number = 0;
-        const isCanvas: boolean = (this.control as Chart).enableCanvas;
-        const svgObject: Element = new SvgRenderer('').createSvg({
+        let svgObject: Element = new SvgRenderer('').createSvg({
             id: 'Svg_Export_Element',
             width: 200, height: 200
         });
+        const controlValues: IControlValue[] = [];
         let backgroundColor: string;
-        controls.map((control: Chart | RangeNavigator | AccumulationChart | BulletChart | StockChart) => {
+        for (let i: number = 0; i < controls.length; i++) {
+            const control = controls[i as number];
+            const isCanvas: boolean = (control as Chart).enableCanvas;
             const svg: Node = control.svgObject.cloneNode(true);
             const groupEle: Element = control.renderer.createGroup({
                 style: (isNullOrUndefined(isVertical) || isVertical) ? 'transform: translateY(' + height + 'px)' :
                     'transform: translateX(' + width + 'px)'
-
             });
             backgroundColor = (svg.childNodes[0] as HTMLElement) ? (svg.childNodes[0] as HTMLElement).getAttribute('fill') : 'transparent';
             if (backgroundColor === 'transparent') {
@@ -273,6 +306,15 @@ export class ExportUtils {
                 }
             }
             if (!isCanvas) {
+                if (control.getModuleName() === 'stockChart') {
+                    (svg.childNodes[0].firstChild as HTMLElement).setAttribute('fill', backgroundColor);
+                    for (let index: number = 1; index < svg.childNodes.length; index++) {
+                        (svg.childNodes[index as number].childNodes[0] as HTMLElement).setAttribute('fill', backgroundColor);
+                    }
+                }
+                else if (type === 'SVG') {
+                    (svg.childNodes[0] as HTMLElement).setAttribute('fill', backgroundColor);
+                }
                 groupEle.appendChild(svg);
             }
             let top: number = 0;
@@ -289,21 +331,31 @@ export class ExportUtils {
                 width + control.availableSize.width + left;
             height = (isNullOrUndefined(isVertical) || isVertical) ? height + control.availableSize.height + top :
                 Math.max(control.availableSize.height + top, height);
-
             if (!isCanvas) {
                 svgObject.appendChild(groupEle);
             }
-        });
-        if (!isCanvas) {
-            svgObject.setAttribute('width', width + '');
-            svgObject.setAttribute('height', height + '');
-            svgObject.setAttribute('style', 'background-color: ' + backgroundColor + ';');
+            if (isMultiPages || i === controls.length - 1) {
+                if ((!isMultiPages && !((this.control as Chart).enableCanvas)) || (isMultiPages && !isCanvas)) {
+                    svgObject.setAttribute('width', width + '');
+                    svgObject.setAttribute('height', height + '');
+                    svgObject.setAttribute('style', 'background-color: ' + backgroundColor + ';');
+                }
+                controlValues.push({
+                    'width': width,
+                    'height': height,
+                    'svg': svgObject
+                });
+            }
+            if (isMultiPages && (i < controls.length)) {
+                width = 0;
+                height = 0;
+                svgObject = new SvgRenderer('').createSvg({
+                    id: 'Svg_Export_Element',
+                    width: 200, height: 200
+                });
+            }
         }
-        return {
-            'width': width,
-            'height': height,
-            'svg': svgObject
-        };
+        return controlValues;
     }
     private createCanvas(): HTMLCanvasElement {
         const chart: Chart = (this.control as Chart);
@@ -329,32 +381,34 @@ export class ExportUtils {
     }
 
     // eslint-disable-next-line max-len
-    private exportPdf(element: HTMLCanvasElement, orientation: PdfPageOrientation, width: number, height: number, isDownload: boolean, fileName: string, header?: IPDFArgs, footer?: IPDFArgs): void {
+    private exportPdf(element: HTMLCanvasElement[], orientation: PdfPageOrientation, width: number[], height: number[], isDownload: boolean, fileName: string, header?: IPDFArgs, footer?: IPDFArgs): void {
         const document: PdfDocument = new PdfDocument();
         const margin: PdfMargins = document.pageSettings.margins;
         const pdfDefaultWidth: number = document.pageSettings.width;
         const pdfDefaultHeight: number = document.pageSettings.height;
-        let imageString: string = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-        document.pageSettings.orientation = orientation;
-        const exactWidth: number = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
-        const exactHeight: number = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
-        if (header !== undefined) {
-            const font: PdfStandardFont = new PdfStandardFont(1, header.fontSize || 15);
-            const pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
-            pdfHeader.graphics.drawString(header.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), header.x, header.y, null);
-            document.template.top = pdfHeader;
+        for (let i: number = 0; element.length > i; i++) {
+            let imageString: string = element[i as number].toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+            document.pageSettings.orientation = orientation;
+            const exactWidth: number = (pdfDefaultWidth < width[i as number]) ? (width[i as number] + margin.left + margin.right) : pdfDefaultWidth;
+            const exactHeight: number = (pdfDefaultHeight < height[i as number]) ? (height[i as number] + margin.top + margin.bottom) : pdfDefaultHeight;
+            if (header !== undefined) {
+                const font: PdfStandardFont = new PdfStandardFont(1, header.fontSize || 15);
+                const pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
+                pdfHeader.graphics.drawString(header.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), header.x, header.y, null);
+                document.template.top = pdfHeader;
+            }
+            if (footer !== undefined) {
+                const font: PdfStandardFont = new PdfStandardFont(1, footer.fontSize || 15);
+                const pdfFooter: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
+                pdfFooter.graphics.drawString(footer.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), footer.x, footer.y, null);
+                document.template.bottom = pdfFooter;
+            }
+            document.pageSettings.size = new SizeF(exactWidth, exactHeight);
+            imageString = imageString.slice(imageString.indexOf(',') + 1);
+            document.pages.add().graphics.drawImage(
+                new PdfBitmap(imageString), 0, 0, width[i as number], height[i as number]
+            );
         }
-        if (footer !== undefined) {
-            const font: PdfStandardFont = new PdfStandardFont(1, footer.fontSize || 15);
-            const pdfFooter: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
-            pdfFooter.graphics.drawString(footer.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), footer.x, footer.y, null);
-            document.template.bottom = pdfFooter;
-        }
-        document.pageSettings.size = new SizeF(exactWidth, exactHeight);
-        imageString = imageString.slice(imageString.indexOf(',') + 1);
-        document.pages.add().graphics.drawImage(
-            new PdfBitmap(imageString), 0, 0, width, height
-        );
         if (isDownload) {
             document.save(fileName + '.pdf');
             document.destroy();

@@ -1,0 +1,11 @@
+@include export-module('dropdowntree-bootstrap4-icons') {
+  .e-ddt {
+    .e-ddt-icon::before {
+      content: '\e744';
+    }
+
+    .e-chips-close::before {
+      content: '\e745';
+    }
+  }
+}

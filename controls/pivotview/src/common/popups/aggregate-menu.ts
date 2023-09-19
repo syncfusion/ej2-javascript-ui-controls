@@ -27,8 +27,6 @@ export class AggregateMenu {
     private parentElement: HTMLElement;
     private buttonElement: HTMLElement;
     private currentMenu: Element;
-    private valueDialog: Dialog;
-    private summaryTypes: AggregateTypes[];
     private stringAggregateTypes: AggregateTypes[] = ['Count', 'DistinctCount'];
 
     /**
@@ -58,14 +56,14 @@ export class AggregateMenu {
         const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
         this.buttonElement = (args.target as HTMLElement).parentElement;
         const isStringField: number = this.parent.engineModule.fieldList[fieldName as string].type !== 'number' ? 1 : 0;
-        this.summaryTypes = [...this.getMenuItem(isStringField)];
+        let summaryTypes: AggregateTypes[] = [...this.getMenuItem(isStringField)];
         this.parent.actionObj.actionName = events.aggregateField;
         this.parent.actionObj.fieldInfo = fieldInfo.fieldItem;
         if (this.parent.actionBeginMethod()) {
             return;
         }
         const eventArgs: AggregateMenuOpenEventArgs = {
-            cancel: false, fieldName: fieldName, aggregateTypes: this.summaryTypes, displayMenuCount: 7
+            cancel: false, fieldName: fieldName, aggregateTypes: summaryTypes, displayMenuCount: 7
         };
         const control: PivotView | PivotFieldList =
             this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).isPopupView ?
@@ -73,8 +71,8 @@ export class AggregateMenu {
         try {
             control.trigger(events.aggregateMenuOpen, eventArgs, (observedArgs: AggregateMenuOpenEventArgs) => {
                 if (!observedArgs.cancel) {
-                    this.summaryTypes = observedArgs.aggregateTypes;
-                    this.createContextMenu(isStringField, observedArgs.displayMenuCount);
+                    summaryTypes = observedArgs.aggregateTypes;
+                    this.createContextMenu(isStringField, summaryTypes, observedArgs.displayMenuCount);
                     this.currentMenu = args.target as Element;
                     const pos: OffsetPosition = this.currentMenu.getBoundingClientRect();
                     if (this.parent.enableRtl) {
@@ -91,15 +89,15 @@ export class AggregateMenu {
         }
     }
 
-    private createContextMenu(isStringField: number, displayMenuCount?: number): void {
+    private createContextMenu(isStringField: number, summaryTypes: AggregateTypes[], displayMenuCount?: number): void {
         const menuItems: MenuItemModel[][] = [];
         menuItems[isStringField  as number] = [];
         if (this.menuInfo[isStringField as number] && !this.menuInfo[isStringField as number].isDestroyed) {
             this.menuInfo[isStringField as number].destroy();
         }
         const checkDuplicates: AggregateTypes[] = [];
-        for (let i: number = 0; i < this.summaryTypes.length; i++) {
-            const key: AggregateTypes = this.summaryTypes[i as number] as AggregateTypes;
+        for (let i: number = 0; i < summaryTypes.length; i++) {
+            const key: AggregateTypes = summaryTypes[i as number] as AggregateTypes;
             if (isStringField) {
                 if ((this.stringAggregateTypes.indexOf(key) > -1) && (checkDuplicates.indexOf(key) < 0)) {
                     menuItems[isStringField as number].push(
@@ -169,20 +167,20 @@ export class AggregateMenu {
     /**
      * create Value Settings Dialog
      *
-     * @param {HTMLElement} target - It represent the target elament.
+     * @param {HTMLElement} target - It represent the target element.
      * @param {HTMLElement} parentElement - It represent the parentElement.
      * @param {string} type -It represent the type.
      * @returns {void}
      * @hidden */
     public createValueSettingsDialog(target: HTMLElement, parentElement: HTMLElement, type?: string): void {
         this.parentElement = parentElement;
-        const valueDialog: HTMLElement = createElement('div', {
+        const valueDialogElement: HTMLElement = createElement('div', {
             id: this.parentElement.id + '_ValueDialog',
             className: 'e-value-field-settings',
             attrs: { 'data-field': target.getAttribute('data-uid') ? target.getAttribute('data-uid') : target.getAttribute('data-field') }
         });
-        this.parentElement.appendChild(valueDialog);
-        this.valueDialog = new Dialog({
+        this.parentElement.appendChild(valueDialogElement);
+        const valueDialog: Dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
             header: this.parent.localeObj.getConstant('valueFieldSettings'),
@@ -203,7 +201,7 @@ export class AggregateMenu {
                 },
                 {
                     click: () => {
-                        this.valueDialog.hide();
+                        valueDialog.hide();
                     },
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
@@ -216,8 +214,8 @@ export class AggregateMenu {
             close: this.removeDialog.bind(this),
             cssClass: this.parent.cssClass
         });
-        this.valueDialog.isStringTemplate = true;
-        this.valueDialog.appendTo(valueDialog);
+        valueDialog.isStringTemplate = true;
+        valueDialog.appendTo(valueDialogElement);
         // this.valueDialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('valueFieldSettings');
     }
     private createFieldOptions(buttonElement: HTMLElement, type?: string): HTMLElement {
@@ -441,7 +439,8 @@ export class AggregateMenu {
         }
     }
     private updateValueSettings(): void {
-        const dialogElement: HTMLElement = this.valueDialog.element;
+        const valueDialog: Dialog = getInstance(select('#' + this.parentElement.id + '_ValueDialog', document) as HTMLElement, Dialog) as Dialog;
+        const dialogElement: HTMLElement = valueDialog.element;
         const captionInstance: MaskedTextBox = getInstance(select('#' + this.parentElement.id + 'type_input_option'), MaskedTextBox) as MaskedTextBox;
         const summaryInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_type_option'), DropDownList) as DropDownList;
         const baseFieldInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_base_field_option'), DropDownList) as DropDownList;
@@ -472,7 +471,7 @@ export class AggregateMenu {
         selectedField.type = summaryInstance.value as SummaryTypes;
         selectedField.baseField = baseFieldInstance.value as string;
         selectedField.baseItem = baseItemInstance.value as string;
-        this.valueDialog.close();
+        valueDialog.close();
         // this.parent.axisFieldModule.render();
         this.parent.lastAggregationInfo = selectedField;
         this.updateDataSource(true);
@@ -481,7 +480,9 @@ export class AggregateMenu {
         if (this.buttonElement && select('#' + this.buttonElement.id, this.parentElement)) {
             (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
         }
-        if (this.valueDialog && !this.valueDialog.isDestroyed) { this.valueDialog.destroy(); }
+        const element: HTMLElement = select('#' + this.parentElement.id + '_ValueDialog', document);
+        const valueDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        if (valueDialog && !valueDialog.isDestroyed) { valueDialog.destroy(); }
         if (document.getElementById(this.parentElement.id + '_ValueDialog')) {
             remove(document.getElementById(this.parentElement.id + '_ValueDialog'));
         }

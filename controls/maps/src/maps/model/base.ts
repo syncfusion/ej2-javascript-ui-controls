@@ -1618,6 +1618,14 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      */
     @Property('')
     public template: string | Function;
+
+    /**
+     * Gets and sets the duration time for animating the data label.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public animationDuration: number;
 }
 /**
  * Gets or sets the options to customize the shapes in the maps.

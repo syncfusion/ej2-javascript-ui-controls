@@ -686,7 +686,10 @@ export class VirtualLayoutRender extends MobileLayout {
             const skeletonWrapper: HTMLElement = createElement('div', {className: 'e-card-skeleton-wrapper'});
             const skeleton: HTMLElement = createElement('span', {className: 'e-skeleton e-skeleton-text e-shimmer-wave'});
             skeleton.style.height = this.cardHeight + 'px';
-            skeleton.style.width = cardWrapper.querySelector('.e-card').getBoundingClientRect().width + 'px';
+            // Assumption fix, issue reproduce in rare cases only .
+            if (!isNoU(cardWrapper.querySelector('.e-card'))) {
+                skeleton.style.width = cardWrapper.querySelector('.e-card').getBoundingClientRect().width + 'px';
+            }
             skeletonWrapper.appendChild(skeleton);
             cardVirtualSkeletonWrapper.appendChild(skeletonWrapper);
         }
@@ -945,7 +948,8 @@ export class VirtualLayoutRender extends MobileLayout {
         let indexes: number[];
         if (info.scrollDirection === 'down') {
             indexes = index >= maxPage ? [max(index, 1), --index, --index].reverse() :
-            (index + 1 >= maxPage ? [max(index - 1, 1),  index, ++index] : [max(index, 1), ++index, ++index]);
+            (index + 1 >= maxPage ? [max(index - 1, 1),  index, ++index] :
+            [max(index, 1), ++index, ++index]);
         } else {
             indexes = index === maxPage ? [max(index - 2, 1), max(index - 1, 1), index] :
                 [max(index - 1, 1), index, index + 1];

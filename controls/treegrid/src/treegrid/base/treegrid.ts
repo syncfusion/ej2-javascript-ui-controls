@@ -1,8 +1,8 @@
-import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend, merge, SanitizeHtmlHelper} from '@syncfusion/ej2-base';
-import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, getValue } from '@syncfusion/ej2-base';
+import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Fetch, ModuleDeclaration, extend, merge, SanitizeHtmlHelper} from '@syncfusion/ej2-base';
+import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, getValue, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
-import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, Row } from '@syncfusion/ej2-grids';
+import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, Row, getNumberFormat } from '@syncfusion/ej2-grids';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
 import { RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, getUid } from '@syncfusion/ej2-grids';
 import { LoadingIndicator } from '../models/loading-indicator';
@@ -44,7 +44,7 @@ import { PdfExportCompleteArgs, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInf
 import { ExcelExportProperties, PdfExportProperties, CellSelectingEventArgs, PrintEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import {BeforeDataBoundArgs} from '@syncfusion/ej2-grids';
-import { DataManager, ReturnOption, RemoteSaveAdaptor, Query, JsonAdaptor, Deferred } from '@syncfusion/ej2-data';
+import { DataManager, ReturnOption, RemoteSaveAdaptor, Query, JsonAdaptor, Deferred, UrlAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner, Dialog } from '@syncfusion/ej2-popups';
 import { isRemoteData, isOffline, extendArray, isCountRequired, findChildrenRecords } from '../utils';
 import { Grid, QueryCellInfoEventArgs, Logger } from '@syncfusion/ej2-grids';
@@ -129,9 +129,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private isExpandedEventTriggered: boolean;
     // A boolean flag indicating whether the expanding event has been triggered.
     private isExpandingEventTriggered: boolean;
-    // Sets to true when collapsing is to be prevented
+    // Sets to true when collapsing is to be prevented.
     private collapseAllPrevent: boolean;
-    // Sets to true when expanding is to be prevented
+    // Sets to true when expanding is to be prevented.
     private expandAllPrevent: boolean;
     /**
      * The `sortModule` is used to manipulate sorting in TreeGrid.
@@ -154,6 +154,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private treeColumnTextAlign: TextAlign;
     private treeColumnField: string;
     private stackedHeader: boolean = false;
+    private isExcel: boolean;
     /** @hidden */
     public initialRender: boolean;
     /** @hidden */
@@ -436,7 +437,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Complex<RowDropSettingsModel>({}, RowDropSettings)
     public rowDropSettings: RowDropSettingsModel;
-
+    /**
+     * Defines the currencyCode format of the Tree Grid columns
+     *
+     * @private
+     */
+    @Property('USD')
+    private currencyCode: string;
     /**
      * @hidden
      * It used to render pager template
@@ -1383,6 +1390,117 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         return this.pdfExportModule.Map(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
     }
 
+    /**
+     * Sends a post request to export tree grid to excel file in server side.
+     *
+     * @param  {string} url - Pass URL for server side excel export action.
+     * @returns {void}
+     */
+    public serverExcelExport(url: string): void {
+        this.isExcel = true;
+        this.exportTreeGrid(url);
+    }
+    /**
+     * Sends a post request to export tree grid to pdf file in server side.
+     *
+     * @param  {string} url - Pass URL for server-side pdf export action.
+     * @returns {void}
+     */
+    public serverPdfExport(url: string): void {
+        this.isExcel = false;
+        this.exportTreeGrid(url);
+    }
+
+    /**
+     * Sends a Post request to export Tree Grid to CSV file in server side.
+     *
+     * @param  {string} url - Pass URL for server-side csv export action.
+     * @returns {void}
+     */
+    public serverCsvExport(url: string): void {
+        this.isExcel = true;
+        this.exportTreeGrid(url);
+    }
+    /**
+     * Exports the TreeGrid data to the specified URL using a POST request.
+     * @param {string} url - Defines exporting url
+     * @returns {void}
+     */
+    private exportTreeGrid(url: string): void {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const treegrid: TreeGrid = this;
+        const query: Query = treegrid.grid.getDataModule().generateQuery(true);
+        const state: { data?: string, pvtData?: Object[] } = new UrlAdaptor().processQuery(new DataManager({ url: '' }), query);
+        const queries: {where: object, search: Object[], sorted: object} = JSON.parse(state.data);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const treeGridModel: any = JSON.parse(this.addOnPersist(['allowPaging', 'pageSettings', 'sortSettings', 'allowPdfExport', 'allowExcelExport', 'aggregates',
+            'filterSettings',  'columns', 'locale', 'searchSettings', 'idMapping', 'parentIdMapping', 'childMapping', 'treeColumnIndex']));
+        const include: string[] = ['field', 'headerText', 'type', 'format', 'visible',
+            'template', 'index', 'width', 'textAlign', 'headerTextAlign', 'columns'];
+        treeGridModel.filterSettings.columns = queries.where;
+        treeGridModel.searchSettings.fields = queries.search && queries.search[0]['fields'] || [];
+        treeGridModel.sortSettings.columns = queries.sorted;
+        treeGridModel.columns = this.setHeaderText(treeGridModel.columns as Column[], include);
+        const form: HTMLFormElement = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
+        const treeGridInput: HTMLInputElement = this.createElement('input', { id: 'treeGridInput', attrs: { name: 'treeGridModel' } });
+        treeGridInput.value = JSON.stringify(treeGridModel);
+        form.method = 'POST';
+        form.action = url;
+        form.appendChild(treeGridInput);
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
+    }
+
+    /**
+     * Sets the header text and other properties for an array of columns based on specified criteria.
+     * @param {Column[]} columns - Defines array of columns
+     * @param {string[]} include - Defines array of sting
+     * @returns {Column[]} returns array of columns
+     */
+    private setHeaderText(columns: Column[], include: string[]): Column[] {
+        for (let i: number = 0; i < columns.length; i++) {
+            let column: Column = this.getColumnByUid(columns[parseInt(i.toString(), 10)].uid);
+            if (this.stackedHeader && isNullOrUndefined(column)) {
+                column = !isNullOrUndefined(columns[parseInt(i.toString(), 10)].field) ?
+                    this.getColumnByField(columns[parseInt(i.toString(), 10)].field) : columns[parseInt(i.toString(), 10)];
+            }
+            columns[parseInt(i.toString(), 10)].headerText = column.headerText;
+            if (!isNullOrUndefined(column.template)) {
+                columns[parseInt(i.toString(), 10)].template = 'true';
+            }
+            if (columns[parseInt(i.toString(), 10)].format) {
+                columns[parseInt(i.toString(), 10)].format = getNumberFormat(
+                    this.getFormat(column.format),
+                    column.type, false, this.currencyCode);
+                if (!this.isExcel && (column.type === 'datetime' || column.type === 'date')) {
+                    columns[parseInt(i.toString(), 10)].format = columns[parseInt(i.toString(), 10)].format.toString().replace('AM/PM', 'tt');
+                }
+                columns[parseInt(i.toString(), 10)].type = column.type;
+            }
+            if (columns[parseInt(i.toString(), 10)].columns) {
+                this.setHeaderText(columns[parseInt(i.toString(), 10)].columns as Column[], include);
+            }
+            const keys: string[] = Object.keys(columns[parseInt(i.toString(), 10)]);
+            for (let j: number = 0; j < keys.length; j++) {
+                if (include.indexOf(keys[parseInt(j.toString(), 10)]) < 0) {
+                    delete columns[parseInt(i.toString(), 10)][keys[parseInt(j.toString(), 10)]];
+                }
+            }
+        }
+        return columns;
+    }
+
+    /**
+     * Retrieves the appropriate format string from the given format options.
+     *
+     * @param {string | NumberFormatOptions | DateFormatOptions} format - The format options to retrieve the format string from.
+     * @returns {string} The format string extracted from the provided format options.
+     */
+    private getFormat(format: string | NumberFormatOptions | DateFormatOptions): string {
+        return typeof (format) === 'object' ? !isNullOrUndefined(format.format) ?
+            format.format : format.skeleton : format;
+    }
 
     /**
      * For internal use only - Get the module name.
@@ -1671,7 +1789,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
         const splitFrozenCount: string = 'splitFrozenCount';
-        this.grid[`${splitFrozenCount}`](this.getGridColumns(this.columns as Column[]));
+        this.grid[`${splitFrozenCount}`](this.getColumns());
         if (this.isDestroyed) { return modules; }
         modules.push({
             member: 'filter', args: [this, this.filterSettings]
@@ -2027,9 +2145,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private IsExpandCollapseClicked(args: RowDeselectingEventArgs): void {
         if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
             || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))
-            && (!isNullOrUndefined(args.data) && args.data['hasChildRecords']) && !this.selectionSettings.checkboxOnly) {
-            args.cancel = true;
-            return;
+            && !this.selectionSettings.checkboxOnly) {
+            if ((!isNullOrUndefined(args.data) && args.data['hasChildRecords']) || (args.rowIndex !== -1 && isNullOrUndefined(args.data))) {
+                args.cancel = true;
+                return;
+            }
         }
     }
     private bindGridEvents(): void {
@@ -2142,9 +2262,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.updateRowTemplate(); this.updateColumnModel();
             this.updateAltRow(this.getRows()); this.notify('dataBoundArg', args);
             if (isRemoteData(this) && !isOffline(this) && !this.hasChildMapping) {
-                const req: number = getObject('dataSource.requests', this).filter((e: Ajax) => {
-                    return e.httpRequest.statusText !== 'OK';
-                }).length;
+                let req: number;
+                if (this.dataResults.result) {
+                    req = 0;
+                } else {
+                    req = 1;
+                }
                 setValue('grid.contentModule.isLoaded', !(req > 0), this);
             }
             if (this.isPixelHeight() && this.initialRender) {
@@ -3913,7 +4036,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const children: string = 'Children';
         if (!(isRemoteData(this) && !isOffline(this)) && (!isCountRequired(this) || !isNullOrUndefined(record[`${children}`]))) {
             let expandArgs: RowExpandedEventArgs = { data: record, row: row };
-            this.setHeightForFrozenContent();
             if (!isNullOrUndefined(this.expandStateMapping)) {
                 this.updateExpandStateMapping(expandArgs.data, true);
             }
@@ -3939,13 +4061,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         records.unshift(record);
         for (let i: number = 0; i < records.length; i++) {
             this.expandCollapse(action, null, records[parseInt(i.toString(), 10)]);
-        }
-    }
-
-    private setHeightForFrozenContent(): void {
-        const freeze: boolean = (this.grid.getFrozenLeftColumnsCount() > 0 || this.grid.getFrozenRightColumnsCount() > 0 ) ? true : false;
-        if (this.grid.getFrozenColumns() > 0 || freeze) {
-            (<{ refreshScrollOffset?: Function }>this.grid.contentModule).refreshScrollOffset();
         }
     }
 
@@ -4023,7 +4138,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.expandCollapse('collapse', row, record);
         let collapseArgs: RowCollapsedEventArgs = { data: record, row: row };
         if (!isRemoteData(this)) {
-            this.setHeightForFrozenContent();
             if (!isNullOrUndefined(this.expandStateMapping)) {
                 this.updateExpandStateMapping(collapseArgs.data, false);
             }
@@ -4470,7 +4584,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.isExpandRefresh = true;
             const scrollHeightBeforeRefresh: number = this.getContentTable().parentElement.scrollTop;
             this.grid.refresh();
-            this.setHeightForFrozenContent();
             if (this.enableInfiniteScrolling) {
                 this.getContentTable().parentElement.scrollTop = scrollHeightBeforeRefresh;
             }
@@ -4499,7 +4612,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.notify(events.remoteExpand, {record: record, rows: rows, parentRow: row});
             const args: RowExpandedEventArgs = {row: row, data: record};
             if (rows.length > 0) {
-                this.setHeightForFrozenContent();
                 this.trigger(events.expanded, args);
             }
         }
@@ -4508,7 +4620,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         else {
             this.collapseRemoteChild({ record: record, rows: rows });
-            this.setHeightForFrozenContent();
             this.trigger(events.collapsed, args);
         }
     }
@@ -4544,14 +4655,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         const freeze: boolean = (this.grid.getFrozenLeftColumnsCount() > 0 || this.grid.getFrozenRightColumnsCount() > 0 ) ? true : false;
         if (this.frozenRows || this.frozenColumns || this.getFrozenColumns() || freeze) {
-            movableRows = <HTMLTableRowElement[]>this.getMovableRows().filter(
+            movableRows = <HTMLTableRowElement[]>this.getRows().filter(
                 (r: HTMLTableRowElement) =>
                     r.querySelector(
                         '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
                     ));
         }
         if (freeze) {
-            freezeRightRows = <HTMLTableRowElement[]>this.getFrozenRightRows().filter(
+            freezeRightRows = <HTMLTableRowElement[]>this.getRows().filter(
                 (r: HTMLTableRowElement) =>
                     r.querySelector(
                         '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
@@ -4658,13 +4769,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         let rightrows: HTMLTableRowElement[] = [];
         const freeze: boolean = (this.getFrozenLeftColumnsCount() > 0 || this.getFrozenRightColumnsCount() > 0 ) ? true : false;
         if (freeze) {
-            movablerows = <HTMLTableRowElement[]>this.getMovableRows().filter(
+            movablerows = <HTMLTableRowElement[]>this.getRows().filter(
                 (r: HTMLTableRowElement) =>
                     r.querySelector(
                         '.e-gridrowindex' + rowDetails.record.index + 'level' + (rowDetails.record.level + 1)
                     )
             );
-            rightrows = <HTMLTableRowElement[]>this.getFrozenRightRows().filter(
+            rightrows = <HTMLTableRowElement[]>this.getRows().filter(
                 (r: HTMLTableRowElement) =>
                     r.querySelector(
                         '.e-gridrowindex' + rowDetails.record.index + 'level' + (rowDetails.record.level + 1)
@@ -4886,18 +4997,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @returns {Element} - Returns movable cell element from the indexes passed
+     *
+     * @deprecated This method is deprecated. Use getCellFromIndex method instead.
      */
     public getMovableCellFromIndex(rowIndex: number, columnIndex: number): Element {
-        return this.grid.getMovableCellFromIndex(rowIndex, columnIndex);
+        return this.grid.getCellFromIndex(rowIndex, columnIndex);
     }
 
     /**
      * Gets all the TreeGrid's movable table data rows.
      *
      * @returns {Element[]} - Returns element collection of movable rows
+     *
+     * @deprecated This method is deprecated. Use getDataRows method instead.
      */
     public getMovableDataRows(): Element[] {
-        return this.grid.getMovableDataRows();
+        return this.grid.getDataRows();
     }
 
     /**
@@ -4905,18 +5020,21 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param  {number} index - Specifies the row index.
      * @returns {Element} - Returns movable row based on index passed
+     *
+     * @deprecated This method is deprecated. Use getRowByIndex method instead.
      */
     public getMovableRowByIndex(index: number): Element {
-        return this.grid.getMovableRowByIndex(index);
+        return this.grid.getRowByIndex(index);
     }
 
     /**
      * Gets the TreeGrid's movable content rows from frozen treegrid.
      *
      * @returns {Element[]}: Returns movable row element
+     * @deprecated This method is deprecated. Use getRows method instead.
      */
     public getMovableRows(): Element[] {
-        return this.grid.getMovableRows();
+        return this.grid.getRows();
     }
 
     /**
@@ -4924,27 +5042,33 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param  {number} index - Specifies the row index.
      * @returns {Element} returns the element
+     *
+     * @deprecated This method is deprecated. Use getRowByIndex method instead.
      */
     public getFrozenRightRowByIndex(index: number): Element {
-        return this.grid.getFrozenRightRowByIndex(index);
+        return this.grid.getRowByIndex(index);
     }
 
     /**
      * Gets the Tree Grid's frozen right content rows from frozen Tree Grid.
      *
      * @returns {Element[]} returns the element
+     *
+     * @deprecated This method is deprecated. Use getRows method instead.
      */
     public getFrozenRightRows(): Element[] {
-        return this.grid.getFrozenRightRows();
+        return this.grid.getRows();
     }
 
     /**
      * Gets all the Tree Grid's frozen right table data rows.
      *
      * @returns {Element[]} Returns the Element
+     *
+     * @deprecated This method is deprecated. Use getDataRows method instead.
      */
     public getFrozenRightDataRows(): Element[] {
-        return this.grid.getFrozenRightDataRows();
+        return this.grid.getDataRows();
     }
 
     /**
@@ -4953,9 +5077,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {number} rowIndex - Specifies the row index.
      * @param  {number} columnIndex - Specifies the column index.
      * @returns {Element} Returns the Element
+     *
+     * @deprecated This method is deprecated. Use getCellFromIndex method instead.
      */
     public getFrozenRightCellFromIndex(rowIndex: number, columnIndex: number): Element {
-        return this.grid.getFrozenRightCellFromIndex(rowIndex, columnIndex);
+        return this.grid.getCellFromIndex(rowIndex, columnIndex);
     }
 
     /**
@@ -4963,9 +5089,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param  {number} index - Specifies the column index.
      * @returns {Element} Returns the Element
+     *
+     * @deprecated This method is deprecated. Use getColumnHeaderByIndex method instead.
      */
     public getFrozenLeftColumnHeaderByIndex(index: number): Element {
-        return this.grid.getFrozenLeftColumnHeaderByIndex(index);
+        return this.grid.getColumnHeaderByIndex(index);
     }
 
     /**
@@ -4973,9 +5101,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param  {number} index - Specifies the column index.
      * @returns {Element} Returns the Element
+     *
+     * @deprecated This method is deprecated. Use getColumnHeaderByIndex method instead.
      */
     public getFrozenRightColumnHeaderByIndex(index: number): Element {
-        return this.grid.getFrozenRightColumnHeaderByIndex(index);
+        return this.grid.getColumnHeaderByIndex(index);
     }
 
     /**
@@ -4983,9 +5113,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param  {number} index - Specifies the column index.
      * @returns {Element} Returns the Element
+     *
+     * @deprecated This method is deprecated. Use getColumnHeaderByIndex method instead.
      */
     public getMovableColumnHeaderByIndex(index: number): Element {
-        return this.grid.getMovableColumnHeaderByIndex(index);
+        return this.grid.getColumnHeaderByIndex(index);
     }
 
     /**

@@ -79,7 +79,7 @@ export class WorkbookNumberFormat {
      * @returns {string} - to get formatted cell.
      */
     public getFormattedCell(args: NumberFormatArgs): string {
-        const fResult: string = args.value === undefined || args.value === null ? '' : args.value as string;
+        let fResult: string = args.value === undefined || args.value === null ? '' : args.value as string;
         args.sheetIndex = args.sheetIndex === undefined ? this.parent.activeSheetIndex : args.sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, args.sheetIndex);
         const cell: CellModel = args.cell || getCell(args.rowIndex, args.colIndex, sheet, false, true);
@@ -110,6 +110,10 @@ export class WorkbookNumberFormat {
         }
         if (cell.format && this.isCustomType(cell)) {
             args.type = 'Custom';
+            const isTextFormat: boolean = cell.format.indexOf('@') > -1;
+            if (fResult !== '' && !isTextFormat && this.isPercentageValue(fResult.toString(), args, cell)) {
+                fResult = args.value.toString();
+            }
             let isCustomText: boolean;
             const orgFormat: string = cell.format;
             cell.format = cell.format.split('\\').join('');
@@ -127,7 +131,7 @@ export class WorkbookNumberFormat {
                     isCustomText = !args.formatApplied;
                 }
                 args.result = args.result || cell.value;
-            } else if (cell.format.indexOf('@') > -1) {
+            } else if (isTextFormat) {
                 isCustomText = true;
                 args.result = this.processCustomText(cell.format, fResult, args);
             } else {
@@ -585,6 +589,9 @@ export class WorkbookNumberFormat {
         let options: AutoDetectGeneralFormatArgs;
         if (fResult !== '') {
             let numArgs: { isNumber: boolean, value: string };
+            if (args.type !== 'General' && args.type !== 'Text' && this.isPercentageValue(fResult.toString(), args, cell)) {
+                fResult = args.value.toString();
+            }
             switch (args.type) {
             case 'General':
                 options = { args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl, isRightAlign: isRightAlign,
@@ -612,10 +619,8 @@ export class WorkbookNumberFormat {
                 break;
             case 'Percentage':
                 numArgs = checkIsNumberAndGetNumber({ value: fResult }, this.parent.locale, this.groupSep, this.decimalSep);
-                if (numArgs.isNumber || (fResult && this.isPercentageValue(fResult.toString(), args, cell))) {
-                    if (numArgs.isNumber) {
-                        cell.value = args.value = numArgs.value;
-                    }
+                if (numArgs.isNumber) {
+                    cell.value = args.value = numArgs.value;
                     fResult = this.percentageFormat(args, intl);
                     isRightAlign = true;
                 }
@@ -667,7 +672,8 @@ export class WorkbookNumberFormat {
         const val: string = options.fResult; let prevVal: string;
         const addressFormula: boolean = options.args.cell && options.args.cell.formula && options.args.cell.formula.indexOf('ADDRESS(') > 0;
         const isDollarFormula: boolean = options.args.cell && options.args.cell.formula && options.args.cell.formula.indexOf('DOLLAR(') > 0;
-        if (isDollarFormula && options.fResult && options.fResult.toString().includes(options.currencySymbol)) {
+        const isTextFormula: boolean = options.args.cell && options.args.cell.formula && options.args.cell.formula.indexOf('TEXT(') > 0;
+        if (isDollarFormula && options.fResult && options.fResult.toString().includes(options.currencySymbol) || isTextFormula) {
             return;
         }
         if (options.fResult && this.decimalSep !== '.') {
@@ -695,6 +701,7 @@ export class WorkbookNumberFormat {
             if (options.args.format === 'General') {
                 if (options.args.cell && options.args.cell.formula && cellVal.includes('.') && cellVal.length > 11) {
                     const decIndex: number = cellVal.indexOf('.') + 1;
+                    prevVal = null;
                     if (options.args.cell.formula.includes('RANDBETWEEN')) {
                         options.fResult = cellVal = decIndex < 7 ? cellVal : (parseFloat(cellVal)).toFixed(0);
                     } else {
@@ -870,7 +877,7 @@ export class WorkbookNumberFormat {
             if (args.td && args.td.style.color !== args.color) {
                 this.parent.notify(
                     applyCellFormat, <CellFormatArgs>{ style: { color: args.color }, rowIdx: args.rowIndex, colIdx: args.colIndex,
-                    cell: args.td });
+                    td: args.td });
             }
         }
     }
@@ -1219,6 +1226,8 @@ export class WorkbookNumberFormat {
                     val = 'Invalid';
                 }
             });
+        } else {
+            val = 'Invalid';
         }
         if (format.length) {
             val = timeArr.join(this.localeObj.timeSeparator);

@@ -1,12 +1,13 @@
 import {
     IGrid, PdfExportProperties, PdfHeader, PdfFooter, PdfHeaderFooterContent,
-    PdfTheme, PdfThemeStyle, PdfBorder, PdfQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs,
+    PdfTheme, PdfThemeStyle, PdfBorder, PdfQueryCellInfoEventArgs,  ExportDetailDataBoundEventArgs,
+    DetailTemplateRow, DetailTemplateCell, ExportDetailTemplateEventArgs, ExportGroupCaptionEventArgs,
     AggregateQueryCellInfoEventArgs, ExportHelperArgs, PdfHeaderQueryCellInfoEventArgs
 } from '../base/interface';
 import { Column } from './../models/column';
 import { Row } from './../models/row';
 import * as events from '../base/constant';
-import { PdfDocument, PdfPage, PdfGrid, PdfBorders, PdfPen, PdfFont, PdfPaddings , PdfGridCellStyle, PdfBrush } from '@syncfusion/ej2-pdf-export';
+import { PdfDocument, PdfPage, PdfGrid, PdfBorders, PdfImage, PdfPen, PdfFont, PdfPaddings , PdfGridCellStyle, PdfBrush, PdfLayoutResult } from '@syncfusion/ej2-pdf-export';
 import { PdfGridRow, PdfStandardFont, PdfFontFamily, PdfFontStyle, PdfBitmap } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfTextAlignment, PdfColor, PdfSolidBrush, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 import { PdfVerticalAlignment, PdfGridCell, RectangleF, PdfPageTemplateElement } from '@syncfusion/ej2-pdf-export';
@@ -99,7 +100,7 @@ export class PdfExport {
         }
         this.processExport(parent, returnType as ReturnType, pdfExportProperties, isMultipleExport).then(() => {
             this.isExporting = false;
-            parent.trigger(events.pdfExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
+            parent.trigger(events.pdfExportComplete, this.isBlob ? { promise: this.blobPromise } : { gridInstance: this.parent });
             this.parent.log('exporting_complete', this.getModuleName());
             resolve(this.pdfDocument);
         }).catch((e: Error) => {
@@ -125,7 +126,7 @@ export class PdfExport {
         this.isBlob = isBlob;
         this.gridPool = {};
         let query: Query = pdfExportProperties && pdfExportProperties.query ? pdfExportProperties.query : new Query();
-        if (parent.childGrid && !(!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.hierarchyExportMode === 'None')) {
+        if ((parent.childGrid || parent.detailTemplate) && !(!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.hierarchyExportMode === 'None')) {
             parent.expandedRows = getPrintGridModel(parent).expandedRows;
         }
         const args: Object = {
@@ -175,15 +176,21 @@ export class PdfExport {
                 Promise.all(allPromise).then((e: ReturnType[]) => {
                     this.init(parent);
                     if (!isNullOrUndefined(pdfDoc)) {
-                        this.pdfDocument = <PdfDocument>pdfDoc;
+                        this.pdfDocument = pdfDoc['document'];
                     } else {
                         this.pdfDocument = new PdfDocument();
                     }
-                    this.processExport(parent, e[0], pdfExportProperties, isMultipleExport).then(() => {
+                    this.processExport(parent, e[0], pdfExportProperties, isMultipleExport, pdfDoc).then((results: object) => {
                         this.isExporting = false;
-                        parent.trigger(events.pdfExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
+                        parent.trigger(events.pdfExportComplete, this.isBlob ? { promise: this.blobPromise }
+                            : { gridInstance: this.parent });
                         this.parent.log('exporting_complete', this.getModuleName());
-                        resolve(this.pdfDocument);
+                        if (pdfExportProperties && pdfExportProperties.multipleExport && pdfExportProperties.multipleExport.type === 'AppendToPage') {
+                            resolve(results);
+                        }
+                        else {
+                            resolve(this.pdfDocument);
+                        }
                     }).catch((e: Error) => {
                         reject(this.pdfDocument);
                         this.parent.trigger(events.actionFailure, e);
@@ -194,11 +201,13 @@ export class PdfExport {
     }
 
     private processExport(gObj: IGrid, returnType: ReturnType,
-                          pdfExportProperties: PdfExportProperties, isMultipleExport: boolean): Promise<Object> {
-        const section: PdfSection = this.pdfDocument.sections.add() as PdfSection;
+                          pdfExportProperties: PdfExportProperties, isMultipleExport: boolean, pdfDoc?: Object): Promise<Object> {
+        const section: PdfSection = !(pdfDoc && pdfExportProperties && pdfExportProperties.multipleExport &&
+            pdfExportProperties.multipleExport.type === 'AppendToPage') ? this.pdfDocument.sections.add() as PdfSection : null;
         let pdfGrid: PdfGrid;
         this.processSectionExportProperties(section, pdfExportProperties);
-        const pdfPage: PdfPage = section.pages.add();
+        const pdfPage: PdfPage = pdfDoc && pdfExportProperties && pdfExportProperties.multipleExport &&
+            pdfExportProperties.multipleExport.type === 'AppendToPage' ? pdfDoc['result'].page : section.pages.add();
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         return new Promise((resolve: Function, reject: Function) => {
             pdfGrid = <PdfGrid>this.processGridExport(gObj, returnType, pdfExportProperties);
@@ -207,9 +216,18 @@ export class PdfExport {
             this.helper.checkAndExport(this.gridPool, this.globalResolve);
         }).then(() => {
             // draw the grid
-            const xPosition: string = 'xPosition';
-            const yPosition: string = 'yPosition';
-            pdfGrid.draw(pdfPage, this.drawPosition[`${xPosition}`], this.drawPosition[`${yPosition}`]);
+            const xPosition: number = this.drawPosition['xPosition'];
+            let yPosition: number;
+            if (pdfDoc && pdfExportProperties && pdfExportProperties.multipleExport && pdfExportProperties.multipleExport.type === 'AppendToPage') {
+                yPosition = pdfDoc['result'].bounds.height;
+                if (pdfExportProperties.multipleExport.blankSpace) {
+                    yPosition = pdfDoc['result'].bounds.height + pdfDoc['result'].bounds.height;
+                }
+            }
+            else {
+                yPosition = this.drawPosition['yPosition'];
+            }
+            const result: PdfLayoutResult = pdfGrid.draw(pdfPage, xPosition, yPosition);
             this.drawHeader(pdfExportProperties);
             if (!isMultipleExport) {
                 // save the PDF
@@ -225,7 +243,12 @@ export class PdfExport {
                 this.pdfDocument.destroy();
                 delete gObj.expandedRows;
             }
-            return this.pdfDocument;
+            if (pdfExportProperties && pdfExportProperties.multipleExport && pdfExportProperties.multipleExport.type === 'AppendToPage') {
+                return { document: this.pdfDocument, result: result };
+            }
+            else {
+                return this.pdfDocument;
+            }
         });
     }
 
@@ -242,7 +265,6 @@ export class PdfExport {
 
     private processGridExport(gObj: IGrid, returnType: ReturnType, pdfExportProperties: PdfExportProperties): PdfGrid {
         let allowHorizontalOverflow: boolean = true;
-        const isFrozen: boolean = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
@@ -252,14 +274,14 @@ export class PdfExport {
         const dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
         let columns: Column[] = isExportColumns(pdfExportProperties) ?
             prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :
-            helper.getGridExportColumns(isFrozen ? gObj.getColumns() : gObj.columns as Column[]);
+            helper.getGridExportColumns(gObj.columns as Column[]);
         columns = columns.filter((columns: Column) => { return isNullOrUndefined(columns.commands); });
         let isGrouping: boolean = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;
         }
 
-        if (gObj.childGrid && !isNullOrUndefined(pdfExportProperties)) {
+        if ((gObj.childGrid || gObj.detailTemplate) && !isNullOrUndefined(pdfExportProperties)) {
             gObj.hierarchyPrintMode = pdfExportProperties.hierarchyExportMode || 'Expanded';
         }
 
@@ -1119,30 +1141,130 @@ export class PdfExport {
             }
             if (row.isExpand) {
                 const gridRow: PdfGridRow = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
-                const startIndexVal: number = this.parent.childGrid ? 0 : startIndex;
+                const startIndexVal: number = (this.parent.childGrid || this.parent.detailTemplate) ? 0 : startIndex;
                 const cell: PdfGridCell = gridRow.cells.getCell(startIndexVal);
                 cell.columnSpan = gridRow.cells.count - (startIndexVal);
                 cell.style.cellPadding = new PdfPaddings(10, 10, 10, 10);
-                gObj.isPrinting = true;
-                const exportType: ExportType = (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType) ?
-                    pdfExportProperties.exportType : 'AllPages';
-                const returnValue: {childGrid: IGrid, element: HTMLElement} =
-                this.helper.createChildGrid(gObj, row, exportType, this.gridPool);
-                const childGridObj: IGrid = returnValue.childGrid;
-                const element: HTMLElement = returnValue.element;
-                (<{actionFailure?: Function}>childGridObj).actionFailure =
-                helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
-                const args: ExportDetailDataBoundEventArgs = {childGrid: childGridObj, row, cell, exportProperties: pdfExportProperties };
-                this.parent.trigger(events.exportDetailDataBound, args);
-                (<Grid>childGridObj).beforeDataBound = this.childGridCell(cell, childGridObj, pdfExportProperties);
-                childGridObj.appendTo(element);
+                if (this.parent.childGrid) {
+                    gObj.isPrinting = true;
+                    const exportType: ExportType = (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType) ?
+                        pdfExportProperties.exportType : 'AllPages';
+                    const returnValue: { childGrid: IGrid, element: HTMLElement } =
+                        this.helper.createChildGrid(gObj, row, exportType, this.gridPool);
+                    const childGridObj: IGrid = returnValue.childGrid;
+                    const element: HTMLElement = returnValue.element;
+                    (<{ actionFailure?: Function }>childGridObj).actionFailure =
+                        helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
+                    const args: ExportDetailDataBoundEventArgs = {
+                        childGrid: childGridObj, row, cell, exportProperties: pdfExportProperties
+                    };
+                    this.parent.trigger(events.exportDetailDataBound, args);
+                    (<Grid>childGridObj).beforeDataBound = this.childGridCell(cell, childGridObj, pdfExportProperties);
+                    childGridObj.appendTo(element);
+                } else if (this.parent.detailTemplate) {
+                    const args: ExportDetailTemplateEventArgs = { parentRow: row, row: gridRow, value: {}, action: 'pdfexport', gridInstance: gObj };
+                    this.parent.trigger(events.exportDetailTemplate, args);
+                    cell.value = this.processDetailTemplate(args);
+                }
             }
             this.parent.notify( events.exportRowDataBound, { type: 'pdf', rowObj: row });
         }
         return rowIndex;
     }
 
-    private setHyperLink(args: PdfHeaderQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs): PdfTextWebLink{
+    private processDetailTemplate (templateData: ExportDetailTemplateEventArgs): PdfGrid | PdfTextWebLink | string | PdfBitmap {
+        if (templateData.value.columnHeader || templateData.value.rows) {
+            // create a grid
+            const pdfGrid: PdfGrid = new PdfGrid();
+            // get header theme style
+            const headerThemeStyle: IThemeStyles = this.getHeaderThemeStyle();
+            const border: PdfBorders = headerThemeStyle.border;
+            const headerFont: PdfFont = headerThemeStyle.font;
+            const headerBrush: PdfSolidBrush = headerThemeStyle.brush;
+
+            const processRow: Function = (row: DetailTemplateRow, gridRow: PdfGridRow, isHeader?: boolean) => {
+                if (isHeader) {
+                    gridRow.style.setBorder(border);
+                    gridRow.style.setFont(headerFont);
+                    gridRow.style.setTextBrush(headerBrush);
+                }
+                for (let j: number = 0; j < row.cells.length; j++) {
+                    const currentCell: DetailTemplateCell = row.cells[parseInt(j.toString(), 10)];
+                    const pdfCell: PdfGridCell = gridRow.cells.getCell(currentCell.index ? currentCell.index : j);
+                    if (currentCell.rowSpan > 0) {
+                        pdfCell.rowSpan = currentCell.rowSpan;
+                    }
+                    if (currentCell.colSpan > 0) {
+                        pdfCell.columnSpan = currentCell.colSpan;
+                    }
+                    pdfCell.value = currentCell.value;
+                    if (!isNullOrUndefined(currentCell.image)) {
+                        pdfCell.value = new PdfBitmap(currentCell.image.base64);
+                        (pdfCell.value as PdfImage).height = currentCell.image.height;
+                        (pdfCell.value as PdfImage).width = currentCell.image.width;
+                    }
+                    if (!isNullOrUndefined(currentCell.hyperLink)) {
+                        pdfCell.value = this.setHyperLink(currentCell);
+                    }
+                    if (!isNullOrUndefined(currentCell.style)) {
+                        const cellStyle: PdfQueryCellInfoEventArgs = {
+                            style: {
+                                backgroundColor: currentCell.style.backColor,
+                                textAlignment: currentCell.style.pdfTextAlignment,
+                                verticalAlignment: currentCell.style.pdfVerticalAlignment,
+                                textBrushColor: currentCell.style.fontColor,
+                                textPenColor: currentCell.style.fontColor,
+                                fontFamily: currentCell.style.pdfFontFamily,
+                                fontSize: currentCell.style.fontSize,
+                                bold: currentCell.style.bold,
+                                italic: currentCell.style.italic,
+                                underline: currentCell.style.underline,
+                                strikeout: currentCell.style.strikeThrough,
+                                border: currentCell.style.pdfBorder,
+                                paragraphIndent: currentCell.style.pdfParagraphIndent,
+                                cellPadding: currentCell.style.pdfCellPadding
+                            }
+                        };
+                        this.processCellStyle(pdfCell, cellStyle);
+                    }
+                }
+            };
+
+            if (templateData.value.columnCount) {
+                pdfGrid.columns.add(templateData.value.columnCount);
+            } else {
+                if (templateData.value.columnHeader && templateData.value.columnHeader.length) {
+                    pdfGrid.columns.add(templateData.value.columnHeader[0].cells.length);
+                } else if (templateData.value.rows && templateData.value.rows.length) {
+                    pdfGrid.columns.add(templateData.value.rows[0].cells.length);
+                }
+            }
+            if (templateData.value.columnHeader) {
+                pdfGrid.headers.add(templateData.value.columnHeader.length);
+                for (let i: number = 0; i < templateData.value.columnHeader.length; i++) {
+                    const gridHeader: PdfGridRow = pdfGrid.headers.getHeader(parseInt(i.toString(), 10));
+                    processRow(templateData.value.columnHeader[parseInt(i.toString(), 10)], gridHeader, true);
+                }
+            }
+            if (templateData.value.rows) {
+                for (const row of templateData.value.rows) {
+                    // create a new row and set default style properties
+                    const gridRow: PdfGridRow = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
+                    processRow(row, gridRow, false);
+                }
+            }
+            return pdfGrid;
+        } else if (templateData.value.image) {
+            return new PdfBitmap(templateData.value.image.base64);
+        } else if (templateData.value.text) {
+            return templateData.value.text;
+        } else if (templateData.value.hyperLink) {
+            return this.setHyperLink(templateData.value);
+        }
+        return '';
+    }
+
+    private setHyperLink(args: PdfHeaderQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs | DetailTemplateCell): PdfTextWebLink{
         // create the Text Web Link
         const textLink: PdfTextWebLink = new PdfTextWebLink();
         // set the hyperlink

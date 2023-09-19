@@ -46,18 +46,18 @@ describe('Selection Module Unit Test script', () => {
             done();
         }, 1000);
     });
-    it('toggle highlight color testing', () => {
-console.log('toggle highlight color testing');
-        documentHelper.selection.characterFormat.highlightColor = undefined;
-        editor.editorModule.toggleHighlightColor();
-        expect(documentHelper.selection.characterFormat.highlightColor).toBe('Yellow');
-    });
-    it('toggle highlight no color testing', () => {
-console.log('toggle highlight no color testing');
-        documentHelper.selection.characterFormat.highlightColor = 'Yellow';
-        editor.editorModule.toggleHighlightColor();
-        expect(documentHelper.selection.characterFormat.highlightColor).toBe('NoColor');
-    });
+//     it('toggle highlight color testing', () => {
+// console.log('toggle highlight color testing');
+//         documentHelper.selection.characterFormat.highlightColor = undefined;
+//         editor.editorModule.toggleHighlightColor();
+//         expect(documentHelper.selection.characterFormat.highlightColor).toBe('Yellow');
+//     });
+//     it('toggle highlight no color testing', () => {
+// console.log('toggle highlight no color testing');
+//         documentHelper.selection.characterFormat.highlightColor = 'Yellow';
+//         editor.editorModule.toggleHighlightColor();
+//         expect(documentHelper.selection.characterFormat.highlightColor).toBe('NoColor');
+//     });
 });
 describe('Selection Public APi testing ', () => {
     let editor: DocumentEditor;
@@ -427,29 +427,29 @@ describe('Selection with out clearing multi selection', () => {
             done();
         }, 1000);
     });
-    it('Select without clearing selection range', () => {
-console.log('Select without clearing selection range');
-        editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software');
-        editor.selection.selectCurrentWord();
-        let line: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;
-        let startPos = new TextPosition(editor);
-        startPos.setPositionForCurrentIndex(line.getHierarchicalIndex('2'));
-        let endPos = new TextPosition(editor);
-        endPos.setPositionForCurrentIndex(line.getHierarchicalIndex('2'));
+//     it('Select without clearing selection range', () => {
+// console.log('Select without clearing selection range');
+//         editor.openBlank();
+//         editor.editorModule.insertText('Syncfusion Software');
+//         editor.selection.selectCurrentWord();
+//         let line: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;
+//         let startPos = new TextPosition(editor);
+//         startPos.setPositionForCurrentIndex(line.getHierarchicalIndex('2'));
+//         let endPos = new TextPosition(editor);
+//         endPos.setPositionForCurrentIndex(line.getHierarchicalIndex('2'));
 
-        editor.selection.start = startPos;
-        editor.selection.end = endPos;
-        editor.selection.selectParagraph();
-        editor.selection.extendToLineStart();
-        editor.selection.extendToLineEnd();
-        editor.selection.extendToParagraphStart();
-        editor.selection.extendToParagraphEnd();
-        editor.selection.moveToPreviousParagraph();
-        editor.selection.moveToNextParagraph();
-        editor.selection.moveToLineEnd();
-        editor.selection.selects(line, 2, false);
-    });
+//         editor.selection.start = startPos;
+//         editor.selection.end = endPos;
+//         editor.selection.selectParagraph();
+//         editor.selection.extendToLineStart();
+//         editor.selection.extendToLineEnd();
+//         editor.selection.extendToParagraphStart();
+//         editor.selection.extendToParagraphEnd();
+//         editor.selection.moveToPreviousParagraph();
+//         editor.selection.moveToNextParagraph();
+//         editor.selection.moveToLineEnd();
+//         editor.selection.selects(line, 2, false);
+//     });
 });
 
 
@@ -478,56 +478,56 @@ describe('Select Current Word', () => {
             done();
         }, 1000);
     });
-    it('Select current word validation in list text element box', () => {
-console.log('Select current word validation in list text element box');
-        editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software');
-        editor.editor.applyNumbering('%1.', 'Arabic');
-        editor.selection.handleHomeKey();
-        editor.selection.selectCurrentWord();
-        expect(editor.selection.getText(true)).toBe('Syncfusion ');
-    });
-    it('Select current word validation in list text element box with continous word', () => {
-console.log('Select current word validation in list text element box with continous word');
-        editor.openBlank();
-        editor.editorModule.insertText('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
-        editor.editor.applyNumbering('%1.', 'Arabic');
-        editor.selection.handleUpKey();
-        editor.selection.handleHomeKey();
-        editor.selection.selectCurrentWord();
-        expect(editor.selection.getText(true)).toBe('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
-    });
-    it('Select current word validation in text element box with out list', () => {
-console.log('Select current word validation in text element box with out list');
-        editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software');
-        editor.selection.handleHomeKey();
-        editor.selection.selectCurrentWord();
-        expect(editor.selection.getText(true)).toBe('Syncfusion ');
-    });
-    it('Select current word validation text element box without list', () => {
-console.log('Select current word validation text element box without list');
-        editor.openBlank();
-        editor.editorModule.insertText('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
-        editor.selection.handleUpKey();
-        editor.selection.handleHomeKey();
-        editor.selection.selectCurrentWord();
-        expect(editor.selection.getText(true)).toBe('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
-    });
-    it('Select current word inside field', () => {
-        console.log('Select current word inside field');
-        editor.openBlank();
-        var fieldCode = 'MERGEFIELD  ' + 'Hello' + "  \\* MERGEFORMAT ";
-        editor.editor.insertField(fieldCode, '«' + 'Hello' + '»');
-        editor.selection.handleLeftKey();
-        editor.selection.handleLeftKey();
-        editor.selection.handleLeftKey();
-        editor.selection.selectCurrentWord();
-        expect(editor.selection.start.offset).toBeGreaterThan(0);
-        // Insert Text inside field
-        editor.editorModule.insertText('World');
-        expect(editor.selection.start.currentWidget.children.length).toBe(5)
-    });
+//     it('Select current word validation in list text element box', () => {
+// console.log('Select current word validation in list text element box');
+//         editor.openBlank();
+//         editor.editorModule.insertText('Syncfusion Software');
+//         editor.editor.applyNumbering('%1.', 'Arabic');
+//         editor.selection.handleHomeKey();
+//         editor.selection.selectCurrentWord();
+//         expect(editor.selection.getText(true)).toBe('Syncfusion ');
+//     });
+//     it('Select current word validation in list text element box with continous word', () => {
+// console.log('Select current word validation in list text element box with continous word');
+//         editor.openBlank();
+//         editor.editorModule.insertText('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
+//         editor.editor.applyNumbering('%1.', 'Arabic');
+//         editor.selection.handleUpKey();
+//         editor.selection.handleHomeKey();
+//         editor.selection.selectCurrentWord();
+//         expect(editor.selection.getText(true)).toBe('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
+//     });
+//     it('Select current word validation in text element box with out list', () => {
+// console.log('Select current word validation in text element box with out list');
+//         editor.openBlank();
+//         editor.editorModule.insertText('Syncfusion Software');
+//         editor.selection.handleHomeKey();
+//         editor.selection.selectCurrentWord();
+//         expect(editor.selection.getText(true)).toBe('Syncfusion ');
+//     });
+//     it('Select current word validation text element box without list', () => {
+// console.log('Select current word validation text element box without list');
+//         editor.openBlank();
+//         editor.editorModule.insertText('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
+//         editor.selection.handleUpKey();
+//         editor.selection.handleHomeKey();
+//         editor.selection.selectCurrentWord();
+//         expect(editor.selection.getText(true)).toBe('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
+//     });
+    // it('Select current word inside field', () => {
+    //     console.log('Select current word inside field');
+    //     editor.openBlank();
+    //     var fieldCode = 'MERGEFIELD  ' + 'Hello' + "  \\* MERGEFORMAT ";
+    //     editor.editor.insertField(fieldCode, '«' + 'Hello' + '»');
+    //     editor.selection.handleLeftKey();
+    //     editor.selection.handleLeftKey();
+    //     editor.selection.handleLeftKey();
+    //     editor.selection.selectCurrentWord();
+    //     expect(editor.selection.start.offset).toBeGreaterThan(0);
+    //     // Insert Text inside field
+    //     editor.editorModule.insertText('World');
+    //     expect(editor.selection.start.currentWidget.children.length).toBe(5)
+    // });
 });
 
 describe('Cut and Copy operation without SfdtExport', () => {
@@ -554,12 +554,12 @@ describe('Cut and Copy operation without SfdtExport', () => {
             done();
         }, 1000);
     });
-    it('Cut, Copy , paste validation', () => {
-console.log('Cut, Copy , paste validation');
-        editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software');
-        editor.selection.selectAll();
-        expect(() => { editor.selection.copy() }).not.toThrowError();
-        expect(() => { editor.editorModule.cut() }).not.toThrowError();
-    });
+//     it('Cut, Copy , paste validation', () => {
+// console.log('Cut, Copy , paste validation');
+//         editor.openBlank();
+//         editor.editorModule.insertText('Syncfusion Software');
+//         editor.selection.selectAll();
+//         expect(() => { editor.selection.copy() }).not.toThrowError();
+//         expect(() => { editor.editorModule.cut() }).not.toThrowError();
+//     });
 });

@@ -1012,9 +1012,14 @@ export class Magnification {
                         }
                         let tileRequestCount: number = noTileX * noTileY;
                         if (tileRequestCount === 1) {
-                            let storedData: any = this.pdfViewerBase.getWindowSessionStorage(i, zoomFactor) ? this.pdfViewerBase.getWindowSessionStorage(i, zoomFactor) : this.pdfViewerBase.getPinchZoomPage(i);
+                            let storedData: any;
+                            if (this.pdfViewerBase.clientSideRendering) {
+                                storedData = this.pdfViewerBase.getWindowSessionStorage(i, zoomFactor) ? this.pdfViewerBase.getWindowSessionStorage(i, zoomFactor) : this.pdfViewerBase.getPinchZoomPage(i);
+                            } else {
+                                storedData = this.pdfViewerBase.getLinkInformation(i);
+                            }
                             if (storedData) {
-                                storedData = JSON.parse(storedData);
+                                storedData = this.pdfViewerBase.clientSideRendering ? storedData : JSON.parse(storedData);
                                 let imageData: string = storedData['image'];
                                 if (imageData) {
                                     (canvas as HTMLImageElement).src = imageData;
@@ -1042,7 +1047,7 @@ export class Magnification {
                                 let tileX: number = parseFloat(tileImgId[tileImgId.length - 2]);
                                 let tileY: number = parseFloat(tileImgId[tileImgId.length - 1]);
                                 // eslint-disable-next-line
-                                let tileData: any = JSON.parse(this.pdfViewerBase.getWindowSessionStorageTile(i, tileX, tileY, zoomFactor));
+                                let tileData: any = this.pdfViewerBase.clientSideRendering ? JSON.parse(this.pdfViewerBase.getStoredTileImageDetails(i, tileX, tileY, zoomFactor)) : JSON.parse(this.pdfViewerBase.getWindowSessionStorageTile(i, tileX, tileY, zoomFactor));
                                 if (tileData && tileData.zoomFactor) {
                                     zoomFactor = tileData.zoomFactor;
                                 }

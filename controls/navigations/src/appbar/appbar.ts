@@ -161,6 +161,7 @@ export class AppBar extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     protected render(): void {
+        this.element.classList.add(CLS_APPBAR);
         if (this.element.tagName !== 'HEADER') {
             this.element.setAttribute('role', 'header');
         }

@@ -1008,11 +1008,11 @@ describe('update rows method', () => {
           dataSource: sampleData,
           childMapping: 'subtasks',
           treeColumnIndex: 1,
+          frozenColumns: 1,
           toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
           editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Cell' },
-          frozenColumns: 1,
           columns: [
-            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'taskName', headerText: 'Task Name'},
             { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
             { field: 'progress', headerText: 'Progress' },
             { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
@@ -1030,7 +1030,7 @@ describe('update rows method', () => {
       gridObj.getCellFromIndex(0, 2).dispatchEvent(event);
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '101';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      expect((gridObj.getMovableRows()[0].getElementsByClassName('e-rowcell')[1] as HTMLElement).innerText == "101").toBe(true);
+      expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[2] as HTMLElement).innerText == "101").toBe(true);
     });
     it('Edit Frozen Cell', () => {
       let event: MouseEvent = new MouseEvent('dblclick', {
@@ -1183,7 +1183,7 @@ describe('update rows method', () => {
       gridObj.getCellFromIndex(0, 2).dispatchEvent(event);
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '101';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      expect((gridObj.getMovableRows()[0].getElementsByClassName('e-rowcell')[1] as HTMLElement).innerText == "101").toBe(true);
+      expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[2] as HTMLElement).innerText == "101").toBe(true);
     });
     it('Edit another Movable Cell', () => {
       let event: MouseEvent = new MouseEvent('dblclick', {
@@ -1194,7 +1194,7 @@ describe('update rows method', () => {
       gridObj.getCellFromIndex(0, 3).dispatchEvent(event);
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '51';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      expect((gridObj.getMovableRows()[0].getElementsByClassName('e-rowcell')[2] as HTMLElement).innerText == "51").toBe(true);
+      expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[3] as HTMLElement).innerText == "51").toBe(true);
     });
     afterAll(() => {
       destroy(gridObj);
@@ -1282,6 +1282,35 @@ describe('update rows method', () => {
       expect(gridObj.getRows()[2].classList.contains("e-editedrow")).toBe(true);
       done();
     });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('Record double click the edit action Testing', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, allowNextRowEdit: true, mode: "Cell",
+          newRowPosition: "Child" },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'priority', headerText: 'priority' },
+          ]
+        },
+        done
+      );
+    });
+    it('Record double click the edit action testing on f2 click', () => {
+      gridObj.grid.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: gridObj.getCellFromIndex(0,1) } as any);
+      expect(gridObj.getRows()[0].querySelectorAll(".e-treegridexpand").length == 1).toBe(true);
+  });
     afterAll(() => {
       destroy(gridObj);
     });

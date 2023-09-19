@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
-import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append, select } from '@syncfusion/ej2-base';
+import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append, select, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';
 import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';
 import { addClass, removeClass, closest, prepend, detach, classList } from '@syncfusion/ej2-base';
@@ -11,7 +11,9 @@ import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs,
 import { FocusEventArgs, ResultData, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { DropDownListModel } from '../drop-down-list';
-import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
+import { DataManager, Query, Predicate, DataOptions } from '@syncfusion/ej2-data';
+import {VirtualScroll, Offsets, ScrollDirection, SentinelType, VirtualInfo} from '../common/virtual-scroll';
+import { Skeleton } from '@syncfusion/ej2-notifications';
 
 export interface ChangeEventArgs extends SelectEventArgs {
     /**
@@ -38,6 +40,10 @@ export interface ChangeEventArgs extends SelectEventArgs {
      */
     event: MouseEvent | KeyboardEvent | TouchEvent
 }
+
+export interface GeneratedData {
+    [key: string]: Object
+}[];
 // don't use space in classnames
 export const dropDownListClasses: DropDownListClassList = {
     root: 'e-dropdownlist',
@@ -48,6 +54,7 @@ export const dropDownListClasses: DropDownListClassList = {
     disable: dropDownBaseClasses.disabled,
     base: dropDownBaseClasses.root,
     focus: dropDownBaseClasses.focus,
+    content: dropDownBaseClasses.content,
     input: 'e-input-group',
     inputFocus: 'e-input-focus',
     icon: 'e-input-group-icon e-ddl-icon',
@@ -65,7 +72,8 @@ export const dropDownListClasses: DropDownListClassList = {
     clearIconHide: 'e-clear-icon-hide',
     popupFullScreen: 'e-popup-full-page',
     disableIcon: 'e-ddl-disable-icon',
-    hiddenElement: 'e-ddl-hidden'
+    hiddenElement: 'e-ddl-hidden',
+    virtualList: 'e-list-item e-virtual-list',
 };
 
 
@@ -98,6 +106,8 @@ export class DropDownList extends DropDownBase implements IInput {
     protected previousSelectedLI: HTMLElement;
     protected previousItemData: { [key: string]: Object } | string | number | boolean;
     private listHeight: string;
+    private listItemHeight: number;
+    private skeletonCount: number = 32;
     protected hiddenElement: HTMLSelectElement;
     protected isPopupOpen: boolean;
     private isDocumentClick: boolean;
@@ -108,6 +118,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private initRemoteRender: boolean;
     private searchBoxHeight: number;
     private popupObj: Popup;
+    private popupContentElement: HTMLElement;
     private backIconElement: Element;
     private clearIconElement: Element;
     private containerStyle: ClientRect;
@@ -134,6 +145,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected isDropDownClick: boolean;
     protected preventAltUp: boolean;
     private searchKeyEvent: KeyboardEventArgs;
+    private keyboardEvent: KeyboardEventArgs;
     private filterInputObj: InputObject;
     protected spinnerElement: HTMLElement;
     protected keyConfigure: { [key: string]: string };
@@ -143,6 +155,52 @@ export class DropDownList extends DropDownBase implements IInput {
     protected preventChange: boolean = false;
     protected isAngular: boolean = false;
     protected selectedElementID: string;
+    protected itemCount: number = 10;
+    private virtualListHeight: number = 0;
+    private virtualItemCount: number;
+    private isVirtualScrolling: boolean = false;
+    private observer: VirtualScroll;
+    protected isPreventScrollAction: boolean = false;
+    private scrollPreStartIndex: number = 0;
+    private isScrollActionTriggered: boolean = false;
+    protected previousStartIndex: number = 0;
+    private isMouseScrollAction: boolean = false;
+    private isKeyBoardAction: boolean = false;
+    private isUpwardScrolling: boolean = false;
+    private containerElementRect: ClientRect;
+    protected previousEndIndex: number; 
+    private previousInfo: VirtualInfo;
+    protected startIndex: number = 0;
+    private currentPageNumber: number = 0;
+    private pageCount: number = 0;
+    private isPreventKeyAction: boolean = false;
+    protected virtualItemStartIndex: number;
+    private virtualItemEndIndex: number;
+    private generatedDataObject: GeneratedData = {};
+    protected virtualListInfo: VirtualInfo = {
+        currentPageNumber: null,
+        direction: null,
+        sentinelInfo: {},
+        offsets: {},
+        startIndex: 0,
+        endIndex: 0,
+    };
+    protected viewPortInfo: VirtualInfo = {
+        currentPageNumber: null,
+        direction: null,
+        sentinelInfo: {},
+        offsets: {},
+        startIndex: 0,
+        endIndex: 0,
+    };
+    private selectedValueInfo: VirtualInfo = {
+        currentPageNumber: null,
+        direction: null,
+        sentinelInfo: {},
+        offsets: {},
+        startIndex: 0,
+        endIndex: 0,
+    };
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -289,6 +347,13 @@ export class DropDownList extends DropDownBase implements IInput {
      */
     @Property(false)
     public readonly: boolean;
+    /**
+     * Defines whether to enable virtual scrolling in the component. 
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableVirtualization: boolean;
     /**
      * Gets or sets the display text of the selected item in the component.
      *
@@ -464,6 +529,14 @@ export class DropDownList extends DropDownBase implements IInput {
             hide: 'alt+38',
             space: '32'
         };
+        this.viewPortInfo = {
+            currentPageNumber: null,
+            direction: null,
+            sentinelInfo: {},
+            offsets: {},
+            startIndex: 0,
+            endIndex: this.itemCount,
+        };
     }
 
     protected setZIndex(): void {
@@ -472,8 +545,18 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
+    public requiredModules(): ModuleDeclaration[] {
+        const modules: ModuleDeclaration[] = [];
+        if (this.enableVirtualization) {
+            modules.push({ args: [this], member: 'VirtualScroll' });
+        }
+        return modules;
+    }
+
     protected renderList(e?: MouseEvent | KeyboardEventArgs | TouchEvent, isEmptyData?: boolean): void {
         super.render(e, isEmptyData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.totalItemCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
         this.unWireListEvents();
         this.wireListEvents();
     }
@@ -492,6 +575,12 @@ export class DropDownList extends DropDownBase implements IInput {
     protected resetHandler(e: MouseEvent): void {
         e.preventDefault();
         this.clearAll(e);
+        if (this.enableVirtualization) {
+            this.list.scrollTop = 0;
+            this.virtualListInfo = null;
+            this.previousStartIndex = 0;
+            this.previousEndIndex = 0;
+        }
     }
 
     protected resetFocusElement(): void {
@@ -500,7 +589,10 @@ export class DropDownList extends DropDownBase implements IInput {
         this.removeFocus();
         this.list.scrollTop = 0;
         if (this.getModuleName() !== 'autocomplete' && !isNullOrUndefined(this.ulElement)) {
-            const li: Element = this.ulElement.querySelector('.' + dropDownListClasses.li);
+            let li: Element = this.ulElement.querySelector('.' + dropDownListClasses.li);
+            if(this.enableVirtualization){
+                li = this.liCollections[this.skeletonCount];
+            }
             if (li) {
                 li.classList.add(dropDownListClasses.focus);
             }
@@ -520,6 +612,10 @@ export class DropDownList extends DropDownBase implements IInput {
             return;
         }
         this.onChangeEvent(e);
+        this.checkAndResetCache();
+        if (this.enableVirtualization) {
+            this.updateInitialData();
+        }
     }
 
     private resetSelection(properties?: DropDownListModel): void {
@@ -581,10 +677,10 @@ export class DropDownList extends DropDownBase implements IInput {
                 } else if (htmlAttr === 'style') {
                     this.inputWrapper.container.setAttribute('style', this.htmlAttributes[`${htmlAttr}`]);
                 } else if (htmlAttr === 'aria-label') {
-                    if (this.getModuleName() === 'autocomplete' || this.getModuleName() === 'combobox') {
+                    if ((this.getModuleName() === 'autocomplete' || this.getModuleName() === 'combobox') && !this.readonly) {
                         this.inputElement.setAttribute('aria-label', this.htmlAttributes[`${htmlAttr}`]);
                     }
-                    else{
+                    else if (this.getModuleName() === 'dropdownlist') {
                         this.inputWrapper.container.setAttribute('aria-label', this.htmlAttributes[`${htmlAttr}`]);
                     }
                 } else {
@@ -688,6 +784,8 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private initValue(): void {
+        this.viewPortInfo.startIndex = this.virtualItemStartIndex = 0;
+        this.viewPortInfo.endIndex = this.virtualItemEndIndex = this.itemCount;
         this.renderList();
         if (this.dataSource instanceof DataManager) {
             this.initRemoteRender = true;
@@ -697,6 +795,7 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected updateValues(): void {
+        this.selectedValueInfo = this.viewPortInfo;
         if (!isNullOrUndefined(this.value)) {
             this.setSelection(this.getElementByValue(this.value), null);
         } else if (this.text && isNullOrUndefined(this.value)) {
@@ -831,12 +930,13 @@ export class DropDownList extends DropDownBase implements IInput {
            this.popupObj.refreshPosition(this.inputWrapper.container);
         }
     }
-    
+
     private bindClearEvent(): void {
         if (this.showClearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
         }
     }
+    
 
     protected unBindCommonEvent(): void {
         if (!isNullOrUndefined(this.inputWrapper) && this.targetElement()) {
@@ -895,6 +995,7 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected onMouseClick(e: MouseEvent): void {
         const target: Element = <Element>e.target;
+        this.keyboardEvent = null;
         const li: HTMLElement = <HTMLElement>closest(target, '.' + dropDownBaseClasses.li);
         if (!this.isValidLI(li)) {
             return;
@@ -983,6 +1084,10 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.enabled) {
             return;
         }
+        this.keyboardEvent = e;
+        if (this.isPreventKeyAction && this.enableVirtualization) {
+            e.preventDefault();
+        }
         const preventAction: boolean = e.action === 'pageUp' || e.action === 'pageDown';
         const preventHomeEnd: boolean = this.getModuleName() !== 'dropdownlist' && (e.action === 'home' || e.action === 'end');
         this.isEscapeKey = e.action === 'escape';
@@ -1022,9 +1127,11 @@ export class DropDownList extends DropDownBase implements IInput {
                     e.preventDefault();
                     break;
                 case 'home':
+                    this.isMouseScrollAction = true;
                     this.updateHomeEndAction(e);
                     break;
                 case 'end':
+                    this.isMouseScrollAction = true;
                     this.updateHomeEndAction(e);
                     break;
                 case 'space':
@@ -1059,12 +1166,18 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    private updateUpDownAction(e: KeyboardEventArgs): void {
+    private updateUpDownAction(e: KeyboardEventArgs, isVirtualKeyAction?: boolean): void {
         const focusEle: Element = this.list.querySelector('.' + dropDownListClasses.focus);
-        if (this.isSelectFocusItem(focusEle)) {
+        if (this.isSelectFocusItem(focusEle) && !isVirtualKeyAction) {
             this.setSelection(focusEle, e);
+            if (this.enableVirtualization) {
+                let selectedLiOffsetTop = this.virtualListInfo && this.virtualListInfo.startIndex ? this.selectedLI.offsetTop + (this.virtualListInfo.startIndex * this.selectedLI.offsetHeight) : this.selectedLI.offsetTop;
+                this.list.scrollTop = selectedLiOffsetTop - (this.list.querySelectorAll('.e-virtual-list').length * this.selectedLI.offsetHeight);
+            }
         } else if (!isNullOrUndefined(this.liCollections)) {
+            let virtualIndex = this.activeIndex;
             let index: number = e.action === 'down' ? this.activeIndex + 1 : this.activeIndex - 1;
+            index = isVirtualKeyAction ? virtualIndex : index;
             let startIndex: number = 0;
             if (this.getModuleName() === 'autocomplete') {
                 startIndex = e.action === 'down' && isNullOrUndefined(this.activeIndex) ? 0 : this.liCollections.length - 1;
@@ -1072,8 +1185,25 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             let nextItem: Element;
             if (this.getModuleName() !== 'autocomplete' || this.getModuleName() === 'autocomplete' && this.isPopupOpen) {
-                nextItem = isNullOrUndefined(this.activeIndex) ? this.liCollections[startIndex as number]
-                : this.liCollections[index as number];
+                if (!this.enableVirtualization) {
+                    nextItem = isNullOrUndefined(this.activeIndex) ? this.liCollections[startIndex as number]
+                        : this.liCollections[index as number];
+                }
+                else {
+                    if (!isVirtualKeyAction) {
+                        nextItem = isNullOrUndefined(this.activeIndex) ? this.liCollections[this.skeletonCount]
+                            : this.liCollections[index as number];
+                        nextItem = !isNullOrUndefined(nextItem) && !nextItem.classList.contains('e-virtual-list') ? nextItem : null;
+                    }
+                    else {
+                        if (this.getModuleName() === 'autocomplete') {
+                            var value = this.selectedLI.dataset.value;
+                            nextItem = this.getElementByValue(value);
+                        } else {
+                            nextItem = this.getElementByValue(this.getItemData().value);
+                        }
+                    }
+                }
             }
             if (!isNullOrUndefined(nextItem)) {
                 this.setSelection(nextItem, e);
@@ -1082,16 +1212,22 @@ export class DropDownList extends DropDownBase implements IInput {
         e.preventDefault();
     }
 
-    private updateHomeEndAction(e: KeyboardEventArgs): void {
+    private updateHomeEndAction(e: KeyboardEventArgs, isVirtualKeyAction?: boolean): void {
         if (this.getModuleName() === 'dropdownlist') {
             let findLi: number = 0;
             if (e.action === 'home') {
                 findLi = 0;
+                if (this.enableVirtualization) {
+                    findLi = this.skeletonCount;
+                }
             } else {
                 findLi = this.getItems().length - 1;
             }
             e.preventDefault();
             if (this.activeIndex === findLi) {
+                if(isVirtualKeyAction){
+                    this.setSelection(this.liCollections[findLi as number], e);
+                }
                 return;
             }
             this.setSelection(this.liCollections[findLi as number], e);
@@ -1131,6 +1267,37 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
+    private handleVirtualKeyboardActions(e: KeyboardEventArgs, pageCount: number): void {
+        switch (e.action) {
+            case 'down':
+            case 'up':
+                if (this.itemData != null || this.getModuleName() === 'autocomplete') {
+                    this.updateUpDownAction(e, true);
+                }
+                break;
+            case 'pageUp':
+                let count = (pageCount * 2) - 4;
+                this.activeIndex = Math.round(count);
+                this.pageUpSelection(this.activeIndex - this.getPageCount(), e, true);
+                e.preventDefault();
+                break;
+            case 'pageDown':
+                this.activeIndex = 1;
+                this.pageDownSelection(this.activeIndex + this.getPageCount(), e, true);
+                e.preventDefault();
+                break;
+            case 'home':
+                this.isMouseScrollAction = true;
+                this.updateHomeEndAction(e, true);
+                break;
+            case 'end':
+                this.isMouseScrollAction = true;
+                this.updateHomeEndAction(e, true);
+                break;
+        }
+        this.keyboardEvent = null;
+    }
+
     protected selectCurrentItem(e: KeyboardEventArgs): void {
         if (this.isPopupOpen) {
             const li: Element = this.list.querySelector('.' + dropDownListClasses.focus);
@@ -1153,20 +1320,30 @@ export class DropDownList extends DropDownBase implements IInput {
         return !isNullOrUndefined(element);
     }
 
-    private getPageCount(): number {
+    private getPageCount(returnExactCount?: boolean): number {
         const liHeight: string = this.list.classList.contains(dropDownBaseClasses.noData) ? null :
             getComputedStyle(this.getItems()[0], null).getPropertyValue('height');
-        return Math.round(this.list.getBoundingClientRect().height / parseInt(liHeight, 10));
+        let pageCount = Math.round(this.list.getBoundingClientRect().height / parseInt(liHeight, 10));
+        return returnExactCount? pageCount : Math.round(pageCount);
     }
 
-    private pageUpSelection(steps: number, event: KeyboardEventArgs): void {
-        const previousItem: Element = steps >= 0 ? this.liCollections[steps + 1] : this.liCollections[0];
+    private pageUpSelection(steps: number, event: KeyboardEventArgs, isVirtualKeyAction?: boolean): void {
+        let previousItem: Element = steps >= 0 ? this.liCollections[steps + 1] : this.liCollections[0];
+        if ((this.enableVirtualization && this.activeIndex == null) || isVirtualKeyAction) {
+            previousItem = steps >= 0 ? this.liCollections[steps + this.skeletonCount + 1] : this.liCollections[0];
+        }
+        if(!isNullOrUndefined(previousItem) && previousItem.classList.contains('e-virtual-list')){
+            previousItem = this.liCollections[this.skeletonCount];
+        }
         this.setSelection(previousItem, event);
     }
 
-    private pageDownSelection(steps: number, event: KeyboardEventArgs): void {
+    private pageDownSelection(steps: number, event: KeyboardEventArgs, isVirtualKeyAction?: boolean): void {
         const list: Element[] = this.getItems();
-        const previousItem: Element = steps <= list.length ? this.liCollections[steps - 1] : this.liCollections[list.length - 1];
+        let previousItem: Element = steps <= list.length ? this.liCollections[steps - 1] : this.liCollections[list.length - 1];
+        if ((this.enableVirtualization && this.activeIndex == null) || isVirtualKeyAction) {
+            previousItem = steps <= list.length ? this.liCollections[steps + this.skeletonCount - 1] : this.liCollections[list.length - 1];
+        }
         this.setSelection(previousItem, event);
     }
 
@@ -1236,6 +1413,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (e.which === 3 || e.button === 2) {
             return;
         }
+        this.keyboardEvent = null;
         if (this.targetElement().classList.contains(dropDownListClasses.disable) || this.inputWrapper.clearButton === e.target) {
             return;
         }
@@ -1386,6 +1564,16 @@ export class DropDownList extends DropDownBase implements IInput {
             this.updateSelectedItem(li, e, false, true);
         } else {
             this.setSelectOptions(li, e);
+            if (this.enableVirtualization) {
+                const fields: string = (this.fields.value) ? this.fields.value : '';
+                const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
+                    this.dataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', this.value)));
+
+                if (getItem && getItem.length > 0) {
+                    this.itemData = getItem[0];
+                    this.setProperties({ 'text': getItem[0].text, 'value': getItem[0].value }, true);
+                }
+            }
         }
     }
     private setSelectOptions(li: Element, e?: MouseEvent | KeyboardEventArgs | KeyboardEvent | TouchEvent): void {
@@ -1645,13 +1833,45 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.typedString = this.filterInput.value;
                     this.preventAutoFill = false;
                     this.searchLists(e);
+                    if (this.enableVirtualization) {
+                        this.getFilteringSkeletonCount();
+                    }
                     break;
             }
         } else {
             this.isValidKey = false;
         }
     }
+    protected getFilteringSkeletonCount(): void {
+        const difference: number = this.dataCount - this.viewPortInfo.endIndex;
+        const currentSkeletonCount: number = this.skeletonCount;
+        this.getSkeletonCount(true);
+        this.skeletonCount = this.dataCount > this.itemCount * 2 ? this.skeletonCount : difference > this.skeletonCount ? this.skeletonCount : difference > 0 ? difference : 0;
+        if (!this.list.classList.contains(dropDownBaseClasses.noData)) {
+            const isSkeletonCountChange: boolean = currentSkeletonCount !== this.skeletonCount;
+            if(currentSkeletonCount !== this.skeletonCount){
+                this.UpdateSkeleton(true,Math.abs(currentSkeletonCount - this.skeletonCount));
+            }
+            else{
+                this.UpdateSkeleton();
+            }
+            this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.e-list-item');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.list.getElementsByClassName('e-virtual-ddl')[0] as any).style = this.GetVirtualTrackHeight();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
+        }
+    }
 
+    protected getSkeletonCount(retainSkeleton?: boolean): void {
+        this.virtualListHeight = this.listHeight != null ? parseInt(this.listHeight, 10) : this.virtualListHeight;
+        const actualCount: number = this.virtualListHeight > 0 ? Math.floor(this.virtualListHeight / this.listItemHeight) : 0;
+        this.skeletonCount = actualCount * 2 < this.itemCount ? this.itemCount : actualCount * 2;
+        this.itemCount = retainSkeleton ? this.itemCount : this.skeletonCount;
+        this.skeletonCount = Math.floor(this.skeletonCount / 2) + 2;
+    }
+    
+    
     protected onFilterDown(e: KeyboardEventArgs): void {
         switch (e.keyCode) {
             case 13:  //enter
@@ -1694,6 +1914,14 @@ export class DropDownList extends DropDownBase implements IInput {
         } else {
             filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
         }
+        if (this.enableVirtualization && (this.viewPortInfo.endIndex != 0)) {
+            var takeValue = this.getTakeValue();
+            if (this.allowFiltering) {
+                filterQuery.skip(this.virtualItemStartIndex);
+            }
+            filterQuery.take(takeValue);
+            filterQuery.requiresCount();
+        }
         return filterQuery;
     }
 
@@ -1713,6 +1941,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         this.isDataFetched = false;
         if (this.isFiltering()) {
+            this.checkAndResetCache();
             const eventArgs: FilteringEventArgs = {
                 preventDefaultAction: false,
                 text: this.filterInput.value,
@@ -1756,10 +1985,30 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = (!this.isPopupOpen && this.getModuleName() === 'combobox' && this.filterInput.value === '') ?
                 false : true;
+            let isNoData = this.list.classList.contains(dropDownBaseClasses.noData);
             if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
                 if (!isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
+                    if (this.enableVirtualization) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        this.totalItemCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
+                        this.resetList(dataSource, fields, query);
+                        if (isNoData && !this.list.classList.contains(dropDownBaseClasses.noData)) {
+                            if (!this.list.querySelector('.e-virtual-ddl-content')) {
+                                this.list.appendChild(this.createElement('div', {
+                                    className: 'e-virtual-ddl-content',
+                                    styles: this.getTransformValues()
+                                })).appendChild(this.list.querySelector('.e-list-parent'));
+                            }
+                            if (!this.list.querySelector('.e-virtual-ddl')) {
+                                var virualElement = this.createElement('div', {
+                                    id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                                });
+                                document.getElementsByClassName('e-popup')[0].querySelector('.e-dropdownbase').appendChild(virualElement);
+                            }
+                        }
+                    }
                     this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list);
                 }
                 this.isTyped = true;
@@ -1771,7 +2020,30 @@ export class DropDownList extends DropDownBase implements IInput {
             } else {
                 this.isNotSearchList = false;
                 query = (this.filterInput.value.trim() === '') ? null : query;
+                if (this.enableVirtualization && this.isFiltering() && this.isTyped) {
+                    this.isPreventScrollAction = true;
+                    this.list.scrollTop = 0;
+                    this.previousStartIndex = 0;
+                    this.virtualListInfo = null;
+                }
                 this.resetList(dataSource, fields, query);
+                if (this.enableVirtualization && isNoData && !this.list.classList.contains(dropDownBaseClasses.noData)) {
+                    if (!this.list.querySelector('.e-virtual-ddl-content')) {
+                        this.list.appendChild(this.createElement('div', {
+                            className: 'e-virtual-ddl-content',
+                            styles: this.getTransformValues()
+                        })).appendChild(this.list.querySelector('.e-list-parent'));
+                    }
+                    if (!this.list.querySelector('.e-virtual-ddl')) {
+                        var virualElement = this.createElement('div', {
+                            id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                        });
+                        document.getElementsByClassName('e-popup')[0].querySelector('.e-dropdownbase').appendChild(virualElement);
+                    }
+                }
+            }
+            if (this.enableVirtualization) {
+                this.getFilteringSkeletonCount();
             }
             this.renderReactTemplates();
         }
@@ -1869,16 +2141,47 @@ export class DropDownList extends DropDownBase implements IInput {
             this.renderPopup();
         }
     }
+    private UpdateSkeleton(isSkeletonCountChange?: boolean, skeletonCount?: number): void {
+        let isContainSkeleton = this.list.querySelector('.e-virtual-ddl-content');
+        let isContainVirtualList = this.list.querySelector('.e-virtual-list');
+        if (isContainSkeleton && (!isContainVirtualList || isSkeletonCountChange) && this.enableVirtualization) {
+            const totalSkeletonCount: number = isSkeletonCountChange ? skeletonCount : this.skeletonCount;
+            for (let i = 0; i < totalSkeletonCount; i++) {
+                const liElement = this.createElement('li', { className: dropDownListClasses.virtualList, styles: 'overflow: inherit' });
+
+                let skeleton: Skeleton = new Skeleton({
+                    shape: "Text",
+                    height: "10px",
+                    width: "95%",
+                    cssClass: "e-skeleton-text",
+                });
+                skeleton.appendTo(this.createElement('div'));
+                liElement.appendChild(skeleton.element);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                isContainSkeleton.firstChild.insertBefore(liElement, (isContainSkeleton.firstChild as any).children[0]);
+            }
+        }
+    }
+
+    protected getTakeValue(): number {
+        return this.allowFiltering && this.getModuleName() === 'dropdownlist' && Browser.isDevice ? Math.round(window.outerHeight / this.listItemHeight) : this.itemCount;
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected onActionComplete(ulElement: HTMLElement, list: { [key: string]: Object }[], e?: Object, isUpdated?: boolean): void {
-        if (this.isNotSearchList) {
+        if (this.dataSource instanceof DataManager && !isNullOrUndefined(e)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.totalItemCount = (e as any).count;
+        }
+        if (this.isNotSearchList && !this.enableVirtualization) {
             this.isNotSearchList = false;
             return;
         }
+        let tempItemCount = this.itemCount;
         if (this.isActive || !isNullOrUndefined(ulElement)) {
             const selectedItem: HTMLElement = this.selectedLI ? <HTMLElement>this.selectedLI.cloneNode(true) : null;
             super.onActionComplete(ulElement, list, e);
+            this.skeletonCount = this.totalItemCount != 0 && this.totalItemCount < (this.itemCount * 2) ? 0 : this.skeletonCount;
             this.updateSelectElementData(this.allowFiltering);
             if (this.isRequested && !isNullOrUndefined(this.searchKeyEvent) && this.searchKeyEvent.type === 'keydown') {
                 this.isRequested = false;
@@ -1889,7 +2192,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.incrementalSearch(this.searchKeyEvent);
                 this.searchKeyEvent = null;
             }
-            this.list.scrollTop = 0;
+            if (!this.enableVirtualization) {
+                this.list.scrollTop = 0;
+            }
             if (!isNullOrUndefined(ulElement)) {
                 attributes(ulElement, { 'id': this.element.id + '_options', 'role': 'listbox', 'aria-hidden': 'false' });
             }
@@ -1940,14 +2245,37 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.updateActionCompleteDataValues(ulElement, list);
                     }
                 }
-                this.addNewItem(list, selectedItem);
-                if (!isNullOrUndefined(this.itemData)) {
+                if(!this.enableVirtualization){
+                    this.addNewItem(list, selectedItem);
+                }
+                if (!isNullOrUndefined(this.itemData) || (isNullOrUndefined(this.itemData) && this.enableVirtualization)) {
                     this.focusIndexItem();
                 }
+                if(this.enableVirtualization){
+                    this.updateActionCompleteDataValues(ulElement, list);
+                }
+            } else if (this.enableVirtualization && this.getModuleName() !== 'autocomplete' && !this.isFiltering()) {
+                const value: string | number = this.getItemData().value;
+                this.activeIndex = this.getIndexByValue(value);
+                const element: HTMLElement = this.findListElement(this.list, 'li', 'data-value', value);
+                this.selectedLI = element;
+            }
+            else if(this.enableVirtualization && this.getModuleName() === 'autocomplete'){
+                this.activeIndex = this.skeletonCount
             }
             if (this.beforePopupOpen) {
                 this.renderPopup(e);
+                if (this.enableVirtualization) {
+                    if (!this.list.querySelector('.e-virtual-list')) {
+                        this.UpdateSkeleton();
+                        this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.e-list-item');
+                    }
+                }
+                if (this.enableVirtualization && tempItemCount != this.itemCount) {
+                    this.resetList(this.dataSource, this.fields);
+                }
             }
+            
         }
     }
 
@@ -2013,7 +2341,9 @@ export class DropDownList extends DropDownBase implements IInput {
         const element: HTMLElement = this.findListElement(this.list, 'li', 'data-value', value);
         this.selectedLI = element;
         this.activeItem(element);
-        this.removeFocus();
+        if (!(this.enableVirtualization && isNullOrUndefined(element))) {
+            this.removeFocus();
+        }
     }
 
     protected updateSelection(): void {
@@ -2027,11 +2357,49 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
+    private updateSelectionList(): void {
+        let selectedItem: HTMLElement = this.list && this.list.querySelector('.' + 'e-active');
+        if (!selectedItem && !isNullOrUndefined(this.value)) {
+            var findEle = this.findListElement(this.list, 'li', 'data-value', this.value);
+            if (findEle)
+            {
+                findEle.classList.add('e-active');
+            }
+        }
+    }
+
+    protected checkAndResetCache(): void {
+        if (this.enableVirtualization) {
+            this.generatedDataObject = {};
+          this.virtualItemStartIndex = this.virtualItemEndIndex = 0;
+          this.viewPortInfo = { currentPageNumber: null,
+            direction: null,
+            sentinelInfo: {},
+            offsets: {},
+            startIndex: 0,
+            endIndex: this.itemCount, };
+          this.selectedValueInfo = null;
+        }
+      }
+      
+
     protected removeFocus(): void {
         const highlightedItem: Element[] = <NodeListOf<Element> & Element[]>this.list.querySelectorAll('.' + dropDownListClasses.focus);
         if (highlightedItem && highlightedItem.length) {
             removeClass(highlightedItem, dropDownListClasses.focus);
         }
+    }
+    protected getTransformValues(): string {
+        let translateY: number = this.viewPortInfo.startIndex * this.listItemHeight;
+        translateY = translateY - (this.skeletonCount * this.listItemHeight);
+        translateY = this.viewPortInfo.startIndex === 0 && this.listData && this.listData.length === 0 ? 0 : translateY;
+        const styleText: string = `transform: translate(0px, ${translateY}px);`;
+        return styleText;
+    }
+    protected GetVirtualTrackHeight(): string {
+        const height: number = this.totalItemCount === this.viewPortInfo.endIndex ? this.totalItemCount * this.listItemHeight - this.itemCount * this.listItemHeight : this.totalItemCount * this.listItemHeight;
+        const heightDimension: string = `height: ${height - this.itemCount * this.listItemHeight}px;`;
+        return heightDimension;
     }
 
     protected renderPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent | Object): void {
@@ -2055,10 +2423,34 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.setFooterTemplate(popupEle);
                 }
                 document.body.appendChild(popupEle);
+                if(this.enableVirtualization && !this.list.classList.contains(dropDownBaseClasses.noData)){
+                    if(!this.list.querySelector('.e-virtual-ddl-content')){
+                        this.list.appendChild(this.createElement('div', {
+                            className: 'e-virtual-ddl-content',
+                            styles: this.getTransformValues()
+                        })).appendChild(this.list.querySelector('.e-list-parent'));
+                    }
+                    else{
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
+                    }
+                    this.UpdateSkeleton();
+                    this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+                    this.virtualItemCount = this.itemCount;
+                    if(!this.list.querySelector('.e-virtual-ddl')){
+                        var virualElement = this.createElement('div', {
+                            id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()});
+                        popupEle.querySelector('.e-dropdownbase').appendChild(virualElement);
+                    }
+                    else{
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (this.list.getElementsByClassName('e-virtual-ddl')[0] as any).style = this.GetVirtualTrackHeight();
+                    }
+                }
                 popupEle.style.visibility = 'hidden';
                 if (this.popupHeight !== 'auto') {
                     this.searchBoxHeight = 0;
-                    if (!isNullOrUndefined(searchBox.container)) {
+                    if (!isNullOrUndefined(searchBox.container) && this.getModuleName() !== 'combobox' && this.getModuleName() !== 'autocomplete') {
                         this.searchBoxHeight = (searchBox.container.parentElement).getBoundingClientRect().height;
                         this.listHeight = (parseInt(this.listHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
                     }
@@ -2079,7 +2471,10 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 let offsetValue: number = 0;
                 let left: number;
+                this.isPreventScrollAction = true;
                 if (!isNullOrUndefined(this.selectedLI) && (!isNullOrUndefined(this.activeIndex) && this.activeIndex >= 0)) {
+                    this.setScrollPosition();
+                } else if(this.enableVirtualization){
                     this.setScrollPosition();
                 } else {
                     this.list.scrollTop = 0;
@@ -2096,6 +2491,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 this.getFocusElement();
                 this.createPopup(popupEle, offsetValue, left);
+                this.popupContentElement = this.popupObj.element.querySelector('.e-content');
                 this.checkCollision(popupEle);
                 if (Browser.isDevice) {
                     this.popupObj.element.classList.add(dropDownListClasses.device);
@@ -2126,6 +2522,24 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.unWireListEvents(); this.wireListEvents();
                 }
                 this.selectedElementID = this.selectedLI ? this.selectedLI.id : null;
+                if(this.enableVirtualization){
+                    this.notify("bindScrollEvent", {
+                        module: "VirtualScroll",
+                        component: this.getModuleName(),
+                        enable: this.enableVirtualization,
+                    });
+                    setTimeout(() => {
+                        if (this.value) {
+                            this.updateSelectionList()
+                            if (this.selectedValueInfo && this.viewPortInfo && this.viewPortInfo.offsets.top) {
+                                this.list.scrollTop = this.viewPortInfo.offsets.top;
+                            } else {
+                                this.scrollBottom(true, true);
+                            }
+
+                        }
+                    }, 5);
+                }
                 attributes(this.targetElement(), { 'aria-expanded': 'true', 'aria-owns': this.element.id + '_options' });
                 this.inputElement.setAttribute('aria-expanded', 'true');
                 const inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
@@ -2259,6 +2673,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const firstItem: HTMLElement = this.isEmptyList() ? this.list : this.liCollections[0];
         const lastItem: HTMLElement = this.isEmptyList() ? this.list : this.liCollections[this.getItems().length - 1];
         const liHeight: number = firstItem.getBoundingClientRect().height;
+        this.listItemHeight = liHeight;
         const listHeight: number = this.list.offsetHeight / 2;
         const height: number = isNullOrUndefined(selectedLI) ? firstItem.offsetTop : selectedLI.offsetTop;
         const lastItemOffsetValue: number = lastItem.offsetTop;
@@ -2268,7 +2683,7 @@ export class DropDownList extends DropDownBase implements IInput {
             const paddingBottom: number = parseInt(getComputedStyle(this.list).paddingBottom, 10);
             offsetValue = (count - (this.liCollections.length - this.activeIndex)) * liHeight - popupOffset + paddingBottom;
             this.list.scrollTop = selectedLI.offsetTop;
-        } else if (height > listHeight) {
+        } else if (height > listHeight && !this.enableVirtualization) {
             offsetValue = listHeight - liHeight / 2;
             this.list.scrollTop = height - listHeight + liHeight / 2;
         } else {
@@ -2295,39 +2710,117 @@ export class DropDownList extends DropDownBase implements IInput {
         return width;
     }
 
-    private scrollBottom(isInitial?: boolean): void {
+    private scrollBottom(isInitial?: boolean, isInitialSelection: boolean = false, keyAction: string = null): void {
+        if (isNullOrUndefined(this.selectedLI) && this.enableVirtualization) {
+            this.selectedLI = this.list.querySelector('.' + dropDownBaseClasses.li);
+            if(!isNullOrUndefined(this.selectedLI) && this.selectedLI.classList.contains('e-virtual-list')) {
+                this.selectedLI = this.liCollections[this.skeletonCount];
+            }
+        }
         if (!isNullOrUndefined(this.selectedLI)) {
+            this.isUpwardScrolling = false;
+            let virtualListCount: number = this.list.querySelectorAll('.e-virtual-list').length;
+            let lastElementValue: string = this.list.querySelector('li:last-of-type') ? this.list.querySelector('li:last-of-type').getAttribute('data-value') : null;
+            let selectedLiOffsetTop: number = this.virtualListInfo  && this.virtualListInfo.startIndex ? this.selectedLI.offsetTop + (this.virtualListInfo.startIndex * this.selectedLI.offsetHeight) : this.selectedLI.offsetTop;
             const currentOffset: number = this.list.offsetHeight;
-            const nextBottom: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
+            let nextBottom: number = selectedLiOffsetTop - (virtualListCount * this.selectedLI.offsetHeight) + this.selectedLI.offsetHeight - this.list.scrollTop;
             let nextOffset: number = this.list.scrollTop + nextBottom - currentOffset;
-            nextOffset = isInitial ? nextOffset + parseInt(getComputedStyle(this.list).paddingTop, 10) * 2 : nextOffset;
-            let boxRange: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
+            let isScrollerCHanged: boolean = false;
+            let isScrollTopChanged: boolean = false;
+            nextOffset = isInitial ? nextOffset + parseInt(getComputedStyle(this.list).paddingTop, 10) * 2 : nextOffset + parseInt(getComputedStyle(this.list).paddingTop, 10);
+            let boxRange: number = selectedLiOffsetTop - (virtualListCount * this.selectedLI.offsetHeight) + this.selectedLI.offsetHeight - this.list.scrollTop;
             boxRange = this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
                 boxRange - this.fixedHeaderElement.offsetHeight : boxRange;
-            if (this.activeIndex === 0) {
+            if (this.activeIndex === 0 && !this.enableVirtualization) {
                 this.list.scrollTop = 0;
+                isScrollerCHanged = this.isKeyBoardAction;
             } else if (nextBottom > currentOffset || !(boxRange > 0 && this.list.offsetHeight > boxRange)) {
-                this.list.scrollTop = nextOffset;
+                let currentElementValue: string = this.selectedLI ? this.selectedLI.getAttribute('data-value') : null;
+                var liCount = keyAction == "pageDown" ? this.getPageCount() - 2 : 1;
+                if (!this.enableVirtualization || this.isKeyBoardAction || isInitialSelection) {
+                    if (this.isKeyBoardAction && this.enableVirtualization && lastElementValue && currentElementValue === lastElementValue && keyAction != "end"  && !this.isVirtualScrolling) {
+                        this.isPreventKeyAction = true;
+                        this.list.scrollTop += this.selectedLI.offsetHeight * liCount;
+                        this.isPreventKeyAction = this.IsScrollerAtEnd() ? false : this.isPreventKeyAction;
+                        this.isKeyBoardAction = false;
+                        this.isPreventScrollAction = false;
+                    }
+                    else if (this.enableVirtualization && keyAction == "end") {
+                        this.isPreventKeyAction = false;
+                        this.isKeyBoardAction = false;   
+                        this.isPreventScrollAction = false;
+                        this.list.scrollTop = this.list.scrollHeight;
+                       
+                    } else {
+                        if (keyAction == "pageDown" && this.enableVirtualization && !this.isVirtualScrolling) {
+                            this.isPreventKeyAction = false;
+                            this.isKeyBoardAction = false;
+                            this.isPreventScrollAction = false;
+                            nextOffset = nextOffset + (this.selectedLI.offsetHeight * liCount);
+                        }
+                       
+                      this.list.scrollTop = nextOffset;
+                    }
+                }
+                else {
+                    this.list.scrollTop = this.virtualListInfo && this.virtualListInfo.startIndex ? this.virtualListInfo.startIndex * this.listItemHeight : 0;
+                }
+                isScrollerCHanged = this.isKeyBoardAction;
+                isScrollTopChanged = true;
             }
+            this.isKeyBoardAction = isScrollerCHanged;
         }
     }
 
-    private scrollTop(): void {
+    private scrollTop(keyAction: string = null): void {
         if (!isNullOrUndefined(this.selectedLI)) {
-            let nextOffset: number = this.selectedLI.offsetTop - this.list.scrollTop;
+            let virtualListCount: number = this.list.querySelectorAll('.e-virtual-list').length;
+            let selectedLiOffsetTop: number = (this.virtualListInfo && this.virtualListInfo.startIndex) ? this.selectedLI.offsetTop + (this.virtualListInfo.startIndex * this.selectedLI.offsetHeight) : this.selectedLI.offsetTop;
+            let nextOffset: number = selectedLiOffsetTop - (virtualListCount * this.selectedLI.offsetHeight) - this.list.scrollTop;
+            let firstElementValue: string = this.list.querySelector('li.e-list-item:not(.e-virtual-list)') ? this.list.querySelector('li.e-list-item:not(.e-virtual-list)').getAttribute('data-value') : null;
             nextOffset = this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
                 nextOffset - this.fixedHeaderElement.offsetHeight : nextOffset;
-            const boxRange: number = (this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop);
-            if (this.activeIndex === 0) {
+            let boxRange: number = (selectedLiOffsetTop - (virtualListCount * this.selectedLI.offsetHeight) + this.selectedLI.offsetHeight - this.list.scrollTop);
+            let isPageUpKeyAction: boolean = this.enableVirtualization && this.getModuleName() === 'autocomplete' && nextOffset <= 0 ;
+            if (this.activeIndex === 0 && !this.enableVirtualization) {
                 this.list.scrollTop = 0;
-            } else if (nextOffset < 0) {
-                this.list.scrollTop = this.list.scrollTop + nextOffset;
+            } else if (nextOffset < 0 || isPageUpKeyAction) {
+                var currentElementValue = this.selectedLI ? this.selectedLI.getAttribute('data-value') : null;
+                var liCount = keyAction == "pageUp" ? this.getPageCount() - 2 : 1;
+                if (this.enableVirtualization && this.isKeyBoardAction && firstElementValue && currentElementValue === firstElementValue && keyAction != "home"  && !this.isVirtualScrolling) {
+                    this.isUpwardScrolling = true;
+                    this.isPreventKeyAction = true;
+                    this.list.scrollTop -= this.selectedLI.offsetHeight * liCount;
+                    this.isPreventKeyAction = this.list.scrollTop != 0 ? this.isPreventKeyAction : false;
+                    this.isKeyBoardAction = false;
+                    this.isPreventScrollAction = false;
+                }
+                else if (this.enableVirtualization && keyAction == "home") {
+                    this.isPreventScrollAction = false;
+                    this.isPreventKeyAction = true;
+                    this.isKeyBoardAction = false;
+                    this.list.scrollTo(0, 0);
+                }
+                else {
+                    if (keyAction == "pageUp" && this.enableVirtualization && !this.isVirtualScrolling) {
+                        this.isPreventKeyAction = false;
+                        this.isKeyBoardAction = false;
+                        this.isPreventScrollAction = false;
+                        nextOffset = nextOffset - (this.selectedLI.offsetHeight * liCount);
+                    }
+                    this.list.scrollTop = this.list.scrollTop + nextOffset;
+                }
             } else if (!(boxRange > 0 && this.list.offsetHeight > boxRange)) {
                 this.list.scrollTop = this.selectedLI.offsetTop - (this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
                     this.fixedHeaderElement.offsetHeight : 0);
             }
         }
     }
+
+    private IsScrollerAtEnd = function () {
+        return this.list && this.list.scrollTop + this.list.clientHeight >= this.list.scrollHeight;
+    }
+
     protected isEditTextBox(): boolean {
         return false;
     }
@@ -2341,25 +2834,47 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected setScrollPosition(e?: KeyboardEventArgs): void {
+        this.isPreventScrollAction = true;
         if (!isNullOrUndefined(e)) {
             switch (e.action) {
                 case 'pageDown':
                 case 'down':
                 case 'end':
-                    this.scrollBottom();
+                    this.isKeyBoardAction = true;
+                    this.scrollBottom(false, false, e.action)
                     break;
                 default:
-                    this.scrollTop();
+                    this.isKeyBoardAction = e.action == 'up' || e.action == 'pageUp' || e.action == 'open';
+                    this.scrollTop(e.action)
                     break;
             }
         } else {
             this.scrollBottom(true);
         }
+        this.isKeyBoardAction = false;
     }
 
     private clearText(): void {
         this.filterInput.value = this.typedString = '';
         this.searchLists(null);
+        if(this.enableVirtualization){
+            this.list.scrollTop = 0;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.totalItemCount = this.dataCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if(this.list.getElementsByClassName('e-virtual-ddl')[0] as any){
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this.list.getElementsByClassName('e-virtual-ddl')[0] as any).style = this.GetVirtualTrackHeight();
+            }
+            this.getSkeletonCount();
+            this.UpdateSkeleton();
+            this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.e-list-item');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if(this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any){
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
+            }
+        }
     }
 
     private setEleWidth(width: string | number): void {
@@ -2373,10 +2888,13 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private closePopup(delay: number, e: MouseEvent | KeyboardEventArgs | TouchEvent): void {
+        let isFilterValue = !isNullOrUndefined(this.filterInput) && !isNullOrUndefined(this.filterInput.value) && this.filterInput.value !== '';
+        const typedString: string = this.getModuleName() === 'combobox' ? this.typedString : null;
         this.isTyped = false;
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
         }
+        this.keyboardEvent = null;
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.isActive = false;
         this.filterInputObj = null;
@@ -2417,6 +2935,25 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.isFiltering()) {
             this.actionCompleteData.isUpdated = false;
         }
+        if (this.enableVirtualization)
+            {
+                if ((this.value == null || this.isTyped))
+                {
+                    this.viewPortInfo.endIndex = this.viewPortInfo && this.viewPortInfo.endIndex > 0 ? this.viewPortInfo.endIndex : this.itemCount;
+                    if (this.getModuleName() === 'autocomplete'||  (this.getModuleName() === 'dropdownlist' && !isNullOrUndefined(this.typedString) && this.typedString != "") || (this.getModuleName() === 'combobox' && this.allowFiltering && !isNullOrUndefined(this.typedString) && this.typedString != ""))
+                    {
+                       this.checkAndResetCache();
+                    }
+                }
+                else if(this.getModuleName() === 'autocomplete')
+                {
+                    this.checkAndResetCache();
+                }
+                if((this.getModuleName() === 'dropdownlist' || this.getModuleName() === 'combobox') && !(this.skeletonCount==0))
+                {
+                    this.getSkeletonCount(true);
+                }
+            }
         this.beforePopupOpen = false;
         const animModel: AnimationModel = {
             name: 'FadeOut',
@@ -2445,6 +2982,47 @@ export class DropDownList extends DropDownBase implements IInput {
         });
         if((this as any).isReact && this.isFiltering() && this.itemTemplate != null){
             (this as any).actionCompleteData.ulElement = this.ulElement.cloneNode(true);
+        }
+        const dataSourceCount: number = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
+        if (this.enableVirtualization && this.isFiltering() && this.value != null && isFilterValue && this.totalItemCount !== dataSourceCount) {
+            this.updateInitialData();
+            this.checkAndResetCache();
+        }
+    }
+
+    private updateInitialData(): void {
+    let currentData : any[]= this.selectData;
+        let ulElement = this.renderItems(currentData, this.fields);
+        this.list.scrollTop = 0;
+        this.virtualListInfo = {
+            currentPageNumber: null,
+            direction: null,
+            sentinelInfo: {},
+            offsets: {},
+            startIndex: 0,
+            endIndex: 0,
+        };
+        if(this.getModuleName() === 'combobox'){
+            this.typedString = "";
+        }
+        this.previousStartIndex = 0;
+        this.previousEndIndex = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.totalItemCount = this.dataCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if(this.list.getElementsByClassName('e-virtual-ddl')[0] as any){
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.list.getElementsByClassName('e-virtual-ddl')[0] as any).style = this.GetVirtualTrackHeight();
+        }
+        this.getSkeletonCount();
+        this.UpdateSkeleton();
+        this.listData = currentData;
+        this.updateActionCompleteDataValues(ulElement, currentData);
+        this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.e-list-item');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if(this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any){
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
         }
     }
 
@@ -2536,9 +3114,9 @@ export class DropDownList extends DropDownBase implements IInput {
         this.element.id = id;
         this.hiddenElement.id = id + '_hidden';
         this.targetElement().setAttribute('tabindex', this.tabIndex);
-        if(this.getModuleName() === 'autocomplete' || this.getModuleName() === 'combobox'){
+        if((this.getModuleName() === 'autocomplete' || this.getModuleName() === 'combobox') && !this.readonly){
             this.inputElement.setAttribute('aria-label', this.getModuleName());
-        }else{
+        }else if (this.getModuleName() === 'dropdownlist'){
             attributes(this.targetElement(), { 'aria-label': this.getModuleName()});
         }
         attributes(this.targetElement(), this.getAriaAttributes());
@@ -2548,7 +3126,16 @@ export class DropDownList extends DropDownBase implements IInput {
             this.inputElement.removeAttribute('aria-labelledby');
         }
         if (this.value !== null || this.activeIndex !== null || this.text !== null) {
+            if(this.enableVirtualization){
+                this.listItemHeight = this.getListHeight();
+                this.getSkeletonCount();
+                this.updateVirtualizationProperties(this.itemCount, this.allowFiltering);
+            }
             this.initValue();
+            this.selectedValueInfo = this.viewPortInfo;
+            if (this.enableVirtualization) {
+                this.activeIndex = this.activeIndex + this.skeletonCount;
+            }
         } else if (this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options[0]) {
             const selectElement: HTMLSelectElement = <HTMLSelectElement>this.element;
             this.value = selectElement.options[selectElement.selectedIndex].value;
@@ -2583,6 +3170,30 @@ export class DropDownList extends DropDownBase implements IInput {
             attributes(this.inputElement, { 'aria-labelledby': floatLabelElement.id });
         }
         this.renderComplete();
+        this.listItemHeight = this.getListHeight();
+        this.getSkeletonCount();
+        if(this.enableVirtualization){
+            this.updateVirtualizationProperties(this.itemCount, this.allowFiltering);
+        }
+        this.viewPortInfo.startIndex = this.virtualItemStartIndex = 0;
+        this.viewPortInfo.endIndex = this.virtualItemEndIndex = this.viewPortInfo.startIndex > 0 ? this.viewPortInfo.endIndex : this.itemCount;
+    }
+
+    private getListHeight(): number {
+        let listParent: HTMLElement = this.createElement('div', {
+            className: 'e-dropdownbase'
+        });
+        let item: HTMLElement = this.createElement('li', {
+            className: 'e-list-item'
+        });
+        let listParentHeight: string = formatUnit(this.popupHeight);
+        listParent.style.height = (parseInt(listParentHeight, 10)).toString() + 'px'; 
+        listParent.appendChild(item);
+        document.body.appendChild(listParent);
+        this.virtualListHeight = listParent.getBoundingClientRect().height;
+        let listItemHeight: number = Math.ceil(item.getBoundingClientRect().height);
+        listParent.remove();
+        return listItemHeight;
     }
 
     private setFooterTemplate(popupEle: HTMLElement): void {
@@ -2727,7 +3338,10 @@ export class DropDownList extends DropDownBase implements IInput {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'query':
-                case 'dataSource': break;
+                case 'dataSource': 
+                    this.getSkeletonCount();
+                    this.checkAndResetCache();
+                    break;
                 case 'htmlAttributes': this.setHTMLAttributes();
                     break;
                 case 'width': this.setEleWidth(newProp.width); Input.calculateWidth(this.inputElement, this.inputWrapper.container); break;
@@ -2986,7 +3600,24 @@ export class DropDownList extends DropDownBase implements IInput {
             this.list.querySelectorAll('.' + dropDownBaseClasses.li).length <= 0)) {
             this.renderList(e);
         }
+        if (this.enableVirtualization && this.listData && this.listData.length) {
+            if (!isNullOrUndefined(this.value) && (this.getModuleName() === 'dropdownlist' || this.getModuleName() === 'combobox')) {
+                this.removeHover();
+            }
+            if (!this.beforePopupOpen) {
+                this.notify("setCurrentViewDataAsync", {
+                    module: "VirtualScroll",
+                });
+            }
+        }
         this.invokeRenderPopup(e);
+        if (this.enableVirtualization && !this.allowFiltering && this.selectedValueInfo != null && this.selectedValueInfo.startIndex > 0 && this.value != null)
+        {
+            this.notify("dataProcessAsync", {
+                module: "VirtualScroll",
+                isOpen: true,
+            });
+        }
     }
 
     private invokeRenderPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
@@ -3082,7 +3713,9 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.enabled) {
             return;
         }
-        this.isTyped = true;
+        if (!this.enableVirtualization && this.getModuleName() === 'combobox') {
+            this.isTyped = true;
+        }
         this.hidePopup(e);
         if (this.targetElement()) {
             this.targetElement().blur();
@@ -3137,6 +3770,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.ulElement = null;
         this.list = null;
         this.popupObj = null;
+        this.popupContentElement = null;
         this.rippleFun = null;
         this.selectedLI = null;
         this.liCollections = null;
@@ -3150,7 +3784,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.inputElement && !isNullOrUndefined(this.inputElement.onchange)) {
             this.inputElement.onchange = null;
         }
-        if(this.isAngular) {
+        if (this.isAngular) {
             this.inputElement = null;
         }
         super.destroy();
@@ -3190,6 +3824,8 @@ export class DropDownList extends DropDownBase implements IInput {
         this.value = null;
     }
 }
+type ScrollArg = { direction: string, sentinel: SentinelType, offset: Offsets, focusElement: HTMLElement };
+
 export interface DropDownListClassList {
     root: string
     hover: string
@@ -3217,6 +3853,8 @@ export interface DropDownListClassList {
     popupFullScreen: string
     disableIcon: string
     hiddenElement: string
+    content: string
+    virtualList: string
 }
 interface ActionCompleteData {
     ulElement?: HTMLElement

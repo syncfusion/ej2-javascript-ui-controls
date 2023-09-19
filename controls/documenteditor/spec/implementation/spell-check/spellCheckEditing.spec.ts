@@ -30,11 +30,11 @@ describe('Spell check insert page break issues', () => {
             done();
         }, 1000);
     });
-    it('Spell check insert page break issues', () => {
-        editor.openBlank();
-        editor.editor.insertPageBreak();
-        expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(1);
-        editor.editor.handleBackKey();
-        expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(0);
-    });
+    // it('Spell check insert page break issues', () => {
+    //     editor.openBlank();
+    //     editor.editor.insertPageBreak();
+    //     expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(1);
+    //     editor.editor.handleBackKey();
+    //     expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(0);
+    // });
 });

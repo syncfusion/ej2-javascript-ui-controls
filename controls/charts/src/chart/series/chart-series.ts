@@ -4,14 +4,14 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
-import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue, animationMode } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { DataLabelSettingsModel, MarkerSettingsModel, TrendlineModel, ChartSegmentModel, ParetoOptionsModel } from '../series/chart-series-model';
 import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
 import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';
 import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
-import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType } from '../utils/enum';
+import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType, ShapeType } from '../utils/enum';
 import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';
 import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';
 import { ConnectorModel } from '../../common/model/base-model';
@@ -1178,7 +1178,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 i++;
             }
         }
-        if (this instanceof Series) {
+        if (this instanceof Series && !(this.chart.stockChart && this.xAxis.valueType === 'DateTimeCategory')) {
             if (this.type.indexOf('Spline') > -1 || (this.drawType.indexOf('Spline') > -1 && this.chart.chartAreaType === 'PolarRadar')) {
                 const isArea: boolean = (this.type.indexOf('Area') > -1 || this.drawType.indexOf('Area') > -1);
                 const isRange: boolean = this.type.indexOf('Range') > -1;
@@ -1950,6 +1950,16 @@ export class Series extends SeriesBase {
     public columnWidthInPixel: number;
 
     /**
+     * Defines the shape of the data in a column and bar chart.
+     * Rectangle: Displays the data in a column and bar chart in a rectangle shape.
+     * Cylinder: Displays the data in a column and bar chart in a cylinder shape.
+     *
+     * @default 'Rectangle'
+     */
+    @Property('Rectangle')
+    public columnFacet: ShapeType;
+
+    /**
      * To render the column series points with particular column spacing. It takes value from 0 - 1.
      *
      * @default 0
@@ -2260,6 +2270,24 @@ export class Series extends SeriesBase {
 
     /** @private */
     public renderSeries(chart: Chart): void {
+        if (this.chart.stockChart && this.xAxis.valueType === 'DateTimeCategory') {
+            for (let i: number = 0; i < this.points.length; i++) {
+                const index: number = this.xAxis.labels.indexOf(Date.parse(this.points[i as number].x.toString()).toString());
+                this.points[i as number].xValue = index;
+                if (chart.series.length > 1) {
+                    this.xData[i as number] = index;
+                    this.xMin = (this.xMin > index) ? index : this.xMin;
+                    this.xMax = (this.xMax < index) ? index : this.xMax;
+                }
+            }
+            if (this instanceof Series && this.type.indexOf('Spline') > -1) {
+                const isArea: boolean = this.type.indexOf('Area') > -1;
+                const isRange: boolean = this.type.indexOf('Range') > -1;
+                this.chart[
+                    'spline' + (isArea ? isRange ? 'RangeArea' : 'Area' : '') + 'SeriesModule'
+                ].findSplinePoint(this);
+            }
+        }
         let seriesType: string = firstToLowerCase(this.type);
         seriesType = seriesType.replace('100', '');
         if (chart[seriesType + 'SeriesModule']) {
@@ -2392,7 +2420,7 @@ export class Series extends SeriesBase {
         chart: Chart, type: string, errorBar: ErrorBarSettingsModel,
         marker: MarkerSettingsModel, dataLabel: DataLabelSettingsModel
     ): void {
-        if (this.animation.enable && chart.animateSeries) {
+        if (((this.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && chart.animateSeries && (!chart.stockChart || !chart.stockChart.isStockChartRendered)) {
             chart[type + 'SeriesModule'].doAnimation(this);
             if (errorBar.visible) {
                 chart.errorBarModule.doErrorBarAnimation(this);

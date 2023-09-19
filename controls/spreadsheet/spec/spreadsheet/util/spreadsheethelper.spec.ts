@@ -75,7 +75,7 @@ export class SpreadsheetHelper extends TestHelper {
     }
 
     public triggerKeyNativeEvent(keyCode: number, isCtrl: boolean = false, isShift: boolean = false,
-        element?: HTMLElement, type: string = 'keydown', isAltKey: boolean = false, target?: HTMLElement): void {
+        element?: Element, type: string = 'keydown', isAltKey: boolean = false, target?: Element): void {
             if (!element) {
                 element = this.getElement();
             }

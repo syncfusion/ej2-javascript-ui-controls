@@ -2,52 +2,28 @@
 
 ## [Unreleased]
 
-## 22.2.9 (2023-08-15)
-
 ### Tree Grid
 
-#### Bug fixes
+#### Features
 
-- `#I483217` -  Fixed an issue where the column template was not functioning correctly when the `getpersistdata` method was used.
+- `#I341079` - Provided support for exporting data to PDF, CSV, and Excel formats using server-side functionality. Please find the demo [here](https://ej2.syncfusion.com/aspnetcore/TreeGrid/ServerSideExporting#/material3).
 
-## 22.1.39 (2023-07-18)
+- Added support for the new `fixed` mode within the `freeze` property of column settings. When a column is set as `fixed`, it will stay within the viewport during horizontal scrolling, enhancing the user experience with improved visibility and efficiency.
 
-### Tree Grid
+#### Breaking changes
 
-#### Bug fixes
+- Optimized the frozen columns feature in Tree Grid and thus changed the dom structure of tree grid from two table to single table architecture. Also, the following methods have been deprecated, and it's recommended to use the following alternatives instead.
 
-- `#I478636`, `#F183159` - Fixed the issue where an unwanted tooltip was being displayed in the checkbox column feature.
+Deprecated Methods | Previous | Current | Suggested Alternative Methods
+ ---  | --- | --- | ---
+| `getMoavableRows` | This method returns only the movable table rows `(tr's)`. | This method will return all table rows `(tr's)` of the entire table. The movable cells within the tr element can be selected using the `e-unfreeze` class. | `getRows()` |
+`getFrozenRightRows()` | This method returns only the table rows `(tr's)` from the freeze right table. | This method will return all the rows `(tr’s)` of the entire table. The frozen right cells can be selected using the `e-rightfreeze` class. | `getRows()`
+`getMovableRowByIndex()` <br> `getFrozenRightRowByIndex()` | * `getMovableRowByIndex` - select a movable row <br> *`getFrozenRightRowByIndex` - select a right freeze row. | This method will return the table row `(tr)` based on the given index. Additionally, class names for table cells `(td's)` have been separated as follows: <br> * Left-Freeze: `e-leftfreeze` <br> * Movable: `e-unfreeze` <br>  | `getRowByIndex()`
+`getMovableCellFromIndex()` <br> `getFrozenRightCellFromIndex()` |  * `getMovableCellFromIndex()` - select a particular cell in the movable table. <br> *`getFrozenRightCellFromIndex()` - select a particular cell in the right freeze table.|No change| `getCellFromIndex()`
+`getMovableDataRows()` <br> `getFrozenRightDataRows()` | These methods return the viewport data rows for the freeze, movable tables separately. | This method, will return the entire viewport data rows.| `getDataRows()`
+`getMovableColumnHeaderByIndex()` <br> `getFrozenRightColumnHeaderByIndex()` <br> `getFrozenLeftColumnHeaderByIndex()` | These methods select the movable, right freeze, and left freeze headers from the table separately. | No change | `getColumnHeaderByIndex`()
 
-## 22.1.38 (2023-07-11)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I471838` - Fixed a bug in the virtualization feature that caused a white space issue when changing the page size using the `databound` event.
-- `#I459187` - Fixed an issue where a white space would occur when deleting a parent record in virtualization.
-- `#F182900` - Fixed the issue where the newly added form was placed incorrectly when selecting two records and performing an add action.
-
-## 22.1.37 (2023-07-04)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I461924`, `#I473131` - Resolved the collapsed event multiple times triggered issue in virtualization enabled samples.
-- `#I471838` - Resolved white space issue occurred in virtualization feature when changing the page size using databound event.
-
-## 22.1.36 (2023-06-28)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I469071` - Fixed issue where scrolling down using the scroll bar would cause some records to not be displayed and scrolling using the mouse would repeat some records in virtualization.
-- `#F182421` - Fixed an issue where the stacked column was not functioning properly when resizing was enabled in the treegrid.
-- `#I182710` - Fixed an issue where the child aggregates row would display in the current view records.
-
-## 22.1.34 (2023-06-21)
+## 20.2.36 (2022-06-30)
 
 ### Tree Grid
 
@@ -55,19 +31,6 @@
 
 - Provided support for inline editing with virtualization enabled. Please find the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/tree-grid/virtual-scrolling.html).
 - `#I323425`, `#I332700`, `#I344742`, `#I375307` - Provided support for frozen column with virtualization enabled.
-
-## 20.2.36 (2022-06-30)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I379907` - Resolved editing for the dropdown edit type column with state persistence enabled.
-
-#### Features
-
-- `#I334966`, `#I373929`, `#I332693`, `#I342835`, `#F172606`, `#F171250`, `#F171248` - Provided row drag and drop support with virtualization feature enabled.
-- `#I367483` - Provided support for row indent and outdent functionality. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/bootstrap5/tree-grid/inline-editing).
 
 ## 19.2.44 (2021-06-30)
 

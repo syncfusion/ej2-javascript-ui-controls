@@ -2,8 +2,6 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
 ### Excel Export
 
 #### Bug Fixes

@@ -224,7 +224,10 @@ export class WSectionFormat {
         this.columns = undefined;
         this.removedHeaderFooters = undefined;
     }
-    private hasValue(property: string): boolean {
+    /**
+     * @private
+     */
+    public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueSectionFormat)) {
             const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueSectionFormat.uniqueFormatType, property);
             return this.uniqueSectionFormat.propertiesHash.containsKey(propertyType);

@@ -1,0 +1,131 @@
+@include export-module('h-scroll-theme') {
+
+  /*! h-scroll theme */
+  #{&}.e-hscroll {
+
+    .e-scroll-nav .e-icons {
+      color: $hscroll-default-icon-color;
+    }
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-scroll-nav.e-scroll-right-nav {
+          border-color: $hscroll-device-arrow-border-color;
+          box-shadow: $hscroll-device-arrow-rtl-box-shadow;
+        }
+      }
+    }
+
+    &.e-scroll-device {
+
+      .e-scroll-nav.e-scroll-right-nav {
+        background-color: $hscroll-device-arrow-bg;
+        border-color: $hscroll-device-arrow-border-color;
+        border-width: $hscroll-device-arrow-border-size;
+        box-shadow: $hscroll-device-arrow-box-shadow;
+
+        .e-nav-arrow {
+          color: $hscroll-device-arrow-color;
+        }
+      }
+    }
+
+    .e-scroll-overlay {
+      background-color: transparent;
+      background-repeat: repeat-x;
+
+      &.e-scroll-left-overlay {
+        background-image: $hscroll-left-bg;
+      }
+
+      &.e-scroll-right-overlay {
+        background-image: $hscroll-right-bg;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+        background: $hscroll-default-bg;
+
+        &.e-scroll-left-nav {
+          border-left: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
+          border-right: 0;
+        }
+
+        &.e-scroll-right-nav {
+          border-left: 0;
+          border-right: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
+        }
+
+        &:hover {
+          background: $hscroll-hover-bg;
+          border: $hscroll-hover-border;
+          color: $hscroll-hover-font;
+
+          &:active {
+            background: $hscroll-nav-hover-press-bg;
+          }
+        }
+      }
+    }
+
+    &:not(.e-scroll-device) {
+
+      .e-scroll-nav  {
+
+        &:hover {
+          background: $hscroll-hover-bg;
+          color: $hscroll-hover-font;
+
+          .e-icons {
+            color: $hscroll-nav-hover-icons-color;
+          }
+        }
+
+        &:focus {
+          background: $hscroll-nav-focus-bg-color;
+          border: $hscroll-nav-focus-border;
+          color: $hscroll-hover-font;
+
+          .e-icons {
+            color: $hscroll-nav-hover-icons-color;
+          }
+        }
+
+        &:active {
+          background: $hscroll-press-bg;
+          border: $hscroll-active-border;
+          box-shadow: $hscroll-active-box-shadow;
+          color: $hscroll-active-font-color;
+
+          .e-icons {
+            color: $hscroll-nav-active-color;
+          }
+        }
+      }
+    }
+
+    .e-scroll-nav  {
+      background: $hscroll-default-bg;
+
+      &.e-scroll-left-nav {
+        border-right: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
+      }
+
+      &.e-scroll-right-nav {
+        border-left: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
+      }
+
+      &::after {
+        @include hscroll-btn-animation;
+      }
+
+      &:active::after {
+        @include hscroll-btn-animation-after;
+      }
+    }
+  }
+}

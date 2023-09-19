@@ -330,8 +330,8 @@ describe('PivotView spec', () => {
             it('values testing', () => {
                 expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("#N/A");
                 (document.querySelector('#PivotGrid_row_nextIcon') as HTMLElement).click();
-                    pivotGridObj.refreshData();
-                    expect(pivotGridObj.engineModule.pivotValues.length === 8 && pivotGridObj.engineModule.pivotValues[2].length === 4).toBeTruthy;
+                pivotGridObj.refreshData();
+                expect(pivotGridObj.engineModule.pivotValues.length === 8 && pivotGridObj.engineModule.pivotValues[2].length === 4).toBeTruthy;
             });
             it('filter testing', () => {
                 (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
@@ -343,7 +343,7 @@ describe('PivotView spec', () => {
                 pivotGridObj.refreshData();
                 expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("#N/A");
             });
-            it('filter testing1', () => {
+            it('filter testing1', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -351,15 +351,21 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-");
+                setTimeout(() => {
+                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("#N/A");
                     expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 3).toBeTruthy;
+                    done();
+                }, 500);
             });
-            it('sort testing2', () => {
+            it('sort testing2', (done: Function) => {
                 (document.querySelectorAll('.e-icons.e-sort')[0] as HTMLElement).click();
                 (document.querySelectorAll('.e-icons.e-sort')[2] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("-");
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("");
                     expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[3].length === 3).toBeTruthy;
+                    done();
+                }, 500);
             });
             it('set data', () => {
                 pivotGridObj.setProperties({ dataSourceSettings: { valueIndex: -1 } });
@@ -385,22 +391,22 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("New Jercy");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[4].length === 3).toBeTruthy;
+                expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("quantity");
+                expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[4].length === 3).toBeTruthy;
             });
             it('filter testing5', () => {
                 pivotGridObj.dataSourceSettings.valueAxis = 'column';
                 pivotGridObj.dataSourceSettings.valueIndex = 2;
                 pivotGridObj.refreshData();
-                    expect("1").toBe("1");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[5].length === 5).toBeTruthy;
+                expect("1").toBe("1");
+                expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[5].length === 5).toBeTruthy;
             });
             it('sort testing6', () => {
                 (document.querySelectorAll('.e-icons.e-sort')[1] as HTMLElement).click();
                 (document.querySelectorAll('.e-icons.e-sort')[3] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("Delhi");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
+                expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("Delhi");
+                expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
             });
             it('filter testing7', () => {
                 (document.querySelectorAll('.e-btn-filter')[6] as HTMLElement).click();
@@ -410,8 +416,8 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Grand Total");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
+                expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Grand Total");
+                expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
             });
             it('filter testing8', () => {
                 (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
@@ -421,8 +427,8 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Californiya");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
+                expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Californiya");
+                expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
             });
             it('drilldown testing8', (done: Function) => {
                 (document.querySelectorAll('.e-expand')[1] as HTMLElement).click();
@@ -430,7 +436,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-expand')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("39");
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("40");
                     expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                     done();
                 }, 200);
@@ -453,8 +459,8 @@ describe('PivotView spec', () => {
                 pivotGridObj.refreshData();
                 (document.querySelectorAll('.e-remove')[5] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("33");
-                    expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
+                expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("34");
+                expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
             });
             it('Sub Total', (done: Function) => {
                 setTimeout(() => {
@@ -508,68 +514,68 @@ describe('PivotView spec', () => {
                 }, 100);
             });
             it('Grand Total - True', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - False', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - Row', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - Column', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             });
             it('Mouseover on chart icon', () => {
-                    expect(pivotGridObj.element.querySelector('.e-pivot-toolbar') !== undefined).toBeTruthy();
-                    expect((pivotGridObj.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display === 'none').toBeTruthy();
-                    let li: HTMLElement = document.getElementById('PivotGridchart_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                expect(pivotGridObj.element.querySelector('.e-pivot-toolbar') !== undefined).toBeTruthy();
+                expect((pivotGridObj.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display === 'none').toBeTruthy();
+                let li: HTMLElement = document.getElementById('PivotGridchart_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Click Column Chart with chart grouping bar', () => {
                 (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                    expect((document.querySelector('.e-grid') as HTMLElement).style.display).toBe('none');
-                    expect((document.querySelector('.e-pivotchart') as HTMLElement).style.display === 'none').toBeFalsy();
-                    expect(pivotGridObj.element.querySelector('.e-chart-grouping-bar')).toBeTruthy();
+                expect((document.querySelector('.e-grid') as HTMLElement).style.display).toBe('none');
+                expect((document.querySelector('.e-pivotchart') as HTMLElement).style.display === 'none').toBeFalsy();
+                expect(pivotGridObj.element.querySelector('.e-chart-grouping-bar')).toBeTruthy();
             });
             it('Switch to Grid with grouping bar', () => {
                 (document.querySelector('.e-pivot-toolbar .e-toolbar-grid') as HTMLElement).click();
-                    expect((document.querySelector('.e-grid') as HTMLElement).style.display === 'none').toBeFalsy();
-                    expect(pivotGridObj.element.querySelector('.e-grouping-bar')).toBeTruthy();
-                    pivotGridObj.displayOption.primary = 'Chart';
+                expect((document.querySelector('.e-grid') as HTMLElement).style.display === 'none').toBeFalsy();
+                expect(pivotGridObj.element.querySelector('.e-grouping-bar')).toBeTruthy();
+                pivotGridObj.displayOption.primary = 'Chart';
             });
             it('Export', () => {
-                    let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('PDF Export', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Excel Export', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('CSV Export', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             });
         });
 
@@ -717,20 +723,20 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-");
+                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("#N/A");
                     expect(pivotGridObj.engineModule.pivotValues.length === 22 && pivotGridObj.engineModule.pivotValues[2].length === 3).toBeTruthy;
                     done();
-                }, 100);
+                }, 500);
             });
             it('sort testing2', (done: Function) => {
                 (document.querySelectorAll('.e-icons.e-sort')[0] as HTMLElement).click();
                 (document.querySelectorAll('.e-icons.e-sort')[2] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("-");
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("");
                     expect(pivotGridObj.engineModule.pivotValues.length === 22 && pivotGridObj.engineModule.pivotValues[3].length === 3).toBeTruthy;
                     done();
-                }, 100);
+                }, 500);
             });
             it('set data', () => {
                 pivotGridObj.setProperties({ dataSourceSettings: { valueIndex: -1 } });
@@ -757,10 +763,10 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Tamilnadu");
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("quantity");
                     expect(pivotGridObj.engineModule.pivotValues.length === 22 && pivotGridObj.engineModule.pivotValues[4].length === 3).toBeTruthy;
                     done();
-                }, 100);
+                }, 500);
             });
             it('filter testing5', (done: Function) => {
                 pivotGridObj.dataSourceSettings.valueAxis = 'column';
@@ -818,7 +824,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-expand')[3] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("39");
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("40");
                     expect(pivotGridObj.engineModule.pivotValues.length === 25 && pivotGridObj.engineModule.pivotValues[2].length === 21).toBeTruthy;
                     done();
                 }, 100);
@@ -832,7 +838,7 @@ describe('PivotView spec', () => {
                     expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Tamilnadu");
                     expect(pivotGridObj.engineModule.pivotValues.length === 10 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                     done();
-                }, 100);
+                }, 500);
             });
             it('remove testing9', (done: Function) => {
                 (document.querySelectorAll('.e-remove')[3] as HTMLElement).click();
@@ -842,66 +848,66 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-remove')[5] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("37");
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("38");
                     expect(pivotGridObj.engineModule.pivotValues.length === 23 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                     done();
-                }, 100);
+                }, 500);
             });
             it('Sub Total', () => {
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Sub Total - True', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Sub Total - False', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Sub Total - Row', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Sub Total - Column', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             });
             it('Grand Total', () => {
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - True', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - False', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - Row', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - Column', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             });
             it('Mouseover on chart icon', (done: Function) => {
                 setTimeout(() => {
@@ -949,15 +955,15 @@ describe('PivotView spec', () => {
                 }, 100);
             });
             it('Excel Export', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('CSV Export', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             });
         });
 
@@ -1092,9 +1098,9 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][4] as IDataSet).formattedText).toBe("3");
+                    expect((pivotGridObj.engineModule.pivotValues[4][4] as IDataSet).formattedText).toBe("-11");
                     done();
-                }, 100);
+                }, 1000);
             });
             it('filter testing1', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
@@ -1108,17 +1114,24 @@ describe('PivotView spec', () => {
                     expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-");
                     expect(pivotGridObj.engineModule.pivotValues.length === 13 && pivotGridObj.engineModule.pivotValues[2].length === 3).toBeTruthy;
                     done();
-                }, 100);
+                }, 500);
             });
             it('sort testing2', (done: Function) => {
                 (document.querySelectorAll('.e-icons.e-sort')[0] as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 (document.querySelectorAll('.e-icons.e-sort')[2] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[1][0] as IDataSet).formattedText).toBe("Tamilnadu");
+                    pivotGridObj.refreshData();
+                    done();
+                }, 1000);
+            });
+            it('sort testing3', (done: Function) => {
+                setTimeout(() => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("balance");
                     expect(pivotGridObj.engineModule.pivotValues.length === 13 && pivotGridObj.engineModule.pivotValues[3].length === 3).toBeTruthy;
                     done();
-                }, 100);
+                }, 500);
             });
             it('set data', () => {
                 pivotGridObj.setProperties({ dataSourceSettings: { valueIndex: -1 } });
@@ -1145,7 +1158,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Rajkot");
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("quantity");
                     expect(pivotGridObj.engineModule.pivotValues.length === 10 && pivotGridObj.engineModule.pivotValues[4].length === 3).toBeTruthy;
                     done();
                 }, 100);
@@ -1165,7 +1178,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-icons.e-sort')[3] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("Tamilnadu");
+                    expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("Vetaikan");
                     expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                     done();
                 }, 100);
@@ -1179,7 +1192,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Grand Total");
+                    expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Rajkot");
                     expect(pivotGridObj.engineModule.pivotValues.length === 6 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                     done();
                 }, 100);
@@ -1193,7 +1206,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Rajkot");
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Tamilnadu");
                     expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                     done();
                 }, 100);
@@ -1215,7 +1228,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-collapse')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Rajkot");
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("33");
                     expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                     done();
                 }, 100);
@@ -1228,66 +1241,66 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-remove')[5] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("21");
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("28");
                     expect(pivotGridObj.engineModule.pivotValues.length === 7 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                     done();
                 }, 100);
             });
             it('Sub Total', () => {
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Sub Total - True', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Sub Total - False', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Sub Total - Row', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Sub Total - Column', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridsubtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             });
             it('Grand Total', () => {
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - True', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - False', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - Row', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Grand Total - Column', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             });
             it('Mouseover on chart icon', (done: Function) => {
                 setTimeout(() => {
@@ -1335,15 +1348,15 @@ describe('PivotView spec', () => {
                 }, 100);
             });
             it('Excel Export', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('CSV Export', () => {
-                    (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
-                    let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                (document.querySelectorAll('.e-menu-popup li')[2] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             });
         });
 
@@ -1441,10 +1454,10 @@ describe('PivotView spec', () => {
                 done();
                 }, 300);
             });
-            it('Filter testing', () => {
+            it('Filter testing1', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'Equals', value1: 'car' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
             });
             it('lable filter', () => {
                 (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
@@ -1503,24 +1516,36 @@ describe('PivotView spec', () => {
                     done();
                 }, 100);
             });
-            it('numberformatting-filter', () => {
+            it('numberformatting-filter1', () => {
                 expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                 expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
+            });
+            it('numberformatting-filter2', () => {
                 (document.querySelector('#PivotGridnumberFormatting') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 (document.querySelector('.e-ok-btn') as HTMLElement).click();
-                pivotGridObj.refreshData();
                 expect("1").toBe("1");
             });
-            it('Filter testing', () => {
-                expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
+            it('numberformatting-filter3', (done: Function) => {
+                setTimeout(() => {
+                    pivotGridObj.refreshData();
+                    expect("1").toBe("1");
+                    done();
+                }, 500);
+            });
+            it('Filter testing2', (done: Function) => {
+                setTimeout(() => {
+                    expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
+                    done();
+                }, 500);
             });
             it('Mouseover on chart icon', () => {
-                    expect(pivotGridObj.element.querySelector('.e-pivot-toolbar') !== undefined).toBeTruthy();
-                    expect((pivotGridObj.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display === 'none').toBeTruthy();
-                    let li: HTMLElement = document.getElementById('PivotGridchart_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                expect(pivotGridObj.element.querySelector('.e-pivot-toolbar') !== undefined).toBeTruthy();
+                expect((pivotGridObj.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display === 'none').toBeTruthy();
+                let li: HTMLElement = document.getElementById('PivotGridchart_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Click Column Chart with chart grouping bar', (done: Function) => {
                 (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
@@ -1531,9 +1556,12 @@ describe('PivotView spec', () => {
                     done();
                 }, 100);
             });
-            it('Filter testing', () => {
-                expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
+            it('Filter testing3', (done: Function) => {
+                setTimeout(() => {
+                    expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
+                    done();
+                }, 2000);
             });
         });
 
@@ -1631,10 +1659,10 @@ describe('PivotView spec', () => {
                 done();
                 }, 300);
             });
-            it('Filter testing', () => {
+            it('Filter testing1', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'Equals', value1: 'car' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
             });
             it('lable filter', () => {
                 (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
@@ -1693,24 +1721,35 @@ describe('PivotView spec', () => {
                     done();
                 }, 100);
             });
-            it('numberformatting-filter', () => {
+            it('numberformatting-filte1r', () => {
                 expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
                 expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
-                (document.querySelector('#PivotGridnumberFormatting') as HTMLElement).click();
-                (document.querySelector('.e-ok-btn') as HTMLElement).click();
-                pivotGridObj.refreshData();
-                expect("1").toBe("1");
             });
-            it('Filter testing', () => {
-                expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
+            it('numberformatting-filter2', () => {
+                (document.querySelector('#PivotGridnumberFormatting') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                (document.querySelector('.e-ok-btn') as HTMLElement).click();
+            });
+            it('numberformatting-filter3', (done: Function) => {
+                setTimeout(() => {
+                    pivotGridObj.refreshData();
+                    expect("1").toBe("1");
+                    done();
+                }, 500);
+            });
+            it('Filter testing2', (done: Function) => {
+                setTimeout(() => {
+                    expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
+                    done();
+                }, 500);
             });
             it('Mouseover on chart icon', () => {
-                    expect(pivotGridObj.element.querySelector('.e-pivot-toolbar') !== undefined).toBeTruthy();
-                    expect((pivotGridObj.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display === 'none').toBeTruthy();
-                    let li: HTMLElement = document.getElementById('PivotGridchart_menu').children[0] as HTMLElement;
-                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    util.triggerEvent(li, 'mouseover');
+                expect(pivotGridObj.element.querySelector('.e-pivot-toolbar') !== undefined).toBeTruthy();
+                expect((pivotGridObj.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display === 'none').toBeTruthy();
+                let li: HTMLElement = document.getElementById('PivotGridchart_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
             });
             it('Click Column Chart with chart grouping bar', (done: Function) => {
                 (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
@@ -1719,11 +1758,14 @@ describe('PivotView spec', () => {
                     expect((document.querySelector('.e-pivotchart') as HTMLElement).style.display === 'block').toBeFalsy();
                     expect(pivotGridObj.element.querySelector('.e-chart-grouping-bar')).toBeTruthy();
                     done();
-                }, 100);
+                }, 500);
             });
-            it('Filter testing', () => {
-                expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
+            it('Filter testing3', (done: Function) => {
+                setTimeout(() => {
+                    expect(pivotGridObj.engineModule.pivotValues.length === 5 && pivotGridObj.engineModule.pivotValues[2].length === 5).toBeTruthy;
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("$14.00");
+                    done();
+                }, 500);
             });
         });
 

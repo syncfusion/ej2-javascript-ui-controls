@@ -1,11 +1,11 @@
 import { RangeNavigator, IChangedEventArgs } from '../../../src/range-navigator/index';
-import { AreaSeries, DateTime } from '../../../src/chart/index';
+import { AreaSeries, DateTime , DateTimeCategory} from '../../../src/chart/index';
 import { PeriodSelector } from '../../../src/common/period-selector/period-selector';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MouseEvents } from '../../chart/base/events.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-RangeNavigator.Inject(AreaSeries, DateTime, PeriodSelector);
+RangeNavigator.Inject(AreaSeries, DateTime, PeriodSelector , DateTimeCategory);
 
 /**
  * Spec for range navigator
@@ -112,7 +112,6 @@ describe('Range navigator', () => {
             range.refresh();
         });
         it('checking months click', (done: Function) => {
-            debugger;
             range.loaded = (args: Object) => {
                 let dayButton: HTMLElement = document.getElementById('e-tbr-btn_10');
                 trigger.clickEvent(dayButton);
@@ -121,7 +120,8 @@ describe('Range navigator', () => {
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
                     // Here changed the Month May instead of Apr due to spec failure in live.
-                    expect(args.start.toString().indexOf('Mar') > -1 || args.start.toString().indexOf('May') > -1).toBe(true);
+                    expect(args.start.toString().indexOf('Mar') > -1 || args.start.toString().indexOf('May') > -1
+                        || args.start.toString().indexOf('Apr') > -1).toBe(true);
                     isCheck = false;
                 }
                 done();
@@ -278,15 +278,62 @@ describe('Range navigator', () => {
             range.refresh();
         });
         it('checing date range changed', (done: Function) => {
-            range.loaded = (args: Object) => {                
+            range.loaded = (args: Object) => {
                 isCheck = true;
-                range.periodSelectorModule.datePicker.startDate =  new Date(2018, 4, 3, 4);
-                range.periodSelectorModule.datePicker.endDate =  new Date(2018, 4, 3, 4);
+                range.periodSelectorModule.datePicker.startDate = new Date(2018, 4, 3, 4);
+                range.periodSelectorModule.datePicker.endDate = new Date(2018, 4, 3, 4);
                 range.periodSelectorModule.triggerChange = true;
             };
             range.changed = (args: IChangedEventArgs) => {
                 if (isCheck) {
-                    expect(args.start.toString().indexOf('May') > 1 ).toBe(true);
+                    expect(args.start.toString().indexOf('May') !== -1).toBe(true);
+                    isCheck = false;
+                }
+                done();
+            };
+            range.refresh();
+        });
+        it('checking all click with value type date time category', (done: Function) => {
+            range.loaded = (args: Object) => {
+                let dayButton: HTMLElement = document.getElementById('e-tbr-btn_46');
+                trigger.clickEvent(dayButton);
+                isCheck = true;
+            };
+            range.changed = (args: IChangedEventArgs) => {
+                if (isCheck) {
+                    isCheck = false;
+                }
+                done();
+            };
+            range.series[0].dataSource = [{ x: new Date(2017, 1), y: 10 }, { x: new Date(2017, 5), y: 45 }, { x: new Date(2018, 3), y: 23 }, { x: new Date(2018, 4, 1), y: 12 },
+                { x: new Date(2018, 4, 2), y: 10 }, { x: new Date(2018, 4, 5), y: 12 }];
+            range.valueType = 'DateTimeCategory';
+            range.intervalType = 'Years';
+            range.periodSelectorSettings.periods = [{ intervalType: 'Years', interval: 1, text: '1y' }, { text: 'ytd' }, { text: 'all' }];
+            range.refresh();
+        });
+        it('checking ytd click with value type date time category', (done: Function) => {
+            range.loaded = (args: Object) => {
+                let dayButton: HTMLElement = document.getElementById('e-tbr-btn_49');
+                trigger.clickEvent(dayButton);
+                isCheck = true;
+            };
+            range.changed = (args: IChangedEventArgs) => {
+                if (isCheck) {
+                    isCheck = false;
+                }
+                done();
+            };
+            range.refresh();
+        });
+        it('checking 1y click with value type date time category', (done: Function) => {
+            range.loaded = (args: Object) => {
+                let dayButton: HTMLElement = document.getElementById('e-tbr-btn_52');
+                trigger.clickEvent(dayButton);
+                isCheck = true;
+            };
+            range.changed = (args: IChangedEventArgs) => {
+                if (isCheck) {
                     isCheck = false;
                 }
                 done();

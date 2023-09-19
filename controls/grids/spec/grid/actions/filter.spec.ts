@@ -7,7 +7,6 @@ import { Filter } from '../../../src/grid/actions/filter';
 import { Group } from '../../../src/grid/actions/group';
 import { Page } from '../../../src/grid/actions/page';
 import { ForeignKey } from '../../../src/grid/actions/foreign-key';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { ValueFormatter } from '../../../src/grid/services/value-formatter';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { Column } from '../../../src/grid/models/column';
@@ -22,8 +21,9 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { DataManager, ODataV4Adaptor, DataUtil } from "@syncfusion/ej2-data";
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { createElement } from '@syncfusion/ej2-base';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
 
-Grid.Inject(Filter, Page, Selection, Group, Freeze, Reorder, ColumnMenu, ForeignKey,VirtualScroll);
+Grid.Inject(Filter, Page, Selection, Group, Reorder, ColumnMenu, ForeignKey, Toolbar, VirtualScroll);
 
 describe('Filtering module => ', () => {
 
@@ -844,37 +844,6 @@ describe('Filtering module => ', () => {
                 }, done);
         });
 
-        it('Filter on frozen content', (done: Function) => {
-            dBound = (args?: Object): void => {
-                expect(gridObj.getHeaderContent().querySelector('.e-frozenheader')
-                    .querySelector('tbody').children[0].children[1].innerHTML).toBe('VINET');
-                done();
-            };
-            gridObj.dataBound = dBound;
-            filterColumn(gridObj, 'CustomerID', 'VINET');
-        });
-
-        it('Filter on movable content', (done: Function) => {
-            dBound = (args?: Object): void => {
-                expect(gridObj.getHeaderContent().querySelector('.e-movableheader')
-                    .querySelector('tbody').children[0].children[2].innerHTML).toBe('Reims');
-                done();
-            };
-            gridObj.dataBound = dBound;
-            filterColumn(gridObj, 'ShipCity', 'REIMS');
-        });
-
-        it('Render empty', (done: Function) => {
-            dBound = (args?: Object): void => {
-                expect(gridObj.getContent().querySelector('.e-movablecontent').querySelector('tbody').childElementCount).toBe(1);
-                expect(gridObj.getContent().querySelector('.e-frozencontent')
-                    .querySelector('tbody').children[0].classList).toContain('e-emptyrow');
-                done();
-            };
-            gridObj.dataBound = dBound;
-            filterColumn(gridObj, 'OrderID', '2');
-        });
-
         it('on property change', (done: Function) => {
             dBound = (args?: Object): void => {
                 done();
@@ -885,8 +854,7 @@ describe('Filtering module => ', () => {
             expect(gridObj.getHeaderContent().querySelector('.e-filterbar')).toBe(null);
             gridObj.allowFiltering = true;
             gridObj.dataBind();
-            expect(gridObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('.e-filterbar')).not.toBe(null);
-            expect(gridObj.getHeaderContent().querySelector('.e-movableheader').querySelector('.e-filterbar')).not.toBe(null);
+            expect(gridObj.getHeaderContent().querySelector('.e-filterbar')).not.toBe(null);
         });
 
         afterAll(() => {
@@ -937,68 +905,6 @@ describe('Filtering module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
-            gridObj = actionBegin = dBound = null;
-        });
-    });
-
-    describe('Filterbar with Freeze Column => ', () => {
-        let gridObj: Grid;
-        let actionBegin: () => void;
-        let dBound: () => void;
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: filterData,
-                    frozenColumns: 2,
-                    allowFiltering: true,
-                    allowPaging: false,
-                    filterSettings: { type: 'FilterBar', showFilterBarStatus: true },
-                    columns: [{ field: 'OrderID', type: 'number', visible: true }, { field: 'CustomerID', type: 'string' },
-                    { field: 'EmployeeID', type: 'number' }, { field: 'Freight', format: 'C2', type: 'number' },
-                    { field: 'ShipCity' }, { field: 'Verified', type: 'boolean' }, { field: 'ShipName', allowFiltering: false },
-                    { field: 'ShipCountry', type: 'string' },
-                    { field: 'OrderDate', format: { skeleton: 'yMd', type: 'date' }, type: 'date' },
-                    { field: 'ShipAddress', allowFiltering: true, visible: false }],
-                    actionBegin: actionBegin
-                }, done);
-        });
-
-        it('Filter on frozen content', (done: Function) => {
-            dBound = (args?: Object): void => {
-                expect(gridObj.getContent().querySelector('.e-frozencontent')
-                    .querySelector('tbody').children[0].children[1].innerHTML).toBe('VINET');
-                done();
-            };
-            gridObj.dataBound = dBound;
-            filterColumn(gridObj, 'CustomerID', 'VINET');
-        });
-
-        it('Filter on movable content', (done: Function) => {
-            dBound = (args?: Object): void => {
-                expect(gridObj.getContent().querySelector('.e-movablecontent')
-                    .querySelector('tbody').children[0].children[2].innerHTML).toBe('Reims');
-                done();
-            };
-            gridObj.dataBound = dBound;
-            filterColumn(gridObj, 'ShipCity', 'REIMS');
-        });
-
-        it('Render empty', (done: Function) => {
-            dBound = (args?: Object): void => {
-                expect(gridObj.getContent().querySelector('.e-movablecontent').querySelector('tbody').childElementCount).toBe(1);
-                expect(gridObj.getContent().querySelector('.e-frozencontent')
-                    .querySelector('tbody').children[0].classList).toContain('e-emptyrow');
-                done();
-            };
-            gridObj.dataBound = dBound;
-            filterColumn(gridObj, 'OrderID', '2');
-        });
-
-        afterAll((done) => {
-            destroy(gridObj);
-            setTimeout(function () {
-                done();
-            }, 1000);
             gridObj = actionBegin = dBound = null;
         });
     });

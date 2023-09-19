@@ -2,14 +2,14 @@
 /// <reference path='../../workbook/base/workbook-model.d.ts'/>
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event, isUndefined } from '@syncfusion/ej2-base';
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
-import { detach, select, closest, setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
+import { detach, select, closest, setStyleAttribute, EventHandler, getComponent, remove } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
 import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage, removeHyperlink } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
 import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems, getSiblingsHeight } from '../common/index';
-import { defaultLocale, locale, setAriaOptions, setResize, initiateFilterUI, clearFilter } from '../common/index';
+import { defaultLocale, locale, setAriaOptions, setResize, initiateFilterUI, clearFilter, focus } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange, addToolbarItems } from '../common/index';
 import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged, refreshFormulaDatasource } from '../common/index';
@@ -44,12 +44,11 @@ import { DataValidation } from '../actions/index';
 import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace, WorkbookAutoFill } from '../../workbook/actions/index';
 import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel, getFormattedCellObject } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
-import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index';
+import { WorkbookImage, WorkbookChart, initiateChart, updateView } from '../../workbook/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
 import { contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
 import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress, cellValidation } from './../../workbook/common/index';
-import { updateScroll, SelectionMode, clearCopy, isImported } from '../common/index';
-import { clearUndoRedoCollection } from '../common/index';
+import { updateScroll, SelectionMode, clearCopy, isImported, clearUndoRedoCollection, removeDesignChart } from '../common/index';
 /**
  * Represents the Spreadsheet component.
  *
@@ -67,15 +66,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To specify a CSS class or multiple CSS class separated by a space, add it in the Spreadsheet root element.
      * This allows you to customize the appearance of component.
      *
-     * ```html
-     * <div id='spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *  cssClass: 'e-custom1 e-custom2',
-     *  ...
-     * }, '#spreadsheet');
-     * ```
+     * {% codeBlock src='spreadsheet/cssClass/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      */
@@ -159,24 +150,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * Configures the selection settings.
-     * ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *      selectionSettings: {
-     *          mode: 'None'
-     *      }
-     * ...
-     * }, '#Spreadsheet');
-     *
-     * The selectionSettings `mode` property has three values and it is described below:
+     * 
+     * The selectionSettings `mode` property has three values and is described below:
      *
      * * None: Disables UI selection.
      * * Single: Allows single selection of cell, row, or column and disables multiple selection.
      * * Multiple: Allows multiple selection of cell, row, or column and disables single selection.
-     *
-     * ```
+     * 
+     * {% codeBlock src='spreadsheet/selectionSettings/index.md' %}{% endcodeBlock %}
      *
      * @default { mode: 'Multiple' }
      */
@@ -185,18 +166,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * Configures the scroll settings.
-     * ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *      scrollSettings: {
-     *          isFinite: true,
-     *          enableVirtualization: false
-     *      }
-     * ...
-     *  }, '#Spreadsheet');
-     * ```
+     * 
+     * {% codeBlock src='spreadsheet/scrollSettings/index.md' %}{% endcodeBlock %}
      *
      * > The `allowScrolling` property should be `true`.
      *
@@ -2397,7 +2368,23 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     private keyDownHandler(e: KeyboardEvent): void {
-        if (!closest(e.target as Element, '.e-findtool-dlg')) {
+        const findToolDlg: HTMLElement = closest(e.target as Element, '.e-findtool-dlg') as HTMLElement;
+        if (findToolDlg) {
+            if (e.keyCode === 9) {
+                const target: HTMLElement = e.target as HTMLElement;
+                if (e.shiftKey) {
+                    if (target.classList.contains('e-text-findNext-short')) {
+                        const focusEle: HTMLElement = findToolDlg.querySelector('.e-findRib-close .e-tbar-btn');
+                        if (focusEle) {
+                            e.preventDefault();
+                            focusEle.focus();
+                        }
+                    }
+                } else if (target.classList.contains('e-tbar-btn') && target.parentElement.classList.contains('e-findRib-close')) {
+                    focus(findToolDlg);
+                }
+            }
+        } else {
             this.notify(keyDown, e);
             if (!this.enableKeyboardNavigation && document.activeElement.classList.contains('e-cell')) {
                 if ([38, 40, 33, 34, 35, 36].indexOf(e.keyCode) > -1) {
@@ -2429,6 +2416,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     private freezePaneUpdated(): void {
         this.off(contentLoaded, this.freezePaneUpdated);
         const sheet: SheetModel = this.getActiveSheet();
+        focus(this.element);
         this.notify(completeAction, { eventArgs: { row: sheet.frozenRows, column: sheet.frozenColumns,
             sheetIndex: this.activeSheetIndex }, action: 'freezePanes' });
     }
@@ -2733,19 +2721,62 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             let addBtn: HTMLButtonElement;
             switch (prop) {
             case 'enableRtl':
+                if (newProp.locale) {
+                    break;
+                }
                 header = this.getColumnHeaderContent();
                 if (header) { header = header.parentElement; }
                 if (!header) { break; }
                 if (newProp.enableRtl) {
-                    header.style.marginLeft = getScrollBarWidth() + 'px'; header.style.marginRight = '';
+                    header.style.marginRight = '';
                     document.getElementById(this.element.id + '_sheet_panel').classList.add('e-rtl');
                 } else {
-                    header.style.marginRight = getScrollBarWidth() + 'px'; header.style.marginLeft = '';
+                    header.style.marginLeft = '';
                     document.getElementById(this.element.id + '_sheet_panel').classList.remove('e-rtl');
                 }
-                if (Object.keys(newProp).indexOf('locale') === -1) {
-                    this.renderModule.refreshSheet();
+                if (this.allowScrolling) {
+                    this.scrollModule.setPadding(true);
                 }
+                if (this.allowAutoFill) {
+                    const autofillEle: HTMLElement = this.element.querySelector('.e-dragfill-ddb') as HTMLElement;
+                    if (autofillEle) {
+                        const autofillDdb: { enableRtl: boolean, dataBind: Function } = getComponent(autofillEle, 'dropdown-btn');
+                        if (autofillDdb) {
+                            autofillDdb.enableRtl = newProp.enableRtl;
+                            autofillDdb.dataBind();
+                        }
+                    }
+                }
+                const sheet: SheetModel = this.getActiveSheet();
+                this.sheetModule.setPanelWidth(sheet, this.getRowHeaderContent(), true);
+                if (this.allowImage || this.allowChart) {
+                    const overlays: HTMLCollectionOf<Element> = this.element.getElementsByClassName('e-ss-overlay');
+                    let chart: { destroy: Function }; let overlay: HTMLElement; let chartEle: HTMLElement;
+                    for (let idx: number = 0, overlayLen: number = overlays.length - 1; idx <= overlayLen; idx++) {
+                        overlay = <HTMLElement>overlays[0];
+                        if (overlay.classList.contains('e-datavisualization-chart')) {
+                            chartEle = overlay.querySelector('.e-accumulationchart');
+                            if (chartEle) {
+                                chart = getComponent(chartEle, 'accumulationchart');
+                            } else {
+                                chartEle = overlay.querySelector('.e-chart');
+                                chart = chartEle && getComponent(chartEle, 'chart');
+                            }
+                            if (chart) {
+                                chart.destroy();
+                            }
+                        }
+                        detach(overlay);
+                        if (idx === overlayLen) {
+                            this.notify(updateView, {});
+                        }
+                    }
+                }
+                const horizontalScroll: HTMLElement = this.getScrollElement();
+                if (horizontalScroll) {
+                    horizontalScroll.scrollLeft = 0;
+                }
+                this.selectRange(sheet.selectedRange);
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass.split(' ')); }
@@ -2864,7 +2895,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 this.refresh();
                 break;
             case 'currencyCode':
-                this.notify('updateView', {});
+                if (!newProp.locale) {
+                    this.notify(updateView, {});
+                }
                 break;
             case 'password':
                 if (this.password.length > 0) {

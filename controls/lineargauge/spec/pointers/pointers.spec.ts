@@ -93,7 +93,24 @@ describe('Linear gauge control', () => {
             gauge.axes[0].pointers[0].markerType = 'Circle';
             gauge.refresh();
         });
-
+        it('checking with marker pointer in Arrow', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                expect(svg != null).toBe(true);
+            };
+            gauge.axes[0].pointers[0].markerType = 'Arrow';
+            gauge.orientation = 'Horizontal';
+            gauge.refresh();
+        });
+        it('checking with marker pointer in InvertedArrow', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                expect(svg != null).toBe(true);
+            };
+            gauge.axes[0].pointers[0].markerType = 'InvertedArrow';
+            gauge.orientation = 'Horizontal';
+            gauge.refresh();
+        });
         it('checking with marker pointer in InvertedTriangle', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_AxisIndex_0_MarkerPointer_0');

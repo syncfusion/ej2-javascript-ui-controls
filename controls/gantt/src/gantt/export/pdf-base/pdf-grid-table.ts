@@ -8,6 +8,7 @@ import {
 } from '@syncfusion/ej2-pdf-export';
 import { SizeF, PdfBrush, PdfPen, PdfFontStyle, PdfFont, PdfGraphics } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfStringLayouter, PdfStringLayoutResult } from '@syncfusion/ej2-pdf-export';
+import { pointToPixel, pixelToPoint } from '../../base/utils';
 
 /**@hidden*/
 
@@ -230,10 +231,10 @@ export class PdfTreeGridCell {
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value as string;
                 /* eslint-disable-next-line */
-                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
+                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
             } else {
                 /* eslint-disable-next-line */
-                graphics.drawString(this.remainingString, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), innerLayoutArea.y, this.style.format);
+                graphics.drawString(this.remainingString, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, this.style.format);
             }
             result = graphics.stringLayoutResult;
         }

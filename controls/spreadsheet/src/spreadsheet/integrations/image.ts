@@ -228,29 +228,32 @@ export class SpreadsheetImage {
         }
     }
 
-    public deleteImage(args: { id: string, range?: string, preventEventTrigger?:boolean }): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+    public deleteImage(
+        args: { id: string, range?: string, preventEventTrigger?: boolean, sheet?: SheetModel, rowIdx?: number, colIdx?: number }): void {
+        let sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
         const pictureElements: HTMLElement = document.getElementById(args.id);
-        let rowIdx: number; let colIdx: number;
+        let rowIdx: number = args.rowIdx; let colIdx: number = args.colIdx;
         let address: string;
         if (pictureElements) {
-            let imgTop: { clientY: number, isImage?: boolean, target?: Element };
-            let imgleft: { clientX: number, isImage?: boolean, target?: Element };
-            if (sheet.frozenRows || sheet.frozenColumns) {
-                const clientRect: ClientRect = pictureElements.getBoundingClientRect();
-                imgTop = { clientY: clientRect.top }; imgleft = { clientX: clientRect.left };
-                if (clientRect.top < this.parent.getColumnHeaderContent().getBoundingClientRect().bottom) {
-                    imgTop.target = this.parent.getColumnHeaderContent();
+            if (args.rowIdx === undefined && args.colIdx === undefined) {
+                let imgTop: { clientY: number, isImage?: boolean, target?: Element };
+                let imgleft: { clientX: number, isImage?: boolean, target?: Element };
+                if (sheet.frozenRows || sheet.frozenColumns) {
+                    const clientRect: ClientRect = pictureElements.getBoundingClientRect();
+                    imgTop = { clientY: clientRect.top }; imgleft = { clientX: clientRect.left };
+                    if (clientRect.top < this.parent.getColumnHeaderContent().getBoundingClientRect().bottom) {
+                        imgTop.target = this.parent.getColumnHeaderContent();
+                    }
+                    if (clientRect.left < this.parent.getRowHeaderContent().getBoundingClientRect().right) {
+                        imgleft.target = this.parent.getRowHeaderTable();
+                    }
+                } else {
+                    imgTop = { clientY: parseFloat(pictureElements.style.top), isImage: true };
+                    imgleft = { clientX: parseFloat(pictureElements.style.left), isImage: true };
                 }
-                if (clientRect.left < this.parent.getRowHeaderContent().getBoundingClientRect().right) {
-                    imgleft.target = this.parent.getRowHeaderTable();
-                }
-            } else {
-                imgTop = { clientY: parseFloat(pictureElements.style.top), isImage: true };
-                imgleft = { clientX: parseFloat(pictureElements.style.left), isImage: true };
+                this.parent.notify(getRowIdxFromClientY, imgTop); this.parent.notify(getColIdxFromClientX, imgleft);
+                rowIdx = imgTop.clientY; colIdx = imgleft.clientX;
             }
-            this.parent.notify(getRowIdxFromClientY, imgTop); this.parent.notify(getColIdxFromClientX, imgleft);
-            rowIdx = imgTop.clientY; colIdx = imgleft.clientX;
             address = sheet.name + '!' + getCellAddress(rowIdx, colIdx);
             if (!args.preventEventTrigger) {
                 const eventArgs: { address: string, cancel: boolean } = { address: address, cancel: false };
@@ -260,7 +263,7 @@ export class SpreadsheetImage {
                 }
             }
             document.getElementById(args.id).remove();
-        } else {
+        } else if (!args.sheet) {
             const rangeVal: string = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
                 this.parent.getActiveSheet().selectedRange;
             const sheetIndex: number = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent as Workbook, args.range.split('!')[0]) :
@@ -282,7 +285,7 @@ export class SpreadsheetImage {
         if (!args.preventEventTrigger) {
             this.parent.notify(
                 completeAction,
-                { action: 'deleteImage', eventArgs: { address: address, id: image.id, imageData: image.src, cancel: false } });
+                { action: 'deleteImage', eventArgs: { address: address, id: image.id, imageData: image.src, imageWidth: image.width, imageHeight: image.height, cancel: false } });
         }
     }
 

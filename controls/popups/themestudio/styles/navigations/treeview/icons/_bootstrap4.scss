@@ -1,0 +1,39 @@
+@include export-module('treeview-bootstrap4-icons') {
+
+  /*! TreeView icons */
+  .e-treeview {
+    .e-list-item {
+      div.e-icons::before {
+        content: '\e70b';
+      }
+    }
+
+    .e-sibling::before {
+      content: '';
+    }
+
+    .e-popup {
+      .e-icons::before {
+        content: '\e930';
+      }
+    }
+
+    &.e-drag-item {
+      .e-icons.e-drop-in::before {
+        content: '\e755';
+      }
+
+      .e-icons.e-drop-out::before {
+        content: '\e742';
+      }
+
+      .e-icons.e-drop-next::before {
+        content: '\e7e8';
+      }
+
+      .e-icons.e-no-drop::before {
+        content: '\e797';
+      }
+    }
+  }
+}

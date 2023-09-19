@@ -1510,4 +1510,46 @@ describe('EJ2-70058 -When rowdd is enabled with batch edit mode, the expand/coll
   afterAll(() => {
     destroy(gridObj);
   });
+
+  describe('Code coverage improment', () => {
+    let treegrid: TreeGrid;
+    let rows: HTMLTableRowElement;
+    beforeAll((done: Function) => {
+      treegrid = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition: "Below" },
+          allowFiltering: true,
+          allowRowDragAndDrop: true,
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('check the removeEventListener Binding', (done: Function) => {
+      treegrid.isDestroyed = true;
+      treegrid.editModule['batchEditModule'].removeEventListener();
+      done();
+    });
+    it('check the removeEventListener Binding', (done: Function) => {
+      treegrid.isDestroyed = false;
+      treegrid.editModule['batchEditModule'].removeEventListener();
+      done();
+    });
+    it('check the destroy Binding', (done: Function) => {
+      treegrid.editModule['batchEditModule'].destroy();
+      done();
+    });
+    afterAll(() => {
+      destroy(treegrid);
+    });
+  });
 });

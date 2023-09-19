@@ -32,13 +32,13 @@ export class VirtualScroll implements IAction {
     private instantiateRenderer(): void {
         this.parent.log(['limitation', 'virtual_height'], 'virtualization');
         const renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
-        if (!this.parent.isFrozenGrid()) {
-            if (this.parent.enableColumnVirtualization) {
-                renderer.addRenderer(RenderType.Header, new VirtualHeaderRenderer(this.parent, this.locator));
-            }
-            renderer.addRenderer(RenderType.Content, new VirtualContentRenderer(this.parent, this.locator));
+        if (this.parent.enableColumnVirtualization) {
+            renderer.addRenderer(RenderType.Header, new VirtualHeaderRenderer(this.parent, this.locator));
         }
-        this.ensurePageSize();
+        renderer.addRenderer(RenderType.Content, new VirtualContentRenderer(this.parent, this.locator));
+        if (!(!this.parent.enableVirtualization && this.parent.enableColumnVirtualization)) {
+            this.ensurePageSize();
+        }
     }
 
     public ensurePageSize(): void {
@@ -109,10 +109,9 @@ export class VirtualScroll implements IAction {
             if (error && error.style.display !== 'none') {
                 const errorDomRect: DOMRect | ClientRect = error.getBoundingClientRect();
                 const forms: NodeListOf<Element> = gObj.element.querySelectorAll('.e-gridform');
-                let form: Element = forms[0]; let contentLeft: number = gObj.getContent().getBoundingClientRect().left;
+                let form: Element = forms[0]; const contentLeft: number = gObj.getContent().getBoundingClientRect().left;
                 if (forms.length > 1) {
-                    form = gObj.getFrozenMode() !== 'Right' ? forms[1] : forms[0];
-                    contentLeft = gObj.getMovableVirtualContent().getBoundingClientRect().left;
+                    form = forms[1];
                 }
                 if (errorDomRect.left < contentLeft || errorDomRect.right > gObj.element.offsetWidth) {
                     const tooltip: Element = form.querySelector('.e-tooltip-wrap:not([style*="display: none"])');

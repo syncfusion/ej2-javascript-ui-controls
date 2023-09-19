@@ -1,0 +1,16 @@
+@include export-module('toolbar-fabric-icons') {
+
+  /*! toolbar icons */
+  #{&}.e-toolbar {
+
+    .e-popup-down-icon::before {
+      content: '\e916';
+      line-height: normal;
+    }
+
+    .e-popup-up-icon::before {
+      content: '\e910';
+      line-height: normal;
+    }
+  }
+}

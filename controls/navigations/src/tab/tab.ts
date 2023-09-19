@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance, isNullOrUndefined, animationMode } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, isVisible } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
@@ -304,7 +304,6 @@ export class TabItem extends ChildProperty<TabItem> {
 }
 
 /** @hidden */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface EJ2Instance extends HTMLElement {
     /* eslint-disable */
     ej2_instances: Object[]
@@ -369,6 +368,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private draggingItems: TabItemModel[];
     private draggableItems: Draggable[] = [];
     private tbId: string;
+    private isAngular: boolean;
+    private isReact: boolean;
+    private isVue: boolean;
     private resizeContext: EventListenerObject = this.refreshActiveTabBorder.bind(this);
     /**
      * Contains the keyboard configuration of the Tab.
@@ -526,13 +528,15 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public scrollStep: number;
     /**
      * Defines the area in which the draggable element movement will be occurring. Outside that area will be restricted
-     * for the draggable element movement. By default, the draggable element movement occurs in the toolbar. 
+     * for the draggable element movement. By default, the draggable element movement occurs in the toolbar.
+     * 
      * @default null
      */
     @Property()
     public dragArea: string;
     /**
      * Sets true to allow drag and drop the Tab items
+     * 
      * @default false
      */
     @Property(false)
@@ -632,7 +636,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns {void}
      */
     public destroy(): void {
-        if ((this as any).isReact || (this as any).isAngular) {
+        if (this.isReact || this.isAngular) {
             this.clearTemplate();
         }
         if (!isNOU(this.tbObj)) {
@@ -686,11 +690,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns {void}
      */
     public refresh(): void {
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.clearTemplate();
         }
         super.refresh();
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.renderReactTemplates();
         }
     }
@@ -746,7 +750,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
-        if ((this as any).isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
+        if (this.isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
             this.renderReactTemplates(function () {
                 if (!isNOU(this.tbObj)) {
                     this.tbObj.refreshOverflow();
@@ -957,9 +961,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             tCont.appendChild(this.btnCls.cloneNode(true));
             const wrap: HTEle = this.createElement('div', { className: CLS_WRAP, attrs: wrapAttrs });
             wrap.appendChild(tCont);
-            if (this.itemIndexArray === []) {
-                this.itemIndexArray.push(CLS_ITEM + this.tabId + '_' + this.lastIndex);
-            } else {
+            if (this.itemIndexArray instanceof Array) {
                 this.itemIndexArray.splice((index + i), 0, CLS_ITEM + this.tabId + '_' + this.lastIndex);
             }
             const attrObj: Object = {
@@ -1108,10 +1110,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (!isNOU(newCnt)) {
             this.prevActiveEle = newCnt.id;
         }
-        const isPrevent: boolean = isNOU(this.animation) || this.animation.next === {} || this.animation.previous === {}
-            || isNOU(this.animation.next.effect) || isNOU(this.animation.previous.effect)
-            || this.animation.previous.effect == 'None' || this.animation.next.effect == 'None';
-        if (this.initRender || value === false || this.animation === {} || isPrevent) {
+        const isPrevent: boolean = isNOU(this.animation) || isNOU(this.animation.next.effect) || isNOU(this.animation.previous.effect)
+            || this.animation.previous.effect === 'None' || this.animation.next.effect === 'None';
+        if (this.initRender || value === false || isPrevent) {
             if (oldCnt && oldCnt !== newCnt) {
                 oldCnt.classList.remove(CLS_ACTIVE);
             }
@@ -1123,14 +1124,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             const openEff: Effect = <Effect>this.animation.previous.effect;
             animateObj = {
                 name: <Effect>((openEff === <Effect>'None') ? '' : ((openEff !== <Effect>'SlideLeftIn') ? openEff : 'SlideLeftIn')),
-                duration: this.animation.previous.duration,
+                duration: (this.animation.previous.duration === 0 && animationMode === 'Enable') ? 600: this.animation.previous.duration,
                 timingFunction: this.animation.previous.easing
             };
         } else if (this.isPopup || this.prevIndex < this.selectedItem || this.prevIndex === this.selectedItem) {
             const clsEff: Effect = <Effect>this.animation.next.effect;
             animateObj = {
                 name: <Effect>((clsEff === <Effect>'None') ? '' : ((clsEff !== <Effect>'SlideRightIn') ? clsEff : 'SlideRightIn')),
-                duration: this.animation.next.duration,
+                duration: (this.animation.next.duration === 0 && animationMode === 'Enable') ? 600:this.animation.next.duration,
                 timingFunction: this.animation.next.easing
             };
         }
@@ -1202,7 +1203,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
         }
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.renderReactTemplates();
         }
     }
@@ -1210,7 +1211,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let templateFn: Function;
         if (typeof val === 'string') {
             val = val.trim();
-            if ((this as any).isVue) {
+            if (this.isVue) {
                 templateFn = compile(SanitizeHtmlHelper.sanitize(val));
             } else {
                 ele.innerHTML = SanitizeHtmlHelper.sanitize(val);
@@ -1233,7 +1234,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
     private getContent(ele: HTEle, cnt: Str | HTEle | Function, callType: string, index: number): void {
         let eleStr: Str;
-        cnt = isNOU(cnt) ? "" : cnt;
+        cnt = isNOU(cnt) ? '' : cnt;
         if (typeof cnt === 'string' || isNOU((<HTEle>cnt).innerHTML)) {
             if (typeof cnt === 'string' && this.enableHtmlSanitizer) {
                 cnt = SanitizeHtmlHelper.sanitize(<Str>cnt);
@@ -1403,7 +1404,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         ele.removeChild(ele.firstChild);
                     }
                 }
-                if ((this as any).isReact) {
+                if (this.isReact) {
                     this.clearTemplate(['content']);
                 }
                 this.templateEle = [];
@@ -1538,7 +1539,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 preventFocus: false
             };
             this.trigger('selected', eventArg, (selectEventArgs: SelectEventArgs) => {
-                if(!selectEventArgs.preventFocus) {
+                if (!selectEventArgs.preventFocus) {
                     (<HTEle>trg.firstElementChild).focus();
                 }
             });
@@ -1565,7 +1566,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
     private showPopup(config: object): void {
         const tbPop: HTEle = <HTEle>select('.e-popup.e-toolbar-pop', this.hdrEle);
-        if (tbPop.classList.contains('e-popup-close')) {
+        if (tbPop && tbPop.classList.contains('e-popup-close')) {
             const tbPopObj: Popup = (<PopupModel>(tbPop && (<Instance>tbPop).ej2_instances[0])) as Popup;
             tbPopObj.position.X = (this.headerPlacement === 'Left') ? 'left' : 'right';
             tbPopObj.dataBind();
@@ -1817,7 +1818,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         } else if (newVal === '' && oldVal[0] === '#') {
                             (<HTEle>document.body.appendChild(this.element.querySelector(oldVal))).style.display = 'none';
                             cntItem.innerHTML = <Str>newVal;
-                        } else if ((this as any).isAngular || (this as any).isReact) {
+                        } else if (this.isAngular || this.isReact) {
                             this.clearTabTemplate(cntItem, properties[j], CLS_ITEM);
                             cntItem.innerHTML = '';
                             this.templateCompile(cntItem, <Str>newVal, index);
@@ -1848,7 +1849,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (isNOU(this.tbObj)) {
                 this.reRenderItems();
             } else {
-                if ((this as any).isReact || (this as any).isAngular) {
+                if (this.isReact || this.isAngular) {
                     this.clearTemplate();
                 }
                 this.setItems(<TabItemModel[]>newProp.items);
@@ -2002,8 +2003,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             clonedElement: this.cloneElement,
             cancel: false
         };
-        this.trigger('onDragStart', dragArgs, (tabitemDragArgs: DragEventArgs) => {
-            if (tabitemDragArgs.cancel) {
+        this.trigger('onDragStart', dragArgs, (tabItemDragArgs: DragEventArgs) => {
+            if (tabItemDragArgs.cancel) {
                 const dragObj: Draggable = (e.element as EJ2Instance).ej2_instances[0] as Draggable;
                 if (!isNullOrUndefined(dragObj)) {
                     dragObj.intDestroy(e.event);
@@ -2149,7 +2150,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         } else {
             this.addingTabContent(items, index);
         }
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.renderReactTemplates();
         }
     }
@@ -2571,7 +2572,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns {void}
      */
     public refreshActiveTab(): void {
-        if ((this as any).isReact && this.isTemplate) {
+        if (this.isReact && this.isTemplate) {
             this.clearTemplate();
         }
         if (!this.isTemplate) {
@@ -2673,7 +2674,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             const crElem: HTEle = this.createElement('div', { innerHTML: mainContents });
             this.element.querySelector('.' + CLS_CONTENT).querySelector('.' + CLS_ACTIVE).appendChild(crElem);
         }
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.renderReactTemplates();
         }
     }

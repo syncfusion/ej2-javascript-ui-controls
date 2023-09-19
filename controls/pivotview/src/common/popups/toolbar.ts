@@ -30,18 +30,8 @@ export class Toolbar {
     public isReportChange: boolean = false;
 
     private parent: PivotView;
-    private dialog: Dialog;
-    private mdxDialog: Dialog;
-    private reportList: DropDownList;
     private currentReport: string = '';
-    private confirmPopUp: Dialog;
-    private chartMenu: Menu;
-    private exportMenu: Menu;
-    private subTotalMenu: Menu;
-    private grandTotalMenu: Menu;
-    private formattingMenu: Menu;
     private dropArgs: ChangeEventArgs;
-    private chartTypesDialog: Dialog;
     private newArgs: ClickEventArgs;
     private renameText: string;
     private showLableState: boolean;
@@ -66,8 +56,8 @@ export class Toolbar {
     private createToolbar(): void {
         this.parent.isModified = false;
         this.renderDialog();
-        if (select('#' + this.parent.element.id + 'pivot-toolbar', document) !== null) {
-            remove(select('#' + this.parent.element.id + 'pivot-toolbar', document));
+        if (select('#' + this.parent.element.id + 'pivot-toolbar', this.parent.element) !== null) {
+            remove(select('#' + this.parent.element.id + 'pivot-toolbar', this.parent.element));
         }
         const element: HTMLElement = createElement( 'div', {
             id: this.parent.element.id + 'pivot-toolbar',
@@ -329,7 +319,8 @@ export class Toolbar {
     }
 
     private mdxQueryDialog(): void {
-        if (!(this.mdxDialog && !this.mdxDialog.isDestroyed)) {
+        const mdxDialog: Dialog = getInstance(select('#' + this.parent.element.id + 'mdx-dialog', document), Dialog) as Dialog;
+        if (!(mdxDialog && !mdxDialog.isDestroyed)) {
             this.renderMDXDialog();
         }
         const outerDiv: HTMLElement = createElement('div', {
@@ -341,13 +332,14 @@ export class Toolbar {
         });
         textarea.innerText = this.parent.olapEngineModule.getMDXQuery(this.parent.dataSourceSettings).trim();
         outerDiv.appendChild(textarea);
-        this.mdxDialog.content = outerDiv;
-        this.mdxDialog.show();
+        mdxDialog.content = outerDiv;
+        mdxDialog.show();
     }
 
     private dialogShow(args: ClickEventArgs, action?: string): void {
         if (args) {
-            this.dialog.header = args.item.tooltipText;
+            const dialog: Dialog = getInstance(select('#' + this.parent.element.id + 'report-dialog', document), Dialog) as Dialog;
+            dialog.header = args.item.tooltipText;
             const outerDiv: HTMLElement = createElement('div', {
                 className: cls.GRID_REPORT_OUTER
             });
@@ -366,9 +358,9 @@ export class Toolbar {
             (input as HTMLTextAreaElement).setSelectionRange(input.textContent.length, input.textContent.length);
             outerDiv.appendChild(label);
             outerDiv.appendChild(input);
-            this.dialog.content = outerDiv;
-            this.dialog.refresh();
-            this.dialog.show();
+            dialog.content = outerDiv;
+            dialog.refresh();
+            dialog.show();
         }
     }
 
@@ -451,14 +443,14 @@ export class Toolbar {
     }
 
     private renderDialog(): void {
-        if (select('#' + this.parent.element.id + 'report-dialog', document) !== null) {
-            remove(select('#' + this.parent.element.id + 'report-dialog', document));
+        if (select('#' + this.parent.element.id + 'report-dialog', this.parent.element) !== null) {
+            remove(select('#' + this.parent.element.id + 'report-dialog', this.parent.element));
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parent.element.id + 'report-dialog',
             className: cls.GRID_REPORT_DIALOG
         }));
-        this.dialog = new Dialog({
+        const dialog: Dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
             position: { X: 'center', Y: 'center' },
@@ -490,19 +482,19 @@ export class Toolbar {
             target: document.body,
             cssClass: this.parent.cssClass
         });
-        this.dialog.isStringTemplate = true;
-        this.dialog.appendTo('#' + this.parent.element.id + 'report-dialog');
+        dialog.isStringTemplate = true;
+        dialog.appendTo('#' + this.parent.element.id + 'report-dialog');
     }
 
     private renderMDXDialog(): void {
-        if (select('#' + this.parent.element.id + 'mdx-dialog', document) !== null) {
-            remove(select('#' + this.parent.element.id + 'mdx-dialog', document));
+        if (select('#' + this.parent.element.id + 'mdx-dialog', this.parent.element) !== null) {
+            remove(select('#' + this.parent.element.id + 'mdx-dialog', this.parent.element));
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parent.element.id + 'mdx-dialog',
             className: cls.GRID_MDX_DIALOG
         }));
-        this.mdxDialog = new Dialog({
+        const mdxDialog: Dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
             position: { X: 'center', Y: 'center' },
@@ -529,12 +521,13 @@ export class Toolbar {
             target: document.body,
             cssClass: this.parent.cssClass
         });
-        this.mdxDialog.isStringTemplate = true;
-        this.mdxDialog.appendTo('#' + this.parent.element.id + 'mdx-dialog');
+        mdxDialog.isStringTemplate = true;
+        mdxDialog.appendTo('#' + this.parent.element.id + 'mdx-dialog');
     }
 
     private copyMDXQuery(): void {
-        const textArea: HTMLInputElement = this.mdxDialog.element.querySelector('.' + cls.MDX_QUERY_CONTENT);
+        const mdxDialog: Dialog = getInstance(select('#' + this.parent.element.id + 'mdx-dialog', document), Dialog) as Dialog;
+        const textArea: HTMLInputElement = mdxDialog.element.querySelector('.' + cls.MDX_QUERY_CONTENT);
         try {
             textArea.select();
             document.execCommand('copy');
@@ -545,13 +538,17 @@ export class Toolbar {
     }
 
     private okBtnClick(): void {
-        const reportInput: HTMLInputElement = this.dialog.element.querySelector('.' + cls.GRID_REPORT_INPUT) as HTMLInputElement;
+        const dialog: Dialog = getInstance(select('#' + this.parent.element.id + 'report-dialog', document), Dialog) as Dialog;
+        const reportInput: HTMLInputElement = dialog.element.querySelector('.' + cls.GRID_REPORT_INPUT) as HTMLInputElement;
         if (reportInput && reportInput.value === '') {
             reportInput.focus();
             return;
         }
-        if ((this.dialog.header === this.parent.localeObj.getConstant('save') ||
-            this.dialog.header === this.parent.localeObj.getConstant('saveAs')) &&
+        if (!this.parent.localeObj) {
+            this.parent = getInstance(select('#' + this.parent.element.id, document) as HTMLElement, PivotView) as PivotView;
+        }
+        if ((dialog.header === this.parent.localeObj.getConstant('save') ||
+            dialog.header === this.parent.localeObj.getConstant('saveAs')) &&
             reportInput.value && reportInput.value !== '') {
             this.action = 'Save';
             this.currentReport = reportInput.value;
@@ -584,9 +581,9 @@ export class Toolbar {
                 _this.parent.trigger(events.saveReport, saveArgs);
                 _this.parent.isModified = false;
                 _this.updateReportList();
-                _this.dialog.hide();
+                (getInstance(select('#' + this.parent.element.id + 'report-dialog', document), Dialog) as Dialog).hide();
             });
-        } else if (this.dialog.header === this.parent.localeObj.getConstant('new') &&
+        } else if (dialog.header === this.parent.localeObj.getConstant('new') &&
             reportInput.value && reportInput.value !== '') {
             this.action = 'New';
             this.currentReport = reportInput.value;
@@ -620,18 +617,19 @@ export class Toolbar {
                 _this.parent.trigger(events.saveReport, saveArgs);
                 _this.parent.isModified = false;
                 _this.updateReportList();
-                _this.dialog.hide();
+                (getInstance(select('#' + this.parent.element.id + 'report-dialog', document), Dialog) as Dialog).hide();
             });
-        } else if (this.dialog.header === this.parent.localeObj.getConstant('rename') && reportInput.value && reportInput.value !== '') {
+        } else if (dialog.header === this.parent.localeObj.getConstant('rename') && reportInput.value && reportInput.value !== '') {
             if (this.currentReport === reportInput.value) {
-                this.dialog.hide();
+                dialog.hide();
                 return;
             }
             this.action = 'Rename';
             let isExist: boolean = false;
             this.renameText = reportInput.value;
-            for (let i: number = 0; i < (this.reportList.dataSource as string[]).length; i++) {
-                if (reportInput.value === (this.reportList.dataSource as string[])[i as number]) {
+            const reportList: DropDownList = getInstance(select('#' + this.parent.element.id + '_reportlist', this.parent.element), DropDownList) as DropDownList;
+            for (let i: number = 0; i < (reportList.dataSource as string[]).length; i++) {
+                if (reportInput.value === (reportList.dataSource as string[])[i as number]) {
                     isExist = true;
                     break;
                 }
@@ -654,7 +652,7 @@ export class Toolbar {
             this.parent.trigger(events.renameReport, renameArgs);
             this.currentReport = reportInput.value;
             this.updateReportList();
-            this.dialog.hide();
+            dialog.hide();
         }
         this.parent.actionObj.actionName = this.parent.getActionCompleteName();
         if (this.parent.actionObj.actionName) {
@@ -667,7 +665,8 @@ export class Toolbar {
     }
 
     private cancelBtnClick(): void {
-        this.dialog.hide();
+        const dialog: Dialog = getInstance(select('#' + this.parent.element.id + 'report-dialog', document), Dialog) as Dialog;
+        dialog.hide();
     }
 
     private createConfirmDialog(title: string, description: string): void {
@@ -679,7 +678,7 @@ export class Toolbar {
             className: cls.ERROR_DIALOG_CLASS
         });
         this.parent.element.appendChild(errorDialog);
-        this.confirmPopUp = new Dialog({
+        const confirmPopUp: Dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
             showCloseIcon: true,
@@ -713,12 +712,13 @@ export class Toolbar {
                 }
             ]
         });
-        this.confirmPopUp.isStringTemplate = true;
-        this.confirmPopUp.appendTo(errorDialog);
-        (this.confirmPopUp.element.querySelector('.e-dlg-header') as HTMLElement).innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(title) : title;
+        confirmPopUp.isStringTemplate = true;
+        confirmPopUp.appendTo(errorDialog);
+        (confirmPopUp.element.querySelector('.e-dlg-header') as HTMLElement).innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(title) : title;
     }
 
     private okButtonClick(): void {
+        const dialog: Dialog = getInstance(select('#' + this.parent.element.id + 'report-dialog', document), Dialog) as Dialog;
         if (this.action === 'Remove') {
             const removeArgs: RemoveReportArgs = {
                 reportName: this.currentReport
@@ -780,7 +780,7 @@ export class Toolbar {
                 this.parent.trigger(events.saveReport, saveArgs);
                 this.parent.isModified = false;
                 this.updateReportList();
-                this.dialog.hide();
+                dialog.hide();
             }
         } else if (this.action === 'Save') {
             const saveArgs: SaveReportArgs = {
@@ -790,7 +790,7 @@ export class Toolbar {
             this.parent.trigger(events.saveReport, saveArgs);
             this.parent.isModified = false;
             this.updateReportList();
-            this.dialog.hide();
+            dialog.hide();
         } else if (this.action === 'Rename') {
             const renameArgs: RenameReportArgs = {
                 reportName: this.currentReport,
@@ -801,27 +801,31 @@ export class Toolbar {
             this.currentReport = this.renameText;
             this.parent.isModified = false;
             this.updateReportList();
-            this.dialog.hide();
+            dialog.hide();
         }
-        this.confirmPopUp.hide();
+        const confirmPopUp: Dialog = getInstance(select('#' + this.parent.element.id + '_ConfirmDialog', document), Dialog) as Dialog;
+        confirmPopUp.hide();
     }
 
     private cancelButtonClick(): void {
+        const dialog: Dialog = getInstance(select('#' + this.parent.element.id + 'report-dialog', document), Dialog) as Dialog;
         if (this.action === 'New') {
             if (this.parent.isModified) {
                 this.createNewReport(this.newArgs);
             } else {
-                this.dialog.hide();
+                dialog.hide();
             }
         } else if (this.action === 'Save') {
-            this.currentReport = this.reportList.value as string;
-            this.dialog.hide();
+            const reportList: DropDownList = getInstance(select('#' + this.parent.element.id + '_reportlist', this.parent.element), DropDownList) as DropDownList;
+            this.currentReport = reportList.value as string;
+            dialog.hide();
         } else if (this.action === 'Rename') {
-            this.dialog.hide();
+            dialog.hide();
         } else if (this.dropArgs && this.action !== 'Remove') {
             this.reportLoad(this.dropArgs);
         }
-        this.confirmPopUp.hide();
+        const confirmPopUp: Dialog = getInstance(select('#' + this.parent.element.id + '_ConfirmDialog', document), Dialog) as Dialog;
+        confirmPopUp.hide();
     }
     /**
      *
@@ -829,7 +833,7 @@ export class Toolbar {
      * @hidden
      */
     public createChartMenu(): void {
-        if (select('#' + this.parent.element.id + 'chart_menu', document)) {
+        if (select('#' + this.parent.element.id + 'chart_menu', this.parent.element)) {
             const menuItems: MenuItemModel[] = [];
             const types: ChartSeriesType[] = this.getValidChartType();
             for (let i: number = 0; (i < types.length && i < 7); i++) {
@@ -862,10 +866,13 @@ export class Toolbar {
                 iconCss: cls.TOOLBAR_CHART + ' ' + cls.ICON,
                 items: toDisable ? [] : menuItems
             }];
-            if (this.chartMenu && !this.chartMenu.isDestroyed) {
-                this.chartMenu.destroy();
+            let chartMenu: Menu = select('#' + this.parent.element.id + 'chart_menu', this.parent.element) ?
+                getInstance(select('#' + this.parent.element.id + 'chart_menu', this.parent.element), Menu) as Menu : null;
+            if (chartMenu && !chartMenu.isDestroyed) {
+                chartMenu.destroy();
+                chartMenu = null;
             }
-            this.chartMenu = new Menu(
+            chartMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
@@ -878,8 +885,8 @@ export class Toolbar {
                     },
                     beforeItemRender: this.multipleAxesCheckbox.bind(this)
                 });
-            this.chartMenu.isStringTemplate = true;
-            this.chartMenu.appendTo('#' + this.parent.element.id + 'chart_menu');
+            chartMenu.isStringTemplate = true;
+            chartMenu.appendTo('#' + this.parent.element.id + 'chart_menu');
         }
     }
     private create(): void {
@@ -922,7 +929,7 @@ export class Toolbar {
                     }
                 ]
             }];
-            this.exportMenu = new Menu(
+            const exportMenu: Menu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
@@ -932,8 +939,8 @@ export class Toolbar {
                         this.focusToolBar();
                     }
                 });
-            this.exportMenu.isStringTemplate = true;
-            this.exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
+            exportMenu.isStringTemplate = true;
+            exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
         }
         if (select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element)) {
             const menu: MenuItemModel[] = [{
@@ -986,7 +993,7 @@ export class Toolbar {
                     }
                 ]
             }];
-            this.subTotalMenu = new Menu(
+            const subTotalMenu: Menu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
@@ -996,8 +1003,8 @@ export class Toolbar {
                         this.focusToolBar();
                     }
                 });
-            this.subTotalMenu.isStringTemplate = true;
-            this.subTotalMenu.appendTo('#' + this.parent.element.id + 'subtotal_menu');
+            subTotalMenu.isStringTemplate = true;
+            subTotalMenu.appendTo('#' + this.parent.element.id + 'subtotal_menu');
         }
         if (select('#' + this.parent.element.id + 'grandtotal_menu', this.parent.element)) {
             const menu: MenuItemModel[] = [{
@@ -1045,7 +1052,7 @@ export class Toolbar {
                     }
                 ]
             }];
-            this.grandTotalMenu = new Menu(
+            const grandTotalMenu: Menu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
@@ -1055,8 +1062,8 @@ export class Toolbar {
                         this.focusToolBar();
                     }
                 });
-            this.grandTotalMenu.isStringTemplate = true;
-            this.grandTotalMenu.appendTo('#' + this.parent.element.id + 'grandtotal_menu');
+            grandTotalMenu.isStringTemplate = true;
+            grandTotalMenu.appendTo('#' + this.parent.element.id + 'grandtotal_menu');
         }
         if (select('#' + this.parent.element.id + 'formatting_menu', this.parent.element)) {
             const menu: MenuItemModel[] = [{
@@ -1074,15 +1081,15 @@ export class Toolbar {
                     }
                 ]
             }];
-            this.formattingMenu = new Menu(
+            const formattingMenu: Menu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                     cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this)
                 });
-            this.formattingMenu.isStringTemplate = true;
-            this.formattingMenu.appendTo('#' + this.parent.element.id + 'formatting_menu');
+            formattingMenu.isStringTemplate = true;
+            formattingMenu.appendTo('#' + this.parent.element.id + 'formatting_menu');
         }
         if (select('#' + this.parent.element.id + '_reportlist', this.parent.element)) {
             const saveArgs: SaveReportArgs = {
@@ -1092,7 +1099,7 @@ export class Toolbar {
             this.currentReport = this.parent.localeObj.getConstant('defaultReport');
             this.parent.trigger(events.saveReport, saveArgs);
             const reports: FetchReportArgs = this.fetchReports();
-            this.reportList = new DropDownList({
+            const reportList: DropDownList = new DropDownList({
                 dataSource: reports.reportName,
                 width: '150px',
                 popupHeight: '200px',
@@ -1103,8 +1110,8 @@ export class Toolbar {
                 select: this.reportChange.bind(this),
                 value: this.currentReport
             });
-            this.reportList.isStringTemplate = true;
-            this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+            reportList.isStringTemplate = true;
+            reportList.appendTo('#' + this.parent.element.id + '_reportlist');
         }
         this.updateItemElements();
     }
@@ -1193,7 +1200,8 @@ export class Toolbar {
     }
 
     private getLableState(): boolean {
-        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData(true)).chartSettings;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const chartSettings: ChartSettingsModel = JSON.parse((this.parent as any).getChartSettings()).chartSettings;
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
             this.showLableState = chartSettings.legendSettings.visible;
         } else {
@@ -1299,16 +1307,17 @@ export class Toolbar {
     }
     private updateReportList(): void {
         const reports: FetchReportArgs = this.fetchReports();
-        this.reportList.dataSource = reports.reportName;
-        if (this.currentReport === '' && this.reportList.dataSource.length > 0) {
-            this.reportList.value = this.reportList.dataSource[this.reportList.dataSource.length - 1];
-            this.reportList.text = this.reportList.dataSource[this.reportList.dataSource.length - 1];
-            this.currentReport = this.reportList.dataSource[this.reportList.dataSource.length - 1];
+        const reportList: DropDownList = getInstance(select('#' + this.parent.element.id + '_reportlist', this.parent.element), DropDownList) as DropDownList;
+        reportList.dataSource = reports.reportName;
+        if (this.currentReport === '' && reportList.dataSource.length > 0) {
+            reportList.value = reportList.dataSource[reportList.dataSource.length - 1];
+            reportList.text = reportList.dataSource[reportList.dataSource.length - 1];
+            this.currentReport = reportList.dataSource[reportList.dataSource.length - 1];
         } else {
-            this.reportList.value = this.currentReport;
-            this.reportList.text = this.currentReport;
+            reportList.value = this.currentReport;
+            reportList.text = this.currentReport;
         }
-        this.reportList.refresh();
+        reportList.refresh();
     }
     private menuItemClick(args: ClickEventArgs): void {
         let exportArgs: BeforeExportEventArgs = {};
@@ -1546,7 +1555,7 @@ export class Toolbar {
             id: this.parent.element.id + '_ChartTypeDialog',
             className: cls.PIVOTCHART_TYPE_DIALOG
         }));
-        this.chartTypesDialog = new Dialog({
+        const chartTypesDialog: Dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
             header: this.parent.localeObj.getConstant('chartTypeSettings'),
@@ -1576,11 +1585,13 @@ export class Toolbar {
             cssClass: this.parent.cssClass,
             close: this.removeDialog.bind(this)
         });
-        this.chartTypesDialog.isStringTemplate = true;
-        this.chartTypesDialog.appendTo(chartDialog);
+        chartTypesDialog.isStringTemplate = true;
+        chartTypesDialog.appendTo(chartDialog);
     }
     private removeDialog(): void {
-        if (this.chartTypesDialog && !this.chartTypesDialog.isDestroyed) { this.chartTypesDialog.destroy(); }
+        const chartTypesDialog: Dialog = select('#' + this.parent.element.id + '_ChartTypeDialog', this.parent.element) ?
+            getInstance(select('#' + this.parent.element.id + '_ChartTypeDialog', this.parent.element), Dialog) as Dialog : null;
+        if (chartTypesDialog && !chartTypesDialog.isDestroyed) { chartTypesDialog.destroy(); }
         if (document.getElementById(this.parent.element.id + '_ChartTypeDialog')) {
             remove(document.getElementById(this.parent.element.id + '_ChartTypeDialog'));
         }
@@ -1601,7 +1612,9 @@ export class Toolbar {
         this.updateChartType(chartType, false);
         this.parent.chartSettings.enableMultipleAxis = checked;
         this.parent.chartSettings.multipleAxisMode = (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).value as MultipleAxisMode;
-        this.chartTypesDialog.close();
+        const chartTypesDialog: Dialog = select('#' + this.parent.element.id + '_ChartTypeDialog', document) ?
+            getInstance(select('#' + this.parent.element.id + '_ChartTypeDialog', document), Dialog) as Dialog : null;
+        chartTypesDialog.close();
     }
     private updateChartType(type: ChartSeriesType, isMultiAxis: boolean): void {
         if (this.getAllChartItems().indexOf(type) > -1) {
@@ -1695,7 +1708,8 @@ export class Toolbar {
         return mainWrapper;
     }
     private changeDropDown(args: ChangeEventArgs): void {
-        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData(true)).chartSettings;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const chartSettings: ChartSettingsModel = JSON.parse((this.parent as any).getChartSettings()).chartSettings;
         if (!(chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined)) {
             (getInstance(select('#' + this.parent.element.id + '_DialogShowLabel'), CheckBox) as CheckBox).checked = true;
         }
@@ -1730,13 +1744,16 @@ export class Toolbar {
             locale: this.parent.locale,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
-        checkbox1.appendTo(select('#' + this.parent.element.id + '_DialogShowLabel', this.chartTypesDialog.element) as HTMLElement);
-        checkbox.appendTo(select('#' + this.parent.element.id + '_DialogMultipleAxis', this.chartTypesDialog.element) as HTMLElement);
+        const chartTypesDialog: Dialog = select('#' + this.parent.element.id + '_ChartTypeDialog', document) ?
+            getInstance(select('#' + this.parent.element.id + '_ChartTypeDialog', document), Dialog) as Dialog : null;
+        checkbox1.appendTo(select('#' + this.parent.element.id + '_DialogShowLabel', chartTypesDialog.element) as HTMLElement);
+        checkbox.appendTo(select('#' + this.parent.element.id + '_DialogMultipleAxis', chartTypesDialog.element) as HTMLElement);
         if (['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
             checkbox.disabled = true;
             (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = false;
         }
-        const chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData(true)).chartSettings;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const chartSettings: ChartSettingsModel = JSON.parse((this.parent as any).getChartSettings()).chartSettings;
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
             this.chartLableState = true;
         } else {
@@ -1771,41 +1788,62 @@ export class Toolbar {
      */
     public destroy(): void {
         this.removeEventListener();
-        if (this.confirmPopUp && !this.confirmPopUp.isDestroyed) {
-            this.confirmPopUp.destroy();
+        let element: HTMLElement = select('#' + this.parent.element.id + '_ConfirmDialog', document);
+        const confirmPopUp: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        if (confirmPopUp && !confirmPopUp.isDestroyed) {
+            confirmPopUp.destroy();
         }
-        if (this.dialog && !this.dialog.isDestroyed) {
-            this.dialog.destroy();
+        element = select('#' + this.parent.element.id + 'report-dialog', document);
+        const dialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        if (dialog && !dialog.isDestroyed) {
+            dialog.destroy();
         }
-        if (this.mdxDialog && !this.mdxDialog.isDestroyed) {
-            this.mdxDialog.destroy();
+        element = select('#' + this.parent.element.id + 'mdx-dialog', document);
+        const mdxDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        if (mdxDialog && !mdxDialog.isDestroyed) {
+            mdxDialog.destroy();
         }
-        if (this.chartMenu && !this.chartMenu.isDestroyed) {
-            this.chartMenu.destroy();
+        element = select('#' + this.parent.element.id + 'chart_menu', document);
+        const chartMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        if (chartMenu && !chartMenu.isDestroyed) {
+            chartMenu.destroy();
         }
-        if (this.chartTypesDialog && !this.chartTypesDialog.isDestroyed) {
-            this.chartTypesDialog.destroy();
+        element = select('#' + this.parent.element.id + '_ChartTypeDialog', document);
+        const chartTypesDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        if (chartTypesDialog && !chartTypesDialog.isDestroyed) {
+            chartTypesDialog.destroy();
         }
-        if (this.exportMenu && !this.exportMenu.isDestroyed) {
-            this.exportMenu.destroy();
+        element = select('#' + this.parent.element.id + 'export_menu', document);
+        const exportMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        if (exportMenu && !exportMenu.isDestroyed) {
+            exportMenu.destroy();
         }
-        if (this.subTotalMenu && !this.subTotalMenu.isDestroyed) {
-            this.subTotalMenu.destroy();
+        element = select('#' + this.parent.element.id + 'subtotal_menu', document);
+        const subTotalMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        if (subTotalMenu && !subTotalMenu.isDestroyed) {
+            subTotalMenu.destroy();
         }
-        if (this.grandTotalMenu && !this.grandTotalMenu.isDestroyed) {
-            this.grandTotalMenu.destroy();
+        element = select('#' + this.parent.element.id + 'grandtotal_menu', document);
+        const grandTotalMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        if (grandTotalMenu && !grandTotalMenu.isDestroyed) {
+            grandTotalMenu.destroy();
         }
-        if (this.formattingMenu && !this.formattingMenu.isDestroyed) {
-            this.formattingMenu.destroy();
+        element = select('#' + this.parent.element.id + 'formatting_menu', document);
+        const formattingMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        if (formattingMenu && !formattingMenu.isDestroyed) {
+            formattingMenu.destroy();
         }
-        if (this.reportList && !this.reportList.isDestroyed) {
-            this.reportList.destroy();
+        element = select('#' + this.parent.element.id + '_reportlist', document);
+        const reportList: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
+        if (reportList && !reportList.isDestroyed) {
+            reportList.destroy();
         }
         if (this.toolbar && !this.toolbar.isDestroyed) {
             this.toolbar.destroy();
         }
-        if (select('#' + this.parent.element.id + 'pivot-toolbar', document)) {
-            remove(select('#' + this.parent.element.id + 'pivot-toolbar', document));
+        element = select('#' + this.parent.element.id + 'pivot-toolbar', document);
+        if (element) {
+            remove(element);
         }
     }
 

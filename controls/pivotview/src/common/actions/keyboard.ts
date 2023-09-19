@@ -1,4 +1,4 @@
-import { KeyboardEvents, KeyboardEventArgs, closest, addClass, removeClass } from '@syncfusion/ej2-base';
+import { KeyboardEvents, KeyboardEventArgs, closest, addClass, removeClass, getInstance } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { Dialog } from '@syncfusion/ej2-popups';
@@ -196,8 +196,7 @@ export class CommonKeyboardInteraction {
     private processClose(e: Event): void {
         const target: Element = e.target as Element;
         if (target && closest(target, '.e-popup.e-popup-open')) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as any).ej2_instances[0] as Dialog;
+            const dialogInstance: Dialog = getInstance(<HTMLElement>closest(target, '.e-popup.e-popup-open'), Dialog) as Dialog;
             if (dialogInstance && !dialogInstance.closeOnEscape) {
                 const button: string = dialogInstance.element.getAttribute('data-fieldName');
                 dialogInstance.hide();

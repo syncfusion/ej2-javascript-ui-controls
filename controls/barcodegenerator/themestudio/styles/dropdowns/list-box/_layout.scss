@@ -1,7 +1,8 @@
 @include export-module('listbox-layout') {
   /* stylelint-disable property-no-vendor-prefix */
   .e-listbox-wrapper,
-  .e-listbox-container {
+  .e-listbox-container,
+  .e-listboxtool-wrapper {
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
     cursor: pointer;
@@ -54,10 +55,6 @@
       line-height: $listbox-item-line-height;
       padding: $listbox-item-padding;
       position: relative;
-    }
-
-    &.e-filter-list {
-      overflow: inherit;
     }
 
     .e-list-parent {
@@ -121,7 +118,12 @@
     & .e-list-group-item {
       border-bottom: $listbox-group-border-bottom solid $listbox-border-bottom-color;
       border-top: $listbox-group-border-top solid;
-      font-weight: 600;
+      @if $skin-name == 'Material3' {
+        font-weight: 500;
+      }
+      @else {
+        font-weight: 600;
+      }
       height: $listbox-groupheader-item-height;
       line-height: $listbox-groupheader-item-line-height;
       padding: $listbox-item-padding;
@@ -262,6 +264,9 @@
       margin: $listbox-checkbox-left-margin;
       text-indent: 0;
       vertical-align: middle;
+      @if $skin-name == 'Material3' {
+        position: relative;
+      }
     }
 
     &.e-checkbox-right {
@@ -305,8 +310,6 @@
   .e-listbox-wrapper {
 
     &.e-filter-list {
-      overflow: inherit;
-
       & .e-list-parent {
         overflow: auto;
       }
@@ -314,7 +317,8 @@
   }
 
   .e-listbox-wrapper.e-sortableclone,
-  .e-listbox-container.e-sortableclone {
+  .e-listbox-container.e-sortableclone,
+  .e-listboxtool-wrapper.e-sortableclone {
     border-width: 0;
     overflow: visible;
 
@@ -345,6 +349,10 @@
       top: -10px;
       width: 22px;
     }
+  }
+
+  .e-listboxtool-wrapper.e-sortableclone{
+    display: block;
   }
 
   .e-listboxtool-wrapper,

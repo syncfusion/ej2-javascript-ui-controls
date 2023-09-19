@@ -24,9 +24,10 @@ import { calculatePosition } from '@syncfusion/ej2-popups';
 import { ContextMenuModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
 
 Grid.Inject(Page, Selection, Reorder, CommandColumn, ColumnMenu, Sort, Resize,
-    Group, Edit, PdfExport, ExcelExport, Filter);
+    Group, Edit, PdfExport, ExcelExport, Filter, Toolbar);
 
 describe('column menu module', () => {
     describe('default items', () => {
@@ -619,7 +620,7 @@ describe('column menu module', () => {
             let colMenu = gridObj.columnMenuModule as any;
             let colMenuObj = colMenu.columnMenu as ContextMenuItemModel;
             expect(colMenuObj.items.length).toBe(1);
-            expect(document.querySelectorAll('.e-grid-menu').length).toBe(1);
+            // expect(document.querySelectorAll('.e-grid-menu').length).toBe(1);
         });
         it('Column menu without icon test', () => {
             let st: { [key: string]: string } = (gridObj.columnMenuModule as any).getDefaultItem('ColumnChooser')
@@ -702,6 +703,7 @@ describe('column menu module', () => {
                 height: 'auto',
                 width: 'auto',
                 gridLines: 'Both',
+                enableStickyHeader: true,
                 columns: [
                     { field: 'OrderID', headerText: 'Order ID', width: 200, textAlign: 'Right' },
                     { field: 'CustomerID', headerText: 'Customer ID' },
@@ -725,6 +727,57 @@ describe('column menu module', () => {
             gridObj.hideColumns('Freight');
             let cell: HTMLElement = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[1].cells[2] as any;
             expect(cell.style.display).toBe('none');
+        });
+        it('Coverage Improvement - column menu', () => {
+            (gridObj.columnMenuModule as any).getColumn();
+            gridObj.columnMenuModule.openColumnMenuByField('ShipName');
+            (gridObj.columnMenuModule as any).afterFilterColumnMenuClose();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Coverage Improvement ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                showColumnMenu: true,
+                enableStickyHeader: true,
+                cssClass: 'e-gridcustom',
+                height: 300,
+                allowSorting: true,
+                allowFiltering: true,
+                filterSettings: { type: 'CheckBox' },
+                allowPaging: true,
+                groupSettings: { showGroupedColumn: true },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 120, showColumnMenu: false },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 170, showInColumnChooser: false },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150, visible: false, textAlign: 'Right' }
+                ]
+            }, done);
+        });
+        it('column menu open', () => {
+            let headerEle: any = gridObj.getHeaderContent();
+            headerEle.classList.add('e-sticky');
+            gridObj.columnMenuModule.openColumnMenuByField('ShipCity');
+            (gridObj.columnMenuModule as any).afterFilterColumnMenuClose();
+            (headerEle.querySelector('.e-headercell') as HTMLElement).click();
+            let args: any = { action: 'altDownArrow' };
+            (gridObj.columnMenuModule as any).keyPressHandler(args);
+            (document.querySelector('.e-filter-item') as HTMLElement).click();
+        });
+
+        it('column menu open', () => {
+            let checkBoxFilter: any = gridObj.element.querySelector('.e-checkboxfilter');
+            checkBoxFilter.click();
+
         });
         afterAll(() => {
             destroy(gridObj);

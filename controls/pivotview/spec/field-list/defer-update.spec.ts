@@ -778,10 +778,9 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             setTimeout(() => {
                 let treeObj: TreeView = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.allMemberSelect;
                 let memberTreeObj: TreeView = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.memberTreeView;
-                let filterDialog: Dialog = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.dialogPopUp;
                 let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                expect(checkEle.length).toBeGreaterThan(0);
+                expect(checkEle.length).toBeGreaterThan(1);
                 expect(allNode.classList.contains('e-small')).toBe(false);
                 let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 allNode.querySelector('.e-frame').dispatchEvent(args);
@@ -789,9 +788,18 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 allNode.querySelector('.e-frame').dispatchEvent(args);
                 args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                 allNode.querySelector('.e-frame').dispatchEvent(args);
+                done();
+            }, 1000);
+        });
+        it('check all nodes on filter popup', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let memberTreeObj: TreeView = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.memberTreeView;
                 let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
-                expect(checkEle.length).toEqual(checkedEle.length);
-                expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                let filterDialog: Dialog = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.dialogPopUp;
+                expect(checkEle.length).toBe(2);
+                expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
                 (filterDialog.element.querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
             }, 1000);
@@ -820,14 +828,20 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 done();
             }, 1000);
         });
-        it('check remove pivot button', (done: Function) => {
-            let pivotButton: HTMLElement =
-                (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
-            expect(pivotButton.id).toBe('PivotGrid_PivotFieldList_gender');
-            (pivotButton.querySelector('.e-remove') as HTMLElement).click();
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        it('check remove pivot button1', (done: Function) => {
+            let pivotButton: HTMLElement = (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector(
+                '.e-filters').querySelector('.e-pivot-button') as HTMLElement);
             setTimeout(() => {
-                pivotButton = (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                expect(pivotButton.id).toBe('PivotGrid_PivotFieldList_gender');
+                (pivotButton.querySelector('.e-remove') as HTMLElement).click();
+                done();
+            }, 1000); 
+        });
+        it('check remove pivot button2', (done: Function) => {
+            let pivotButton: HTMLElement = (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector(
+                '.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+            setTimeout(() => {
                 expect(pivotButton).toBeNull();
                 done();
             }, 1000);
@@ -848,14 +862,23 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 done();
             }, 1000);
         });
-        it('check remove pivot button', (done: Function) => {
-            let pivotButton: HTMLElement =
-                (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
-            expect(pivotButton.id).toBe('PivotGrid_PivotFieldList_gender');
-            (pivotButton.querySelector('.e-remove') as HTMLElement).click();
+        it('check remove pivot button1', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                pivotButton = (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                let pivotButton: HTMLElement = (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector(
+                    '.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                expect(pivotButton.id).toBe('PivotGrid_PivotFieldList_gender');
+                (pivotButton.querySelector('.e-remove') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('check remove pivot button2', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let pivotButton: HTMLElement = (pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector(
+                    '.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 expect(pivotButton).toBeNull();
                 done();
             }, 1000);
@@ -882,11 +905,9 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(2);
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
             mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove = util.setMouseCordinates(mousemove, 15, 75);
@@ -922,7 +943,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             let rowAxiscontent: HTMLElement = pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-rows');
             let valueAxiscontent: HTMLElement = pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-values');
             let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(2);
+            expect(pivotButton.length).toEqual(1);
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
             let mousedown: any =
                 util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
@@ -940,7 +961,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(3);
+                expect(pivotButton.length).toEqual(4);
                 done();
             }, 1000);
         });

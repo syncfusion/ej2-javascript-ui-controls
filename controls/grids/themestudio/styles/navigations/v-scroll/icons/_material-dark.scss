@@ -1,0 +1,27 @@
+@include export-module('vscroll-material-icons') {
+
+  /*! vscroll icons */
+  #{&}.e-vscroll {
+
+    &.e-scroll-device {
+
+      .e-nav-up-arrow::before {
+        content: '\e85e';
+      }
+
+      .e-nav-down-arrow::before {
+        content: '\e84f';
+      }
+    }
+
+    .e-nav-up-arrow::before {
+      content: '\e910';
+      line-height: normal;
+    }
+
+    .e-nav-down-arrow::before {
+      content: '\e916';
+      line-height: normal;
+    }
+  }
+}

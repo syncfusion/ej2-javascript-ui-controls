@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.36 (2023-09-15)
+
+### Document Editor
+
+#### New Features
+
+- `#I471020` - Added support for table title and description.
+
 ## 22.2.12 (2023-09-05)
 
 ### Document Editor
@@ -167,15 +175,6 @@
 - `#I469096` - Resolved the loss of original text formatting while pasting.
 - `#I464759` - Resolved the issue in shape rendering.
 - `#I464934` - Resolved the issue in customize the page size after inserting next page break.
-
-### Document Editor
-
-#### New Features
-
-- `#I397854`, `#I401771` - Added support for editing alternate text for images.
-- `#I370306`, `#I438565` - Added support for character spacing and scaling.
-- `#I273864`, `#I318326`, `#I325320`, `#I331615`, `#I339872`, `#F164047` - Added support for linking to the previous header/footer.
-- `#I445060`, `#I468741` - Added a property in the `selectionChanged` event arguments to identify whether the user has completed their selection.
 
 ## 21.2.10 (2023-06-13)
 

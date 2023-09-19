@@ -1,11 +1,12 @@
 /**
  * Gantt taskbaredit spec
  */
-import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu} from '../../src/index';
+import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
 import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { falseLine } from '../../src/gantt/base/css-constants';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
@@ -3694,7 +3695,6 @@ describe('Milestone get disappeared when we indent the record issue', () => {
         triggerMouseEvent(save, 'click');
         ganttObj.dataBind();
         expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(0);
-    
     });
 });
 describe('Bug-842430:Milestone is not converting back to taskbar when we change isMilestone property', () => {

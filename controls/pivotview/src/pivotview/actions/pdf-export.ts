@@ -85,7 +85,14 @@ export class PDFExport {
         const footer: string = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer) &&
             !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].value)) ?
             pdfExportProperties.footer.contents[0].value : this.exportProperties.footer ? this.exportProperties.footer : '';
-        const font: PdfFont = new PdfStandardFont(PdfFontFamily.TimesRoman, 15, PdfFontStyle.Regular);
+        const themeStyle: PdfThemeStyle = (!isNullOrUndefined(pdfExportProperties.theme) && !isNullOrUndefined(pdfExportProperties.theme.record))
+            ? pdfExportProperties.theme.record : undefined;
+        const fontFamily: number = (!isNullOrUndefined(themeStyle) && !isNullOrUndefined(themeStyle.font) && !isNullOrUndefined(themeStyle.font.name)) ?
+            this.getFontFamily(themeStyle.font.name) : PdfFontFamily.TimesRoman;
+        const fontSize: number = (!isNullOrUndefined(themeStyle) && !isNullOrUndefined(themeStyle.font) && !isNullOrUndefined(themeStyle.font.size)) ? themeStyle.font.size : 10;
+        const fontStyle: PdfFontStyle = !isNullOrUndefined(themeStyle) ? this.getFontStyle(themeStyle) : PdfFontStyle.Regular;
+        const font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+        // const font: PdfFont = new PdfStandardFont(PdfFontFamily.TimesRoman, 15, PdfFontStyle.Regular);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const headerCondition: any = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)
             && !isNullOrUndefined(pdfExportProperties.header.contents) && !isNullOrUndefined(pdfExportProperties.header.contents[0].style));
@@ -248,7 +255,7 @@ export class PDFExport {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         : Promise<any> {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
-        this.gridStyle = this.exportProperties.style;
+        this.gridStyle = this.exportProperties.pdfExportProperties.theme;
         const eventParams: { document: PdfDocument, args: EnginePopulatedEventArgs } = this.applyEvent();
         if (!isNullOrUndefined(pdfDoc)) {
             eventParams.document = <PdfDocument>pdfDoc;
@@ -569,7 +576,7 @@ export class PDFExport {
         /** Event trigerring */
         let clonedValues: IAxisSet[][];
         const currentPivotValues: IAxisSet[][] = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
-        if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataType !== 'olap') {
+        if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataType !== 'olap' && this.parent.dataSourceSettings.mode !== 'Server') {
             const pageSettings: IPageSettings = this.engine.pageSettings;
             this.engine.pageSettings = null;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = false;

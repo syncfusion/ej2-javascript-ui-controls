@@ -2,99 +2,31 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
+## 23.1.36 (2023-09-15)
 
 ### PivotTable
 
-#### Bug Fixes
+#### Breaking Changes
 
-- `#F183246` - An issue with adding multiple classes using the `cssClass` property has been fixed.
-- `#F183955` - An issue with the pivot table not displaying with the selected display view options from the loaded report while using the toolbar has been fixed.
+- The skeleton (aka, HTML) of the pivot table has been restructured. Previously, the pivot table displayed frozen row headers and values data in a two-table manner. It has been simplified to one table. The appearance of the horizontal scrollbar has changed as the row headers were frozen using the CSS attributes. However, the pivot table's appearance will remain unchanged as the prior version.
 
-## 22.2.11 (2023-08-29)
+- Because the DOM structure of the pivot table has changed, the following classes included elements have been removed and can now be identified using the classes listed below.
 
-### Pivot Table
+- The frozen and moveable header elements have now been identified within the `e-gridheader` element using the class names shown below.
 
-#### Bug fixes
+| Previous | Now | Description |
+|---|---|---|
+| `e-frozenheader > e-table > th.e-headercell` | `e-table > th.e-leftfreeze.e-headercell` | Element defining the frozen column header. |
+| `e-movableheader > e-table > th.e-headercell` | `e-table > th.e-unfreeze.e-headercell` | Element defining the moveable column header. |
 
-- `F183271` - The pivot table can now be properly displayed while adding the field at runtime with data compression.
+- The frozen and moveable content elements have now been identified within the `e-gridcontent` element using the class names shown below.
 
-## 22.2.10 (2023-08-22)
+| Previous | Now | Description |
+|---|---|---|
+| `e-frozencontent > e-table > th.e-rowcell` | `e-table > th.e-leftfreeze.e-rowcell` | Element defining the frozen content (aka, row headers). |
+| `e-movablecontent > e-table > th.e-rowcell` | `e-table > th.e-unfreeze.e-rowcell` | Element defining the moveable content (aka, values). |
 
-### Pivot Table
-
-#### Bug fixes
-
-- The issue with server side rendering in next.js has been resolved.
-
-## 22.2.9 (2023-08-15)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `I489341` - The toolbar menu items will now be properly displayed in the pivot table with the material dark theme.
-
-## 22.2.8 (2023-08-08)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `I485463` - The pivot table can now be properly rendered when sorting is applied with virtualization.
-- `I486436` - The pivot chart can now be properly rendered with remote data binding.
-- `F183726` - The "multiLevelLabelRender" event will now work properly in the Angular pivot table.
-
-## 22.2.7 (2023-08-02)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `I459099` - The pivot table can now be rendered properly with the reordering feature.
-
-## 22.2.5 (2023-07-27)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `I471218` - The value sort icon in the pivot table is now properly positioned with larger column text.
-- `F183271` - When defer layout update is enabled, the pivot table now renders properly with the pivot chart.
-- `I463929` - When enabling virtualization dynamically at runtime, the pivot table will now render properly.
-
-#### Features
-
-- `I398184` - Provided support to customize the column width when exporting the pivot table to a PDF document.
-
-## 22.1.39 (2023-07-18)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#F183090` - Columns can now be hidden specifically with an OLAP data source.
-
-## 22.1.36 (2023-06-28)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I473176` - The issue with the spinner not being properly hidden on the pivot table when the drillthrough popup was closed with server-side engine has now been resolved.
-- `#I461804` - When we bind fields from the same hierarchy, drill down/up will now work properly in the pivot table with an OLAP data.
-
-## 22.1.34 (2023-06-21)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I467010` - When using the server-side engine support, the pivot table now works properly when grouping is applied dynamically.
-
-#### New features
-
-- `I456010` - In addition to server-side engine support, the pivot table data can be easily exported to Excel or CSV files via server-side export.
+## 22.1.34 (2023-01-21)
 
 ### Pivot Table
 

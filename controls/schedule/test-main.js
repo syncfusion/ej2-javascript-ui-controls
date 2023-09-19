@@ -82,6 +82,11 @@ require.config({
             name: '@syncfusion/ej2-compression',
             location: 'node_modules/@syncfusion/ej2-compression/dist',
             main: 'ej2-compression.umd.min.js'
+        },
+        {
+            name: '@syncfusion/ej2-notifications',
+            location: 'node_modules/@syncfusion/ej2-notifications/dist',
+            main:  'ej2-notifications.umd.min.js'
         }
     ],
 

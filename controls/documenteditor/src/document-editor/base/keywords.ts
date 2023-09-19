@@ -323,6 +323,7 @@ export const restartLevelProperty: string[] = ['restartLevel','rl'];
 export const levelNumberProperty: string[] = ['levelNumber','lvlno'];
 export const numberFormatProperty: string[] = ['numberFormat','nf'];
 export const abstractListIdProperty: string[] = ['abstractListId','alid'];
+export const nsidProperty: string = 'nsid';
 export const levelsProperty: string[] = ['levels','lvl'];
 export const overrideListLevelProperty: string[] = ['overrideListLevel','o'];
 export const levelOverridesProperty: string[] = ['levelOverrides','lo'];

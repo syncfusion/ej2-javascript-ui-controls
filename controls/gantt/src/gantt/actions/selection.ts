@@ -280,7 +280,20 @@ export class Selection {
      * @returns {Object[]} .
      */
     public getSelectedRecords(): Object[] {
-        return this.parent.treeGrid.getSelectedRecords();
+        if(!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+            let selectedRows: IGanttData[] = [];
+            let selectedIndexes: number[] = this.parent.selectionModule.getSelectedRowIndexes();
+            for(let i: number=0; i<selectedIndexes.length; i++) {
+               const rec: IGanttData = this.parent.currentViewData.filter((data: IGanttData) => {
+                    return data.index == selectedIndexes[i as number]
+                })[0];
+               selectedRows.push(rec);
+            }
+            return selectedRows;
+        }
+        else {
+          return this.parent.treeGrid.getSelectedRecords();
+        }
     }
 
     /**

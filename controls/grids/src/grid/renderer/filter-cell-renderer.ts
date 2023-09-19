@@ -5,7 +5,7 @@ import { Cell } from '../models/cell';
 import { ICellRenderer, IGrid } from '../base/interface';
 import { CellRenderer } from './cell-renderer';
 import { Input } from '@syncfusion/ej2-inputs';
-import { appendChildren } from '../base/util';
+import { appendChildren, addStickyColumnPosition } from '../base/util';
 import { InputArgs }  from '@syncfusion/ej2-inputs';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import * as events from '../base/constant';
@@ -143,6 +143,9 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                     templateWrite.call(this, args);
                 }
             }
+        }
+        if (this.parent.isFrozenGrid()) {
+            addStickyColumnPosition(this.parent, column, node);
         }
         return node;
     }

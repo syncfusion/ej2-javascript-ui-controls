@@ -1185,8 +1185,8 @@ export class MoveTool extends ToolBase {
             newValue: cloneBlazorObject(oldValues),
             target: args.target, targetPosition: args.position, allowDrop: arg.allowDrop, cancel: arg.cancel
         };
-          //(EJ2-277624)-In the positionChange event, during the completed state, old and new values remain identical.
-          if(!this.isStartAction){
+        //(EJ2-277624)-In the positionChange event, during the completed state, old and new values remain identical.
+        if(!this.isStartAction){
             this.intialValue= { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY}
         }
         if (isSame && !isBlazor()) {
@@ -1261,7 +1261,7 @@ export class MoveTool extends ToolBase {
             }
         } else {
             const matrix: Matrix = identityMatrix(); const node: NodeModel = args.source as Node;
-            rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
+            rotateMatrix(matrix, -node.rotateAngle || -node.wrapper.rotateAngle, node.offsetX || node.wrapper.offsetX, node.offsetY || node.wrapper.offsetY);
             const prevPosition: PointModel = transformPointByMatrix(matrix, { x: this.prevPosition.x, y: this.prevPosition.y });
             const position: PointModel = transformPointByMatrix(matrix, { x: args.position.x, y: args.position.y });
             this.commandHandler.portDrag(args.source, args.sourceWrapper, position.x - prevPosition.x, position.y - prevPosition.y);
@@ -1406,7 +1406,6 @@ export class RotateTool extends ToolBase {
         super.mouseMove(args);
         let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
-        //EJ2-837158-Resize - Event "Start" state triggers multiple times in rotate action
         if (this.undoElement.rotateAngle === object.wrapper.rotateAngle && !this.rotateStart) {
             const oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
 
@@ -1485,7 +1484,7 @@ export class ResizeTool extends ToolBase {
 
     /**   @private  */
     public initialOffset: PointModel;
-    
+
     /** @private */
     public resizeStart: boolean = false;
 
@@ -1635,7 +1634,6 @@ export class ResizeTool extends ToolBase {
         super.mouseMove(args);
         let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
-        //EJ2-837158-Resize - Event "Start" state triggers multiple times in resize
         if (this.undoElement.offsetX === object.wrapper.offsetX && this.undoElement.offsetY === object.wrapper.offsetY && !this.resizeStart) {
             const oldValue: SelectorModel = {
                 offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,

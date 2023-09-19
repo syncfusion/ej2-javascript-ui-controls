@@ -38,7 +38,8 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-excel-export/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-pdf-export/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-compression/**/*.js", included: false },
-      { pattern: "node_modules/@syncfusion/ej2-file-utils/**/*.js", included: false }
+      { pattern: "node_modules/@syncfusion/ej2-file-utils/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-pdf/**/*.js", included: false }
 
 
       // Add dependent package's script files here              

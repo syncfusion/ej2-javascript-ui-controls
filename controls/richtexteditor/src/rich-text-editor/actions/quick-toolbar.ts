@@ -121,8 +121,10 @@ export class QuickToolbar {
         }
         this.linkQTBar = this.createQTBar('Link', 'Scrollable', this.parent.quickToolbarSettings.link, RenderType.LinkToolbar);
         this.renderFactory.addRenderer(RenderType.LinkToolbar, this.linkQTBar);
-        this.textQTBar = this.createQTBar('Text', 'Scrollable', this.parent.quickToolbarSettings.text, RenderType.TextToolbar);
-        this.renderFactory.addRenderer(RenderType.TextToolbar, this.textQTBar);
+        if (!isNOU(this.parent.quickToolbarSettings.text) && !this.parent.inlineMode.enable) {
+            this.textQTBar = this.createQTBar('Text', 'MultiRow', this.parent.quickToolbarSettings.text, RenderType.TextToolbar);
+            this.renderFactory.addRenderer(RenderType.TextToolbar, this.textQTBar);
+        }
         this.imageQTBar = this.createQTBar('Image', 'MultiRow', this.parent.quickToolbarSettings.image, RenderType.ImageToolbar);
         this.renderFactory.addRenderer(RenderType.ImageToolbar, this.imageQTBar);
         this.audioQTBar = this.createQTBar('Audio', 'MultiRow', this.parent.quickToolbarSettings.audio, RenderType.AudioToolbar);
@@ -268,6 +270,24 @@ export class QuickToolbar {
                 }
             }
         }
+        if (!isNOU(this.textQTBar) && !isNOU(this.parent.quickToolbarSettings.text) && !this.parent.inlineMode.enable ) {
+            const args: Touch | MouseEvent = (e.args as TouchEvent).touches ?
+                (e.args as TouchEvent).changedTouches[0] : e.args as MouseEvent;
+            const target: HTMLElement = (e.args as MouseEvent).target as HTMLElement;
+            this.hideQuickToolbars();
+            const parentLeft: number = this.parent.element.getBoundingClientRect().left;
+            this.offsetX = this.parent.iframeSettings.enable ? this.parent.element.ownerDocument.documentElement.scrollLeft
+                + parentLeft + args.clientX : args.pageX;
+            this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
+            const range: Range = this.parent.getRange();
+            if ((range.endContainer.parentElement.tagName === range.startContainer.parentElement.tagName && (range.startContainer.parentElement.tagName === 'A' && range.endContainer.parentElement.tagName === 'A')) ||
+             (target.tagName === 'IMG') || (target.tagName === 'VIDEO') || (target.tagName === 'AUDIO') || ( target.childNodes[0].nodeType === 1 && (target.childNodes[0 as number] as HTMLElement).classList.contains('e-rte-audio')) ||
+             (this.parent.getRange().startOffset === this.parent.getRange().endOffset)) {
+                return;
+            }
+            this.target = target;
+            this.textQTBar.showPopup(this.offsetX, this.offsetY, target, 'text');
+        }
     }
 
     private keyDownHandler(): void {
@@ -281,6 +301,11 @@ export class QuickToolbar {
         if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
             && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
+        }
+        if (!isNOU(this.parent.quickToolbarSettings.text)) {
+            if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close') && document.body.contains(this.textQTBar.element)) {
+                this.textQTBar.hidePopup();
+            }
         }
     }
 
@@ -445,6 +470,7 @@ export class QuickToolbar {
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
+        this.parent.on(events.hidePopup, this.hideQuickToolbars, this);
     }
 
     private onKeyDown(e: NotifyArgs): void {
@@ -501,6 +527,9 @@ export class QuickToolbar {
         if (this.linkQTBar) {
             this.linkQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
         }
+        if (this.textQTBar) {
+            this.textQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
+        }
     }
     /**
      * removeEventListener
@@ -529,6 +558,8 @@ export class QuickToolbar {
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.bindCssClass, this.setCssClass);
+        this.parent.off(events.hidePopup, this.hideQuickToolbars);
+
     }
 
     /**

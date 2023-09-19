@@ -238,7 +238,9 @@ export class TableResizer {
         }
         this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
         this.owner.documentHelper.layout.reLayoutTable(table);
+        this.owner.editorModule.isSkipOperationsBuild = true;
         this.owner.editorModule.reLayout(this.owner.selection);
+        this.owner.editorModule.isSkipOperationsBuild = false;
         if (row) {
             this.getRowReSizerPosition(undefined, this.startingPoint);
         }
@@ -661,7 +663,9 @@ export class TableResizer {
             this.documentHelper.layout.reLayoutTable(table);
         }
         this.owner.editor.getOffsetValue(this.documentHelper.selection);
+        this.owner.editorModule.isSkipOperationsBuild = true;
         this.owner.editorModule.reLayout(this.owner.selection);
+        this.owner.editorModule.isSkipOperationsBuild = false;
         if (dragValue) {
             this.startingPoint.x += HelperMethods.convertPointToPixel(dragValue);
             this.resizerPosition = this.getCellReSizerPosition(this.startingPoint);

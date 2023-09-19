@@ -264,7 +264,7 @@ export class AutoComplete extends ComboBox {
                 filterQuery.where(mapping, filterType, queryString, this.ignoreCase, this.ignoreAccent);
             }
         }
-        if (!isNullOrUndefined(this.suggestionCount)) {
+        if (!isNullOrUndefined(this.suggestionCount) && !this.enableVirtualization) {
             // Since defualt value of suggestioncount is 20, checked the condition
             if (this.suggestionCount !== 20) {
                 for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
@@ -275,11 +275,19 @@ export class AutoComplete extends ComboBox {
             }
             filterQuery.take(this.suggestionCount);
         }
+        if (this.enableVirtualization)
+        {
+            var takeValue = this.getTakeValue();
+            filterQuery.skip(this.virtualItemStartIndex);
+            filterQuery.take(takeValue);
+            filterQuery.requiresCount();
+        }
         return filterQuery;
     }
     protected searchLists(e: KeyboardEventArgs | MouseEvent): void {
         this.isTyped = true;
         this.isDataFetched = this.isSelectCustom = false;
+        this.checkAndResetCache();
         if (isNullOrUndefined(this.list)) {
             super.renderList(e, true);
         }
@@ -334,8 +342,31 @@ export class AutoComplete extends ComboBox {
         dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
         query?: Query, fields?: FieldSettingsModel, e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         this.beforePopupOpen = true;
+        let isNoDataElement  = this.list.classList.contains('e-nodata');
         if (this.queryString !== '' && (this.queryString.length >= this.minLength)) {
+            if(this.enableVirtualization && this.isFiltering() && this.isTyped) {
+                this.isPreventScrollAction = true;
+                this.list.scrollTop = 0;
+                this.previousStartIndex = 0;
+                this.virtualListInfo  = null;
+            }
             this.resetList(dataSource, fields, query, e);
+            if(this.enableVirtualization && isNoDataElement && !this.list.classList.contains('e-nodata')) {
+                if (!this.list.querySelector('.e-virtual-ddl-content')) {
+                    this.list.appendChild(this.createElement('div', {
+                        className: 'e-virtual-ddl-content',
+                        styles: this.getTransformValues()
+                    })).appendChild(this.list.querySelector('.e-list-parent'));
+                }
+                if(!this.list.querySelector('.e-virtual-ddl')){
+                    var virualElement = this.createElement('div', {
+                        id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()});
+                    document.getElementsByClassName('e-popup')[0].querySelector('.e-dropdownbase').appendChild(virualElement);
+                }
+            }
+            if (this.enableVirtualization) {
+                this.getFilteringSkeletonCount();
+            }
         } else {
             this.hidePopup(e);
             this.beforePopupOpen = false;
@@ -346,6 +377,7 @@ export class AutoComplete extends ComboBox {
     protected clearAll(e?: MouseEvent, property?: AutoCompleteModel): void {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
             super.clearAll(e);
+            this.checkAndResetCache();
         }
         if (this.beforePopupOpen) {
             this.hidePopup();
@@ -430,7 +462,9 @@ export class AutoComplete extends ComboBox {
     }
 
     protected renderPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
-        this.list.scrollTop = 0;
+        if(!this.enableVirtualization){
+            this.list.scrollTop = 0;
+        }
         super.renderPopup(e);
     }
 
@@ -502,6 +536,10 @@ export class AutoComplete extends ComboBox {
     public hidePopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         super.hidePopup(e);
         this.activeIndex = null;
+        this.virtualListInfo = this.viewPortInfo;
+        this.previousStartIndex = this.viewPortInfo.startIndex;
+        this.startIndex = this.viewPortInfo.startIndex;
+        this.previousEndIndex = this.viewPortInfo.endIndex;
     }
     /**
      * Dynamically change the value of properties.

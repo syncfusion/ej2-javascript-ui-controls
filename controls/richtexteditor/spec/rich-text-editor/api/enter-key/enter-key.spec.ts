@@ -93,7 +93,6 @@ describe('841897 - Enter key press submits the form when Rich Text Editor contro
         detach(element);
     });
 });
-
 describe('EJ2-59705 - Console error thrown when pressing enter key at firefox browser', () => {
     let defaultUserAgent= navigator.userAgent;
     let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
@@ -2174,5 +2173,110 @@ describe("EJ2-68925 -The enter key is not working properly with Lists when pasti
     });
     afterAll( () => {
         destroy(rteObj);
+    });
+});
+
+describe('843688 - The Enter key press before the video duplicates the video', function () {
+    let rteEle: HTMLElement;
+    let rteObj: RichTextEditor;
+    
+    var innerHTML: string = "<p><b>Description:</b></p><p>The Rich Text Editor.</p><p> <br></p><p><b>Functional</b></p>";
+    beforeAll(() => {
+        rteObj = renderRTE({
+            height: 400,
+            toolbarSettings: {
+                items: ['Video']
+            },
+            value: innerHTML,
+        });
+        rteEle = rteObj.element;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Press enter key curser places before the embaded video', (done: Function) => {
+    const startNode: any = rteObj.inputElement.childNodes[2];
+        let sel: void = new NodeSelection().setSelectionText(document, startNode, startNode, 1, 1);
+        (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+        let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+        (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/H661HyVGu7I?si=ROQf-Grd6u37RlX6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+        (dialogEle.querySelector('.e-embed-video-url') as HTMLElement).dispatchEvent(new Event("keyup"));
+        (<HTMLElement>document.querySelector('.e-insertVideo') as HTMLElement).click();
+        setTimeout(() => {
+            sel = new NodeSelection().setSelectionText(document, startNode, startNode, 0, 0);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(document.querySelectorAll('.e-video-clickelem').length === 1).toBe(true);
+            done();
+        },500);
+    });
+});
+
+describe('843688 - The Enter key press before the video duplicates the video', function () {
+    let rteEle: HTMLElement;
+    let rteObj: RichTextEditor;
+    
+    var innerHTML: string = "<p><b>Description:</b></p><p>The Rich Text Editor.</p><p> <br></p><p><b>Functional</b></p>";
+    beforeAll(() => {
+        rteObj = renderRTE({
+            height: 400,
+            toolbarSettings: {
+                items: ['Video']
+            },
+            value: innerHTML,
+        });
+        rteEle = rteObj.element;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Press enter key curser places before the embaded video', (done: Function) => {
+    const startNode: any = rteObj.inputElement.childNodes[2];
+        let sel: void = new NodeSelection().setSelectionText(document, startNode, startNode, 1, 1);
+        (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+        let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+        (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/H661HyVGu7I?si=ROQf-Grd6u37RlX6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+        (dialogEle.querySelector('.e-embed-video-url') as HTMLElement).dispatchEvent(new Event("keyup"));
+        (<HTMLElement>document.querySelector('.e-insertVideo') as HTMLElement).click();
+        setTimeout(() => {
+            sel = new NodeSelection().setSelectionText(document, startNode, startNode, 0, 0);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(document.querySelectorAll('.e-video-clickelem').length === 1).toBe(true);
+            done();
+        },500);
+    });
+});
+
+describe('843688 - The Enter key press before the video duplicates the video', function () {
+    let rteEle: HTMLElement;
+    let rteObj: RichTextEditor;
+    
+    var innerHTML: string = "<p><b>Description:</b></p><p>The Rich Text Editor.</p><p> <br></p><p><b>Functional</b></p>";
+    beforeAll(() => {
+        rteObj = renderRTE({
+            height: 400,
+            toolbarSettings: {
+                items: ['Video']
+            },
+            value: innerHTML,
+        });
+        rteEle = rteObj.element;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Press enter key curser places before the embaded video', (done: Function) => {
+    const startNode: any = rteObj.inputElement.childNodes[2];
+        let sel: void = new NodeSelection().setSelectionText(document, startNode, startNode, 1, 1);
+        (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+        let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+        (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/H661HyVGu7I?si=ROQf-Grd6u37RlX6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+        (dialogEle.querySelector('.e-embed-video-url') as HTMLElement).dispatchEvent(new Event("keyup"));
+        (<HTMLElement>document.querySelector('.e-insertVideo') as HTMLElement).click();
+        setTimeout(() => {
+            sel = new NodeSelection().setSelectionText(document, startNode, startNode, 0, 0);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(document.querySelectorAll('.e-video-clickelem').length === 1).toBe(true);
+            done();
+        },500);
     });
 });

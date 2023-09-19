@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Event, EmitType } from '@syncfusion/ej2-base';import { AjaxSettings, AjaxSettingsModel, ContextMenuSettings, ContextMenuSettingsModel, BeforeSendEventArgs } from '@syncfusion/ej2-filemanager';import { DetailsViewSettings, DetailsViewSettingsModel, NavigationPaneSettings } from '@syncfusion/ej2-filemanager';import { NavigationPaneSettingsModel, SearchSettings, SearchSettingsModel, SortOrder } from '@syncfusion/ej2-filemanager';import { ToolbarSettingsModel as FileToolbarSettingsModel, ToolbarSettings as FileToolbarSettings } from '@syncfusion/ej2-filemanager';import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-filemanager';import { SaveFormat, DisplayLayoutOptions } from '../../common';import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IListDropDownModel, EmojiIconsSet } from '../base/interface';import { backgroundColor, fontColor, fontFamily, fontSize, formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList, defaultEmojiIcons } from './items';
+import { Property, ChildProperty, Complex, Event, EmitType } from '@syncfusion/ej2-base';import { AjaxSettings, AjaxSettingsModel, ContextMenuSettings, ContextMenuSettingsModel, BeforeSendEventArgs } from '@syncfusion/ej2-filemanager';import { DetailsViewSettings, DetailsViewSettingsModel, NavigationPaneSettings } from '@syncfusion/ej2-filemanager';import { NavigationPaneSettingsModel, SearchSettings, SearchSettingsModel, SortOrder } from '@syncfusion/ej2-filemanager';import { ToolbarSettingsModel as FileToolbarSettingsModel, ToolbarSettings as FileToolbarSettings } from '@syncfusion/ej2-filemanager';import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-filemanager';import { SaveFormat, DisplayLayoutOptions } from '../../common';import { ToolbarType, ActionOnScroll, ToolbarItems, ToolbarConfigItems } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IListDropDownModel, EmojiIconsSet } from '../base/interface';import { backgroundColor, fontColor, fontFamily, fontSize, formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList, defaultEmojiIcons } from './items';
 
 /**
  * Interface for a class ToolbarSettings
@@ -36,7 +36,7 @@ export interface ToolbarSettingsModel {
      * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'OrderedList',
      * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
      */
-    items?: (string | IToolbarItems)[];
+    items?: (string |ToolbarConfigItems | IToolbarItems)[];
 
     /**
      * Using this property, Modify the default toolbar item configuration like icon class.
@@ -570,10 +570,9 @@ export interface QuickToolbarSettingsModel {
     /**
      * Specifies the items to render in quick toolbar, when text selected.
      *
-     * @default ['Cut', 'Copy', 'Paste']
-     * @deprecated
+     * @default null
      */
-    text?: (string | IToolbarItems)[];
+    text?: (string | ToolbarConfigItems | IToolbarItems)[];
 
     /**
      * Specifies the items to render in quick toolbar, when table selected.

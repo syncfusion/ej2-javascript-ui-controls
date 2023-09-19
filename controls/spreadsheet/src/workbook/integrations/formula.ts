@@ -490,9 +490,20 @@ export class WorkbookFormula {
         }
         this.calculateInstance.cell = '';
         const updatedCell: CellModel = getCell(rowIdx, colIdx, this.parent.getActiveSheet());
-        if (updatedCell && value && value.toString().toUpperCase().indexOf('=SUM(') === 0 && !isDependentRefresh) {
+        let isSum: boolean; let isAverage: boolean;
+        if (value) {
+            isSum = value.toString().toUpperCase().indexOf('=SUM(') === 0;
+            isAverage = value.toString().toUpperCase().indexOf('=AVERAGE(') === 0;
+        }
+        if (updatedCell && value && (isSum || isAverage) && !isDependentRefresh) {
             const errorStrings: string[] = ['#N/A', '#VALUE!', '#REF!', '#DIV/0!', '#NUM!', '#NAME?', '#NULL!', 'invalid arguments'];
-            const val: string = value.toString().toUpperCase().replace('=SUM', '').replace('(', '').replace(')', '').split(':')[0];
+            let val: string;
+            if (isSum) {
+                val = value.toString().toUpperCase().replace('=SUM', '').replace('(', '').replace(')', '').split(':')[0];
+            }
+            if (isAverage) {
+                val = value.toString().toUpperCase().replace('=AVERAGE', '').replace('(', '').replace(')', '').split(':')[0];
+            }
             if (isCellReference(val)) {
                 const index: number[] = getRangeIndexes(val);
                 const fCell: CellModel = getCell(index[0], index[1], this.parent.getActiveSheet());

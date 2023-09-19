@@ -1,14 +1,16 @@
 /**
  * Template render spec
  */
-import { EmitType } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { HeaderCellInfoEventArgs, QueryCellInfoEventArgs, RowDataBoundEventArgs } from '../../../src/grid/base/interface';
+import { Group } from '../../../src/grid/actions/group';
+
+Grid.Inject(Group);
 
 describe('Template render module', () => {
     describe('column template render', () => {
@@ -209,6 +211,7 @@ describe('Template render module', () => {
     //for coverage
     describe('row template render', () => {
         let gridObj: Grid;
+        let dataBound: (e: any) => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -223,6 +226,16 @@ describe('Template render module', () => {
         it('row render testing', () => {
             let trs = gridObj.getContent().querySelectorAll('tr');
            // expect(trs[0].querySelectorAll('td')[0].innerHTML).not.toBe('10248');
+        });
+
+        it('on property change', (done) => {
+            dataBound = function (e: any) {
+                expect(gridObj.getContent().querySelector('.customrow')).not.toBeNull();
+                gridObj.dataBound = null;
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.rowTemplate = '<div class="customrow">${EmployeeID}</div>';
         });
 
         afterAll(() => {

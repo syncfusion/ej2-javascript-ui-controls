@@ -214,13 +214,13 @@ describe('BPMN dataobject node visibility issue', () => {
             }
         ele = createElement('div', { id: 'diagram1' });
         document.body.appendChild(ele);
-         
+
         let nodes: NodeModel[] = [
             {
                 id: 'subProcess', width: 520, height: 250, offsetX: 300, offsetY: 100,
                 shape: { type: 'Bpmn', shape: 'DataObject'}
             }  ,
-          
+
         ];
            diagram = new Diagram({
             width: '74%', height: '600px', nodes: nodes,
@@ -256,7 +256,7 @@ describe('BPMN dataobject node visibility issue', () => {
         expect((diagram.nodes[0].wrapper.children[0] as Container).children[1].visible === false).toBe(true);
         done();
     });
-    
+
 });
 describe('BPMN shapes', () => {
     describe('Changing of BPMN Shapes from one to another', () => {

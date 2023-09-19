@@ -25,6 +25,12 @@ export class Dictionary<K, V> implements DictionaryInfo<K, V> {
     public get keys(): K[] {
         return this.keysInternal;
     }
+    /**
+     * @private
+     */
+    public get values(): V[] {
+        return this.valuesInternal;
+    }
 
     /**
      * @private

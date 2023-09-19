@@ -2,39 +2,13 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
+## 23.1.36 (2023-09-15)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
-- `#F183921` - Resolved the Script error thrown while changing Boolean value in dropdowntree fieldMode of QueryBuilder.
-
-## 22.2.8 (2023-08-08)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I469225` - Resolved the Custom operator not working properly in QueryBuilder While dynamically change locale property.
-
-## 22.1.38 (2023-07-11)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I469225` - Resolved the Dropdown tree field selection related issue in the query builder.
-
-## 22.1.37 (2023-07-04)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I44054` - Resolved the issue where importing SQL queries containing special characters.
-
-## 22.1.34 (2023-06-21)
+- `#I493593` - Resolved the Script error thrown in `getRule` method of QueryBuilder while using change event.
 
 ### QueryBuilder
 

@@ -1761,6 +1761,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         this.todayElement = null;
         this.tableBodyElement = null;
+        this.todayButtonEvent = null;
         this.renderDayCellArgs = null;
         this.headerElement = null;
         this.nextIcon = null;
@@ -2661,6 +2662,7 @@ export class Calendar extends CalendarBase {
     public destroy(): void {
         super.destroy();
         if (this.getModuleName() === 'calendar') {
+            this.changedArgs = null;
             const form: Element = closest(this.element, 'form');
             if (form) {
                 EventHandler.remove(form, 'reset', this.formResetHandler.bind(this));

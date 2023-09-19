@@ -1,0 +1,162 @@
+@include export-module('v-scroll') {
+
+  /*! v-scroll layout */
+
+  .e-bigger #{&}.e-vscroll,
+  #{&}.e-vscroll.e-bigger {
+
+    &:not(.e-scroll-device) {
+      padding: $vscroll-bgr-padding;
+    }
+
+    .e-icons {
+      font-size: 18px;
+    }
+
+    &.e-rtl .e-scroll-overlay.e-scroll-down-overlay {
+      left: $vscroll-nav-bgr-width;
+    }
+
+    .e-scroll-overlay {
+
+      &.e-scroll-down-overlay {
+        right: $vscroll-nav-bgr-width;
+      }
+    }
+
+    .e-scroll-nav {
+      height: $vscroll-nav-bgr-width;
+    }
+  }
+
+  #{&}.e-vscroll {
+    display: block;
+    position: relative;
+    width: inherit;
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-scroll-nav {
+          transform: skewX(-16deg) translateX(-6px);
+        }
+
+        .e-scroll-overlay {
+
+          &.e-scroll-down-overlay {
+            left: $vscroll-device-arrow-width;
+            right: auto;
+            transform: skewX(-16deg) translateX(-6px);
+          }
+
+          &.e-scroll-up-overlay {
+            left: auto;
+            right: 0;
+          }
+        }
+      }
+    }
+
+    &:not(.e-scroll-device) {
+      padding: $vscroll-nrml-padding;
+    }
+
+    &.e-scroll-device {
+
+      .e-scroll-nav {
+        transform: skewX(-16deg) translateX(6px);
+        width: $vscroll-device-arrow-width;
+        z-index: 1001;
+
+        .e-nav-arrow {
+          font-size: $vscroll-device-arrow-size;
+          transform: skewX(16deg);
+        }
+      }
+
+      .e-scroll-overlay {
+        opacity: $vscroll-overlay-opacity;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        z-index: 100;
+
+        &.e-scroll-down-overlay {
+          left: auto;
+          right: $vscroll-device-arrow-width;
+          transform: skewX(-16deg) translateX(6px);
+        }
+
+        &.e-scroll-up-overlay {
+          left: 0;
+          right: auto;
+        }
+      }
+    }
+
+    > * {
+      height: inherit;
+    }
+
+    .e-vscroll-content {
+      display: inline-block;
+      height: auto;
+      position: relative;
+      width: 100%;
+
+      > * {
+        pointer-events: auto;
+      }
+    }
+
+    &.e-rtl {
+
+      .e-scroll-nav  {
+
+        &.e-scroll-up-nav {
+          left: auto;
+          right: 0;
+        }
+
+        &.e-scroll-down-nav {
+          left: 0;
+          right: auto;
+        }
+      }
+    }
+
+    .e-scroll-nav  {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      height: $vscroll-nav-nrml-height;
+      overflow: hidden;
+      position: absolute;
+      width: 100%;
+
+      &.e-scroll-up-nav {
+        top: 0;
+      }
+
+      &.e-scroll-down-nav {
+        bottom: 0;
+      }
+
+      &.e-ie-align {
+        display: table;
+      }
+    }
+
+    .e-nav-arrow {
+      position: relative;
+    }
+
+    .e-nav-arrow.e-icons {
+      display: table-cell;
+      text-align: center;
+      vertical-align: middle;
+      width: 100%;
+    }
+  }
+}

@@ -167,6 +167,7 @@ export class BaseTooltip extends ChartData {
         const series: Series = <Series>this.currentPoints[0].series;
         const module: AccumulationTooltip | Tooltip = (<Chart>chart).tooltipModule || (<AccumulationChart>chart).accumulationTooltipModule;
         if (!module || location === null) { // For the tooltip enable is false.
+            removeElement(this.chart.element.id + '_tooltip');
             return;
         }
 

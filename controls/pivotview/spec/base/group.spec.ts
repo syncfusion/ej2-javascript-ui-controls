@@ -149,18 +149,17 @@ describe('Group By Date feature', () => {
             expect(document.querySelector('.e-pivotfieldlist-container').classList.contains('e-popup-close'));
         });
         it('Check code-behind groups initially', () => {
-                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Airways');
-                (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
+            expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Airways');
+            (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
         });
         it('Check single value header', () => {
-                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Airways');
-                expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
-                (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
+            expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Airways');
+            expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
+            (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
         });
         it('check sorting order field', () => {
             expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Four wheelers');
-            let pivotButtons: HTMLElement[] =
-                [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
             expect(pivotButtons.length).toBe(2);
             expect((pivotButtons[0]).querySelector('.e-ascend')).toBeTruthy;
             ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
@@ -168,8 +167,7 @@ describe('Group By Date feature', () => {
         });
         it('sorting order after update', () => {
             expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Four wheelers');
-            let pivotButtons: HTMLElement[] =
-                [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
             expect(pivotButtons.length).toBe(2);
             expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
             ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
@@ -210,23 +208,20 @@ describe('Group By Date feature', () => {
             expect(filterDialog).toBeUndefined;
         });
         it('check remove pivot button', () => {
-            let pivotButton: HTMLElement =
-                (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+            let pivotButton: HTMLElement = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
             expect(pivotButton.id).toBe('PivotGrid_gender');
             (pivotButton.querySelector('.e-remove') as HTMLElement).click();
-                pivotButton = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
-                expect(pivotButton).toBeTruthy();
+            pivotButton = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+            expect(pivotButton).toBeTruthy();
         });
         it('check drag and drop pivot button', () => {
             let filterAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-filters');
             let pivotButton: HTMLElement[] = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(2);
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-pvt-btn-content');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', dragElement, filterAxiscontent, 15, 70);
+            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, filterAxiscontent, 15, 70);
             mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove = util.setMouseCordinates(mousemove, 15, 75);
@@ -241,9 +236,9 @@ describe('Group By Date feature', () => {
             mouseUp.type = 'mouseup';
             mouseUp.srcElement = mouseUp.target = mouseUp.toElement = filterAxiscontent;
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                pivotButton = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(2);
-                expect((pivotButton[1].id)).toBe("PivotGrid_date_date_group_years");
+            pivotButton = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
+            expect(pivotButton.length).toEqual(2);
+            expect((pivotButton[1].id)).toBe("PivotGrid_date_date_group_years");
         });
         it('contextmenu in row header', () => {
             pivotGridObj.lastCellClicked = document.querySelector('.e-rowsheader');
@@ -252,23 +247,26 @@ describe('Group By Date feature', () => {
         });
         it('check context menu in row header', () => {
             expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Airways');
-                expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
+            expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
         });
         it('Perform group option for false statement', () => {
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_group') as HTMLElement).click();
-                expect(document.querySelector('.e-pivot-error-dialog')).toBeTruthy();
-                (document.querySelector('.e-pivot-error-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
+            expect(document.querySelector('.e-pivot-error-dialog')).toBeTruthy();
+            (document.querySelector('.e-pivot-error-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
         });
-        it('Perform ungroup option', () => {
-            expect(document.querySelector('.e-pivot-error-dialog') == null).toBeTruthy();
-            (document.querySelector('#' + pivotGridObj.element.id + '_custom_ungroup') as HTMLElement).click();
+        it('Perform ungroup option', (done: Function) => {
+            setTimeout(function () {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                expect(document.querySelectorAll('.e-pivot-error-dialog').length === 0).toBeTruthy();
+                (document.querySelector('#' + pivotGridObj.element.id + '_custom_ungroup') as HTMLElement).click();
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[1].textContent).toBe('Bike');
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[1].querySelector('.e-expand')).toBeTruthy();
                 expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[3].textContent).toBe('Grand Total');
+                done();
+            }, 1000);
         });
         it('check pivot button maintenance', () => {
-            let pivotButton: HTMLElement[] =
-                [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+            let pivotButton: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(2);
             expect(pivotButton[0].id).toBe('PivotGrid_date');
         });
@@ -282,9 +280,9 @@ describe('Group By Date feature', () => {
         });
         it('Flight keyboard ctrl + mouse click', function () {
             expect(args.selectedCellsInfo[0].rowHeaders).toBe('Flight');
-                pivotGridObj.lastCellClicked = document.querySelector('[aria-colindex="1"][index="4"]');
-                let cell: HTMLElement = document.querySelector('[aria-colindex="1"][index="4"]');
-                util.triggerMouseEvent(cell, 'contextmenu');
+            pivotGridObj.lastCellClicked = document.querySelector('[aria-colindex="1"][index="4"]');
+            let cell: HTMLElement = document.querySelector('[aria-colindex="1"][index="4"]');
+            util.triggerMouseEvent(cell, 'contextmenu');
         });
         it('Context menu in selected headers', (done: Function) => {
             setTimeout(() => {
@@ -327,8 +325,7 @@ describe('Group By Date feature', () => {
             }, 100);
         });
         it('check pivot button maintenance', () => {
-            let pivotButton: HTMLElement[] =
-                [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+            let pivotButton: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(2);
             expect(pivotButton[0].id).toBe('PivotGrid_date');
         });
@@ -375,8 +372,7 @@ describe('Group By Date feature', () => {
             }, 100);
         });
         it('check pivot button maintenance', () => {
-            let pivotButton: HTMLElement[] =
-                [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+            let pivotButton: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(2);
             expect(pivotButton[0].id).toBe('PivotGrid_date');
         });
@@ -449,11 +445,9 @@ describe('Group By Date feature', () => {
             let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(2);
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-pvt-btn-content');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', dragElement, filterAxiscontent, 15, 70);
+            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, filterAxiscontent, 15, 70);
             mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove = util.setMouseCordinates(mousemove, 15, 75);
@@ -499,11 +493,9 @@ describe('Group By Date feature', () => {
             let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(3);
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-pvt-btn-content');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', dragElement, filterAxiscontent, 15, 70);
+            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, filterAxiscontent, 15, 70);
             mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove = util.setMouseCordinates(mousemove, 15, 75);
@@ -531,11 +523,9 @@ describe('Group By Date feature', () => {
             let pivotButton: HTMLElement[] = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(4);
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-pvt-btn-content');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
             mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove = util.setMouseCordinates(mousemove, 15, 75);
@@ -605,8 +595,7 @@ describe('Group By Date feature', () => {
             }, 100);
         });
         it('check pivot button maintenance', () => {
-            let pivotButton: HTMLElement[] =
-                [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+            let pivotButton: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(2);
             expect(pivotButton[0].id).toBe('PivotGrid_age_custom_group');
             pivotButton = [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
@@ -685,41 +674,41 @@ describe('Group By Date feature', () => {
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
-        it('Filter testing', () => {
+        it('Filter testing1', () => {
             (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
             expect(1).toBe(1);
         });
-        it('Filter testing', () => {
+        it('Filter testing2', () => {
             expect(document.querySelectorAll('.e-dialog').length > 0).toBeTruthy();
             (document.querySelectorAll('.e-cancel-btn')[0] as HTMLElement).click();
         });
-        it('Filter testing', () => {
-            expect(document.querySelectorAll('.e-dialog').length === 1).toBeTruthy();
+        it('Filter testing3', () => {
+            expect(document.querySelectorAll('.e-dialog').length).toBe(6);
             (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
         });
-        it('Filter testing', () => {
+        it('Filter testing4', () => {
             expect((document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value === '').toBeTruthy();
             (document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value = 'k';
         });
-        it('Filter testing', () => {
+        it('Filter testing5', () => {
             expect((document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value === 'k').toBeTruthy();
             (document.querySelectorAll('.e-cancel-btn')[0] as HTMLElement).click();
                 expect(1).toBe(1);
         });
-        it('Filter testing', () => {
+        it('Filter testing6', () => {
             pivotGridObj.maxNodeLimitInMemberEditor = 1000;
             pivotGridObj.refreshData();
             expect(document.querySelectorAll('.e-btn-filter').length > 10).toBeTruthy();
         });
-        it('Filter testing', () => {
+        it('Filter testing7', () => {
             (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
             expect(document.querySelectorAll('.e-member-editor-container-outer-div').length > 0).toBeTruthy();
         });
-        it('Filter testing', () => {
+        it('Filter testing8', () => {
             expect((document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value === '').toBeTruthy();
             (document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value = 'k';
         });
-        it('Filter testing', () => {
+        it('Filter testing9', () => {
             expect((document.querySelectorAll('.e-maskedtextbox')[0] as HTMLInputElement).value === 'k').toBeTruthy();
             (document.querySelectorAll('.e-cancel-btn')[0] as HTMLElement).click();
         });

@@ -1,5 +1,5 @@
 import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';
-import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition, ILegendClickEventArgs, IAxisMultiLabelRenderEventArgs } from '@syncfusion/ej2-charts';
+import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition, ILegendClickEventArgs } from '@syncfusion/ej2-charts';
 import { ChartDrawType, ChartShape, DataLabelSettingsModel as PivotChartDataLabelSettingsModel, ZoomMode } from '@syncfusion/ej2-charts';
 import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes, ToolbarItems, IScrollEventArgs } from '@syncfusion/ej2-charts';
 import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';
@@ -25,7 +25,7 @@ import { PivotSeriesModel, PivotAxisModel, PivotTooltipSettingsModel, PivotZoomS
 import { PivotPieChartCenterModel, PivotChartDataLabelModel, PivotChartConnectorStyleModel } from './chartsettings-model';
 import { ChartSeriesType, ChartSelectionMode } from '../../common/base/enum';
 import { Theme } from '../../common/base/themes';
-import { MultiLevelLabelClickEventArgs, OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';
+import { MultiLevelLabelClickEventArgs, MultiLevelLabelRenderEventArgs, OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';
 import { LabelPosition, MultipleAxisMode } from '../../common/base/enum';
 
 /**
@@ -4087,7 +4087,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      * @event multiLevelLabelRender
      */
     @Event()
-    public multiLevelLabelRender: EmitType<IAxisMultiLabelRenderEventArgs>;
+    public multiLevelLabelRender: EmitType<MultiLevelLabelRenderEventArgs>;
 
     /**
      * It triggers before each points for the series is rendered.

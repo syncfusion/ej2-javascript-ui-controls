@@ -1428,7 +1428,7 @@ export class Splitter extends Component<HTMLElement> {
                             this.allPanes[i as number].offsetWidth : this.allPanes[i as number].offsetHeight);
                         const isPercent: boolean = updatePane.style.flexBasis.indexOf('%') > -1;
                         const updatePaneOffset: number = this.orientation === 'Horizontal' ? updatePane.offsetWidth : updatePane.offsetHeight;
-                        if (!isNullOrUndefined(updatePane) && updatePane.style.flexBasis !== '' && updatePane.classList.contains(STATIC_PANE)) {
+                        if (!isNullOrUndefined(updatePane) &&  updatePane.style.flexBasis !== '' && updatePane.classList.contains(STATIC_PANE)) {
                             updatePane.style.flexBasis = isPercent ? this.convertPixelToPercentage(updatePaneOffset + sizeDiff) + '%'
                                 : (updatePaneOffset + sizeDiff) + 'px';
                         }

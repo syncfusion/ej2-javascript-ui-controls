@@ -155,7 +155,9 @@ export class PdfGanttPredecessor {
             }
             break;
         }
-        let midPoint: number = Math.round((this.parent.rowHeight - 1) / 2.0);
+        const midPointforTaskbar: number = Math.round((this.parent.rowHeight - 1) / 2.0);
+        const midPointforBaseline: number = Math.round((this.parent.rowHeight - 10) / 2.0);
+        let midPoint = this.parent.renderBaseline ? midPointforBaseline : midPointforTaskbar;
         midPoint = pixelToPoint(midPoint);
         /* eslint-disable-next-line */
         let point1, point2, point3, point4, point5, point6: PointF;

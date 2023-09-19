@@ -117,7 +117,7 @@ export class FormFields {
                             let fontStyle: string;
                             let fontSize: number;
     
-                            if (font !== null && font.Height) {
+                            if (!isNullOrUndefined(font) && font.Height) {
                                 fontFamily = font.Name;
                                 if (font.Italic) {
                                     fontStyle = 'Italic';
@@ -210,7 +210,7 @@ export class FormFields {
                             } 
                             if (fieldType === 'SignatureField' || fieldType === 'InitialField') {
                                 this.addSignaturePath(currentData, count);
-                                if (!isNullOrUndefined(currentData.Value)) {
+                                if (!isNullOrUndefined(currentData.Value) && currentData.Value != "") {
                                     this.renderExistingAnnnot(currentData, parseFloat(currentData['PageIndex']) + 1, null, isFieldRotated);
                                     this.isSignatureRendered = true;
                                     count++;
@@ -689,7 +689,7 @@ export class FormFields {
             }
             // eslint-disable-next-line
             let font: any = currentData['Font'];
-            if (font !== null && font.Height) {
+            if (!isNullOrUndefined(font) && font.Height) {
                 fontFamily = font.Name;
                 if (font.Italic) {
                     fontStyle = 'Italic';
@@ -905,12 +905,12 @@ export class FormFields {
                     } else {
                         delete (this.pdfViewerBase.nonFillableFields[currentData.GroupName]);
                     }
-                    if (currentData.CheckboxIndex && currentData.Selected) {
-                        fieldDatas={fieldValue: currentData.CheckboxIndex, isReadOnly: currentData.IsReadonly};
+                    if (currentData.CheckboxIndex && currentData.Selected && currentData.Value) {
+                        fieldDatas={isSelected: currentData.CheckboxIndex, isReadOnly: currentData.IsReadonly, fieldValue: currentData.Value};
                         datas[currentData.GroupName] = fieldDatas;
                         
                     } else if (datas[currentData.GroupName] === undefined || datas[currentData.GroupName] === null) {
-                        fieldDatas={fieldValue: currentData.Selected, isReadOnly: currentData.IsReadonly};
+                        fieldDatas={isSelected: currentData.Selected, isReadOnly: currentData.IsReadonly, fieldValue: currentData.Value};
                         datas[currentData.GroupName] = fieldDatas;
                         
                     }
@@ -922,7 +922,7 @@ export class FormFields {
                         delete (this.pdfViewerBase.nonFillableFields[currentData.Text]);
                     }
                     fieldDatas = {fieldValue: currentData.SelectedValue, isReadOnly: currentData.IsReadonly};
-                    datas[currentData.Text] = fieldDatas;
+                    datas[currentData.FieldName] = fieldDatas;
                    
                 } else if (currentData.Name === 'ListBox') {
                     // eslint-disable-next-line
@@ -1099,7 +1099,7 @@ export class FormFields {
                     if (!isNullOrUndefined(currentField) && item.id === target.id + "_content") {
                         signatureAdd = false;
                     }
-                })
+                });
                 if (!isNullOrUndefined(currentField) && signatureAdd) {
                     let elementId: string = currentField.offsetParent.offsetParent.id.split("_")[0];
                     let signatureField: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[elementId];
@@ -1153,8 +1153,8 @@ export class FormFields {
                     } else if (signatureType === 'Image') {
                         // eslint-disable-next-line
                         bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
-                        let currentTarget = target;
                         let image: HTMLImageElement = new Image();
+                        let currentTarget = target;
                         image.src = currentValue;
                         image.onload = function () {
                             proxy.imageOnLoad(bounds, image, currentValue, currentPage, rotateAngle, currentField, signatureField, signString, signatureFontFamily, signatureFontSize, currentTarget)
@@ -1238,7 +1238,7 @@ export class FormFields {
                         }
                         this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
                     }
-            }
+                }
         }
         }
         if (signatureType !== 'Image'){
@@ -1750,6 +1750,9 @@ export class FormFields {
                                 currentData.Selected = false;
                             }
                         }
+                        if(currentData.Value == ""){
+                            currentData.Value = target.value;
+                        }
                     } else if (target.type === 'checkbox') {
                         let targetCheckBox : any = target.id;
                         let filterCheckBoxSameName : any = FormFieldsData.filter((sameNameCheckboxField: any) => (sameNameCheckboxField.GroupName === target.name) && sameNameCheckboxField.Name == 'CheckBox')
@@ -1772,6 +1775,9 @@ export class FormFields {
                             currentData.Selected = true;
                         } else {
                             currentData.Selected = false;
+                        }
+                        if(currentData.Value == ""){
+                            currentData.Value = target.value;
                         }
                     } else if (target.type === 'select-one' && target.size === 0) {
                         // eslint-disable-next-line
@@ -2527,7 +2533,7 @@ export class FormFields {
             let fieldBounds: any = { left: left, top: top, width: width, height: height };
             // eslint-disable-next-line
             let annotBounds: any = this.getBounds(fieldBounds, pageIndex, rotation, isFieldRotated);
-            if (font !== null && font.Height) {
+            if (!isNullOrUndefined(font) && font.Height) {
                 inputField.style.fontFamily = font.Name;
                 if (font.Italic) {
                     inputField.style.fontStyle = 'italic';

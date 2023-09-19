@@ -2,102 +2,13 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I469741` - Now, group node rotation and undo working properly.
-- `#F184075` - Now, BPMN node subtype visibles whiles changing the node visibility issue is resolved.
-- `#I489954` - Now, Connectors are routed correctly while enable routing set as true.
-- `#I493510` -Now, Expand and collapse working properly at runtime.
-- `#I490046` - In the positionChange event, during the completed state, old and new values remain identical issue is resolved.
-
-## 22.2.11 (2023-08-29)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I477867,#I486093` - Now, Html shapes in palette are rendered properly.
-- `#F183998` - Now, When Dragging Swimlane from Palette to Diagram and Exiting Without Dropping is working properly.
-- `#F184121` - Now, BPMN nodes styles are updated properly at runtime.
-
-## 22.2.10 (2023-08-22)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I484458` - Now, order commands for dropped swimlane is working properly
-- `#I485386` - Now, Copy and paste the child nodes from group is working properly.
-- `#F182827` - Now, Swimlane child nodes are positioned properly and the exception will no longer thrown while performing delete and undo.
-
-## 22.2.9 (2023-08-15)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I486118` - Now, the orthogonal connector routing works properly when we drag connector segment.
-- `#I484774` - Now, Double click on node annotation will open the edit of invisible annotation is resolved.
-- `#I484563` - The DOM Exception will no longer thrown while removing connector with Virtualization Enabled.
-- `#I484335` - Now, highlighter rendered properly on hovering ports and nodes.
-
-## 22.2.8 (2023-08-08)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I482420` - Now, Connector draw cursor is enabled while hover the group node port.
-- `#I484353` - Now, copy paste the group node multiple times is working properly.
-
-## 22.2.7 (2023-08-02)
-
-### Diagram
-
-#### New Feature
-
-- `#I464388` - load Event to notify diagram initial render is added.
-
-#### Bug Fixes
-
--`#I477967`  - Now, symbol size does not change after dragging the symbols.
-
-## 22.2.5 (2023-07-27)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#F-182592,#FB-45000` - scrollbar flickering issue in mac on zooming the diagram has been fixed now.
-- `#I44765` - Now, Event "Start" state triggers for single time in rotate and resize action.
-- `#I44765` - Now, Duplicate nodes and connectors are created after reset for layout type 'None' has been fixed now.
-
-## 22.1.38 (2023-07-11)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I44765` - Now, child nodes are properly rendered after deleting swimlane and performing undo action.
-- `#I473032`- Now, the orthogonal connector routing works properly when we drag connector segment.
-
-## 22.1.36 (2023-06-28)
-
 ### Diagram
 
 #### Bug Fixes
 
 - `#I468711` - Now, opacity 0 get working for the image node.
 - `#I182694` - Now, UML multiplicity type ManyToMany get working for annotation label.
-- `#I467016` - Improved rendering performance for layouts with large number of nodes.
-- `#I469741` - Fixed undo redo issue with group nodes.
-- `#I471066` - Now, dragging group node from palette to diagram adds unselectable element when leaving the diagram has been fixed.
-- `#I448032` - Fixed grid lines appearing black in Safari browser.
-- `#I466480` - Improved performance while nudging large number of nodes.
+- `#I44765` - Now, child nodes are properly rendered after deleting swimlane and performing undo action.
 
 ## 22.1.34 (2023-06-21)
 

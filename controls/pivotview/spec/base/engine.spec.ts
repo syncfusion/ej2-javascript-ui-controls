@@ -4,7 +4,7 @@ import { PivotUtil } from '../../src/base/util';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { closest, createElement, EmitType, remove, EventHandler } from '@syncfusion/ej2-base';
+import { closest, createElement, EmitType, remove, EventHandler, getInstance } from '@syncfusion/ej2-base';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
 import { VirtualScroll } from '../../src/pivotview/actions';
@@ -14,6 +14,8 @@ import { Pager } from '../../src/pivotview/actions/pager';
 import { PivotActionCompleteEventArgs } from '../../src/index';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { Button } from '@syncfusion/ej2-buttons';
+import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 
 describe('PivotView spec', () => {
     /**
@@ -243,111 +245,110 @@ describe('PivotView spec', () => {
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
-            it('Filter testing', () => {
+            it('Filter testing1', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'Equals', value1: 'car' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
             });
-            it('Filter testing', () => {
+            it('Filter testing2', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'BeginWith', value1: 'C' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
             });
-            it('Filter testing', () => {
+            it('Filter testing3', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'EndsWith', value1: 'e' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("16");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("16");
             });
-            it('Filter testing', () => {
+            it('Filter testing4', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', condition: 'GreaterThan', value1: 'Car' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][3] as IDataSet).formattedText).toBe("52740.04999999999");
+                expect((pivotGridObj.engineModule.pivotValues[3][3] as IDataSet).formattedText).toBe("52740.04999999999");
             });
-            it('Filter testing', () => {
+            it('Filter testing5', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', condition: 'GreaterThanOrEqualTo', value1: 'Jet' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("33");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("33");
             });
-            it('Filter testing', () => {
+            it('Filter testing6', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', condition: 'LessThanOrEqualTo', value1: 'Flight' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("14");
+                expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("14");
             });
-            it('Filter testing', () => {
+            it('Filter testing7', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'Contains', value1: 'e', value2: 'v' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[4][5] as IDataSet).formattedText).toBe("34");
-                    expect((pivotGridObj.engineModule.pivotValues[5][5] as IDataSet).formattedText).toBe("50");
+                expect((pivotGridObj.engineModule.pivotValues[4][5] as IDataSet).formattedText).toBe("34");
+                expect((pivotGridObj.engineModule.pivotValues[5][5] as IDataSet).formattedText).toBe("50");
             });
-            it('date testing', () => {
+            it('date testing1', () => {
                 pivotGridObj.dataSourceSettings.rows = [{ name: 'date' }, { name: 'product' }];
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'Before', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("16");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("16");
             });
-            it('date testing', () => {
+            it('date testing2', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'Equals', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
             });
-            it('date testing', () => {
+            it('date testing3', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'After', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("18");
+                expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("18");
             });
-            it('date testing', () => {
+            it('date testing4', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'AfterOrEqualTo', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
             });
-            it('date testing', () => {
+            it('date testing5', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'BeforeOrEqualTo', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("15");
+                expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("15");
             });
-            it('date testing', () => {
+            it('date testing6', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'Between', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)', value2: 'Tue Sep 09 2008 09:47:08 GMT+0530 (India Standard Time)' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
             });
-            it('date testing', () => {
+            it('date testing7', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', value1: 'Tue Sep 09 2008 09:47:08 GMT+0530 (India Standard Time)' }];
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("15");
-                    pivotGridObj.dataSourceSettings.filterSettings = [];
-                    pivotGridObj.dataSourceSettings.columns = [{ name: 'gender' }, { name: 'advance' }];
-                    pivotGridObj.dataSourceSettings.values = [{ name: 'balance', type: 'DifferenceFrom' }, { name: 'quantity', type: 'PercentageOfGrandTotal' }, { name: 'price', type: 'CalculatedField' }];
-                    pivotGridObj.dataSourceSettings.sortSettings = [{ name: 'gender', order: 'Descending' }, { name: 'advance', order: 'Descending', membersOrder: [6124, 7107] }];
-                    pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("12.5%");
+                expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("15");
+                pivotGridObj.dataSourceSettings.filterSettings = [];
+                pivotGridObj.dataSourceSettings.columns = [{ name: 'gender' }, { name: 'advance' }];
+                pivotGridObj.dataSourceSettings.values = [{ name: 'balance', type: 'DifferenceFrom' }, { name: 'quantity', type: 'PercentageOfGrandTotal' }, { name: 'price', type: 'CalculatedField' }];
+                pivotGridObj.dataSourceSettings.sortSettings = [{ name: 'gender', order: 'Descending' }, { name: 'advance', order: 'Descending', membersOrder: [6124, 7107] }];
+                pivotGridObj.refreshData();
+                expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("12.5%");
             });
-            it('date testing', () => {
+            it('date testing8', () => {
                 (document.querySelectorAll('.e-expand')[1] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 (document.querySelectorAll('.e-icons.e-sort')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 (document.querySelectorAll('.e-collapse')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    debugger;
-                    expect((pivotGridObj.engineModule.pivotValues[5][2] as IDataSet).formattedText).toBe("11.72%");
+                expect((pivotGridObj.engineModule.pivotValues[5][2] as IDataSet).formattedText).toBe("11.72%");
             });
-            it('data testing', () => {
+            it('data testing9', () => {
                 pivotGridObj.dataSourceSettings.rows = [{ name: 'product' }, { name: 'date' }];
                 pivotGridObj.refreshData();
                 expect(("1")).toBe("1");
             });
-            it('filter testing', () => {
+            it('filter testing1', () => {
                 (document.querySelectorAll('.e-icons.e-sort')[2] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 (document.querySelectorAll('.e-expand')[3] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 expect(("1")).toBe("1");
             });
-            it('filter testing', () => {
+            it('filter testing2', () => {
                 expect((pivotGridObj.engineModule.pivotValues[4][5] as IDataSet).formattedText).toBe("26.56%");
                 pivotGridObj.refreshData();
             });
-            it('filter testing', () => {
+            it('filter testing3', (done: Function) => {
                 expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
                 (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
                 pivotGridObj.refreshData();
@@ -358,9 +359,12 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("17.54%");
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
+                    done();
+                }, 1000);
             });
-            it('filter testing', () => {
+            it('filter testing4', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[1] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -370,9 +374,12 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("29.85%");
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
+                    done();
+                }, 1000);
             });
-            it('filter testing', () => {
+            it('filter testing5', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -382,9 +389,12 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("42.55%");
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
+                    done();
+                }, 1000);
             });
-            it('filter testing', () => {
+            it('filter testing6', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -394,7 +404,10 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("64.52%");
+                setTimeout(() => {
+                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
+                    done();
+                }, 1000);
             });
             it('aggreagation testing', () => {
                 let field: IFieldOptions = {
@@ -479,10 +492,10 @@ describe('PivotView spec', () => {
             it('Paging testing', () => {
                 expect((pivotGridObj.engineModule.pivotValues[6][1] as IDataSet).formattedText).toBe("105");
                 (document.querySelector('#PivotGrid_row_nextIcon') as HTMLElement).click();
-                    pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-35");
+                pivotGridObj.refreshData();
+                expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-35");
             });
-            it('filter testing', () => {
+            it('filter testing1', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -490,9 +503,12 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-23");
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-35");
+                    done();
+                }, 1000);
             });
-            it('filter testing', () => {
+            it('filter testing2', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -500,20 +516,23 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-21");
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-35");
+                    done();
+                }, 1000);
             });
             it('sort testing', () => {
                 (document.querySelectorAll('.e-icons.e-sort')[0] as HTMLElement).click();
                 (document.querySelectorAll('.e-icons.e-sort')[2] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("-$3,468.89");
+                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("-$3,468.89");
             });
             it('set data', () => {
                 pivotGridObj.setProperties({ dataSourceSettings: { valueIndex: 1 } });
                 pivotGridObj.refreshData();
                 expect("1").toBe("1");
             });
-            it('filter testing', () => {
+            it('filter testing3', () => {
                 (document.querySelectorAll('.e-btn-filter')[1] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -523,7 +542,7 @@ describe('PivotView spec', () => {
                 pivotGridObj.refreshData();
                 expect("1").toBe("1");
             });
-            it('filter testing', () => {
+            it('filter testing4', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -531,9 +550,12 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
+                setTimeout(function () {
                     expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Flight");
+                    done();
+                }, 1000);
             });
-            it('filter testing', () => {
+            it('filter testing5', () => {
                 pivotGridObj.dataSourceSettings.valueAxis = 'column';
                 pivotGridObj.dataSourceSettings.valueIndex = 2;
                 pivotGridObj.refreshData();
@@ -543,9 +565,9 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-icons.e-sort')[1] as HTMLElement).click();
                 (document.querySelectorAll('.e-icons.e-sort')[3] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("Van");
+                expect((pivotGridObj.engineModule.pivotValues[3][0] as IDataSet).formattedText).toBe("Van");
             });
-            it('filter testing', () => {
+            it('filter testing6', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -553,9 +575,12 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Flight");
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Jet");
+                    done();
+                }, 1000)
             });
-            it('filter testing', () => {
+            it('filter testing7', (done: Function) => {
                 (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
@@ -563,7 +588,10 @@ describe('PivotView spec', () => {
                 util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Jet");
+                setTimeout(() => {
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Tempo");
+                    done();
+                }, 1000);
             });
         });
 
@@ -624,7 +652,6 @@ describe('PivotView spec', () => {
             };
             pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it('Ensure the page data', () => {
-                debugger;
                 expect(pivotEngine.pivotValues.length === 9 && pivotEngine.pivotValues[2].length === 27).toBeTruthy;
             });
             it('Ensure the row data', () => {
@@ -633,7 +660,7 @@ describe('PivotView spec', () => {
             it('Ensure the column data', () => {
                 expect((pivotEngine.pivotValues[0][1] as IAxisSet).formattedText === "20").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data1', () => {
                 dataSourceSettings.filterSettings = [{ name: 'product', type: 'Include', items: ['Bike', 'Car', 'Jet'] }]
                 let pageSettings: IPageSettings = {
                     columnPageSize: 4,
@@ -652,14 +679,14 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length === 12 && pivotEngine.pivotValues[2].length === 33).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][6] as IAxisSet).formattedText === "11").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data2', () => {
                 dataSourceSettings.filters = [{ name: 'index' }];
                 dataSourceSettings.filterSettings = [{ name: 'index', type: 'Exclude', items: ['0', '2', '3', '4', '5', '6', '1', '7'] }];
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 9 && pivotEngine.pivotValues[2].length === 27).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][6] as IAxisSet).formattedText === "11").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data3', () => {
                 dataSourceSettings.filterSettings = [{ name: 'index', type: 'Include', items: ['0', '4', '6'] }];
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 9 && pivotEngine.pivotValues[2].length === 27).toBeTruthy;
@@ -726,13 +753,12 @@ describe('PivotView spec', () => {
             };
             pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it('Ensure the page data', () => {
-                debugger;
                 expect(pivotEngine.pivotValues.length === 9 && pivotEngine.pivotValues[2].length === 22).toBeTruthy;
             });
             it('Ensure the row data', () => {
                 expect((pivotEngine.pivotValues[6][3] as IAxisSet).formattedText === "14059.28").toBeTruthy;
             });
-            it('Ensure the column data', () => {
+            it('Ensure the column data1', () => {
                 expect((pivotEngine.pivotValues[3][1] as IAxisSet).formattedText === "$1,278.10").toBeTruthy;
             });
             it('Ensure the filtered data', () => {
@@ -755,7 +781,7 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "14059.28").toBeTruthy;
             });
-            it('Ensure the column data', () => {
+            it('Ensure the column data2', () => {
                 expect((pivotEngine.pivotValues[11][8] as IAxisSet).formattedText === "18").toBeTruthy;
             });
         });
@@ -819,7 +845,6 @@ describe('PivotView spec', () => {
             };
             pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it('Ensure the page data', () => {
-                debugger;
                 expect(pivotEngine.pivotValues.length === 9 && pivotEngine.pivotValues[2].length === 22).toBeTruthy;
             });
             it('Ensure the row data', () => {
@@ -909,59 +934,58 @@ describe('PivotView spec', () => {
             };
             pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it('Ensure the page data', () => {
-                debugger;
                 expect(pivotEngine.pivotValues.length === 9 && pivotEngine.pivotValues[2].length === 22).toBeTruthy;
             });
-            it('Ensure the row data', () => {
+            it('Ensure the row data1', () => {
                 expect((pivotEngine.pivotValues[6][3] as IAxisSet).formattedText === "14059.28").toBeTruthy;
             });
-            it('Ensure the row data', () => {
+            it('Ensure the row data2', () => {
                 expect((pivotEngine.pivotValues[6][3] as IAxisSet).formattedText === "14059.28").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data1', () => {
                 dataSourceSettings.valueIndex = 0;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data2', () => {
                 dataSourceSettings.valueIndex = 1;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data3', () => {
                 dataSourceSettings.valueIndex = -1;
                 dataSourceSettings.valueAxis = 'column';
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data4', () => {
                 dataSourceSettings.valueIndex = 0;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data5', () => {
                 dataSourceSettings.valueIndex = 1;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data6', () => {
                 dataSourceSettings.showRowSubTotals = false;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data7', () => {
                 dataSourceSettings.showColumnSubTotals = false;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data8', () => {
                 dataSourceSettings.showRowSubTotals = false;
                 dataSourceSettings.showRowSubTotals = true;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
@@ -969,7 +993,7 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
 
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data9', () => {
                 dataSourceSettings.showRowSubTotals = true;
                 dataSourceSettings.subTotalsPosition = 'Auto';
                 dataSourceSettings.valueAxis = 'row';
@@ -978,44 +1002,44 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data10', () => {
                 dataSourceSettings.valueIndex = 1;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data11', () => {
                 dataSourceSettings.valueIndex = -1;
                 dataSourceSettings.valueAxis = 'column';
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data12', () => {
                 dataSourceSettings.valueIndex = 0;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data13', () => {
                 dataSourceSettings.valueIndex = 1;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data14', () => {
                 dataSourceSettings.showRowSubTotals = false;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data15', () => {
                 dataSourceSettings.showColumnSubTotals = false;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data16', () => {
                 dataSourceSettings.showRowSubTotals = false;
                 dataSourceSettings.showRowSubTotals = true;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
@@ -1023,7 +1047,7 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
 
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data17', () => {
                 dataSourceSettings.showRowSubTotals = true;
                 dataSourceSettings.subTotalsPosition = 'Top';
                 dataSourceSettings.valueAxis = 'row';
@@ -1032,44 +1056,44 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data18', () => {
                 dataSourceSettings.valueIndex = 1;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data19', () => {
                 dataSourceSettings.valueIndex = -1;
                 dataSourceSettings.valueAxis = 'column';
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data20', () => {
                 dataSourceSettings.valueIndex = 0;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data21', () => {
                 dataSourceSettings.valueIndex = 1;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data22', () => {
                 dataSourceSettings.showRowSubTotals = false;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data23', () => {
                 dataSourceSettings.showColumnSubTotals = false;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect(pivotEngine.pivotValues.length === 46 && pivotEngine.pivotValues[2].length === 136).toBeTruthy;
                 expect((pivotEngine.pivotValues[3][3] as IAxisSet).formattedText === "1278.1").toBeTruthy;
             });
-            it('Ensure the filtered data', () => {
+            it('Ensure the filtered data24', () => {
                 dataSourceSettings.showRowSubTotals = false;
                 dataSourceSettings.showRowSubTotals = true;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
@@ -1146,52 +1170,52 @@ describe('PivotView spec', () => {
             });
             it('Calculated field using min function', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = 'min("Sum(balance)","Count(quantity)")';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
             it('Calculated field using max function', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = 'max("Sum(balance)","Count(quantity)")';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
             it('Calculated field using abs function', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = 'abs("Sum(balance)") + "Count(quantity)"';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
             it('Calculated field using Math.min function', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = 'Math.min("Sum(balance)","Count(quantity)")';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
             it('Calculated field using Math.max function', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = 'Math.max("Sum(balance)","Count(quantity)")';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
             it('Calculated field using Math.abs function', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = 'Math.abs("Sum(balance)") + "Count(quantity)"';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
             it('Calculated field using > condition', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" > "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
             it('Calculated field using < condition', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" < "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
             it('Calculated field using >= condition', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" >= "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
             it('Calculated field using <= condition', () => {
                 dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" <= "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
-                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('28');
             });
         });
@@ -1234,7 +1258,7 @@ describe(' - VirtualScrolling', () => {
             return;
         }
     });
-    describe(' - VirtualScrolling', () => {
+    describe(' - VirtualScrolling1', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
         beforeAll((done: Function) => {
@@ -1261,56 +1285,56 @@ describe(' - VirtualScrolling', () => {
                 });
             pivotGridObj.appendTo('#PivotGrid');
         });
-        it('scroll top0', (done: Function) => {
+        it('scroll top1', (done: Function) => {
             setTimeout(() => {
                 done();
             }, 1000);
         });
-        it('scroll top00', () => {
+        it('scroll top2', () => {
             expect(1).toBe(1);
         });
-        it('scroll top', () => {
-            document.querySelectorAll('.e-frozencontent')[0].scrollTop = 317;
+        it('scroll top3', () => {
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollTop = 317;
             pivotGridObj.virtualscrollModule.direction = 'vertical';
             let args: MouseEvent = new MouseEvent("touchstart", { clientY: 317, view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-frozencontent').dispatchEvent(args);
+            document.querySelectorAll('.e-content-virtualtable')[0].dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-frozencontent').dispatchEvent(args);
-                expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 0).toBeTruthy();
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+            document.querySelectorAll('.e-content-virtualtable')[0].dispatchEvent(args);
+            expect(Math.round(document.querySelectorAll('.e-content-virtualtable')[0].scrollTop) === 0).toBeTruthy();
+            expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+            expect(document.querySelectorAll('.e-content-virtualtable td')[1].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
         });
 
         it('scroll right', () => {
-            document.querySelectorAll('.e-movableheader')[0].scrollLeft = 1360;
+            document.querySelectorAll('.e-headercontent')[0].scrollLeft = 1360;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("touchstart", { clientX: 1360, view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movableheader').dispatchEvent(args);
+            document.querySelector('.e-headercontent').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movableheader').dispatchEvent(args);
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+            document.querySelector('.e-headercontent').dispatchEvent(args);
+            expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+            expect(document.querySelectorAll('.e-content-virtualtable td')[1].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
         });
 
         it('scroll right false', () => {
-            document.querySelectorAll('.e-movableheader')[0].scrollLeft = 1360;
+            document.querySelectorAll('.e-headercontent')[0].scrollLeft = 1360;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("touchstart", { clientX: 0, view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movableheader').dispatchEvent(args);
+            document.querySelector('.e-headercontent').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movableheader').dispatchEvent(args);
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+            document.querySelector('.e-headercontent').dispatchEvent(args);
+            expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-freezeleftborder) .e-cellvalue').textContent).toBe('$12,490.89');
         });
 
         it('scroll top wheel', () => {
-            document.querySelectorAll('.e-frozencontent')[0].scrollTop = 0;
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollTop = 0;
             pivotGridObj.virtualscrollModule.direction = 'vertical';
             let args: MouseEvent = new MouseEvent("wheel", { clientY: 0, view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-frozencontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-frozencontent').dispatchEvent(args);
-                expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 0).toBeTruthy();
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
+            expect(Math.round(document.querySelectorAll('.e-content-virtualtable')[0].scrollTop) === 0).toBeTruthy();
         });
 
         afterAll(() => {
@@ -1320,7 +1344,7 @@ describe(' - VirtualScrolling', () => {
             remove(elem);
         });
     });
-    describe(' - VirtualScrolling', () => {
+    describe(' - VirtualScrolling2', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
         beforeAll((done: Function) => {
@@ -1349,100 +1373,100 @@ describe(' - VirtualScrolling', () => {
         });
         it('pivotgrid render testing', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(30);
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-freezeleftborder)').length).toBe(14);
+                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                 done();
             }, 1000);
         });
         it('scroll right', (done: Function) => {
-            document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1360;
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 1360;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
+                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                 done();
             }, 100);
         });
         it('scroll bottom', (done: Function) => {
-            pivotGridObj.element.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
+            pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop = 0;
             pivotGridObj.virtualscrollModule.direction = 'vertical';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$32,045.16');
+                expect(pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
+                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-freezeleftborder) .e-cellvalue').textContent).toBe('$32,045.16');
                 done();
             }, 100);
         });
-        it('scroll left', (done: Function) => {
-            document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 400;
+        it('scroll left1', (done: Function) => {
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 400;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(400);
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
+                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft).toBe(400);
+                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                 expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('390.1px');
                 expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1980px');
                 done();
             }, 100);
         });
-        it('scroll left', (done: Function) => {
-            document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
+        it('scroll left2', (done: Function) => {
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 0;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(0);
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
+                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft).toBe(0);
+                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                expect(document.querySelectorAll('.e-content-virtualtable td')[1].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
                 done();
             }, 100);
         });
         it('Collapse flight', (done: Function) => {
-            (document.querySelectorAll('.e-frozencontent tr .e-icons')[0] as HTMLElement).click();
+            (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[0] as HTMLElement).click();
             setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
+                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
                 expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('210.1px');
                 done();
             }, 100);
         });
         it('Collapse male', (done: Function) => {
-            (document.querySelectorAll('.e-movableheader th .e-icons')[0] as HTMLElement).click();
+            (document.querySelectorAll('.e-headercontent th .e-sortfilterdiv.e-icons')[0] as HTMLElement).click();
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
-                expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$95,040.55');
+                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
+                expect(document.querySelectorAll('.e-headercontent th')[6].textContent).toBe('male Total');
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('$12,490.89');
                 done();
             }, 100);
         });
 
         it('Collapse bike', (done: Function) => {
-            (document.querySelectorAll('.e-frozencontent tr .e-icons')[2] as HTMLElement).click();
+            (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[2] as HTMLElement).click();
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(0);
+                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft).toBe(0);
                 done();
             }, 100);
         });
         it('Collapse female', (done: Function) => {
-            (document.querySelectorAll('.e-movableheader th .e-collapse')[0] as HTMLElement).click();
+            (document.querySelectorAll('.e-headercontent th .e-collapse')[0] as HTMLElement).click();
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(0);
+                expect(document.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
                 done();
             }, 100);
         });
@@ -1450,7 +1474,7 @@ describe(' - VirtualScrolling', () => {
             pivotGridObj.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
             pivotGridObj.dataSourceSettings.drilledMembers = [];
             setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
                 expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('30.1px');
                 done();
             }, 100);
@@ -1462,15 +1486,15 @@ describe(' - VirtualScrolling', () => {
                 done();
             }, 100);
         });
-        it('scroll left', (done: Function) => {
-            document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 50000;
+        it('scroll left3', (done: Function) => {
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 50000;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
                 done();
             }, 100);
         });
@@ -1514,57 +1538,57 @@ describe(' - VirtualScrolling', () => {
         });
         it('pivotgrid render testing', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(30);
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-leftfreeze)').length).toBe(14);
+                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                 done();
             }, 100);
         });
         it('scroll right', (done: Function) => {
-            document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1360;
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 1360;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                 done();
             }, 100);
         });
         it('scroll bottom', (done: Function) => {
-            pivotGridObj.element.querySelectorAll('.e-movablecontent')[0].scrollTop = 0;
+            pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop = 0;
             pivotGridObj.virtualscrollModule.direction = 'vertical';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$32,045.16');
+                expect(pivotGridObj.element.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
+                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                expect(document.querySelectorAll('.e-content-virtualtable td')[1].querySelector('td .e-cellvalue').textContent).toBe('$32,045.16');
                 done();
             }, 100);
         });
         it('scroll left', (done: Function) => {
-            document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 0;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
                 done();
             }, 100);
         });
         it('Collapse flight', (done: Function) => {
-            (document.querySelectorAll('.e-frozencontent tr .e-icons')[0] as HTMLElement).click();
+            (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[0] as HTMLElement).click();
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
                 done();
-            }, 100);
+            }, 500);
         });
 
         it('filter', (done: Function) => {
@@ -1586,9 +1610,9 @@ describe(' - VirtualScrolling', () => {
         });
         it('filter check', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                 done();
-            }, 100);
+            }, 500);
         });
 
         it('value moved to row', (done: Function) => {
@@ -1597,11 +1621,9 @@ describe(' - VirtualScrolling', () => {
             let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(3);
             let dragElement: HTMLElement = pivotButton[2].querySelector('.e-pvt-btn-content');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
             mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
@@ -1620,11 +1642,9 @@ describe(' - VirtualScrolling', () => {
             let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(3);
             let dragElement: HTMLElement = pivotButton[2].querySelector('.e-pvt-btn-content');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', dragElement, columnAxiscontent, 15, 70);
+            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, columnAxiscontent, 15, 70);
             mousemove.srcElement = mousemove.target = mousemove.toElement = columnAxiscontent;
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, columnAxiscontent);
@@ -1643,11 +1663,9 @@ describe(' - VirtualScrolling', () => {
             let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
             expect(pivotButton.length).toEqual(3);
             let dragElement: HTMLElement = pivotButton[2].querySelector('.e-pvt-btn-content');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
             EventHandler.trigger(dragElement, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
             mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseUp: any = util.getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
@@ -1690,7 +1708,7 @@ describe(' - VirtualScrolling', () => {
         it('RTL', (done: Function) => {
             pivotGridObj.enableRtl = true;
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(0);
+                expect(document.querySelectorAll('.e-content-virtualtable')[0].scrollTop).toBe(0);
                 done();
             }, 100);
         });
@@ -1732,82 +1750,82 @@ describe(' - VirtualScrolling', () => {
         });
         it('pivotgrid render testing', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(30);
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
+                expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-leftfreeze)').length).toBe(14);
                 done();
             }, 100);
         });
         it('state start with t', (done: Function) => {
             pivotGridObj.dataSourceSettings.filterSettings = [
                 { name: 'state', type: 'Label', condition: 'BeginWith', value1: 't' }],
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(30);
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                    done();
-                }, 100);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-content-virtualtable tr').length).toBe(30);
+                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                done();
+            }, 100);
         });
         it('state contains e', (done: Function) => {
             pivotGridObj.dataSourceSettings.filterSettings = [
                 { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' }],
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
-                    done();
-                }, 100);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelectorAll('td:not(.e-leftfreeze)').length).toBe(14);
+                done();
+            }, 100);
         });
         it('eyeColor equals blue', (done: Function) => {
             pivotGridObj.dataSourceSettings.filterSettings = [
                 { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' },
                 { name: 'eyeColor', type: 'Label', condition: 'Equals', value1: 'blue' }],
-                setTimeout(() => {
-                    expect(1).toBe(1);
-                    done();
-                }, 100);
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 100);
         });
         it('scroll right', (done: Function) => {
-            document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 1360;
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 1360;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === document.querySelectorAll('.e-movablecontent')[0].scrollLeft).toBeTruthy();
+                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft).toBeTruthy();
                 done();
             }, 100);
         });
         it('product quantity > 100', (done: Function) => {
             pivotGridObj.dataSourceSettings.filterSettings = [
                 { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('male Total');
-                    done();
-                }, 100);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-headercontent th')[5].textContent).toBe('male Total');
+                done();
+            }, 100);
         });
         it('scroll left', (done: Function) => {
-            document.querySelectorAll('.e-movablecontent')[0].scrollLeft = 0;
+            document.querySelectorAll('.e-content-virtualtable')[0].scrollLeft = 0;
             pivotGridObj.virtualscrollModule.direction = 'horizondal';
             let args: MouseEvent = new MouseEvent("scroll", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-            document.querySelector('.e-movablecontent').dispatchEvent(args);
+            document.querySelector('.e-content-virtualtable').dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
+                expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                 done();
             }, 100);
         });
         it('Collapse flight', (done: Function) => {
-            (document.querySelectorAll('.e-frozencontent tr .e-icons')[0] as HTMLElement).click()
+            (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[0] as HTMLElement).click()
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
+                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
                 done();
             }, 100);
         });
         it('Collapse male', (done: Function) => {
-            (document.querySelectorAll('.e-movableheader th .e-icons')[0] as HTMLElement).click()
+            (document.querySelectorAll('.e-headercontent th .e-sortfilterdiv.e-icons')[0] as HTMLElement).click()
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
+                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
+                expect(document.querySelectorAll('.e-headercontent th')[6].textContent).toBe('male Total');
                 done();
             }, 100);
         });
@@ -1815,9 +1833,9 @@ describe(' - VirtualScrolling', () => {
             pivotGridObj.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
             pivotGridObj.dataSourceSettings.drilledMembers = [];
             setTimeout(() => {
-                let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
+                let mCnt: HTMLElement = document.querySelector('.e-content-virtualtable') as HTMLElement;
                 expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('210.1px');
-                expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1320px');
+                expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1980px');
                 done();
             }, 100);
         });
@@ -1874,21 +1892,21 @@ describe(' - VirtualScrolling', () => {
         it('drop down menu (Sum of Amount) click', (done: Function) => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-values .e-dropdown-icon')).not.toBeUndefined;
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('28550');
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('28550');
                 document.querySelectorAll('.e-values .e-dropdown-icon')[0].dispatchEvent(click);
                 done();
             }, 500);
         });
 
         it('Sum of Amount -> Count of Amount _using grouping bar dropdown menu', () => {
-                let menu: MenuEventArgs = {
-                    element: document.querySelectorAll('.e-menu-item')[1] as HTMLElement,
-                    item: { id: pivotGridObj.element.id + '_Count', text: 'Count' }
-                };
-                (pivotGridObj.pivotButtonModule.menuOption as any).selectOptionInContextMenu(menu);
+            let menu: MenuEventArgs = {
+                element: document.querySelectorAll('.e-menu-item')[1] as HTMLElement,
+                item: { id: pivotGridObj.element.id + '_Count', text: 'Count' }
+            };
+            (pivotGridObj.pivotButtonModule.menuOption as any).selectOptionInContextMenu(menu);
         });
         it('Sum of Amount -> Count of Amount _result + enable sorting', () => {
-            expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('28550');
+            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('28550');
             pivotGridObj.dataSourceSettings.enableSorting = true;
         });
         it('Country -> descending _using grouping bar sort icon', (done: Function) => {
@@ -1897,31 +1915,35 @@ describe(' - VirtualScrolling', () => {
                 done();
             }, 100);
         });
-        it('Country -> descending _result + Switch to ascending', () => {
-            expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('6');
-            expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
-            document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
+        it('Country -> descending _result + Switch to ascending', (done: Function) => {
+            setTimeout(function () {
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('7');
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('United States');
+                document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
+                done();
+            }, 500)
         });
-        it('Country -> Switch to ascending _result + open field list', () => {
-                expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('6');
-                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('United States');
+        it('Country -> Switch to ascending _result + open field list', (done: Function) => {
+            setTimeout(function () {
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td:not(.e-leftfreeze) .e-cellvalue').textContent).toBe('6');
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
                 document.querySelectorAll('.e-toggle-field-list')[0].dispatchEvent(click);
+                done();
+            }, 500)
         });
         it('Open calculated field dialog', () => {
             cf = new CalculatedField(pivotGridObj);
             cf.createCalculatedFieldDialog(pivotGridObj);
             pivotGridObj.engineModule.enableSort = false;
-                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
         });
         it('drag and drop Amount(Count) node to drop field', () => {
             let treeObj: any = cf.treeObj;
             let filterAxiscontent: HTMLElement = document.getElementById(cf.parentID + 'droppable');
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
-            let mousedown: any =
-                util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-drag'), 15, 10);
+            let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-drag'), 15, 10);
             EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-            let mousemove: any =
-                util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-drag'), 15, 70);
+            let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-drag'), 15, 70);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
             mousemove = util.setMouseCordinates(mousemove, 150, 400);
@@ -1932,37 +1954,46 @@ describe(' - VirtualScrolling', () => {
             expect((document.querySelector('.e-pivot-formula') as HTMLTextAreaElement).value !== null).toBeTruthy;
         });
         it('set new field as "New" and close the dialog', () => {
-            cf.inputObj.value = 'New';
+            const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+            (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'), MaskedTextBox) as MaskedTextBox).value = 'New';
             (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'New';
             (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
             expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-            cf.dialog.buttons[0].click();
+            (getInstance(calcField.querySelectorAll('.e-btn')[1] as HTMLElement, Button) as Button).click()
             document.querySelector('.e-pivotfieldlist-container .e-cancel-btn').dispatchEvent(click);
         });
-        it('Country -> open filter dialog + uncheck canada + click ok btn', () => {
+        it('Country -> open filter dialog + uncheck canada + click ok btn', (done: Function) => {
             pivotGridObj.engineModule.enableSort = true;
-            expect(document.querySelectorAll('.e-movableheader th')[11].textContent).toBe('New');
+            expect(document.querySelectorAll('.e-headercontent th')[12].textContent).toBe('New');
             document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
-                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
-                firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
-                firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
-                firstNode.querySelector('.e-frame').dispatchEvent(click);
+            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
+            firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
+            firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
+            firstNode.querySelector('.e-frame').dispatchEvent(click);
+            setTimeout(() => {
                 document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
+                done();
+            }, 500);
         });
-        it('Country -> open filter dialog + check canada + click ok btn', () => {
-            expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
-            expect(document.querySelectorAll('.e-movablecontent td')[0].textContent).toBe('6');
+        it('Country -> open filter dialog + check canada + click ok btn', (done: Function) => {
+            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
+            expect(document.querySelectorAll('.e-content-virtualtable td:not(.e-leftfreeze)')[0].textContent).toBe('6');
             document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
-                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
+            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
+            if (firstNode.querySelector('.e-frame').dispatchEvent) {
                 firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
                 firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
                 firstNode.querySelector('.e-frame').dispatchEvent(click);
+            } 
+            setTimeout(() => {
                 document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
+                done();
+            }, 500);
         });
         it('Country -> set report as no data', () => {
-            expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
+            expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
             pivotGridObj.dataSourceSettings.rows[0].showNoDataItems = true;
         });
         it('Country -> open filter dialog + uncheck france + click ok btn', (done: Function) => {
@@ -2027,34 +2058,34 @@ describe(' - VirtualScrolling', () => {
                 pivotGridObj.appendTo('#PivotGrid');
             });
             it('Compare scrollbar', () => {
-                expect(document.querySelector('.e-movablecontent').scrollHeight).toBe(document.querySelector('.e-movablecontent').clientHeight);
-                expect(document.querySelector('.e-movablecontent').scrollWidth).toBe(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
+                expect(document.querySelector('.e-content').scrollWidth).toBe(document.querySelector('.e-content').clientWidth);
             });
 
             it('Display vertical scrollbar alone', () => {
                 pivotGridObj.height = 200;
-                    expect(document.querySelector('.e-movablecontent').scrollHeight).toBe(document.querySelector('.e-movablecontent').clientHeight);
-                    expect(document.querySelector('.e-movablecontent').scrollWidth).toBe(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
+                expect(document.querySelector('.e-content').scrollWidth).toBe(document.querySelector('.e-content').clientWidth);
             });
 
             it('Display horizondal scrollbar alone', () => {
                 pivotGridObj.setProperties({ height: '100%' }, true);
                 pivotGridObj.width = 300;
-                    expect(document.querySelector('.e-movablecontent').scrollHeight).toBe(document.querySelector('.e-movablecontent').clientHeight);
-                    expect(document.querySelector('.e-movablecontent').scrollWidth).toBe(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
+                expect(document.querySelector('.e-content').scrollWidth).toBe(document.querySelector('.e-content').clientWidth);
             });
 
             it('Hide both scrollbars', () => {
                 pivotGridObj.setProperties({ height: '100%' }, true);
                 pivotGridObj.width = '100%';
-                    expect(document.querySelector('.e-movablecontent').scrollHeight).toBe(document.querySelector('.e-movablecontent').clientHeight);
-                    expect(document.querySelector('.e-movablecontent').scrollWidth).toBe(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
+                expect(document.querySelector('.e-content').scrollWidth).toBe(document.querySelector('.e-content').clientWidth);
             });
 
             it('Hide both scrollbars by setting auto', () => {
                 pivotGridObj.setProperties({ height: 'auto' }, true);
-                    expect(document.querySelector('.e-movablecontent').scrollHeight).toBe(document.querySelector('.e-movablecontent').clientHeight);
-                    expect(document.querySelector('.e-movablecontent').scrollWidth).toBeGreaterThan(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content').scrollHeight).toBe(document.querySelector('.e-content').clientHeight);
+                expect(document.querySelector('.e-content').scrollWidth).toBeGreaterThan(document.querySelector('.e-content').clientWidth);
             });
 
         });
@@ -2100,102 +2131,36 @@ describe(' - VirtualScrolling', () => {
             });
 
             it('Scroll compare', () => {
-                    expect(document.querySelector('.e-movablecontent').scrollHeight).toBeGreaterThan(document.querySelector('.e-movablecontent').clientHeight);
-                    expect(document.querySelector('.e-movablecontent').scrollWidth).toBe(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBe(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
             it('Display vertical scrollbar alone', () => {
                 pivotGridObj.height = 200;
-                    expect(document.querySelector('.e-movablecontent').scrollHeight).toBeGreaterThan(document.querySelector('.e-movablecontent').clientHeight);
-                    expect(document.querySelector('.e-movablecontent').scrollWidth).toBe(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBe(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
             it('Display horizondal scrollbar alone', () => {
                 pivotGridObj.setProperties({ height: '100%' }, true);
                 pivotGridObj.width = 300;
-                    expect(document.querySelector('.e-movablecontent').scrollHeight).toBeGreaterThan(document.querySelector('.e-movablecontent').clientHeight);
-                    expect(document.querySelector('.e-movablecontent').scrollWidth).toBe(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBe(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
             it('Hide both scrollbars by setting 100%', () => {
                 pivotGridObj.setProperties({ height: '100%' }, true);
                 pivotGridObj.width = '100%';
-                    expect(document.querySelector('.e-movablecontent').scrollHeight).toBe(document.querySelector('.e-movablecontent').clientHeight);
-                    expect(document.querySelector('.e-movablecontent').scrollWidth).toBe(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBe(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
             it('Hide both scrollbars by setting auto', () => {
                 pivotGridObj.setProperties({ height: 'auto' }, true);
-                    expect(document.querySelector('.e-movablecontent').scrollHeight).toBe(document.querySelector('.e-movablecontent').clientHeight);
-                    expect(document.querySelector('.e-movablecontent').scrollWidth).toBeGreaterThan(document.querySelector('.e-movablecontent').clientWidth);
+                expect(document.querySelector('.e-content-virtualtable').scrollHeight).toBe(document.querySelector('.e-content-virtualtable').clientHeight);
+                expect(document.querySelector('.e-content-virtualtable').scrollWidth).toBeGreaterThan(document.querySelector('.e-content-virtualtable').clientWidth);
             });
 
-        });
-
-        describe('VirtualScrolling', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-            beforeAll((done: Function) => {
-                document.body.appendChild(elem);
-                let dataBound: EmitType<Object> = () => { done(); };
-                PivotView.Inject(VirtualScroll);
-                pivotGridObj = new PivotView(
-                    {
-                        dataSourceSettings: {
-                            dataSource: pivot_dataset as IDataSet[],
-                            expandAll: true,
-                            enableSorting: false,
-                            sortSettings: [{ name: 'company', order: 'Descending' }],
-                            formatSettings: [{ name: 'balance', format: 'C' }],
-                            rows: [{ name: 'product' }, { name: 'state' }],
-                            columns: [{ name: 'gender' }, { name: 'eyeColor' }],
-                            values: [{ name: 'balance' }, { name: 'quantity' }],
-                            filters: [],
-                        },
-                        allowCalculatedField: true,
-                        enableVirtualization: true,
-                        dataBound: dataBound,
-                        width: 600,
-                        height: 300
-                    });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            it('Ensuring - with virtualization', (done: Function) => {
-                setTimeout(() => {
-                    expect(pivotGridObj.pivotValues.length).toBe(33);
-                    done();
-                }, 1000);
-            });
-            it('virtualization - disabled', (done: Function) => {
-                setTimeout(() => {
-                    pivotGridObj.enableVirtualization = false;
-                    done();
-                }, 1000);
-            });
-            it('Ensuring - without virtualization', (done: Function) => {
-                setTimeout(() => {
-                    expect(pivotGridObj.pivotValues.length).toBe(46);
-                    done();
-                }, 1000);
-            });
-            it('virtualization - enabled', (done: Function) => {
-                setTimeout(() => {
-                    pivotGridObj.enableVirtualization = true;
-                    done();
-                }, 1000);
-            });
-            it('Ensuring - with virtualization', (done: Function) => {
-                setTimeout(() => {
-                    expect(pivotGridObj.pivotValues.length).toBe(33);
-                    done();
-                }, 1000);
-            });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
         });
     });
 

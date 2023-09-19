@@ -38,8 +38,17 @@ export class DetailRow {
      */
     constructor(parent?: IGrid, locator?: ServiceLocator) {
         this.parent = parent;
-        if (this.parent.isDestroyed) { return; }
+        this.serviceLocator = locator;
         this.focus = locator.getService<FocusStrategy>('focus');
+        this.addEventListener();
+    }
+
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public addEventListener(): void {
+        if (this.parent.isDestroyed) { return; }
         this.parent.on(events.click, this.clickHandler, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.keyPressed, this.keyPressHandler, this);
@@ -47,7 +56,6 @@ export class DetailRow {
         this.parent.on(events.columnVisibilityChanged, this.refreshColSpan, this);
         this.parent.on(events.destroy, this.destroyChildGrids, this);
         this.parent.on(events.destroyChildGrid, this.destroyChildGrids, this);
-        this.serviceLocator = locator;
     }
 
     private clickHandler(e: MouseEvent): void {

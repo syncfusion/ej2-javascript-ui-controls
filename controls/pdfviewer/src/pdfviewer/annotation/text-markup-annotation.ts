@@ -790,9 +790,21 @@ export class TextMarkupAnnotation {
         let height: number = 0;
         let currentTop: number = 0;
         let nextTop: number = 0;
+        let currentLeft: number = 0;
+        let nextLeft: number = 0;
+        let currentRotation: number = 0;
+        let nextRotation: number = 0;
         for (let i: number = 0; i < newAnnotation.bounds.length; i++) {
             currentTop = newAnnotation.bounds[i].top ? newAnnotation.bounds[i].top : newAnnotation.bounds[i].Top;
             nextTop = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].top ? newAnnotation.bounds[i + 1].top : newAnnotation.bounds[i + 1].Top : 0;
+            let rotation_0_180_exists: boolean;
+            if (this.pdfViewerBase.clientSideRendering) {
+                currentLeft = newAnnotation.bounds[i].left ? newAnnotation.bounds[i].left : newAnnotation.bounds[i].Left;
+                nextLeft = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].left ? newAnnotation.bounds[i + 1].left : newAnnotation.bounds[i + 1].Left : 0;
+                currentRotation = newAnnotation.bounds[i].rotation;
+                nextRotation = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].rotation : 0;
+                 rotation_0_180_exists = (currentRotation == 0) || (currentRotation == 180);
+            }
             if (newAnnotation.bounds.length > 1 && i < newAnnotation.bounds.length - 1 && currentTop === nextTop) {
                 newBounds.push(newAnnotation.bounds[i]);
             } else {
@@ -800,14 +812,36 @@ export class TextMarkupAnnotation {
                     newBounds.push(newAnnotation.bounds[i]);
                 }
                 if (newBounds.length >= 1) {
-                    x = newBounds[0].left ? newBounds[0].left : newBounds[0].Left;
-                    y = newBounds[0].top ? newBounds[0].top : newBounds[0].Top;
-                    height = newBounds[0].height ? newBounds[0].height: newBounds[0].Height;
-                    for (var j = 0; j < newBounds.length; j++) {
-                        if ((!isNaN(newBounds[j].width) && newBounds[j].width > 0) || (!isNaN(newBounds[j].Width) && newBounds[j].Width > 0)) {
-                            width += newBounds[j].width ? newBounds[j].width : newBounds[j].Width;
+                    if (this.pdfViewerBase.clientSideRendering) {
+                        let boundsLength: number = newBounds.length - 1;
+                        x = newBounds.reduce((min: number, rect: any) => (rect.left ? rect.left : rect.Left || 0) < min ? (rect.left ? rect.left : rect.Left || 0) : min, Infinity);
+                        y = newBounds.reduce((min: number, rect: any) => (rect.top ? rect.top : rect.Top || 0) < min ? (rect.top ? rect.top : rect.Top || 0) : min, Infinity);
+                        if (rotation_0_180_exists) {
+                            height = newBounds[0].height ? newBounds[0].height : newBounds[0].Height;
+                            width = newBounds.reduce((sum: number, rect: any) => sum + (rect.width ? rect.width : rect.Width || 0), 0);
+                        } else {
+                            width += newBounds[0].width ? newBounds[0].width : newBounds[0].Width;
+                            height = newBounds.reduce((sum: number, rect: any) => sum + (rect.height ? rect.height : rect.Height || 0), 0);
                         }
+                    } else {
+                        x = newBounds[0].left ? newBounds[0].left : newBounds[0].Left;
+                        y = newBounds[0].top ? newBounds[0].top : newBounds[0].Top;
+                        height = newBounds[0].height ? newBounds[0].height : newBounds[0].Height;
+                        for (var j = 0; j < newBounds.length; j++) {
+                            if ((!isNaN(newBounds[j].width) && newBounds[j].width > 0) || (!isNaN(newBounds[j].Width) && newBounds[j].Width > 0)) {
+                                width += newBounds[j].width ? newBounds[j].width : newBounds[j].Width;
+                            }
+                        }
+                        if (!newcanvas) {
+                            newcanvas = this.pdfViewerBase.getElement('_annotationCanvas_' + newAnnotation.pageNumber);
+                        }
+                        // eslint-disable-next-line max-len
+                        this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(width + 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(height + 0.5, this.pdfViewerBase.getZoomFactor()), annotation);
+                        newBounds = [];
+                        width = 0;
                     }
+                }
+                if (this.pdfViewerBase.clientSideRendering) {
                     if (!newcanvas) {
                         newcanvas = this.pdfViewerBase.getElement('_annotationCanvas_' + newAnnotation.pageNumber);
                     }
@@ -815,6 +849,7 @@ export class TextMarkupAnnotation {
                     this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(width + 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(height + 0.5, this.pdfViewerBase.getZoomFactor()), annotation);
                     newBounds = [];
                     width = 0;
+                    height = 0;
                 }
             }
         }
@@ -1230,12 +1265,24 @@ export class TextMarkupAnnotation {
             context.beginPath();
             let x: number = bound.X ? bound.X : bound.left;
             let y: number = bound.Y ? bound.Y : bound.top;
-            const width: number = bound.Width ? bound.Width : bound.width;
+            let width: number = bound.Width ? bound.Width : bound.width;
             let height: number = bound.Height ? bound.Height : bound.height;
+            let rotation: number = bound.Rotation ? bound.Rotation : bound.rotation;
             x = x ? x : bound.x;
             y = y ? y : bound.y;
             // The highlighted position is slightly increased. So Subtract -1 from the height. 
-            height = height - 1;
+            if (this.pdfViewerBase.clientSideRendering) {
+                if (rotation >= 0) {
+                    rotation = Math.abs(rotation) / 90;
+                }
+                if (rotation == 0 || rotation == 2) {
+                    height = height - 1;
+                } else if (rotation == 1 || rotation == 3) {
+                    width = width - 1;
+                }
+            } else {
+                height = height - 1;
+            }
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
                 if (isPrint) {
                     // eslint-disable-next-line max-len
@@ -1267,35 +1314,35 @@ export class TextMarkupAnnotation {
             const pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
             let factorRatio : number = this.pdfViewerBase.getZoomRatio(factor); 
             let rotation: number = pageDetails.rotation;
-            if (annotationRotation) {
-                let pageRotation = this.getAngle(rotation);
-                rotation = Math.abs(annotationRotation - pageRotation)/ 90
+            if (annotationRotation || (this.pdfViewerBase.clientSideRendering && bounds[i].rotation)) {
+                let pageRotation: number = this.getAngle(rotation);
+                rotation = this.pdfViewerBase.clientSideRendering? Math.abs(bounds[i].rotation) / 90 : Math.abs(annotationRotation - pageRotation)/ 90;
             }
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageNumber) {
                 if (isPrint) {
                     if (rotation === 1) {
                         // eslint-disable-next-line max-len
-                        this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                        this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
                     } else if (rotation === 2) {
                         // eslint-disable-next-line max-len
-                        this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                        this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
                     } else if (rotation === 3) {
-                        this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                        this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
                     } else {
-                        this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, annotationRotation);
+                        this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
                     }
                 }
             } else {
                 if (rotation === 1) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                    this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
                 } else if (rotation === 2) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                    this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
                 } else if (rotation === 3) {
-                    this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                    this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
                 } else {
-                    this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, annotationRotation);
+                    this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
                 }
             }
         }
@@ -1310,11 +1357,11 @@ export class TextMarkupAnnotation {
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageNumber) {
                 if (isPrint) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber, annotationRotation);
+                    this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
                 }
             } else {
                 // eslint-disable-next-line max-len
-                this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber, annotationRotation);
+                this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
             }
         }
     }
@@ -1336,13 +1383,22 @@ export class TextMarkupAnnotation {
         if (isBlazor()) {
             y = y - 1;
         }
-        height = height - 1;
+        if (!this.pdfViewerBase.clientSideRendering) {
+            height = height - 1;
+        }
         context.beginPath();
         const pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
         let rotation: number = pageDetails.rotation;
-        if (annotationRotation) {
+        if (annotationRotation || (this.pdfViewerBase.clientSideRendering && annotationRotation >= 0)) {
             let pageRotation = this.getAngle(rotation);
-            rotation = Math.abs(annotationRotation - pageRotation)/ 90
+            rotation = this.pdfViewerBase.clientSideRendering? Math.abs(annotationRotation) / 90 : Math.abs(annotationRotation - pageRotation)/ 90;
+        }
+        if (this.pdfViewerBase.clientSideRendering) {
+            if (rotation == 0 || rotation == 2) {
+                height = height - 1;
+            } else if (rotation == 1 || rotation == 3) {
+                width = width - 1;
+            }
         }
         if (rotation === 1) {
             context.moveTo(( x * factor), (y * factor));
@@ -1900,14 +1956,36 @@ export class TextMarkupAnnotation {
                         }
                     }
                     const boundingRect: ClientRect = range.getBoundingClientRect();
+                    let annotationRotate: number = 0;
+                    if (this.pdfViewerBase.clientSideRendering) {
+                        let pageDetails: any = this.pdfViewerBase.pageSize[pageId];
+                        let pageRotation: number = this.getAngle(pageDetails.rotation);
+                        let textElement: any;
+                        if (range.startContainer.parentElement) {
+                            textElement = range.startContainer.parentElement;
+                        } else {
+                            textElement = range.startContainer.parentNode;
+                        }
+                        if (textElement && textElement.style.transform !== '') {
+                            if (textElement.style.transform.startsWith('rotate(90deg)')) {
+                                annotationRotate = 90;
+                            } else if (textElement.style.transform.startsWith('rotate(180deg)')) {
+                                annotationRotate = 180;
+                            } else if (textElement.style.transform.startsWith('rotate(-90deg)') || textElement.style.transform.startsWith('rotate(270deg)')) {
+                                annotationRotate = 270;
+                            } else {
+                                annotationRotate = 0;
+                            }
+                        }
+                    }
                     // eslint-disable-next-line
                     let indexes: any = this.getIndexNumbers(pageId, range.toString(), range.commonAncestorContainer.textContent.toString());
                     // eslint-disable-next-line max-len
-                    const rectangle: IRectangle = { left: this.getDefaultValue(boundingRect.left - pageRect.left), top: this.getDefaultValue(boundingRect.top - pageRect.top), width: this.getDefaultValue(boundingRect.width), height: this.getDefaultValue(boundingRect.height), right: this.getDefaultValue(boundingRect.right - pageRect.left), bottom: this.getDefaultValue(boundingRect.bottom - pageRect.top) };
+                    const rectangle: IRectangle = { left: this.getDefaultValue(boundingRect.left - pageRect.left), top: this.getDefaultValue(boundingRect.top - pageRect.top), width: this.getDefaultValue(boundingRect.width), height: this.getDefaultValue(boundingRect.height), right: this.getDefaultValue(boundingRect.right - pageRect.left), bottom: this.getDefaultValue(boundingRect.bottom - pageRect.top), rotation: annotationRotate };
                     const rectangleArray: IRectangle[] = [];
                     rectangleArray.push(rectangle);
                     // eslint-disable-next-line
-                    let rect: any = { left: rectangle.left, top: rectangle.top, right: rectangle.right, bottom: rectangle.bottom };
+                    let rect: any = { left: rectangle.left, top: rectangle.top, right: rectangle.right, bottom: rectangle.bottom, rotation: annotationRotate };
                     pageBounds.push({ pageIndex: pageId, bounds: rectangleArray, rect: rect, startIndex: indexes.startIndex, endIndex: indexes.endIndex, textContent: range.toString() });
                 }
             } else {
@@ -1967,8 +2045,24 @@ export class TextMarkupAnnotation {
                             range.setEnd(node, endOffset);
                         }
                         const boundingRect: ClientRect = range.getBoundingClientRect();
+                        let annotationRotate: number = 0;
+                        if (this.pdfViewerBase.clientSideRendering) {
+                            let pageDetails: any = this.pdfViewerBase.pageSize[i];
+                            let pageRotation: number = this.getAngle(pageDetails.rotation);
+                            if (textElement && textElement.style.transform !== '') {
+                                if (textElement.style.transform.startsWith('rotate(90deg)')) {
+                                    annotationRotate = 90;
+                                } else if (textElement.style.transform.startsWith('rotate(180deg)')) {
+                                    annotationRotate = 180;
+                                } else if (textElement.style.transform.startsWith('rotate(-90deg)') || textElement.style.transform.startsWith('rotate(270deg)')) {
+                                    annotationRotate = 270;
+                                } else {
+                                    annotationRotate = 0;
+                                }
+                            }
+                        }
                         // eslint-disable-next-line max-len
-                        const rectangle: IRectangle = { left: this.getDefaultValue(boundingRect.left - pageRect.left), top: this.getDefaultValue(boundingRect.top - pageRect.top), width: this.getDefaultValue(boundingRect.width), height: this.getDefaultValue(boundingRect.height), right: this.getDefaultValue(boundingRect.right - pageRect.left), bottom: this.getDefaultValue(boundingRect.bottom - pageRect.top) };
+                        const rectangle: IRectangle = { left: this.getDefaultValue(boundingRect.left - pageRect.left), top: this.getDefaultValue(boundingRect.top - pageRect.top), width: this.getDefaultValue(boundingRect.width), height: this.getDefaultValue(boundingRect.height), right: this.getDefaultValue(boundingRect.right - pageRect.left), bottom: this.getDefaultValue(boundingRect.bottom - pageRect.top), rotation: annotationRotate };
                         selectionRects.push(rectangle);
                         range.detach();
                         if (i === focusPageId && j === focusTextId) {
@@ -2005,7 +2099,7 @@ export class TextMarkupAnnotation {
     // eslint-disable-next-line
     private getIndexNumbers(pageNumber: number, content: string, parentText?: string): any {
         // eslint-disable-next-line
-        let storedData: any = this.pdfViewerBase.getStoredData(pageNumber);
+        let storedData: any = this.pdfViewerBase.clientSideRendering? this.pdfViewerBase.getLinkInformation(pageNumber) : this.pdfViewerBase.getStoredData(pageNumber);
         let startIndex: number;
         let endIndex: number;
         if (storedData) {

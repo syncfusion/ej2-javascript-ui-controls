@@ -4,7 +4,7 @@
 /**
  * AccumulationChart DataLabel module file
  */
-import { extend, createElement, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, createElement, getValue, isNullOrUndefined, animationMode } from '@syncfusion/ej2-base';
 import { Rect, Size, PathOption, measureText, TextOption } from '@syncfusion/ej2-svg-base';
 import { ChartLocation, degreeToLocation, isOverlap, stringToNumber, getAngle, appendChildElement } from '../../common/utils/helper';
 import { textTrim, subtractThickness, Thickness, getElement } from '../../common/utils/helper';
@@ -998,7 +998,7 @@ export class AccumulationDataLabel extends AccumulationBase {
     public doTemplateAnimation(accumulation: AccumulationChart, element: Element): void {
         const series: AccumulationSeries = accumulation.visibleSeries[0];
         const delay: number = series.animation.delay + series.animation.duration;
-        if (series.animation.enable && accumulation.animateSeries) {
+        if (((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && accumulation.animateSeries) {
             (<HTMLElement>element).style.visibility = 'hidden';
             templateAnimate(element, delay, 200, 'ZoomIn');
         }

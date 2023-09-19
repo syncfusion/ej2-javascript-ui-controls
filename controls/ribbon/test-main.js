@@ -53,6 +53,11 @@ require.config({
         main: 'ej2-dropdowns.umd.min.js'
     },
     {
+        name: '@syncfusion/ej2-notifications',
+        location: 'node_modules/@syncfusion/ej2-notifications/dist',
+        main: 'ej2-notifications.umd.min.js'
+    },
+    {
         name: '@syncfusion/ej2-navigations',
         location: 'node_modules/@syncfusion/ej2-navigations/dist',
         main: 'ej2-navigations.umd.min.js'

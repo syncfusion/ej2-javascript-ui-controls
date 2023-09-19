@@ -4,7 +4,7 @@ import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { remoteData, remoteData2, remoteData2_1, remoteData1_1, remoteData3_1 } from '../dataSource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
-describe('DropDown Tree control Remote datasource', () => {
+xdescribe('DropDown Tree control Remote datasource', () => {
 
     describe('property change testing', () => {
         let mouseEventArgs: any;

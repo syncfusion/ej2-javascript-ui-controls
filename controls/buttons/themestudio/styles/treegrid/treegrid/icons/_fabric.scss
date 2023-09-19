@@ -1,0 +1,37 @@
+@include export-module('treegrid-fabric-icons') {
+  #{&}.e-treegrid,
+  .e-grid-menu {
+    .e-indent::before {
+      content: '\e33f';
+    }
+
+    .e-outdent::before {
+      content: '\e35d';
+    }
+  }
+
+  .e-treegrid {
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      content: '\e22e';
+    }
+
+    .e-toolbar-item {
+      .e-expand::before {
+        content: '\e555';
+      }
+
+      .e-collapse::before {
+        content: '\e559';
+      }
+
+      .e-indent::before {
+        content: '\e33f';
+      }
+
+      .e-outdent::before {
+        content: '\e35d';
+      }
+    }
+  }
+}

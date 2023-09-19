@@ -18,6 +18,12 @@ export class WListFormat {
     public ownerBase: Object = undefined;
     public baseStyle: WStyle = undefined;
     public list: WList = undefined;
+    public get nsid(): number {
+        return this.getPropertyValue('nsid') as number;
+    }
+    public set nsid(id: number) {
+        this.setPropertyValue('nsid', id);
+    }
     public get listId(): number {
         return this.getPropertyValue('listId') as number;
     }
@@ -109,6 +115,7 @@ export class WListFormat {
         const uniqueListFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
         this.addUniqueListFormat('listId', property, propValue, uniqueListFormatTemp);
         this.addUniqueListFormat('listLevelNumber', property, propValue, uniqueListFormatTemp);
+        this.addUniqueListFormat('nsid', property, propValue, uniqueListFormatTemp);
         this.uniqueListFormat = WListFormat.uniqueListFormats.addUniqueFormat(uniqueListFormatTemp, WListFormat.uniqueFormatType);
     }
 
@@ -121,12 +128,15 @@ export class WListFormat {
     private static getPropertyDefaultValue(property: string): Object {
         let value: Object = undefined;
         switch (property) {
-        case 'listId':
-            value = -1;
-            break;
-        case 'listLevelNumber':
-            value = 0;
-            break;
+            case 'listId':
+                value = -1;
+                break;
+            case 'listLevelNumber':
+                value = 0;
+                break;
+            case 'nsid':
+                value = -1;
+                break;
         }
         return value;
     }
@@ -135,6 +145,7 @@ export class WListFormat {
             if (!isNullOrUndefined(format.uniqueListFormat)) {
                 this.listId = format.listId;
                 this.listLevelNumber = format.listLevelNumber;
+                this.nsid = format.nsid;
             }
             if (!isNullOrUndefined(format.baseStyle)) {
                 this.baseStyle = format.baseStyle;
@@ -184,6 +195,9 @@ export class WListFormat {
         if (isNullOrUndefined(this.getValue('listLevelNumber'))) {
             this.listLevelNumber = format.getValue('listLevelNumber') as number;
         }
+        if (isNullOrUndefined(this.getValue('nsid'))) {
+            this.nsid = format.getValue('nsid') as number;
+        }
         if (!isNullOrUndefined(format.list)) {
             if (isNullOrUndefined(this.list)) {
                 this.list = new WList();
@@ -195,6 +209,7 @@ export class WListFormat {
         const format: WListFormat = new WListFormat(undefined);
         format.list = this.list;
         format.listId = this.listId;
+        format.nsid = this.nsid;
         format.baseStyle = this.baseStyle;
         format.listLevelNumber = this.listLevelNumber;
         format.uniqueListFormat = this.uniqueListFormat;

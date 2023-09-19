@@ -7,11 +7,10 @@ import { Filter } from '../../../src/grid/actions/filter';
 import { Group } from '../../../src/grid/actions/group';
 import { Page } from '../../../src/grid/actions/page';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { Selection } from '../../../src/grid/actions/selection';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
-import { filterData, customerData} from '../base/datasource.spec';
+import { filterData, customerData, fdata, fCustomerData} from '../base/datasource.spec';
 import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
@@ -21,8 +20,9 @@ import { FilterSearchBeginEventArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import * as events from '../../../src/grid/base/constant';
+import { ForeignKey } from '../../../src/grid/actions/foreign-key';
 
-Grid.Inject(Filter, Page,Toolbar, Selection, Group, Freeze, Edit, Filter, VirtualScroll, InfiniteScroll);
+Grid.Inject(Filter, Page, Toolbar, Selection, Group, Edit, Filter, ForeignKey, VirtualScroll, InfiniteScroll);
 
 describe('Checkbox Filter module => ', () => {
 
@@ -2775,9 +2775,304 @@ describe('EJ2-61734 - disableHtmlEncode property is not working with Excel Filte
         gridObj.actionComplete = actionComplete;        
         (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
     });
-    
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
+    });
+});
+
+describe('coverage improvemnet.', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'CheckBox' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('Check module name', () => {
+        gridObj.filterByColumn('OrderID', 'equal', 10250);
+        expect(gridObj.filterSettings.columns.length).toBe(1);
+        // gridObj.filterModule.filterModule.clearCustomFilter(gridObj.columns[0]);
+        // expect(gridObj.filterSettings.columns.length).toBe(0);
+    });
+
+    it('filter dialog open/close testing - 1', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if(args.requestType === 'filterafteropen') {
+                // expect((gridObj.filterModule.filterModule as any).getModuleName()).toBe('CheckBoxFilter');
+                gridObj.filterModule.filterModule.applyCustomFilter();    
+                done();
+            }   
+        };
+        gridObj.actionComplete = actionComplete;        
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('filter dialog open/close testing - 2', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if(args.requestType === 'filterafteropen') {
+                gridObj.filterModule.filterModule.closeResponsiveDialog();    
+                done();
+            }   
+        };
+        gridObj.actionComplete = actionComplete;        
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('check the addEventListener Binding', () => {
+        gridObj.isDestroyed = true;
+        (gridObj.filterModule.filterModule as any).addEventListener();
+        gridObj.isDestroyed = false;
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+
+    // used for code coverage
+    describe('checkbox filter with foreign key =>', () => {
+        let gridObj: Grid;
+        let actionBegin: (e?: any) => void;
+        let actionComplete: (e?: any) => void;
+        let isDlgOpened: boolean = false;
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: fdata.slice(0, 10),
+                allowFiltering: true,
+                filterSettings: {
+                    type: "CheckBox", columns: [
+                        { field: 'ShipCity', matchCase: false, operator: 'equal', value: 'Rio de Janeiro' }]
+                },
+                cssClass: 'report market',
+                loadingIndicator: { indicatorType: 'Shimmer' },
+                enablePersistence: true,
+                enableRtl: true,
+                columns: [
+                    { field: 'OrderID', width: 120 },
+                    { field: 'ShipCity', width: 120 },
+                    { field: 'Verified', width: 120 },
+                    { field: 'OrderDate', width: 120 },
+                    {
+                        field: 'CustomerID', width: 100, foreignKeyValue: 'City', foreignKeyField: 'CustomerID',
+                        dataSource: fCustomerData.slice(0, 20), filter: { itemTemplate: "${foreignKeyData.City}" },
+                    },
+                    { field: 'ShipCountry', width: 120 },
+                ]
+            };
+            gridObj = createGrid(options, done);
+        });
+
+        it('prevent filter dialog opening', (done: Function) => {
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'filterbeforeopen') {
+                    args.cancel = true;
+                    expect(args.cancel).toBeTruthy();
+                    gridObj.actionBegin = null;
+                    done();
+                }
+            };
+            gridObj.actionBegin = actionBegin;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('open filter dialog - 1', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest') {
+                    expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('ShipCity').querySelector('.e-filtermenudiv')));
+        });
+
+        it('destroy the filter dialog', (done: Function) => {
+            (gridObj.filterModule as any).filterModule.checkBoxBase.destroy();
+            expect(document.querySelectorAll('.e-checkboxfilter').length).toBe(0);
+            done();
+        });
+
+        it('open filter dialog - 2 (date column without format)', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest') {
+                    expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderDate').querySelector('.e-filtermenudiv')));
+        });
+
+        it('open filter dialog - 3 (boolean column)', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest' && args.filterModel.dlg.querySelector('.e-searchinput').value == '' && !isDlgOpened) {
+                    args.filterModel.dlg.querySelector('.e-searchinput').value = 'true';
+                    expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
+                    isDlgOpened = true;
+                    args.filterModel.refreshCheckboxes();
+                }
+                if (args.requestType === 'filterchoicerequest' && isDlgOpened) {
+                    isDlgOpened = false;
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('Verified').querySelector('.e-filtermenudiv')));
+        });
+
+        it('open filter dialog - 4 (foreign key)', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest' && args.filterModel.dlg.querySelector('.e-searchinput').value == '' && !isDlgOpened) {
+                    args.filterModel.dlg.querySelector('.e-searchinput').value = 'b';
+                    args.filterModel.dlg.querySelector('.e-searchinput').click();
+                    expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
+                    isDlgOpened = true;
+                    args.filterModel.refreshCheckboxes();
+                }
+                if (args.requestType === 'filterchoicerequest' && isDlgOpened) {
+                    isDlgOpened = false;
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.resetFilterDlgPosition('Verified');
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('clear search', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest') {
+                    expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (document.querySelector('.e-checkboxfilter .e-searchclear') as any).click();
+        });
+
+        it('open filter dialog - 5 (boolean column)', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest' && args.filterModel.dlg.querySelector('.e-searchinput').value == '' && !isDlgOpened) {
+                    args.filterModel.dlg.querySelector('.e-searchinput').value = 'false';
+                    expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
+                    isDlgOpened = true;
+                    args.filterModel.refreshCheckboxes();
+                }
+                if (args.requestType === 'filterchoicerequest' && isDlgOpened) {
+                    isDlgOpened = false;
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('Verified').querySelector('.e-filtermenudiv')));
+        });
+
+        it('open filter dialog - 6', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest' && args.filterModel.dlg.querySelector('.e-searchinput').value === '' && !isDlgOpened) {
+                    args.filterModel.dlg.querySelector('.e-searchinput').value = 'qzz';
+                    expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
+                    isDlgOpened = true;
+                    args.filterModel.refreshCheckboxes();
+                }
+                if (args.requestType === 'filterchoicerequest' && isDlgOpened) {
+                    isDlgOpened = false;
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('ShipCountry').querySelector('.e-filtermenudiv')));
+        });
+
+        it('clear filter', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filtering' && args.action === 'clear-filter') {
+                    expect(document.querySelectorAll('.e-checkboxfilter').length).toBe(0);
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterModule.checkBoxBase.filterState = false;
+            (document.querySelectorAll('.e-checkboxfilter .e-footer-content .e-btn') as any)[1].click();
+        });
+
+        it('open filter dialog - 7', (done: Function) => {
+            (gridObj.filterModule as any).filterModule.closeDialog();
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest' && !isDlgOpened) {
+                    args.filterModel.dlg.querySelector('.e-searchinput').value = 'r';
+                    expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
+                    isDlgOpened = true;
+                    args.filterModel.searchBoxKeyUp();
+                    args.filterModel.filterEvent(undefined, new Query());
+                }
+                if (args.requestType === 'filterchoicerequest' && isDlgOpened) {
+                    isDlgOpened = false;
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('ShipCity').querySelector('.e-filtermenudiv')));
+        });
+
+        it('add current selection filter', (done: Function) => {
+            (document.querySelector('.e-checkboxfilter .e-add-current') as any).click();
+            (document.querySelector('.e-checkboxfilter .e-footer-content .e-primary') as any).click();
+            expect(document.querySelectorAll('.e-checkboxfilter').length).toBe(0);
+            done();
+        });
+
+        afterAll((done) => {
+            destroy(gridObj);
+            gridObj = actionBegin = isDlgOpened = actionComplete = null;
+        });
+    });
+
+    // used for code coverage
+    describe('on property change =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: fdata.slice(0, 10),
+                filterSettings: {
+                    type: "CheckBox"
+                },
+                columns: [
+                    { field: 'OrderID', width: 120 },
+                    { field: 'ShipCity', width: 120 },
+                    { field: 'Verified', width: 120 },
+                ]
+            };
+            gridObj = createGrid(options, done);
+        });
+
+        it('enable filtering', (done: Function) => {
+            gridObj.allowFiltering = true;
+            expect(1).toBe(1);
+            done();
+        });
+
+        afterAll((done) => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
     });
 });

@@ -1,4 +1,4 @@
-import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest } from '@syncfusion/ej2-base';
+import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest, Collection } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';
 import { createElement, addClass, removeClass, setStyleAttribute as setAttr, getUniqueID } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
@@ -7,6 +7,7 @@ import { Splitter, PanePropertiesModel } from '@syncfusion/ej2-layouts';
 import { Dialog, createSpinner, hideSpinner, showSpinner, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { createDialog, createExtDialog } from '../pop-up/dialog';
 import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';
+import { ToolbarItem, ToolbarItemModel } from'../models/index' ;
 import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';
 import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../models/index';
 import { Toolbar } from '../actions/toolbar';
@@ -412,6 +413,18 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Complex<ToolbarSettingsModel>({}, ToolbarSettings)
     public toolbarSettings: ToolbarSettingsModel;
+    
+    /** 
+     * An array of items that are used to configure File Manager toolbar items. 
+     * 
+     * @remarks 
+     * Use this property if you want to include custom toolbar items along with existing toolbar items. If both `toolbarSettings` and `toolbarItems` are defined, then items will be rendered based on toolbarItems.
+     * 
+     * @default [] 
+     * 
+     */ 
+    @Collection<ToolbarItemModel>([], ToolbarItem) 
+    public toolbarItems: ToolbarItemModel[]; 
 
     /**
      * Specifies the upload settings for the file manager.
@@ -1332,6 +1345,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 this.notify(events.modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
                 break;
             case 'toolbarSettings':
+            case 'toolbarItems':
                 this.adjustHeight();
                 this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
                 break;
@@ -1439,10 +1453,10 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.element.innerHTML = '';
         this.breadCrumbBarNavigation = null;
         this.activeElements = null;
-        this.virtualizationModule = null;
         this.virtualDragElement = null;
         this.visitedItem = null;
         super.destroy();
+        this.virtualizationModule = null;
         this.navigationpaneModule = null;
         this.toolbarModule = null;
         this.contextmenuModule = null;
@@ -1507,7 +1521,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public disableToolbarItems(items: string[]): void {
-        if (!isNOU(items)) {
+        if (!isNOU(items) && this.toolbarModule) {
             this.toolbarModule.enableItems(items, false);
         }
     }
@@ -1533,7 +1547,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public enableToolbarItems(items: string[]): void {
-        if (!isNOU(items)) {
+        if (!isNOU(items) && this.toolbarModule) {
             this.toolbarModule.enableItems(items, true);
         }
     }

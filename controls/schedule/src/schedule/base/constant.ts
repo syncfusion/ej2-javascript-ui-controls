@@ -49,6 +49,10 @@ export const resizeStop: string = 'resizeStop';
 export const inlineClick: string = 'inlineClick';
 /** @private */
 export const cellSelect: string = 'cellSelect';
+/** @private */
+export const virtualScrollStart: string = 'virtualScrollStart';
+/** @private */
+export const virtualScrollStop: string = 'virtualScrollStop';
 
 /**
  * Specifies schedule internal events

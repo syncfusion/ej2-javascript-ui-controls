@@ -66,6 +66,8 @@ export class BaseQuickToolbar {
             className = classes.CLS_IMAGE_POP;
         } else if (args.popupType === 'Inline') {
             className = classes.CLS_INLINE_POP;
+        } else if (args.popupType === 'Text') {
+            className = classes.CLS_TEXT_POP;
         } else {
             className = '';
         }
@@ -143,7 +145,7 @@ export class BaseQuickToolbar {
             case 'bottom': {
                 let posY: number;
                 if (viewPort === 'document') {
-                    if (type === 'inline') {
+                    if (type === 'inline' || type === 'text') {
                         posY = (e.y - e.popHeight - 10);
                     } else {
                         if ((e.windowHeight - (parentTop + e.tBarElementHeight)) > e.popHeight) {
@@ -166,14 +168,14 @@ export class BaseQuickToolbar {
                 y = posY;
                 break; }
             case 'right':
-                if (type === 'inline') {
+                if (type === 'inline' || type === 'text') {
                     x = window.pageXOffset + (e.windowWidth - (e.popWidth + e.bodyRightSpace + 10));
                 } else {
                     x = e.x - e.popWidth;
                 }
                 break;
             case 'left':
-                if (type === 'inline') {
+                if (type === 'inline' || type === 'text') {
                     x = 0;
                 } else {
                     x = e.parentData.left;
@@ -192,11 +194,12 @@ export class BaseQuickToolbar {
      * @param {number} x - specifies the x value
      * @param {number} y - specifies the y value
      * @param {Element} target - specifies the element
+     * @param {string} type - specifies the type
      * @returns {void}
      * @hidden
      * @deprecated
      */
-    public showPopup(x: number, y: number, target: Element): void {
+    public showPopup(x: number, y: number, target: Element, type?: string): void {
         const eventArgs: BeforeQuickToolbarOpenArgs = { popup: this.popupObj, cancel: false, targetElement: target,
             positionX: x, positionY: y };
         this.parent.trigger(events.beforeQuickToolbarOpen, eventArgs, (beforeQuickToolbarArgs: BeforeQuickToolbarOpenArgs) => {
@@ -227,7 +230,7 @@ export class BaseQuickToolbar {
                     editPanelTop = (cntEle) ? cntEle.scrollTop : 0;
                     editPanelHeight = (cntEle) ? cntEle.offsetHeight : 0;
                 }
-                if (!this.parent.inlineMode.enable && !closest(target, 'table')) {
+                if (!this.parent.inlineMode.enable && !closest(target, 'table') && type !== 'text') {
                     this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
                     this.parent.enableToolbarItem(['Undo', 'Redo']);
                 }
@@ -280,7 +283,7 @@ export class BaseQuickToolbar {
                 if (!this.parent.inlineMode.enable) {
                     this.checkCollision(showPopupData, 'parent', '');
                 }
-                this.checkCollision(showPopupData, 'document', ((this.parent.inlineMode.enable) ? 'inline' : ''));
+                this.checkCollision(showPopupData, 'document', ((this.parent.inlineMode.enable) ? 'inline' : (type === 'text') ? 'text' : ''));
                 this.popupObj.element.classList.remove('e-popup-open');
                 removeClass([this.element], [classes.CLS_HIDE]);
                 this.popupObj.show({ name: 'ZoomIn', duration: (Browser.isIE ? 250 : 400) });
@@ -320,7 +323,7 @@ export class BaseQuickToolbar {
             this.tooltip.destroy();
         }
         else {
-            if(!isNullOrUndefined(this.tooltip)){
+            if (!isNullOrUndefined(this.tooltip)){
                 this.tooltip.destroy();
             }
         }

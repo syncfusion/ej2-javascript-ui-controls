@@ -1718,8 +1718,8 @@ export class SelectionHeaderFooter {
         if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.start) && !selection.isRetrieveFormatting) {
             const value: Object = this.getPropertyvalue(propertyName);
             if (!isNullOrUndefined(value)) {
-                const headerFooterWidget: HeaderFooterWidget = selection.start.paragraph.containerWidget as HeaderFooterWidget;
-                let sectionIndex: number = headerFooterWidget.sectionIndex;
+                const headerFooterWidget: HeaderFooterWidget = selection.start.paragraph.bodyWidget as HeaderFooterWidget;
+                let sectionIndex: number = headerFooterWidget.sectionIndex; 
                 let headerFooterType: HeaderFooterType = headerFooterWidget.headerFooterType;
                 selection.owner.editorModule.removeInlineHeaderFooterWidget(sectionIndex, headerFooterType, propertyName, value);
             }
@@ -2557,6 +2557,8 @@ export class SelectionTableFormat {
     private preferredWidthIn: number = 0;
     private preferredWidthTypeIn: WidthType;
     private bidiIn: boolean = undefined;
+    private titleIn: string;
+    private descriptionIn: string;
     /**
      * Gets or sets the table.
      *
@@ -2567,6 +2569,51 @@ export class SelectionTableFormat {
     }
     set table(value: TableWidget) {
         this.tableIn = value;
+    }
+    /**
+     * Gets or sets the title of the selected table.
+     *
+     * @aspType string
+     */
+    public get title(): string {
+        return this.titleIn;
+    }
+    /**
+     * Gets or sets the title of the selected table.
+     *
+     * @aspType string
+     */
+    public set title(value: string)
+    {
+        if(isNullOrUndefined(this.table))
+        {
+            return;
+        }
+        this.titleIn = value;
+        this.notifyPropertyChanged('title');
+    }
+    /**
+     * Gets or sets the description of the selected table.
+     *
+     * @aspType string
+     */
+    public get description(): string 
+    {
+        return this.descriptionIn;
+    }
+    /**
+     * Gets or sets the description of the selected table.
+     *
+     * @aspType string
+     */
+    public set description(value: string)
+    {
+        if(isNullOrUndefined(this.table))
+        {
+            return;
+        }
+        this.descriptionIn = value;
+        this.notifyPropertyChanged('description');
     }
     /**
      * Gets or Sets the left indent for selected table.
@@ -2832,6 +2879,10 @@ export class SelectionTableFormat {
                 return this.preferredWidthType;
             case 'bidi':
                 return this.bidi;
+            case 'title':
+                return this.title;
+            case 'description':
+                return this.description;
             default:
                 return undefined;
         }
@@ -2871,6 +2922,8 @@ export class SelectionTableFormat {
         this.preferredWidth = format.preferredWidth;
         this.preferredWidthType = format.preferredWidthType;
         this.bidi = format.bidi;
+        this.title = format.title;
+        this.description = format.description;
     }
     /**
      * Clears the format.

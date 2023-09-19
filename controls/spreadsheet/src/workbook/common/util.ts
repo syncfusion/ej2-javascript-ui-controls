@@ -676,7 +676,11 @@ export function checkRange(indexes: number[][], range: string): boolean {
                         } else if (cfIdx[2] - idx[2] > 0) {
                             return true;
                         }
+                    } else if (idx[1] < cfIdx[1] && idx[3] > cfIdx[3]) {
+                        return true;
                     }
+                } else if ((left || right) && idx[0] < cfIdx[0] && idx[2] > cfIdx[2]) {
+                    return true;
                 }
             }
         }

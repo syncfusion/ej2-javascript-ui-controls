@@ -21,15 +21,9 @@ import * as events from '../../common/base/constant';
 export class Grouping implements IAction {
     private parent: PivotView;
     private parentElement: HTMLElement;
-    private groupDialog: Dialog;
-    private selectedCellsInfo: SelectedCellsInfo[];
     /** @hidden */
     public isUpdate: boolean;
     private dateGroup: RegExp = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
-
-    private handlers: {
-        load: Function;
-    };
 
     /**
      * Constructor for the group UI rendering.
@@ -57,19 +51,19 @@ export class Grouping implements IAction {
         const target: HTMLElement = args.target;
         const option: string = args.option;
         const parentElement: HTMLElement = args.parentElement;
+        let selectedCellsInfo: SelectedCellsInfo[] = [];
         this.parentElement = parentElement;
-        this.selectedCellsInfo = [];
         this.isUpdate = false;
         const colIndex: number = Number(target.getAttribute('data-colindex'));
         const rowIndex: number = Number(target.getAttribute('index'));
         const cell: IAxisSet = (this.parent.engineModule.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
         const fieldName: string = cell.valueSort.axis.toString();
-        this.selectedCellsInfo = this.getSelectedCells(cell.axis, fieldName, cell.actualText.toString());
-        this.selectedCellsInfo.push({ axis: cell.axis, fieldName: fieldName, name: cell.actualText.toString(), cellInfo: cell });
+        selectedCellsInfo = this.getSelectedCells(cell.axis, fieldName, cell.actualText.toString());
+        selectedCellsInfo.push({ axis: cell.axis, fieldName: fieldName, name: cell.actualText.toString(), cellInfo: cell });
         if (option.replace(parentElement.id, '').indexOf('_custom_group') !== -1) {
-            this.createGroupSettings(fieldName);
+            this.createGroupSettings(fieldName, selectedCellsInfo);
         } else {
-            this.updateUnGroupSettings(fieldName);
+            this.updateUnGroupSettings(fieldName, selectedCellsInfo);
         }
     }
 
@@ -90,10 +84,10 @@ export class Grouping implements IAction {
         }
         return selectedOptions;
     }
-    private createGroupSettings(fieldName: string): void {
+    private createGroupSettings(fieldName: string, selectedCellsInfo: SelectedCellsInfo[]): void {
         const fieldList: IField = this.parent.engineModule.fieldList[fieldName as string];
         const group: IGroupSettings = this.getGroupSettings(fieldName);
-        if (this.selectedCellsInfo.length > 0) {
+        if (selectedCellsInfo.length > 0) {
             let type: string;
             let isInvalid: boolean = false;
             if (fieldList.isCustomField) {
@@ -105,11 +99,11 @@ export class Grouping implements IAction {
                         type = 'date';
                         fieldName = fieldName.replace(this.dateGroup, '');
                     } else if (customGroup) {
-                        isInvalid = this.selectedCellsInfo.length === 1;
+                        isInvalid = selectedCellsInfo.length === 1;
                         type = 'custom';
                     }
                 } else if (group && group.type === 'Custom') {
-                    if (this.selectedCellsInfo.length === 1) {
+                    if (selectedCellsInfo.length === 1) {
                         isInvalid = true;
                     } else {
                         isInvalid = false;
@@ -125,17 +119,17 @@ export class Grouping implements IAction {
                         isInvalid = false;
                         type = group.type === 'Date' ? 'date' : 'number';
                     } else if (group.type === 'Custom') {
-                        isInvalid = this.selectedCellsInfo.length === 1;
+                        isInvalid = selectedCellsInfo.length === 1;
                         type = 'custom';
                     }
                 } else {
                     if (fieldList.type === 'number' ||
                         (['datetime', 'date']).indexOf(fieldList.type) !== -1 || this.isDateType(fieldName)) {
                         isInvalid = false;
-                        type = (this.selectedCellsInfo.length === 1 ? ((['datetime', 'date']).indexOf(fieldList.type) !== -1 ||
+                        type = (selectedCellsInfo.length === 1 ? ((['datetime', 'date']).indexOf(fieldList.type) !== -1 ||
                             this.isDateType(fieldName)) ? 'date' : 'number' : 'custom');
                     } else if (fieldList.type === 'string') {
-                        isInvalid = this.selectedCellsInfo.length === 1;
+                        isInvalid = selectedCellsInfo.length === 1;
                         type = 'custom';
                     }
                 }
@@ -144,15 +138,15 @@ export class Grouping implements IAction {
                 this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('warning'), this.parent.localeObj.getConstant('invalidSelection'));
                 this.parent.grid.clearSelection();
             } else if (type && type !== '') {
-                this.createGroupDialog(fieldName, type);
+                this.createGroupDialog(fieldName, type, selectedCellsInfo);
             }
         }
     }
-    private updateUnGroupSettings(fieldName: string): void {
+    private updateUnGroupSettings(fieldName: string, selectedCellsInfo: SelectedCellsInfo[]): void {
         const fieldList: IField = this.parent.engineModule.fieldList[fieldName as string];
         let groupFields: IGroupSettings[] = PivotUtil.cloneGroupSettings(this.parent.dataSourceSettings.groupSettings);
         const group: IGroupSettings = this.getGroupSettings(fieldName);
-        if (this.selectedCellsInfo.length > 0) {
+        if (selectedCellsInfo.length > 0) {
             let type: string;
             if (fieldList.isCustomField) {
                 if (!group) {
@@ -177,7 +171,7 @@ export class Grouping implements IAction {
             if (type === 'date' || type === 'number') {
                 groupFields = this.validateSettings(fieldName, groupFields, type, []);
             } else if (type === 'custom') {
-                const selectedOptions: string[] = this.getSelectedOptions(this.selectedCellsInfo);
+                const selectedOptions: string[] = this.getSelectedOptions(selectedCellsInfo);
                 groupFields = this.validateSettings(fieldName, groupFields, type, selectedOptions);
             }
             this.updateDateSource(groupFields, type);
@@ -266,14 +260,14 @@ export class Grouping implements IAction {
         }
         return selectedCellsInfo;
     }
-    private createGroupDialog(fieldName: string, type: string): void {
-        const groupDialog: HTMLElement = createElement('div', {
+    private createGroupDialog(fieldName: string, type: string, selectedCellsInfo: SelectedCellsInfo[]): void {
+        const groupDialogElement: HTMLElement = createElement('div', {
             id: this.parentElement.id + '_GroupDialog',
             className: 'e-group-field-settings',
             attrs: { 'data-field': fieldName, 'data-type': type }
         });
-        this.parentElement.appendChild(groupDialog);
-        this.groupDialog = new Dialog({
+        this.parentElement.appendChild(groupDialogElement);
+        const groupDialog: Dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
             header: this.parent.localeObj.getConstant('grouping'),
@@ -289,12 +283,12 @@ export class Grouping implements IAction {
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
-                    click: this.updateGroupSettings.bind(this),
+                    click: this.updateGroupSettings.bind(this, selectedCellsInfo),
                     buttonModel: { cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
                 },
                 {
                     click: () => {
-                        this.groupDialog.hide();
+                        groupDialog.hide();
                     },
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
@@ -307,8 +301,8 @@ export class Grouping implements IAction {
             target: this.parentElement,
             cssClass: this.parent.cssClass
         });
-        this.groupDialog.isStringTemplate = true;
-        this.groupDialog.appendTo(groupDialog);
+        groupDialog.isStringTemplate = true;
+        groupDialog.appendTo(groupDialogElement);
     }
     private createGroupOptions(fieldName: string, type: string): HTMLElement {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -490,11 +484,13 @@ export class Grouping implements IAction {
                         enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                         cssClass: this.parent.cssClass,
                         select: () => {
-                            groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
+                            (getInstance(select( '#' + groupInstance.parentElement.id + '_GroupDialog', document), Dialog) as Dialog
+                            ).element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
                         },
                         removed: () => { // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             if ((intervalObj as any).checkBoxSelectionModule.activeLi.length === 0) {
-                                groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+                                (getInstance(select( '#' + groupInstance.parentElement.id + '_GroupDialog', document), Dialog) as Dialog
+                                ).element.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
                             }
                         }
                     });
@@ -592,8 +588,9 @@ export class Grouping implements IAction {
         }
         return mainDiv;
     }
-    private updateGroupSettings(): void {
-        const dialogElement: HTMLElement = this.groupDialog.element;
+    private updateGroupSettings(selectedCellsInfo: SelectedCellsInfo[]): void {
+        const groupDialog: Dialog = getInstance(select( '#' + this.parentElement.id + '_GroupDialog', document), Dialog) as Dialog;
+        const dialogElement: HTMLElement = groupDialog.element;
         const groupType: string = dialogElement.getAttribute('data-type');
         const fieldName: string = dialogElement.getAttribute('data-field');
         let groupFields: IGroupSettings[] =
@@ -616,7 +613,7 @@ export class Grouping implements IAction {
                 inputInstance.element.focus();
                 return;
             }
-            const selectedOptions: string[] = this.getSelectedOptions(this.selectedCellsInfo);
+            const selectedOptions: string[] = this.getSelectedOptions(selectedCellsInfo);
             const customGroup: ICustomGroups = { groupName: inputInstance.value, items: selectedOptions };
             let splicedItems: string[] = [];
             let newItems: string[] = [];
@@ -699,7 +696,7 @@ export class Grouping implements IAction {
             }
             groupFields = this.validateSettings(fieldName, groupFields, groupType, [], []);
         }
-        this.groupDialog.close();
+        groupDialog.close();
         this.updateDateSource(groupFields, groupType);
     }
     private getGroupBasedSettings(groupFields: IGroupSettings[]): { [key: string]: IGroupSettings[] } {
@@ -824,9 +821,11 @@ export class Grouping implements IAction {
     private removeDialog(): void {
         if (this.parent.grid && this.parent.grid.isDestroyed) { return; }
         this.parent.grid.clearSelection();
-        if (this.groupDialog && !this.groupDialog.isDestroyed) { this.groupDialog.destroy(); }
-        if (this.parentElement && document.getElementById(this.parentElement.id + '_GroupDialog')) {
-            remove(document.getElementById(this.parentElement.id + '_GroupDialog'));
+        const element: HTMLElement = select('#' + this.parent.element.id + '_GroupDialog', document);
+        const groupDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        if (groupDialog && !groupDialog.isDestroyed) { groupDialog.destroy(); }
+        if (this.parent.element && document.getElementById(this.parent.element.id + '_GroupDialog')) {
+            remove(document.getElementById(this.parent.element.id + '_GroupDialog'));
         }
     }
 
@@ -836,11 +835,8 @@ export class Grouping implements IAction {
      * @hidden
      */
     public addEventListener(): void {
-        this.handlers = {
-            load: this.render
-        };
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(events.initGrouping, this.handlers.load, this); //For initial rendering
+        this.parent.on(events.initGrouping, this.render, this); //For initial rendering
     }
 
     /**
@@ -851,7 +847,7 @@ export class Grouping implements IAction {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.removeDialog();
-        this.parent.off(events.initGrouping, this.handlers.load);
+        this.parent.off(events.initGrouping, this.render);
     }
 
     /**

@@ -332,7 +332,7 @@ export namespace ListBase {
                 li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options, componentInstance);
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
-                if(ariaAttributes.groupItemRole =='presentation'){
+                if(ariaAttributes.groupItemRole =='presentation' || ariaAttributes.itemRole == 'presentation'){
                     li.removeAttribute('aria-level');
                 }
                 anchorElement = li.querySelector('.' + cssClass.anchorWrap);
@@ -1189,20 +1189,14 @@ export interface ListBaseOptions {
     sortOrder?: SortOrder;
     /**
      * Specifies the item template
-     * 
-     * @aspType string
      */
     template?: string | Function;
     /**
      * Specifies the group header template
-     * 
-     * @aspType string
      */
     groupTemplate?: string | Function;
     /**
      * Specifies the ListView header template
-     * 
-     * @aspType string
      */
     headerTemplate?: string | Function;
     /**

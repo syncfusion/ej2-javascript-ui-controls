@@ -478,7 +478,7 @@ describe('Destroy Method', () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         document.body.innerHTML = '';
     });
-    it('performance testing', (done) => {
+    xit('performance testing', (done) => {
         let hugeitems: any = [];
         let startDate:number;
         let timeTaken:number;

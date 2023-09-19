@@ -1141,8 +1141,10 @@ describe('BPMN Shapes strokecolor changing', () => {
             expect(diagram.nodes[4].style.strokeColor === 'green').toBe(true);
             done();
     });
-
+  
 });
+
+
 
 
 

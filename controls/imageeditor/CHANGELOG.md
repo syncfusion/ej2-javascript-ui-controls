@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 22.2.12 (2023-09-05)
+### ImageEditor
+
+#### Features
+
+- Provided support for image annotations allowing users to insert and display multiple images in addition to the main image they are editing.
+- Provided support for frames allowing users to add decorative borders or frames around images. Frames can enhance the visual appeal of an image..
+- Provided resizing support allowing users to adjust the size and dimensions of an image to suit their needs, such as printing, web display, or other purposes.
+
+## 22.2.11 (2023-08-29)
 
 ### Image Editor
 

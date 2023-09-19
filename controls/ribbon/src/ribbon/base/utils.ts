@@ -5,7 +5,6 @@ import { commonProperties, DisplayMode, EJ2Control, itemProps, RibbonLayout, rib
 import { Ribbon } from './ribbon';
 import * as constants from './constant';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
-import { Item } from '@syncfusion/ej2-navigations';
 
 
 /**

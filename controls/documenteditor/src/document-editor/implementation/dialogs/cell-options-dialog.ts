@@ -218,6 +218,9 @@ export class CellOptionsDialog {
     public applySubCellOptions(cellFormat: WCellFormat): void {
         this.documentHelper.owner.editorHistory.initComplexHistory(this.documentHelper.selection, 'CellMarginsSelection');
         this.documentHelper.owner.editorModule.initHistory('CellOptions');
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentBaseHistoryInfo)) {
+            this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.insertedFormat = cellFormat;
+        }
         /* eslint-disable max-len */
         this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.combineWidget(this.owner);
         this.applyCellMarginValue(this.documentHelper.selection.start.paragraph.associatedCell.ownerRow.combineWidget(this.owner) as TableRowWidget, this.documentHelper.selection.start, this.documentHelper.selection.end, cellFormat);

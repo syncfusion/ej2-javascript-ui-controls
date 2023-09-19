@@ -87,6 +87,7 @@ export class TreeMapLegend {
         });
 
     }
+    // eslint-disable-next-line valid-jsdoc
     /** @private */
     public calculateLegendBounds(): void {
         const treemap: TreeMap = this.treemap;
@@ -891,6 +892,7 @@ export class TreeMapLegend {
             this.translate = new Location(x, y);
         }
     }
+    // eslint-disable-next-line valid-jsdoc
     /** @private */
     public mouseUpHandler(e: PointerEvent): void {
         this.renderInteractivePointer(e);

@@ -1,7 +1,7 @@
 import { PivotView } from '../base/pivotview';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { createElement, remove, select, EventHandler, MouseEventArgs, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { createElement, remove, select, EventHandler, MouseEventArgs, isNullOrUndefined, initializeCSPTemplate, getInstance } from '@syncfusion/ej2-base';
 import { Pager as GridPager } from '@syncfusion/ej2-grids';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { PagerSettingsModel } from '../base/pivotview-model';
@@ -16,14 +16,6 @@ export class Pager {
     public pager: GridPager;
     /** @hidden */
     public parent: PivotView;
-
-    /**
-     * Internal variables.
-     */
-    private columnPagerTextBox: NumericTextBox;
-    private rowPagerTextBox: NumericTextBox;
-    private columnPageSizeDropDown: DropDownList;
-    private rowPageSizeDropDown: DropDownList;
 
     constructor(parent: PivotView) {
         this.parent = parent;
@@ -111,7 +103,7 @@ export class Pager {
             if (isNullOrUndefined(pagerOptions.template)) {
                 if (pagerOptions.showRowPager) {
                     if (!pagerOptions.enableCompactView && tableWidth > 400) {
-                        this.rowPagerTextBox = new NumericTextBox({
+                        const rowPagerTextBox: NumericTextBox = new NumericTextBox({
                             min: 1,
                             max: this.parent.engineModule.rowPageCount,
                             showSpinButton: false,
@@ -126,7 +118,7 @@ export class Pager {
                             change: this.rowPageChange.bind(this),
                             cssClass: this.parent.cssClass
                         });
-                        this.rowPagerTextBox.appendTo('#' + this.parent.element.id + '_row_textbox');
+                        rowPagerTextBox.appendTo('#' + this.parent.element.id + '_row_textbox');
                     }
                     if (pagerOptions.showRowPageSize) {
                         const rowPages: number[] = this.parent.pagerSettings.rowPageSizes.slice(0);
@@ -134,7 +126,7 @@ export class Pager {
                             rowPages.push(this.parent.pageSettings.rowPageSize);
                             rowPages.sort(function (a: number, b: number): number { return a - b; });
                         }
-                        this.rowPageSizeDropDown = new DropDownList({
+                        const rowPageSizeDropDown: DropDownList = new DropDownList({
                             dataSource: rowPages,
                             value: this.parent.pageSettings.rowPageSize,
                             enableRtl: this.parent.enableRtl,
@@ -145,12 +137,12 @@ export class Pager {
                             width: '64px',
                             cssClass: this.parent.cssClass
                         });
-                        this.rowPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'row' + '_size_list');
+                        rowPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'row' + '_size_list');
                     }
                 }
                 if (pagerOptions.showColumnPager) {
                     if (!pagerOptions.enableCompactView && tableWidth > 400) {
-                        this.columnPagerTextBox = new NumericTextBox({
+                        const columnPagerTextBox: NumericTextBox = new NumericTextBox({
                             min: 1,
                             max: this.parent.engineModule.columnPageCount,
                             showSpinButton: false,
@@ -165,7 +157,7 @@ export class Pager {
                             change: this.columnPageChange.bind(this),
                             cssClass: this.parent.cssClass
                         });
-                        this.columnPagerTextBox.appendTo('#' + this.parent.element.id + '_column_textbox');
+                        columnPagerTextBox.appendTo('#' + this.parent.element.id + '_column_textbox');
                     }
                     if (pagerOptions.showColumnPageSize) {
                         const columnPages: number[] = this.parent.pagerSettings.columnPageSizes.slice(0);
@@ -173,7 +165,7 @@ export class Pager {
                             columnPages.push(this.parent.pageSettings.columnPageSize);
                             columnPages.sort(function (a: number, b: number): number { return a - b; });
                         }
-                        this.columnPageSizeDropDown = new DropDownList({
+                        const columnPageSizeDropDown: DropDownList = new DropDownList({
                             dataSource: columnPages,
                             value: this.parent.pageSettings.columnPageSize,
                             enableRtl: this.parent.enableRtl,
@@ -184,7 +176,7 @@ export class Pager {
                             width: '64px',
                             cssClass: this.parent.cssClass
                         });
-                        this.columnPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'column' + '_size_list');
+                        columnPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'column' + '_size_list');
                     }
                 }
                 this.unWireEvent();
@@ -321,9 +313,9 @@ export class Pager {
             id: this.parent.element.id + '_' + axis + '_firstIcon',
             attrs: {
                 class: cls.PIVOT_FIRST_ICON_DEFAULT + (isFirstDisable ? (' ' + cls.DISABLE_FIRST_PAGE + ' ' + cls.ICON_DISABLE) : ' ' + cls.PIVOT_FIRST_ICON_ENABLE),
-                title: this.parent.localeObj.getConstant('gotofirstpage'),
-                'aria-label': this.parent.localeObj.getConstant('gotofirstpage'),
-                tabindex: '-1',
+                title: this.parent.localeObj.getConstant('goToFirstPage'),
+                'aria-label': this.parent.localeObj.getConstant('goToFirstPage'),
+                tabindex: '0',
                 role: 'button'
             }
         });
@@ -331,9 +323,9 @@ export class Pager {
             id: this.parent.element.id + '_' + axis + '_prevIcon',
             attrs: {
                 class: cls.PIVOT_PREV_ICON_DEFAULT + (isFirstDisable ? (' ' + cls.DISABLE_PREV_PAGE + ' ' + cls.ICON_DISABLE) : ' ' + cls.PIVOT_PREV_ICON_ENABLE),
-                title: this.parent.localeObj.getConstant('gotopreviouspage'),
-                'aria-label': this.parent.localeObj.getConstant('gotopreviouspage'),
-                tabindex: '-1',
+                title: this.parent.localeObj.getConstant('goToPreviousPage'),
+                'aria-label': this.parent.localeObj.getConstant('goToPreviousPage'),
+                tabindex: '0',
                 role: 'button'
             }
         });
@@ -364,9 +356,9 @@ export class Pager {
             id: this.parent.element.id + '_' + axis + '_nextIcon',
             attrs: {
                 class: cls.PIVOT_NEXT_ICON_DEFAULT + (isLastDisable ? (' ' + cls.DISABLE_NEXT_PAGE + ' ' + cls.ICON_DISABLE) : ' ' + cls.PIVOT_NEXT_ICON_ENABLE),
-                title: this.parent.localeObj.getConstant('gotonextpage'),
-                'aria-label': this.parent.localeObj.getConstant('gotonextpage'),
-                tabindex: '-1',
+                title: this.parent.localeObj.getConstant('goToNextPage'),
+                'aria-label': this.parent.localeObj.getConstant('goToNextPage'),
+                tabindex: '0',
                 role: 'button'
             }
         });
@@ -374,9 +366,9 @@ export class Pager {
             id: this.parent.element.id + '_' + axis + '_lastIcon',
             attrs: {
                 class: cls.PIVOT_LAST_ICON_DEFAULT + (isLastDisable ? (' ' + cls.DISABLE_LAST_PAGE + ' ' + cls.ICON_DISABLE) : ' ' + cls.PIVOT_LAST_ICON_ENABLE),
-                title: this.parent.localeObj.getConstant('gotolastpage'),
-                'aria-label': this.parent.localeObj.getConstant('gotolastpage'),
-                tabindex: '-1',
+                title: this.parent.localeObj.getConstant('goToLastPage'),
+                'aria-label': this.parent.localeObj.getConstant('goToLastPage'),
+                tabindex: '0',
                 role: 'button'
             }
         });
@@ -458,25 +450,33 @@ export class Pager {
     public destroy(): void {
         this.removeEventListener();
         if (this.parent.pagerModule) {
-            if (this.columnPagerTextBox) {
-                this.columnPagerTextBox.destroy();
+            let element: HTMLElement = select('#' + this.parent.element.id + '_column_textbox', this.parent.element);
+            let columnPagerTextBox: NumericTextBox = element ? getInstance(element, NumericTextBox) as NumericTextBox : null;
+            if (columnPagerTextBox) {
+                columnPagerTextBox.destroy();
+                columnPagerTextBox = null;
             }
-            if (this.rowPagerTextBox) {
-                this.rowPagerTextBox.destroy();
+            element = select('#' + this.parent.element.id + '_row_textbox', this.parent.element);
+            let rowPagerTextBox: NumericTextBox = element ? getInstance(element, NumericTextBox) as NumericTextBox : null;
+            if (rowPagerTextBox) {
+                rowPagerTextBox.destroy();
+                rowPagerTextBox = null;
             }
-            if (this.columnPageSizeDropDown) {
-                this.columnPageSizeDropDown.destroy();
+            element = select('#' + this.parent.element.id + '_' + 'column' + '_size_list', this.parent.element);
+            let columnPageSizeDropDown: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
+            if (columnPageSizeDropDown) {
+                columnPageSizeDropDown.destroy();
+                columnPageSizeDropDown = null;
             }
-            if (this.rowPageSizeDropDown) {
-                this.rowPageSizeDropDown.destroy();
+            element = select('#' + this.parent.element.id + '_' + 'row' + '_size_list', this.parent.element);
+            let rowPageSizeDropDown: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
+            if (rowPageSizeDropDown) {
+                rowPageSizeDropDown.destroy();
+                rowPageSizeDropDown = null;
             }
             if (this.pager) {
                 this.pager.destroy();
             }
-            this.columnPagerTextBox = null;
-            this.rowPagerTextBox = null;
-            this.columnPageSizeDropDown = null;
-            this.rowPageSizeDropDown = null;
             this.pager = null;
         } else {
             return;

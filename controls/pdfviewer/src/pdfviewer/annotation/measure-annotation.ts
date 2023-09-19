@@ -1867,7 +1867,7 @@ export class MeasureAnnotation {
             ModifiedDate: '',
             Note: notes,
             Opacity: annotationObject.opacity?annotationObject.opacity:1,
-            RectangleDifference: null,
+            RectangleDifference: [],
             RotateAngle: 'RotateAngle0',
             ShapeAnnotationType: shapeAnnotationType,
             State: '',

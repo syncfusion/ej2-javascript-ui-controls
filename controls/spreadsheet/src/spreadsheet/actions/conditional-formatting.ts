@@ -61,7 +61,7 @@ export class ConditionalFormatting {
                     if (styleVal) {
                         style = {};
                         style[`${styleProp}`] = styleVal;
-                        this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: style, rowIdx: rIdx, colIdx: cIdx, cell: td });
+                        this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: style, rowIdx: rIdx, colIdx: cIdx, td: td });
                     }
                 }
             });
@@ -456,7 +456,7 @@ export class ConditionalFormatting {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cfRule: ConditionalFormatModel[] = args.cfModel || sheet.conditionalFormats;
         let indexes: number[][] = [args.indexes];
-        let isEditCellUpdated: boolean = false;
+        let isEditCellUpdated: boolean;
         if (args.refreshAll) {
             indexes = getViewportIndexes(this.parent, this.parent.viewport);
         }
@@ -559,10 +559,10 @@ export class ConditionalFormatting {
                     }
                     break;
                 case 'AboveAverage':
-                    isApply = cf.result.length && parseFloat(cellVal) > cf.result[0];
+                    isApply = cf.result.length && parseFloat(cellVal) > <number>cf.result[0];
                     break;
                 case 'BelowAverage':
-                    isApply = cf.result.length && parseFloat(cellVal) < cf.result[0];
+                    isApply = cf.result.length && parseFloat(cellVal) < <number>cf.result[0];
                     break;
                 default:
                     isValueCFRule = false;
@@ -592,7 +592,7 @@ export class ConditionalFormatting {
                             style = extend({}, this.parent.commonCellStyle, cell && cell.style);
                             if (style.backgroundColor || style.color) {
                                 this.parent.notify(
-                                    applyCellFormat, <CellFormatArgs>{ rowIdx: rIdx, colIdx: cIdx, cell: td,
+                                    applyCellFormat, <CellFormatArgs>{ rowIdx: rIdx, colIdx: cIdx, td: td,
                                         style: { backgroundColor: style.backgroundColor, color: style.color } });
                             }
                         }
@@ -600,7 +600,7 @@ export class ConditionalFormatting {
                         td.removeAttribute('style');
                         style = extend({}, this.parent.commonCellStyle, cell && cell.style);
                         if (Object.keys(style).length) {
-                            this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: style, rowIdx: rIdx, colIdx: cIdx, cell: td });
+                            this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: style, rowIdx: rIdx, colIdx: cIdx, td: td });
                         }
                     }
                 }
@@ -761,7 +761,7 @@ export class ConditionalFormatting {
                 const style: CellStyleModel = extend({}, this.parent.commonCellStyle, cell && cell.style);
                 if (style.backgroundColor) {
                     this.parent.notify(
-                        applyCellFormat, <CellFormatArgs>{ style: { backgroundColor: style.backgroundColor }, cell: td, rowIdx: rIdx,
+                        applyCellFormat, <CellFormatArgs>{ style: { backgroundColor: style.backgroundColor }, td: td, rowIdx: rIdx,
                         colIdx: cIdx });
                 }
             }

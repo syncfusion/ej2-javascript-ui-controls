@@ -51,6 +51,11 @@ require.config({
       location: 'node_modules/@syncfusion/ej2-navigations/dist',
       main: 'ej2-navigations.umd.min.js'
     },
+    {
+      name: '@syncfusion/ej2-notifications',
+      location: 'node_modules/@syncfusion/ej2-notifications/dist',
+      main: 'ej2-notifications.umd.min.js'
+    },
     { 
        name: '@syncfusion/ej2-splitbuttons',
        location: 'node_modules/@syncfusion/ej2-splitbuttons/dist',

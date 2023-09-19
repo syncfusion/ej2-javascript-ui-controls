@@ -1,0 +1,9 @@
+@include export-module('ribbon-material-icons') {
+  .e-ribbon {
+    & .e-drop-icon {
+      &::before {
+        content: '\e94d';
+      }
+    }
+  }
+}

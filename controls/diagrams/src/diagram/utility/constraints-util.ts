@@ -10,7 +10,7 @@ import { PointPortModel } from './../objects/port-model';
 import { Selector } from './../objects/node';
 import { SelectorModel } from './../objects/node-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
-import { PointPort } from '../objects/port';
+import { PathPort, PointPort } from '../objects/port';
 
 
 /**
@@ -351,7 +351,7 @@ export function canEnableToolTip(node: ConnectorModel | NodeModel | PointPortMod
         } else if (node.constraints & ConnectorConstraints.InheritTooltip) {
             state = diagram.constraints & DiagramConstraints.Tooltip;
         }
-    } else if (node instanceof PointPort) {
+    } else if (node instanceof PointPort || node instanceof PathPort) {
         if (node.constraints & PortConstraints.ToolTip) {
             state = node.constraints & PortConstraints.ToolTip;
         } else if (node.constraints & PortConstraints.InheritTooltip) {

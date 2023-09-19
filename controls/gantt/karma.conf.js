@@ -23,7 +23,8 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-data/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-buttons/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
-      { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },      
+      { pattern: "node_modules/@syncfusion/ej2-notifications/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-layouts/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-compression/**/*.js", included: false },
@@ -38,7 +39,7 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-grids/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-treegrid/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-richtexteditor/**/*.js", included: false },
-      { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false } 
+      { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false }
       // Add dependent package's script files here              
     ],
 

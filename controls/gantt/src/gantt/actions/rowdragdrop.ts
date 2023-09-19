@@ -129,8 +129,16 @@ export class RowDD {
         const dragElement: HTMLElement = this.parent.element.querySelector('.e-ganttdrag');
         const ganttTop: number = this.parent.element.getClientRects()[0].top;
         const ganttLeft: number = this.parent.element.getClientRects()[0].left;
-        const left: number = getValue('event', args.originalEvent).clientX - ganttLeft;
-        const top: number = getValue('event', args.originalEvent).clientY - ganttTop;
+        let left: number;
+        let top: number;
+        if(this.parent.isAdaptive){
+           left = (args.originalEvent as any).event.touches[0].clientX - ganttLeft;
+            top = (args.originalEvent as any).event.touches[0].clientY - ganttTop;
+        }
+    else{
+        left = getValue('event', args.originalEvent).clientX - ganttLeft;
+        top = getValue('event', args.originalEvent).clientY - ganttTop;
+        }
         dragElement.style.left = left + 20 + 'px';
         dragElement.style.top = top + 20 + 'px';
         this.parent.trigger('rowDrag', args);

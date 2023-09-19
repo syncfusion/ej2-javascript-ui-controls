@@ -1,17 +1,17 @@
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, ModuleDeclaration, extend, isBlazor, BlazorDotnetObject } from '@syncfusion/ej2-base';
 import { Event, EmitType, EventHandler, getComponent, isNullOrUndefined, getUniqueID } from '@syncfusion/ej2-base';
 import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { createSpinner } from '@syncfusion/ej2-popups';
+import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
 import { Complex, Browser, ChildProperty, compile as templateCompiler, compile } from '@syncfusion/ej2-base';
 import { ImageEditorModel, FinetuneSettingsModel, ZoomSettingsModel, SelectionSettingsModel } from './image-editor-model';
-import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType } from './../index';
+import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings } from './../index';
 import { ZoomEventArgs, PanEventArgs, CropEventArgs, RotateEventArgs, FlipEventArgs, ShapeChangeEventArgs } from './../index';
 import { ToolbarEventArgs, OpenEventArgs, SaveEventArgs, BeforeSaveEventArgs, Point, ShapeSettings, ImageFilterEventArgs } from './../index';
 import { FinetuneEventArgs, QuickAccessToolbarEventArgs, CurrentObject, ImageDimension, TransformValue, PanPoint } from './../index';
-import { Interaction, SelectionPoint, ImageFinetuneValue, Dimension, ActivePoint, ImageEditorClickEventArgs } from './../index';
+import { Interaction, SelectionPoint, ImageFinetuneValue, Dimension, ActivePoint, ImageEditorClickEventArgs, FrameValue } from './../index';
 import { Direction, ZoomTrigger, Theme, ImageEditorCommand, ImageFilterOption, ImageFinetuneOption } from './../index';
 import { ItemModel as DropDownButtonItemModel } from '@syncfusion/ej2-splitbuttons';
-
+import { ChangeEventArgs, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
 
 /**
  * This interface is used to specify settings for finetuning operations on images, including brightness, contrast, hue, saturation, exposure, opacity, and blur. It includes properties for setting minimum and maximum values for each of these options, as well as a default value.
@@ -233,6 +233,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     /** @hidden */
     public baseImg: HTMLImageElement;
     /** @hidden */
+    public baseImgCanvas: HTMLCanvasElement;
+    /** @hidden */
     public lowerCanvas : HTMLCanvasElement;
     /** @hidden */
     public upperCanvas : HTMLCanvasElement;
@@ -273,7 +275,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint, rotateFlipColl: [],
         degree: 0, currFlipState: '', destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
         srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '', isBrightAdjust: false,
-        zoomFactor: 0, previousZoomValue : 0 };
+        zoomFactor: 0, previousZoomValue : 0, aspectWidth: null, aspectHeight: null, frame: 'none' };
     // Stored transformations performed after cropping
     /** @hidden */
     public afterCropActions: string[] = [];
@@ -320,6 +322,47 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public eventType: string;
     /** @hidden */
     public panEventArgs: PanEventArgs;
+    /** @hidden */
+    public resizeSrc: ActivePoint =
+    {startX: this.img.srcLeft, startY: this.img.srcTop, width: this.img.srcWidth, height: this.img.srcHeight };
+    /** @hidden */
+    public isResize: boolean = false;
+    /** @hidden */
+    public aspectHeight: number;
+    /** @hidden */
+    public aspectWidth: number;
+    /** @hidden */
+    public isAspectRatio: boolean = false;
+    /** @hidden */
+    public prevCropObj: CurrentObject;
+    /** @hidden */
+    public prevObj: CurrentObject;
+    /** @hidden */
+    public frameObj: FrameValue = {type: 'none', color: '#fff', size: 20, inset: 20, offset: 20, radius: 0, amount: 1, border: 'solid', gradientColor: '' };
+    /** @hidden */
+    public tempFrameObj: FrameValue = {type: 'none', color: '#fff', size: 20, inset: 20, offset: 20, radius: 0, amount: 1, border: 'solid', gradientColor: '' };
+    /** @hidden */
+    public allowDownScale: boolean = true;
+    /** @hidden */
+    public frameType: FrameType;
+    /** @hidden */
+    public gradientColor: string = '';
+    /** @hidden */
+    public size: number = 20;
+    /** @hidden */
+    public inset: number = 0;
+    /** @hidden */
+    public offset: number = 0;
+    /** @hidden */
+    public borderRadius: number = 0;
+    /** @hidden */
+    public lineCount: number = 0;
+    /** @hidden */
+    public tempFrameZoomLevel: number;
+    /** @hidden */
+    public frameDestPoints: ImageDimension;
+    /** @hidden */
+    public cxtTbarHeight: number;
 
     private lowerContext: CanvasRenderingContext2D;
     private upperContext: CanvasRenderingContext2D;
@@ -396,7 +439,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * If the property is defined as empty collection, the toolbar will not be rendered.
      * The preconfigured toolbar commands are
      * - Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
-     * - Annotate: help to insert a shape on image that supports rectangle, ellipse, line, arrow, path, text and freehand drawing with resize, drag and drop, and customize its appearance.
+     * - Annotate: help to insert a shape on image that supports rectangle, ellipse, line, arrow, path, text, image and freehand drawing with resize, drag and drop, and customize its appearance.
      * - Transform: helps to rotate and flip an image.
      * - Finetunes: helps to perform adjustments on an image.
      * - Filters: helps to perform predefined color filters.
@@ -781,6 +824,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     @Event()
     public quickAccessToolbarOpen: EmitType<QuickAccessToolbarEventArgs>
 
+    /** 
+     * Event callback that is raised while resizing an image. 
+     *
+     * @event resizing 
+     */ 
+    @Event()
+    public resizing : EmitType<ResizeEventArgs>
+
     /**
      * Event callback that is raised once the quick access toolbar item is clicked.
      *
@@ -789,6 +840,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      */
     @Event()
     public quickAccessToolbarItemClick : EmitType<ClickEventArgs>
+
+    /** 
+     *  Event callback that is raised while applying frames on an image. 
+     *
+     * @event frameChange
+     */ 
+    @Event()
+    public frameChange : EmitType<FrameChangeEventArgs>
 
     /**
      *
@@ -998,6 +1057,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('toolbar', { prop: 'create-contextual-toolbar', onPropertyChange: false });
         }
         this.createCanvas();
+        this.createDropUploader();
         if (this.showQuickAccessToolbar) {
             const canvasWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_canvasWrapper');
             canvasWrapper.appendChild(this.createElement('div', {
@@ -1033,6 +1093,58 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.initializeZoomSettings();
     }
 
+
+    private createDropUploader(): void {
+        const uploadObj: Uploader = new Uploader({
+            dropArea: document.getElementsByClassName('e-canvas-wrapper')[0] as HTMLElement,
+            allowedExtensions: '.jpg, .jpeg, .png,.svg',
+            selected: (args: ChangeEventArgs) => {
+                if (args.event.type === 'change' || args.event.type === 'drop') {
+                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                    const type: string = (args as any).filesData[0].type;
+                    if (type === 'png' || type === 'jpg' || type === 'jpeg' || type === 'svg') {
+                        this.notify('draw', {prop: 'fileSelect', value: {inputElement:
+                            this.element.querySelector('#' + this.element.id + '_dropfileUpload') as HTMLInputElement, args: args }});
+                    } else {
+                        this.showDialogPopup();
+                    }
+                }
+            }
+        });
+        uploadObj.appendTo('#' + this.element.id + '_dropfileUpload');
+    }
+
+    private dlgCloseBtnClick(): void {
+        (getComponent(document.getElementById(this.element.id + '_dialog'), 'dialog') as Dialog).destroy();
+    }
+
+    private showDialogPopup(): void {
+        (this.element.querySelector('#' + this.element.id + '_dialog') as HTMLElement).style.display = 'block';
+        const headerObj: Object = { key: 'AlertDialogHeader' };
+        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: headerObj }});
+        const contentObj: Object = { key: 'AlertDialogContent' };
+        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: contentObj }});
+        const supportObj: Object = { key: 'SupportText' };
+        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: supportObj }});
+        const okObj: Object = { key: 'OK' };
+        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: okObj }});
+        const dialog: Dialog = new Dialog({
+            header: headerObj['value'],
+            closeOnEscape: true,
+            content: '<span>' + contentObj['value'] + ' ' + supportObj['value'] + '<b> JPG, PNG, and SVG</b></span>',
+            target: document.getElementById('target'),
+            width: '285px',
+            isModal: true,
+            animationSettings: { effect: 'Zoom' },
+            close: this.dlgCloseBtnClick.bind(this),
+            buttons: [
+                { click: this.dlgCloseBtnClick.bind(this),
+                    buttonModel: { content: okObj['value'], iconCss: 'e-icons e-close' }
+                }
+            ]
+        });
+        dialog.appendTo('#' + this.element.id + '_dialog');
+    }
 
     /**
      *
@@ -1102,6 +1214,28 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         (this.element.offsetWidth - 2)
             + 'px; position: relative; overflow: hidden; margin: 0 auto;'}
         }));
+        const dragObj: Object = { key: 'DragText' };
+        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: dragObj }});
+        const browseObj: Object = { key: 'BrowseText' };
+        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: browseObj }});
+        const supportObj: Object = { key: 'SupportText' };
+        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: supportObj }});
+        const dropAreaElement: HTMLElement = this.createElement('div', { id: this.element.id + '_dropArea', className: 'e-ie-drop-area', attrs: { style: 'position: relative;' }});
+        const dropIconElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-icon e-icons e-image', attrs: { style: 'position: absolute;' }});
+        const dropContentElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-content', attrs: { style: 'position: absolute;' }});
+        dropContentElement.textContent = dragObj['value'] + ' ';
+        const dropAnchorElement: HTMLElement = this.createElement('a', { id: this.element.id + '_dropBrowse',  className: 'e-ie-drop-browse'});
+        dropAnchorElement.textContent = browseObj['value'];
+        dropContentElement.appendChild(dropAnchorElement);
+        (dropAnchorElement as HTMLAnchorElement).href = '';
+        const dropInfoElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-info', attrs: { position: 'absolute' }});
+        dropInfoElement.textContent = supportObj['value'] + ' SVG, PNG, and JPG';
+        const dropUploader: HTMLElement = dropAreaElement.appendChild(this.createElement('input', {
+            id: this.element.id + '_dropfileUpload', className: 'e-fileUpload e-image-upload'
+        }));
+        dropUploader.setAttribute('type', 'file'); dropUploader.setAttribute('accept', 'image/*');
+        dropAreaElement.appendChild(dropIconElement); dropAreaElement.appendChild(dropContentElement);
+        dropAreaElement.appendChild(dropInfoElement); canvasWrapper.appendChild(dropAreaElement);
         this.lowerCanvas = canvasWrapper.appendChild(this.createElement('canvas', {
             id: this.element.id + '_lowerCanvas', attrs: { name: 'canvasImage' }
         }));
@@ -1111,6 +1245,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.inMemoryCanvas = this.createElement('canvas', {
             id: this.element.id + '_inMemoryCanvas', attrs: { name: 'canvasImage' }
         });
+        this.baseImgCanvas = this.createElement('canvas', {
+            id: this.element.id + '_baseImgCanvas', attrs: { name: 'canvasImage' }
+        });
         this.textArea = canvasWrapper.appendChild(this.createElement('textarea', {
             id: this.element.id + '_textArea', className: 'e-textarea', attrs: { name: 'textArea' }
         }));
@@ -1118,6 +1255,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             id: this.element.id + '_dialog', className: 'e-dialog'
         }));
         dialog.style.display = 'none';
+        const uploader: HTMLElement = this.element.appendChild(this.createElement('input', {
+            id: this.element.id + '_fileUpload', className: 'e-fileUpload'
+        }));
+        uploader.setAttribute('type', 'file'); uploader.setAttribute('accept', 'image/*');
+        uploader.style.display = 'none';
         this.textArea.setAttribute('spellcheck', 'false');
         this.textArea.style.lineHeight = 'normal';
         this.lowerCanvas.style.width = this.upperCanvas.style.width = this.inMemoryCanvas.style.width = '100%';
@@ -1132,6 +1274,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.upperCanvas.style.cursor = this.cursor = 'default';
         this.upperCanvas.style.display = 'block';
         this.upperContext = this.upperCanvas.getContext('2d');
+        document.getElementById(this.element.id + '_dropBrowse').onclick = () => {
+            (this.element.querySelector('#' + this.element.id + '_dropfileUpload') as HTMLInputElement).click();
+            return false;
+        };
     }
 
     private touchStartHandler(e: MouseEvent & TouchEvent): void {
@@ -1139,6 +1285,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private mouseDownEventHandler(e: MouseEvent & TouchEvent): void {
+        if ((e.target as HTMLElement).className === 'e-ie-drop-browse') {
+            return;
+        }
         this.notify('selection', {prop: 'mouseDownEventHandler', onPropertyChange: false, value: {e: e}});
     }
 
@@ -1147,6 +1296,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private mouseUpEventHandler(e: MouseEvent & TouchEvent): void {
+        if ((e.target as HTMLElement).className === 'e-ie-drop-browse') {
+            return;
+        }
         this.notify('selection', {prop: 'mouseUpEventHandler', onPropertyChange: false, value: {e: e}});
     }
 
@@ -1162,6 +1314,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private canvasMouseDownHandler(e: MouseEvent & TouchEvent): void {
+        if ((e.target as HTMLElement).className === 'e-ie-drop-browse') {
+            return;
+        }
         this.notify('selection', {prop: 'canvasMouseDownHandler', onPropertyChange: false, value: {e: e}});
     }
 
@@ -1170,6 +1325,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private canvasMouseUpHandler(e: MouseEvent & TouchEvent): void {
+        if ((e.target as HTMLElement).className === 'e-ie-drop-browse') {
+            return;
+        }
         this.notify('selection', {prop: 'canvasMouseUpHandler', onPropertyChange: false, value: {e: e}});
     }
 
@@ -1243,7 +1401,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * A horizontal direction for horizontal flipping and vertical direction for vertical flipping.
      *
      * @remarks
-     * It flips the shapes including rectangle, circle, line, text, and freehand drawings.
+     * It flips the shapes including rectangle, circle, line, text, image, and freehand drawings.
      *
      * @returns {void}.
      *
@@ -1279,6 +1437,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public open(data: string | ImageData): void {
+        document.getElementById(this.element.id + '_dropArea').style.display = 'none';
         this.notify('draw', {prop: 'open', value: {data: data}});
     }
 
@@ -1304,11 +1463,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.notify('toolbar', { prop: 'create-bottom-toolbar', onPropertyChange: false});
                 }
             }
+            const isImageLoaded: boolean = this.isImageLoaded;
             this.currObjType.isUndoAction = this.isUndoRedo = this.togglePan = this.togglePen = this.isImageLoaded = false;
             this.isCircleCrop = this.isCropTab =  false; this.objColl = [];  this.transform.degree = 0;
-            this.upperCanvas.style.display = 'block'; this.transform.currFlipState = '';
+            this.upperCanvas.style.display = 'block'; this.transform.currFlipState = ''; this.allowDownScale = true;
             this.upperCanvas.style.cursor = this.cursor = this.lowerCanvas.style.cursor = 'default';
-            this.lowerContext.lineWidth = this.upperContext.lineWidth = undefined;
+            this.lowerContext.lineWidth = this.upperContext.lineWidth = undefined; this.frameDestPoints = null;
             this.textArea.value = this.textArea.textContent = ''; this.textArea.style.display = 'none';
             this.lowerContext.filter = this.canvasFilter = this.getDefaultFilter();
             this.img.destLeft = this.img.destTop = this.img.srcLeft = this.img.srcTop = 0;
@@ -1321,15 +1481,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.lowerCanvas.style.maxWidth = this.upperCanvas.style.maxWidth = '';
             this.lowerCanvas.style.maxHeight = this.upperCanvas.style.maxHeight = '';
             this.transform.defaultZoomFactor = this.transform.zoomFactor = 0; this.transform.cropZoomFactor = null;
+            this.frameObj = {type: 'none', color: '#fff', size: 20, inset: 20, offset: 20, radius: 0, amount: 1, border: 'solid', gradientColor: '' };
+            this.tempFrameObj = {type: 'none', color: '#fff', size: 20, inset: 20, offset: 20, radius: 0, amount: 1, border: 'solid', gradientColor: '' };
             this.currObjType = { shape: '', isDragging: false, isActiveObj: false, isText: false, isInitialText: false, isLine: false,
                 isInitialLine: false, isCustomCrop: false, isZoomed: false, isUndoZoom: false,
                 isUndoAction: false, isFiltered: false, isSave: false, isResize: false  };
             this.cropObj = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
                 totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint,
                 rotateFlipColl: [], degree: 0, currFlipState: '', zoomFactor: 0, previousZoomValue : 0,
-                destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
-                srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter: '', isBrightAdjust: false };
-            this.afterCropActions = []; this.currentFilter = '';
+                destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, frame: 'none',
+                srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter: '', isBrightAdjust: false,
+                aspectWidth: null, aspectHeight: null };
+            this.afterCropActions = []; this.currentFilter = ''; this.tempFrameZoomLevel = null;
             const obj: Object = {initialZoomValue: false };
             this.notify('draw', { prop: 'getInitialZoomValue', onPropertyChange: false, value: {obj: obj }});
             if (obj['initialZoomValue']) {
@@ -1341,7 +1504,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notifyResetForAllModules(); this.notify('filter', { prop: 'update-finetunes'});
             this.isImageLoaded = false;
             this.notify('draw', { prop: 'update-canvas', onPropertyChange: false});
-            this.isImageLoaded = true;
+            this.isImageLoaded = isImageLoaded;
             if (!isBlazor()) {
                 if (this.element.querySelector('.e-contextual-toolbar-wrapper')) {
                     this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
@@ -1361,7 +1524,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * A positive integer value for clockwise and negative integer value for anti-clockwise rotation. 
      *
      * @remarks
-     * It rotated the shapes including rectangle, circle, line, text, and freehand drawings.
+     * It rotated the shapes including rectangle, circle, line, text, image, and freehand drawings.
      *
      * @returns {boolean}.
      *
@@ -1481,17 +1644,18 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @param {number} strokeWidth - Specifies the stroke width of ellipse.
      * @param {string} strokeColor - Specifies the stroke color of ellipse.
      * @param {string} fillColor - Specifies the fill color of the ellipse.
+     * @param {number} degree - Specifies the degree to rotate the ellipse.
      * @returns {boolean}.
      *
      */
     public drawEllipse(x?: number, y?: number, radiusX?: number, radiusY?: number, strokeWidth?: number, strokeColor?: string,
-                       fillColor?: string): boolean {
+                       fillColor?: string, degree?: number): boolean {
         let isEllipse: boolean = false;
         const isPointsInRange: boolean = this.allowShape(x, y);
         if (!this.disabled && this.isImageLoaded && (isPointsInRange || (isNullOrUndefined(x) && isNullOrUndefined(y)))) {
             isEllipse = true;
             this.notify('shape', { prop: 'drawEllipse', onPropertyChange: false, value: {x: x, y: y, radiusX: radiusX, radiusY: radiusY,
-                strokeWidth: strokeWidth, strokeColor: strokeColor, fillColor: fillColor }});
+                strokeWidth: strokeWidth, strokeColor: strokeColor, fillColor: fillColor, degree: degree}});
         }
         return isEllipse;
     }
@@ -1582,16 +1746,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @param {number} strokeWidth - Specifies the stroke width of rectangle.
      * @param {string} strokeColor - Specifies the stroke color of rectangle.
      * @param {string} fillColor - Specifies the fill color of the rectangle.
+     * @param {number} degree - Specifies the degree to rotate the rectangle.
      * @returns {boolean}.
      */
     public drawRectangle(x?: number, y?: number, width?: number, height?: number, strokeWidth?: number, strokeColor?: string,
-                         fillColor?: string): boolean {
+                         fillColor?: string, degree?: number): boolean {
         let isRectangle: boolean = false;
         const isPointsInRange: boolean = this.allowShape(x, y);
         if (!this.disabled && this.isImageLoaded && (isPointsInRange || (isNullOrUndefined(x) && isNullOrUndefined(y)))) {
             isRectangle = true;
             this.notify('shape', { prop: 'drawRectangle', onPropertyChange: false, value: {x: x, y: y, width: width, height: height,
-                strokeWidth: strokeWidth, strokeColor: strokeColor, fillColor: fillColor }});
+                strokeWidth: strokeWidth, strokeColor: strokeColor, fillColor: fillColor, degree: degree}});
         }
         return isRectangle;
     }
@@ -1622,6 +1787,35 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 fontSize: fontSize, bold: bold, italic: italic, color: color}});
         }
         return isText;
+    }
+
+    /**
+     * Draw an image as annotation on an image.
+     *
+     *
+     * @param {string | ImageData} data - Specifies url of the image or image data.
+     * @param {number} x - Specifies x-coordinate of a starting point for an image.
+     * @param {number} y - Specifies y-coordinate of a starting point for an image.
+     * @param {number} width - Specifies the width of the image.
+     * @param {number} height - Specifies the height of the image.
+     * @param {boolean} isAspectRatio - Specifies whether to maintain aspect ratio or not.
+     * @param {number} degree - Specifies the degree to rotate the image.
+     * @returns {boolean}.
+     *
+     */
+    public drawImage(data: string | ImageData, x?: number, y?: number, width?: number, height?: number, isAspectRatio?: boolean,
+                     degree?: number): boolean {
+        let isImage: boolean = false;
+        const isPointsInRange: boolean = this.allowShape(x, y);
+        if (!this.disabled && this.isImageLoaded && (isPointsInRange || (isNullOrUndefined(x) && isNullOrUndefined(y)))) {
+            const length: number = this.objColl.length;
+            this.notify('shape', { prop: 'drawImage', onPropertyChange: false, value: {x: x, y: y, width: width, height: height,
+                src: data, degree: degree, isAspectRatio: isAspectRatio }});
+            if (this.objColl.length > length) {
+                isImage = true;
+            }
+        }
+        return isImage;
     }
 
     /**
@@ -1759,6 +1953,101 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         return { x: this.img.destLeft, y: this.img.destTop, width: this.img.destWidth, height: this.img.destHeight };
     }
 
+    /**
+     * Resize an image by changing its width and height.
+     *
+     * @param {number} width - Specifies the width of an image.
+     * @param {number} height - Specifies the height of an image.
+     * @param {boolean} isAspectRatio - Specifies whether the scaling option is enabled or not.
+     *
+     * @returns {boolean} - A boolean value indicating the success of the resizing operation.
+     */  
+    public resize(width: number, height: number, isAspectRatio?: boolean): boolean {
+        let isResized: boolean = false;
+        if ((width.toString()).length <= 4 && (height.toString()).length <= 4) {
+            const destPoints: ActivePoint = {startX: this.img.destLeft, startY: this.img.destTop, width: this.img.destWidth,
+                height: this.img.destHeight };
+            if (isBlazor()) {
+                this.updateToolbar(this.element, 'resize');
+            } else {
+                if (isAspectRatio) {
+                    this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: { type: 'resize',
+                        isApplyBtn: false, isCropping: false } });
+                    this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: { type: 'resize',
+                        isApplyBtn: false, isCropping: false } });
+                } else {
+                    this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: { type: 'resize',
+                        isApplyBtn: false, isCropping: false } });
+                }
+                const aspectRatioWidth: HTMLInputElement = this.element.querySelector('#' + this.element.id + '_resizeWidth');
+                const aspectRatioHeight: HTMLInputElement = this.element.querySelector('#' + this.element.id + '_resizeHeight');
+                if (aspectRatioWidth && aspectRatioHeight) {
+                    (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value = Math.floor(width);
+                    (aspectRatioWidth as HTMLInputElement).value = Math.floor(width).toString() + ' px';
+                    (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value = Math.floor(height);
+                    (aspectRatioHeight as HTMLInputElement).value = Math.floor(height).toString() + ' px';
+                }
+            }
+            this.notify('transform', {prop: 'resize', value: {width: width, height: height, isAspectRatio: isAspectRatio }});
+            if (destPoints.startX !== this.img.destLeft || destPoints.startY !== this.img.destTop ||
+                destPoints.width !== this.img.destWidth || destPoints.height !== this.img.destHeight) {
+                isResized = true;
+                this.okBtn();
+            } else {
+                this.notify('draw', {prop: 'performCancel', value: {isContextualToolbar: null }});
+            }
+        }
+        return isResized;
+    }
+
+    /** 
+     * Draw a frame on an image. 
+     * 
+     * @param { FrameType} frameType - Specifies the frame option to be drawn on an image. 
+     * @param {string} color - Specifies the color of a frame on an image. The default value is ‘#fff’. 
+     * @param {string} gradientColor - Specifies the gradient color of a frame on an image. The default value is ‘’. 
+     * @param {number} size - Specifies the size of the frame as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 20 if not specified. 
+     * @param {number} inset - Specifies the inset value for line, hook, and inset type frames, as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 0 if not specified. 
+     * @param {number} offset - Specifies the offset value for line and inset type frames, as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 0 if not specified. 
+     * @param {number} borderRadius - Specifies the border radius for line-type frames, as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 0 if not specified. 
+     * @param {FrameLineStyle} frameLineStyle - Specifies the type of line to be drawn for line-type frames. Default to Solid if not specified. 
+     * @param {number} lineCount - Specifies the number of lines for line-type frames. Defaults to 0 if not specified.
+     *  
+     * @returns {boolean}. 
+     */ 
+    public drawFrame(frameType: FrameType, color: string, gradientColor: string, size: number, inset: number, offset: number,
+        borderRadius: number, frameLineStyle: FrameLineStyle, lineCount: number): boolean {
+        let isFrame: boolean = false; let obj: Object = {frameChangeEventArgs: null };
+        const prevFrameSettings: FrameSettings = {type: this.toPascalCase(this.frameObj.type) as FrameType, color: this.frameObj.color,
+            gradientColor: this.frameObj.gradientColor, size: this.frameObj.size, inset: this.frameObj.inset,
+            offset: this.frameObj.offset, borderRadius: this.frameObj.radius, frameLineStyle: this.toPascalCase(this.frameObj.border) as FrameLineStyle,
+            lineCount: this.frameObj.amount};
+        extend(this.tempFrameObj, this.frameObj); this.tempFrameZoomLevel = this.transform.zoomFactor;
+        this.frameDestPoints = extend({}, this.img, {}, true) as ImageDimension;
+        if (!isBlazor()) {
+            this.notify('toolbar', { prop: 'frameToolbarClick' });
+        } else {
+            (this as any).performFrameClick();
+        }
+        this.frameObj.type = frameType.toLowerCase();
+        this.frameObj.color = color; this.frameObj.gradientColor = gradientColor;
+        this.frameObj.size = size; this.frameObj.inset = inset; this.frameObj.offset = offset;
+        this.frameObj.radius = borderRadius; this.frameObj.border = frameLineStyle.toLowerCase(); this.frameObj.amount = lineCount;
+        this.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: prevFrameSettings, obj: obj }});
+        if (obj['frameChangeEventArgs'] && !obj['frameChangeEventArgs'].cancel) {
+            this.notify('draw', { prop: 'render-image', value: { isMouseWheel: null } });
+            if (JSON.stringify(this.frameObj) !== JSON.stringify(this.tempFrameObj)) {
+                isFrame = true; this.okBtn();
+            } else {
+                this.tempFrameZoomLevel = null;
+            }
+        } else {
+            this.notify('draw', {prop: 'performCancel', value: {isContextualToolbar: null }});
+            extend(this.frameObj, this.tempFrameObj); this.tempFrameZoomLevel = null;
+        }
+        return isFrame;
+    }
+
     // Toolbar related codes
     private toolbarTemplateFn(): void {
         let template: Element; const templateID: string = this.element.id + '_toolbar';
@@ -1841,6 +2130,26 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('freehand-draw', {prop: 'color-change', value: {color: obj['tempFreeHandDrawEditingStyles'].strokeColor}});
     }
 
+    private updateImageTransformColl(type: string): void {
+        let value: number | string;
+        if (type === 'rotateleft') {value = -90; }
+        else if (type === 'rotateright') {value = 90; }
+        else if (type === 'horizontalflip') {value = 'horizontal'; }
+        else if (type === 'verticalflip') {value = 'vertical'; }
+        for (let i: number = 0; i < this.objColl.length; i++) {
+            if (this.objColl[i as number].shape === 'image') {
+                if (isNullOrUndefined(this.objColl[i as number].rotateFlipColl)) {
+                    this.objColl[i as number].rotateFlipColl = [];
+                }
+                this.objColl[i as number].rotateFlipColl.push(value);
+                const obj: Object = {collection: this.objColl[i as number].rotateFlipColl};
+                this.notify('shape', { prop: 'alignRotateFlipColl', onPropertyChange: false,
+                    value: {collection: this.objColl[i as number].rotateFlipColl, isRotateFlipCollection: false, obj: obj }});
+                this.objColl[i as number].rotateFlipColl = obj['collection'];
+            }
+        }
+    }
+
     private setInitialZoomState(): void {
         this.objColl.push(this.activeObj);
         this.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
@@ -1848,11 +2157,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.isCropTab = false; this.isUndoRedo = true;
         if (this.transform.cropZoomFactor && this.transform.cropZoomFactor > 0) {
             this.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                value: {zoomFactor: -this.transform.cropZoomFactor, zoomPoint: null}});
+                value: {zoomFactor: -this.transform.cropZoomFactor, zoomPoint: null, isResize: null}});
         }
         else {
             this.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                value: {zoomFactor: Math.abs(this.transform.cropZoomFactor), zoomPoint: null}});
+                value: {zoomFactor: Math.abs(this.transform.cropZoomFactor), zoomPoint: null, isResize: null }});
         }
         this.isUndoRedo = isUndoRedo; this.panPoint.totalPannedPoint = { x: 0, y: 0 };
         this.transform.cropZoomFactor = 0;
@@ -1943,16 +2252,63 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public okBtn(isMouseDown?: boolean): void {
+        this.element.querySelector('.e-contextual-toolbar-wrapper').classList.remove('e-frame-wrapper');
         let isCropSelection: boolean = false; let splitWords: string[];
+        const aspectIcon: HTMLInputElement = (this.element.querySelector('#' + this.element.id + '_aspectratio') as HTMLInputElement);
+        const nonAspectIcon: HTMLInputElement = (this.element.querySelector('#' + this.element.id + '_nonaspectratio') as HTMLInputElement);
+        const blrAspRatElem: HTMLInputElement = (this.element.querySelector('.e-ie-toolbar-aspect-ratio-btn') as HTMLInputElement);
+        const blrNAspRatElem: HTMLInputElement = (this.element.querySelector('.e-ie-toolbar-nonaspect-ratio-btn') as HTMLInputElement);
         if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
         if (splitWords === undefined && this.currObjType.isCustomCrop) {
             isCropSelection = true;
         } else if (splitWords !== undefined && splitWords[0] === 'crop'){
             isCropSelection = true;
         }
+        this.allowDownScale = true;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        if (aspectIcon || nonAspectIcon || (isBlazor() && (this as any).currentToolbar === 'resize-toolbar')){
+            const obj: Object = {width: null, height: null };
+            this.notify('selection', { prop: 'getNumTextValue', onPropertyChange: false, value: { obj: obj } });
+            const point: Point = {x: obj['width'], y: obj['height'] };
+            const obj1: object = {prevCropObj: this.prevCropObj};
+            const obj2: object = {prevObj: this.prevObj};
+            if (point && point.x && point.y && obj1['prevCropObj'] && obj2['prevObj']) {
+                if (nonAspectIcon || (blrNAspRatElem && !blrNAspRatElem.classList.contains('e-hidden'))) {
+                    this.notify('transform', {prop: 'resize', value: {width: point.x, height: point.y, isAspectRatio: false }});
+                }
+                else if (aspectIcon || (blrAspRatElem && !blrAspRatElem.classList.contains('e-hidden'))) {
+                    this.notify('transform', {prop: 'resize', value: {width: point.x, height: null, isAspectRatio: true }});
+                }
+                this.isResize = false;
+                this.aspectWidth = point.x; this.aspectHeight = point.y;
+                this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
+                    isApplyBtn: false, isCropping: false, isZooming: null, cType: null}});
+                this.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
+                    value: { zoomFactor: -this.transform.zoomFactor, zoomPoint: null, isResize: true } });
+                this.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
+                    value: { zoomFactor: obj2['prevObj']['defaultZoom'], zoomPoint: null, isResize: true } });
+                if (obj2['prevObj'].zoomFactor) {
+                    this.setProperties({zoomSettings: { zoomFactor: obj2['prevObj'].zoomFactor}}, true);
+                }
+                this.notify('transform', { prop: 'setPreviousZoomValue', onPropertyChange: false,
+                    value: { previousZoomValue: this.zoomSettings.zoomFactor }});
+                this.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false, value: {operation: 'resize',
+                    previousObj: obj2['prevObj'], previousObjColl: obj2['prevObj']['objColl'],
+                    previousPointColl: obj2['prevObj']['pointColl'], previousSelPointColl: obj2['prevObj']['selPointColl'],
+                    previousCropObj: obj1['prevCropObj'], previousText: null, currentText: null, previousFilter: null,
+                    isCircleCrop: null }});
+                this.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
+            } else {
+                this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
+                    isApplyBtn: false, isCropping: false, isZooming: null, cType: null}});
+            }
+            this.isAspectRatio = false;
+        }
         const selElem: HTMLElement = this.element.querySelector('.e-contextual-toolbar-wrapper .e-toolbar-item.e-selected');
         const obj: Object = {bool: false };
         this.notify('selection', { prop: 'getFreehandDrawEditing', onPropertyChange: false, value: {obj: obj }});
+        const frameObject: Object = {bool: null };
+        this.notify('toolbar', { prop: 'getFrameToolbar', onPropertyChange: false, value: {obj: frameObject }});
         if (selElem) {
             this.currentFilter = selElem.children[0].children[0].id.replace('Canvas', '');
         }
@@ -1967,7 +2323,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             if (isNullOrUndefined(isMouseDown)) {
                 this.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
             }
-        } else if ((!isBlazor() && document.querySelector('#' + this.element.id + '_sliderWrapper')) || (isBlazor() && !this.element.querySelector('.e-ie-contextual-slider').classList.contains('e-hidden')) ||
+        } else if ((!isBlazor() && document.querySelector('#' + this.element.id + '_sliderWrapper')) ||
+            (isBlazor() && !this.element.querySelector('.e-ie-contextual-slider').classList.contains('e-hidden')) ||
             this.currObjType.isFiltered) {
             this.initialAdjustmentValue = this.canvasFilter = this.lowerContext.filter;
             this.currObjType.isFiltered = false;
@@ -1975,6 +2332,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('draw', {prop: 'getTempAdjustmentValue', value: {obj: obj }});
             if (obj['value'] !== this.lowerContext.filter) {
                 this.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
+            }
+            if ((this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) ||
+            (this.activeObj.shape === 'path' && this.activeObj.pointColl.length > 0)) {
+                this.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: isMouseDown}});
             }
         } else if (obj['bool']) {
             this.notify('freehand-draw', {prop: 'applyFhd', onPropertyChange: false});
@@ -1987,11 +2348,31 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
         } else if ((this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) ||
             (this.activeObj.shape === 'path' && this.activeObj.pointColl.length > 0)) {
+            if (this.activeObj.shape === 'image') {
+                this.notify('draw', { prop: 'setImageApply', onPropertyChange: false, value: {bool: true }});
+            }
             this.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: isMouseDown}});
+        } else {
+            if (JSON.stringify(this.frameObj) !== JSON.stringify(this.tempFrameObj)) {
+                const object: Object = {currObj: {} as CurrentObject };
+                this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+                this.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                    operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                        previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                        previousCropObj: extend({}, this.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                        previousFilter: null, isCircleCrop: null }});
+                this.notify('draw', {prop: 'render-image', value: {isMouseWheel: null, isPreventClearRect: null, isFrame: true }});
+                this.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
+                this.tempFrameObj = extend({}, this.frameObj, {}, true) as FrameValue;
+                this.notify('draw', { prop: 'setTempFrame', onPropertyChange: false, value: {frame: this.frameObj.type }});
+            }
+            this.notify('draw', { prop: 'resetFrameZoom', onPropertyChange: false });
         }
         if (!isBlazor() && !obj['isCropToolbar']) {
             this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
                 isApplyBtn: false, isCropping: null, isZooming: null, cType: null}});
+        } else if (isBlazor() && !obj['isCropToolbar'] && ((this as any).currentToolbar == 'resize-toolbar' || (this as any).currentToolbar == 'frame-toolbar')) {
+            this.updateToolbar(this.element, 'imageLoaded');
         }
         this.notify('draw', { prop: 'setNewPath', value: {bool: false }});
         this.isCropTab = false;
@@ -2041,13 +2422,25 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * An ImageData returns the current canvas image data object.
      */
     public getCurrentCanvasData(): ImageData {
+        const tempFrame: FrameValue = extend({}, this.frameObj, {}, true) as FrameValue;
+        this.frameObj = {type: 'none', color: '#fff', size: 20, inset: 20, offset: 20, radius: 0, amount: 1, border: 'solid', gradientColor: '' };
         const tempFilter: string = this.lowerContext.filter;
         this.lowerContext.filter = this.canvasFilter = 'none';
         const objColl: SelectionPoint[] = extend([], this.objColl, null, true) as SelectionPoint[];
         const pointColl: Point[] = extend([], this.pointColl, null, true) as Point[];
         this.objColl = []; this.pointColl = []; this.freehandCounter = 0;
         this.notify('draw', {prop: 'render-image', value: {isMouseWheel: false } });
+        if (this.element.querySelector('.e-contextual-toolbar-wrapper')) {
+            this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+        }
         const data: ImageData = this.getImageData();
+        if (this.element.querySelector('.e-contextual-toolbar-wrapper')) {
+            this.element.querySelector('.e-contextual-toolbar-wrapper').classList.remove('e-hide');
+            if (isBlazor()) {
+                this.element.querySelector('.e-ie-toolbar-check-btn').classList.remove('e-hidden');
+                this.element.querySelector('.e-ie-toolbar-close-btn').classList.remove('e-hidden');
+            }
+        }
         if (!isBlazor()) {
             if (!Browser.isDevice) {
                 this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
@@ -2058,6 +2451,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.objColl = objColl; this.pointColl = pointColl; this.freehandCounter = pointColl.length;
         this.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
         this.lowerContext.filter = this.canvasFilter = tempFilter;
+        this.frameObj = tempFrame;
         return data;
     }
 
@@ -2492,30 +2886,39 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public updateStrokeWidth(id: string): void {
-        this.notify('shape', { prop: 'pushActItemIntoObj'});
-        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
-        const object: Object = {currObj: {} as CurrentObject };
-        this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
-        const prevObj: CurrentObject = object['currObj'];
-        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
-        const selPointCollObj: Object = {selPointColl: null };
-        this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
-            value: {obj: selPointCollObj }});
-        prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-        this.objColl.pop();
-        this.activeObj.strokeSettings.strokeWidth = parseInt(id, 10);
-        this.activeObj.strokeSettings.strokeWidth *= 2;
-        this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null, strokeColor: null, fillColor: null,
-            strokeWidth: this.activeObj.strokeSettings.strokeWidth }});
-        this.objColl.push(this.activeObj);
-        this.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
-            value: {operation: 'shapeTransform', previousObj: prevObj, previousObjColl: prevObj.objColl,
-                previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
-                previousCropObj: prevCropObj, previousText: null,
-                currentText: null, previousFilter: null, isCircleCrop: null}});
-        this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
+        if (this.activeObj.shape && (this.activeObj.shape !== 'path' || (this.activeObj.shape === 'path' &&
+            this.activeObj.pointColl.length > 0))) {
+            this.notify('shape', { prop: 'pushActItemIntoObj'});
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const object: Object = {currObj: {} as CurrentObject };
+            this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+            const prevObj: CurrentObject = object['currObj'];
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            const selPointCollObj: Object = {selPointColl: null };
+            this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
+                value: {obj: selPointCollObj }});
+            prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
+            this.objColl.pop();
+            this.activeObj.strokeSettings.strokeWidth = parseInt(id, 10);
+            this.activeObj.strokeSettings.strokeWidth *= 2;
+            this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null, strokeColor: null, fillColor: null,
+                strokeWidth: this.activeObj.strokeSettings.strokeWidth }});
+            this.objColl.push(this.activeObj);
+            this.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
+                value: {operation: 'shapeTransform', previousObj: prevObj, previousObjColl: prevObj.objColl,
+                    previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
+                    previousCropObj: prevCropObj, previousText: null,
+                    currentText: null, previousFilter: null, isCircleCrop: null}});
+            this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
+        } else if (this.activeObj.shape && (this.activeObj.shape === 'path' &&
+            this.activeObj.pointColl.length === 0)) {
+            this.activeObj.strokeSettings.strokeWidth = parseInt(id, 10);
+            this.activeObj.strokeSettings.strokeWidth *= 2;
+            this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null, strokeColor: null, fillColor: null,
+                strokeWidth: this.activeObj.strokeSettings.strokeWidth }});
+        }
     }
 
     /**
@@ -2526,30 +2929,38 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public updateStrokeColor(value: string): void {
-        this.notify('shape', { prop: 'pushActItemIntoObj'});
-        const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
-        const object: Object = {currObj: {} as CurrentObject };
-        this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
-        const prevObj: CurrentObject = object['currObj'];
-        prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
-        prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
-        prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
-        const selPointCollObj: Object = {selPointColl: null };
-        this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
-            value: {obj: selPointCollObj }});
-        prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-        this.objColl.pop();
-        this.activeObj.strokeSettings.strokeColor = value;
-        this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null, strokeColor:
-            this.activeObj.strokeSettings.strokeColor, fillColor: null, strokeWidth: null }});
-        if (!this.togglePen) {
-            this.objColl.push(this.activeObj);
-            this.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
-                value: {operation: 'shapeTransform', previousObj: prevObj, previousObjColl: prevObj.objColl,
-                    previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
-                    previousCropObj: prevCropObj, previousText: null,
-                    currentText: null, previousFilter: null, isCircleCrop: null}});
-            this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
+        if (this.activeObj.shape && (this.activeObj.shape !== 'path' || (this.activeObj.shape === 'path' &&
+            this.activeObj.pointColl.length > 0))) {
+            this.notify('shape', { prop: 'pushActItemIntoObj'});
+            const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const object: Object = {currObj: {} as CurrentObject };
+            this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+            const prevObj: CurrentObject = object['currObj'];
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            const selPointCollObj: Object = {selPointColl: null };
+            this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
+                value: {obj: selPointCollObj }});
+            prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
+            this.objColl.pop();
+            this.activeObj.strokeSettings.strokeColor = value;
+            this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null, strokeColor:
+                this.activeObj.strokeSettings.strokeColor, fillColor: null, strokeWidth: null }});
+            if (!this.togglePen) {
+                this.objColl.push(this.activeObj);
+                this.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
+                    value: {operation: 'shapeTransform', previousObj: prevObj, previousObjColl: prevObj.objColl,
+                        previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
+                        previousCropObj: prevCropObj, previousText: null,
+                        currentText: null, previousFilter: null, isCircleCrop: null}});
+                this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
+            }
+        } else if (this.activeObj.shape && (this.activeObj.shape === 'path' &&
+            this.activeObj.pointColl.length === 0)) {
+            this.activeObj.strokeSettings.strokeColor = value;
+            this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null, strokeColor:
+                this.activeObj.strokeSettings.strokeColor, fillColor: null, strokeWidth: null }});
         }
     }
 
@@ -2588,6 +2999,120 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     /**
+     * Apply horizontal flip.
+     *
+     * @param { CanvasRenderingContext2D } ctx - Specifies the canvas context 2D.
+     * @param { boolean } isPreventURC - Specifies to update undo redo collection.
+     * @hidden
+     * @returns {void}.
+     */
+    public horizontalFlip(ctx: CanvasRenderingContext2D, isPreventURC?: boolean): void {
+        let prevCropObj: CurrentObject; let prevObj: CurrentObject;
+        if (isNullOrUndefined(isPreventURC)) {
+            this.notify('shape', { prop: 'pushActItemIntoObj'});
+            prevCropObj = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const object: Object = {currObj: {} as CurrentObject };
+            this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+            prevObj = object['currObj'];
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            const selPointCollObj: Object = {selPointColl: null };
+            this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
+                value: {obj: selPointCollObj }});
+            prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
+            this.objColl.pop();
+        }
+        if (!isBlazor()) {
+            this.notify('toolbar', {prop: 'refreshSlider'});
+        }
+        ctx.clearRect(0, 0, this.activeObj.imageCanvas.width, this.activeObj.imageCanvas.height);
+        this.notify('draw', { prop: 'downScaleImgCanvas', onPropertyChange: false,
+            value: {ctx: this.activeObj.imageCanvas.getContext('2d'), isImgAnnotation: true, isHFlip: true, isVFlip: null }});
+        this.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate' }});
+        if (isNullOrUndefined(isPreventURC)) {
+            this.objColl.push(this.activeObj);
+            this.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
+            value: {operation: 'imageHFlip', previousObj: prevObj, previousObjColl: prevObj.objColl,
+                previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
+                previousCropObj: prevCropObj, previousText: null,
+                currentText: null, previousFilter: null, isCircleCrop: null}});
+            this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
+        }
+    }
+
+    /**
+     * Apply vertical flip.
+     *
+     * @param { CanvasRenderingContext2D } ctx - Specifies the canvas context 2D.
+     * @param { boolean } isPreventURC - Specifies to update undo redo collection.
+     * @hidden
+     * @returns {void}.
+     */
+    public verticalFlip(ctx: CanvasRenderingContext2D, isPreventURC?: boolean): void {
+        let prevCropObj: CurrentObject; let prevObj: CurrentObject;
+        if (isNullOrUndefined(isPreventURC)) {
+            this.notify('shape', { prop: 'pushActItemIntoObj'});
+            prevCropObj = extend({}, this.cropObj, {}, true) as CurrentObject;
+            const object: Object = {currObj: {} as CurrentObject };
+            this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+            prevObj = object['currObj'];
+            prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
+            prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
+            prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
+            const selPointCollObj: Object = {selPointColl: null };
+            this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
+                value: {obj: selPointCollObj }});
+            prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
+            this.objColl.pop();
+        }
+        if (!isBlazor()) {
+            this.notify('toolbar', {prop: 'refreshSlider'});
+        }
+        ctx.clearRect(0, 0, this.activeObj.imageCanvas.width, this.activeObj.imageCanvas.height);
+        this.notify('draw', { prop: 'downScaleImgCanvas', onPropertyChange: false,
+            value: {ctx: this.activeObj.imageCanvas.getContext('2d'), isImgAnnotation: true, isHFlip: null, isVFlip: true }});
+        this.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate' }});
+        if (isNullOrUndefined(isPreventURC)) {
+            this.objColl.push(this.activeObj);
+            this.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
+            value: {operation: 'imageVFlip', previousObj: prevObj, previousObjColl: prevObj.objColl,
+                previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
+                previousCropObj: prevCropObj, previousText: null,
+                currentText: null, previousFilter: null, isCircleCrop: null}});
+            this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
+        }
+    }
+
+    /**
+     * Apply rotate image.
+     *
+     * @param { string } rotate - Specifies the direction of rotation.
+     * @hidden
+     * @returns {void}.
+     */
+    public rotateImage(rotate: string): void {
+        if (!isBlazor()) {
+            this.notify('toolbar', {prop: 'refreshSlider'});
+        }
+        if (rotate === 'rotleft') {
+            this.activeObj.rotatedAngle -= (90 * (Math.PI / 180));
+        } else {
+            this.activeObj.rotatedAngle += (90 * (Math.PI / 180));
+        }
+        this.notify('selection', {prop: 'updPtCollForShpRot', onPropertyChange: false, value: {obj: this.activeObj }});
+        this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+        this.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate' }});
+        if (!isBlazor()) {
+            this.notify('toolbar', {prop: 'destroy-qa-toolbar'});
+            this.notify('toolbar', {prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null }});
+        } else {
+            this.updateToolbar(this.element, 'destroyQuickAccessToolbar');
+            this.updateToolbar(this.element, 'quickAccessToolbar', 'image');
+        }
+    }
+
+    /**
      * Get pascalToSplitWords from string.
      *
      * @param { string } str - Specifies the word.
@@ -2618,7 +3143,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const typeToAdjustmentLevel: Object = {'brightness': obj['adjustmentLevel'].brightness,
             'contrast': obj['adjustmentLevel'].contrast, 'hue': obj['adjustmentLevel'].hue,
             'saturation': obj['adjustmentLevel'].saturation, 'opacity': obj['adjustmentLevel'].opacity,
-            'blur': obj['adjustmentLevel'].blur, 'exposure': obj['adjustmentLevel'].exposure };
+            'blur': obj['adjustmentLevel'].blur, 'exposure': obj['adjustmentLevel'].exposure,
+            'transparency': obj['adjustmentLevel'].transparency };
         return typeToAdjustmentLevel[`${type}`] as number;
     }
 
@@ -2630,11 +3156,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public transformSelect(type: string): void {
-        this.isCropToolbar = true;
+        this.isCropToolbar = true; this.allowDownScale = false;
         this.setInitialZoomState();
         const activeObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
         this.cropSelectedState();
         this.notify('draw', {prop: 'resetCurrentSelectionPoint' });
+        this.updateImageTransformColl(type);
         this.notify('transform', {prop: 'performTransformation', value: {text: type }});
         this.notify('draw', {prop: 'moveToSelectionRange', value: {type: type, activeObj: activeObj }});
         this.isCropToolbar = false;
@@ -2664,6 +3191,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public initializeImageEditor(element: HTMLDivElement, dotnetRef?: BlazorDotnetObject): void {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         this.element = element as any;
+        if (isBlazor() && this.element.querySelector('.place-holder')) {
+            this.element.querySelector('.place-holder').remove();
+        }
+        if (isBlazor() && this.element.querySelector('.e-ie-drop-area')) {
+            (this.element.querySelector('.e-ie-drop-area') as HTMLElement).style.display = 'block';
+        }
+        if (isBlazor() && this.element.querySelector('.e-toolbar-area')) {
+            (this.element.querySelector('.e-toolbar-area') as HTMLElement).style.display = 'block';
+        }
         const canvasWrapper: HTMLElement =  this.element.querySelector('.e-canvas-wrapper');
         if (this.element.querySelector('#' + this.element.id + '_toolbarArea')) {
             this.toolbarHeight = this.element.querySelector('#' + this.element.id + '_toolbarArea').clientHeight;
@@ -2679,6 +3215,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.textArea = this.element.querySelector('.e-textbox');
         this.inMemoryCanvas = this.createElement('canvas', {
             id: this.element.id + '_inMemoryCanvas', attrs: { name: 'canvasImage' }
+        });
+        this.baseImgCanvas = this.createElement('canvas', {
+            id: this.element.id + '_baseImgCanvas', attrs: { name: 'canvasImage' }
         });
         this.upperCanvas.width = this.lowerCanvas.width = this.inMemoryCanvas.width = this.element.offsetWidth;
         this.upperCanvas.height = this.lowerCanvas.height = this.inMemoryCanvas.height = (this.element.offsetHeight - this.toolbarHeight);

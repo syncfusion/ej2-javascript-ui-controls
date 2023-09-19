@@ -51,7 +51,7 @@ export class ExportHelper {
                 const options: { [x: string]: Object } = {isExpand: false};
                 options.data = dataSource[parseInt(i.toString(), 10)];
                 options.index = startIndex;
-                if (gObj.childGrid) {
+                if (gObj.childGrid || gObj.detailTemplate) {
                     if (gObj.hierarchyPrintMode === 'All') {
                         options.isExpand = true;
                     } else if (gObj.hierarchyPrintMode === 'Expanded' &&

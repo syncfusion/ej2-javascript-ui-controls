@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect, animationMode } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { isVisible, closest, attributes, detach, select, addClass, removeClass, append } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';
@@ -268,6 +268,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     private isDestroy: boolean;
     private templateEle: string[];
     private isAngular: boolean;
+    private isReact: boolean;
+    private isVue: boolean;
     private headerTemplateFn: Function;
     private itemTemplateFn: Function;
     private removeRippleEffect: () => void;
@@ -424,12 +426,12 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public destroy(): void {
-        if ((this as any).isReact || (this as any).isAngular || (this as any).isVue) {
+        if (this.isReact || this.isAngular || this.isVue) {
             this.clearTemplate();
         }
         const ele: HTEle = this.element;
         super.destroy();
-        this.unwireEvents();
+        this.unWireEvents();
         this.isDestroy = true;
         this.restoreContent(null);
         [].slice.call(ele.children).forEach((el: HTEle) => {
@@ -515,7 +517,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             }
         }
     }
-    private unwireEvents(): void {
+    private unWireEvents(): void {
         EventHandler.remove(this.element, 'click', this.clickHandler);
         if (!isNOU(this.keyModule)) {
             this.keyModule.destroy();
@@ -612,7 +614,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 this.expandItem(true, this.initExpand[parseInt(i.toString(), 10)]);
             }
         }
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.renderReactTemplates();
         }
     }
@@ -645,7 +647,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 });
             }
         }
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.renderReactTemplates();
         }
     }
@@ -688,7 +690,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.afterContentRender(trgt, eventArgs, acrdnItem, acrdnHdr, acrdnCtn, acrdnCtnItem);
         }
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.renderReactTemplates();
         }
     }
@@ -824,7 +826,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             const ctnEle: HTEle = this.headerEleGenerate();
             const hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN });
             ctnEle.appendChild(hdrEle);
-            ctnEle.appendChild(this.fetchElement(hdrEle, item.header, index, true));
+            ctnEle.appendChild(this.fetchElement(hdrEle, item.header, index));
             innerEle.appendChild(ctnEle);
         }
         let hdr: HTEle = <HTEle>select('.' + CLS_HEADER, innerEle);
@@ -885,8 +887,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private fetchElement(ele: HTEle, value: Str, index: number, isHeader: boolean): HTEle {
+    private fetchElement(ele: HTEle, value: Str, index: number): HTEle {
         let templateFn: Function;
         let temString: Str;
         try {
@@ -902,7 +903,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             if (typeof (value) === 'string') {
                 ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
             } else if (!isNOU(this.trgtEle) && ((value as any) instanceof (HTMLElement))) {
-                ele.appendChild(value as any);
+                ele.appendChild(value as HTMLElement);
                 (<HTMLElement>ele.firstElementChild).style.display = '';
             } else {
                 templateFn = templateCompiler(value);
@@ -910,7 +911,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
         let tempArray: HTEle[];
         if (!isNOU(templateFn)) {
-            if ((this as any).isReact) {
+            if (this.isReact) {
                 this.renderReactTemplates();
             }
             let templateProps: string;
@@ -953,7 +954,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         attributes(itemcnt, { 'aria-hidden': 'true' });
         const ctn: HTEle = this.createElement('div', { className: CLS_CTENT });
         if (this.dataSource.length > 0) {
-            if ((this as any).isReact) {
+            if (this.isReact) {
                 this.renderReactTemplates();
             }
             append(this.getItemTemplate()(this.dataSource[parseInt(index.toString(), 10)], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
@@ -963,7 +964,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 this.items[parseInt(index.toString(), 10)].content =
                     SanitizeHtmlHelper.sanitize(this.items[parseInt(index.toString(), 10)].content);
             }
-            itemcnt.appendChild(this.fetchElement(ctn, this.items[parseInt(index.toString(), 10)].content, index, false));
+            itemcnt.appendChild(this.fetchElement(ctn, this.items[parseInt(index.toString(), 10)].content, index));
         }
         return itemcnt;
     }
@@ -996,7 +997,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                     expandState.classList.remove(CLS_EXPANDSTATE);
                 }
                 trgtItemEle.classList.add(CLS_EXPANDSTATE);
-                if ((animation.name === <Effect>'None')) {
+                if ((animation.name === <Effect>'None' && animationMode !== 'Enable') || (animationMode === 'Disable')) {
                     this.expandProgress('begin', icon, trgt, trgtItemEle, expandArgs);
                     this.expandProgress('end', icon, trgt, trgtItemEle, expandArgs);
                 } else {
@@ -1006,6 +1007,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         });
     }
     private expandAnimation(ef: Str, icn: HTEle, trgt: HTEle, trgtItemEle: HTEle, animate: AnimationModel, args: ExpandEventArgs): void {
+        if (ef === 'None' && animationMode === 'Enable'){
+            ef = 'SlideDown';
+            animate.name = 'SlideDown'
+        }
         let height: number;
         this.lastActiveItemId = trgtItemEle.id;
         if (ef === 'SlideDown') {
@@ -1098,7 +1103,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 this.expandedItemsPop(trgtItemEle);
                 trgtItemEle.classList.remove(CLS_EXPANDSTATE);
                 icon.classList.add(CLS_TOGANIMATE);
-                if ((animation.name === <Effect>'None')) {
+                if ((animation.name === <Effect>'None' && animationMode !== 'Enable') || (animationMode === 'Disable')) {
                     this.collapseProgress('begin', icon, trgt, trgtItemEle, expandArgs);
                     this.collapseProgress('end', icon, trgt, trgtItemEle, expandArgs);
                 } else {
@@ -1108,6 +1113,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         });
     }
     private collapseAnimation(ef: Str, trgt: HTEle, trgtItEl: HTEle, icn: HTEle, animate: AnimationModel, args: ExpandEventArgs): void {
+        if(ef === 'None' && animationMode === 'Enable') {
+            ef = 'SlideUp';
+            animate.name = 'SlideUp'
+        }
         let height: number;
         let trgtHeight: number;
         let itemHeight: number;
@@ -1204,18 +1213,17 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
                 this.expandedIndices = [];
-                this.expandedItemRefresh(ele);
+                this.expandedItemRefresh();
                 if (addItem && (addItem as AccordionItemModel).expanded) {
                     this.expandItem(true, itemIndex);
                 }
             });
         }
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.renderReactTemplates();
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private expandedItemRefresh(ele: HTEle): void {
+    private expandedItemRefresh(): void {
         const itemEle: HTEle[] = this.getItemElements();
         [].slice.call(itemEle).forEach((el: HTEle) => {
             if (el.classList.contains(CLS_SLCTED)) {
@@ -1230,8 +1238,12 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}.
      */
     public removeItem(index: number): void {
-        if ((this as any).isReact) {
-            this.clearTemplate(['headerTemplate', 'itemTemplate'], index);
+        if (this.isReact || this.isAngular) {
+            const item: HTEle = <HTEle>selectAll('.' + CLS_ITEM, this.element)[parseInt(index.toString(), 10)];
+            const header: HTEle = <HTEle>select('.' + CLS_HEADERCTN, item);
+            const content: HTEle = <HTEle>select('.' + CLS_CTENT, item);
+            this.clearAccordionTemplate(header, this.dataSource.length > 0 ? 'headerTemplate' : 'header', CLS_HEADERCTN);
+            this.clearAccordionTemplate(content, this.dataSource.length > 0 ? 'itemTemplate' : 'content', CLS_CTENT);
         }
         const itemEle: HTEle[] = this.getItemElements();
         const ele: HTEle = <HTEle>itemEle[parseInt(index.toString(), 10)];
@@ -1243,7 +1255,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         detach(ele);
         items.splice(index, 1);
         this.expandedIndices = [];
-        this.expandedItemRefresh(this.element);
+        this.expandedItemRefresh();
     }
     /**
      * Sets focus to the specified index item header in Accordion.
@@ -1368,13 +1380,13 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 this.collapse(ctn);
             }
         }
-        if ((this as any).isReact) {
+        if (this.isReact) {
             this.renderReactTemplates();
         }
     }
     private destroyItems(): void {
         this.restoreContent(null);
-        if ((this as any).isReact || (this as any).isAngular || (this as any).isVue) {
+        if (this.isReact || this.isAngular || this.isVue) {
             this.clearTemplate();
         }
         [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach((el: HTEle) => {
@@ -1402,7 +1414,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             this.restoreContent(index);
             const header: HTEle = <HTEle>select('.' + CLS_HEADERCTN, item);
             const content: HTEle = <HTEle>select('.' + CLS_CTENT, item);
-            if ((this as any).isReact || (this as any).isAngular) {
+            if (this.isReact || this.isAngular) {
                 this.clearAccordionTemplate(header, 'header', CLS_HEADERCTN);
                 this.clearAccordionTemplate(content, 'content', CLS_CTENT);
             }
@@ -1411,28 +1423,18 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
     }
     private setTemplate(template: string | HTMLElement, toElement: HTMLElement, index: number): void {
-        toElement.innerHTML = '';
-        this.templateCompile(toElement, template, index);
-        if ((this as any).isReact) {
+        this.fetchElement(toElement, template as string, index);
+        if (this.isReact) {
             this.renderReactTemplates();
-        }
-    }
-    private templateCompile(ele: HTMLElement, cnt: any, index: number): void {
-        const tempEle: HTMLElement = this.createElement('div');
-        this.fetchElement(tempEle, cnt, index, false);
-        if (tempEle.childNodes.length !== 0) {
-            [].slice.call(tempEle.childNodes).forEach((childEle: HTMLElement): void => {
-                ele.appendChild(childEle);
-            });
         }
     }
     private clearAccordionTemplate(templateEle: HTMLElement, templateName: string, className: string): void {
         if ((this as Record<string, any>).registeredTemplate && (this as Record<string, any>).registeredTemplate[`${templateName}`]) {
             const registeredTemplates: Record<string, any> = (this as Record<string, any>).registeredTemplate;
             for (let index: number = 0; index < registeredTemplates[`${templateName}`].length; index++) {
-                const registeredItem: Record<string, any> = registeredTemplates[`${templateName}`][parseInt(index.toString(), 10)].rootNodes[0];
-                const closestItem: Element = closest(registeredItem.containerInfo, '.' + className);
-                if (!isNOU(closestItem) && closestItem === templateEle) {
+                const registeredItem: Element = registeredTemplates[`${templateName}`][parseInt(index.toString(), 10)].rootNodes[0];
+                const closestItem: Element = closest(registeredItem, '.' + className);
+                if (!isNOU(closestItem) && closestItem === templateEle || isNOU(registeredItem.parentNode)) {
                     this.clearTemplate([templateName], [registeredTemplates[`${templateName}`][parseInt(index.toString(), 10)]]);
                     break;
                 }
@@ -1495,9 +1497,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                             if (property[parseInt(k.toString(), 10)] === 'disabled' && !isNOU(item)) {
                                 this.enableItem(index, !newVal);
                             }
-                            if (property[parseInt(k.toString(), 10)] === 'content' && !isNOU(item) && item.children.length === 2) {
+                            if (property.indexOf('header') < 0 && property[parseInt(k.toString(), 10)] === 'content'
+                                && !isNOU(item) && item.children.length === 2) {
                                 if (typeof newVal === 'function') {
-                                    if ((this as any).isAngular || (this as any).isReact) {
+                                    if (this.isAngular || this.isReact) {
                                         this.clearAccordionTemplate(content, property[parseInt(k.toString(), 10)], CLS_CTENT);
                                     }
                                     const activeContent: HTEle = item.querySelector('.' + CLS_CTENT);

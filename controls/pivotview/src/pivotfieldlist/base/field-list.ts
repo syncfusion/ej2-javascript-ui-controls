@@ -89,7 +89,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public filterTargetID: HTMLElement;
     private defaultLocale: Object;
-    private captionData: FieldOptionsModel[][];
 
     //Module Declarations
     /** @hidden */
@@ -120,7 +119,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public enableValueSorting: boolean = false;
     /** @hidden */
     public guid: string;
-    private request: XMLHttpRequest;
+    private request: XMLHttpRequest = new XMLHttpRequest();
     private savedDataSourceSettings: DataSourceSettingsModel;
     private remoteData: string[][] | IDataSet[] = [];
     /** @hidden */
@@ -748,7 +747,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
-        this.captionData = [];
         this.wireEvent();
     }
 
@@ -839,13 +837,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const customProperties: any = {
-            pageSettings: this.pivotGridModule ? JSON.parse(this.pivotGridModule.getPersistData()).pageSettings : undefined,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            pageSettings: this.pivotGridModule ? JSON.parse((this.pivotGridModule as any).getPageSettings()).pageSettings : undefined,
             enableValueSorting: this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined,
             enableDrillThrough: this.pivotGridModule ?
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
         };
-        this. request = isNullOrUndefined(this.request) ? new XMLHttpRequest() : this.request;
         this.request.open('POST', this.dataSourceSettings.url, true);
         const params: BeforeServiceInvokeEventArgs = {
             request: this.request,
@@ -1092,10 +1090,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         && !isNullOrUndefined(this.staticPivotGridModule)) {
                             this.savedDataSourceSettings =
                             PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
-                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { rows: [] } }, true);
-                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { columns: [] } }, true);
-                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { values: [] } }, true);
-                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { filters: [] } }, true);
+                            this.staticPivotGridModule.setProperties({ dataSourceSettings: {
+                                rows: [],
+                                columns: [],
+                                values: [],
+                                filters: []
+                            }}, true);
                         }
                     }
                     if (this.dataType === 'pivot') {
@@ -1119,8 +1119,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         const values: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.values);
                         const rows: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.rows);
                         const columns: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.columns);
-                        this.pivotGridModule.setProperties({ dataSourceSettings: { rows: rows, columns: columns, values: values
-                            , filters: filters } }, true);
+                        this.pivotGridModule.setProperties({ dataSourceSettings: {
+                            rows: rows, columns: columns, values: values, filters: filters }}, true);
                         this.pivotGridModule.axisFieldModule.render();
                     } else if (!this.isPopupView && this.staticPivotGridModule && !this.staticPivotGridModule.isDestroyed) {
                         const pivot: PivotView = this.staticPivotGridModule;
@@ -1132,8 +1132,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             const columns: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.columns);
                             const values: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.values);
                             const filters: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.filters);
-                            pivot.pivotFieldListModule.setProperties({ dataSourceSettings: { rows: rows, columns: columns, values: values,
-                                filters: filters } }, true);
+                            pivot.pivotFieldListModule.setProperties({ dataSourceSettings: {
+                                rows: rows, columns: columns, values: values, filters: filters } }, true);
                             pivot.pivotFieldListModule.axisFieldModule.render();
                             if (pivot.pivotFieldListModule.treeViewModule.fieldTable && !pivot.isAdaptive) {
                                 pivot.pivotFieldListModule.notify(events.treeViewUpdate, {});
@@ -1357,13 +1357,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
     }
     private getFieldCaption(dataSourceSettings: DataSourceSettingsModel): void {
-        this.getFields(dataSourceSettings);
+        const captionData: FieldOptionsModel[][] = this.getFields(dataSourceSettings);
         const engineModule: OlapEngine | PivotEngine = this.dataType === 'olap' ? this.olapEngineModule : this.engineModule;
-        if (this.captionData.length > 0 && engineModule && engineModule.fieldList) {
-            let lnt: number = this.captionData.length;
+        if (captionData.length > 0 && engineModule && engineModule.fieldList) {
+            let lnt: number = captionData.length;
             while (lnt--) {
-                if (this.captionData[lnt as number]) {
-                    for (const obj of this.captionData[lnt as number]) {
+                if (captionData[lnt as number]) {
+                    for (const obj of captionData[lnt as number]) {
                         if (obj) {
                             if (engineModule.fieldList[obj.name]) {
                                 if (obj.caption) {
@@ -1380,10 +1380,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             return;
         }
     }
-    private getFields(dataSourceSettings: DataSourceSettingsModel): void {
-        this.captionData =
-            [dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.values,
-                dataSourceSettings.filters] as FieldOptionsModel[][];
+    private getFields(dataSourceSettings: DataSourceSettingsModel): FieldOptionsModel[][] {
+        return [dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.values,
+            dataSourceSettings.filters] as FieldOptionsModel[][];
     }
 
     /**
@@ -1481,9 +1480,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                                 control.getEngine('onDrop', null, null, null, null, null, null);
                             }
                         } else {
-                            pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties,
-                                                            pivot.aggregateCellInfo ? pivot.getValueCellInfo.bind(pivot) : undefined,
-                                                            pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
+                            pivot.engineModule.renderEngine(
+                                pivot.dataSourceSettings as IDataOptions, customProperties, pivot.aggregateCellInfo ?
+                                    pivot.getValueCellInfo.bind(pivot) : undefined, pivot.onHeadersSort ?
+                                    pivot.getHeaderSortInfo.bind(pivot) : undefined
+                            );
                         }
                         pivot.lastSortInfo = {};
                         pivot.lastAggregationInfo = {};
@@ -1764,9 +1765,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
         if (this.pivotFieldList) {
             this.pivotFieldList = {};
-        }
-        if (this.captionData) {
-            this.captionData = null;
         }
         if (this.contextMenuModule) {
             this.contextMenuModule.destroy();

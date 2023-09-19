@@ -514,13 +514,16 @@ export class Table {
                 let pageX : number;
                 let pageY : number;
                 if (Browser.isDevice && (e.args as TouchEvent).touches) {
-                    pageX = (e.args as TouchEvent).changedTouches[0].pageX;
-                    pageY = (e.args as TouchEvent).changedTouches[0].pageY;
+                    pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset + this.parent.element.getBoundingClientRect().left +
+                    (e.args as TouchEvent).changedTouches[0].clientX : (e.args as TouchEvent).changedTouches[0].pageX;
+                    pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + this.parent.element.getBoundingClientRect().top +
+                    (!this.parent.inlineMode.enable ? this.parent.toolbarModule.getToolbarHeight() : 0)
+                     + (e.args as TouchEvent).changedTouches[0].clientY : (e.args as TouchEvent).changedTouches[0].pageY;
                 } else {
                     pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset
                     + this.parent.element.getBoundingClientRect().left + args.clientX : args.pageX;
-                    pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset +
-                    this.parent.element.getBoundingClientRect().top + args.clientY : args.pageY;
+                    pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + this.parent.element.getBoundingClientRect().top +
+                    this.parent.toolbarModule.getToolbarHeight() + args.clientY : args.pageY;
                 }
                 this.quickToolObj.tableQTBar.showPopup(pageX, pageY, target as Element);
                 this.parent.formatter.editorManager.nodeSelection.restore();
@@ -927,12 +930,12 @@ export class Table {
                     const width: number = parseFloat(this.columnEle.offsetWidth.toString());
                     const cellRow: number = this.curTable.rows[0].cells[0].nodeName === 'TH' ? 1 : 0;
                     let currentTableWidth: number;
-                    if (this.curTable.style.width != ''){
+                    if (this.curTable.style.width !== ''){
                         currentTableWidth =  parseFloat(this.curTable.style.width.split('%')[0]);
                     }
                     else {
                         currentTableWidth =  this.getCurrentTableWidth(this.curTable.offsetWidth, this.parent.inputElement.offsetWidth);
-                    }                    
+                    }
                     const currentColumnCellWidth: number = parseFloat((this.curTable.rows[cellRow as number].cells[this.colIndex >= this.curTable.rows[cellRow as number].cells.length ? this.curTable.rows[cellRow as number].cells.length - 1 : this.colIndex] as HTMLElement).style.width.split('%')[0]);
                     if (this.currentColumnResize === 'first') {
                         mouseX = mouseX - 0.75; //This was done for to make the gripper and the table first/last column will be close.
@@ -971,7 +974,7 @@ export class Table {
                                 tableWidth + mouseX, widthCompare);
                             for (let i: number = 0; i < lastColumnsCell.length; i++) {
                                 if (this.curTable.rows[i as number].cells[this.colIndex]) {
-                                     (this.curTable.rows[i as number].cells[this.curTable.rows[i as number].cells.length === this.colIndex ?
+                                    (this.curTable.rows[i as number].cells[this.curTable.rows[i as number].cells.length === this.colIndex ?
                                         this.colIndex - 1 : this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
                                 }
                             }
@@ -990,6 +993,7 @@ export class Table {
                                 let isMergedEleResize: boolean = false;
                                 let leftTableCell: HTMLTableDataCellElement;
                                 let rightTableCell: HTMLTableDataCellElement;
+                                /* eslint-disable */
                                 for (let j: number = 0; j < currentRow.cells.length; j++) {
                                     if (currentRow.cells[j as number].hasAttribute('rowspan') && j <= this.colIndex) {
                                         isRowCellsMerged = true;
@@ -1044,6 +1048,7 @@ export class Table {
                                             this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
                                     }
                                 }
+                                /* eslint-enable */
                             }
                         }
                     }
@@ -1066,7 +1071,7 @@ export class Table {
                     }
                     if (currentTdElement) {
                         const tableBoxPosition: number = this.curTable.getBoundingClientRect().left
-                            - currentTdElement.getBoundingClientRect().left;
+                        - currentTdElement.getBoundingClientRect().left;
                         maxiumWidth = Math.abs(tableBoxPosition - currentTdElement.getBoundingClientRect().width) - 5;
                         this.curTable.style.maxWidth = maxiumWidth + 'px';
                     }
@@ -1182,7 +1187,8 @@ export class Table {
     }
 
     private renderDlgContent(args?: ITableNotifyArgs): void {
-        if (Browser.isDevice || this.parent.inlineMode.enable) {
+        const argsTarget: HTMLElement = (args.args as ClickEventArgs).originalEvent.target as HTMLElement;
+        if (Browser.isDevice || this.parent.inlineMode.enable || !isNullOrUndefined(closest(argsTarget, '.e-rte-text-popup'))) {
             this.insertTableDialog(args as MouseEvent);
             return;
         }
@@ -1438,6 +1444,10 @@ export class Table {
         if (this.quickToolObj && this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
             this.quickToolObj.inlineQTBar.hidePopup();
         }
+        if (this.quickToolObj && this.quickToolObj.textQTBar &&
+             this.parent.element.ownerDocument.body.contains(this.quickToolObj.textQTBar.element)) {
+            this.quickToolObj.textQTBar.hidePopup();
+        }
     }
 
     private customTable(args: ITableNotifyArgs, e: MouseEvent): void {
@@ -1445,8 +1455,10 @@ export class Table {
         if (proxy.rowTextBox.value && proxy.columnTextBox.value) {
             const argument: ITableNotifyArgs = ((Browser.isDevice || (!isNullOrUndefined(args.args as ClickEventArgs)
                 && !isNullOrUndefined((args.args as ClickEventArgs).originalEvent) &&
-                ((args.args as ClickEventArgs).originalEvent as KeyboardEventArgs).action === 'insert-table')
-                || proxy.parent.inlineMode.enable) ? args : this as ITableNotifyArgs);
+                ((args.args as ClickEventArgs).originalEvent as
+                 KeyboardEventArgs).action === 'insert-table')
+                || proxy.parent.inlineMode.enable || !isNullOrUndefined(proxy.parent.quickToolbarSettings.text)) ? args :
+                this as ITableNotifyArgs);
             proxy.tableInsert(proxy.rowTextBox.value, proxy.columnTextBox.value, e, argument);
         }
     }

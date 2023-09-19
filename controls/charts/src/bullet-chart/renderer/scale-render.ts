@@ -8,7 +8,7 @@ import { Rect, measureText, textElement, TextOption, Size, PathOption } from '@s
 import { RectOption, CircleOption } from '../../common/utils/helper';
 import { RangeModel } from '../model/bullet-base-model';
 import { IFeatureBarBounds } from '../model/bullet-interface';
-import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, animationMode } from '@syncfusion/ej2-base';
 import { AnimationModel } from '../../common/model/base-model';
 import { getAnimationFunction } from '../../common/utils/helper';
 import { TargetType } from '../utils/enum';
@@ -198,7 +198,7 @@ export class ScaleGroup {
                     );
                 }
             }
-            if (bulletChart.animation.enable) {
+            if ((bulletChart.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') {
                 this.doValueBarAnimation();
             }
         }
@@ -311,7 +311,7 @@ export class ScaleGroup {
                 this.scaleSettingsGroup.appendChild(comparativeGroup);
             }
             values = [];
-            if (bulletChart.animation.enable) {
+            if ((bulletChart.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') {
                 this.doTargetBarAnimation(0);
             }
         }
@@ -459,7 +459,7 @@ export class ScaleGroup {
         }
         valueBarElement.style.visibility = 'hidden';
         new Animation({}).animate(valueBarElement, {
-            duration: animateDuration,
+            duration: (animateDuration === 0 && animationMode === 'Enable') ? 1000: animateDuration,
             delay: animateOption.delay,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {
@@ -509,7 +509,7 @@ export class ScaleGroup {
         const threshold: number = this.comparative.length;
         const duration: number = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : option.duration;
         new Animation({}).animate(targetBarelement, {
-            duration: duration,
+            duration: (duration === 0 && animationMode === 'Enable') ? 1000: duration,
             delay: option.delay,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {

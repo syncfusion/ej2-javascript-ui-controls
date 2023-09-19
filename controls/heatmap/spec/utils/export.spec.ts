@@ -93,6 +93,32 @@ describe('Heatmap Control', () => {
                 done();
             }, 500);
         });
+        it('Export support- SVG mode', function (done: Function) {
+            heatmap.renderingMode = 'SVG';
+            heatmap.theme ='Tailwind';
+            heatmap.export('JPEG', 'jpeg');
+            heatmap.export('PDF', 'pdf');
+            heatmap.export('PNG', 'png');
+            heatmap.export('SVG', 'svg');
+            heatmap.export('JPEG', 'jpeg',PdfPageOrientation.Portrait);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Export support- SVG mode', function (done: Function) {
+            heatmap.renderingMode = 'SVG';
+            heatmap.theme ='TailwindDark';
+            heatmap.export('JPEG', 'jpeg');
+            heatmap.export('PDF', 'pdf');
+            heatmap.export('PNG', 'png');
+            heatmap.export('SVG', 'svg');
+            heatmap.export('JPEG', 'jpeg',PdfPageOrientation.Portrait);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
         it('Export support for IE browser', function (done: Function) {
             Browser.info.name = 'msie';
             Browser.info.version = '11.914.17763.0';

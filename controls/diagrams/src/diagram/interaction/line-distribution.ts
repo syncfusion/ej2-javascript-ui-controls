@@ -985,10 +985,12 @@ export class LineDistribution {
             temppoints[temppoints.length - 3].y = temppoints[temppoints.length - 2].y;
         }
         if (diagram.layout.orientation === 'RightToLeft' || diagram.layout.orientation === 'LeftToRight') {
-            temppoints[0] = points[0];
-            temppoints[1] = points[1];
-            temppoints[temppoints.length - 1] = points[points.length - 1];
-            temppoints[temppoints.length - 2] = points[points.length - 2];
+            //EJ2-842769-Curved Connectors Instead of Straight Lines When enableRouting is Set to True
+            let newPoints:PointModel[] = JSON.parse(JSON.stringify(points));
+            temppoints[0] = newPoints[0];
+            temppoints[1] = newPoints[1];
+            temppoints[temppoints.length - 1] = newPoints[newPoints.length - 1];
+            temppoints[temppoints.length - 2] = newPoints[newPoints.length - 2];
             if (diagram.layout.orientation === 'RightToLeft') {
                 temppoints[1].x = temppoints[0].x - diagram.layout.verticalSpacing / 2;
             }

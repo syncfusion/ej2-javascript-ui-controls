@@ -224,7 +224,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent == 'Chart SubTitle').toBe(true);
-            expect(text.getAttribute('y') == '52.25' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '51.25' || text.getAttribute('y') == '49.25').toBe(true);
        });
 
         it('Checking textoverflow subtitle none', function () {
@@ -233,7 +233,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent == 'SubTitle').toBe(true);
-            expect(text.getAttribute('y') == '52.25' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '51.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
         it('Checking textoverflow subtitle trim', function () {
@@ -243,7 +243,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent.indexOf('...') != -1).toBe(true);
-            expect(text.getAttribute('y') == '52.25' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '51.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
         it('Checking textoverflow subtitle wrap', function () {
@@ -251,7 +251,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.childNodes.length == 2).toBe(true);
-            expect(text.getAttribute('y') == '52.25' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '51.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
         it('Checking textAlignment subtitle center and subtitle is in Title width', function () {

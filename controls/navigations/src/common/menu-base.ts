@@ -587,9 +587,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             this.targetElement = target;
             if (!this.isMenu) {
-                EventHandler.add(this.targetElement, 'scroll', this.scrollHandler, this);
+                EventHandler.add(this.targetElement, 'mousewheel DOMMouseScroll', this.scrollHandler, this);
                 for (const parent of getScrollableParent(this.targetElement)) {
-                    EventHandler.add(parent, 'scroll', this.scrollHandler, this);
+                    EventHandler.add(parent, 'mousewheel DOMMouseScroll', this.scrollHandler, this);
                 }
             }
         }
@@ -633,8 +633,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private keyHandler(e: KeyboardEvent): void {
-        if (e.keyCode === 38 || e.keyCode === 40)
-        { 
+        if (e.keyCode === 38 || e.keyCode === 40) { 
             if (e.target && ((e.target as Element).classList.contains('e-contextmenu') || (e.target as Element).classList.contains('e-menu-item'))) {
                 e.preventDefault();
             }
@@ -768,7 +767,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             const popups: Element[] = [];
             const allPopup: Element[] = selectAll('.' + POPUP);
             allPopup.forEach((elem: Element) => {
-                if (this.element.id === elem.id.split('-')[2] || elem.id.split('-')[2] + "-" + elem.id.split('-')[3]) {
+                if (this.element.id === elem.id.split('-')[2] || elem.id.split('-')[2] + '-' + elem.id.split('-')[3]) {
                     popups.push(elem);
                 }
             });
@@ -1084,9 +1083,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (isNullOrUndefined(e)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const ev: any = document.createEvent('MouseEvents');
-                ev.initEvent("click", true, false);
+                ev.initEvent('click', true, false);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let targetEvent: any = this.copyObject(ev, {});
+                const targetEvent: any = this.copyObject(ev, {});
                 targetEvent.target = targetEvent.srcElement = target;
                 targetEvent.currentTarget = target;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1097,6 +1096,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private copyObject(source: any, destination: any): any {
         for (const prop in source) {
             destination[`${prop}`] = source[`${prop}`];
@@ -1777,7 +1777,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
         const navIdx: number[] = this.getIndex(idx, isUniqueId);
         const newItem: MenuItemModel = this.getItem(navIdx);
-        Object.assign(newItem, item); 
+        Object.assign(newItem, item);
     }
 
     private getItem(navIdx: number[]): MenuItemModel {
@@ -2010,9 +2010,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             }
             if (!this.isMenu) {
-                EventHandler.remove(this.targetElement, 'scroll', this.scrollHandler);
+                EventHandler.remove(this.targetElement, 'mousewheel DOMMouseScroll', this.scrollHandler);
                 for (const parent of getScrollableParent(this.targetElement)) {
-                    EventHandler.remove(parent, 'scroll', this.scrollHandler);
+                    EventHandler.remove(parent, 'mousewheel DOMMouseScroll', this.scrollHandler);
                 }
             }
         }
@@ -2266,9 +2266,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             index = navIdx.pop();
             ul = this.getUlByNavIdx(navIdx.length);
             if (ul) {
-                let validUl: string = isUniqueId ? ul.children[index as number].id : ul.children[index as number].textContent;
+                const validUl: string = isUniqueId ? ul.children[index as number].id : ul.children[index as number].textContent;
                 if (ishide && validUl === items[i as number]) {
-                        ul.children[index as number].classList.add(HIDE);
+                    ul.children[index as number].classList.add(HIDE);
                 } else {
                     ul.children[index as number].classList.remove(HIDE);
                 }

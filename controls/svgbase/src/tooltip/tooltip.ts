@@ -8,7 +8,7 @@
 import { NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { extend, compile as templateComplier, Component, resetBlazorTemplate, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '../svg-render/index';
-import { ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation } from '@syncfusion/ej2-base';
+import { ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation, animationMode } from '@syncfusion/ej2-base';
 import { TextStyleModel, TooltipBorderModel, TooltipModel, ToolLocationModel, AreaBoundsModel } from './tooltip-model';
 import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs, IBlazorTemplate } from './interface';
 import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';
@@ -1355,7 +1355,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const y: number = parseFloat(tooltipDiv.style.top);
         let currenDiff: number;
         new Animation({}).animate(tooltipDiv, {
-            duration: this.duration,
+            duration: (this.duration === 0 && animationMode === 'Enable')? 300: this.duration,
             progress: (args: AnimationOptions): void => {
                 currenDiff = (args.timeStamp / args.duration);
                 tooltipDiv.style.animation = null;
@@ -1406,7 +1406,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const tooltipDiv: HTMLElement = <HTMLElement>getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;
-            if (tooltipGroup && tooltipGroup.nodeType !== Node.ELEMENT_NODE) {
+            if (tooltipGroup.nodeType !== Node.ELEMENT_NODE) {
                 tooltipGroup = tooltipElement.firstElementChild as HTMLElement;
             }
             if (this.isCanvas && !this.template) {

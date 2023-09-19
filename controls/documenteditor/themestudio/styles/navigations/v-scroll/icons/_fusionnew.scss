@@ -1,0 +1,27 @@
+@include export-module('vscroll-fusionnew-icons') {
+
+  /*! vscroll icons */
+  #{&}.e-vscroll {
+
+    &.e-scroll-device {
+
+      .e-nav-up-arrow::before {
+        content: '\e7dd';
+      }
+
+      .e-nav-down-arrow::before {
+        content: '\e734';
+      }
+    }
+
+    .e-nav-up-arrow::before {
+      content: '\e776';
+      line-height: normal;
+    }
+
+    .e-nav-down-arrow::before {
+      content: '\e729';
+      line-height: normal;
+    }
+  }
+}

@@ -96,57 +96,57 @@ describe('CRUD actions module', () => {
         //     });
         // });
 
-        // describe('Update action testing', () => {
-        //     let kanbanObj: Kanban;
-        //     let dataSource: Object[] = kanbanData.slice(0, 10);
-        //     beforeAll((done: DoneFn) => {
-        //         kanbanObj = util.createKanban({}, dataSource, done);
-        //     });
+        describe('Update action testing', () => {
+            let kanbanObj: Kanban;
+            let dataSource: Object[] = kanbanData.slice(0, 10);
+            beforeAll((done: DoneFn) => {
+                kanbanObj = util.createKanban({}, dataSource, done);
+            });
 
-        //     afterAll(() => {
-        //         util.destroy(kanbanObj);
-        //     });
+            afterAll(() => {
+                util.destroy(kanbanObj);
+            });
 
-        //     it('action begin event testing in update card public method', () => {
-        //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
-        //         expect(kanbanObj.kanbanData.length).toEqual(10);
-        //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-        //         let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 3)) as { [key: string]: Object }[];
-        //         cardData[0].Status = 'Testing';
-        //         cardData[1].Status = 'Close';
-        //         kanbanObj.updateCard(cardData);
-        //         expect(kanbanObj.kanbanData.length).toEqual(10);
-        //     });
+            it('action begin event testing in update card public method', () => {
+                kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
+                expect(kanbanObj.kanbanData.length).toEqual(10);
+                expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+                let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 3)) as { [key: string]: Object }[];
+                cardData[0].Status = 'Testing';
+                cardData[1].Status = 'Close';
+                kanbanObj.updateCard(cardData);
+                expect(kanbanObj.kanbanData.length).toEqual(10);
+            });
 
-        //     it('action complete event testing in update card public method', () => {
-        //         kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
-        //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = true;
-        //         expect(kanbanObj.kanbanData.length).toEqual(10);
-        //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-        //         let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 3)) as { [key: string]: Object }[];
-        //         cardData[0].Status = 'Testing';
-        //         cardData[1].Status = 'Close';
-        //         kanbanObj.updateCard(cardData);
-        //         expect(kanbanObj.kanbanData.length).toEqual(10);
-        //     });
+            it('action complete event testing in update card public method', () => {
+                kanbanObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
+                kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = true;
+                expect(kanbanObj.kanbanData.length).toEqual(10);
+                expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+                let cardData: { [key: string]: Object }[] = util.cloneDataSource(kanbanData.slice(1, 3)) as { [key: string]: Object }[];
+                cardData[0].Status = 'Testing';
+                cardData[1].Status = 'Close';
+                kanbanObj.updateCard(cardData);
+                expect(kanbanObj.kanbanData.length).toEqual(10);
+            });
 
-        //     it('update card public method testing', (done: DoneFn) => {
-        //         kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = false;
-        //         kanbanObj.dataBound = () => {
-        //             expect(kanbanObj.kanbanData.length).toEqual(10);
-        //             expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-        //             expect(cardData.Id).toEqual(1);
-        //             expect(cardData.Status).toEqual('InProgress');
-        //             done();
-        //         };
-        //         expect(kanbanObj.kanbanData.length).toEqual(10);
-        //         expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
-        //         let cardData: { [key: string]: Object } = util.cloneDataSource(kanbanData.slice(0, 1))[0] as { [key: string]: Object };
-        //         expect(cardData.Id).toEqual(1);
-        //         expect(cardData.Status).toEqual('Open');
-        //         cardData.Status = 'InProgress';
-        //         kanbanObj.updateCard(cardData);
-        //     });
+            it('update card public method testing', (done: DoneFn) => {
+                kanbanObj.actionComplete = (args: ActionEventArgs) => args.cancel = false;
+                kanbanObj.dataBound = () => {
+                    expect(kanbanObj.kanbanData.length).toEqual(10);
+                    expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+                    expect(cardData.Id).toEqual(1);
+                    expect(cardData.Status).toEqual('InProgress');
+                    done();
+                };
+                expect(kanbanObj.kanbanData.length).toEqual(10);
+                expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(9);
+                let cardData: { [key: string]: Object } = util.cloneDataSource(kanbanData.slice(0, 1))[0] as { [key: string]: Object };
+                expect(cardData.Id).toEqual(1);
+                expect(cardData.Status).toEqual('Open');
+                cardData.Status = 'InProgress';
+                kanbanObj.updateCard(cardData);
+            });
     });
 
     describe('Delete action testing', () => {
@@ -921,4 +921,5 @@ describe('CRUD actions module', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 
+});
 });

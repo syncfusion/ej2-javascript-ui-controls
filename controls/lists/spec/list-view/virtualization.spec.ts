@@ -737,6 +737,9 @@ describe('UI virtualization', () => {
         let listObj: any;
         let ele: HTMLElement = createElement('div', { id: 'ListView' });
         ele.style.overflow = 'auto';
+        let templateFunc: Function = (data: any) => {
+            return `<div class ="${data.rid}" id ="${data.id}"><span ${data.rid}="true" type ="${data.id % 2 === 0 ? 'even-list' : 'odd-list'}"> ${data.id % 2 === 0 ? data.even : data.odd} </span> </div>`;
+        }
         setStyle(ele, 50);
         let data: { [key: string]: Object }[] = [
         ];
@@ -748,7 +751,7 @@ describe('UI virtualization', () => {
             listObj = new ListView({
                 dataSource: data, enableVirtualization: true, showCheckBox: true,
                 height: 500,
-                template: '<div class ="${rid}" id ="${id}"><span ${rid}="true" type ="${ $id % 2 === 0 ? \'even-list\' : \'odd-list\'}"> ${ $id % 2 === 0 ? $even : $odd} </span> </div>'
+                template: templateFunc
             });
             listObj.appendTo(ele);
         });
@@ -790,6 +793,9 @@ describe('UI virtualization', () => {
         let listObj: any;
         let ele: HTMLElement = createElement('div', { id: 'ListView' });
         ele.style.overflow = 'auto';
+        let templateFunc: Function = (data: any) => {
+            return `<div class ="${data.rid}" id ="${data.id}"><span ${data.rid}="true" type ="${data.id % 2 === 0 ? 'even-list' : 'odd-list'}"> ${data.id % 2 === 0 ? data.even : data.odd} </span> </div>`;
+        }
         setStyle(ele, 50);
         let data: { [key: string]: Object }[] = [
         ];
@@ -803,7 +809,7 @@ describe('UI virtualization', () => {
                 dataSource: data, enableVirtualization: true, showCheckBox: true,
                 height: 500,
                 fields: { groupBy: 'category' },
-                template: '<div class ="${rid}" id ="${id}"><span ${rid}="true" type ="${ $id % 2 === 0 ? \'even-list\' : \'odd-list\'}"> ${ $id % 2 === 0 ? $even : $odd} </span> </div>'
+                template: templateFunc
             });
             listObj.appendTo(ele);
         });
@@ -844,6 +850,9 @@ describe('UI virtualization', () => {
         let listObj: any;
         let ele: HTMLElement = createElement('div', { id: 'ListView' });
         ele.style.overflow = 'auto';
+        let templateFunc: Function = (data: any) => {
+            return `<div  class="${data.items[0].rid}" ${data.items[0].rid} = "true" type ="${data.items[0].id % 2 === 0 ? 'even-list' : 'odd-list'}">  ${data.text} </div>`;
+        }
         setStyle(ele, 50);
         let data: { [key: string]: Object }[] = [
         ];
@@ -856,7 +865,7 @@ describe('UI virtualization', () => {
                 dataSource: data, enableVirtualization: true, showCheckBox: true,
                 height: 550, headerTitle: 'list', showHeader: true,
                 fields: { groupBy: 'category' },
-                groupTemplate: '<div  class="${items[0].rid}" ${items[0].rid} = "true" type ="${ $items[0].id % 2 === 0 ? \'even-list\' : \'odd-list\'}">  ${ text } </div>',
+                groupTemplate: templateFunc,
             });
             listObj.appendTo(ele);
         });
@@ -879,6 +888,9 @@ describe('UI virtualization', () => {
         let listObj: any;
         let ele: HTMLElement = createElement('div', { id: 'ListView' });
         ele.style.overflow = 'auto';
+        let templateFunc: Function = (data: any) => {
+            return `<div class ="${data.id % 2 === 0 ? 'even-list' : 'odd-list'}" id ="${data.id}"><span ${data.rid}="true" > ${data.id % 2 === 0 ? data.even : data.odd} </span> </div>`;
+        }
         setStyle(ele, 45);
         let data: { [key: string]: Object }[] = [
         ];
@@ -892,7 +904,7 @@ describe('UI virtualization', () => {
                 height: 550,
                 fields: { groupBy: 'id' },
                 groupTemplate: '<div > <span></span> ${ text }</div>',
-                template: '<div class ="${ $id % 2 === 0 ? \'even-list\' : \'odd-list\'}" id ="${id}"><span ${rid}="true" > ${ $id % 2 === 0 ? $even : $odd} </span> </div>'
+                template: templateFunc
             });
             listObj.appendTo(ele);
         });

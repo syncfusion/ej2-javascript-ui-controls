@@ -1184,6 +1184,8 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 | 'DifferentOddAndEvenPages'
 | 'LineSpacing'
 | 'LineSpacingType'
+| 'SpaceAfterAuto'
+| 'SpaceBeforeAuto'
 | 'ListFormat'
 | 'ParagraphFormat'
 | 'SectionFormat'
@@ -1222,7 +1224,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 |'BottomBorder'
 |'HorizontalBorder'
 |'VerticalBorder'|'ColumnBreak'
-|'DragAndDropContent'|'LinkToPrevious';
+|'DragAndDropContent'|'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment'| 'TableTitle'|'TableDescription';
 /**
  * Enum for direction
  */
@@ -2647,3 +2649,26 @@ export type BreakClearType =
      * Specifies the text to start on next full line.
      */
     'All';
+
+
+
+
+/**
+ * For internal use only.
+ * @private
+ */
+export const CONTROL_CHARACTERS = {
+    'Tab': '\t',
+    'Paragraph': '\n',
+    'LineBreak': '\v',
+    'PageBreak': '\f',
+    'ColumnBreak': '\u000e',
+    'Image': '\u0011',
+    "Table": `\u0012`,
+    "Row": `\u0013`,
+    "Cell": `\u0014`,
+    "Marker_Start": `\u0015`,
+    "Marker_End": `\u0016`,
+    "Field_Separator": `\u0017`,
+    "Section_Break": `\u0018`,
+}

@@ -34,7 +34,9 @@ export let pieColorMapping: Object[] = [
     { y: 23, x: 2, name: 'Bison', text: 'Bison : 23', color:'green'  },
     { y: 30, x: 3, name: 'Brown Bear', text: 'Brown Bear : 30', color:'blue' }
 ];
-
+export let stackedBarData: Object[] = [{ x: 'GBR', y: 17, y1: 13, y2: 7 }, { x: 'CHN', y: 16, y1: 20, y2: 11 }, { x: 'AUS', y: 8, y1: 11, y2: 10 }, 
+    { x: 'RUS', y: 14, y1: 6, y2: 20 }, { x: 'GER', y: 17, y1: 10, y2: 15 }, { x: 'UA', y: 2, y1: 5, y2: 24 }, { x: 'ES', y: 7, y1: 4, y2: 6 }, 
+    { x: 'UZB', y: 4, y1: 2, y2: 7 }, { x: 'JPN', y: 12, y1: 8, y2: 8 }, { x: 'NL', y: 8, y1: 7, y2: 4 }, { x: 'USA', y: 26, y1: 10, y2: 8 }];
 export let data: Object[] = [
     {
         OrderCount: 18, EmployeeID: 1, Freight: 12, Verified: !0

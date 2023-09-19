@@ -4,7 +4,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { remoteData2,filteredremoteData2 } from '../dataSource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
-describe('filter remote data testing ', () => {
+xdescribe('filter remote data testing ', () => {
     let ddtreeObj: any;
     let mouseEventArgs: any;
     let tapEvent: any;

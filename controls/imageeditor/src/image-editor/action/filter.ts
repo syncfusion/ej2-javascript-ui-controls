@@ -1,13 +1,14 @@
 import { ImageEditor, ImageFinetuneOption, CurrentObject, SelectionPoint, Point, ActivePoint, Adjustment, FinetuneSettingsModel } from '../index';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { FrameValue } from '../base';
 
 export class Filter {
     private parent: ImageEditor;
     private lowerContext: CanvasRenderingContext2D;
     private adjustmentLevel: Adjustment = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0, blur: 0,
-        exposure: 0, sharpen: false, bw: false}; // for toolbar slider value
+        exposure: 0, transparency: 100, sharpen: false, bw: false}; // for toolbar slider value
     private tempAdjustmentLevel: Adjustment = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0, blur: 0,
-        exposure: 0, sharpen: false, bw: false}; // for temp toolbar slider value
+        exposure: 0, transparency: 100, sharpen: false, bw: false}; // for temp toolbar slider value
     private adjustmentValue: string = ''; // for internal slider value
     private isBrightnessAdjusted: boolean = false;
     private appliedFilter: string = '';
@@ -44,9 +45,6 @@ export class Filter {
         case 'update-finetunes':
             this.updateFinetunes();
             break;
-        case 'updateBrightFilter':
-            this.updateBrightFilter();
-            break;
         case 'set-adjustment':
             this.setAdjustment(args.value['operation'] as string);
             break;
@@ -67,6 +65,11 @@ export class Filter {
             this.getCurrentObj(args.value['object']);
             break;
         case 'getAdjustmentLevel':
+            if (isNullOrUndefined(this.parent.activeObj.imageTransparency)) {
+                this.adjustmentLevel.transparency = 100;
+            } else {
+                this.adjustmentLevel.transparency = this.parent.activeObj.imageTransparency * 100;
+            }
             args.value['obj']['adjustmentLevel'] = this.adjustmentLevel;
             break;
         case 'setAdjustmentLevel':
@@ -105,20 +108,11 @@ export class Filter {
         return 'filter';
     }
 
-    private updateBrightFilter(): void {
-        const splitWords: string[] = this.lowerContext.filter.split(' ');
-        if (this.isBrightnessAdjusted && splitWords.length > 0 && !isNullOrUndefined(splitWords[4])) {
-            const opacityValue: number = parseFloat(splitWords[4].split('(')[1]);
-            splitWords[4] = 'opacity(' + (opacityValue - 0.3) + ')';
-            this.lowerContext.filter = splitWords.join(' ');
-        }
-    }
-
     private reset(): void {
         this.adjustmentLevel = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0,
-            blur: 0, exposure: 0, sharpen: false, bw: false};
+            blur: 0, exposure: 0, transparency: 100, sharpen: false, bw: false};
         this.tempAdjustmentLevel = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0,
-            blur: 0, exposure: 0, sharpen: false, bw: false};
+            blur: 0, exposure: 0, transparency: 100, sharpen: false, bw: false};
         this.adjustmentValue = this.parent.getDefaultFilter();
         this.isBrightnessAdjusted =  false; this.appliedFilter = '';
     }
@@ -177,7 +171,6 @@ export class Filter {
         if (splitWords[4]) {opacityValue = parseFloat(splitWords[4].split('(')[1]); }
         if (splitWords[0]) {brightnessValue = parseFloat(splitWords[0].split('(')[1]); }
         const brightness: number = this.getFilterValue(this.adjustmentLevel.brightness);
-        const saturation: number = this.getFilterValue(this.adjustmentLevel.saturation);
         const excludedTypes: string[] = ['brightness', 'contrast', 'hue', 'saturation', 'exposure', 'opacity', 'blur'];
         if (excludedTypes.indexOf(type) === -1) {
             if (isNullOrUndefined(isPreview) && (this.adjustmentLevel.sharpen || this.adjustmentLevel.bw)) {
@@ -191,15 +184,20 @@ export class Filter {
                 parent.isUndoRedo = false;
             }
         }
-        if (brightness !== 1) {splitWords[4] = 'opacity(' + (opacityValue - 0.3) + ')'; }
         let saturate: number; let bright: number; let saturatePercent: number; let contrast: number;
         let saturatePercentage: number;
         switch (type) {
         case 'brightness':
-            if (parseFloat(splitWords[3].split('(')[1]) !== 100) {
-                value += 0.1;
-            }
+            value = this.getFilterValue(this.adjustmentLevel.exposure) +  (value * 0.005)
             splitWords[0] = 'brightness(' + value + ')';
+            if (this.adjustmentLevel.brightness !== 0) {
+                value = (this.adjustmentLevel.opacity / 100) - (this.adjustmentLevel.opacity * 0.3) / 100;
+                splitWords[4] = 'opacity(' + value + ')';
+            }
+            else {
+                value = this.adjustmentLevel.opacity / 100;
+                splitWords[4] = 'opacity(' + value + ')';
+            }
             this.adjustmentValue = splitWords.join(' ');
             break;
         case 'contrast':
@@ -212,9 +210,6 @@ export class Filter {
             break;
         case 'saturation':
             splitWords[3] = 'saturate(' + value + '%)';
-            if (saturation !== 1) {
-                splitWords[0] = 'brightness(' + (brightnessValue + 0.09) + ')';
-            }
             this.adjustmentValue = splitWords.join(' ');
             break;
         case 'opacity':
@@ -222,6 +217,7 @@ export class Filter {
                 value -= 0.2;
             }
             splitWords[4] = 'opacity(' + value + ')';
+            opacityValue = value;
             this.adjustmentValue = splitWords.join(' ');
             break;
         case 'blur':
@@ -229,11 +225,9 @@ export class Filter {
             this.adjustmentValue = splitWords.join(' ');
             break;
         case 'exposure':
-            if (brightness !== 1) {splitWords[4] = 'opacity(' + (opacityValue - 0.3) + ')'; }
             if (value > 1) {
                 value -= 1; value += brightness;
-            }
-            else if (value < 1) {
+            } else if (value < 1) {
                 value = 1 - value; value = brightness - value;
             }
             splitWords[0] = 'brightness(' + value + ')';
@@ -343,20 +337,10 @@ export class Filter {
             parent.notify('draw', { prop: 'updateCurrTransState', onPropertyChange: false,
                 value: {type: 'initial', isPreventDestination: null, isRotatePan: null} });
             this.appliedFilter = this.lowerContext.filter;
-            this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
-                                        parent.img.srcHeight, parent.img.destLeft, parent.img.destTop, parent.img.destWidth,
-                                        parent.img.destHeight);
+            parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
             parent.notify('draw', { prop: 'updateCurrTransState', onPropertyChange: false,
                 value: {type: 'reverse', isPreventDestination: null, isRotatePan: null} });
             parent.notify('draw', { prop: 'setRotateZoom', onPropertyChange: false, value: {isRotateZoom: false }});
-            if (brightness !== 1) {
-                splitWords[4] = 'opacity(' + opacityValue + ')';
-            } else if (saturation !== 1) {
-                splitWords[0] = 'brightness(' + brightnessValue + ')';
-            }
-            if ((type === 'exposure' && brightness !== 1) || (type === 'saturation' && saturation !== 1)) {
-                splitWords[0] = 'brightness(' + brightnessValue + ')';
-            }
             splitWords = this.setTempFilterValue(brightness, isPreview, splitWords, type);
             if (isNullOrUndefined(isPreview)) {this.lowerContext.filter = splitWords.join(' '); }
             parent.initialAdjustmentValue = splitWords.join(' ');
@@ -422,7 +406,6 @@ export class Filter {
         parent.notify('freehand-draw', { prop: 'apply-pen-draw', onPropertyChange: false });
         this.adjustmentLevel[`${type}`] = value;
         switch (type) {
-        case 'brightness':
         case 'contrast':
         case 'exposure':
             value = this.getFilterValue(value);
@@ -640,8 +623,9 @@ export class Filter {
         const obj: CurrentObject = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
             totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint,
             rotateFlipColl: [], degree: 0, currFlipState: '', zoomFactor: 0, previousZoomValue : 0,
-            destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint,
-            srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '', isBrightAdjust: this.isBrightnessAdjusted };
+            destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, frame: 'none',
+            srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '', isBrightAdjust: this.isBrightnessAdjusted,
+            aspectWidth: null, aspectHeight: null };
         obj.cropZoom = parent.transform.cropZoomFactor; obj.defaultZoom = parent.transform.defaultZoomFactor;
         obj.zoomFactor = parent.zoomSettings.zoomFactor; obj.previousZoomValue = zoomObj['previousZoomValue'];
         obj.totalPannedPoint = extend({}, parent.panPoint.totalPannedPoint, {}, true) as Point;
@@ -656,7 +640,9 @@ export class Filter {
             width: parent.img.destWidth, height: parent.img.destHeight};
         obj.srcPoints = {startX: parent.img.srcLeft, startY: parent.img.srcTop, endX: 0, endY: 0,
             width: parent.img.srcWidth, height: parent.img.srcHeight};
-        obj.filter = this.lowerContext.filter;
+        obj.filter = this.lowerContext.filter; obj.aspectWidth = parent.aspectWidth; obj.aspectHeight = parent.aspectHeight;
+        obj.frame = parent.frameObj.type;
+        obj.frameObj = extend({}, parent.frameObj) as FrameValue;
         if (dummyObj) {dummyObj['currObj'] = obj; }
         return obj;
     }

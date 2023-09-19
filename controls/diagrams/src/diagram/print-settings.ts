@@ -39,6 +39,8 @@ export class PrintAndExport {
         this.diagram = diagram;
     }
 
+    private printWindow: Window = undefined;
+
     /**
      * To Export the diagram
      *
@@ -753,15 +755,20 @@ export class PrintAndExport {
             const div: HTMLElement | string[] = this.getMultipleImage(img, options);
             // specify window parameters
             const printWind: Window = window.open('');
+            this.printWindow = printWind;
             if (printWind != null) {
                 if ((div instanceof HTMLElement)) {
                     printWind.document.write(
                         '<html><head><style> body{margin:0px;}  @media print { .e-diagram-print-page' +
                         '{page-break-after: left; }.e-diagram-print-page:last-child {page-break-after: avoid;}}' +
                         '</style><title></title></head>');
+                    //833683-Need to close print window after closing the parent window
+                    window.addEventListener('beforeunload', this.closePrintWindow);
                     printWind.addEventListener('load', (event) => {
                         setTimeout(() => {
                             printWind.window.print();
+                            //To close new window once print window is closed
+                            printWind.close();
                         }, 3000);
                     });
                     printWind.document.write('<center>' + div.innerHTML + '</center>');
@@ -769,6 +776,13 @@ export class PrintAndExport {
                 }
             }
         };
+    }
+
+    //833683 - Method for closing the newly opened print window.
+    private closePrintWindow = (): void => {
+        if (this.printWindow && !this.printWindow.closed) {
+            this.printWindow.close();
+        }
     }
 
     private getContent(styleSheets?: StyleSheetList): string {
@@ -905,6 +919,9 @@ export class PrintAndExport {
         /**
          * Destroys the Print and Export module
          */
+        //833683 - unwire beforeunload event on destroy
+        window.removeEventListener('beforeunload', this.closePrintWindow);
+        this.printWindow = undefined;
     }
 
     /**

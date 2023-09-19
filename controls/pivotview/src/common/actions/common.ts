@@ -10,9 +10,6 @@ import { Browser } from '@syncfusion/ej2-base';
 /** @hidden */
 export class Common implements IAction {
     private parent: PivotView;
-    private handlers: {
-        load: Function;
-    };
 
     constructor(parent: PivotView) {
         this.parent = parent;
@@ -72,14 +69,11 @@ export class Common implements IAction {
      * @hidden
      */
     public addEventListener(): void {
-        this.handlers = {
-            load: this.initiateCommonModule
-        };
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.on(events.initialLoad, this.handlers.load, this);
-        this.parent.on(events.uiUpdate, this.handlers.load, this);
+        this.parent.on(events.initialLoad, this.initiateCommonModule, this);
+        this.parent.on(events.uiUpdate, this.initiateCommonModule, this);
     }
 
     /* eslint-disable-next-line */
@@ -90,8 +84,8 @@ export class Common implements IAction {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off(events.initialLoad, this.handlers.load);
-        this.parent.off(events.uiUpdate, this.handlers.load);
+        this.parent.off(events.initialLoad, this.initiateCommonModule);
+        this.parent.off(events.uiUpdate, this.initiateCommonModule);
     }
 
     /**

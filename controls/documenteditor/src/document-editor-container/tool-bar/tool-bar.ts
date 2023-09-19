@@ -680,7 +680,7 @@ export class Toolbar {
                 this.container.trigger(toolbarClickEvent, args);
                 break;
         }
-        if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID) {
+        if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID && args.item.id !== id + BOOKMARK_ID && args.item.id !== id + INSERT_TABLE_ID && args.item.id !== id + INSERT_LINK_ID) {
             this.container.documentEditor.focusIn();
         }
     }

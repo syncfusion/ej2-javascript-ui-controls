@@ -5,7 +5,7 @@ import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontSt
 import { CellModel, SheetModel, getColumn, isLocked as isCellLocked, exportDialog, getFormatFromType } from '../../workbook/index';
 import { setCell, getCell, skipHiddenIdx, selectionComplete, refreshRibbonIcons } from '../../workbook/index';
 import { RowModel } from '../../workbook/base/row-model';
-import { isNullOrUndefined, closest, select, getComponent } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, select, getComponent, EventHandler } from '@syncfusion/ej2-base';
 import { ItemModel, Tab } from '@syncfusion/ej2-navigations';
 import { RibbonItem } from '../../ribbon';
 
@@ -71,7 +71,8 @@ export class KeyboardShortcut {
                     args.filterRange[3] >= activeCell[1])) {
                     const actEle: HTMLElement = document.activeElement as HTMLElement;
                     if (!actEle.classList.contains('e-spreadsheet-edit') && !actEle.classList.contains('e-sheet-rename') &&
-                        !closest(actEle, '.e-dropdown-btn') && !closest(actEle, '.e-split-btn') && !closest(actEle, '.e-popup-open')) {
+                        actEle.id !== `${this.parent.element.id}_name_box` && !closest(actEle, '.e-dropdown-btn') &&
+                        !closest(actEle, '.e-split-btn') && !closest(actEle, '.e-popup-open')) {
                         const cell: HTMLElement = this.parent.getCell(activeCell[0], activeCell[1]);
                         if (cell && cell.querySelector('.e-validation-list')) {
                             return;
@@ -100,55 +101,6 @@ export class KeyboardShortcut {
                 }
             }
         }
-
-        // tab and shift + tab
-        if ((e.keyCode === 9 || (e.shiftKey && e.keyCode === 9)) && closest(document.activeElement, '.e-ribbon') || closest(document.activeElement, '.e-chart')) {
-            let id: string;
-            const selectedTab: number = this.parent.ribbonModule.ribbon.selectedTab;
-            const items: RibbonItem[] = this.parent.ribbonModule.ribbon.items;
-            const tabItems: ItemModel[] = e.shiftKey ? items[selectedTab as number].content.slice().reverse() :
-                items[selectedTab as number].content;
-            let selectedItem: number;
-            if (closest(document.activeElement, '.e-tab-header')) {
-                selectedItem = 0;
-            } else {
-                const toolbarItem: Element = closest(document.activeElement, '.e-toolbar-item');
-                if (toolbarItem) {
-                    const toolbarSibilings: Element[] = [].slice.call(toolbarItem.parentElement.children);
-                    selectedItem = (e.shiftKey ? toolbarSibilings.reverse().indexOf(toolbarItem) :
-                        toolbarSibilings.indexOf(toolbarItem)) + 1;
-                }
-            }
-            for (let i: number = selectedItem; i <= tabItems.length; i++) {
-                if (i === tabItems.length) {
-                    i = -1; continue;
-                }
-                id = (selectedTab === 5 && tabItems[i as number].id === '') ? tabItems[i as number].type.toLowerCase() : tabItems[i as number].id;
-                if (id.indexOf('separator') < 0) {
-                    if (id.includes('find')) {
-                        id = id.replace('find', 'findbtn');
-                    } else if (selectedTab !== 5 && id.includes('chart')) {
-                        id = id.replace('chart', 'chart-btn');
-                    }
-                    if (selectedTab === 5) {
-                        if (id.includes('chart_type')) {
-                            id = id.replace('chart_type', 'chart-type-btn');
-                        }
-                        else if (id.includes('add_chart_ element_chart')) {
-                            id = id.replace('add_chart_ element_chart', '_addchart');
-                        }
-                    }
-                    let element: HTMLElement = this.parent.element.querySelector('#' + id);
-                    if (!tabItems[i as number].disabled) {
-                        if (element.classList.contains('e-colorpicker-wrapper')) {
-                            element = element.querySelector('.e-split-btn');
-                        }
-                        element.focus();
-                        return;
-                    }
-                }
-            }
-        }
     }
 
     private keyUpHandler(e: KeyboardEvent): void {
@@ -160,6 +112,18 @@ export class KeyboardShortcut {
                     focus(colorPickerBtn);
                 }
             }
+        } else if (e.keyCode === 13) {
+            const target: HTMLElement = e.target as HTMLElement;
+            if (target.classList.contains('e-scroll-nav')) {
+                const focusScroll: Function = (): void => {
+                    if (!target.getAttribute('tabindex')) {
+                        target.setAttribute('tabindex', '0');
+                        focus(target);
+                    }
+                    EventHandler.remove(target, 'blur', focusScroll);
+                };
+                EventHandler.add(target, 'blur', focusScroll, this);
+            }
         }
     }
 
@@ -167,8 +131,9 @@ export class KeyboardShortcut {
         const isSelectionNone: boolean = this.parent.selectionSettings.mode === 'None';
         this.ribbonShortCuts(e);
         const sheet: SheetModel = this.parent.getActiveSheet();
+        const target: Element = e.target as Element;
         if ((e.ctrlKey || e.metaKey) && this.isTrgtNotInput(e)) {
-            if (!closest(e.target as Element, '.e-find-dlg') && !isSelectionNone) {
+            if (!closest(target, '.e-find-dlg') && !isSelectionNone) {
                 if ([79, 83].indexOf(e.keyCode) > -1) {
                     e.preventDefault();
                 } else if (e.keyCode === 65 && !this.parent.isEdit) {
@@ -285,7 +250,8 @@ export class KeyboardShortcut {
         if (e.keyCode === 27) { /*ESC*/
             this.parent.notify(clearCopy, null);
         }
-        if ((e.ctrlKey || e.metaKey) && e.keyCode === 119 && this.parent.showRibbon) { /*ctrl + f8*/
+        if ((((e.ctrlKey || e.metaKey) && e.keyCode === 119) || (e.keyCode === 13 && target.classList.contains('e-drop-icon')))
+            && this.parent.showRibbon) { /*ctrl + f8 or Enter*/
             e.preventDefault();
             const expandCollapseIcon: HTMLElement = this.parent.element.querySelector('.e-drop-icon');
             if (expandCollapseIcon) {

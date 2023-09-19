@@ -5,7 +5,7 @@ import {
 } from '@syncfusion/ej2-pdf-export';
 import { TimelineDetails, TaskLabel } from './../base/interface';
 import { Gantt } from '../base/gantt';
-import { pixelToPoint } from '../base/utils';
+import { pixelToPoint,pointToPixel } from '../base/utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -21,6 +21,16 @@ export class PdfGanttTaskbarCollection {
     public isAutoSchedule?: boolean;
     /** Defines the task is milestone or not. */
     public isMilestone?: boolean;
+    /** Defines the task baselinestartdate. */
+    public baselineStartDate?: Date;
+    /** Defines the task baselineenddate. */
+    public baselineEndDate?: Date;
+    /** Defines the task baselineleft. */
+    public baselineLeft?: number;
+    /** Defines the task baselinewidth. */
+    public baselineWidth?: number;
+    /** Defines the task baselineHeight . */
+    public baselineHeight: number = 8;
     /** Defines the left of task.
      *
      * @hidden
@@ -65,6 +75,9 @@ export class PdfGanttTaskbarCollection {
     public gridLineColor: PdfColor;
     public progressFontColor: PdfColor;
     public taskColor: PdfColor;
+    public baselineColor: PdfColor;
+    public baselineBorderColor: PdfColor;
+    public baselineTop: number;
     public labelColor: PdfColor;
     public taskBorderColor: PdfColor;
     public progressColor: PdfColor;
@@ -121,6 +134,7 @@ export class PdfGanttTaskbarCollection {
         //code for while current pdf page is exceed
         if (yPoint > pageSize.height) {
             page = this.GetNextPage(page);
+            page['contentWidth'] = pointToPixel(detail.endPoint - detail.startPoint);
             taskGraphics = page.graphics;
             startPoint.y = 0;
             if (this.parent.pdfExportModule.gantt.enableHeader) {
@@ -128,6 +142,11 @@ export class PdfGanttTaskbarCollection {
                 startPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
             }
             isNextPage = true;
+            const graphics = page.graphics;
+            const pen = new PdfPen(new PdfColor(206, 206, 206));
+            if (page['contentWidth'] && (this.parent.gridLines == "Both" || this.parent.gridLines == "Horizontal")) {
+                graphics.drawRectangle(pen, startPoint.x, startPoint.y, page['contentWidth'] + 0.5, rowHeight);
+            }
         }
         this.drawLeftLabel(page, startPoint, detail, cumulativeWidth);
         //Draw Taskbar
@@ -151,9 +170,13 @@ export class PdfGanttTaskbarCollection {
         if (!taskbar.isMilestone) {
             const taskbarPen: PdfPen = new PdfPen(taskbar.taskBorderColor);
             const taskBrush: PdfBrush = new PdfSolidBrush(taskbar.taskColor);
+            const baselinePen: PdfPen = new PdfPen(taskbar.baselineBorderColor);
+            const baselineBrush: PdfBrush = new PdfSolidBrush(taskbar.baselineColor);
             const progressPen: PdfPen = new PdfPen(taskbar.progressColor);
             const progressBrush: PdfBrush = new PdfSolidBrush(taskbar.progressColor);
-            const adjustHeight: number = pixelToPoint((this.parent.rowHeight - this.height) / 2.0);
+            const adjustHeightforTaskbar: number = pixelToPoint((this.parent.rowHeight - this.height) / 2.0);
+            var adjustHeightforBaseline: number = pixelToPoint((this.parent.rowHeight - this.height) / 4.5);
+            const adjustHeight = this.parent.renderBaseline ? adjustHeightforBaseline : adjustHeightforTaskbar;
             pageIndex = page.section.indexOf(page);
             const startDate: Date = isNullOrUndefined(this.unscheduleStarteDate) ? this.startDate : this.unscheduleStarteDate;
             const endDate: Date = isNullOrUndefined(this.unscheduleEndDate) ? this.endDate : this.unscheduleEndDate;
@@ -166,12 +189,15 @@ export class PdfGanttTaskbarCollection {
                 if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
                     this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
                 } else {
+                    if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(this.baselineWidth), pixelToPoint(this.baselineHeight));
+                    }
                     taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
                     if (this.isScheduledTask) {
                         taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
                         if (!isNullOrUndefined(this.parent.labelSettings.taskLabel) && !isNullOrUndefined(this.taskLabel)) {
                             updatedWidth = this.progressWidth;
-                            if(isLabelString) {
+                            if (isLabelString) {
                                 updatedWidth = this.width;
                             }
                             taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
@@ -196,6 +222,9 @@ export class PdfGanttTaskbarCollection {
                 if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
                     this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
                 } else {
+                    if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(this.baselineWidth), pixelToPoint(this.baselineHeight));
+                    }
                     taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(renderWidth), pixelToPoint(taskbar.height));
                     taskbar.width = taskbar.width - renderWidth;
                     if (this.isScheduledTask) {
@@ -209,7 +238,7 @@ export class PdfGanttTaskbarCollection {
                         this.progressWidth -= progressBoundsWidth;
                         if (this.parent.labelSettings.taskLabel && !isNullOrUndefined(this.taskLabel)) {
                             updatedWidth = progressBoundsWidth;
-                            if(isLabelString) {
+                            if (isLabelString) {
                                 updatedWidth = this.width;
                             }
                             taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
@@ -225,6 +254,9 @@ export class PdfGanttTaskbarCollection {
                 if (!this.isStartPoint) {
                     this.taskStartPoint = { ...startPoint };
                     this.isStartPoint = true;
+                }
+                if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+                    taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(this.baselineWidth), pixelToPoint(this.baselineHeight));
                 }
                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
                 if (this.isScheduledTask) {
@@ -246,6 +278,9 @@ export class PdfGanttTaskbarCollection {
                 if (!this.isStartPoint) {
                     this.taskStartPoint = { ...startPoint };
                     this.isStartPoint = true;
+                }
+                if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+                    taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5,startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(this.baselineWidth), pixelToPoint(this.baselineHeight));
                 }
                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(detail.totalWidth), pixelToPoint(taskbar.height));
                 if (this.isScheduledTask) {
@@ -270,6 +305,9 @@ export class PdfGanttTaskbarCollection {
             }
         } else {
             this.drawMilestone(page, startPoint, detail, cumulativeWidth);
+            if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+                this.drawMilestone(page, startPoint, detail, cumulativeWidth);
+            }
         }
         this.drawRightLabel(page, startPoint, detail, cumulativeWidth);
         return isNextPage;
@@ -422,13 +460,20 @@ export class PdfGanttTaskbarCollection {
             const pageIndex: number = page.section.indexOf(page);
             this.taskStartPoint = { ...startPoint };
             const milestonePen: PdfPen = new PdfPen(this.milestoneColor);
-            const adjustHeight: number = pixelToPoint(((this.parent.rowHeight - this.height) / 2.0));
+            const adjustHeightforBaselineMilesone: number = pixelToPoint(((this.parent.rowHeight - this.height) / 3.0));
+            const adjustHeightforMilesone: number = pixelToPoint(((this.parent.rowHeight - this.height) / 2.0));
+            const adjustHeight = this.parent.renderBaseline ? adjustHeightforBaselineMilesone : adjustHeightforMilesone
             const milestoneBrush: PdfBrush = new PdfSolidBrush(this.milestoneColor);
+            const baselinePen: PdfPen = new PdfPen(this.baselineBorderColor);
+            const baselineBrush: PdfBrush = new PdfSolidBrush(this.baselineColor);
             taskGraphics.save(); //saving graphics state
-            const height: number = Math.floor(this.parent.chartRowsModule.taskBarHeight * 0.6);
+            const height: number = Math.floor(this.parent.chartRowsModule.taskBarHeight * 0.8);
             /* eslint-disable-next-line */
             taskGraphics.translateTransform(startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2);
             taskGraphics.rotateTransform(45); //apply rotation
+            if (this.parent.renderBaseline && this.baselineStartDate && this.baselineEndDate) {
+                taskGraphics.drawRectangle(baselinePen, baselineBrush, 2, 2, pixelToPoint(height), pixelToPoint(height));
+            }
             taskGraphics.drawRectangle(milestonePen, milestoneBrush, 0, 0, pixelToPoint(height), pixelToPoint(height));
             taskGraphics.restore(); //restoring graphics state
             this.endPage = this.startPage = pageIndex;

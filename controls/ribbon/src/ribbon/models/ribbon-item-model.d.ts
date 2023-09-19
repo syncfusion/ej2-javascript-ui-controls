@@ -1,4 +1,4 @@
-import { ChildProperty, Complex, Property } from '@syncfusion/ej2-base';import { RibbonItemType, RibbonItemSize, DisplayMode } from '../base/interface';import { RibbonButtonSettings } from './ribbon-button-settings';import { RibbonButtonSettingsModel } from './ribbon-button-settings-model';import { RibbonCheckBoxSettings } from './ribbon-checkbox-settings';import { RibbonCheckBoxSettingsModel } from './ribbon-checkbox-settings-model';import { RibbonColorPickerSettings } from './ribbon-colorpicker-settings';import { RibbonColorPickerSettingsModel } from './ribbon-colorpicker-settings-model';import { RibbonComboBoxSettings } from './ribbon-combobox-settings';import { RibbonComboBoxSettingsModel } from './ribbon-combobox-settings-model';import { RibbonDropDownSettings } from './ribbon-dropdown-settings';import { RibbonDropDownSettingsModel } from './ribbon-dropdown-settings-model';import { RibbonSplitButtonSettings } from './ribbon-splitbutton-settings';import { RibbonSplitButtonSettingsModel } from './ribbon-splitbutton-settings-model';import { RibbonTooltip } from './ribbon-tooltip';import { RibbonTooltipModel } from './ribbon-tooltip-model';
+import { ChildProperty, Complex, Property } from '@syncfusion/ej2-base';import { RibbonItemType, RibbonItemSize, DisplayMode } from '../base/interface';import { RibbonButtonSettings } from './ribbon-button-settings';import { RibbonButtonSettingsModel } from './ribbon-button-settings-model';import { RibbonCheckBoxSettings } from './ribbon-checkbox-settings';import { RibbonCheckBoxSettingsModel } from './ribbon-checkbox-settings-model';import { RibbonColorPickerSettings } from './ribbon-colorpicker-settings';import { RibbonColorPickerSettingsModel } from './ribbon-colorpicker-settings-model';import { RibbonComboBoxSettings } from './ribbon-combobox-settings';import { RibbonComboBoxSettingsModel } from './ribbon-combobox-settings-model';import { RibbonDropDownSettings } from './ribbon-dropdown-settings';import { RibbonDropDownSettingsModel } from './ribbon-dropdown-settings-model';import { RibbonSplitButtonSettings } from './ribbon-splitbutton-settings';import { RibbonSplitButtonSettingsModel } from './ribbon-splitbutton-settings-model';import { RibbonTooltip } from './ribbon-tooltip';import { RibbonTooltipModel } from './ribbon-tooltip-model';import { RibbonGroupButtonSettingsModel } from './ribbon-group-button-settings-model';import { RibbonGroupButtonSettings } from './ribbon-group-button-settings';
 
 /**
  * Interface for a class RibbonItem
@@ -47,6 +47,9 @@ export interface RibbonItemModel {
      * `ActiveSize` property is passed as string in template context.
      *
      * @default ''
+     * @angularType string | object | HTMLElement
+     * @reactType string | function | JSX.Element | HTMLElement
+     * @vueType string | function | HTMLElement
      * @aspType string
      */
     itemTemplate?: string | HTMLElement | Function;
@@ -116,5 +119,12 @@ export interface RibbonItemModel {
      * @default {}
      */
     splitButtonSettings?: RibbonSplitButtonSettingsModel;
+
+    /**
+     * Defines the properties for group button in Ribbon
+     *
+     * @default {}
+     */
+    groupButtonSettings?: RibbonGroupButtonSettingsModel;
 
 }

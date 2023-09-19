@@ -25,7 +25,7 @@ Toolbar,
 /** Defines RenderType as InlineToolbar */
     InlineToolbar,
 /** Defines RenderType as TableToolbar */
-    TableToolbar
+    TableToolbar,
 /* eslint-enable */
 }
 
@@ -83,3 +83,16 @@ export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'jus
 | 'tableRemove' | 'tableRows' | 'tableColumns' | 'tableCellBackground'
 | 'tableCellHorizontalAlign' | 'tableCellVerticalAlign' | 'tableEditProperties'
 | 'styles' | 'removeLink'| 'merge';
+
+/**
+ * Defines types to be used to configure the toolbarSettings items.
+ */
+export type ToolbarConfigItems = 'Alignments' | 'JustifyLeft'| 'JustifyCenter' | 'JustifyRight'
+| 'JustifyFull' | 'FontName' | 'FontSize' | 'FontColor' | 'BackgroundColor'
+| 'Bold' | 'Italic' | 'Underline' | 'StrikeThrough' | 'ClearFormat' | 'ClearAll'
+| 'Cut' | 'Copy' | 'Paste' | 'UnorderedList' | 'OrderedList' | 'Indent'| 'Outdent'
+| 'Undo' | 'Redo' | 'SuperScript' | 'SubScript'
+| 'CreateLink'| 'Image' | 'CreateTable' |'InsertLink' |'FullScreen' | 'LowerCase'
+| 'UpperCase' | 'Print' | 'Formats'|'FormatPainter'|'EmojiPicker'|'UnderLine'|'ZoomOut'|'ZoomIn'
+| 'SourceCode' | 'Preview' | 'ViewSide' | 'InsertCode' |'Audio'|'Video'|'NumberFormatList'
+|'BulletFormatList'|'FileManager'| '|'|'-';

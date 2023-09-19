@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isNullOrUndefined, Internationalization, append, createElement, addClass, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Internationalization, append, createElement, addClass, initializeCSPTemplate, removeClass } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Schedule } from '../base/schedule';
 import { TdData, ResourceDetails, EventFieldsMapping } from '../base/interface';
@@ -25,7 +25,7 @@ export class EventTooltip {
             cssClass: this.parent.cssClass + ' ' + cls.EVENT_TOOLTIP_ROOT_CLASS,
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
-            afterClose: this.onTooltipClose.bind(this),
+            beforeClose: this.onTooltipClose.bind(this),
             enableRtl: this.parent.enableRtl,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer
         });
@@ -136,7 +136,11 @@ export class EventTooltip {
         this.parent.renderTemplates();
     }
 
-    private onTooltipClose(): void {
+    private onTooltipClose(args: TooltipEventArgs): void {
+        if (args.element) {
+            removeClass([args.element], cls.POPUP_OPEN);
+            addClass([args.element], cls.POPUP_CLOSE);
+        }
         this.parent.resetTemplates(['tooltipTemplate', 'headerTooltipTemplate']);
     }
 

@@ -189,8 +189,12 @@ export class EnterKeyAction {
                                     (this.range.startContainer.previousSibling.nodeName === 'IMG' || this.range.startContainer.previousSibling.nodeName === 'BR'))) {
                                     let isNearBlockLengthZero: boolean;
                                     let newElem: Node;
-                                    if ( !isNOU( this.range.startContainer.childNodes) && this.range.startContainer.textContent.length === 0
-                                    && ( (this.range.startContainer as HTMLElement).querySelectorAll('img, audio, video').length > 0 ||
+                                    if ( !isNOU( this.range.startContainer.childNodes) &&
+                                    (this.range.startContainer.textContent.length === 0 ||
+                                    ((this.range.startContainer  as HTMLElement).nodeName !== '#text' && !isNOU((this.range.startContainer  as HTMLElement).querySelector('.e-video-clickelem')) &&
+                                    (this.range.startContainer  as HTMLElement).querySelector('.e-video-clickelem').textContent.length === 0)) &&
+                                    ((this.range.startContainer as HTMLElement).querySelectorAll('img, audio, video').length > 0 ||
+                                    !isNOU((this.range.startContainer as HTMLElement).querySelector('.e-video-clickelem')) ||
                                     this.range.startContainer.nodeName === 'IMG' || this.range.startContainer.nodeName === 'TABLE' )) {
                                         newElem = this.createInsertElement(shiftKey);
                                         isMediaNode = true;

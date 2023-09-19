@@ -19,7 +19,7 @@ export class ChartRows extends DateProcessor {
     public taskBarHeight: number = 0;
     public milestoneHeight: number = 0;
     private milesStoneRadius: number = 0;
-    private baselineTop: number = 0;
+    public baselineTop: number = 0;
     public baselineHeight: number = 8;
     private baselineColor: string;
     private parentTaskbarTemplateFunction: Function;
@@ -324,17 +324,17 @@ export class ChartRows extends DateProcessor {
     }
 
     private getSplitTaskbarLeftResizerNode(): string {
-        const lResizerLeft: number = -(this.parent.isAdaptive ? 12 : 2);
+        const lResizerLeft: number = (!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger")) ? 5 : - 2;
         const template: string = '<div class="' + cls.taskBarLeftResizer + ' ' + cls.icon + '"' +
-            ' style="' + (this.parent.enableRtl? 'right:' : 'left:') + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
+            ' style="' + (this.parent.enableRtl? 'right:' : 'left:') + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;z-index:1"></div>';
         return template;
     }
 
     private getSplitTaskbarRightResizerNode(segment: ITaskSegment): string {
-        const rResizerLeft: number = this.parent.isAdaptive ? -2 : -10;
+        const rResizerLeft: number = (!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger")) ? -17 : -10;
         const template: string = '<div class="' + cls.taskBarRightResizer + ' ' + cls.icon + '"' +
             ' style="'+ (this.parent.enableRtl? 'right:' : 'left:') + (segment.width + rResizerLeft) + 'px;' +
-            'height:' + (this.taskBarHeight) + 'px;"></div>';
+            'height:' + (this.taskBarHeight) + 'px;z-index:1"></div>';
         return template;
     }
 
@@ -690,7 +690,7 @@ export class ChartRows extends DateProcessor {
                 this.getTemplateID('MilestoneTemplate'), false, undefined, rootElement[0], this.parent.treeGrid['root']);
         } else {
             const template: string = '<div class="' + cls.traceMilestone + '" style="width:' + ((this.parent.renderBaseline ? this.taskBarHeight  : this.taskBarHeight - 6)) + 'px;height:' +
-                ((this.parent.renderBaseline ? this.taskBarHeight  : this.taskBarHeight - 6)) + 'px;position:absolute;transform: rotate(45deg);top:' + (this.parent.rowHeight > 40 ? 0 : 1) + 'px;left:' + 1 + 'px;"> </div>';
+                ((this.parent.renderBaseline ? this.taskBarHeight  : this.taskBarHeight - 6)) + 'px;position:absolute;transform: rotate(45deg);left:' + 1 + 'px;"> </div>';
             milestoneNode = this.createDivElement(template);
         }
         return milestoneNode;
@@ -1082,17 +1082,17 @@ export class ChartRows extends DateProcessor {
     }
 
     private childTaskbarLeftResizer(): NodeList {
-        const lResizerLeft: number = -(this.parent.isAdaptive ? 12 : 2);
+        const lResizerLeft: number = (!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger"))? 5 : - 2;
         const template: string = '<div class="' + cls.taskBarLeftResizer + ' ' + cls.icon + '"' +
-            'style="' + (this.parent.enableRtl? 'right:' : 'left:') + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
+            'style="' + (this.parent.enableRtl? 'right:' : 'left:') + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;z-index:1"></div>';
         return this.createDivElement(template);
     }
 
     private childTaskbarRightResizer(): NodeList {
-        const rResizerLeft: number = this.parent.isAdaptive ? -2 : -10;
+        const rResizerLeft: number = (!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger")) ? -17 : -10;
         const template: string = '<div class="' + cls.taskBarRightResizer + ' ' + cls.icon + '"' +
             'style="' + (this.parent.enableRtl? 'right:' : 'left:') + (this.templateData.ganttProperties.width + rResizerLeft) + 'px;' +
-            'height:' + (this.taskBarHeight) + 'px;"></div>';
+            'height:' + (this.taskBarHeight) + 'px;z-index:1"></div>';
         return this.createDivElement(template);
     }
 
@@ -1108,8 +1108,10 @@ export class ChartRows extends DateProcessor {
 
     private getLeftPointNode(): NodeList {
         const data: IGanttData = this.templateData;
-        const pointerLeft: number = -((this.parent.isAdaptive ? 14 : 2) + this.connectorPointWidth);
-        const mileStoneLeft: number = -(this.connectorPointWidth + 2);
+        let left = (!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger")) ? 12 : 0;
+        let mileStoneLeftValue = (!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger")) ? 6 : 3;
+        const pointerLeft: number = -(3 + this.connectorPointWidth + left);
+        const mileStoneLeft: number = -(this.connectorPointWidth + 4 + mileStoneLeftValue);
         const pointerTop: number = Math.floor(this.milesStoneRadius - (this.connectorPointWidth / 2));
         let marginTop: string;
         if ((!this.templateData.ganttProperties.isAutoSchedule && this.templateData.hasChildRecords) && this.parent.allowParentDependency) {
@@ -1129,7 +1131,8 @@ export class ChartRows extends DateProcessor {
 
     private getRightPointNode(): NodeList {
         const data: IGanttData = this.templateData;
-        const pointerRight: number = this.parent.isAdaptive ? 10 : -2;
+        let right = (!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger")) ? -12 : 0;
+        const pointerRight: number = -(3 +right);
         const pointerTop: number = Math.floor(this.milesStoneRadius - (this.connectorPointWidth / 2));
         let marginTop: string;
         if ((!this.templateData.ganttProperties.isAutoSchedule && this.templateData.hasChildRecords) && this.parent.allowParentDependency) {
@@ -1139,7 +1142,7 @@ export class ChartRows extends DateProcessor {
              marginTop =  'margin-top:' + this.connectorPointMargin + 'px';
          }
         const template: string = '<div class="' + cls.rightConnectorPointOuterDiv + '" style="' +
-            ((data.ganttProperties.isMilestone) ? ('left:' + (this.milestoneHeight - 2) + 'px;margin-top:' +
+            ((data.ganttProperties.isMilestone) ? ('left:' + ((!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger"))?(this.milestoneHeight + 5) :this.milestoneHeight - 2) + 'px;margin-top:' +
                 pointerTop + 'px;') : ('left:' + (data.ganttProperties.width + pointerRight) + 'px;' + marginTop + ';')) + '">' +
             '<div class="' + cls.connectorPointRight + ' ' + this.parent.getUnscheduledTaskClass(data.ganttProperties) +
             '" style="width:' + this.connectorPointWidth + 'px;height:' + this.connectorPointWidth + 'px;">' +
@@ -1308,7 +1311,7 @@ export class ChartRows extends DateProcessor {
      * @private
      */
     private initChartHelperPrivateVariable(): void {
-        let taskbarHeightValue = this.parent.renderBaseline ? 0.45 : 0.62;
+        let taskbarHeightValue = this.parent.renderBaseline ? 0.45 : ((!isNullOrUndefined( document.body.className) && document.body.className.includes("e-bigger")) ? 0.7 : 0.62);
         let taskBarMarginTopValue = this.parent.renderBaseline ? 4 : 2;
         let milestoneHeightValue = this.parent.renderBaseline ? 1.13 : 0.82;
         this.baselineColor = !isNullOrUndefined(this.parent.baselineColor) &&
@@ -1329,8 +1332,8 @@ export class ChartRows extends DateProcessor {
         this.milestoneMarginTop = Math.floor((this.parent.rowHeight - this.milestoneHeight) / 2);
         this.milesStoneRadius = Math.floor((this.milestoneHeight) / 2);
         this.baselineTop = -(Math.floor((this.parent.rowHeight - (this.taskBarHeight + this.taskBarMarginTop))) - 4);
-        this.connectorPointWidth = this.parent.isAdaptive ? Math.round(this.taskBarHeight / 2) : 10;
-        this.connectorPointMargin = Math.floor((this.taskBarHeight / 2) - (this.connectorPointWidth / 2))-1;
+        this.connectorPointWidth = this.parent.isAdaptive ? Math.round(this.taskBarHeight / 2) : 8;
+        this.connectorPointMargin = Math.floor((this.taskBarHeight / 2) - (this.connectorPointWidth / 2));
     }
 
     /**
@@ -1618,8 +1621,19 @@ export class ChartRows extends DateProcessor {
         const dataSource: IGanttData[] = this.parent.treeGrid.getCurrentViewRecords() as IGanttData[];
         const visualData: IGanttData[] = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
             getValue('virtualScrollModule.visualData', this.parent.treeGrid) : dataSource;
-        const index: number = visualData.indexOf(tempTemplateData);
-        (tRow as Element).setAttribute('aria-rowindex', index.toString());
+        let index: number;
+            if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+                let gridData = this.parent.treeGrid.grid.contentModule['rows'];
+                const data: object = gridData.filter((x: any) => {
+                    if (x['data'][this.parent.taskFields.id] === tempTemplateData.ganttProperties.taskId) {
+                        return x;
+                    }
+                })[0];
+                (tRow as Element).setAttribute('aria-rowindex', data['index'].toString());
+            } else {
+                index = visualData.indexOf(tempTemplateData);
+                (tRow as Element).setAttribute('aria-rowindex', index.toString());
+            }
     }
     /**
      * To trigger query taskbar info event.
@@ -2003,8 +2017,11 @@ export class ChartRows extends DateProcessor {
                 this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
             }
             const dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
-            this.parent.treeGrid.grid.setRowData(dataId, data);
-            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar && !this.parent.allowTaskbarOverlap) {
+            if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll) {
+                this.parent.treeGrid.grid.setRowData(dataId, data);
+            }
+            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar && !this.parent.allowTaskbarOverlap &&
+               !this.parent.ganttChartModule.isCollapseAll && !this.parent.ganttChartModule.isExpandAll) {
                 this.updateDragDropRecords(selectedItem, tr);
             }
             if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {

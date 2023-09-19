@@ -445,3 +445,25 @@ describe("Events Testing", () => {
         expect(k).toEqual(1);
     })
 });
+describe('Functionality testing', () => {
+    beforeAll(() => {
+        ele = createElement('div', { id: 'msg' });
+        document.body.appendChild(ele);
+    });
+    beforeEach((): void => {
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        Browser.userAgent = Chromebrowser;
+    });
+    afterAll(() => {
+        document.body.innerHTML = "";
+    });
+    it('Close icon alignment testing if message content alignment is set to centre', () => {
+        msgObj = new Message({cssClass: "e-content-center"});
+        msgObj.appendTo('#msg');
+        expect(msgObj.cssClass).toBe('e-content-center');
+        expect(msgObj.element.firstElementChild.classList.contains('e-msg-content-wrap')).toBe(true);
+        expect(msgObj.element.firstElementChild.children.length).toBe(2);
+        expect(msgObj.element.firstElementChild.children[0].classList.contains('e-msg-icon')).toBe(true);
+        expect(msgObj.element.firstElementChild.children[1].classList.contains('e-msg-content')).toBe(true);
+    })
+})

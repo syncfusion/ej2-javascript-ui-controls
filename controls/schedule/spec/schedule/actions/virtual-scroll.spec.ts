@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Schedule, TimelineViews, TimelineMonth, TimelineYear, ScheduleModel } from '../../../src/schedule/index';
+import { Schedule, TimelineViews, TimelineMonth, TimelineYear, ScheduleModel, DataBindingEventArgs, ScrollEventArgs } from '../../../src/schedule/index';
 import { timelineResourceData, generateEvents, generateResourceDatasource } from '../base/datasource.spec';
 import { createSchedule, destroy, triggerScrollEvent, triggerMouseEvent } from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -698,6 +698,86 @@ describe('Virtual scroll', () => {
             schObj.crudModule.refreshProcessedData(true);
             const endTime: number = window.performance.now();
             expect(Math.floor((endTime - StartTime) / 1000)).toBeLessThanOrEqual(3);
+        });
+    });
+
+    describe('Enablelazyloading property checking', () => {
+        let schObj: Schedule;
+        const ownerData: Record<string, any>[] = generateResourceDatasource(1, 300, 'Resource');
+        const eventData: Record<string, any>[] = generateEvents(new Date(2023, 3, 1), 300, 10);
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '550px', width: '100%', currentView: 'TimelineMonth',
+                views: [
+                    { option: 'TimelineMonth', allowVirtualScrolling: true, enableLazyLoading: true }
+                ],
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner',
+                    name: 'Owners', allowMultiple: true,
+                    dataSource: ownerData,
+                    textField: 'Text', idField: 'Id', colorField: 'Color'
+                }],
+                selectedDate: new Date(2023, 3, 1)
+            };
+            schObj = createSchedule(model, eventData, done);
+            schObj.dataBinding = (args: DataBindingEventArgs) => {
+                expect((args as any).query.params.length).toEqual(3);
+                expect((args as any).query.params[0].key).toEqual('OwnerId');
+                expect((args as any).query.params[0].value).toEqual('1,2,3,4,5,6,7,8,9,10,11,12,13');
+            };
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('query params with after scrolling', (Done: DoneFn) => {
+            schObj.dataBinding = (args: DataBindingEventArgs) => {
+                expect((args as any).query.params.length).toEqual(3);
+                expect((args as any).query.params[0].key).toEqual('OwnerId');
+                expect((args as any).query.params[0].value).toEqual('17,18,19,20,21,22,23,24,25,26,27,28,29');
+                Done();
+            };
+            const conWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            triggerScrollEvent(conWrap, 1000);
+            expect(conWrap.scrollTop).toEqual(1000);
+        });
+        it('Scroll start event after scrolling', (Done: DoneFn) => {
+            schObj.virtualScrollStart = (args: ScrollEventArgs) => {
+                expect(args.startDate.getTime()).toEqual(1680307200000);
+                expect(args.endDate.getTime()).toEqual(1682899200000);
+                expect(args.resourceData.length).toEqual(13);
+                expect(args.startIndex).toEqual(16);
+                expect(args.endIndex).toEqual(28);
+                expect(args.eventData).toBeUndefined();
+                Done();
+            };
+            const conWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            triggerScrollEvent(conWrap, 1200);
+            expect(conWrap.scrollTop).toEqual(1200);
+        });
+        it('Scroll stop event after scrolling', (Done: DoneFn) => {
+            schObj.virtualScrollStop = (args: ScrollEventArgs) => {
+                expect(args.startDate.getTime()).toEqual(1680307200000);
+                expect(args.endDate.getTime()).toEqual(1682899200000);
+                expect(args.resourceData.length).toEqual(13);
+                expect(args.startIndex).toEqual(20);
+                expect(args.endIndex).toEqual(32);
+                expect(args.eventData).toBeUndefined();
+                args.eventData = [
+                    {
+                        Id: 5,
+                        Subject: 'Testing',
+                        StartTime: new Date(2023, 3, 4, 10, 30, 0),
+                        EndTime: new Date(2023, 3, 4, 12, 0, 0),
+                        OwnerId: 21
+                    }
+                ];
+                Done();
+            };
+        });
+        it('dynamic events fetched in scroll stop event', () => {
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
         });
     });
 

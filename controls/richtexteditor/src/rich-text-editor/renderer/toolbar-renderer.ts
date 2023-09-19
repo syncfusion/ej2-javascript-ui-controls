@@ -1,8 +1,8 @@
-import { addClass, Browser, removeClass, EventHandler, formatUnit, isNullOrUndefined, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { addClass, Browser, L10n, removeClass, EventHandler, formatUnit, isNullOrUndefined, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { getInstance, closest, MouseEventArgs, selectAll, detach } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { Popup, Tooltip } from '@syncfusion/ej2-popups';
+import { Popup, Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import * as classes from '../base/classes';
 import * as events from '../base/constant';
 import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE_DROPDOWN,
@@ -12,6 +12,7 @@ import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE
 import { IRenderer, IRichTextEditor, IToolbarOptions, IDropDownModel, IColorPickerModel, IColorPickerEventArgs } from '../base/interface';
 import { ColorPicker, PaletteTileEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { hasClass } from '../base/util';
+import { ServiceLocator } from '../services/service-locator';
 
 /**
  * `Toolbar renderer` module is used to render toolbar in RichTextEditor.
@@ -33,14 +34,19 @@ export class ToolbarRenderer implements IRenderer {
     private currentDropdown: DropDownButton;
     private popupOverlay: HTMLElement;
     private tooltip: Tooltip;
+    private l10n: L10n;
 
     /**
      * Constructor for toolbar renderer module
      *
      * @param {IRichTextEditor} parent - specifies the parent element.
+     * @param {ServiceLocator} serviceLocator - specifies the serviceLocator
      */
-    public constructor(parent?: IRichTextEditor) {
+    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
+        if (serviceLocator){
+            this.l10n = serviceLocator.getService<L10n>('rteLocale');
+        }
         this.wireEvent();
     }
 
@@ -50,7 +56,11 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private destroyTooltip(): void {
-        this.tooltip.close();
+        if (!isNullOrUndefined(document.querySelector('.e-tooltip-wrap')) && !isNullOrUndefined(document.querySelector( ' [data-tooltip-id]'))) {
+            const tooltipTargetEle: HTMLElement = <HTMLElement> document.querySelector('#' + (this.parent.element).id + ' [data-tooltip-id]');
+            const event: MouseEvent = new MouseEvent('mouseleave', {bubbles: true, cancelable: true});
+            tooltipTargetEle.dispatchEvent(event);
+        }
     }
 
     private unWireEvent(): void {
@@ -91,6 +101,23 @@ export class ToolbarRenderer implements IRenderer {
             return;
         }
         this.parent.notify(events.beforeDropDownItemRender, args);
+    }
+
+    private tooltipBeforeRender(args: TooltipEventArgs): void {
+        if (!isNOU(args.target.getAttribute('title'))) {
+            const tooltipTarget: string = args.target.getAttribute('title');
+            let tooltipText: string;
+            switch (tooltipTarget) {
+            case 'Minimize':
+                tooltipText = this.l10n.getConstant('minimize');
+                args.target.setAttribute('title', tooltipText + ' (Esc)');
+                break;
+            case 'Maximize':
+                tooltipText = this.l10n.getConstant('maximize');
+                args.target.setAttribute('title', tooltipText + ' (Ctrl+Shift+F)');
+                break;
+            }
+        }
     }
 
     private dropDownOpen(args: MenuEventArgs): void {
@@ -160,6 +187,8 @@ export class ToolbarRenderer implements IRenderer {
                 target: '#' + this.parent.getID() + '_toolbar_wrapper [title]',
                 showTipPointer: true,
                 openDelay: 400,
+                opensOn: 'Hover',
+                beforeRender: this.tooltipBeforeRender.bind(this),
                 cssClass: this.parent.cssClass,
                 windowCollision: true,
                 position: 'BottomCenter'

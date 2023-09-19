@@ -214,6 +214,7 @@ describe('filter menu module =>', () => {
         });
 
         it('date filter with null values', (done: Function) => {
+            gridObj.cssClass = 'coverage';
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'filterafteropen') {
                     (<HTMLInputElement>document.querySelector('.e-flmenu-okbtn')).click();
@@ -242,6 +243,7 @@ describe('filter menu module =>', () => {
                     expect(gridObj.filterSettings.columns.length).toBe(1);
                     expect(gridObj.element.querySelectorAll('.e-filtered').length).toBe(1);
                     gridObj.actionComplete = null;
+                    gridObj.cssClass = undefined;
                     done();
                 }
             };

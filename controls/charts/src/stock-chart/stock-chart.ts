@@ -40,7 +40,7 @@ import { StockEvents } from './renderer/stock-events';
 import { IThemeStyle } from '../chart/model/chart-interface';
 import { StockChartLegendSettingsModel } from './legend/legend-model';
 import { StockLegend, StockChartLegendSettings } from './legend/legend';
-import { SeriesModel } from './index';
+import { SeriesModel, VisibleRangeModel } from './index';
 
 /**
  * Stock Chart
@@ -518,7 +518,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * It specifies the types of Export types in financial chart.
      */
-    @Property(['PNG', 'JPEG', 'SVG', 'PDF', 'Print'])
+    @Property(['PNG', 'JPEG', 'SVG', 'PDF', 'XLSX', 'CSV', 'Print'])
     public exportType: ExportType[];
 
     /**
@@ -653,6 +653,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public tempAvailableSize: Size;
     /** @private */
     public mouseMoveEvent: PointerEvent;
+    public isDateTimeCategory: boolean = false;
+    public sortedData: number[] = [];
+    private visibleRange: VisibleRangeModel = {
+        min: 0, max: 0,
+        delta: 0, interval: 0
+    };
+    public isStockChartRendered: boolean = false;
 
     /**
      * Constructor for creating the widget
@@ -693,8 +700,10 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         }
         this.startValue = updatedStart; this.endValue = updatedEnd;
         this.cartesianChart.initializeChart();
-        this.periodSelector.datePicker.startDate = new Date(updatedStart);
-        this.periodSelector.datePicker.endDate = new Date(updatedEnd);
+        this.periodSelector.datePicker.startDate = this.isDateTimeCategory ? new Date(this.sortedData[updatedStart as number]) :
+            new Date(updatedStart);
+        this.periodSelector.datePicker.endDate = this.isDateTimeCategory ? new Date(this.sortedData[updatedEnd as number]) :
+            new Date(updatedEnd);
         this.periodSelector.datePicker.dataBind();
     }
     /**
@@ -765,6 +774,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         this.startValue = null;
         this.endValue = null;
         this.currentEnd = null;
+        this.isStockChartRendered = false;
     }
 
     /**
@@ -811,6 +821,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.renderComplete();
             this.allowServerDataBinding = true;
             this.isProtectedOnChange = false;
+            this.isStockChartRendered = true;
         });
 
     }
@@ -911,12 +922,15 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     public findCurrentData(totalData: Object, xName: string): Object {
         let tempData: Object = (!this.enablePeriodSelector && !this.enableSelector) ? totalData : undefined;
-        if (totalData && this.startValue && this.endValue) {
+        const start: number = (this.isDateTimeCategory) ? new Date(this.sortedData[Math.floor(this.startValue)]).getTime() :
+            this.startValue;
+        const end: number = (this.isDateTimeCategory) ? new Date(this.sortedData[Math.floor(this.endValue)]).getTime() : this.endValue;
+        if (totalData && start && end) {
             tempData = (totalData as Object[])
                 .filter((data: Object) => {
                     return (
-                        new Date(Date.parse(data[xName as string])).getTime() >= this.startValue &&
-                    new Date(Date.parse(data[xName as string])).getTime() <= this.endValue
+                        new Date(Date.parse(data[xName as string])).getTime() >= start &&
+                    new Date(Date.parse(data[xName as string])).getTime() <= end
                     );
                 });
         }
@@ -937,6 +951,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     }
 
     private chartRender(): void {
+        this.sortedData = [];
         this.cartesianChart = new CartesianChart(this);
         this.cartesianChart.initializeChart();
     }
@@ -1003,7 +1018,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             } else {
                 RangeNavigator.Inject(modules);
             }
-            if (moduleName === 'datetime' || moduleName === 'areaseries' || moduleName === 'steplineseries') {
+            if (moduleName === 'datetime' || moduleName === 'areaseries' || moduleName === 'steplineseries' || moduleName === 'datetimecategory') {
                 RangeNavigator.Inject(modules);
             }
         }
@@ -1027,13 +1042,26 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.tempPeriods = this.periods.length ? this.periods : this.toolbarSelector.calculateAutoPeriods();
             this.tempPeriods.map((period: PeriodsModel) => {
                 if (period.selected && period.text.toLowerCase() === 'ytd') {
-                    this.startValue = new Date(new Date(this.currentEnd).getFullYear().toString()).getTime();
+                    if (this.isDateTimeCategory) {
+                        const currentYear: number = new Date(this.sortedData[this.currentEnd]).getFullYear();
+                        let index: number = this.currentEnd - 1;
+                        for (; index >= 0; index--) {
+                            if (new Date(this.sortedData[index as number]).getFullYear() !== currentYear) {
+                                this.startValue = index + 1;
+                                break;
+                            }
+                        }
+                        this.startValue = index === -1 ? 0 : this.startValue;
+                    }
+                    else {
+                        this.startValue = new Date(new Date(this.currentEnd).getFullYear().toString()).getTime();
+                    }
                 } else if (period.selected && period.text.toLowerCase() === 'all') {
                     this.startValue = this.seriesXMin;
                 } else if (period.selected) {
-                    this.startValue = this.periodSelector.changedRange(
-                        period.intervalType, this.endValue, period.interval
-                    ).getTime();
+                    this.startValue = this.periodSelector.changedRange(period.intervalType, this.endValue, period.interval).getTime();
+                    this.startValue = this.isDateTimeCategory ? this.periodSelector.findStartValue(this.startValue, this.endValue) :
+                        this.startValue;
                 }
             });
         } else {
@@ -1041,7 +1069,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         }
         this.rangeFound = true;
     }
-
     /**
      * Handles the chart resize.
      *
@@ -1110,8 +1137,19 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.setMouseXY(pageX, pageY);
             this.referenceXAxis = this.chart.primaryXAxis as Axis;
             getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
+            if (this.isDateTimeCategory) {
+                this.visibleRange.min = this.sortedData.indexOf(parseInt(
+                    this.referenceXAxis.labels[this.referenceXAxis.visibleRange.min], 10));
+                this.visibleRange.max = this.sortedData.indexOf(parseInt(
+                    this.referenceXAxis.labels[this.referenceXAxis.visibleRange.max], 10));
+                this.visibleRange.delta = this.referenceXAxis.visibleRange.delta;
+                this.visibleRange.interval = this.referenceXAxis.visibleRange.interval;
+            }
+            else {
+                this.visibleRange = this.referenceXAxis.visibleRange;
+            }
             this.mouseDownXPoint = getRangeValueXByPoint(this.mouseX - this.referenceXAxis.rect.x, this.referenceXAxis.rect.width,
-                                                         this.referenceXAxis.visibleRange, this.referenceXAxis.isInversed);
+                                                         this.visibleRange, this.referenceXAxis.isInversed);
             this.allowPan = true;
             this.notify(Browser.touchStartEvent, e);
         }
@@ -1217,21 +1255,21 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.rangeNavigator.mouseX = this.mouseX;
             this.rangeNavigator.rangeSlider.mouseMoveHandler(e);
         }
-        if (this.allowPan && this.mouseDownXPoint && this.mouseX !== this.previousMouseMoveX && this.zoomSettings.enablePan) {
+        if (this.allowPan && !this.chart.startMove && this.mouseDownXPoint && this.mouseX !== this.previousMouseMoveX && this.zoomSettings.enablePan) {
             this.onPanning = true;
             this.zoomChange = false;
             getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
             this.mouseUpXPoint = getRangeValueXByPoint(this.mouseX - this.referenceXAxis.rect.x, this.referenceXAxis.rect.width,
-                                                       this.referenceXAxis.visibleRange, this.referenceXAxis.isInversed);
+                                                       this.visibleRange, this.referenceXAxis.isInversed);
             const diff: number = Math.abs(this.mouseUpXPoint - this.mouseDownXPoint);
 
             if (this.mouseDownXPoint < this.mouseUpXPoint) {
-                if (this.seriesXMin <= this.referenceXAxis.visibleRange.min - diff) {
-                    this.startValue = this.referenceXAxis.visibleRange.min - diff;
-                    this.endValue = this.referenceXAxis.visibleRange.max - diff;
+                if (this.seriesXMin <= this.visibleRange.min - diff) {
+                    this.startValue = this.visibleRange.min - diff;
+                    this.endValue = this.visibleRange.max - diff;
                     if (this.enableSelector) {
-                        this.rangeNavigator.rangeSlider.setSlider(this.referenceXAxis.visibleRange.min - diff,
-                                                                  this.referenceXAxis.visibleRange.max - diff,
+                        this.rangeNavigator.rangeSlider.setSlider(this.visibleRange.min - diff,
+                                                                  this.visibleRange.max - diff,
                                                                   !this.rangeNavigator.enableDeferredUpdate,
                                                                   (this.rangeNavigator.rangeTooltipModule
                                                                   && this.rangeNavigator.tooltip.enable));
@@ -1241,12 +1279,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
                     }
                 }
             } else {
-                if (this.seriesXMax >= this.referenceXAxis.visibleRange.max + diff) {
-                    this.startValue = this.referenceXAxis.visibleRange.min + diff;
-                    this.endValue = this.referenceXAxis.visibleRange.max + diff;
+                if (this.seriesXMax >= this.visibleRange.max + diff) {
+                    this.startValue = this.visibleRange.min + diff;
+                    this.endValue = this.visibleRange.max + diff;
                     if (this.enableSelector) {
-                        this.rangeNavigator.rangeSlider.setSlider(this.referenceXAxis.visibleRange.min + diff,
-                                                                  this.referenceXAxis.visibleRange.max + diff,
+                        this.rangeNavigator.rangeSlider.setSlider(this.visibleRange.min + diff,
+                                                                  this.visibleRange.max + diff,
                                                                   !this.rangeNavigator.enableDeferredUpdate,
                                                                   (this.rangeNavigator.rangeTooltipModule
                                                                   && this.rangeNavigator.tooltip.enable));

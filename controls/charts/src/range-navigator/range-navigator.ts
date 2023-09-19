@@ -45,6 +45,7 @@ import { PeriodSelector } from '../common/period-selector/period-selector';
 import { AccumulationChart } from '../accumulation-chart/accumulation';
 import { IRangeSelectorRenderEventArgs, IPrintEventArgs } from '../chart/model/chart-interface';
 import { StockChart } from '../stock-chart/stock-chart';
+import { DateTimeCategory } from '../chart/axis/date-time-category-axis';
 
 /**
  * Range Navigator
@@ -89,6 +90,10 @@ export class RangeNavigator extends Component<HTMLElement> {
      * `periodSelectorModule` is used to add period selector un range navigator
      */
     public periodSelectorModule: PeriodSelector;
+    /**
+     * `dateTimeCategoryModule` is used to manipulate and add dateTimeCategory axis to the chart.
+     */
+    public dateTimeCategoryModule : DateTimeCategory;
 
     /**
      * The width of the range navigator as a string accepts input as both like '100px' or '100%'.
@@ -212,7 +217,11 @@ export class RangeNavigator extends Component<HTMLElement> {
     public logBase: number;
 
     /**
-     * ValueType for the axis
+     * Specifies the data types that the axis can handle:
+     * * Double: This type is used for rendering a numeric axis to accommodate numeric data.
+     * * DateTime: This type is utilized for rendering a date-time axis to manage date-time data.
+     * * Logarithmic: This type is applied for rendering a logarithmic axis to handle a wide range of values.
+     * * DateTimeCategory: This type is used to render a date time category axis for managing business days.
      *
      * @default 'Double'
      */
@@ -583,13 +592,28 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
     private setSliderValue(): void {
         const isDateTime: boolean = this.valueType === 'DateTime';
+        const isDateTimeCategory: boolean = this.valueType === 'DateTimeCategory';
         const range: VisibleRangeModel = this.chartSeries.xAxis.actualRange;
-        this.startValue = this.startValue ? this.startValue : (!this.value[0] ? range.min :
-            (isDateTime ? (new Date(this.value[0].toString())).getTime() : +this.value[0]));
-        this.endValue = this.endValue ? this.endValue : (!this.value[1] ? range.max :
-            (isDateTime ? (new Date(this.value[1].toString())).getTime() : +this.value[1]));
+        this.startValue = (this.startValue || (isDateTimeCategory && this.startValue === 0)) ? this.startValue : (!this.value[0] ?
+            range.min : (isDateTime ? (new Date(this.value[0].toString())).getTime() : isDateTimeCategory ?
+                this.getRangeValue(new Date(this.value[0].toString()).getTime(), true) : +this.value[0]));
+        this.endValue = (this.endValue || (isDateTimeCategory && this.endValue === 0)) ? this.endValue : (!this.value[1] ? range.max :
+            (isDateTime ? (new Date(this.value[1].toString())).getTime() : isDateTimeCategory ?
+                this.getRangeValue(new Date(this.value[1].toString()).getTime(), false) : +this.value[1]));
     }
 
+    /**
+     * To find the start and end value in the date-time category.
+     */
+    private getRangeValue(value: number, isStart: boolean): number {
+        const labels: string[] = this.chartSeries.xAxis.labels;
+        let index: number = labels.length - 1;
+        while (index >= 0 && parseInt(labels[index as number], 10) > value) {
+            index--;
+        }
+        return isStart ? (index !== -1 ? index : this.chartSeries.xAxis.actualRange.min) :
+            (index === 0 ? this.chartSeries.xAxis.actualRange.max : index);
+    }
     /**
      * To render the range navigator
      */

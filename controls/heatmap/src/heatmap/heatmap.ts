@@ -1165,36 +1165,40 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         // eslint-disable-next-line
         this.touchInstance = new Touch(this.element, {
             tapHold: (e: TapEventArgs) => {
-                heatmap.isCellTapHold = true;
-                const selectedCellCollection: SelectedCellDetails[] = [];
-                for (let i: number = 0; i < this.multiCellCollection.length; i++) {
-                    selectedCellCollection.push(this.multiCellCollection[i as number]);
-                }
-                if (!e.originalEvent.ctrlKey || !this.enableMultiSelect) {
-                    this.multiCellCollection = [];
-                }
-                heatmap.getDataCollection();
-                const argData: ISelectedEventArgs = {
-                    heatmap: heatmap,
-                    cancel: false,
-                    name: 'cellSelected',
-                    data: heatmap.multiCellCollection
-                };
-                heatmap.trigger('cellSelected', argData);
-                if (!argData.cancel) {
-                    if ((e as any).ctrlKey === false || !this.enableMultiSelect) {
-                        this.removeSelectedCellsBorder(false);
+                const targetId: string = (<Element>e.originalEvent.target).id;
+                if ((targetId.indexOf(this.element.id + '_HeatMapRect_') !== -1 || targetId.indexOf(this.element.id + '_HeatMapRectLabels_') !== -1) && this.allowSelection) {
+                    heatmap.isCellTapHold = true;
+                    const selectedCellCollection: SelectedCellDetails[] = [];
+                    for (let i: number = 0; i < this.multiCellCollection.length; i++){
+                        selectedCellCollection.push(this.multiCellCollection[i as number]);
                     }
-                    heatmap.currentRect.allowCollection = false;
-                } else {
-                    this.multiCellCollection = selectedCellCollection;
-                    if (this.multiCellCollection.length > 0 || (e as any).ctrlKey === false || !this.enableMultiSelect) {
-                        this.removeSelectedCellsBorder(true);
+                    if (!e.originalEvent.ctrlKey || !this.enableMultiSelect) {
+                        this.multiCellCollection = [];
                     }
+                    heatmap.getDataCollection();
+                    const argData: ISelectedEventArgs = {
+                        heatmap: heatmap,
+                        cancel: false,
+                        name: 'cellSelected',
+                        data: heatmap.multiCellCollection
+                    };
+                    heatmap.trigger('cellSelected', argData);
+                    if (!argData.cancel) {
+                        if ((e as any).ctrlKey === false || !this.enableMultiSelect) {
+                            this.removeSelectedCellsBorder(false);
+                        }
+                        heatmap.currentRect.allowCollection = false;
+                    } else {
+                        this.multiCellCollection = selectedCellCollection;
+                        if (this.multiCellCollection.length > 0 || (e as any).ctrlKey === false || !this.enableMultiSelect)
+                        {
+                            this.removeSelectedCellsBorder(true);
+                        }
+                    }
+                    heatmap.setCellOpacity();
+                    window.clearTimeout(this.tooltipTimer);
+                    heatmap.tooltipOnMouseMove(null, heatmap.currentRect, heatmap.isCellTapHold);
                 }
-                heatmap.setCellOpacity();
-                window.clearTimeout(this.tooltipTimer);
-                heatmap.tooltipOnMouseMove(null, heatmap.currentRect, heatmap.isCellTapHold);
             },
             tap: (e) => {
                 const targetId: string = (<Element>e.originalEvent.target).id;
@@ -1483,7 +1487,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     private heatMapMouseDoubleClick(e: PointerEvent): void {
         this.triggerClickEvent(e, true);
     }
-
+    // eslint-disable-next-line valid-jsdoc
     /**
      * @private
      */
@@ -1652,7 +1656,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         && !this.enableCanvasRendering) {
                         this.heatMapSeries.highlightSvgRect(currentRect.id);
                     }
-                    if (this.tooltipTimer) {
+                    if (this.tooltipTimer && !isNullOrUndefined(e) && (e.type === 'touchstart' || e.type === 'touchmove')) {
                         window.clearTimeout(this.tooltipTimer);
                         this.tooltipTimer = null;
                     }
@@ -2164,10 +2168,13 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (this.titleSettings.text && this.titleCollection[0].indexOf('...') !== -1) {
-            if (!this.enableCanvasRendering) {
-                removeElement(this.element.id + '_Title_Tooltip');
-            } else {
-                removeElement(this.element.id + '_canvas_Tooltip');
+            e.preventDefault();
+            if (!this.isTouch) {
+                if (!this.enableCanvasRendering) {
+                    removeElement(this.element.id + '_Title_Tooltip');
+                } else {
+                    removeElement(this.element.id + '_canvas_Tooltip');
+                }
             }
         }
         return true;

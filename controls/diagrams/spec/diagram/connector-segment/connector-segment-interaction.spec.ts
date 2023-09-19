@@ -8,7 +8,7 @@ import { Connector, OrthogonalSegment } from '../../../src/diagram/objects/conne
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { SnapConstraints, Snapping, ConnectorBridging } from '../../../src/diagram/index';
+import { SnapConstraints, Snapping, ConnectorBridging, IEditSegmentOptions } from '../../../src/diagram/index';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { ConnectorEditing } from '../../../src/diagram/interaction/connector-editing';
@@ -1688,7 +1688,7 @@ describe('Diagram Control', () => {
 });
 describe('Connector Segment shapes and style', () => {
   
-    describe(' Segment thumb and segement Thumb shape', () => {
+    describe(' Segment thumb and segment Thumb shape', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let diagramCanvas: HTMLElement;
@@ -1722,7 +1722,7 @@ describe('Connector Segment shapes and style', () => {
         });
         it('Checking the Thumbshape at initial rendering', function (done) {
              diagram.select([diagram.connectors[0]]);
-            expect(document.getElementById("orthoThumb_1_1").getAttribute("d")==="M10,5 L5,10 L0,5 L5,0 L10,5 Z ").toBe(true);
+            expect(document.getElementById("orthoThumb_1_1").getAttribute("d")==="M10,5 C10,7.76,7.76,10,5,10 C2.24,10,0,7.76,0,5 C0,2.24,2.24,0,5,0 C7.76,0,10,2.24,10,5 Z  ").toBe(true);
             done();
         });
         it('Check the segment thumb visibility for hidden thumbs', function (done) {
@@ -1745,14 +1745,223 @@ describe('Connector Segment shapes and style', () => {
         });
         it('Checking the orthogonal thumbshape rendering dynamically', function (done) {
             diagram.select([diagram.connectors[0]]);
-            diagram.segmentThumbShape = "OpenArrow";
+            diagram.connectors[0].segmentThumbShape = "OpenArrow";
             diagram.dataBind();
             expect(document.getElementById("orthoThumb_1_1").getAttribute("d") === "M15.9,23 L5,16 L15.9,9 L17,10.7 L8.7,16 L17,21.3 Z ").toBe(true);
             done();
             }); 
     });
-});
 
+    describe('824805-Modify connector segment Thumb shape', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let diagramCanvas: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+
+            let connector2: ConnectorModel = {};
+            connector2.id = 'connector2';
+            connector2.type = 'Orthogonal';
+            connector2.sourcePoint = { x: 250, y: 250 };
+            connector2.targetPoint = { x: 350, y: 350 };
+            connector2.segments = [{ type: 'Orthogonal', direction: "Right", length: 70 }, { type: 'Orthogonal', direction: "Bottom", length: 20 }];
+            connector2.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+            let connector1: ConnectorModel = 
+            {
+                id: 'connector1',type: 'Bezier',
+                sourcePoint: { x: 500, y: 100 },targetPoint: { x: 800, y: 150 },
+                segments: [
+                    {
+                        type: 'Bezier',
+                        point: { x: 550, y: 350 }
+                    },
+                    {
+                        type: 'Bezier',
+                        point: { x: 700, y: 250 }
+                    }
+                ],
+                constraints: ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb,
+            };
+            diagram = new Diagram({
+                width: 1000, height: 1000,
+                connectors: [connector2,connector1],
+                snapSettings: { constraints: SnapConstraints.ShowLines },
+                segmentThumbShape:'Rectangle'
+            });
+            diagram.appendTo('#diagram');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            
+            
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('default shape of bezier segment thumb', function (done) {
+            debugger
+            diagram.select([diagram.connectors[1]]);
+            //default shape of bezier segment thumb shape to be Circle
+            expect(diagram.connectors[1].segmentThumbShape).toBe('Circle');
+            done();
+        });
+        it('Checking bezier thumb shape icon', function (done) {
+            diagram.select([diagram.connectors[1]]);
+            expect(diagram.connectors[1].segmentThumbShape).toBe('Circle');
+            diagram.connectors[1].segmentThumbShape ='Ellipse'
+            diagram.dataBind();
+            expect(document.getElementById("segementThumb_1").getAttribute("d") === "M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z ").toBe(true);
+            diagram.connectors[1].segmentThumbShape = 'Fletch';
+            diagram.dataBind();
+            expect(document.getElementById("segementThumb_1").getAttribute("d") === "M9.82,0 C9.82,0,6.61,5,10,10 C10,10,7.71,5,0,5 C0,5,6.61,5,9.82,0 Z ").toBe(true);
+            done();
+        });
+        it('Checking bezier thumb shape icon by constraints', function (done) {
+            diagram.select([diagram.connectors[1]]);
+            expect(diagram.connectors[1].segmentThumbShape).toBe('Fletch');
+            diagram.connectors[1].segmentThumbShape ='Ellipse'
+            diagram.dataBind();
+            expect(document.getElementById("segementThumb_1").getAttribute("d") === "M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z ").toBe(true);
+            diagram.connectors[1].constraints = (ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb) & ~ConnectorConstraints.InheritSegmentThumbShape;
+            diagram.dataBind();
+            expect(document.getElementById("segementThumb_1").getAttribute("d") === "M0,0 L15,0 L15,10 L0,10 Z  ").toBe(true);
+            expect(diagram.segmentThumbShape).toBe('Rectangle');;
+            done();
+        });
+        it('Checking Orthogonal thumb shape icon by constraints', function (done) {
+            debugger
+            diagram.select([diagram.connectors[0]]);
+            expect(diagram.segmentThumbShape).toBe('Rectangle');
+            diagram.segmentThumbShape ='Ellipse'
+            diagram.dataBind();
+            expect(document.getElementById("orthoThumb_1_1").getAttribute("d") === "M15,5 C15,7.76,11.64,10,7.5,10 C3.36,10,0,7.76,0,5 C0,2.24,3.36,0,7.5,0 C11.64,0,15,2.24,15,5 Z ").toBe(true);
+            diagram.connectors[0].constraints = (ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb) & ~ConnectorConstraints.InheritSegmentThumbShape;
+            diagram.dataBind();
+            expect(document.getElementById("orthoThumb_1_1").getAttribute("d") === "M10,5 C10,7.76,7.76,10,5,10 C2.24,10,0,7.76,0,5 C0,2.24,2.24,0,5,0 C7.76,0,10,2.24,10,5 Z  ").toBe(true);
+            
+            expect(diagram.connectors[0].segmentThumbShape).toBe('Circle');
+            done();
+        });
+        it('Checking bezier segment - drag segment point', (done: Function) => {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let a1= (diagram.connectors[1].segments[0] as any).points[1].x;
+            let b1= (diagram.connectors[1].segments[0] as any).points[1].y;
+            let connector: (NodeModel | ConnectorModel)[] = [diagram.connectors[1]];
+            diagram.unSelect(diagram.connectors[1]);
+            mouseEvents.clickEvent(diagramCanvas, 550, 350);
+            mouseEvents.mouseDownEvent(diagramCanvas, 550, 350);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 600, 400);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 610, 410);
+            mouseEvents.mouseUpEvent(diagramCanvas, 610, 410);
+            let a2= (diagram.connectors[1].segments[0] as any).points[1].x;
+            let b2= (diagram.connectors[1].segments[0] as any).points[1].y;
+            mouseEvents.clickEvent(diagramCanvas, 550, 350);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 550, 350, 620, 420);
+            expect(a1 !== a2 && b1 !== b2).toBe(true);
+            done();
+        });     
+    });
+});
+//827745-Add or remove Segment Dynamically to the straight connector
+describe('Connectors Segments - Add or Remove Segment Runtime', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramOrthoChangeSourcePoint' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: 1000, height: 1000,
+            connectors: [
+                {
+                    id: 'connector1', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 }, type: 'Straight',
+                    segments: [{ type: 'Straight',point:{x:100,y:150} },
+                    { type: 'Straight',},]
+                },
+                {
+                    id: 'connector2', sourcePoint: { x: 572, y: 40 }, targetPoint: { x: 600, y: 300 }, type: 'Straight',
+                    segments: [{ type: 'Straight', direction: 'Bottom', length: 200 },
+                    ]
+                },
+            ],
+            getConnectorDefaults: (obj: ConnectorModel) => {
+                let connector: ConnectorModel = {};
+                connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                return connector;
+            },
+            snapSettings: { constraints: SnapConstraints.ShowLines }
+        });
+        diagram.appendTo('#diagramOrthoChangeSourcePoint');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking Straight - segment Add', function (done) {
+        diagram.select([diagram.connectors[0]]);
+        expect(diagram.connectors[0].segments.length == 2).toBe(true);
+        debugger
+        let point: PointModel = { x: 160, y:180};
+        let options: IEditSegmentOptions={
+            connector: diagram.connectors[0], 
+            point: point,
+            SegmentEditing:'Add'
+        }
+        diagram.editSegment(options);
+        expect(diagram.connectors[0].segments.length == 3).toBe(true);
+        done();
+    });
+    it('Checking Straight - segment Remove - in same point ', function (done) {
+        diagram.select([diagram.connectors[0]]);
+        expect(diagram.connectors[0].segments.length == 3).toBe(true);
+        let point: PointModel = { x: 160, y:180};
+        let options: IEditSegmentOptions={
+            connector: diagram.connectors[0], 
+            point: point,
+            SegmentEditing:'Remove'
+        }
+        diagram.editSegment(options);
+        expect(diagram.connectors[0].segments.length == 2).toBe(true);
+        done();
+    });
+    it('Checking Straight - segment Toggle - in same point ', function (done) {
+        diagram.select([diagram.connectors[0]]);
+        expect(diagram.connectors[0].segments.length == 2).toBe(true);
+        let point: PointModel = { x: 160, y:180};
+        let options: IEditSegmentOptions={
+            connector: diagram.connectors[0], 
+            point: point,
+            SegmentEditing:'Toggle'
+        }
+        diagram.editSegment(options);
+        expect(diagram.connectors[0].segments.length == 3).toBe(true);
+        done();
+    });
+    it('Checking Straight - segment Toggle - in same point ', function (done) {
+        diagram.select([diagram.connectors[0]]);
+        expect(diagram.connectors[0].segments.length == 3).toBe(true);
+        let point: PointModel = { x: 160, y:180};
+        let options: IEditSegmentOptions={
+            connector: diagram.connectors[0], 
+            point: point,
+            SegmentEditing:'Toggle'
+        }
+        diagram.editSegment(options);
+        expect(diagram.connectors[0].segments.length == 2).toBe(true);
+        done();
+    });
+}); 
+
+  
 describe('Orthogonal connector segment routing issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;

@@ -7,6 +7,7 @@ import { sum, ChartLocation, getPoint, templateAnimate } from '../../common/util
 import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Series } from './chart-series';
 import { ColumnSeries } from './column-series';
+import { animationMode } from '@syncfusion/ej2-base';
 
 /**
  * `HistogramSeries` Module used to render the histogram series.
@@ -148,7 +149,7 @@ export class HistogramSeries extends ColumnSeries {
             ),
             new Int32Array([series.clipRect.x, series.clipRect.y])
         );
-        (<HTMLElement>distributionLine).style.visibility = (!series.chart.enableCanvas) ? ((series.animation.enable &&
+        (<HTMLElement>distributionLine).style.visibility = (!series.chart.enableCanvas) ? ((((series.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') &&
                                                             series.chart.animateSeries) ? 'hidden' : 'visible') : null;
         if (!series.chart.enableCanvas) {
             series.seriesElement.appendChild(distributionLine);
@@ -165,7 +166,7 @@ export class HistogramSeries extends ColumnSeries {
         if (series.showNormalDistribution) {
             templateAnimate(
                 series.seriesElement.lastElementChild,
-                series.animation.duration, 500, 'FadeIn'
+                ((series.animation.duration === 0 && animationMode === 'Enable') ? 1000 : series.animation.duration), 500, 'FadeIn'
             );
         }
     }

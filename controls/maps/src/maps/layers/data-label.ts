@@ -4,7 +4,7 @@ import {
     getTranslate, RectOption, convertElementFromLabel,
     Point, TextOption, renderTextElement, MapLocation, textTrim, Size, measureText, Internalize
 } from '../utils/helper';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, AnimationOptions, Animation, animationMode } from '@syncfusion/ej2-base';
 import { FontModel, DataLabelSettingsModel, ILabelRenderingEventArgs, LayerSettings } from '../index';
 import { dataLabelRendering } from '../model/constants';
 import { Theme } from '../model/theme';
@@ -78,6 +78,7 @@ export class DataLabel {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const shapeData: any = shape;
         let element: Element;
+        let rect: Element;
         let text: string = '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let datasrcObj: any;
@@ -97,7 +98,7 @@ export class DataLabel {
         const properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
         let propertyPath: string; const isPoint : boolean = false;
-        const animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+        const animate: boolean = (layer.animationDuration !== 0 || animationMode === 'Enable') || isNullOrUndefined(this.maps.zoomModule);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const translate: any = (this.maps.isTileMap) ? new Object() : ((this.maps.zoomSettings.zoomFactor > 1 &&
             !isNullOrUndefined(this.maps.zoomModule)) ? getZoomTranslate(this.maps, layer, animate) :
@@ -350,11 +351,13 @@ export class DataLabel {
                                 this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index,
                                 fill, border, opacity, new Rect((x + labelArgs.offsetX), (y + labelArgs.offsetY), textSize['width'], textSize['height']), rx, ry
                             );
-                            const rect: Element = this.maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
+                            rect = this.maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
+                            rect.setAttribute('visibility', layer.dataLabelSettings.animationDuration > 0 || animationMode === 'Enable' ? 'hidden' : 'visibile');
                             group.appendChild(rect);
                         }
                     }
                     element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
+                    element.setAttribute('visibility', layer.dataLabelSettings.animationDuration > 0 || animationMode === 'Enable' ? 'hidden' : 'visibile');
                     if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied){
                         element.setAttribute('transform', 'translate( ' + ((location['x'] + labelArgs.offsetX) ) + ' '
                       + (((location['y'] + labelArgs.offsetY) )  ) + ' )');
@@ -379,8 +382,35 @@ export class DataLabel {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.maps as any).renderReactTemplates();
                 }
+                if (layer.dataLabelSettings.animationDuration > 0 || animationMode === 'Enable') {
+                    if (!isNullOrUndefined(element)) {
+                        this.datalabelAnimate(element as HTMLElement, dataLabelSettings.animationDuration, style.opacity, false);
+                        if (!isNullOrUndefined(rect)) {
+                            this.datalabelAnimate(rect as HTMLElement, dataLabelSettings.animationDuration, dataLabelSettings.opacity, true);
+                        }
+                    }
+                }
             });
         }
+    }
+
+    private datalabelAnimate(element: HTMLElement, duration: number, opacity: number, isRect: boolean): void {
+        let height: number = 0;
+        new Animation({}).animate(<HTMLElement>element, {
+            duration: (duration === 0 && animationMode === 'Enable') ? 1000: duration,
+            delay: 0,
+            progress: (args: AnimationOptions) => {
+                if (args.timeStamp > args.delay) {
+                    height = ((args.timeStamp - args.delay) / args.duration);
+                    element.setAttribute('style', 'user-select: none; visibility: visible;');
+                    element.setAttribute(isRect ? 'fill-opacity' : 'opacity', (opacity * height).toString());
+                }
+            },
+            end: (model: AnimationOptions) => {
+                element.style.visibility = 'visible';
+                element.setAttribute(isRect ? 'fill-opacity' : 'opacity', opacity.toString());
+            }
+        });
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getPoint(shapes: any[], points: MapLocation[]): MapLocation[] {

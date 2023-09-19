@@ -526,7 +526,7 @@ export class CartesianAxisLayoutPanel {
 
                 if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
                     this.drawAxisLine(
-                        axis, i, axis.plotOffset, 0, 0, 0, axis.plotOffsetLeft, axis.plotOffsetRight, (isInside || axis.lineStyle.width > 1) ? outsideElement : this.element, axis.updatedRect
+                        axis, i, axis.plotOffset, 0, 0, 0, axis.plotOffsetLeft, axis.plotOffsetRight, isInside ? outsideElement : this.element, axis.updatedRect
                     );
                 }
                 if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0 || axis.minorTickLines.width > 0 || axis.minorGridLines.width > 0) {
@@ -550,7 +550,7 @@ export class CartesianAxisLayoutPanel {
             } else {
                 axis.updateCrossValue();
                 if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
-                    this.drawAxisLine(axis, i, 0, axis.plotOffset, axis.plotOffsetBottom, axis.plotOffsetTop, 0, 0, (isInside || axis.lineStyle.width > 1) ? outsideElement : this.element, axis.updatedRect);
+                    this.drawAxisLine(axis, i, 0, axis.plotOffset, axis.plotOffsetBottom, axis.plotOffsetTop, 0, 0, isInside ? outsideElement : this.element, axis.updatedRect);
                 }
                 if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0 || axis.minorTickLines.width > 0 || axis.minorGridLines.width > 0) {
                     this.drawYAxisGridLine(
@@ -741,7 +741,7 @@ export class CartesianAxisLayoutPanel {
         const ticks: number = isTickInside ? (rect.x - tickSize - axisLineSize) : (rect.x + tickSize + axisLineSize + scrollBarHeight);
         let length: number = axis.visibleLabels.length;
         const chartThemeStyle: IThemeStyle = this.chart.themeStyle;
-        if (axis.valueType.indexOf('Category') > -1 && axis.labelPlacement === 'BetweenTicks' && length > 0) {
+        if (axis.valueType.indexOf('Category') > -1 && axis.labelPlacement === 'BetweenTicks' && length > 0 && !this.chart.stockChart) {
             length += 1;
         }
         const minorGridLines: MinorGridLinesModel = axis.minorGridLines;
@@ -873,7 +873,7 @@ export class CartesianAxisLayoutPanel {
             pointY = (valueToCoefficient(axis.visibleLabels[i as number].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
             textHeight = ((elementSize.height / 8) * axis.visibleLabels[i as number].text.length / 2);
-            textPadding = chart.requireInvertedAxis ? 0 : ((elementSize.height / 4) * 3) + 3;
+            textPadding = (chart.requireInvertedAxis && axis.labelPosition === 'Inside') ? 0 : ((elementSize.height / 4) * 3) + 3;
             intervalLength = rect.height / axis.visibleLabels.length;
             labelHeight = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle !== 0 &&
                 elementSize.width > intervalLength) ? intervalLength : elementSize.width;
@@ -881,7 +881,7 @@ export class CartesianAxisLayoutPanel {
                 : (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? pointY + textPadding :  pointY));
             if (axis.labelPosition === 'Inside' && ((i === 0 && !axis.isInversed) || (i === len - 1 && axis.isInversed))) {
                 if (chart.stockChart) { pointY -= (textPadding); }
-                else { pointY -= (textPadding - (chart.requireInvertedAxis ? 0 : (axis.opposedPosition ? -padding : padding))); }
+                else { pointY -= (textPadding - ((chart.requireInvertedAxis && axis.labelPosition === 'Inside') ? 0 : (axis.opposedPosition ? -padding : padding))); }
             }
             if (axis.majorGridLines.width > axis.majorTickLines.width) {
                 maxLineWidth = axis.majorGridLines.width;
@@ -1103,13 +1103,13 @@ export class CartesianAxisLayoutPanel {
         const axisLineSize: number = (isOpposed) ? -axis.lineStyle.width * 0.5 : axis.lineStyle.width * 0.5;
         const scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? isOpposed ? -axis.scrollBarHeight :
             axis.scrollBarHeight : 0;
-        const ticksbwtLabel: number = (axis.valueType.indexOf('Category') > -1 && axis.labelPlacement === 'BetweenTicks') ?
+        const ticksbwtLabel: number = (axis.valueType.indexOf('Category') > -1 && axis.labelPlacement === 'BetweenTicks' && !this.chart.stockChart) ?
             0.5 : 0;
         let length: number = axis.visibleLabels.length;
         const isTickInside: boolean = axis.tickPosition === 'Inside';
         const ticks: number = isTickInside ? (rect.y - tickSize - axisLineSize) : (rect.y + tickSize + axisLineSize + scrollBarHeight);
         const chartThemeStyle: IThemeStyle = this.chart.themeStyle;
-        if (axis.valueType.indexOf('Category') > -1 && length > 0 && axis.labelPlacement === 'BetweenTicks') {
+        if (axis.valueType.indexOf('Category') > -1 && length > 0 && axis.labelPlacement === 'BetweenTicks' && !this.chart.stockChart) {
             length += 1;
         }
         //Gridlines
@@ -1319,7 +1319,7 @@ export class CartesianAxisLayoutPanel {
             && (axis.zoomFactor < 1 || axis.zoomPosition > 0)) ? axis.scrollBarHeight : 0;
         const newPoints: ChartLocation[][] = []; let isRotatedLabelIntersect: boolean = false;
         const textPoints: ChartLocation[][] = [];
-        let rotatedLabelSize: Size;
+        let rotatedLabelSize: Size = new Size(0, 0);
         padding += (angle === 90 || angle === 270 || angle === -90 || angle === -270) ? (islabelInside ? 5 : -5) : 0;
         const isLabelUnderAxisLine: boolean = ((!isOpposed && !islabelInside) || (isOpposed && islabelInside));
         const isEndAnchor: boolean = isLabelUnderAxisLine ?
@@ -1391,7 +1391,7 @@ export class CartesianAxisLayoutPanel {
                 anchor = (chart.enableRtl) ? ((isEndAnchor) ? '' : 'end') : (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
-            if (angle !== 0) {
+            if (angle !== 0 && !chart.stockChart) {
                 rotatedLabelSize = rotateTextSize(label.labelStyle, label.originalText, angle, chart);
                 isLeft = ((angle < 0 && angle > -90) || (angle < -180 && angle > -270) || (angle > 90 && angle < 180) || (angle > 270 && angle < 360));
             }

@@ -7,16 +7,16 @@ import { Sort } from '../../../src/grid/actions/sort';
 import { Page } from '../../../src/grid/actions/page';
 import { Selection } from '../../../src/grid/actions/selection';
 import { RowDD } from '../../../src/grid/actions/row-reorder';
-import { data } from '../base/datasource.spec';
+import { data, employeeData, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { Group } from '../../../src/grid/actions/group';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { RowDropEventArgs } from '../../../src/grid/base/interface';
 
-Grid.Inject(Page, Sort, Selection, RowDD, Freeze, Group, Aggregate, VirtualScroll);
+Grid.Inject(Page, Sort, Selection, RowDD, Group, Aggregate, VirtualScroll);
 
 function copyObject(source: Object, destiation: Object): Object {
     for (let prop in source) {
@@ -1144,7 +1144,6 @@ describe('Row Drag and Drop module', () => {
 
         it('Check the Grid content', () => {
             expect(gridObj.getRows().length).toBe(2);
-            expect(gridObj.getMovableRows().length).toBe(2);
         });
         afterAll(() => {
             destroy(gridObj);
@@ -1295,6 +1294,35 @@ describe('Row Drag and Drop module', () => {
             // expect(groupFooterRow[1].innerHTML).toBe('Sum : $143.76');
         });
 
+        it('for coverage drag and drop row action', () => {
+            const dragRowElem: Element = gridObj.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj.getRowByIndex(1);
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.children[2].getBoundingClientRect();
+            gridObj.rowDrop = rowDrop;
+            (gridObj.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                dragElement: dropClone,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj.rowDragAndDropModule as any).drag({
+                target: dropRowElem.children[2],
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem.children[2] }
+            });
+            (gridObj.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem.children[2],
+                element: gridObj.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem.children[2] }
+            });
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;
@@ -1400,10 +1428,763 @@ describe('Row Drag and Drop module', () => {
             // expect(groupFooterRow[1].innerHTML).toBe('Sum : $143.76');
         });
 
+        it ('for coverage', () => {
+            //for coverage for helper and dragstop
+            
+            expect(gridObj.rowDropSettings.targetID).toBe(undefined);
+            const dragRowElem: Element = gridObj.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            gridObj.rowDropSettings.targetID = 'coverage';
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            gridObj.selectionSettings.type = 'Single';
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            dragRowElem.classList.add('e-rowcell');
+            (gridObj.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropRowElem: Element = gridObj.getContentTable().querySelector('tr');
+            dropRowElem.classList.add('e-rowcell');
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            const dropClone: HTMLElement = gridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+        });
+
+        it('for coverage drag and drop row action', () => {
+            gridObj.rowDropSettings.targetID = undefined;
+            const dragRowElem: Element = gridObj.getRowByIndex(5).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj.getRowByIndex(0);
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.children[2].getBoundingClientRect();
+            (gridObj.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj.rowDragAndDropModule as any).drag({
+                target: dropRowElem.children[2],
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem.children[2] }
+            });
+            (gridObj.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem.children[2],
+                element: gridObj.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem.children[2] }
+            });
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;
             rowDrop = null;
         });
     });
+
+    describe('Code Coverage - Grouped Row Reorder functionalities without group caption', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 5),
+                    allowRowDragAndDrop: true,
+                    allowGrouping: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    groupSettings: { columns: ['CustomerID']},
+                    height: 'auto',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+
+        it('for coverage drag and drop row action', () => {
+            expect(gridObj.rowDropSettings.targetID).toBe(undefined);
+            const dragRowElem: Element = gridObj.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj.getRowByIndex(4);
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            (gridObj.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem.children[2],
+                element: gridObj.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem.children[2] }
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - drag and drop selected rows within grid with data', () => {
+        let gridObj1: Grid;
+        beforeAll((done: Function) => {
+            gridObj1 = createGrid(
+                {
+                    dataSource: data,
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+
+        it('coverage improvement single grid with data drag and drop - 1', () => {
+            expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
+            const dragRowElem: Element = gridObj1.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj1.getRowByIndex(1).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            gridObj1.selectRow(2);
+            dragRowElem.classList.add('e-rowcell');
+            (gridObj1.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj1.rowDragAndDropModule as any).helper({
+                target: gridObj1.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj1.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj1.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+        });
+
+        it('coverage improvement single grid with data drag and drop - 2', () => {
+            expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
+            const dragRowElem: Element = gridObj1.getRowByIndex(11).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            let dropRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            let dropClient: any = dropRowElem.getBoundingClientRect();
+            gridObj1.selectRow(11);
+            dragRowElem.classList.add('e-rowcell');
+            (gridObj1.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj1.rowDragAndDropModule as any).helper({
+                target: gridObj1.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            let dropClone: HTMLElement = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj1.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj1.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+
+            // for coverage
+                
+            dropRowElem = gridObj1.getRowByIndex(0);
+            dropClient = dropRowElem.getBoundingClientRect();
+            (gridObj1.rowDragAndDropModule as any).helper({
+                target: gridObj1.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            dropClone = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj1.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            gridObj1.rowDropSettings.targetID = gridObj1.element.id;
+            dropRowElem.children[0].classList.add('e-content');
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: dropRowElem.children[2],
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            gridObj1.rowDropSettings.targetID = undefined;
+            dropRowElem.children[0].classList.remove('e-content');
+        });
+
+        it('coverage improvement single grid with data drag and drop - 3', () => {
+            expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
+            const dragRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element =
+            gridObj1.getRowByIndex(11).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            gridObj1.selectRow(0);
+            dragRowElem.classList.add('e-rowcell');
+            (gridObj1.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj1.rowDragAndDropModule as any).helper({
+                target: gridObj1.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            let dropClone: HTMLElement = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj1.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj1.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+
+            // for coverage
+            gridObj1.rowDropSettings.targetID = undefined;
+            gridObj1.selectionSettings.type = 'Multiple';
+            gridObj1.selectRows([0, 1]);
+            // gridObj1.rowDragAndDropModule.dragTarget = dragRowElem;
+            dropClone = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            dropClone.querySelector('td').classList.add('e-selectionbackground');
+            document.getElementById('captiontemplate').querySelector('div').classList.add('e-dlg-overlay');
+            (gridObj1.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj1.getContentTable(),
+                helper: dropClone,
+                event: { clientX: 10, clientY: 10, target: undefined }
+            });
+            document.getElementById('captiontemplate').querySelector('div').classList.remove('e-dlg-overlay');
+            (gridObj1.rowDragAndDropModule as any).helper({
+                target: gridObj1.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            gridObj1.rowDropSettings.targetID = gridObj1.element.id;
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj1);
+            gridObj1 = null;
+        });
+    });
+
+    describe('Code Coverage - drag and drop selected rows outside of grid without data', () => {
+        let gridObj1: Grid;
+        let gridObj2: Grid;
+        beforeAll((done: Function) => {
+            gridObj1 = createGrid(
+                {
+                    dataSource: data,
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    width: '49%',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+        beforeAll((done: Function) => {
+            gridObj2 = createGrid(
+                {
+                    dataSource: [],
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    width: '49%',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+
+        it('coverage improvement 2nd grid empty data', () => {
+            gridObj1.element.style.display = 'inline-block';
+            gridObj2.element.style.display = 'inline-block';
+            expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
+            expect((gridObj2.dataSource as Object[]).length).toBe(0);
+            gridObj1.rowDropSettings.targetID = gridObj2.element.id;
+            const dragRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj2.getContentTable().querySelector('tr');
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            gridObj1.selectRow(0);
+            dragRowElem.classList.add('e-rowcell');
+            (gridObj1.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj1.rowDragAndDropModule as any).helper({
+                target: gridObj1.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj1.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj2.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+
+            // for coverage reorderrow(), dragstart(), drag() and dragStop()
+            (gridObj1.rowDragAndDropModule as any).reorderRow();
+            (gridObj1.rowDragAndDropModule as any).rowData = {0:{}};
+            (gridObj1.rowDragAndDropModule as any).startedRow.cells[0].classList.remove('e-selectionbackground');
+            (gridObj1.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            gridObj1.rowDropSettings.targetID = gridObj1.element.id;
+            gridObj1.selectRows([0, 1]);
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: undefined,
+                event: { clientX: 1, clientY: 1, target: undefined }
+            });
+            dropClone.classList.add('e-dlg-overlay');
+            dropRowElem.classList.add('e-dlg-overlay');
+            (gridObj1.rowDragAndDropModule as any).dragStartData = {0:{}};
+            gridObj1.selectRows([0, 1]);
+            gridObj1.rowDropSettings.targetID = undefined;
+            (gridObj1.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj2.getContentTable(),
+                helper: dropClone,
+                event: { clientX: 1, clientY: 1, target: dropRowElem }
+            });
+
+            // for coverage refreshRowTarget() and getScrollWidth()
+
+            (gridObj1.rowDragAndDropModule as any).getScrollWidth();
+            const args: RowDropEventArgs = { fromIndex: 0, dropIndex: 0, target: dragRowElem.children[0] };
+            (gridObj1.rowDragAndDropModule as any).refreshRowTarget(args);
+            gridObj1.element.style.width = '400px';
+            (gridObj1.rowDragAndDropModule as any).getScrollWidth();
+
+        });
+
+        afterAll(() => {
+            destroy(gridObj1);
+            gridObj1 = null;
+            destroy(gridObj2);
+            gridObj2 = null;
+        });
+    });
+
+    describe('Code Coverage - multiple selected rows drag and drop outside of grid without data', () => {
+        let gridObj1: Grid;
+        let gridObj2: Grid;
+        beforeAll((done: Function) => {
+            gridObj1 = createGrid(
+                {
+                    dataSource: data,
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    width: '49%',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+        beforeAll((done: Function) => {
+            gridObj2 = createGrid(
+                {
+                    dataSource: [],
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    width: '49%',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+
+        it('coverage improvement 2nd grid empty data', () => {
+            gridObj1.element.style.display = 'inline-block';
+            gridObj2.element.style.display = 'inline-block';
+            expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
+            expect((gridObj2.dataSource as Object[]).length).toBe(0);
+            gridObj1.rowDropSettings.targetID = gridObj2.element.id;
+            const dragRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj2.getContentTable().querySelector('tr');
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            gridObj1.selectRows([0, 1]);
+            dragRowElem.classList.add('e-rowcell');
+            (gridObj1.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj1.rowDragAndDropModule as any).helper({
+                target: gridObj1.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj1.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj2.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj1);
+            gridObj1 = null;
+            destroy(gridObj2);
+            gridObj2 = null;
+        });
+    });
+
+    describe('Code Coverage - drag and drop selected rows outside of grid with data', () => {
+        let gridObj1: Grid;
+        let gridObj2: Grid;
+        beforeAll((done: Function) => {
+            gridObj1 = createGrid(
+                {
+                    dataSource: data,
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    width: '49%',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+        beforeAll((done: Function) => {
+            gridObj2 = createGrid(
+                {
+                    dataSource: data.slice(9, 11),
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    width: '49%',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+
+        it('coverage improvement 2nd grid with data', () => {
+            gridObj1.element.style.display = 'inline-block';
+            gridObj2.element.style.display = 'inline-block';
+            expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
+            expect((gridObj2.dataSource as Object[]).length).toBe(2);
+            gridObj1.rowDropSettings.targetID = gridObj2.element.id;
+            const dragRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj2.getRowByIndex(0);
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            gridObj1.selectRow(0);
+            dragRowElem.classList.add('e-rowcell');
+            (gridObj1.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj1.rowDragAndDropModule as any).helper({
+                target: gridObj1.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj1.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj2.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj1);
+            gridObj1 = null;
+            destroy(gridObj2);
+            gridObj2 = null;
+        });
+    });
+
+    describe('Code Coverage - Hierarchy row drag and drop testing', () => {
+        let gridObj: Grid;
+        let childGrid: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    allowFiltering: true,
+                    allowTextWrap: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 'auto',
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                        { field: 'Title', headerText: 'Title', textAlign: 'Left', width: 120 },
+                        { field: 'City', headerText: 'City', textAlign: 'Left', width: 100 },
+                        { field: 'Country', headerText: 'Country', textAlign: 'Left', width: 100 }
+                    ],
+                    childGrid: {
+                        dataSource: filterData,
+                        queryString: 'EmployeeID',
+                        allowRowDragAndDrop: true,
+                        allowPaging: true,
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                            { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                            { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                            { field: 'Freight', headerText: 'Freight', textAlign: 'Left', width: 120 },
+                            { field: 'ShipName', headerText: 'Ship Name', textAlign: 'Left', width: 100 }
+                        ]
+                    },
+                }, done);
+        });
+
+
+        it('row expand testing - 1', (done: Function) => {
+            let detailDataBound = (e: any) => {
+                childGrid = e.childGrid;
+                gridObj.detailDataBound = null;
+                done();
+            }
+            gridObj.detailDataBound = detailDataBound;
+            (gridObj.getDataRows()[1].querySelector('.e-detailrowcollapse') as HTMLElement).click();
+        });
+
+        it('coverage child grid row drag and drop', () => {
+            expect(childGrid.rowDropSettings.targetID).toBe(undefined);
+            const dragRowElem: Element = childGrid.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = childGrid.getRowByIndex(1).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            childGrid.selectRow(2);
+            dragRowElem.classList.add('e-rowcell');
+            (childGrid.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (childGrid.rowDragAndDropModule as any).helper({
+                target: childGrid.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = childGrid.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (childGrid.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem },
+                dragElement: dragRowElem
+            });
+            childGrid.rowDropSettings.targetID = childGrid.element.id;
+            (childGrid.rowDragAndDropModule as any).drag({
+                target: childGrid.getRowByIndex(0),
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (childGrid.rowDragAndDropModule as any).drag({
+                target: dragRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (childGrid.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (childGrid.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: childGrid.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+        });
+
+        it('for coverage - 1 - coverage child grid focus', () => {
+            const header = childGrid.getHeaderContent().querySelector('.e-headercell');
+            childGrid.enableHeaderFocus = true;
+            (childGrid.focusModule as any).onFocus({target: header});
+            (childGrid.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function () { }, target: header });
+            (childGrid.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function() {}, target: childGrid.element } as any);
+        });
+
+        it('for coverage - 2 - coverage pager focus', () => {
+            const pagerItems = (gridObj.pagerModule as any).element.querySelectorAll('.e-numericitem');
+            gridObj.pagerModule.pagerObj.element.tabIndex = 0;
+            pagerItems[0].click();
+            (gridObj.focusModule as any).onFocus({target: pagerItems[0]});
+            (gridObj.focusModule as any).onKeyPress({ action: 'tab', preventDefault: function () { }, target: pagerItems[0], keyCode: 9 });
+            (gridObj.focusModule as any).onKeyPress({ action: 'tab', preventDefault: function () { }, target: pagerItems[1], keyCode: 9 });
+            (gridObj.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function () { }, target: pagerItems[1], keyCode: 9, shiftKey: true });
+            (gridObj.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function () { }, target: pagerItems[0], keyCode: 9, shiftKey: true });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            destroy(childGrid);
+            childGrid = null;
+        });
+    });
+
+    describe('Code Coverage - freeze row drag and drop', () => {
+        let gridObj: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    frozenRows: 2,
+                    frozenColumns: 2,
+                    allowSorting: true,
+                    allowRowDragAndDrop: true,
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' }]
+                }, done);
+        });
+
+        it('for coverage set target id', () => {
+            expect(gridObj.rowDropSettings.targetID).toBe(undefined);
+            gridObj.rowDropSettings.targetID = gridObj.element.id;
+        });
+
+        it('for coverage', () => {
+            const dragRowElem: Element = gridObj.getRowByIndex(5).querySelectorAll('.e-rowcell')[1];
+            const dropRowElem: Element = gridObj.getRowByIndex(3).querySelectorAll('.e-rowcell')[1];
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            gridObj.selectRow(5);
+            (gridObj.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem },
+                dragElement: dragRowElem
+            });
+            (gridObj.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            dropClone.querySelector('tr').setAttribute('single-dragrow', 'true');
+            (gridObj.rowDragAndDropModule as any).columnDrop({ target: dropRowElem, droppedElement: dropClone });
+            dropClone.querySelector('tr').removeAttribute('single-dragrow');
+            (gridObj.rowDragAndDropModule as any).columnDrop({ target: dropRowElem, droppedElement: dropClone });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('Execute methods', () => {
+        let gridObj: Grid;
+        window['browserDetails'].isIE = false;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: JSON.parse(JSON.stringify(<any>data)),
+                    allowRowDragAndDrop: true,
+                    rowDropSettings: { targetID: undefined },
+                    allowSelection: true,
+                    selectionSettings: { type: 'Multiple', mode: 'Row' },
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                    allowSorting: true,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 6, currentPage: 1 },
+                }, done);
+        });
+
+        it('hide the rowdd cell', (done) => {
+            gridObj.disableRowDD(true);
+            expect(1).toBe(1);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    })
 });

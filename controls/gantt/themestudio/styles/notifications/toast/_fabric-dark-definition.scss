@@ -1,0 +1,92 @@
+//Mouse Mode
+$toast-icon-nrml-height: 24px !default;
+$toast-icon-nrml-width: 24px !default;
+$toast-icon-nrml-size: 16px !default;
+$toast-icon-nrml-right-margin: 8px !default;
+$toast-close-icon-nrml-height: 24px !default;
+$toast-close-icon-nrml-width: 24px !default;
+$toast-close-icon-nrml-size: 14px !default;
+$toast-position-nrml-distance: 10px !default;
+$multitoast-nrml-gap-distance: 10px !default;
+$toast-nrml-min-height: 48px !default;
+$toast-nrml-padding: 16px !default;
+$toast-action-btn-nrml-padding: 8px 0 0 0 !default;
+$toast-action-btn-nrml-margin: 10px !default;
+$toast-progressbar-nrml-height: 2px !default;
+$toast-content-nrml-padding: 8px 0 8px 0 !default;
+$toast-nrml-border-radious: 0 !default;
+$toast-font-nrml-size: 14px !default;
+$toast-title-font-nrml-size: 14px !default;
+
+//Touch Mode
+$toast-icon-bgr-height: 24px !default;
+$toast-icon-bgr-width: 24px !default;
+$toast-icon-bgr-size: 16px !default;
+$toast-icon-bgr-right-margin: 8px !default;
+$toast-close-icon-bgr-height: 24px !default;
+$toast-close-icon-bgr-width: 24px !default;
+$toast-close-icon-bgr-size: 16px !default;
+$toast-position-bgr-distance: 10px !default;
+$multitoast-bgr-gap-distance: 10px !default;
+$toast-bgr-min-height: 48px !default;
+$toast-bgr-padding: 16px !default;
+$toast-action-btn-bgr-padding: 8px 0 0 0 !default;
+$toast-action-btn-bgr-margin: 10px !default;
+$toast-progressbar-bgr-height: 2px !default;
+$toast-content-bgr-padding: 8px 0 8px 0 !default;
+$toast-bgr-border-radious: 0 !default;
+$toast-font-bgr-size: 14px !default;
+$toast-title-font-weight: bold !default;
+
+//theme variables
+$toast-border: none !default;
+$toast-box-shadow: 0 2px 5px 0 rgba($shadow, .26) !default;
+$toast-hover-box-shadow: 0 3px 6px 0 rgba($shadow, .26) !default;
+$toast-progress-color: $theme-primary !default;
+$toast-bg-color: $neutral-lighter-alt !default;
+$toast-hover-bg-color: $neutral-lighter !default;
+$toast-active-bg-color: $neutral-lighter !default;
+$toast-font-color: $neutral-light-font !default;
+$toast-icon-color: $neutral-light-font !default;
+$toast-close-icon-color: $neutral-light-font !default;
+$toast-title-color: $neutral-light-font !default;
+$toast-content-color: $neutral-light-font !default;
+
+// Toast Types theme definitions
+$toast-success-bg-color: $success-bg !default;
+$toast-success-color: $message-font !default;
+$toast-success-title-color: $message-font !default;
+$toast-success-icon-color: $message-font !default;
+$toast-success-content-color: $message-font !default;
+$toast-success-hover-bg-color: #347d49 !default;
+$toast-success-hover-color: $toast-success-color !default;
+$toast-success-hover-box-shadow: 0 3px 6px 0 rgba($neutral-black, .26) !default;
+
+$toast-info-bg-color: $info-bg !default;
+$toast-info-color: $message-font !default;
+$toast-info-title-color: $message-font !default;
+$toast-info-icon-color: $message-font !default;
+$toast-info-content-color: $message-font !default;
+$toast-info-hover-bg-color: #1d74c2 !default;
+$toast-info-hover-color: $toast-info-color !default;
+$toast-info-hover-box-shadow: 0 3px 6px 0 rgba($neutral-black, .26) !default;
+
+$toast-warning-bg-color: $alert-bg !default;
+$toast-warning-color: $message-font !default;
+$toast-warning-title-color: $message-font !default;
+$toast-warning-icon-color: $message-font !default;
+$toast-warning-content-color: $message-font !default;
+$toast-warning-hover-bg-color: #b56f00 !default;
+$toast-warning-hover-color: $toast-warning-color !default;
+$toast-warning-hover-box-shadow: 0 3px 6px 0 rgba($neutral-black, .26) !default;
+
+$toast-danger-bg-color: $error-bg !default;
+$toast-danger-color: $message-font !default;
+$toast-danger-title-color: $message-font !default;
+$toast-danger-icon-color: $message-font !default;
+$toast-danger-content-color: $message-font !default;
+$toast-danger-hover-bg-color: #c42818 !default;
+$toast-danger-hover-color: $toast-danger-color !default;
+$toast-danger-hover-box-shadow: 0 3px 6px 0 rgba($neutral-black, .26) !default;
+
+//enddefault

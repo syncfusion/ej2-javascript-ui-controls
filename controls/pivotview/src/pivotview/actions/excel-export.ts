@@ -18,8 +18,6 @@ export class ExcelExport {
     private engine: PivotEngine | OlapEngine;
     private rows: ExcelRow[];
     private actualrCnt: number = 0;
-    private blobData: Promise<{ blobData: Blob; }>;
-    private book: Workbook;
 
     /**
      * Constructor for the PivotGrid Excel Export module.
@@ -269,19 +267,23 @@ export class ExcelExport {
             }
             workSheets.push({ columns: columns, rows: this.rows });
         }
-        this.book = new Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv', undefined, this.parent.currencyCode);
+        const book: Workbook = new Workbook(
+            { worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv', undefined, this.parent.currencyCode
+        );
         const fileExtension: string = fileName.split('.').pop();
+        let blobData: Promise<{ blobData: Blob; }>;
         if (!isBlob) {
-            this.book.save(fileExtension === 'xlsx' || fileExtension === 'csv' ?
-                fileName : (fileName + (type === 'Excel' ? '.xlsx' : '.csv')));
+            book.save(fileExtension === 'xlsx' || fileExtension === 'csv' ? fileName : (
+                fileName + (type === 'Excel' ? '.xlsx' : '.csv')
+            ));
         }
         else {
-            this.blobData = this.book.saveAsBlob(fileExtension === 'xlsx' || type === 'Excel' ?
+            blobData = book.saveAsBlob(fileExtension === 'xlsx' || type === 'Excel' ?
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'text/csv');
         }
         const exportCompleteEventArgs: ExportCompleteEventArgs = {
             type: type,
-            promise: isBlob ? this.blobData : null
+            promise: isBlob ? blobData : null
         };
         this.parent.trigger(events.exportComplete, exportCompleteEventArgs);
     }
@@ -296,12 +298,6 @@ export class ExcelExport {
     public destroy(): void {
         if (this.engine) {
             this.engine = null;
-        }
-        if (this.blobData) {
-            this.blobData = null;
-        }
-        if (this.book) {
-            this.book = null;
         }
     }
 }

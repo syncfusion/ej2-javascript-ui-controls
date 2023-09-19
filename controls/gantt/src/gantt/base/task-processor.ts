@@ -13,9 +13,9 @@ import { CObject } from './enum';
  */
 export class TaskProcessor extends DateProcessor {
 
-    private recordIndex: number;
-    private dataArray: Object[];
-    private taskIds: Object[];
+    public recordIndex: number;
+    public dataArray: Object[];
+    public taskIds: Object[];
     private segmentCollection: Object[];
     private hierarchyData: Object[];
 
@@ -80,7 +80,9 @@ export class TaskProcessor extends DateProcessor {
         dataManager.executeQuery(queryManager).then((e: ReturnOption) => {
             this.dataArray = <Object[]>e.result;
             this.processTimeline();
-            this.cloneDataSource();
+            if (this.parent.loadChildOnDemand || (!this.parent.loadChildOnDemand && !(this.parent.taskFields.hasChildMapping))) {
+                this.cloneDataSource();
+            }
             this.parent.renderGantt(isChange);
         }).catch((e: ReturnType) => {
             // Trigger action failure event
@@ -111,7 +113,7 @@ export class TaskProcessor extends DateProcessor {
         }
         this.hierarchyData = this.dataReorder(dataSource, rootData);
     }
-    private cloneDataSource(): void {
+    public cloneDataSource(): void {
         const taskIdMapping: string = this.parent.taskFields.id;
         const parentIdMapping: string = this.parent.taskFields.parentID;
         let hierarchicalData: Object[] = [];
@@ -119,6 +121,9 @@ export class TaskProcessor extends DateProcessor {
             const data: object[] = [];
             for (let i: number = 0; i < this.dataArray.length; i++) {
                 const tempData: Object = this.dataArray[i as number];
+                if (tempData['parentItem']) {
+                    delete tempData['parentItem'];
+                }
                 data.push(extend({}, {}, tempData, true));
                 if (!isNullOrUndefined(tempData[taskIdMapping as string])) {
                     this.taskIds.push(tempData[taskIdMapping as string].toString());
@@ -128,7 +133,12 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setProperties({ taskFields: { child: 'Children' } }, true)
             }
             this.constructDataSource(data);
-            hierarchicalData = this.hierarchyData;
+            if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping && this.hierarchyData.length === 0) {
+                hierarchicalData = this.dataArray;
+            }
+            else {
+                hierarchicalData = this.hierarchyData;
+            }
         } else {
             hierarchicalData = this.dataArray;
         }
@@ -338,7 +348,12 @@ export class TaskProcessor extends DateProcessor {
         if (!isNullOrUndefined(data[taskSettings.id])) {
             id = data[taskSettings.id];
             name = data[taskSettings.name];
-            this.addTaskData(ganttData, data, isLoad);
+            if (!this.parent.loadChildOnDemand &&  taskSettings.hasChildMapping && data['taskData']) {
+                ganttData['taskData'] = data['taskData'];
+            }
+            else {
+                this.addTaskData(ganttData, data, isLoad);
+            }
         } else if (!isNullOrUndefined(data[resourceFields.id])) {
             id = data[resourceFields.id];
             name = data[resourceFields.name];
@@ -375,6 +390,9 @@ export class TaskProcessor extends DateProcessor {
         this.parent.setRecordValue('notes', notes, ganttProperties, true);
         this.parent.setRecordValue('cssClass', data[taskSettings.cssClass], ganttProperties, true);
         this.parent.setRecordValue('parentItem', this.getCloneParent(parentItem), ganttData);
+        if (!this.parent.loadChildOnDemand && taskSettings.hasChildMapping && this.parent.currentViewData.length > 0) {
+            this.parent.setRecordValue('parentItem', ganttData.parentItem, this.parent.currentViewData[this.taskIds.indexOf(data[taskSettings.id].toString())]);
+        }
         const parentUniqId: string = ganttData.parentItem ? ganttData.parentItem.uniqueID : null;
         this.parent.setRecordValue('parentUniqueID', parentUniqId, ganttData);
         if (this.parent.viewType === 'ResourceView' && !isNullOrUndefined(taskSettings.parentID)
@@ -382,7 +400,12 @@ export class TaskProcessor extends DateProcessor {
             this.parent.setRecordValue('parentId', ganttData.parentItem.taskId, ganttProperties, true);
         }
         this.parent.setRecordValue('level', level, ganttData);
-        this.parent.setRecordValue('uniqueID', getUid(this.parent.element.id + '_data_'), ganttData);
+        if (!this.parent.loadChildOnDemand && taskSettings.hasChildMapping && data['uniqueID']) {
+            this.parent.setRecordValue('uniqueID', data['uniqueID'], ganttData);
+        }
+        else {
+            this.parent.setRecordValue('uniqueID', getUid(this.parent.element.id + '_data_'), ganttData);
+        }
         this.parent.setRecordValue('uniqueID', ganttData.uniqueID, ganttProperties, true);
         this.parent.setRecordValue('childRecords', [], ganttData);
         if (this.parent.dataSource instanceof Object && isCountRequired(this.parent) &&
@@ -396,7 +419,11 @@ export class TaskProcessor extends DateProcessor {
                this.resetDependency(ganttData);
             }
         } else {
-            this.parent.setRecordValue('hasChildRecords', false, ganttData);
+            if (!this.parent.loadChildOnDemand && taskSettings.hasChildMapping && ganttData.taskData[taskSettings.hasChildMapping]) {
+                this.parent.setRecordValue('hasChildRecords', true, ganttData);
+            } else {
+                this.parent.setRecordValue('hasChildRecords', false, ganttData);
+            }
         }
         if (ganttData.hasChildRecords) {
             this.parent.setRecordValue('autoStartDate', ganttData.ganttProperties.startDate, ganttProperties);
@@ -1017,7 +1044,12 @@ export class TaskProcessor extends DateProcessor {
             }
         } else {
             this.updateDurationValue(duration, ganttProperties);
-            this.calculateEndDate(ganttData);
+            if (this.parent.autoCalculateDateScheduling) {
+                this.calculateEndDate(ganttData);
+            }
+            else {
+                this.parent.setRecordValue('endDate', endDate, ganttProperties, true);
+            }
         }
     }
     /**
@@ -1768,7 +1800,7 @@ export class TaskProcessor extends DateProcessor {
      */
     public updateDurationValue(duration: string, ganttProperties: ITaskData): void {
         const tempDuration: Object = this.getDurationValue(duration);
-        if (!isNaN(getValue('duration', tempDuration))) {
+        if (!isNaN(getValue('duration', tempDuration)) && !(this.parent.viewType==="ResourceView" && tempDuration["duration"] === 0)) {
             this.parent.setRecordValue('duration', getValue('duration', tempDuration), ganttProperties, true);
         }
         if (!isNullOrUndefined(getValue('durationUnit', tempDuration))) {
@@ -2143,7 +2175,14 @@ export class TaskProcessor extends DateProcessor {
      * @private
      */
     public reUpdateGanttDataPosition(): void {
-        const flatData: IGanttData[] = this.parent.flatData;
+        let flatData: IGanttData[];
+        if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps && 
+            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) {
+              flatData = this.parent.pdfExportModule.helper.beforeSinglePageExport['cloneFlatData'];
+        }
+        else {
+            flatData = this.parent.flatData;
+        }
         const length: number = flatData.length;
         for (let i: number = 0; i < length; i++) {
             const data: IGanttData = flatData[i as number];
@@ -2296,7 +2335,12 @@ export class TaskProcessor extends DateProcessor {
                 let milestoneCount: number = 0; let totalProgress: number = 0; let childCompletedWorks: number = 0;
                 let childData: IGanttData;
                 for (let count: number = 0; count < childLength; count++) {
-                    childData = childRecords[count as number] as IGanttData;
+                    if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+                        childData = this.parent.currentViewData.filter(item => item.ganttProperties.taskId === childRecords[count as number][this.parent.taskFields.id])[0];
+                    }
+                    else {
+                        childData = childRecords[count as number] as IGanttData;
+                    }
                     if (this.parent.isOnDelete && childData.isDelete) {
                         if (childLength === 1 && this.parent.viewType === 'ProjectView') {
                             deleteUpdate = true;

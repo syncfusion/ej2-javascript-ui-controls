@@ -60,65 +60,76 @@ export class BookmarkView {
         this.bookmarkRequestHandler = new AjaxHandler(this.pdfViewer);
         this.bookmarkRequestHandler.url = proxy.pdfViewer.serviceUrl + '/Bookmarks';
         this.bookmarkRequestHandler.responseType = 'json';
-        this.bookmarkRequestHandler.send(jsonObject);
-        // eslint-disable-next-line
-        this.bookmarkRequestHandler.onSuccess = function (result: any) {
-            if (proxy.pdfViewerBase.navigationPane) {
-                proxy.pdfViewerBase.navigationPane.disableBookmarkButton();
-            }
+        if(this.pdfViewerBase.clientSideRendering){
+            let data :any = this.pdfViewer.pdfRendererModule.getBookmarks(jsonObject);
+            this.renderBookmarksOnSuccess(data, proxy);
+        }
+        else{
+            this.bookmarkRequestHandler.send(jsonObject);
             // eslint-disable-next-line
-            let data: any = result.data;
-            let redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
-            if (!redirect) {
-                if (data) {
-                    if (typeof data !== 'object') {
-                        try {
-                            data = JSON.parse(data);
-                        } catch (error) {
-                            proxy.pdfViewerBase.onControlError(500, data, 'Bookmarks');
-                            data = null;
-                        }
-                    }
-                    if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
-                        proxy.pdfViewer.fireAjaxRequestSuccess('Bookmarks', data);
-                        proxy.bookmarks = { bookMark: data.Bookmarks };
-                        proxy.bookmarkStyles = data.Bookmarkstyles;
-                        proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
-                        if (isBlazor()) {
-                            // eslint-disable-next-line
-                            let bookmarkCollection: any = { bookmarks: proxy.bookmarks, bookmarksDestination: proxy.bookmarksDestination };
-                            if (proxy.pdfViewer && proxy.pdfViewer._dotnetInstance) {
-                                proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', bookmarkCollection);
-                            }
-                        }
-                    }
-                }
+            this.bookmarkRequestHandler.onSuccess = function (result: any) {
                 if (proxy.pdfViewerBase.navigationPane) {
-                    if (proxy.bookmarks == null) {
-                        proxy.pdfViewerBase.navigationPane.disableBookmarkButton();
-                        if (isBlazor() && proxy.pdfViewer._dotnetInstance) {
-                            proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', null);
-                        }
-                    } else {
-                        proxy.pdfViewerBase.navigationPane.enableBookmarkButton();
-                        proxy.isBookmarkViewDiv = false;
-                        if (proxy.pdfViewer.isBookmarkPanelOpen) {
-                            proxy.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
-                        }
+                    proxy.pdfViewerBase.navigationPane.disableBookmarkButton();
+                }
+                // eslint-disable-next-line
+                let data: any = result.data;
+                let redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
+                if (!redirect) {
+                    proxy.renderBookmarksOnSuccess(data, proxy);
+                }
+            };
+            // eslint-disable-next-line
+            this.bookmarkRequestHandler.onFailure = function (result: any) {
+                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, 'Bookmarks');
+            };
+            // eslint-disable-next-line
+            this.bookmarkRequestHandler.onError = function (result: any) {
+                proxy.pdfViewerBase.openNotificationPopup();
+                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, 'Bookmarks');
+            };
+        }
+    }
+
+    private renderBookmarksOnSuccess(data: any, proxy: BookmarkView): void {
+        if (data) {
+            if (typeof data !== 'object') {
+                try {
+                    data = JSON.parse(data);
+                } catch (error) {
+                    proxy.pdfViewerBase.onControlError(500, data, 'Bookmarks');
+                    data = null;
+                }
+            }
+            if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                proxy.pdfViewer.fireAjaxRequestSuccess('Bookmarks', data);
+                proxy.bookmarks = { bookMark: data.Bookmarks };
+                proxy.bookmarkStyles = data.Bookmarkstyles;
+                proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
+                if (isBlazor()) {
+                    // eslint-disable-next-line
+                    let bookmarkCollection: any = { bookmarks: proxy.bookmarks, bookmarksDestination: proxy.bookmarksDestination };
+                    if (proxy.pdfViewer && proxy.pdfViewer._dotnetInstance) {
+                        proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', bookmarkCollection);
                     }
                 }
             }
-        };
-        // eslint-disable-next-line
-        this.bookmarkRequestHandler.onFailure = function (result: any) {
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, 'Bookmarks');
-        };
-        // eslint-disable-next-line
-        this.bookmarkRequestHandler.onError = function (result: any) {
-            proxy.pdfViewerBase.openNotificationPopup();
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, 'Bookmarks');
-        };
+        }
+        if (proxy.pdfViewerBase.navigationPane) {
+            if (proxy.bookmarks == null) {
+                proxy.pdfViewerBase.navigationPane.disableBookmarkButton();
+                if (isBlazor() && proxy.pdfViewer._dotnetInstance) {
+                    proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', null);
+                }
+            } else {
+                proxy.pdfViewerBase.navigationPane.enableBookmarkButton();
+                proxy.isBookmarkViewDiv = false;
+                if (proxy.pdfViewer.isBookmarkPanelOpen) {
+                    proxy.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+                }
+            }
+        }
     }
+
     /**
      * @private
      */

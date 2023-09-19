@@ -68,3 +68,5 @@ export const defaultFont: string = 'Times New Roman';
 export const internalAutoResize: string = 'internalAutoResize';
 /** @hidden */
 export const beforeAutoResize: string = 'beforeAutoResize';
+/** @hidden */
+export const trackChanges: string = 'trackChanges';

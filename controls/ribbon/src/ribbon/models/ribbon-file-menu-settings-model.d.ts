@@ -46,6 +46,9 @@ export interface FileMenuSettingsModel {
      * Specifies the template for file menu item.
      *
      * @default ''
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
      * @aspType string
      */
     itemTemplate?: string | Function;
@@ -54,6 +57,9 @@ export interface FileMenuSettingsModel {
      * Specifies the custom content for the file menu popup.
      *
      * @default ''
+     * @angularType string | HTMLElement
+     * @reactType string | HTMLElement | JSX.Element
+     * @vueType string | HTMLElement
      * @aspType string
      */
     popupTemplate?: string | HTMLElement;

@@ -7,6 +7,7 @@ import {
     RectangleF, PdfLayoutParams, RowLayoutResult, PdfLayoutType, PdfLayoutBreakType
 } from '@syncfusion/ej2-pdf-export';
 import { PdfDocument, PdfSection, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
+import { pointToPixel } from '../../base/utils';
 
 /**
  *
@@ -75,7 +76,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         let startColumn: number = 0;
         let endColumn: number = 0;
         let cellWidths: number = 0;
-        const availableWidth: number = this.currentGraphics.clientSize.width - this.currentBounds.x;
+        const availableWidth: number = pointToPixel(this.currentGraphics.clientSize.width) - this.currentBounds.x;
         for (let i: number = 0; i < this.treegrid.columns.count; i++) {
             cellWidths += this.treegrid.columns.getColumn(i).width;
             if (cellWidths >= availableWidth) {
@@ -302,6 +303,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                 let size: SizeF = new SizeF(column.width, height);
                 if (cell.columnSpan > 1) {
                     size = new SizeF(cell.width, height);
+                    i += cell.columnSpan;
                 }
                 if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
                     cell.style.format = column.format;

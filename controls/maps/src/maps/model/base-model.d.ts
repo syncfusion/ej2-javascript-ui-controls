@@ -1535,6 +1535,13 @@ export interface DataLabelSettingsModel {
      */
     template?: string | Function;
 
+    /**
+     * Gets and sets the duration time for animating the data label.
+     *
+     * @default 0
+     */
+    animationDuration?: number;
+
 }
 
 /**

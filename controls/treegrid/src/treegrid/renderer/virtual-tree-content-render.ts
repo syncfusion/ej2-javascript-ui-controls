@@ -39,10 +39,12 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     /** @hidden */
     public isDataSourceChanged: boolean = false;
     public getRowByIndex(index: number) : Element {
-        return this.parent.getDataRows().filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 10) === index)[0];
-    }
-    public getMovableVirtualRowByIndex(index: number): Element {
-        return this.getRowCollection(index, true) as Element;
+        if (this.parent.enableVirtualization && this.parent.isFrozenGrid()){
+            return this.getRowCollection(index, true) as Element;
+        }
+        else{
+            return this.parent.getDataRows().filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 10) === index)[0];
+        }
     }
 
     public getFrozenRightVirtualRowByIndex(index: number): Element {
@@ -51,8 +53,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
 
     public getRowCollection(index: number, isMovable: boolean, isRowObject?: boolean, isFrozenRight?: boolean): Element | Object {
         const startIdx: number = parseInt(this.parent.getRows()[0].getAttribute(literals.dataRowIndex), 10);
-        let rowCollection: Element[] = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
-        rowCollection = isFrozenRight ? this.parent.getFrozenRightDataRows() : rowCollection;
+        const rowCollection: Element[] = this.parent.getDataRows();
         const collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         let selectedRow: Element | Object = collection[index - startIdx];
         if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
@@ -104,8 +105,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.endIndex = this.parent.pageSettings.pageSize - 1;
         }
         if ((this.endIndex - this.startIndex !== this.parent.pageSettings.pageSize) &&
-            (this.totalRecords > this.parent.pageSettings.pageSize) &&
-            (this.endIndex === this.totalRecords)) {
+            (this.totalRecords > this.parent.pageSettings.pageSize)
+            && (this.endIndex === this.totalRecords)){
             args.startIndex = this.endIndex - this.parent.pageSettings.pageSize;
             args.endIndex = this.endIndex;
         }
@@ -516,27 +517,15 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         }
     }
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs) : void {
-        const isFrozen: boolean = this.parent.isFrozenGrid();
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
         && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent) || this.parent.isFrozenGrid()) {
             if (getValue('isExpandCollapse', e)) {
                 this.isRemoteExpand = true;
             }
-            if (isFrozen && ((isNullOrUndefined(this.requestType) && getValue('requestTypes', this).indexOf('isFrozen') === -1) ||
-             (this.parent.enableVirtualMaskRow && this.requestType === 'virtualscroll'))) {
-                getValue('requestTypes', this).push('isFrozen');
-                this.requestType = 'isFrozen';
-            }
             super.appendContent(target, newChild, e);
             if (getValue('requestTypes', this).indexOf('isFrozen') !== -1){
                 getValue('requestTypes', this).splice(getValue('requestTypes', this).indexOf('isFrozen'), 1);
                 this.requestType = this.requestType === 'isFrozen' ? undefined : this.requestType;
-            }
-            if (isFrozen && (!this.isExpandCollapse || this.translateY === 0)) {
-                this.translateY = this.translateY < 0 ? 0 : this.translateY;
-                getValue('virtualEle', this).adjustTable(0, this.translateY);
-            } else {
-                this.isExpandCollapse = false;
             }
         } else {
             const info: VirtualInfo = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' &&

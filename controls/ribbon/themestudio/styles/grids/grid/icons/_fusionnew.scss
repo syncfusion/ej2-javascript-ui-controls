@@ -1,0 +1,246 @@
+@include export-module('grid-fusionnew-icons') {
+
+  /*! component icons */
+
+  .e-icon-check::before {
+    content: '\e774';
+  }
+
+  #{&}.e-grid,
+  .e-grid-menu {
+
+    .e-group-animate .e-drag.e-icon-drag::before {
+      content: '\e726';
+    }
+
+    .e-group-animate .e-nextgroup.e-icon-next::before {
+      content: '\e748';
+    }
+
+    .e-icon-ascending::before {
+      content: '\e7df';
+    }
+
+    .e-icon-descending::before {
+      content: '\e7d8';
+    }
+
+    .e-icon-hide::before {
+      content: '\e7e7';
+    }
+
+    .e-ungroupbutton.e-icon-hide::before {
+      content: '\e7e7';
+    }
+
+    .e-icon-rowselect::before {
+      content: '\e7d4';
+    }
+
+    .e-icon-sortdirect::before {
+      content: '\e824';
+    }
+
+    .e-icon-gdownarrow::before {
+      content: '\e729';
+    }
+
+    .e-icon-grightarrow::before {
+      content: '\e748';
+    }
+
+    .e-icon-filter::before,
+    .e-icon-filter.e-filtered::before {
+      content: '\e7f7';
+    }
+
+    .e-resfilter-icon::before {
+      content: '\e7f7';
+    }
+
+    .e-ressort-icon::before {
+      content: '\e823';
+    }
+
+    .e-excl-filter-icon::before {
+      content: '\e7f7';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e72c';
+    }
+
+    &.e-rtl {
+      .e-icon-grightarrow::before {
+        content: '\e765';
+      }
+    }
+
+    .e-icon-group::before {
+      content: '\e724';
+    }
+
+    .e-icon-ungroup::before {
+      content: '\e724';
+    }
+
+    .e-icon-reorderuparrow::before {
+      content: '\e87a';
+    }
+
+    .e-icon-reorderdownarrow::before {
+      content: '\e70d';
+    }
+
+    .e-print::before {
+      content: '\e75d';
+    }
+
+    .e-add::before {
+      content: '\e805';
+    }
+
+    .e-resback-icon::before {
+      content: '\e773';
+    }
+
+    .e-wordexport::before {
+      content: '\e7d0';
+    }
+
+    .e-pdfexport::before {
+      content: '\e700';
+    }
+
+    .e-csvexport::before {
+      content: '\e7ba';
+    }
+
+    .e-excelexport::before {
+      content: '\e7c1';
+    }
+
+    .e-edit::before {
+      content: '\e730';
+    }
+
+    .e-columnmenu::before,
+    .e-columnmenu.e-filtered::before {
+      content: '\e770';
+    }
+
+    .e-delete::before {
+      content: '\e820';
+    }
+
+    .e-cancel::before {
+      content: '\e7e7';
+    }
+
+    .e-copy::before {
+      content: '\e77c';
+    }
+
+    .e-save::before {
+      content: '\e7c8';
+    }
+
+    .e-update::before {
+      content: '\e7c8';
+    }
+
+    .e-search-icon::before {
+      content: '\e754';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e7e7';
+    }
+
+    .e-columnchooserdiv::before {
+      content: '\e7f7';
+    }
+
+    .e-ccsearch-icon::before {
+      content: '\e754';
+    }
+
+    .e-columnchooser::before {
+      content: '\e21e'; // icon not found
+    }
+
+    .e-columnchooser-btn::before {
+      content: '\e70d';
+    }
+
+    .e-cc-icon::before {
+      content: '\e70d';
+    }
+
+    .e-icon-rowdragicon::before {
+      content: '\e726';
+    }
+
+    &.e-rtl {
+      .e-icon-rowdragicon::before {
+        content: '\e726';
+      }
+    }
+
+    .e-ccsearch-icon.e-cc-cancel::before,
+    .e-chkcancel-icon::before {
+      content: '\e7e7';
+    }
+  }
+}
+
+.e-responsive-dialog {
+
+  & .e-resfilterback::before {
+    content: '\e773';
+  }
+
+  &.e-rtl .e-resfilterback::before {
+    content: '\e7f9';
+  }
+
+  & .e-filterset::before {
+    content: '\e7f7';
+  }
+
+  & .e-search-icon::before {
+    content: '\e754';
+  }
+
+  & .e-chkcancel-icon::before {
+    content: '\e7e7';
+  }
+
+  & .e-icon-filter-clear::before {
+    content: '\e72c';
+  }
+}
+
+.e-row-responsive-filter {
+  & .e-dlg-closeicon-btn {
+    & .e-icon-dlg-close::before {
+      content: '\e773';
+    }
+  }
+
+  &.e-rtl .e-dlg-closeicon-btn {
+    & .e-icon-dlg-close::before {
+      content: '\e7f9';
+    }
+  }
+}
+
+.e-checkboxfilter {
+  .e-search-icon::before {
+    content: '\e754';
+  }
+
+  .e-chkcancel-icon::before {
+    content: '\e7e7';
+  }
+}

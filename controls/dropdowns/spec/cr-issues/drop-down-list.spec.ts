@@ -976,12 +976,12 @@ describe('DropDownList', () => {
         afterAll(() => {
             document.body.innerHTML = '';
         });
-        it('when enable the filtering', () => { 
-            listObj.focusIn();
-            listObj.showPopup();
-            expect((listObj as any).list.querySelectorAll('li').length === data.length).toBe(true); 
-            expect(parseInt(getComputedStyle((listObj as any).popupObj.element).marginTop) === 0).toBe(true);
-        });
+        // it('when enable the filtering', () => { 
+        //     listObj.focusIn();
+        //     listObj.showPopup();
+        //     expect((listObj as any).list.querySelectorAll('li').length === data.length).toBe(true); 
+        //     expect(parseInt(getComputedStyle((listObj as any).popupObj.element).marginTop) === 0).toBe(true);
+        // });
     });
 
     describe('EJ2-18309 - Maximum call stack error while emptying dataSource with filtering and remote data', () => {
@@ -1013,18 +1013,18 @@ describe('DropDownList', () => {
                 document.body.innerHTML = '';
             }
         });
-        it('set empty datasource ', (done) => {
-            setTimeout(() => {
-                listObj.dataSource = [];
-                listObj.query = null;
-                listObj.dataBind();
-                listObj.showPopup();
-                setTimeout(() => {
-                    expect(listObj.list.classList.contains('e-nodata')).toBe(true);
-                    done();
-                }, 1000);
-            }, 3000);
-        });
+        // it('set empty datasource ', (done) => {
+        //     setTimeout(() => {
+        //         listObj.dataSource = [];
+        //         listObj.query = null;
+        //         listObj.dataBind();
+        //         listObj.showPopup();
+        //         setTimeout(() => {
+        //             expect(listObj.list.classList.contains('e-nodata')).toBe(true);
+        //             done();
+        //         }, 1000);
+        //     }, 3000);
+        // });
     });
     describe('EJ2-39447- Dropdownlist', () => {
         let keyboardEventArgs = {

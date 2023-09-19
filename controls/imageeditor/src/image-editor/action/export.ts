@@ -46,6 +46,9 @@ export class Export {
         case 'exportToCanvas':
             this.exportToCanvas(args.value['object']);
             break;
+        case 'drawAnnotation':
+            this.drawAnnotation(args.value['context'], args.value['ratio']);
+            break;
         }
     }
 
@@ -169,8 +172,22 @@ export class Export {
     private exportToCanvas(object?: Object): HTMLCanvasElement {
         const parent: ImageEditor = this.parent;
         let width: number; let height: number;
-        if (parent.currSelectionPoint) {width = parent.img.srcWidth; height = parent.img.srcHeight; }
-        else {width = parent.baseImg.width; height = parent.baseImg.height; }
+        if (this.parent.aspectWidth) {
+            if (!isBlazor()) {
+                parent.notify('toolbar', { prop: 'resizeClick', value: {bool: false }}); 
+            } else {
+                (parent as any).performResizeClick();
+            }
+            (parent as any).currentToolbar = 'resize-toolbar';
+            parent.okBtn();
+            if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
+                width = this.parent.aspectHeight; height = this.parent.aspectWidth;
+            } else {
+                width = this.parent.aspectWidth; height = this.parent.aspectHeight;
+            }
+        }
+        else if (parent.currSelectionPoint) { width = parent.img.srcWidth; height = parent.img.srcHeight; }
+        else {width = parent.baseImgCanvas.width; height = parent.baseImgCanvas.height; }
         const obj: Object = {width: 0, height: 0 };
         parent.notify('crop', { prop: 'calcRatio', onPropertyChange: false,
             value: {obj: obj, dimension: {width: width, height: height }}});
@@ -195,15 +212,27 @@ export class Export {
         const maxDimension: Dimension = dimObj as Dimension;
         tempCanvas.style.maxWidth = maxDimension.width + 'px'; tempCanvas.style.maxHeight = maxDimension.height + 'px';
         const temp: string = this.lowerContext.filter;
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
         tempContext.filter = this.lowerContext.filter;
-        tempContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
-                              parent.img.srcHeight, 0, 0, width, height);
+        this.downScaleImgCanvas(tempContext, width, height);
+        this.updateFrame(tempContext);
         this.lowerContext.filter = temp;
         if (parent.transform.degree !== 0 || parent.transform.currFlipState !== '') {
             this.updateSaveContext(tempContext);
             this.exportTransformedImage(tempContext);
         }
+        this.drawAnnotation(tempContext, ratio);
+        if (parent.isCircleCrop) {
+            parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
+                value: {context: tempContext, isSave: true, isFlip: null}});
+        }
+        this.updateFrame(tempContext, true);
+        this.lowerContext.filter = tempContextFilter; parent.canvasFilter = tempContextFilter;
+        if (object) { object['canvas'] = tempCanvas; }
+        return tempCanvas;
+    }
+
+    private drawAnnotation(tempContext: CanvasRenderingContext2D, ratio: Dimension): void {
+        const parent: ImageEditor = this.parent;
         if (parent.objColl.length > 0) {
             const temp: string = tempContext.filter;
             tempContext.filter = 'none';
@@ -234,6 +263,10 @@ export class Export {
                         parent.objColl[i as number].pointColl[l as number].y =
                             (parent.objColl[i as number].pointColl[l as number].y - parent.img.destTop) * ratio.height;
                     }
+                } else if (parent.objColl[i as number].shape === 'image') {
+                    parent.activeObj = extend({}, parent.objColl[i as number], {}, true) as SelectionPoint;
+                    parent.notify('selection', { prop: 'upgradeImageQuality', onPropertyChange: false});
+                    parent.objColl[i as number] = extend({}, parent.activeObj, {}, true) as SelectionPoint;
                 }
                 parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'saveContext', obj: parent.objColl[i as number], isCropRatio: null,
                     points: null, isPreventDrag: true, saveContext: tempContext, isPreventSelection: null} });
@@ -259,13 +292,37 @@ export class Export {
                 value: {context: tempContext, points: null} });
             parent.pointColl = tempPointColl;
         }
-        if (parent.isCircleCrop) {
-            parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
-                value: {context: tempContext, isSave: true, isFlip: null}});
+    }
+
+    private downScaleImgCanvas(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+        const parent: ImageEditor = this.parent;
+        const canvas: HTMLCanvasElement = parent.baseImgCanvas;
+        const img: HTMLImageElement = parent.baseImg;
+        const obj: Object = {width: 0, height: 0 };
+        parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
+            value: {width: img.width, height: img.height, obj: obj, isImgShape: null }});
+        if (obj['width'] > width && obj['height'] > height) {
+            const tempCanvas: HTMLCanvasElement = parent.createElement('canvas', {
+                id: parent.element.id + '_downScaleCanvas', attrs: { name: 'canvasImage' }
+            });
+            tempCanvas.width = this.parent.img.srcWidth; tempCanvas.height = this.parent.img.srcHeight;
+            tempCanvas.getContext('2d').drawImage(canvas, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
+                                                  parent.img.srcHeight, 0, 0, tempCanvas.width, tempCanvas.height);
+            parent.notify('draw', {prop: 'downScale', value: {canvas: tempCanvas, width: width, height: height }});
+            ctx.drawImage(tempCanvas, 0, 0);
+        } else {
+            ctx.drawImage(parent.baseImgCanvas, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
+                          parent.img.srcHeight, 0, 0, width, height);
         }
-        this.lowerContext.filter = tempContextFilter; parent.canvasFilter = tempContextFilter;
-        if (object) { object['canvas'] = tempCanvas; }
-        return tempCanvas;
+    }
+
+    private updateFrame(tempContext: CanvasRenderingContext2D, isAnnotation?: boolean): void {
+        if (this.parent.frameObj.type !== 'none') {
+            const temp: string = tempContext.filter;
+            tempContext.filter = 'none';
+            this.parent.notify('draw', {prop: 'applyFrame', value: {ctx: tempContext, frame: this.parent.frameObj.type, preventImg: isAnnotation }});
+            tempContext.filter = temp;
+        }
     }
 
     private downloadImg(blob: string, fileName: string): void {
@@ -327,17 +384,20 @@ export class Export {
     private setMaxDim(degree: number, tempCanvas: HTMLCanvasElement): void {
         let newWidth: number; let newHeight: number;
         if (degree % 90 === 0 && degree % 180 !== 0) {
-            newWidth = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImg.height : this.parent.img.srcHeight;
-            newHeight = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImg.width : this.parent.img.srcWidth;
+            newWidth = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImgCanvas.height : this.parent.img.srcHeight;
+            newHeight = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImgCanvas.width : this.parent.img.srcWidth;
         } else if (degree % 180 === 0 || degree === 0) {
-            newWidth = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImg.width : this.parent.img.srcWidth;
-            newHeight = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImg.height : this.parent.img.srcHeight;
+            newWidth = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImgCanvas.width : this.parent.img.srcWidth;
+            newHeight = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImgCanvas.height : this.parent.img.srcHeight;
         }
-        tempCanvas.width = newWidth;
-        tempCanvas.height = newHeight;
+        if (!isNullOrUndefined(this.parent.aspectWidth)) {
+            newWidth = this.parent.aspectWidth;
+            newHeight = this.parent.aspectHeight;
+        }
+        tempCanvas.width = newWidth; tempCanvas.height = newHeight;
         const obj: Object = {width: 0, height: 0 };
         this.parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
-            value: {width: newWidth, height: newHeight, obj: obj}});
+            value: {width: newWidth, height: newHeight, obj: obj, isImgShape: null}});
         const maxDimension: Dimension = obj as Dimension;
         tempCanvas.style.maxWidth = maxDimension.width + 'px';
         tempCanvas.style.maxHeight = maxDimension.height + 'px';

@@ -1,0 +1,14 @@
+@include export-module('dropdownlist-material-icons') {
+  .e-ddl .e-search-icon::before {
+    content: '\e993';
+  }
+
+  .e-ddl .e-back-icon::before {
+    content: '\e977';
+  }
+
+  .e-ddl.e-input-group.e-control-wrapper .e-ddl-icon::before {
+    content: '\e969';
+    font-family: 'e-icons';
+  }
+}

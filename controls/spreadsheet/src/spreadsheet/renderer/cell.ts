@@ -6,7 +6,7 @@ import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, g
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol} from '../../workbook/base/index';
 import { getRowHeight, setRowHeight, getCell, getColumnWidth, getSheet, setCell } from '../../workbook/base/index';
-import { addClass, attributes, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { addClass, attributes, extend, compile, isNullOrUndefined, detach, append } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, applyCF } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView, skipHiddenIdx } from '../../workbook/index';
 import { checkIsFormula, ApplyCFArgs, NumberFormatArgs, ExtendedCellModel } from '../../workbook/common/index';
@@ -124,14 +124,14 @@ export class CellRenderer implements ICellRenderer {
 
     private update(args: CellRenderArgs): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const compiledTemplate: string = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
+        const compiledTemplate: string | Element[] = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
         // In SF-425413 ticket, we suggested to add the template property in the cell model to render the template using updateCell method.
         if (compiledTemplate && (!args.isRefresh || (args.cell && (args.cell as ExtendedCellModel).template))) {
             if (typeof compiledTemplate === 'string') {
                 args.td.innerHTML = compiledTemplate;
             } else {
                 removeAllChildren(args.td);
-                args.td.appendChild(compiledTemplate);
+                append(compiledTemplate, args.td);
             }
             args.td.classList.add('e-cell-template');
         }
@@ -212,15 +212,15 @@ export class CellRenderer implements ICellRenderer {
             const borderTop: string = this.parent.getCellStyleValue(
                 ['borderTop'], [Number(this.parent.getContentTable().rows[0].getAttribute('aria-rowindex')) - 1, args.colIdx]).borderTop;
             if (borderTop !== '' && (!args.cell || !args.cell.style || !(args.cell.style as CellStyleExtendedModel).bottomPriority)) {
-                this.parent.notify(applyCellFormat, { style: { borderBottom: borderTop }, rowIdx: args.rowIdx,
-                    colIdx: args.colIdx, cell: args.td });
+                args.style = { borderBottom: borderTop };
+                this.parent.notify(applyCellFormat, args);
             }
         }
         if (args.checkNextBorder === 'Column') {
             const borderLeft: string = this.parent.getCellStyleValue(['borderLeft'], [args.rowIdx, args.colIdx + 1]).borderLeft;
             if (borderLeft !== '' && (!args.cell || !args.cell.style || (!args.cell.style.borderRight && !args.cell.style.border))) {
-                this.parent.notify(applyCellFormat, { style: { borderRight: borderLeft }, rowIdx: args.rowIdx, colIdx: args.colIdx,
-                    cell: args.td });
+                args.style = { borderRight: borderLeft };
+                this.parent.notify(applyCellFormat, args);
             }
         }
         if (args.cell && args.cell.wrap) {
@@ -240,10 +240,8 @@ export class CellRenderer implements ICellRenderer {
     }
     private applyStyle(args: CellRenderArgs, style: CellStyleModel): void {
         if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || args.lastCell) {
-            this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: extend({}, this.parent.commonCellStyle, style), rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.td,
-                first: args.first, row: args.row, lastCell: args.lastCell, hRow: args.hRow, pRow: args.pRow, isHeightCheckNeeded:
-                args.isHeightCheckNeeded, manualUpdate: args.manualUpdate, onActionUpdate: args.onActionUpdate });
+            args.style = extend({}, this.parent.commonCellStyle, style);
+            this.parent.notify(applyCellFormat, <CellFormatArgs>args);
         }
     }
     private createImageAndChart(args: CellRenderArgs) {
@@ -495,7 +493,7 @@ export class CellRenderer implements ICellRenderer {
         }
     }
 
-    private processTemplates(cell: CellModel, rowIdx: number, colIdx: number): string {
+    private processTemplates(cell: CellModel, rowIdx: number, colIdx: number): string | Element[] {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const ranges: RangeModel[] = sheet.ranges;
         let range: number[];
@@ -516,7 +514,7 @@ export class CellRenderer implements ICellRenderer {
         return '';
     }
 
-    private compileCellTemplate(template: string | Function, cell: CellModel): string {
+    private compileCellTemplate(template: string | Function, cell: CellModel): string | Element[] {
         let compiledStr: Function;
         if (typeof template === 'string') {
             let templateString: string;
@@ -529,11 +527,12 @@ export class CellRenderer implements ICellRenderer {
             if (!(this.parent as { isVue?: boolean }).isVue || document.querySelector(template)) {
                 return (compiledStr(cell, this.parent, 'ranges', '', true)[0] as HTMLElement).outerHTML;
             } else {
-                return compiledStr(cell, this.parent, 'ranges', '')[0];
+                return compiledStr(cell, this.parent, 'ranges', '');
             }
         } else {
             compiledStr = compile(template);
-            return compiledStr(cell, this.parent, 'ranges', '')[0];
+            const compiledTemplate: Element | Element[] = compiledStr(cell, this.parent, 'ranges', '');
+            return compiledTemplate[0] ? <Element[]>compiledTemplate : [<Element>compiledTemplate];
         }
     }
 

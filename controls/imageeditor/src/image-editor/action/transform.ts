@@ -1,6 +1,6 @@
 import { Browser, extend, getComponent, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ActivePoint, Dimension } from '@syncfusion/ej2-inputs';
-import { CurrentObject, Direction, FlipEventArgs, ImageEditor, PanEventArgs, Point, RotateEventArgs, SelectionPoint, StrokeSettings, ZoomEventArgs } from '../index';
+import { ActivePoint, Dimension, NumericTextBox } from '@syncfusion/ej2-inputs';
+import { CurrentObject, Direction, FlipEventArgs, ImageEditor, PanEventArgs, Point, ResizeEventArgs, RotateEventArgs, SelectionPoint, StrokeSettings, ZoomEventArgs } from '../index';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 
@@ -22,6 +22,9 @@ export class Transform {
     private tempActiveObj: SelectionPoint; private isShape: boolean;
     private cropDimension: Dimension = { width: 0, height: 0 };
     private isPreventSelect: boolean = false;
+    private prevResizeCurrObj: CurrentObject;
+    private preventDownScale: boolean = false;
+    private resizedImgAngle: number = null;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -56,7 +59,7 @@ export class Transform {
             this.setDestPointsForFlipState();
             break;
         case 'zoomAction':
-            this.zoomAction(args.value['zoomFactor'], args.value['zoomPoint']);
+            this.zoomAction(args.value['zoomFactor'], args.value['zoomPoint'], args.value['isResize']);
             break;
         case 'disableZoomOutBtn':
             this.disableZoomOutBtn(args.value['isZoomOut']);
@@ -110,7 +113,7 @@ export class Transform {
             this.update();
             break;
         case 'calcMaxDimension':
-            this.calcMaxDimension(args.value['width'], args.value['height'], args.value['obj']);
+            this.calcMaxDimension(args.value['width'], args.value['height'], args.value['obj'], args.value['isImgShape']);
             break;
         case 'updatePanPoints':
             this.updatePanPoints(args.value['panRegion'], args.value['obj']);
@@ -165,6 +168,21 @@ export class Transform {
         case 'setPreventSelect':
             this.isPreventSelect = args.value['bool'];
             break;
+        case 'resizeImage':
+            this.resizeImage(args.value['width'], args.value['height']);
+            break;
+        case 'resizeCrop':
+            this.resizeCrop(args.value['width'], args.value['height']);
+            break;
+        case 'setPreventDownScale':
+            this.preventDownScale = args.value['bool'];
+            break;
+        case 'updateResize':
+            this.updateResize();
+            break;
+        case 'resize':
+            this.resize(args.value['width'], args.value['height'], args.value['isAspectRatio']);
+            break;
         case 'reset':
             this.reset();
             break;
@@ -182,8 +200,8 @@ export class Transform {
 
     private reset(): void {
         this.zoomBtnHold = null; this.tempPanMove = null; this.panMove = null; this.disablePan = false;
-        this.currDestPoint = null; this.isReverseRotate = false; this.flipColl = [];
-        this.transCurrObj = null; this.prevZoomValue = 1; this.isPreventSelect = false;
+        this.currDestPoint = null; this.isReverseRotate = false; this.flipColl = []; this.resizedImgAngle = null;
+        this.transCurrObj = null; this.prevZoomValue = 1; this.isPreventSelect = this.preventDownScale = false;
     }
 
     private rotateImage(degree: number): void {
@@ -304,10 +322,7 @@ export class Transform {
         this.lowerContext.rotate(Math.PI / 180 * degree);
         this.lowerContext.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
         const temp: string = this.lowerContext.filter;
-        this.parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-        this.lowerContext.drawImage(this.parent.baseImg, this.parent.img.srcLeft, this.parent.img.srcTop, this.parent.img.srcWidth,
-                                    this.parent.img.srcHeight, this.parent.img.destLeft, this.parent.img.destTop, this.parent.img.destWidth,
-                                    this.parent.img.destHeight);
+        parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
         this.lowerContext.filter = temp;
         this.lowerContext.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
         this.lowerContext.rotate(Math.PI / 180 * -degree);
@@ -331,8 +346,8 @@ export class Transform {
                 parent.notify('shape', { prop: 'updImgRatioForActObj', onPropertyChange: false});
                 parent.objColl[0] = parent.activeObj;
             }
-            parent.img.srcLeft = 0; parent.img.srcTop = 0; parent.img.srcWidth = parent.baseImg.width;
-            parent.img.srcHeight = parent.baseImg.height;
+            parent.img.srcLeft = 0; parent.img.srcTop = 0; parent.img.srcWidth = parent.baseImgCanvas.width;
+            parent.img.srcHeight = parent.baseImgCanvas.height;
             parent.img.destLeft = this.currDestPoint.startX; parent.img.destTop = this.currDestPoint.startY;
             parent.img.destWidth = this.currDestPoint.width; parent.img.destHeight = this.currDestPoint.height;
             if (typeof(degree) === 'number') {
@@ -355,7 +370,7 @@ export class Transform {
     private flipImage(direction: Direction): void {
         const parent: ImageEditor = this.parent;
         const transitionArgs: FlipEventArgs = {direction: direction, cancel: false,
-            previousDirection: parent.toPascalCase(parent.transform.currFlipState )};
+            previousDirection: parent.toPascalCase(parent.transform.currFlipState || direction )};
         if (!this.isPreventSelect && isBlazor() && parent.events && parent.events.flipping.hasDelegate === true) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             (parent.dotNetRef.invokeMethodAsync('FlipEventAsync', 'OnFlip', transitionArgs) as any).then((args: FlipEventArgs) => {
@@ -419,9 +434,7 @@ export class Transform {
             parent.img.destTop += parent.panPoint.totalPannedInternalPoint.y;
         }
         const temp: string = this.lowerContext.filter;
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-        this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
-                                    parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+        parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
         this.lowerContext.filter = temp;
         parent.notify('draw', { prop: 'setImageEdited', onPropertyChange: false });
         this.updateFlipState(direction.toLowerCase());
@@ -570,12 +583,12 @@ export class Transform {
         }
     }
 
-    private zoomAction(zoomFactor: number, zoomPoint?: Point): void {
+    private zoomAction(zoomFactor: number, zoomPoint?: Point, isResize?: boolean): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
-            if (parent.zoomSettings.zoomFactor >= parent.zoomSettings.maxZoomFactor && zoomFactor > 0 ||
+            if (isNullOrUndefined(isResize) && (parent.zoomSettings.zoomFactor >= parent.zoomSettings.maxZoomFactor && zoomFactor > 0 ||
                 (parent.zoomSettings.zoomFactor > parent.zoomSettings.minZoomFactor && zoomFactor < 0 && this.disableZoomOutBtn(true)) ||
-                (parent.zoomSettings.zoomFactor <= parent.zoomSettings.minZoomFactor && zoomFactor < 0)) {
+                (parent.zoomSettings.zoomFactor <= parent.zoomSettings.minZoomFactor && zoomFactor < 0))) {
                 if (!isBlazor()) {
                     parent.notify('toolbar', { prop: 'zoom-up-handler', onPropertyChange: false});
                 }
@@ -584,7 +597,7 @@ export class Transform {
             parent.notify('draw', { prop: 'setImageEdited', onPropertyChange: false });
             const tempZoomFactor: number = zoomFactor;
             zoomFactor = tempZoomFactor > 0 ? 0.1 : -0.1;
-            for (let i: number = 0; i < Math.abs(tempZoomFactor / 0.1); i++) {
+            for (let i: number = 0; i < Math.round(Math.abs(tempZoomFactor / 0.1)); i++) {
                 if (this.prevZoomValue === 1) {
                     this.prevZoomValue += zoomFactor > 0 ? zoomFactor * 10 : (zoomFactor * 10) / 10;
                 } else if (this.prevZoomValue > 1) {
@@ -644,7 +657,7 @@ export class Transform {
         if (zoomEventArgs.cancel) {return; }
         if (!isBlazor()) {
             parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
-        } else if (parent.element.querySelector('.e-contextual-toolbar-wrapper') && !parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.contains('e-hidden') ) {
+        } else if ((parent as any).currentToolbar !== 'resize-toolbar' && parent.element.querySelector('.e-contextual-toolbar-wrapper') && !parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.contains('e-hidden') ) {
             parent.updateToolbar(parent.element, 'closeContextualToolbar');
         }
         parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
@@ -660,7 +673,10 @@ export class Transform {
                 parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
                     value: {x: null, y: null, isMouseDown: null}});
                 parent.panPoint.currentPannedPoint = {x: 0, y: 0};
+                const temp: boolean = parent.allowDownScale;
+                parent.allowDownScale = false;
                 this.rotatePan(true, true);
+                parent.allowDownScale = temp;
             } else if (parent.transform.currFlipState !== '') {
                 parent.panPoint.totalPannedPoint = {x: 0, y: 0};
             }
@@ -861,9 +877,7 @@ export class Transform {
         parent.notify('draw', { prop: 'currTransState', onPropertyChange: false,
             value: {type: 'initial', isPreventDestination: null, context: null, isPreventCircleCrop: null} });
         const temp: string = this.lowerContext.filter;
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-        this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
-                                    parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+        parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
         this.lowerContext.filter = temp;
         parent.notify('draw', { prop: 'currTransState', onPropertyChange: false,
             value: {type: 'reverse', isPreventDestination: true, context: null, isPreventCircleCrop: null} });
@@ -902,9 +916,7 @@ export class Transform {
         parent.notify('draw', { prop: 'setRotateZoom', onPropertyChange: false, value: {isRotateZoom: true }});
         parent.notify('draw', { prop: 'setDestPoints', onPropertyChange: false});
         const temp: string = this.lowerContext.filter;
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-        this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth, parent.img.srcHeight,
-                                    parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+        parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
         this.lowerContext.filter = temp;
         parent.notify('draw', { prop: 'setRotateZoom', onPropertyChange: false, value: {isRotateZoom: false }});
         parent.notify('draw', { prop: 'updateCurrTransState', onPropertyChange: false,
@@ -1105,10 +1117,7 @@ export class Transform {
         parent.img.destLeft = destPoints.startX; parent.img.destTop = destPoints.startY;
         parent.img.destWidth = destPoints.width; parent.img.destHeight = destPoints.height;
         this.setDestPointsForFlipState();
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-        this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
-                                    parent.img.srcHeight, parent.img.destLeft, parent.img.destTop, parent.img.destWidth,
-                                    parent.img.destHeight);
+        parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
         if ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop) {
             parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
                 value: {context: this.lowerContext, isSave: null, isFlip: true}});
@@ -1237,10 +1246,7 @@ export class Transform {
             parent.panPoint.totalPannedInternalPoint.y = parent.img.destTop - initialDestTop;
         }
         const temp: string = this.lowerContext.filter;
-        parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-        this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
-                                    parent.img.srcHeight, parent.img.destLeft, parent.img.destTop, parent.img.destWidth,
-                                    parent.img.destHeight);
+        parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
         parent.notify('draw', { prop: 'setRotateZoom', onPropertyChange: false, value: {isRotateZoom: false }});
         parent.notify('draw', { prop: 'updateCurrTransState', onPropertyChange: false,
             value: {type: 'reverse', isPreventDestination: true, isRotatePan: true} });
@@ -1418,9 +1424,12 @@ export class Transform {
     }
 
     private update(): void {
-        const parent: ImageEditor = this.parent; let toolbarHeight: number = 0;
+        const parent: ImageEditor = this.parent; let toolbarHeight: number = 0; let isFrameToolbar: boolean = false;
         let isActiveObj: boolean = false;  const freehandObj: Object = {bool: false };
         if (parent.isImageLoaded) {
+            const frameObj: Object = {bool: null };
+            parent.notify('toolbar', { prop: 'getFrameToolbar', onPropertyChange: false, value: {obj: frameObj }});
+            if (frameObj['bool'] || (isBlazor() && (parent as any).currentToolbar == 'frame-toolbar')) {isFrameToolbar = true; }
             if ((parent.element.querySelector('#' + parent.element.id + '_contextualToolbar') &&
                 !parent.element.querySelector('#' + parent.element.id + '_contextualToolbar').parentElement.classList.contains('e-hide')) ||
                 (parent.element.querySelector('#' + parent.element.id + '_headWrapper')
@@ -1513,8 +1522,7 @@ export class Transform {
                 }
             }
             const obj: Object = {width: 0, height: 0 };
-            parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
-                value: {width: parent.img.srcWidth, height: parent.img.srcHeight, obj: obj}});
+            this.calcMaxDimension(parent.img.srcWidth, parent.img.srcHeight, obj);
             const maxDimension: Dimension = obj as Dimension;
             if (parent.transform.defaultZoomFactor > 0) {
                 maxDimension.width += (maxDimension.width * parent.transform.defaultZoomFactor);
@@ -1533,10 +1541,7 @@ export class Transform {
                 parent.notify('draw', { prop: 'updateCurrTransState', onPropertyChange: false,
                     value: {type: 'initial', isPreventDestination: null, isRotatePan: null} });
                 const temp: string = this.lowerContext.filter;
-                parent.notify('filter', { prop: 'updateBrightFilter', onPropertyChange: false});
-                this.lowerContext.drawImage(parent.baseImg, parent.img.srcLeft, parent.img.srcTop, parent.img.srcWidth,
-                                            parent.img.srcHeight, parent.img.destLeft, parent.img.destTop, parent.img.destWidth,
-                                            parent.img.destHeight);
+                parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
                 this.lowerContext.filter = temp;
                 parent.notify('draw', { prop: 'updateCurrTransState', onPropertyChange: false,
                     value: {type: 'reverse', isPreventDestination: null, isRotatePan: null} });
@@ -1563,12 +1568,15 @@ export class Transform {
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
             if (isActiveObj) {
-                parent.activeObj = extend({}, parent.objColl[parent.objColl.length - 1], null, true) as SelectionPoint;
+                const activeObj: SelectionPoint = extend({}, parent.objColl[parent.objColl.length - 1], null, true) as SelectionPoint;
                 parent.objColl.pop();
-                if (parent.activeObj.activePoint.width !== 0 && parent.activeObj.activePoint.height !== 0) {
-                    parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: parent.activeObj}});
+                if (activeObj.activePoint.width !== 0 && activeObj.activePoint.height !== 0) {
+                    this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
+                    parent.notify('draw', {prop: 'render-image', value: {isMouseWheel: true }});
+                    parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: activeObj}});
                     if (parent.activeObj.shape === 'rectangle' || parent.activeObj.shape === 'ellipse' || parent.activeObj.shape === 'text' ||
-                        parent.activeObj.shape === 'line' || parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path') {
+                        parent.activeObj.shape === 'line' || parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path' ||
+                        parent.activeObj.shape === 'image') {
                         if (!isBlazor()) {
                             parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
                         } else {
@@ -1584,14 +1592,29 @@ export class Transform {
                     parent.updateToolbar(parent.element, 'quickAccessToolbar', 'pen');
                 }
             }
+            if (isFrameToolbar) {
+                if (isBlazor()) {
+                    parent.updateToolbar(parent.element, 'frame');
+                } else {
+                    parent.notify('toolbar', { prop: 'callFrameToolbar', onPropertyChange: false});
+                }
+            } else if (parent.isResize) {
+                parent.aspectWidth = Math.ceil(parent.img.destWidth); parent.aspectHeight = Math.ceil(parent.img.destHeight);
+                if (isBlazor()) {
+                    parent.updateToolbar(parent.element, 'resize');
+                } else {
+                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
+                        isApplyBtn: false, isCropping: false }});
+                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
+                        isApplyBtn: false, isCropping: false }});
+                }
+            }
             if ((parent.transform.degree !== 0 || parent.transform.currFlipState !== '') && parent.transform.defaultZoomFactor > 0) {
                 const totalPannedPoint: Point = extend({}, parent.panPoint.totalPannedPoint, null, true) as Point;
                 const totalPannedInternalPoint: Point = extend({}, parent.panPoint.totalPannedInternalPoint, null, true) as Point;
                 const totalPannedClientPoint: Point = extend({}, parent.panPoint.totalPannedClientPoint, null, true) as Point;
-                parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                    value: {zoomFactor: .1, zoomPoint: null}});
-                parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                    value: {zoomFactor: -.1, zoomPoint: null}});
+                this.zoomAction(.1);
+                this.zoomAction(-.1);
                 if (parent.transform.degree === 0) {
                     parent.img.destLeft += totalPannedPoint.x; parent.img.destTop += totalPannedPoint.y;
                     parent.panPoint.totalPannedPoint = totalPannedPoint;
@@ -1601,8 +1624,7 @@ export class Transform {
                     parent.panPoint.totalPannedClientPoint = totalPannedClientPoint;
                     parent.panPoint.currentPannedPoint = {x: 0, y: 0};
                     parent.isCropTab = true;
-                    parent.notify('transform', { prop: 'rotatePan', onPropertyChange: false,
-                        value: {isCropSelection: null, isDefaultZoom: null}});
+                    this.rotatePan();
                     parent.isCropTab = false;
                 }
             } else if (parent.transform.degree !== 0 && parent.transform.cropZoomFactor > 0) {
@@ -1616,25 +1638,31 @@ export class Transform {
         }
     }
 
-    private calcMaxDimension(width: number, height: number, obj?: Object): Dimension {
+    private calcMaxDimension(width: number, height: number, obj?: Object, isImgShape?: boolean): Dimension {
         const object: Object = {toolbarHeight: 0 };
         if (!isBlazor()) {this.parent.notify('toolbar', { prop: 'getToolbarHeight', value: {obj: object }}); }
         else {object['toolbarHeight'] = this.parent.toolbarHeight; }
-        let canvasMaxWidth: number = this.parent.element.clientWidth;
-        let canvasMaxHeight: number = this.parent.element.clientHeight - object['toolbarHeight'];
+        let canvasMaxWidth: number = isImgShape ? this.parent.element.clientWidth / 3 :
+            this.parent.element.clientWidth;
+        let canvasMaxHeight: number = isImgShape ? (this.parent.element.clientHeight - object['toolbarHeight']) / 3 :
+            this.parent.element.clientHeight - object['toolbarHeight'];
         canvasMaxHeight = Browser.isDevice ? canvasMaxHeight - object['toolbarHeight'] : canvasMaxHeight;
-        if (canvasMaxWidth > 30) {canvasMaxWidth -= 30; } if (canvasMaxHeight > 30) {canvasMaxHeight -= 30; }
+        if (isNullOrUndefined(isImgShape)) {
+            if (canvasMaxWidth > 30) {canvasMaxWidth -= 30; } if (canvasMaxHeight > 30) {canvasMaxHeight -= 30; }
+        }
         const widthScale: number = canvasMaxWidth / width; const heightScale: number = canvasMaxHeight / height;
         let cssMaxWidth: number = Math.min(width, canvasMaxWidth); let cssMaxHeight: number = Math.min(height, canvasMaxHeight);
         if (widthScale < 1 && widthScale < heightScale) {cssMaxWidth = width * widthScale; cssMaxHeight = height * widthScale; }
         else if (heightScale < 1 && heightScale < widthScale) {cssMaxWidth = width * heightScale; cssMaxHeight = height * heightScale; }
-        const cropObj: Object = {bool: null };
-        this.parent.notify('crop', { prop: 'getPreventScaling', onPropertyChange: false,
-            value: {obj: cropObj }});
-        if (cropObj['bool'] && this.parent.cropObj.activeObj.activePoint &&
-            this.parent.cropObj.activeObj.activePoint.width !== 0 && this.parent.cropObj.activeObj.activePoint.height !== 0) {
-            cssMaxWidth =  this.parent.cropObj.activeObj.activePoint.width;
-            cssMaxHeight = this.parent.cropObj.activeObj.activePoint.height;
+        if (isNullOrUndefined(isImgShape)) {
+            const cropObj: Object = {bool: null };
+            this.parent.notify('crop', { prop: 'getPreventScaling', onPropertyChange: false,
+                value: {obj: cropObj }});
+            if (cropObj['bool'] && this.parent.cropObj.activeObj.activePoint &&
+                this.parent.cropObj.activeObj.activePoint.width !== 0 && this.parent.cropObj.activeObj.activePoint.height !== 0) {
+                cssMaxWidth =  this.parent.cropObj.activeObj.activePoint.width;
+                cssMaxHeight = this.parent.cropObj.activeObj.activePoint.height;
+            }
         }
         if (obj) {obj['width'] = cssMaxWidth; obj['height'] = cssMaxHeight; }
         return {width: cssMaxWidth, height: cssMaxHeight};
@@ -1676,5 +1704,271 @@ export class Transform {
             obj['x'] = parent.img.destLeft - tempDestLeft; obj['y'] = parent.img.destTop - tempDestTop;
         }
         return {x: parent.img.destLeft - tempDestLeft, y: parent.img.destTop - tempDestTop};
+    }
+
+    private resizeImage(width?: number, height?: number): void {
+        const parent: ImageEditor = this.parent; let temp: boolean = true; let temp1: boolean = true;
+        parent.allowDownScale = false;
+        parent.img.srcLeft = 0; parent.img.srcTop = 0; parent.isAspectRatio = true; const minimum: number[] = [];
+        parent.img.srcWidth = parent.baseImg.width; parent.img.srcHeight = parent.baseImg.height;
+        if (parent.resizeSrc && parent.resizeSrc.width != 0 && parent.resizeSrc.height != 0) {
+            parent.img.srcLeft = parent.resizeSrc.startX; parent.img.srcTop = parent.resizeSrc.startY;
+            parent.img.srcWidth = parent.resizeSrc.width; parent.img.srcHeight = parent.resizeSrc.height;
+        }
+        while ((width < parent.img.destWidth || height < parent.img.destHeight) && temp1) {
+            this.zoomAction(-.1, null, true);
+            if (width > parent.img.destWidth || height > parent.img.destHeight) {
+                while (width > parent.img.destWidth || height > parent.img.destHeight) {
+                    this.zoomAction(0.0125, null, true);
+                    temp1 = false;
+                    minimum.push(parent.img.destWidth);
+                }
+            }
+        }
+        while ((width > parent.img.destWidth || height > parent.img.destHeight) && temp1 && temp) {
+            this.zoomAction(.1, null, true);
+            if (width < parent.img.destWidth || height < parent.img.destHeight) {
+                while (width < parent.img.destWidth) {
+                    this.zoomAction(-.0125, null, true);
+                    temp = false;
+                    minimum.push(parent.img.destWidth);
+                }
+            }
+        }
+        let nearestNumber: number = minimum[0]; let smallestDifference: number = Math.abs(parent.img.destWidth - nearestNumber);
+        for (const num of minimum) {
+            const difference: number = Math.abs(width - num);
+            if (difference < smallestDifference) {
+                nearestNumber = num; smallestDifference = difference;
+            }
+        }
+        if (nearestNumber < width && temp) {
+            this.zoomAction(-.0125, null, true); temp = false;
+        }
+        if (nearestNumber > width && !temp) {
+            this.zoomAction(.0125, null, true); temp = false;
+        }
+        this.zoomAction(.0125, null, true); parent.allowDownScale = true; this.zoomAction(-.0125, null, true);
+        const prevCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
+        const prevObj: CurrentObject = extend({}, this.prevResizeCurrObj, {}, true) as CurrentObject;
+        parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false, value: { operation: 'resize',
+            previousObj: prevObj, previousObjColl: prevObj.objColl, previousPointColl: prevObj.pointColl,
+            previousSelPointColl: prevObj.selPointColl, previousCropObj: prevCropObj, previousText: null, currentText: null,
+            previousFilter: null, isCircleCrop: parent.isCircleCrop }});
+        parent.notify('undo-redo', { prop: 'updateCurrUrc', value: { type: 'ok' } });
+    }
+
+    private resizeCrop(width?: number, height?: number): void {
+        const parent: ImageEditor = this.parent; let temp: boolean = true;
+        const obj1: object = {prevObj: parent.prevObj};
+        parent.cropObj = extend({}, parent.prevCropObj, {}, true) as CurrentObject;
+        parent.allowDownScale = false;
+        parent.notify('toolbar', { prop: 'getPrevObj', onPropertyChange: false, value: { obj: obj1 } });
+        const activeObj: SelectionPoint = extend({}, obj1['prevObj']['activeObj'], {}, true) as SelectionPoint;
+        obj1['prevObj']['activeObj'] = extend({}, parent.activeObj, {}, true) as SelectionPoint;
+        parent.notify('draw', { prop: 'setCurrentObj', onPropertyChange: false, value: { obj: obj1['prevObj'] }});
+        parent.objColl = extend([], obj1['prevObj']['objColl'], [], true) as SelectionPoint[];
+        parent.pointColl = extend([], obj1['prevObj']['pointColl'], [], true) as Point[];
+        parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
+        parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+        parent.notify('freehand-draw', { prop: 'updateFHDColl', onPropertyChange: false});
+        const tempwidth: number = width; const tempheight: number = height; let tempZoom: boolean = false;
+        if (height >= width && height <= Math.ceil(parent.img.destHeight)) {
+            while ((height <= Math.ceil(parent.img.destHeight)) && temp) {
+                this.zoomAction(-.1, null, true);
+                if (width > parent.img.destWidth || height > parent.img.destHeight) {
+                    while (width > parent.img.destWidth || height > parent.img.destHeight) {
+                        this.zoomAction(.0125, null, true); temp = false;
+                    }
+                }
+            }
+        } else if (height <= width  && width < parent.img.destWidth) {
+            while ((width < parent.img.destWidth) && temp) {
+                this.zoomAction(-.1, null, true);
+                if (width > parent.img.destWidth || height > parent.img.destHeight) {
+                    while (width > parent.img.destWidth || height > parent.img.destHeight) {
+                        this.zoomAction(.0125, null, true); temp = false;
+                    }
+                }
+            }
+        } else if (height >= width && height >= parent.img.destHeight) {
+            while ((height >= parent.img.destHeight) && temp) {
+                this.zoomAction(.1, null, true);
+            }
+        } else if (width >= height && width >= parent.img.destWidth) {
+            while ((width >= parent.img.destWidth) && temp) {
+                this.zoomAction(.1, null, true);
+            }
+            if (width < parent.img.destWidth && height < parent.img.destHeight) {
+                while (width < parent.img.destWidth && height < parent.img.destHeight) {
+                    this.zoomAction(-.0125, null, true);
+                    temp = false;
+                }
+                this.zoomAction(.0125, null, true);
+            }
+        } else if (height > parent.img.destHeight && width > parent.img.destWidth ) {
+            while ((height > parent.img.destHeight) && (width > parent.img.destWidth) && temp) {
+                this.zoomAction(.1, null, true);
+            }
+            if (width < parent.img.destWidth && height < parent.img.destHeight) {
+                while (width < parent.img.destWidth && height < parent.img.destHeight) {
+                    this.zoomAction(-.0125, null, true);
+                    temp = false;
+                }
+                this.zoomAction(.0125, null, true);
+            }
+        }
+        this.resizeImg(activeObj, width, height); width = tempwidth; height = tempheight;
+        if ((height !== parent.img.destHeight || width !== parent.img.destWidth)) {
+            while ((height > parent.img.destHeight || width > parent.img.destWidth)) {
+                this.zoomAction(.0125, null, true); tempZoom = true;
+            }
+            if (tempZoom) {
+                this.zoomAction(-.0125, null, true); tempZoom = false;
+            }
+        }
+        if ((height !== parent.img.destHeight || width !== parent.img.destWidth)) {
+            while ((height < parent.img.destHeight || width < parent.img.destWidth)) {
+                this.zoomAction(-.0125, null, true); tempZoom = true;
+            }
+            if (tempZoom) {
+                this.zoomAction(-.0125, null, true); tempZoom = false;
+            }
+        }
+        obj1['prevObj']['activeObj'] = extend({}, activeObj, {}, true) as SelectionPoint;
+        this.zoomAction(.0125, null, true);
+        parent.allowDownScale = this.preventDownScale ? false : true; parent.isCropTab = false;
+        this.zoomAction(-.0125, null, true);
+        parent.aspectWidth = width; parent.aspectHeight = height;
+    }
+
+    private resizeImg(activeObj: SelectionPoint, width: number, height: number): void {
+        const parent: ImageEditor = this.parent; const widthRatio: number = width / parent.img.destWidth;
+        const heightRatio: number = height / parent.img.destHeight;
+        if (activeObj.shape) {
+            parent.currSelectionPoint = activeObj;
+        } else if (parent.img.srcWidth === parent.baseImgCanvas.width && parent.img.srcHeight === parent.baseImgCanvas.height) {
+            parent.currSelectionPoint = null; parent.select('custom');
+        }
+        if (isNullOrUndefined(parent.currSelectionPoint)) {
+            parent.select('custom', parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+        } else {
+            parent.select('custom');
+        }
+        width = parent.activeObj.activePoint.width * widthRatio;
+        height = parent.activeObj.activePoint.height * heightRatio;
+        const sx: number = (parent.activeObj.activePoint.startX + (parent.activeObj.activePoint.width / 2)) - (width / 2);
+        const sy: number = (parent.activeObj.activePoint.startY + (parent.activeObj.activePoint.height / 2)) - (height / 2);
+        parent.transform.defaultZoomFactor = 0;
+        parent.notify('draw', {prop: 'setResizeSelect', value: {bool: true }});
+        parent.select('custom', sx, sy, width, height);
+        parent.notify('draw', {prop: 'setResizeSelect', value: {bool: false }});
+        parent.isCropToolbar = true;
+        parent.crop();
+        parent.isCropToolbar = false;
+    }
+
+    private updateResize(): void {
+        const parent: ImageEditor = this.parent;
+        parent.prevCropObj = extend({}, parent.cropObj, {}, true) as CurrentObject;
+        const currObject: Object = {currObj: {} as CurrentObject };
+        parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: currObject }});
+        parent.prevObj = currObject['currObj'];
+        if (parent.currSelectionPoint && parent.prevCropObj.activeObj.shape) {
+            parent.prevObj.activeObj = extend({}, parent.prevCropObj.activeObj, {}, true) as SelectionPoint;
+        }
+        parent.prevObj.objColl = extend([], parent.objColl, [], true) as SelectionPoint[];
+        parent.prevObj.pointColl = extend([], parent.pointColl, [], true) as Point[];
+        parent.prevObj.afterCropActions = extend([], parent.afterCropActions, [], true) as string[];
+        const selPointCollObj: Object = {selPointColl: null };
+        parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
+            value: {obj: selPointCollObj }});
+        parent.prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
+        parent.resizeSrc = {startX: parent.img.srcLeft, startY: parent.img.srcTop, width: parent.img.srcWidth,
+            height: parent.img.srcHeight };
+    }
+
+    private resize(width: number, height: number, isAspectRatio?: boolean): void {
+        const parent: ImageEditor = this.parent;
+        parent.isResize = true;
+        if (isNullOrUndefined(parent.prevCropObj) && isNullOrUndefined(parent.prevObj)) {
+            parent.notify('transform', { prop: 'updateResize', value: {bool: false }});
+        }
+        const aspectIcon: HTMLInputElement = (parent.element.querySelector('#' + parent.element.id + '_aspectratio') as HTMLInputElement);
+        const nonAspectIcon: HTMLInputElement = (parent.element.querySelector('#' + parent.element.id + '_nonaspectratio') as HTMLInputElement);
+        if (!isNullOrUndefined(aspectIcon) && !isNullOrUndefined(nonAspectIcon)) {
+            parent.notify('toolbar', { prop: 'initResizeToolbar'});
+            if (Browser.isDevice) {
+                parent.notify('toolbar', { prop: 'init-main-toolbar', value: {isApplyBtn: false, isDevice: true, isOkBtn: true, isResize: true}});
+            }
+        }
+        const resizeEventArgs: ResizeEventArgs = {cancel: false, previousWidth: Math.ceil(parent.img.destWidth), previousHeight: Math.ceil(parent.img.destHeight),
+            width: Math.ceil(width), height: height && height !== 0 ? Math.ceil(height) : (parent.aspectHeight ? parent.aspectHeight : Math.ceil(parent.img.destHeight)),
+            isAspectRatio: isAspectRatio ? isAspectRatio : false };
+        if (!isBlazor()) {
+            parent.trigger('resizing', resizeEventArgs);
+            if (!resizeEventArgs.cancel) {
+                this.resizeEventHandler(resizeEventArgs);
+            }
+        } else if (isBlazor() && parent.events && parent.events.imageResizing.hasDelegate === true) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            (parent.dotNetRef.invokeMethodAsync('OnImageResizingAsync', resizeEventArgs) as any).then((args: ResizeEventArgs) => {
+                if (!args.cancel) { 
+                    this.resizeEventHandler(args);
+                }
+            });
+        } else {
+            this.resizeEventHandler(resizeEventArgs);
+        }
+    }
+
+    private resizeEventHandler(args: ResizeEventArgs): void {
+        const parent: ImageEditor = this.parent;
+        let isRotate: boolean;
+        const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
+        const heightElem: HTMLInputElement = parent.element.querySelector(".e-ie-toolbar-e-resize-height-input .e-numerictextbox");
+        if (args.isAspectRatio) {
+            if (this.resizedImgAngle == null || this.resizedImgAngle !== parent.transform.degree) {
+                this.resizedImgAngle = parent.transform.degree;
+                isRotate = true;
+            }
+            if (isRotate) {
+                parent.notify('transform', { prop: 'resizeImage', value: { width: args.width, height: 0 } });
+                if (aspectRatioHeight) {
+                    (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value = Math.floor(parent.img.destHeight);
+                    (aspectRatioHeight as HTMLInputElement).value = Math.floor(parent.img.destHeight).toString() + ' px';
+                    parent.aspectHeight = Math.floor(parent.img.destHeight);
+                } else if (heightElem) {
+                    heightElem.value =  Math.floor(parent.img.destHeight).toString();
+                    parent.aspectHeight = Math.floor(parent.img.destHeight);
+                }
+            } else {
+                parent.notify('transform', { prop: 'resizeImage', value: { width: args.width, height: null } });
+            }
+        } else {
+            if (this.resizedImgAngle !== null && this.resizedImgAngle !== parent.transform.degree) {
+                this.resizedImgAngle = parent.transform.degree;
+                isRotate = true;
+            }
+            if (isRotate) {
+                parent.notify('transform', { prop: 'setPreventDownScale', value: { bool: true } });
+                parent.notify('transform', { prop: 'resizeCrop', value: { width: args.width, height: args.height } });
+                parent.okBtn();
+                parent.resizeSrc = { startX: parent.img.srcLeft, startY: parent.img.srcTop, width: parent.img.srcWidth,
+                    height: parent.img.srcHeight };
+                if (isBlazor()) {
+                    parent.updateToolbar(parent.element, 'resize');
+                } else {
+                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
+                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    parent.notify('transform', { prop: 'setPreventDownScale', value: { bool: false } });
+                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
+                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                }                
+            } else {
+                parent.notify('transform', { prop: 'resizeCrop', value: { width: args.width, height: args.height } });
+            }
+        }
+        this.resizedImgAngle = parent.transform.degree;
     }
 }

@@ -694,8 +694,12 @@ export class StyleDialog {
                 style = this.style;
 
                 this.documentHelper.owner.isShiftingEnabled = true;
+                this.documentHelper.owner.editor.isSkipOperationsBuild = true;
                 this.documentHelper.owner.editorModule.layoutWholeDocument();
+                this.documentHelper.owner.editor.isSkipOperationsBuild = false;
                 this.documentHelper.owner.isShiftingEnabled = false;
+                let listId: number = this.style instanceof WParagraphStyle ? (this.style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
+                this.documentHelper.owner.getStyleData(name, listId);
             } else {
                 let tmpStyle: any = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
                 tmpStyle.copyStyle(this.style);
@@ -719,7 +723,11 @@ export class StyleDialog {
                 this.documentHelper.styles.push(tmpStyle as any);
                 this.documentHelper.addToStylesMap(tmpStyle);
                 name = styleName;
+                let listId: number = this.style instanceof WParagraphStyle ? (this.style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
+                this.documentHelper.owner.getStyleData(name, listId);
+                this.documentHelper.owner.editor.isSkipOperationsBuild = this.styleType.value === 'Character';
                 this.documentHelper.owner.editorModule.applyStyle(name,true);
+                this.documentHelper.owner.editor.isSkipOperationsBuild = false;
                 this.documentHelper.owner.notify(internalStyleCollectionChange, {});
             }
             this.documentHelper.dialog2.hide();
@@ -898,10 +906,12 @@ export class StyleDialog {
             this.okButton.disabled = (this.styleNameElement.value === '');
         }
     }
-    private getTypeValue(): StyleType {
-        let type: StyleType;
-
-        if (this.styleType.value === 'Linked Style' || this.styleType.value === 'Paragraph') {
+    /**
+     * @private
+     */
+    public getTypeValue(type?: string): StyleType {
+        let value = !isNullOrUndefined(type)? type : this.styleType.value;
+        if (value === 'Linked Style' || value === 'Paragraph') {
             return 'Paragraph';
         } else {
             return 'Character';

@@ -165,11 +165,11 @@ export function GetDetails(parent: IFileManager, names: string[], path: string, 
  * @private
  */
 function getDateFormat(parent: IFileManager): string {
-    const columns: ColumnModel[] = parent.detailsViewSettings.columns;
+    const columns: ColumnModel[] = parent.detailsViewSettings.columns as any;
     let dateFormat: string;
     for (var i = 0; i < columns.length; i++) {
         if (columns[i as number].field === '_fm_modified') {
-            if(!isNOU(columns[i as number].format)) {
+            if (!isNOU(columns[i as number].format)) {
                 dateFormat = columns[i as number].format.toString();
             }
             break;
@@ -430,7 +430,7 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
         const args: SuccessEventArgs = { action: 'rename', result: result };
         parent.trigger('success', args);
         parent.renamedItem = Array.isArray(result.files) ? result.files[0] : result.files;
-        if(getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1){
+        if (getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1){
             parent.pathNames[parent.pathNames.length-1]=parent.renameText;
         }
         if (parent.activeModule === 'navigationpane') {

@@ -318,7 +318,7 @@ describe('Kanban base module', () => {
         });
     });
 
-    xdescribe('actionFailure testing', () => {
+    describe('actionFailure testing', () => {
         const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
         let kanbanObj: Kanban;
         beforeAll(() => {
@@ -328,12 +328,15 @@ describe('Kanban base module', () => {
             kanbanObj = util.createKanban(model, dataManager);
         });
         beforeEach((done: DoneFn) => {
-            const request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
+            const request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
             request.respondWith({ 'status': 404, 'contentType': 'application/json', 'responseText': 'Page not found' });
             done();
         });
-        it('actionFailure testing', () => {
-            expect(actionFailedFunction).toHaveBeenCalled();
+        it('actionFailure testing', (done: Function) => {
+            setTimeout(() => {
+                expect(actionFailedFunction).toHaveBeenCalled();
+                done();
+            }, 500);
         });
         afterAll(() => {
             util.destroy(kanbanObj);

@@ -255,7 +255,7 @@ export class TextFormFieldDialog {
                 { Value: "Uppercase", Name: this.localObj.getConstant("Uppercase") },
                 { Value: "Lowercase", Name: this.localObj.getConstant("Lowercase") },
                 { Value: "FirstCapital", Name: this.localObj.getConstant("FirstCapital") },
-                { Value: "Titlecase", Name: this.localObj.getConstant("Titlecase") }
+                { Value: "Titlecase", Name: this.localObj.getConstant("TitleCase") }
             ];
         } else if (args.value === 'Number') {
             this.textFormatDropDown.fields = { text: null , value: null }; 

@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import { isNullOrUndefined, extend, createElement, Fetch } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, createElement, Fetch, animationMode } from '@syncfusion/ej2-base';
 import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
 import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, PolylineOption, removeElement } from '../utils/helper';
@@ -642,7 +642,7 @@ export class LayerPanel {
         }
         pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
             (currentShapeData['property'][properties as string]) : ''));
-        if (this.currentLayer.selectionSettings.enable || this.currentLayer.highlightSettings.enable) {
+        if(this.currentLayer.selectionSettings.enable || this.currentLayer.highlightSettings.enable) {
             (pathEle as HTMLElement).tabIndex = this.mapObject.tabIndex + index + 3;
             pathEle.setAttribute('role', 'button');
             (pathEle as HTMLElement).style.cursor = this.currentLayer.highlightSettings.enable && !this.currentLayer.selectionSettings.enable ? 'default' : 'pointer';
@@ -650,6 +650,7 @@ export class LayerPanel {
         else {
             pathEle.setAttribute('role', 'region');
         }
+        
         if (drawingType === 'LineString' || drawingType === 'MultiLineString') {
             (pathEle as HTMLElement).style.cssText = 'outline:none';
         }
@@ -1007,7 +1008,8 @@ export class LayerPanel {
         let childNode: HTMLElement;
         this.mapObject.translateType = 'layer';
         if (!isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
-            const duration: number = this.currentLayer.animationDuration;
+            const duration: number = animationMode === 'Disable' ? 0 : (this.currentLayer.animationDuration === 0 && animationMode === 'Enable') ?
+                1000 : this.currentLayer.animationDuration;
             const animate: boolean = duration !== 0 || isNullOrUndefined(this.mapObject.zoomModule);
             this.mapObject.baseTranslatePoint = this.mapObject.zoomTranslatePoint;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1259,7 +1261,8 @@ export class LayerPanel {
         let timeOut: number;
         if (!isNullOrUndefined(type) && type !== 'Pan') {
             this.tileAnimation(type, x, y);
-            timeOut = this.mapObject.layersCollection[0].animationDuration;
+            timeOut = animationMode === 'Disable' ? 0 : (this.mapObject.layersCollection[0].animationDuration === 0 &&
+                animationMode === 'Enable') ? 1000 : this.mapObject.layersCollection[0].animationDuration;
         } else {
             timeOut = 0;
         }
@@ -1388,7 +1391,8 @@ export class LayerPanel {
             scaleValue = zoomType.indexOf('ZoomOut') === 0 ? '0.5' : '0.2';
         }
         if (!isNullOrUndefined(animatedTiles)) {
-            animatedTiles.style.transition = this.mapObject.layersCollection[0].animationDuration + 'ms';
+            animatedTiles.style.transition = animationMode === 'Disable' ? '0ms' : (this.mapObject.layersCollection[0].animationDuration === 0
+                && animationMode === 'Enable') ? '1000ms' : this.mapObject.layersCollection[0].animationDuration + 'ms';
             animatedTiles.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scaleValue + ')';
         }
     }

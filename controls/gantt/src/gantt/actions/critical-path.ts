@@ -10,6 +10,7 @@ import * as cls from '../base/css-constants';
 export class CriticalPath {
 
     private parent: Gantt;
+    private validatedids: number[] = [];
     public detailPredecessorCollection: object[];
     public criticalPathCollection: number[];
     public resourceCollectionIds: string[] = [];
@@ -41,6 +42,7 @@ export class CriticalPath {
             const collectionTaskId: number[] = [];
             const fromDataObject: object[] = [];
             let criticalPathIds: number[] = [];
+            this.criticalTasks = [];
             /* eslint-disable-next-line */
             if (parentRecords[0].ganttProperties.autoEndDate > parentRecords[0].ganttProperties.endDate && !parentRecords[0].ganttProperties.isAutoSchedule) {
                 checkEndDate = parentRecords[0].ganttProperties.autoEndDate;
@@ -225,6 +227,7 @@ export class CriticalPath {
                 this.slackCalculation(fromDataObject, collection, collectionTaskId, checkEndDate, totalRecords, modelIds);
             }
             criticalPathIds = this.finalCriticalPath(collection, taskBeyondEnddate, totalRecords, modelIds, checkEndDate);
+            this.validatedids = [];
             this.criticalPathCollection = criticalPathIds;
             this.detailPredecessorCollection = collection;
             this.predecessorCollectionTaskIds = collectionTaskId;
@@ -608,75 +611,71 @@ export class CriticalPath {
             return this.parent.dataOperation.getDuration(startDate, endDate, durationUnit, record.ganttProperties.isAutoSchedule, true);
         }
     }
+    private updateCriticalTasks(record: IGanttData, criticalPathIds: number[]) {
+        for (let i: number = 0; i < record.ganttProperties.predecessor.length; i++) {
+            let fromRecord: IGanttData;
+            if (this.parent.viewType === 'ProjectView') {
+                fromRecord = this.parent.getRecordByID(record.ganttProperties.predecessor[i as number].from);
+            }
+            else {
+                let resourceIndex: number = this.resourceCollectionIds.indexOf(record.ganttProperties.predecessor[i as number].from.toString());
+                fromRecord = this.parent.flatData[resourceIndex as number];
+            }
+            let durationDiff: number;
+            if (record.ganttProperties.endDate.getTime() >= this.maxEndDate.getTime()) {
+                record.ganttProperties.slack = record.slack = 0 + ' ' + record.ganttProperties.durationUnit;
+                if (record.ganttProperties.progress < 100) {
+                   record.isCritical = true;
+                   record.ganttProperties.isCritical = true;
+                   if (criticalPathIds.indexOf(parseInt(record.ganttProperties.taskId)) == -1) {
+                      criticalPathIds.push(parseInt(record.ganttProperties.taskId));
+                  }
+               }
+            }
+            if (fromRecord) {
+                if (record.ganttProperties.predecessor[i as number].type == 'FS') {
+                    durationDiff = this.parent.dataOperation.getDuration(fromRecord.ganttProperties.endDate, record.ganttProperties.startDate, fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
+                }
+                else if (record.ganttProperties.predecessor[i as number].type == 'SS') {
+                    durationDiff = this.parent.dataOperation.getDuration(fromRecord.ganttProperties.startDate, record.ganttProperties.startDate, fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
+                }
+                else if (record.ganttProperties.predecessor[i as number].type == 'FF') {
+                    durationDiff = this.parent.dataOperation.getDuration(fromRecord.ganttProperties.endDate, record.ganttProperties.endDate, fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
+                }
+                else if (record.ganttProperties.predecessor[i as number].type == 'SF') {
+                    durationDiff = this.parent.dataOperation.getDuration(record.ganttProperties.endDate, fromRecord.ganttProperties.startDate, fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
+                }
+                if (durationDiff == 0 && this.validatedids.indexOf(parseInt(fromRecord.ganttProperties.taskId)) == -1 && fromRecord.ganttProperties.taskId != record.ganttProperties.taskId) {
+                    fromRecord.ganttProperties.slack = record.ganttProperties.slack;
+                    fromRecord.slack = record.slack;
+                    fromRecord.isCritical = record.ganttProperties.isCritical;
+                    fromRecord.ganttProperties.isCritical = record.ganttProperties.isCritical;
+                    if (criticalPathIds.indexOf(parseInt(fromRecord.ganttProperties.taskId)) == -1 && fromRecord.ganttProperties.isCritical && fromRecord.ganttProperties.progress < 100) {
+                        this.validatedids.push(parseInt(fromRecord.ganttProperties.taskId));
+                        criticalPathIds.push(parseInt(fromRecord.ganttProperties.taskId));
+                    }
+                    if (fromRecord.ganttProperties.predecessorsName) {
+                        this.updateCriticalTasks(fromRecord, criticalPathIds)
+                    }
+                }
+            }
+        }
+    }
     /* eslint-disable-next-line */
     private finalCriticalPath(collection: object[], taskBeyondEnddate: number[], flatRecords: IGanttData[], modelRecordIds: string[], checkEndDate: Date) {
         let criticalPathIds: number[] = [];
         let index: number;
         let predecessorFrom: any;
-        const slackindexes: number[] = [];
-        const indexes: number[] = [];
-        for (let z: number = flatRecords.length - 1; z >= 0; z--) {
-            if (flatRecords[parseInt(z.toString(), 10)].slack === '0 day') {
-                const index1: number = flatRecords[parseInt(z.toString(), 10)].index;
-                slackindexes.push(index1);
-            }
-        }
-        const num: number = 0;
-        indexes.push(slackindexes[parseInt(num.toString(), 10)]);
-        for (let j: number = 0; j < indexes.length; j++) {
-            const i: any = flatRecords[indexes[parseInt(j.toString(), 10)]].ganttProperties.predecessor;
-            if (!isNullOrUndefined(i)) {
-                for (let f: number = i.length - 1; f >= 0; f--) {
-                    if (this.parent.viewType === 'ProjectView') {
-                        const q: number = modelRecordIds.indexOf(i[parseInt(f.toString(), 10)]['from']);
-                        for (let k: number = 0; k < indexes.length; k++) {
-                            const item: number = indexes[parseInt(j.toString(), 10)];
-                            if (item !== q) {
-                                indexes.push(q);
-                            }
-                            break;
-                        }
-                    }
-                    else {
-                        const q: number = this.resourceCollectionIds.indexOf(i[parseInt(f.toString(), 10)]['from']);
-                        for (let k: number = 0; k < indexes.length; k++) {
-                            const item: number = indexes[parseInt(j.toString(), 10)];
-                            if (item !== q) {
-                                indexes.push(q);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        for (let x: number = 0; x < indexes.length; x++) {
+        for (let x: number = collection.length - 1; x >= 0; x--) {
             if (this.parent.viewType === 'ProjectView') {
-                index = modelRecordIds.indexOf(flatRecords[indexes[parseInt(x.toString(), 10)]]['ganttProperties']['taskId'].toString());
+                index = modelRecordIds.indexOf(collection[x as number]['taskid'].toString());
             }
             else {
-                index = this.resourceCollectionIds.indexOf(flatRecords[indexes[parseInt(x.toString(), 10)]]['TaskID'].toString());
+                index = this.resourceCollectionIds.indexOf(collection[x as number]['taskid'].toString());
             }
             const predecessorLength: IPredecessor[] = flatRecords[index as number].ganttProperties.predecessor;
-            if(isNullOrUndefined(predecessorLength)){
-                if (taskBeyondEnddate.length > 0) {
-                    for (let i: number = 0; i < taskBeyondEnddate.length; i++) {
-                        if (this.parent.viewType === 'ProjectView') {
-                            index = modelRecordIds.indexOf(taskBeyondEnddate[i as number].toString());
-                        }
-                        else {
-                            index = this.resourceCollectionIds.indexOf(taskBeyondEnddate[i as number].toString());
-                        }
-                        if (index !== -1 && flatRecords[index as number].ganttProperties.progress < 100) {
-                            this.criticalTasks.push(flatRecords[index as number]);
-                            criticalPathIds = criticalPathIds.concat(taskBeyondEnddate[i as number]);
-                        }
-                    }
-                }
-                break;
-            }
             const noSlackValue: string = 0 + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
-            for (let i: number = predecessorLength.length - 1; i >= 0; i--) {
+            for (let i: number = predecessorLength.length - 1; i >= 0; i--) {  
                 let toID: number;
                 if (this.parent.viewType === 'ProjectView') {
                     toID = this.parent.ids.indexOf(predecessorLength[i as number].to);
@@ -687,6 +686,7 @@ export class CriticalPath {
                 let dateDifference: number;
                 const currentData: ITaskData = flatRecords[index as number].ganttProperties;
                 if (predecessorLength[i as number].type === 'FS') {
+                    /* eslint-disable-next-line */
                     if (predecessorLength[i as number].to != currentData.taskId.toString() || this.parent.viewType === 'ResourceView'){
                         /* eslint-disable-next-line */
                         dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
@@ -737,8 +737,28 @@ export class CriticalPath {
                     flatRecords[index as number].isCritical = true;
                     flatRecords[index as number].ganttProperties.isCritical = true;
                     this.criticalTasks.push(flatRecords[index as number]);
-                    const num : any = flatRecords[parseInt(index.toString(), 10)]['ganttProperties']['taskId'];
-                    criticalPathIds.push(num);
+                    if (criticalPathIds.indexOf(collection[x as number]['taskid']) === -1) {
+                       criticalPathIds.push(collection[x as number]['taskid']);
+                    }
+                }
+            }
+            if (flatRecords[index as number].ganttProperties.predecessor.length > 0) {
+                this.updateCriticalTasks(flatRecords[index as number], criticalPathIds)
+            }
+        }
+        if (taskBeyondEnddate.length > 0) {
+            for (let i: number = 0; i < taskBeyondEnddate.length; i++) {
+                if (this.parent.viewType === 'ProjectView') {
+                    index = modelRecordIds.indexOf(taskBeyondEnddate[i as number].toString());
+                }
+                else {
+                    index = this.resourceCollectionIds.indexOf(taskBeyondEnddate[i as number].toString());
+                }
+                if (index !== -1 && flatRecords[index as number].ganttProperties.progress < 100) {
+                    this.criticalTasks.push(flatRecords[index as number]);
+                    if (criticalPathIds.indexOf(taskBeyondEnddate[i as number]) === -1) {
+                       criticalPathIds = criticalPathIds.concat(taskBeyondEnddate[i as number]);
+                    }
                 }
             }
         }
@@ -783,7 +803,7 @@ export class CriticalPath {
                 }
             }
             /* eslint-disable-next-line */
-            if (this.parent.allowUnscheduledTasks && !criticalData[columnFields.startDate] && !criticalData[columnFields.endDate] && criticalData[columnFields.duration]) {
+            if (this.parent.allowUnscheduledTasks && criticalData && !criticalData[columnFields.startDate] && !criticalData[columnFields.endDate] && criticalData[columnFields.duration]) {
                 taskClass = cls.criticalUnscheduledTask;
             }
             else {

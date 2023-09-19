@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 22.1.37 (2023-07-04)
-
 ### Spreadsheet
 
-#### Bug Fixes
+#### Features
 
-- `#I472639` - Issue with "merged cells become mixed up with one another while scrolling over the frozen column applied sheet" has been resolved.
+- `#339651` - Now, provided support for displaying the error alert dialog when an invalid formula is typed, or the wrong number of arguments is supplied to the formula.
+- `#369492` - Now, you can experience cut and paste actions in the Spreadsheet faster compared to earlier versions.
+- `#476502` - Now, you can experience smooth scrolling with multiple conditional formatting set in the Spreadsheet, which is faster compared to earlier versions.
 
 ## 22.1.34 (2023-06-21)
 

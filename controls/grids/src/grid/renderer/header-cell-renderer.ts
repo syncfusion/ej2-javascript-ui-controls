@@ -3,7 +3,7 @@ import { attributes } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { ICellRenderer, IGrid } from '../base/interface';
-import { setStyleAndAttributes, appendChildren } from '../base/util';
+import { setStyleAndAttributes, appendChildren, addStickyColumnPosition } from '../base/util';
 import { CellRenderer } from './cell-renderer';
 import { AriaService, IAriaOptions } from '../services/aria-service';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
@@ -205,6 +205,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         }
         else {
             this.parent.trigger(headerCellInfo, {cell, node});
+        }
+        if (this.parent.isFrozenGrid()) {
+            addStickyColumnPosition(this.parent, column, node);
         }
         return node;
     }

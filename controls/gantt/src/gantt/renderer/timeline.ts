@@ -88,7 +88,9 @@ export class Timeline {
      */
     public refreshTimelineByTimeSpan(): void {
         this.validateTimelineProp();
-        this.parent.ganttChartModule.chartTimelineContainer.innerHTML = '';
+        if (!this.parent.pdfExportModule || (this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport) || (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps && !this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)) {
+            this.parent.ganttChartModule.chartTimelineContainer.innerHTML = '';
+        }
         this.createTimelineSeries();
     }
 
@@ -398,7 +400,10 @@ export class Timeline {
         this.customTimelineSettings.topTier.format = this.validateFormat(this.topTier, this.customTimelineSettings.topTier.format);
         this.customTimelineSettings.weekStartDay = this.customTimelineSettings.weekStartDay >= 0 &&
             this.customTimelineSettings.weekStartDay <= 6 ? this.customTimelineSettings.weekStartDay : 0;
-        this.checkCurrentZoomingLevel();
+        if (!(this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps &&
+            this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)) {
+           this.checkCurrentZoomingLevel();
+        }
     }
     /**
      * To find the current zooming level of the Gantt control.
@@ -640,13 +645,15 @@ export class Timeline {
                 'table', { className: cls.timelineHeaderTableContainer, styles: 'display: block;' });
             thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
             tr = createElement('tr', { innerHTML: this.createTimelineTemplate(tier) });
-            td = createElement('th');
-            div = createElement('div', { styles: 'width: 20px' });
-            td.appendChild(div);
-            tr.appendChild(td);
-            thead.appendChild(tr);
-            table.appendChild(thead);
-            this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
+            if (!this.parent.pdfExportModule || (this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport) || (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps && !this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)) {
+                td = createElement('th');
+                div = createElement('div', { styles: 'width: 20px' });
+                td.appendChild(div);
+                tr.appendChild(td);
+                thead.appendChild(tr);
+                table.appendChild(thead);
+                this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
+            }
             tier = 'bottomTier';
             tr = null;
         }

@@ -409,7 +409,8 @@ export class Adaptor {
         for (let splitIndex: number = 0; splitIndex < tempSplitData.length; splitIndex++) {
             value = !isNullOrUndefined(labels) ? (!(valueType === 'DateTime') ?
                 labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]) :
-                labels.map(Number).indexOf(+new Date(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]).setHours(0,0,0,0))) : null;
+                // eslint-disable-next-line max-len
+                labels.map(Number).indexOf(+new Date(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]).setHours(0, 0, 0, 0))) : null;
             if (!isNullOrUndefined(this.tempSplitDataCollection)) {
                 this.tempSplitDataCollection = value !== -1 && !isNullOrUndefined(labels) ?
                     this.tempSplitDataCollection : this.tempSplitDataCollection[tempSplitData[splitIndex as number]];

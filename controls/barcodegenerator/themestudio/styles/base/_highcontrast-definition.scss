@@ -1,4 +1,3 @@
-@import 'common/mixin.scss';
 @import 'definition/highcontrast.scss';
 
 $font-family: 'Segoe UI', 'GeezaPro', 'DejaVu Serif', sans-serif, '-apple-system', 'BlinkMacSystemFont' !default;
@@ -30,7 +29,7 @@ $active-font-color: $content-font !default;
 $active-icon-color: $content-font !default;
 $error-font-color: $error-alt !default;
 $information-font-color: $info-bg !default;
-$warning-font-color: $bg-base-20 !default;
+$warning-font-color: $msg-warning-color !default;
 $success-font-color: $success-alt !default;
 $overlay-bg-color: #383838 !default;
 $shadow-color: rgba(0, 0, 0, .4) !default;

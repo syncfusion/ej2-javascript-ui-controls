@@ -114,6 +114,10 @@
     }
   }
 
+  .e-icon-rowselect::before {
+    content: '\e930';
+  }
+  
   .e-gantt-tooltip-arrow-left::before {
     content: '\e977';
   }

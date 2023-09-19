@@ -301,8 +301,8 @@ describe('Field List rendering on mobile device', () => {
         it('check on calculated field apply button', (done: Function) => {
             (document.querySelector('.e-pivot-calc-input') as any).value = 'ss';
             (document.querySelector('.e-pivot-formula') as any).value = '11';
-            let calc: any = fieldListObj.calculatedFieldModule;
-            calc.inputObj.value = 'ss';
+            (getInstance(fieldListObj.element.querySelector('#' + (fieldListObj.calculatedFieldModule as any
+			).parentID + 'ddlelement') as HTMLElement, MaskedTextBox) as MaskedTextBox).value = 'ss';
             let formatString: MaskedTextBox = getInstance(document.querySelector('#' + fieldListObj.element.id + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
             expect(formatString).toBeTruthy;
             formatString.setProperties({ value: 'C0' });
@@ -322,10 +322,10 @@ describe('Field List rendering on mobile device', () => {
             (document.querySelector('.e-pivot-add-button') as any).click();
             setTimeout(() => {
                 expect((document.querySelector('.e-pivot-formula') as any).
-                    value === '"DistinctCount(pno)""Sum(advance)"').toBeTruthy();
+                value === '"DistinctCount(pno)""Sum(advance)"').toBeTruthy();
                 (document.querySelector('.e-pivot-calc-input') as any).value = 'New';
-                let calc: any = fieldListObj.calculatedFieldModule;
-                calc.inputObj.value = 'New';
+                (getInstance(fieldListObj.element.querySelector('#' + (fieldListObj.calculatedFieldModule as any
+                ).parentID + 'ddlelement') as HTMLElement, MaskedTextBox) as MaskedTextBox).value = 'New';
                 (document.querySelector('.e-pivot-ok-button') as any).click();
                 done();
             }, 1000);
@@ -336,8 +336,8 @@ describe('Field List rendering on mobile device', () => {
         it('check on calculated field change existing formula', (done: Function) => {
             (document.querySelector('.e-pivot-calc-input') as any).value = 'New';
             (document.querySelector('.e-pivot-formula') as any).value = '100/100';
-            let calc: any = fieldListObj.calculatedFieldModule;
-            calc.inputObj.value = 'New';
+            (getInstance(fieldListObj.element.querySelector('#' + (fieldListObj.calculatedFieldModule as any
+            ).parentID + 'ddlelement') as HTMLElement, MaskedTextBox) as MaskedTextBox).value = 'New';
             let formatString: MaskedTextBox = getInstance(document.querySelector('#' + fieldListObj.element.id + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
             expect(formatString).toBeTruthy;
             formatString.value = 'P1';
@@ -351,8 +351,8 @@ describe('Field List rendering on mobile device', () => {
         it('check on calculated field change existing formula', (done: Function) => {
             (document.querySelector('.e-pivot-calc-input') as any).value = 'balance';
             (document.querySelector('.e-pivot-formula') as any).value = '100';
-            let calc: any = fieldListObj.calculatedFieldModule;
-            calc.inputObj.value = 'balance';
+            (getInstance(fieldListObj.element.querySelector('#' + (fieldListObj.calculatedFieldModule as any
+            ).parentID + 'ddlelement') as HTMLElement, MaskedTextBox) as MaskedTextBox).value = 'balance';
             (document.querySelector('.e-pivot-ok-button') as any).click();
             setTimeout(() => {
                 expect((document.querySelector('.e-pivot-calc-input') as any).value === 'balance').toBeTruthy;
@@ -364,8 +364,8 @@ describe('Field List rendering on mobile device', () => {
         it('check on calculated field change existing formula', (done: Function) => {
             (document.querySelector('.e-pivot-calc-input') as any).value = 'Sales';
             (document.querySelector('.e-pivot-formula') as any).value = '100/+/';
-            let calc: any = fieldListObj.calculatedFieldModule;
-            calc.inputObj.value = 'Sales';
+            (getInstance(fieldListObj.element.querySelector('#' + (fieldListObj.calculatedFieldModule as any
+            ).parentID + 'ddlelement') as HTMLElement, MaskedTextBox) as MaskedTextBox).value = 'Sales';
             (document.querySelector('.e-pivot-ok-button') as any).click();
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-pivot-error-dialog').length > 0).toBeTruthy;
@@ -391,9 +391,10 @@ describe('Field List rendering on mobile device', () => {
             expect((document.querySelector('.e-pivot-formula') as any).value).toBe('100/100');
             expect((document.querySelector('.e-custom-format-input') as any).value).toBe('');
             (document.querySelector('.e-pivot-formula') as any).value = '(100/10)+5';
-            let calc: any = fieldListObj.calculatedFieldModule;
-            calc.inputObj.value = 'New -1';
-            calc.inputObj.change({ value: calc.inputObj.value });
+            let inputObj = (getInstance(fieldListObj.element.querySelector('#' + (fieldListObj.calculatedFieldModule as any
+            ).parentID + 'ddlelement') as HTMLElement, MaskedTextBox) as MaskedTextBox);
+            inputObj.value = 'New -1';
+            inputObj.change({ value: inputObj.value });
             let formatString: MaskedTextBox = getInstance(document.querySelector('#' + fieldListObj.element.id + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
             expect(formatString).toBeTruthy;
             formatString.value = 'C1';

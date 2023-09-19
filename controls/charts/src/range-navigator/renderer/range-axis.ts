@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable valid-jsdoc */
 import { RangeNavigator } from '../range-navigator';
-import { valueToCoefficient, textElement, firstToLowerCase } from '../../common/utils/helper';
+import { valueToCoefficient, textElement, firstToLowerCase, withIn } from '../../common/utils/helper';
 import { PathOption, Rect, measureText, TextOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { DateTime } from '../../chart/axis/date-time-axis';
 import { IntervalType } from '../../chart/utils/enum';
@@ -11,6 +11,7 @@ import { FontModel } from '../../common/model/base-model';
 import { Axis, VisibleLabels } from '../../chart/axis/axis';
 import { MajorGridLinesModel, MajorTickLinesModel } from '../../chart/axis/axis-model';
 import { ILabelRenderEventsArgs } from '../model/range-navigator-interface';
+import { DateTimeCategory } from '../../chart/axis/date-time-category-axis';
 
 
 /**
@@ -50,13 +51,18 @@ export class RangeNavigatorAxis extends DateTime {
         chartAxis.skeleton = control.skeleton;
         chartAxis.skeletonType = control.skeletonType;
         chartAxis.isChart = false;
-        if (control.valueType === 'DateTime') {
+        if (control.valueType.indexOf('DateTime') > -1) {
             const interval: number = this.calculateDateTimeNiceInterval(
                 chartAxis, rect, chartAxis.doubleRange.start,
                 chartAxis.doubleRange.end, chartAxis.isChart
             );
-            this.actualIntervalType = chartAxis.actualIntervalType;
-            this.findAxisLabels(chartAxis, interval);
+            if (control.valueType === 'DateTime') {
+                this.findAxisLabels(chartAxis, interval);
+            }
+            this.actualIntervalType = chartAxis.actualIntervalType as RangeIntervalType;
+            if (control.valueType === 'DateTimeCategory' && (this.actualIntervalType === 'Quarter' || this.actualIntervalType === 'Weeks')) {
+                this.findSecondaryAxisLabels(chartAxis);
+            }
         }
         this.firstLevelLabels = chartAxis.visibleLabels;
         this.lowerValues = [];
@@ -103,14 +109,19 @@ export class RangeNavigatorAxis extends DateTime {
         secondaryAxis.intervalType = secondaryAxis.actualIntervalType = (control.groupBy ||
             this.getSecondaryLabelType(axis.actualIntervalType)) as IntervalType;
         secondaryAxis.labelFormat = '';
-        if (control.enableGrouping && control.valueType === 'DateTime' && this.actualIntervalType !== 'Years') {
+        if (control.enableGrouping && control.valueType.indexOf('DateTime') > -1 && this.actualIntervalType !== 'Years') {
             secondaryAxis.visibleRange.interval = 1;
             secondaryAxis.visibleLabels = [];
             const interval: number = this.calculateDateTimeNiceInterval(
                 secondaryAxis, control.bounds, secondaryAxis.doubleRange.start,
                 secondaryAxis.doubleRange.end, secondaryAxis.isChart
             );
-            this.findAxisLabels(secondaryAxis, interval);
+            if (control.valueType === 'DateTime') {
+                this.findAxisLabels(secondaryAxis, interval);
+            }
+            else {
+                this.findSecondaryAxisLabels(secondaryAxis);
+            }
             this.secondLevelLabels = secondaryAxis.visibleLabels;
             pointY = this.findLabelY(control, true);
             const border: string = this.placeAxisLabels(secondaryAxis, pointY, '_SecondaryLabel_', control, secondLevelElement);
@@ -121,7 +132,7 @@ export class RangeNavigatorAxis extends DateTime {
             this.gridLines.appendChild(control.renderer.drawPath(path) as HTMLElement);
         }
         control.chartSeries.xAxis.visibleLabels = control.chartSeries.xAxis.visibleLabels.concat(secondaryAxis.visibleLabels);
-        (labelElement as HTMLElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
+        (labelElement as HTMLElement).style.cursor = axis.valueType.indexOf('DateTime') > -1 ? 'cursor: pointer' : 'cursor: default';
         labelElement.appendChild(firstLevelElement);
         labelElement.appendChild(secondLevelElement);
 
@@ -138,6 +149,42 @@ export class RangeNavigatorAxis extends DateTime {
     private getSecondaryLabelType(type: RangeIntervalType): RangeIntervalType {
         const types: RangeIntervalType[] = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
         return (type === 'Years' ? 'Years' : types[types.indexOf(type) - 1]);
+    }
+
+    /**
+     * To find labels for date time category axis
+     *
+     * @param {Axis} axis range axis
+     */
+    private findSecondaryAxisLabels(axis: Axis): void {
+        axis.visibleLabels = [];
+        axis.visibleRange.interval = Math.max(axis.visibleRange.interval, 1);
+        let previousIndex: number;
+        this.rangeNavigator.format = this.rangeNavigator.intl.getDateFormat({
+            format: axis.labelFormat || '',
+            type: firstToLowerCase(axis.skeleton), skeleton: this.getSkeleton(axis, null, null)
+        });
+        for (let i: number = Math.ceil(axis.visibleRange.min); i <= axis.visibleRange.max; i += axis.visibleRange.interval) {
+            if ((!this.rangeNavigator.dateTimeCategoryModule.sameInterval(axis.labels.map(Number)[i as number],
+                                                                          axis.labels.map(Number)[i - axis.visibleRange.interval],
+                                                                          axis.actualIntervalType, i) || axis.isIndexed)
+                                                                          && withIn(i, axis.visibleRange)
+                && this.rangeNavigator.dateTimeCategoryModule.isMaximum(i, previousIndex, axis)) {
+                const currentLabel: Date = new Date(axis.labels.map(Number)[i as number]);
+                if (axis.actualIntervalType as RangeIntervalType === 'Quarter') {
+                    const quarterMonths: number[] = [0, 3, 6, 9];
+                    const quarterIndex: number = Math.floor(currentLabel.getMonth() / 3);
+                    currentLabel.setMonth(quarterMonths[quarterIndex as number]);
+                }
+                axis.visibleLabels.push(
+                    new VisibleLabels(
+                        this.dateFormats(this.rangeNavigator.format(currentLabel), axis, axis.visibleLabels.length), i,
+                        this.rangeNavigator.labelStyle, this.rangeNavigator.format(currentLabel)
+                    )
+                );
+                previousIndex = i;
+            }
+        }
     }
 
     /**
@@ -294,7 +341,7 @@ export class RangeNavigatorAxis extends DateTime {
         const intervalInTime: number = ((control.labelPlacement === 'Auto' && control.valueType === 'DateTime') || control.labelPlacement === 'BetweenTicks') ?
             maxLabels > 1 ? (axis.visibleLabels[1].value - axis.visibleLabels[0].value) :
                 (axis.visibleRange.max - axis.visibleLabels[0].value) / 2 : 0;
-        if (control.valueType === 'DateTime' && (intervalType === 'Quarter' || intervalType === 'Weeks')) {
+        if (control.valueType.indexOf('DateTime') > -1 && (intervalType === 'Quarter' || intervalType === 'Weeks')) {
             this.findSuitableFormat(axis, control);
         }
         for (let i: number = 0, len: number = maxLabels; i < len; i++) {
@@ -368,7 +415,7 @@ export class RangeNavigatorAxis extends DateTime {
                 new TextOption(
                     this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text),
                 argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor,
-                labelElement, null, null, null, null, null, null, null, null, null, null, control.themeStyle.axisLabelFont) as HTMLElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
+                labelElement, null, null, null, null, null, null, null, null, null, null, control.themeStyle.axisLabelFont) as HTMLElement).style.cursor = axis.valueType.indexOf('DateTime') > -1 ? 'cursor: pointer' : 'cursor: default';
             prevX = pointX;
             prevLabel = label;
         }

@@ -545,9 +545,6 @@ export class Parser {
                             if (j === 0 || (j > 0 && !this.parent.isUpperChar(text[j - 1]))) {
                                 left = 'n' + this.parent.substring(text, j, i - j);
                                 leftIndex = j;
-                            } else if (i === j && this.parent.isUpperChar(text[j - 1]) && (this.parent.substring(text, i - j, i) === 'TRUE' || this.parent.substring(text, i - j, i) === 'FALSE')) {
-                                left = this.parent.substring(text, i - j, i) === 'TRUE' ? 'n1' : (this.parent.substring(text, i - j, i) === 'FALSE' ? 'n0' : left);
-                                leftIndex = i - j;
                             } else {
                                 j = j - 1;
                                 while (j > -1 && (this.parent.isUpperChar(text[j as number]) || this.parent.isDigit(text[j as number]))) {
@@ -736,7 +733,6 @@ export class Parser {
                                 || (this.parent.storedData.has(right.toUpperCase()))) {
                                 right = 'n' + this.checkForNamedRangeAndKeyValue(right);
                             }
-                            right = right === 'TRUE' ? 'n1' : (right === 'FALSE' ? 'n0' : right);
                             rightIndex = j + 1;
                         }
                     }

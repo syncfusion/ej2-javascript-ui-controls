@@ -12,7 +12,7 @@ export interface FontModel {
 
     /**
      * Sets and gets the font color for text.
-     * 
+     *
      * @default ''
      */
     color?: string;
@@ -24,14 +24,14 @@ export interface FontModel {
 
     /**
      * Sets and gets the font weight of the text.
-     * 
+     *
      * @default 'Regular'
      */
     fontWeight?: string;
 
     /**
      * Sets and gets the font style for the text.
-     * 
+     *
      * @default 'Normal'
      */
     fontStyle?: string;
@@ -118,14 +118,14 @@ export interface AnnotationModel {
 
     /**
      * Sets and gets the x position for the annotation in linear gauge.
-     * 
+     *
      * @default 0
      */
     x?: number;
 
     /**
      * Sets and gets the y position for the annotation in linear gauge.
-     * 
+     *
      * @default 0
      */
     y?: number;
@@ -210,7 +210,7 @@ export interface ContainerModel {
 
     /**
      * Sets and gets the background color of the container in linear gauge.
-     * 
+     *
      * @default 'transparent'
      */
     backgroundColor?: string;

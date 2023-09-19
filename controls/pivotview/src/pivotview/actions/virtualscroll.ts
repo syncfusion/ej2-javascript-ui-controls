@@ -49,39 +49,41 @@ export class VirtualScroll {
 
     private wireEvents(): void {
         this.engineModule = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
-        if (this.parent.displayOption.view !== 'Chart' && !this.parent.isVirtualScrollEventsAdded) {
-            const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
-            const fCont: HTMLElement = this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
+        if (this.parent.displayOption.view !== 'Chart') {
+            const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) as HTMLElement;
+            const gridContent: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_CONTENT) as HTMLElement;
             const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
-            const mScrollBar: HTMLElement = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
-            if (this.parent.mScrollBarEvents.length === 0) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                this.parent.mScrollBarEvents = [...(mScrollBar as any)['__eventList']['events']];
-            }
+            const mScrollBar: HTMLElement = gridContent.querySelector('.' + cls.VIRTUALTABLE_DIV);
             EventHandler.clearEvents(mCont);
-            EventHandler.clearEvents(fCont);
             if (this.isFireFox) {
                 EventHandler.clearEvents(mHdr);
             }
             if (this.engineModule) {
-                const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
-                EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
-                EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
+                const ele: HTMLElement = this.parent.isAdaptive ? mCont : gridContent.querySelector('.' + cls.VIRTUALTABLE_DIV);
+                EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont), this);
+                EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(
+                    mCont.parentElement), this);
                 if (this.isFireFox) {
-                    EventHandler.add(mCont, 'mouseup touchend scroll', this.common(mHdr, mCont, fCont), this);
+                    EventHandler.add(ele, 'mouseup touchend scroll', this.common(mHdr, mCont), this);
+                    if (!this.parent.isAdaptive) {
+                        EventHandler.add(mCont.parentElement, 'mouseup touchend scroll', this.common(mHdr, mCont.parentElement), this);
+                    }
                 } else {
-                    EventHandler.add(mCont.parentElement.parentElement, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
+                    EventHandler.add(ele, 'mouseup touchend', this.common(mHdr, mCont), this);
+                    if (!this.parent.isAdaptive) {
+                        EventHandler.add(mCont.parentElement, 'mouseup touchend', this.common(mHdr, mCont.parentElement), this);
+                    }
                 }
                 EventHandler.add(mScrollBar, 'scroll', this.onCustomScrollbarScroll(mCont, mHdr), this);
                 EventHandler.add(mCont, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mHdr), this);
                 EventHandler.add(mHdr, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mCont), this);
-                // EventHandler.add(fCont.parentElement, 'wheel', this.onWheelScroll(mCont, fCont), this);
-                // EventHandler.add(fCont.parentElement, 'touchstart pointerdown', this.setPageXY(), this);
-                // EventHandler.add(fCont.parentElement, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+                // EventHandler.add(mCont.parentElement, 'wheel', this.onWheelScroll(mCont), this);
+                // EventHandler.add(mCont.parentElement, 'touchstart pointerdown', this.setPageXY(), this);
+                // EventHandler.add(mCont.parentElement, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont), this);
                 EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
-                EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+                EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont), this);
                 EventHandler.add(mCont, 'touchstart pointerdown', this.setPageXY(), this);
-                EventHandler.add(mCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+                EventHandler.add(mCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont), this);
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.parent.grid.on('check-scroll-reset', (args: any) => {
@@ -91,14 +93,12 @@ export class VirtualScroll {
                 args.cancel = true;
             });
             this.parent.grid.isPreventScrollEvent = true;
-            this.parent.isVirtualScrollEventsAdded = true;
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private onWheelScroll(mCont: HTMLElement, fCont: HTMLElement): Function {
+    private onWheelScroll(mCont: HTMLElement): Function {
         const element: HTMLElement = mCont;
         return (e: WheelEvent) => {
-            const top: number = element.parentElement.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
+            const top: number = element.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
             if (this.frozenPreviousValues.top === top) {
                 return;
             }
@@ -124,7 +124,7 @@ export class VirtualScroll {
         const content: HTMLElement = mCont;
         const header: HTMLElement = mHdr;
         return (e: Event) => {
-            const eContent: HTMLElement = (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).parentElement;
+            const eContent: HTMLElement = (this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement);
             if (eContent.querySelector('tbody') === null) {
                 return;
             }
@@ -140,16 +140,16 @@ export class VirtualScroll {
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private onTouchScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
+    private onTouchScroll(mHdr: HTMLElement, mCont: HTMLElement): Function {
         const element: HTMLElement = mCont;
         return (e: PointerEvent | TouchEvent) => {
             if ((e as PointerEvent).pointerType === 'mouse') {
                 return;
             }
             const pageXY: { x: number; y: number } = this.getPointXY(e);
-            const top: number = element.parentElement.scrollTop + (this.pageXY.y - pageXY.y);
-            const ele: HTMLElement = this.parent.isAdaptive ? mCont : element.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            const top: number = this.parent.element.querySelector('.' + cls.GRID_CLASS + ' .' + cls.CONTENT_CLASS).scrollTop +
+                (this.pageXY.y - pageXY.y);
+            const ele: HTMLElement = this.parent.isAdaptive ? mCont : element.parentElement.parentElement.querySelector('.' + cls.VIRTUALTABLE_DIV);
             const left: number = ele.scrollLeft + (this.pageXY.x - pageXY.x);
             if (this.frozenPreviousValues.left === left || left < 0) {
                 return;
@@ -168,7 +168,7 @@ export class VirtualScroll {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
+    private update(top: number, left: number, e: Event): void {
         this.parent.isScrolling = true;
         const engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         const args: EnginePopulatingEventArgs = {
@@ -217,7 +217,7 @@ export class VirtualScroll {
                         (this.parent.dataSourceSettings.valueAxis === 'column' ? this.parent.dataSourceSettings.values.length : 1) : 1;
                 const exactSize: number = (this.parent.pageSettings.columnPageSize *
                     colValues * this.parent.gridSettings.columnWidth);
-                const section: number = Math.ceil(left / exactSize);
+                const section: number = Math.ceil(Math.abs(left) / exactSize);
                 if (this.parent.scrollPosObject.horizontal === section) {
                     // this.parent.hideWaitingPopup();
                     return;
@@ -275,48 +275,79 @@ export class VirtualScroll {
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
+    private common(mHdr: HTMLElement, mCont: HTMLElement): Function {
         return (e: Event) => {
-            const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            const ele: HTMLElement = this.parent.isAdaptive ? mCont :
+                mCont.parentElement.parentElement.querySelector('.' + cls.VIRTUALTABLE_DIV);
             this.update(
-                mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale,
+                this.parent.element.querySelector('.' + cls.GRID_CLASS + ' .' + cls.CONTENT_CLASS).scrollTop * this.parent.verticalScrollScale,
                 ele.scrollLeft * this.parent.horizontalScrollScale, e);
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
+    /**
+     * It performs while scrolling horizontal scroll bar
+     *
+     * @param {HTMLElement} mHdr - It contains the header details.
+     * @param {HTMLElement} mCont - It contains the content details.
+     * @returns {Function} - It returns the table details as Function.
+     * @hidden
+     */
+    public onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement): Function {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let timeOutObj: any;
+        const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.VIRTUALTABLE_DIV);
+        let eleScrollLeft: number = Math.abs(ele.scrollLeft);
+        let left: number = eleScrollLeft * this.parent.horizontalScrollScale;
+        let horiOffset: number = left - this.parent.scrollPosObject.horizontalSection - eleScrollLeft;
+        horiOffset = this.parent.enableRtl ? horiOffset : -horiOffset;
+        for (let i: number = 0, j: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.FREEZED_CELL);
+            i < j.length; i++) {
+            if (this.parent.enableRtl) {
+                (j[i as number] as HTMLElement).style.right = (Number(horiOffset)) + 'px';
+            } else {
+                (j[i as number] as HTMLElement).style.left = (Number(-horiOffset)) + 'px';
+            }
+        }
         return (e: Event) => {
-            const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
-            let left: number = ele.scrollLeft * this.parent.horizontalScrollScale;
+            eleScrollLeft = Math.abs(ele.scrollLeft);
+            left = eleScrollLeft * this.parent.horizontalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
                 timeOutObj = setTimeout(() => {
-                    left = e.type === 'touchmove' ? ele.scrollLeft : left;
-                    this.update(mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale, left, e);
+                    left = e.type === 'touchmove' ? eleScrollLeft : left;
+                    this.update(mCont.parentElement.scrollTop * this.parent.verticalScrollScale, left, e);
                 }, 300);
             }
             if (this.previousValues.left === left) {
                 return;
             }
             this.parent.scrollDirection = this.direction = 'horizondal';
-            let horiOffset: number = -((left - this.parent.scrollPosObject.horizontalSection - ele.scrollLeft));
+            horiOffset = left - this.parent.scrollPosObject.horizontalSection - eleScrollLeft;
+            horiOffset = this.parent.enableRtl ? horiOffset : -horiOffset;
             const vertiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',').length > 1 ?
                 (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim() : '0px)';
-            if (ele.scrollLeft < this.parent.scrollerBrowserLimit) {
-                setStyleAttribute(mCont.querySelector('.e-table') as HTMLElement, {
+            if (eleScrollLeft < this.parent.scrollerBrowserLimit) {
+                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
                 });
-                setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
+                setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
                 });
+                for (let i: number = 0, j: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.FREEZED_CELL);
+                    i < j.length; i++) {
+                    if (this.parent.enableRtl) {
+                        (j[i as number] as HTMLElement).style.right = (Number(horiOffset)) + 'px';
+                    } else {
+                        (j[i as number] as HTMLElement).style.left = (Number(-horiOffset)) + 'px';
+                    }
+                }
             }
             let excessMove: number = this.parent.scrollPosObject.horizontalSection > left ?
-                -(this.parent.scrollPosObject.horizontalSection - left) : ((left + mHdr.offsetWidth) -
-                    (this.parent.scrollPosObject.horizontalSection + (mCont.querySelector('.e-table') as HTMLElement).offsetWidth));
+                -(this.parent.scrollPosObject.horizontalSection - left) : ((left + (mHdr.offsetWidth -
+                    (mHdr.querySelector('.e-headercell.e-leftfreeze') as HTMLElement).offsetWidth)) -
+                    (this.parent.scrollPosObject.horizontalSection + ((mCont.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth -
+                    (mCont.querySelector('.' + cls.TABLE).querySelector('.e-leftfreeze.e-rowsheader') as HTMLElement).offsetWidth)));
             const notLastPage: boolean = Math.ceil(this.parent.scrollPosObject.horizontalSection / this.parent.horizontalScrollScale) <
                 this.parent.scrollerBrowserLimit;
             if (this.parent.scrollPosObject.horizontalSection > left ? true : (excessMove > 1 && notLastPage)) {
@@ -331,7 +362,7 @@ export class VirtualScroll {
                 } else {
                     excessMove = -this.parent.scrollPosObject.horizontalSection;
                 }
-                horiOffset = -((left - (this.parent.scrollPosObject.horizontalSection + excessMove) - mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft));
+                horiOffset = -((left - (this.parent.scrollPosObject.horizontalSection + excessMove) - mCont.parentElement.parentElement.querySelector('.' + cls.VIRTUALTABLE_DIV).scrollLeft));
                 let vWidth: number = (this.parent.gridSettings.columnWidth * this.engineModule.columnCount);
                 if (vWidth > this.parent.scrollerBrowserLimit) {
                     this.parent.horizontalScrollScale = vWidth / this.parent.scrollerBrowserLimit;
@@ -341,15 +372,25 @@ export class VirtualScroll {
                     horiOffset = left;
                     excessMove = 0;
                 }
-                setStyleAttribute(mCont.querySelector('.e-table') as HTMLElement, {
+                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
                 });
-                setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
+                setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
                 });
+                for (let i: number = 0, j: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.FREEZED_CELL);
+                    i < j.length; i++) {
+                    if (this.parent.enableRtl) {
+                        (j[i as number] as HTMLElement).style.right = (Number(horiOffset)) + 'px';
+                    } else {
+                        (j[i as number] as HTMLElement).style.left = (Number(-horiOffset)) + 'px';
+                    }
+                }
                 this.parent.scrollPosObject.horizontalSection = this.parent.scrollPosObject.horizontalSection + excessMove;
             }
-            const hScrollPos: number = (ele.scrollWidth - (ele.scrollLeft + ele.offsetWidth));
+            const hScrollPos: number = (ele.scrollWidth - (eleScrollLeft + (ele.offsetWidth -
+                (this.parent.element.querySelector('.' + cls.GRID_CLASS)
+                    .querySelector('.' + cls.HEADERCELL + '.' + cls.FREEZED_CELL) as HTMLElement).offsetWidth)));
             if (hScrollPos <= 0) {
                 const virtualDiv: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV);
                 virtualDiv.style.display = 'none';
@@ -357,64 +398,84 @@ export class VirtualScroll {
                 virtualDiv.style.display = '';
                 const mCntVScrollPos: number = (mCont.scrollWidth - (mCont.scrollLeft + mCont.offsetWidth));
                 this.parent.scrollPosObject.horizontalSection -= mCntScrollPos > hScrollPos ? mCntScrollPos : -mCntVScrollPos;
-                horiOffset = (ele.scrollLeft > this.parent.scrollerBrowserLimit) ?
+                horiOffset = (eleScrollLeft > this.parent.scrollerBrowserLimit) ?
                     Number((mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].split('px')[0].trim()) :
-                    -(((ele.scrollLeft * this.parent.horizontalScrollScale) -
-                        this.parent.scrollPosObject.horizontalSection - ele.scrollLeft));
-                setStyleAttribute(mCont.querySelector('.e-table') as HTMLElement, {
+                    -(((eleScrollLeft * this.parent.horizontalScrollScale) -
+                        this.parent.scrollPosObject.horizontalSection - eleScrollLeft));
+                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
                 });
-                setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
+                setStyleAttribute(mHdr.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
                 });
+                for (let i: number = 0, j: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.FREEZED_CELL);
+                    i < j.length; i++) {
+                    if (this.parent.enableRtl) {
+                        (j[i as number] as HTMLElement).style.right = (Number(horiOffset)) + 'px';
+                    } else {
+                        (j[i as number] as HTMLElement).style.left = (Number(-horiOffset)) + 'px';
+                    }
+                }
             }
             this.previousValues.left = left;
             this.frozenPreviousValues.left = left;
             this.eventType = '';
             mHdr.scrollLeft = ele.scrollLeft;
+            mCont.scrollLeft = ele.scrollLeft;
         };
     }
 
-    private onVerticalScroll(fCont: HTMLElement, mCont: HTMLElement): Function {
+    private onVerticalScroll(mCont: HTMLElement): Function {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let timeOutObj: any;
         return (e: Event | KeyboardEventArgs) => {
-            const top: number = mCont.parentElement.scrollTop * this.parent.verticalScrollScale;
+            const top: number = mCont.scrollTop * this.parent.verticalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove' || e.type === 'keyup' || e.type === 'keydown') {
-                const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+                const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.VIRTUALTABLE_DIV);
                 clearTimeout(timeOutObj);
                 timeOutObj = setTimeout(() => {
-                    this.update(null, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale,
-                                ele.scrollLeft * this.parent.horizontalScrollScale, e);
+                    let scrollLeft: number = 0;
+                    if (this.parent.isAdaptive) {
+                        let contentTable: HTMLElement = ele.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV);
+                        scrollLeft = (ele.scrollLeft === contentTable.scrollLeft) ? ele.scrollLeft :
+                            contentTable.scrollLeft;
+                    } else {
+                        scrollLeft = ele.scrollLeft;
+                    }
+                    this.update(mCont.scrollTop * this.parent.verticalScrollScale,
+                        scrollLeft * this.parent.horizontalScrollScale, e);
                 }, 300);
             }
             if (this.previousValues.top === top) {
                 return;
             }
+            if (this.parent.scrollPosObject.horizontalSection < 0) {
+                this.parent.scrollPosObject.horizontalSection = 0;
+            }
             this.parent.scrollDirection = this.direction = 'vertical';
-            let vertiOffset: number = -((top - this.parent.scrollPosObject.verticalSection - mCont.parentElement.scrollTop));
+            let vertiOffset: number = -((top - this.parent.scrollPosObject.verticalSection - mCont.scrollTop));
             const horiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim();
             if (vertiOffset > this.parent.virtualDiv.clientHeight) {
                 vertiOffset = this.parent.virtualDiv.clientHeight;
             }
-            if (mCont.parentElement.scrollTop < this.parent.scrollerBrowserLimit) {
-                setStyleAttribute(fCont.querySelector('.e-table') as HTMLElement, {
+            if (mCont.scrollTop < this.parent.scrollerBrowserLimit) {
+                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: 'translate(' + 0 + 'px,' + vertiOffset + 'px)'
                 });
-                setStyleAttribute(mCont.querySelector('.e-table') as HTMLElement, {
+                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: horiOffset + ',' + vertiOffset + 'px)'
                 });
             }
             let excessMove: number = this.parent.scrollPosObject.verticalSection > top ?
-                -(this.parent.scrollPosObject.verticalSection - top) : ((top + fCont.parentElement.clientHeight) -
-                    (this.parent.scrollPosObject.verticalSection + (fCont.querySelector('.e-table') as HTMLElement).offsetHeight));
+                -(this.parent.scrollPosObject.verticalSection - top) : ((top + mCont.clientHeight) -
+                    (this.parent.scrollPosObject.verticalSection + (mCont.querySelector('.' + cls.TABLE) as HTMLElement).offsetHeight));
             const notLastPage: boolean = Math.ceil(this.parent.scrollPosObject.verticalSection / this.parent.verticalScrollScale) <
                 this.parent.scrollerBrowserLimit;
             if (this.parent.scrollPosObject.verticalSection > top ? true : (excessMove > 1 && notLastPage)) {
                 //  showSpinner(this.parent.element);
-                if (top > fCont.parentElement.clientHeight) {
+                if (top > mCont.clientHeight) {
                     if (this.parent.scrollPosObject.top < 1) {
-                        this.parent.scrollPosObject.top = fCont.parentElement.clientHeight;
+                        this.parent.scrollPosObject.top = mCont.clientHeight;
                     }
                     this.parent.scrollPosObject.top = this.parent.scrollPosObject.top - 50;
                     excessMove = this.parent.scrollPosObject.verticalSection > top ?
@@ -423,8 +484,8 @@ export class VirtualScroll {
                     excessMove = -this.parent.scrollPosObject.verticalSection;
                 }
                 const movableTable: HTMLElement =
-                    this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV).querySelector('.e-table') as HTMLElement;
-                vertiOffset = -((top - (this.parent.scrollPosObject.verticalSection + excessMove) - mCont.parentElement.scrollTop));
+                    this.parent.element.querySelector('.' + cls.CONTENT_CLASS).querySelector('.' + cls.TABLE) as HTMLElement;
+                vertiOffset = -((top - (this.parent.scrollPosObject.verticalSection + excessMove) - mCont.scrollTop));
                 let vHeight: number = (this.parent.gridSettings.rowHeight * this.engineModule.rowCount + 0.1
                     - movableTable.clientHeight);
                 if (vHeight > this.parent.scrollerBrowserLimit) {
@@ -438,10 +499,10 @@ export class VirtualScroll {
                 if (vertiOffset > this.parent.virtualDiv.clientHeight) {
                     vertiOffset = this.parent.virtualDiv.clientHeight;
                 }
-                setStyleAttribute(fCont.querySelector('.e-table') as HTMLElement, {
+                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: 'translate(' + 0 + 'px,' + vertiOffset + 'px)'
                 });
-                setStyleAttribute(mCont.querySelector('.e-table') as HTMLElement, {
+                setStyleAttribute(mCont.querySelector('.' + cls.TABLE) as HTMLElement, {
                     transform: horiOffset + ',' + vertiOffset + 'px)'
                 });
                 this.parent.scrollPosObject.verticalSection = this.parent.scrollPosObject.verticalSection + excessMove;

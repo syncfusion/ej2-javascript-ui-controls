@@ -11,6 +11,10 @@
           }
         }
       }
+      @if ($skin-name== 'Material3-dark' or $skin-name == 'Material3'){
+        .e-toolbar .e-toolbar-item .e-tbar-btn.e-btn .e-icons.e-btn-icon{
+          font-size: 18px;
+        }}
       .e-gantt-chart {
         .e-timeline-header-container {
           height: $gantt-bigger-header-border-height;
@@ -38,7 +42,7 @@
           }
         }
 
-        @if ($skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind') {
+        @if ($skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name =='Material3') {
           .e-left-resize-gripper::before,
           .e-right-resize-gripper::before {
             content: '\e888';
@@ -73,6 +77,7 @@
         .e-connectorpoint-right-hover {
           background-color: $connector-point-hover-color;
           border-color: $connector-point-border-color;
+          position: relative;
         }
 
         .e-connectorpoint-left-hover:hover,
@@ -80,6 +85,17 @@
           background-color: $connector-point-hover-color;
           border-color: $connector-point-border-color;
           outline: 2px solid $connector-point-hover-outerline-color;
+        }
+        .e-connectorpoint-left-hover::after,
+        .e-connectorpoint-right-hover::after{
+          content: '';
+          position: absolute;
+          width: 30px;
+          height: 40px;
+          top: -10px;
+        }
+        .e-connectorpoint-allow-block {
+          cursor: no-drop;
         }
       }
 
@@ -107,6 +123,10 @@
         @else {
           .e-indicator {
             display: block;
+            @if ($skin-name == 'Material3') {
+              border-top-left-radius: 4px;
+              border-top-right-radius: 4px;
+            }
           }
         }
       }
@@ -131,6 +151,9 @@
 
         .e-btn .e-btn-icon.e-icon-dlg-close {
           font-size: $gantt-bigger-dialog-close-button-size;
+          @if ($skin-name == 'Material3') {
+            width: $gantt-bigger-dialog-close-button-size;
+          }
         }
 
         .e-footer-content {
@@ -145,10 +168,6 @@
         .e-dlg-header {
           line-height: 28px;
         }
-      }
-
-      .e-filter-popup.e-popup {
-        width: $gantt-bigger-filter-dialog-width;
       }
 
       .e-grid .e-flmenu-valuediv {
@@ -178,7 +197,7 @@
     .e-gantt-dialog {
       .e-dialog {
         border-radius: 6px;
-        width: $gantt-bigger-dialog-width;
+        //width: $gantt-bigger-dialog-width;
       }
       .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
         padding: 0 16px !important;    /* stylelint-disable-line declaration-no-important */
@@ -228,6 +247,13 @@
             border-radius: 50%;
             height: auto !important; /* stylelint-disable-line declaration-no-important */
             width: auto;
+            @if ($skin-name=='Material3') {
+              line-height: 0px;
+              padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+            }
+            @if ($skin-name == 'FluentUI') {
+              margin-right: 6px;
+            }
           }
         }
       }
@@ -389,6 +415,11 @@
       word-break: unset !important; /* stylelint-disable-line declaration-no-important */
     }
   }
+  @if ($skin-name == 'Material3-dark' or $skin-name == 'Material3'){
+    .e-toolbar .e-toolbar-item .e-tbar-btn.e-btn .e-icons.e-btn-icon{
+      font-size: 16px;
+    }}
+
   .e-gantt-tooltip{
     .e-tip-content{
       text-align: left !important; /* stylelint-disable-line declaration-no-important */
@@ -402,10 +433,6 @@
     .e-connector-line-left-arrow{
       border-right: none !important; /* stylelint-disable-line declaration-no-important */
       border-left-color: $connector-line-hover-color;
-    }
-    .e-toolbar-right{
-      left: auto !important; /* stylelint-disable-line declaration-no-important */
-      right: 0 !important; /* stylelint-disable-line declaration-no-important */
     }
     .e-gantt-chart{
       .e-timeline-header-container{
@@ -630,6 +657,10 @@
         line-height: 10px;
         vertical-align: middle;
       }
+      
+      .e-grid .e-gantt-resource-parent .e-rowdragdrop{
+        pointer-events: none;
+      }
     }
 
     .e-gantt-chart {
@@ -792,6 +823,14 @@
         z-index: 3;
       }
 
+      .e-taskbar-main-container:hover{
+        z-index: 4;
+      }
+      
+      .e-taskbar-main-container.e-gantt-multi-taskbar:hover {
+        z-index: 4;
+      }
+
       .e-left-label-container.e-left-label-temp-container {
         align-items: center;
         display: inline-flex;
@@ -870,6 +909,13 @@
         width: 100%;
       }
 
+      .e-gantt-milestone{
+        @if $skin-name =='Material3'{
+          border: 1px;
+          border-style: solid;
+        }
+      }
+
       .e-manualparent-main-container {
         background-color: transparent;
         cursor: move;
@@ -886,16 +932,27 @@
           border-color: $gantt-active-background-color;
         }
         @else {
-          border-color: inherit;
+          @if $skin-name =='Material3'{
+            border-color: $gantt-split-container-line-border-color;
+          }
+          @else{
+            border-color: inherit;
+          }
         }
-        border-top-style: dotted;
-        border-top-width: 2px;
+        @if $skin-name =='Material3' or $skin-name =='Material3-dark'{
+          border-top-style: dashed;
+          border-top-width: 2px;
+        }
+        @else{
+          border-top-style: dotted;
+          border-top-width: 2px;
+        }
         height: 0;
         left: 2px;
         pointer-events: none;
         position: absolute;
         top: 50%;
-        width: 98%;
+        width: 99.5%;
       }
 
       .e-gantt-child-taskbar-inner-div,
@@ -944,28 +1001,24 @@
         height: 16px;
         width: 16px;
         left: 14px;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-innerHTML1 {
         height: 16px;
         width: 16px;
         left: 30px;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-innerHTML2 {
         height: 16px;
         width: 16px;
         left: 60px;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-timelineHeader {
         height: 16px;
         width: 82px;
         left: 20px;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell01 {
@@ -973,14 +1026,12 @@
         width: 88px;
         left: 14px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell02 {
         height: 18px;
         width: 410px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell03 {
@@ -988,14 +1039,12 @@
         width: 88px;
         left: 14px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell04 {
         height: 18px;
         width: 208px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell05 {
@@ -1003,7 +1052,6 @@
         width: 108px;
         left: 64px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell06 {
@@ -1011,7 +1059,6 @@
         width: 195px;
         left: 192px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell07 {
@@ -1019,7 +1066,6 @@
         width: 156px;
         left: 388px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-taskbar-left-resizer,
@@ -1113,6 +1159,11 @@
       .e-baseline-gantt-milestone-container {
         position: absolute;
         z-index: 2;
+        @if $skin-name =='Material3'{
+          border: 2px;
+          border-color: $gantt-baseline-color;
+          border-style: solid;
+        }
       }
 
       .e-task-label {
@@ -1175,7 +1226,7 @@
         border-left: 1px dashed;
         position: absolute;
         width: 1px;
-        z-index: 2;
+        z-index: 4;
 
         .e-span-label {
           border-radius: 3px;
@@ -1320,14 +1371,6 @@
         outline-offset: 2px;
       }
     }
-    .e-dialog.e-filter-popup {
-      .e-footer-content {
-        
-        @if ($skin-name =='FluentUI') {
-          padding-top: 0;
-        }
-      }
-    }
   }
   
   .e-gantt-dialog .e-tab .e-tab-header {
@@ -1469,10 +1512,6 @@
     }
   }
 
-  .e-icon-rowselect::before {
-    content: '\e930';
-  }
-
   .e-ganttpopup {
     -moz-user-select: none; /* stylelint-disable-line property-no-vendor-prefix */
     -ms-user-select: none; /* stylelint-disable-line property-no-vendor-prefix */
@@ -1535,6 +1574,13 @@
   .e-bigger .e-gantt .e-gantt-chart .e-label {
     font-size: $gantt-bigger-label-font-size;
   }
+  .e-bigger .e-gantt .e-gantt-chart .e-timeline-single-header-outer-div{
+    height: 64px !important; /* stylelint-disable-line declaration-no-important */
+  }
+  .e-bigger .e-timeline-single-header-cell {
+    height: 64px !important; /* stylelint-disable-line declaration-no-important */
+    line-height: 64px !important; /* stylelint-disable-line declaration-no-important */
+  }
 
   .e-gantt-tooltip-label {
     padding-bottom: 2px;
@@ -1595,16 +1641,16 @@
       font-size: 12px;
     }
 
-    .e-right-resize-gripper,
-    .e-left-resize-gripper {
-      border: 7px solid;
-      z-index: -1;
+    // .e-right-resize-gripper,
+    // .e-left-resize-gripper {
+    //   border: 7px solid;
+    //   z-index: -1;
 
-      &::before {
-        font-size: 14px;
-        margin-left: -7px;
-      }
-    }
+    //   &::before {
+    //     font-size: 14px;
+    //     margin-left: -7px;
+    //   }
+    // }
 
     .e-dependent-div .e-content {
       height: 100%;
@@ -1688,5 +1734,10 @@
         margin-bottom: 0;
       }
     }
+  }
+  .e-gantt-chart-resize-indicator{
+    height: 100%;
+    position: absolute;
+    z-index: 1;
   }
 }

@@ -3,13 +3,14 @@
 /* eslint-disable jsdoc/require-param */
 import { Axis } from '../axis/axis';
 import { Category } from '../axis/category-axis';
-import { triggerLabelRender } from '../../common/utils/helper';
+import { triggerLabelRender, valueToCoefficient } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { withIn, firstToLowerCase } from '../../common/utils/helper';
 import { IntervalType } from '../utils/enum';
 import { Chart } from '../chart';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';
+import { RangeIntervalType } from '../../common/utils/enum';
 
 /**
  * Category module is used to render category axis.
@@ -58,6 +59,12 @@ export class DateTimeCategory extends Category {
         axis.visibleLabels = [];
         let labelStyle: Font;
         const padding: number = axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
+        let previousIndex: number = 0;
+        const isRangeNavigator: boolean = this.chart.getModuleName() === 'rangeNavigator';
+        this.axisSize = isRangeNavigator ? this.chart.availableSize : this.axisSize;
+        if (isRangeNavigator || this.chart.stockChart) {
+            axis.labels.sort((a: string, b: string) => Number(a) - Number(b));
+        }
         if (axis.intervalType === 'Auto') {
             this.calculateDateTimeNiceInterval(
                 axis, this.axisSize, parseInt(axis.labels[0], 10),
@@ -70,16 +77,44 @@ export class DateTimeCategory extends Category {
             format: axis.labelFormat || this.blazorCustomFormat(axis), type: firstToLowerCase(axis.skeletonType),
             skeleton: this.getSkeleton(axis, null, null, this.chart.isBlazor)
         });
-        for (let i: number = 0; i < axis.labels.length; i++) {
+        let i: number = (!isRangeNavigator && this.chart.stockChart) ? 1 : 0;
+        for (; i < axis.labels.length; i++) {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
-            if (!this.sameInterval(axis.labels.map(Number)[i as number], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)
-                || axis.isIndexed) {
-                if (withIn(i - padding, axis.visibleRange)) {
-                    triggerLabelRender(
-                        this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i as number], axis.format) :
-                            <string>axis.format(new Date(axis.labels.map(Number)[i as number]))),
-                        labelStyle, axis
-                    );
+            if (this.chart.stockChart || isRangeNavigator) {
+                if (axis.intervalType === 'Auto') {
+                    if ((((!isRangeNavigator && i === 1) || this.StartOfWeek(axis.labels.map(Number)[i as number], axis.labels.map(Number)[i - 1], axis, i, previousIndex))
+                    || axis.isIndexed) && withIn(i, axis.visibleRange)) {
+                        triggerLabelRender(
+                            this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i as number], axis.format) :
+                                <string>axis.format(new Date(axis.labels.map(Number)[i as number]))),
+                            labelStyle, axis
+                        );
+                        previousIndex = i;
+                    }
+                }
+                else if ((((!isRangeNavigator && i === 1) || !this.sameInterval(axis.labels.map(Number)[i as number], axis.labels.map(Number)[i - 1],
+                                             axis.actualIntervalType, i))
+                    || axis.isIndexed) && withIn(i, axis.visibleRange)) {
+                    if ((!isRangeNavigator && i === 1) || this.isMaximum(i, previousIndex, axis)) {
+                        triggerLabelRender(
+                            this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i as number], axis.format) :
+                                <string>axis.format(new Date(axis.labels.map(Number)[i as number]))),
+                            labelStyle, axis
+                        );
+                        previousIndex = i;
+                    }
+                }
+            }
+            else {
+                if (!this.sameInterval(axis.labels.map(Number)[i as number], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)
+                    || axis.isIndexed) {
+                    if (withIn(i - padding, axis.visibleRange)) {
+                        triggerLabelRender(
+                            this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i as number], axis.format) :
+                                <string>axis.format(new Date(axis.labels.map(Number)[i as number]))),
+                            labelStyle, axis
+                        );
+                    }
                 }
             }
         }
@@ -113,7 +148,7 @@ export class DateTimeCategory extends Category {
     /**
      * get same interval
      */
-    private sameInterval(currentDate: number, previousDate: number, type: IntervalType, index: number): boolean {
+    public sameInterval(currentDate: number, previousDate: number, type: RangeIntervalType, index: number): boolean {
         let sameValue: boolean;
         if (index === 0) {
             sameValue = false;
@@ -122,9 +157,19 @@ export class DateTimeCategory extends Category {
             case 'Years':
                 sameValue = new Date(currentDate).getFullYear() === new Date(previousDate).getFullYear();
                 break;
+            case 'Quarter':
+                sameValue = new Date(currentDate).getFullYear() === new Date(previousDate).getFullYear() &&
+                            Math.floor(new Date(currentDate).getMonth() / 3) === Math.floor(new Date(previousDate).getMonth() / 3);
+                break;
             case 'Months':
                 sameValue = new Date(currentDate).getFullYear() === new Date(previousDate).getFullYear() &&
                         new Date(currentDate).getMonth() === new Date(previousDate).getMonth();
+                break;
+            case 'Weeks':
+                sameValue = new Date(currentDate).getFullYear() === new Date(previousDate).getFullYear() &&
+                            new Date(currentDate).getMonth() === new Date(previousDate).getMonth() &&
+                            Math.floor((new Date(currentDate).getDate() - 1) / 7) ===
+                            Math.floor((new Date(previousDate).getDate() - 1) / 7);
                 break;
             case 'Days':
                 sameValue = (Math.abs(currentDate - previousDate) < 24 * 60 * 60 * 1000 &&
@@ -147,6 +192,39 @@ export class DateTimeCategory extends Category {
         return sameValue;
     }
 
+    /**
+     * To check whether the current label comes in the same week as the previous label week.
+     */
+    private StartOfWeek(currentDate: number, previousDate: number, axis: Axis, index: number, previousIndex: number): boolean {
+        if (index === 0) {
+            return true;
+        }
+        let isMonday: boolean = false;
+        const labelsCount: number = 30;
+        if (axis.labels.length >= labelsCount) {
+            const previousDay: Date = new Date(previousDate);
+            const currentday: Date = new Date(currentDate);
+            previousDay.setDate(previousDay.getDate() - previousDay.getDay());
+            currentday.setDate(currentday.getDate() - currentday.getDay());
+            isMonday = !(previousDay.getTime() === currentday.getTime()) && this.isMaximum(index, previousIndex, axis);
+        }
+        else {
+            isMonday = this.isMaximum(index, previousIndex, axis);
+        }
+        return isMonday;
+    }
+    /**
+     * To check whether the distance between labels is above the axisLabel maximum length.
+     */
+    public isMaximum(index: number, previousIndex: number, axis: Axis): boolean {
+        if (index === 0) {
+            return true;
+        }
+        const axisLabelMaximumLength: number = 100;
+        const pointX: number = valueToCoefficient(index, axis) * axis.rect.width;
+        const previousPointX: number = valueToCoefficient(previousIndex, axis) * axis.rect.width;
+        return (pointX - previousPointX >= (axis.labels.length >= 15 ? axisLabelMaximumLength : axisLabelMaximumLength / 2));
+    }
     /**
      * Get module name
      */

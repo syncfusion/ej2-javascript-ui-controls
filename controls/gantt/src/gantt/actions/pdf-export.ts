@@ -17,12 +17,13 @@ import { PdfGantt } from '../export/pdf-gantt';
  */
 export class PdfExport {
     private parent: Gantt;
-    private helper: ExportHelper;
+    public helper: ExportHelper;
     private pdfDocument: PdfDocument;
     public gantt: PdfGantt;
     public isPdfExport: boolean = false;
     private isBlob: boolean;
     private blobPromise: Promise<{ blobData: Blob }>;
+    public pdfPageDimensions: SizeF;
     /**
      * @param {Gantt} parent .
      * @hidden
@@ -89,11 +90,24 @@ export class PdfExport {
         if (isNullOrUndefined(pdfExportProperties)) {
             pdfExportProperties = {};
         }
+        if (pdfExportProperties.fitToWidthSettings && pdfExportProperties.fitToWidthSettings.isFitToWidth) {
+            if (pdfExportProperties.exportType === 'CurrentViewData') {
+                this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.currentViewData, null, true);
+            }
+            else {
+                this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.flatData, null, true);
+            }
+            this.helper.beforeSinglePageExport['cloneCurrentViewData'] = extend([], this.parent.currentViewData, null, true);
+            data = this.helper.beforeSinglePageExport['cloneFlatData'];
+        }
+        else {
         if (pdfExportProperties.exportType === 'CurrentViewData') {
-            data = this.parent.currentViewData;
-        } else {
+            data = this.parent.currentViewData
+        }
+        else {
             data = this.parent.flatData;
         }
+    }
         this.initGantt();
         if (!isNullOrUndefined(pdfDoc)) {
             this.pdfDocument = <PdfDocument>pdfDoc;
@@ -114,6 +128,7 @@ export class PdfExport {
         const section: PdfSection = this.pdfDocument.sections.add() as PdfSection;
         this.processSectionExportProperties(section, pdfExportProperties);
         const pdfPage: PdfPage = section.pages.add();
+        this.pdfPageDimensions = pdfPage.getClientSize();
         /* eslint-disable-next-line */
         return new Promise((resolve: Function, reject: Function) => {
             this.helper.processGridExport(data, this.gantt, pdfExportProperties);
@@ -124,6 +139,26 @@ export class PdfExport {
             format.break = PdfLayoutBreakType.FitElement;
             const layouter: PdfTreeGridLayoutResult = this.gantt.drawGrid(pdfPage, 0, 0, format);
             this.gantt.drawChart(layouter);
+            if (this.helper.exportProps && this.helper.exportProps.fitToWidthSettings && this.helper.exportProps.fitToWidthSettings.isFitToWidth) {
+                this.parent.zoomingProjectStartDate = this.helper.beforeSinglePageExport['zoomingProjectStartDate'];
+                this.parent.zoomingProjectEndDate = this.helper.beforeSinglePageExport['zoomingProjectEndDate'];
+                this.parent.cloneProjectStartDate = this.helper.beforeSinglePageExport['cloneProjectStartDate'];
+                this.parent.cloneProjectEndDate = this.helper.beforeSinglePageExport['cloneProjectEndDate'];
+                this.parent.timelineModule.customTimelineSettings = this.helper.beforeSinglePageExport['customTimelineSettings'];
+                this.parent.isTimelineRoundOff = this.helper.beforeSinglePageExport['isTimelineRoundOff'];
+                this.parent.timelineModule.topTier = this.helper.beforeSinglePageExport['topTier'];
+                this.parent.timelineModule.topTierCellWidth = this.helper.beforeSinglePageExport['topTierCellWidth'];
+                this.parent.timelineModule.topTierCollection = this.helper.beforeSinglePageExport['topTierCollection'];
+                this.parent.timelineModule.bottomTier = this.helper.beforeSinglePageExport['bottomTier'];
+                this.parent.timelineModule.bottomTierCellWidth = this.helper.beforeSinglePageExport['bottomTierCellWidth'];
+                this.parent.timelineModule.bottomTierCollection = this.helper.beforeSinglePageExport['bottomTierCollection'];
+                this.parent.timelineModule.totalTimelineWidth = this.helper.beforeSinglePageExport['totalTimelineWidth'];
+                this.parent.timelineModule.timelineStartDate = this.helper.beforeSinglePageExport['timelineStartDate'];
+                this.parent.timelineModule.timelineEndDate = this.helper.beforeSinglePageExport['timelineEndDate'];
+                this.parent.timelineModule.timelineRoundOffEndDate = this.helper.beforeSinglePageExport['timelineRoundOffEndDate'];
+                this.parent.perDayWidth = this.helper.beforeSinglePageExport['perDayWidth'];
+                this.parent.updatedConnectorLineCollection = this.helper.beforeSinglePageExport['updatedConnectorLineCollection'];
+            }
             if (!isMultipleExport) {
                 if (!this.isBlob) {
                 // save the PDF

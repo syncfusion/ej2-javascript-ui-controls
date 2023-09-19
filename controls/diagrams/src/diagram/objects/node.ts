@@ -8,7 +8,7 @@
 /* eslint-disable no-case-declarations */
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='./node-base-model.d.ts'/>
-import { Property, Complex, Collection, ChildProperty, ComplexFactory, isBlazor, extend, cloneNode, isNullOrUndefined, compile as baseTemplateCompiler} from '@syncfusion/ej2-base';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, isBlazor, extend, cloneNode, isNullOrUndefined, compile as baseTemplateCompiler } from '@syncfusion/ej2-base';
 import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';
 import { ShapeStyleModel, TextStyleModel, ShadowModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
@@ -2943,15 +2943,15 @@ export class Node extends NodeBase implements IElement {
         if (diagramId && (annotation.template || annotation.annotationType === 'Template'
             || (annotationTemplate && annotation.content === ''))) {
             annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id, (annotationTemplate as string));
-            // Task 834121: Content-Security-Policy support for diagram
-            const diagramElement: Object = document.getElementById(diagramId);
-            const instance: string = 'ej2_instances';
-            const diagram: Object = diagramElement[`${instance}`][0];
-            if(annotation.template && typeof annotation.template === 'function' && (diagram as IReactDiagram).isReact){
-                (annotationcontent as any).templateFn = baseTemplateCompiler(annotation.template);
-                annotationcontent.isTemplate = true;
-            }
-            annotationcontent = getTemplateContent(annotationcontent, annotation, annotationTemplate,diagram);
+             // Task 834121: Content-Security-Policy support for diagram
+             const diagramElement: Object = document.getElementById(diagramId);
+             const instance: string = 'ej2_instances';
+             const diagram: Object = diagramElement[`${instance}`][0];
+             if(annotation.template && typeof annotation.template === 'function' && (diagram as IReactDiagram).isReact){
+                 (annotationcontent as any).templateFn = baseTemplateCompiler(annotation.template);
+                 annotationcontent.isTemplate = true;
+             }
+             annotationcontent = getTemplateContent(annotationcontent, annotation, annotationTemplate,diagram);
         } else {
             annotationcontent = new TextElement();
             (annotationcontent as TextElement).canMeasure = !virtualize;
@@ -3610,4 +3610,13 @@ export class Selector extends ChildProperty<Selector> implements IElement {
         diagram.protectPropertyChange(diagramProtectPropertyChange);
         return container;
     }
+
+    /** 
+     * Specifies whether the selection state of the diagram element should be toggled based on a mouse click at runtime. 
+     * The default value is false.
+     *
+     * @default false
+     */
+    @Property(false)
+    public canToggleSelection: boolean;
 }

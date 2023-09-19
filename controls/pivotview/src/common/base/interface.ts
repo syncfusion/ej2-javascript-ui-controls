@@ -7,7 +7,7 @@ import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionTy
 import { Column, ExcelExportProperties } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs, ColumnModel, ExcelHAlign, ExcelVAlign } from '@syncfusion/ej2-grids';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation, PdfGridColumn } from '@syncfusion/ej2-pdf-export';
-import { SeriesModel, ExportType, Axis, FontModel, Alignment } from '@syncfusion/ej2-charts';
+import { SeriesModel, ExportType, Axis, IAxisMultiLabelRenderEventArgs } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes, Sorting } from '../../base/types';
 import { DisplayOption, PivotView } from '../../pivotview/base/pivotview';
@@ -369,17 +369,8 @@ export interface MultiLevelLabelClickEventArgs {
 /**
  * The event argument which holds the information of the multi-level labels that renders.
  */
-export interface MultiLevelLabelRenderEventArgs {
-    /** Defines the current axis */
-    axis: Axis;
-    /** Defines axis current multi-level label text */
-    text: string;
-    /** Defines font style for multi-level labels */
-    textStyle: FontModel;
-    /** Defines text alignment for multi-level labels */
-    alignment: Alignment;
-    /** Defines custom objects for multi-level labels */
-    customAttributes: object;
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface MultiLevelLabelRenderEventArgs extends IAxisMultiLabelRenderEventArgs {
 }
 
 /**

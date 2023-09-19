@@ -584,9 +584,8 @@ export class SvgRenderer implements IRenderer {
             'id': obj.id + 'image', 'x': obj.x.toString(), 'y': obj.y.toString(), 'transform': 'rotate(' + obj.angle + ','
                 + (obj.x + obj.width * obj.pivotX) + ',' + (obj.y + obj.height * obj.pivotY) + ')',
             'width': obj.width.toString(), 'visibility': obj.visible ? 'visible' : 'hidden',
-            'height': obj.height.toString(), 'preserveAspectRatio': aspectRatio,
-            //832073 - Opacity when set to Zero for image node is not working 
-            //opacity value is already set as '1' by default
+            'height': obj.height.toString(), 'preserveAspectRatio': aspectRatio, 
+            //832073 - Opacity when set to Zero for image node is not working - opacity value of 1 is already set as default
             'opacity': obj.opacity.toString()
         };
         setAttributeSvg(image, attr);

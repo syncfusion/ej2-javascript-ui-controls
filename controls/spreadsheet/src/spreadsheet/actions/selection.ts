@@ -712,7 +712,13 @@ export class Selection {
             }
             if (isFormulaEdit && e && e.target && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit')
                 && this.parent.isEdit) {
-                this.parent.notify(addressHandle, { range: getRangeAddress(range).split(':')[0], isSelect: true });
+                const addRefArgs: { range: string, isSelect: boolean, isAlertDlgOpen?: boolean } = {
+                    range: getRangeAddress(range).split(':')[0], isSelect: true
+                };
+                this.parent.notify(addressHandle, addRefArgs);
+                if (addRefArgs.isAlertDlgOpen) {
+                    return;
+                }
                 this.initFormulaReferenceIndicator(range);
             }
         } else {
@@ -737,7 +743,13 @@ export class Selection {
             }
             if (isFormulaEdit && this.parent.isEdit) {
                 if (e && e.target && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
-                    this.parent.notify(addressHandle, { range: getRangeAddress(range), isSelect: true });
+                    const addRefArgs: { range: string, isSelect: boolean, isAlertDlgOpen?: boolean } = {
+                        range: getRangeAddress(range), isSelect: true
+                    };
+                    this.parent.notify(addressHandle, addRefArgs);
+                    if (addRefArgs.isAlertDlgOpen) {
+                        return;
+                    }
                     this.initFormulaReferenceIndicator(range);
                 }
             } else {

@@ -343,6 +343,9 @@ export class QuickPopups {
                         'aria-label': this.parent.getAnnouncementString(eventData)
                     }
                 });
+                if (eventData[fields.isReadonly]) {
+                    addClass([appointmentElement], 'e-read-only');
+                }
                 let templateElement: HTMLElement[];
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
                     const tempId: string = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';

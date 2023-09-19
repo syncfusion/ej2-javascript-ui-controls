@@ -6,6 +6,7 @@ import { WListLevel } from './list-level';
  */
 export class WAbstractList {
     private abstractListIdIn: number = -1;
+    public nsid: number = -1;
     public levels: WListLevel[] = [];
     public get abstractListId(): number {
         return this.abstractListIdIn;

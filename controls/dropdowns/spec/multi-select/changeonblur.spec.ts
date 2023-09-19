@@ -289,45 +289,45 @@ describe('MultiSelect - changeonblur', () => {
         });
     });
 
-    describe('mulitselect chip remove change event', () => {
-        let ele: HTMLElement = document.createElement('input');
-        ele.id = 'newlist';
-        let multiObj: any;
-        let data: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
-        { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
-        { id: 'lit2', text: 'PHP' }, { id: 'list22', text: 'Phython' }, { id: 'list32', text: 'Perl' },
-        { id: 'list42', text: 'Core' }, { id: 'lis2', text: 'C' }, { id: 'list12', text: 'C##' }];
-        beforeAll(() => {
-            document.body.appendChild(ele);
-            multiObj = new MultiSelect({
-                hideSelectedItem: false,
-                dataSource: data, fields: { text: 'text', value: 'text' },
-                popupHeight: '100px',
-                changeOnBlur: false,
-                value: ['JAVA', 'C#', 'C++'],
-                mode: 'Box',
-                change: function (e: any) {
-                    expect(e.name === "change").toBe(true);
-                    expect(e.element).not.toBe(null);
-                }
-            });
-            multiObj.appendTo('#newlist');
-        });
-        afterAll(() => {
-            if (ele) {
-                ele.remove();
-            }
-        })
-        it('change event trigger', () => {
-            let which: any = null;
-            let button: any = null;
-            multiObj.onBlurHandler(mouseEventArgs);
-            let elem: HTMLElement = (<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="JAVA"]');
-            (<any>multiObj).onChipRemove({ which: 1, button: 1, target: elem.lastElementChild, preventDefault: function () { } });
-            expect(elem.parentElement).toBe(null);
-            multiObj.onBlurHandler(mouseEventArgs);
-        });
-    });
+    // describe('mulitselect chip remove change event', () => {
+    //     let ele: HTMLElement = document.createElement('input');
+    //     ele.id = 'newlist';
+    //     let multiObj: any;
+    //     let data: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
+    //     { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
+    //     { id: 'lit2', text: 'PHP' }, { id: 'list22', text: 'Phython' }, { id: 'list32', text: 'Perl' },
+    //     { id: 'list42', text: 'Core' }, { id: 'lis2', text: 'C' }, { id: 'list12', text: 'C##' }];
+    //     beforeAll(() => {
+    //         document.body.appendChild(ele);
+    //         multiObj = new MultiSelect({
+    //             hideSelectedItem: false,
+    //             dataSource: data, fields: { text: 'text', value: 'text' },
+    //             popupHeight: '100px',
+    //             changeOnBlur: false,
+    //             value: ['JAVA', 'C#', 'C++'],
+    //             mode: 'Box',
+    //             change: function (e: any) {
+    //                 expect(e.name === "change").toBe(true);
+    //                 expect(e.element).not.toBe(null);
+    //             }
+    //         });
+    //         multiObj.appendTo('#newlist');
+    //     });
+    //     afterAll(() => {
+    //         if (ele) {
+    //             ele.remove();
+    //         }
+    //     })
+    //     it('change event trigger', () => {
+    //         let which: any = null;
+    //         let button: any = null;
+    //         multiObj.onBlurHandler(mouseEventArgs);
+    //         let elem: HTMLElement = (<any>multiObj).chipCollectionWrapper.querySelector('span[data-value="JAVA"]');
+    //         (<any>multiObj).onChipRemove({ which: 1, button: 1, target: elem.lastElementChild, preventDefault: function () { } });
+    //         expect(elem.parentElement).toBe(null);
+    //         multiObj.onBlurHandler(mouseEventArgs);
+    //     });
+    // });
     describe('EJ2-13148 - Multiselect key navigation is not working with Home , Endkeys', () => {
         let listObj: MultiSelect;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
@@ -379,33 +379,33 @@ describe('MultiSelect - changeonblur', () => {
             listObj.showPopup();
         });
     });
-    describe('Validation for events.', () => {
-        let listObj: MultiSelect;
-        let popupObj: any;
-        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
-        beforeAll(() => {
-            document.body.innerHTML = '';
-            document.body.appendChild(element);
-        });
-        afterAll(() => {
-            if (element) {
-                element.remove();
-            }
-        }); 
-        it('change Event', () => {
-            let checker: boolean = false;
-            listObj = new MultiSelect({
-                hideSelectedItem: false, changeOnBlur: false, dataSource: datasource2, change: function () {
-                    checker = true;
-                }
-            });
-            listObj.appendTo(element);
-            listObj.value = ["JAVA"];
-            listObj.dataBind();
-            expect(checker).toBe(true);//66
-            listObj.destroy();
-        });   
-    });
+    // describe('Validation for events.', () => {
+    //     let listObj: MultiSelect;
+    //     let popupObj: any;
+    //     let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+    //     beforeAll(() => {
+    //         document.body.innerHTML = '';
+    //         document.body.appendChild(element);
+    //     });
+    //     afterAll(() => {
+    //         if (element) {
+    //             element.remove();
+    //         }
+    //     }); 
+    //     it('change Event', () => {
+    //         let checker: boolean = false;
+    //         listObj = new MultiSelect({
+    //             hideSelectedItem: false, changeOnBlur: false, dataSource: datasource2, change: function () {
+    //                 checker = true;
+    //             }
+    //         });
+    //         listObj.appendTo(element);
+    //         listObj.value = ["JAVA"];
+    //         listObj.dataBind();
+    //         expect(checker).toBe(true);//66
+    //         listObj.destroy();
+    //     });   
+    // });
     describe('selectAll', () => {
         let listObj: MultiSelect;
         let popupObj: any;

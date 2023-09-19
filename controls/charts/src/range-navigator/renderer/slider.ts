@@ -5,7 +5,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/ban-types */
 import { PeriodsModel, RangeNavigator, RangeValueType } from '../index';
-import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { animationMode, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { RectOption, drawSymbol, linear } from '../../common/utils/helper';
 import { getXLocation, getExactData, getRangeValueXByPoint, DataPoint, getNearestValue } from '../utils/helper';
 import { VisibleRangeModel, VisibleLabels, Axis } from '../../chart/axis/axis';
@@ -260,9 +260,9 @@ export class RangeSlider {
         const valueType: RangeValueType = xAxis.valueType as RangeValueType;
         const argsData: IChangedEventArgs = {
             cancel: false,
-            start: valueType === 'DateTime' ? new Date(this.currentStart) :
+            start: valueType === 'DateTime' ? new Date(this.currentStart) : valueType === 'DateTimeCategory' ? this.currentStart :
                 (valueType === 'Logarithmic' ? Math.pow(xAxis.logBase, this.currentStart) : this.currentStart),
-            end: valueType === 'DateTime' ? new Date(this.currentEnd) :
+            end: valueType === 'DateTime' ? new Date(this.currentEnd) :  valueType === 'DateTimeCategory' ? this.currentEnd :
                 (valueType === 'Logarithmic' ? Math.pow(xAxis.logBase, this.currentEnd) : this.currentEnd),
             name: 'changed',
             selectedData: getExactData(this.points, this.currentStart, this.currentEnd),
@@ -407,10 +407,10 @@ export class RangeSlider {
             (this.leftSlider.childNodes[2] as Element).setAttribute('fill', this.thumbColor);
             (this.rightSlider.childNodes[2] as Element).setAttribute('fill', this.thumbColor);
             return 'UnSelectedArea';
-        } else if (id.indexOf(this.elementId + '_AxisLabel_') > -1 && this.control.valueType === 'DateTime') {
+        } else if (id.indexOf(this.elementId + '_AxisLabel_') > -1 && (this.control.valueType === 'DateTime' || this.control.valueType === 'DateTimeCategory')) {
             this.labelIndex = +id.substring(id.lastIndexOf('_') + 1 , id.length);
             return 'firstLevelLabels';
-        } else if (id.indexOf(this.elementId + '_SecondaryLabel') > -1 && this.control.valueType === 'DateTime') {
+        } else if (id.indexOf(this.elementId + '_SecondaryLabel') > -1 && (this.control.valueType === 'DateTime' || this.control.valueType === 'DateTimeCategory')) {
             this.labelIndex = +id.substring(id.lastIndexOf('_') + 1 , id.length);
             return 'secondLevelLabels';
         } else {
@@ -490,8 +490,8 @@ export class RangeSlider {
         if (this.currentSlider !== null) {
             if (this.control.periodSelectorSettings.periods.length > 0) {
                 this.control.periodSelectorModule.triggerChange = false;
-                this.control.periodSelectorModule.datePicker.startDate = new Date(this.currentStart);
-                this.control.periodSelectorModule.datePicker.endDate = new Date(this.currentEnd);
+                this.control.periodSelectorModule.datePicker.startDate = this.control.periodSelectorModule.isDatetimeCategory ? new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentStart)]) : new Date(this.currentStart);
+                this.control.periodSelectorModule.datePicker.endDate = this.control.periodSelectorModule.isDatetimeCategory ? new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentEnd)]) : new Date(this.currentEnd);
             }
         }
         (this.selectedElement as HTMLElement).style.cursor = '-webkit-grab';
@@ -530,7 +530,7 @@ export class RangeSlider {
         const isDeffered: boolean = control.enableDeferredUpdate;
         const enableTooltip: boolean = control.tooltip.enable;
         new Animation({}).animate(createElement('div'), {
-            duration: !isNullOrUndefined(animationDuration) ? animationDuration : this.control.animationDuration,
+            duration: (this.control.animationDuration === 0 && animationMode === 'Enable') ? 1000 : this.control.animationDuration,
             progress: (args: AnimationOptions): void => {
                 this.setSlider(
                     linear(args.timeStamp, 0, start - currentStart, args.duration) + currentStart,
@@ -548,8 +548,8 @@ export class RangeSlider {
                 this.control.endValue = this.currentEnd;
                 if (this.control.periodSelectorSettings.periods.length > 0) {
                     this.control.periodSelectorModule.triggerChange = false;
-                    this.control.periodSelectorModule.datePicker.startDate = new Date(this.currentStart);
-                    this.control.periodSelectorModule.datePicker.endDate = new Date(this.currentEnd);
+                    this.control.periodSelectorModule.datePicker.startDate = this.control.periodSelectorModule.isDatetimeCategory ? new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentStart)]) : new Date(this.currentStart);
+                    this.control.periodSelectorModule.datePicker.endDate = this.control.periodSelectorModule.isDatetimeCategory ? new Date(this.control.periodSelectorModule.sortedData[Math.floor(this.currentEnd)]) : new Date(this.currentEnd);
                 }
             }
         });

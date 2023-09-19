@@ -1,11 +1,11 @@
 import { extend, Browser, detach, select } from '@syncfusion/ej2-base';
 import { EventHandler, getComponent, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
-import { ActivePoint, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';
+import { ActivePoint, NumericTextBox, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';
-import { ImageEditor, SelectionPoint, ToolbarEventArgs, Point, ImageFilterEventArgs, ZoomTrigger, Transition } from '../index';
+import { ImageEditor, SelectionPoint, ToolbarEventArgs, Point, ImageFilterEventArgs, ZoomTrigger, Transition, CurrentObject, FrameValue, ImageDimension, FrameSettings, FrameType, FrameLineStyle } from '../index';
 import { QuickAccessToolbarEventArgs, ImageFilterOption } from '../index';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
@@ -22,12 +22,16 @@ export class ToolbarModule {
     private currentToolbar: string = 'main';
     private selFhdColor: string = '#42a5f5';
     private preventEnableDisableUr: boolean = false;
+    private isAspectRatio: boolean = true;
+    private isFrameToolbar: boolean = false;
 
     // For element purpose
     private lowerContext: CanvasRenderingContext2D;
     private upperContext: CanvasRenderingContext2D;
     private inMemoryCanvas: HTMLCanvasElement;
     private inMemoryContext: CanvasRenderingContext2D;
+    public imageWidth: number;
+    public imageHeight: number;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -127,7 +131,50 @@ export class ToolbarModule {
             SquareSolid: 'Square Solid',
             None: 'None',
             CropAndTransform: 'Crop and Transform',
-            CropSelection: 'Crop Selection'
+            CropSelection: 'Crop Selection',
+            Image: 'Add Image',
+            Transparency: 'Transparency',
+            Height: 'Height',
+            Width: 'Width',
+            AspectRatio: 'Maintain aspect ratio',
+            W: 'W',
+            H: 'H',
+            DragText: 'Drag and drop your image here or',
+            BrowseText: 'Browse here...',
+            SupportText: 'Supports:',
+            Frame: 'Frame',
+            Mat: 'Mat',
+            Bevel: 'Bevel',
+            Inset: 'Inset',
+            Hook: 'Hook',
+            Color: 'Color',
+            Size: 'Size',
+            Offset: 'Offset',
+            Radius: 'Radius',
+            Amount: 'Amount',
+            Resize: 'Resize',
+            0: '0%',
+            20: '20%',
+            40: '40%',
+            60: '60%',
+            80: '80%',
+            100: '100%',
+            1: '1',
+            2: '2',
+            3: '3',
+            4: '4',
+            5: '5',
+            Border: 'Border',
+            Solid: 'Solid',
+            Dashed: 'Dashed',
+            Dotted: 'Dotted',
+            GradientColor: 'Gradient Color',
+            ConfirmDialogHeader: 'Confirm Save Changes',
+            ConfirmDialogContent: 'Do you want to save the changes you made to the image?',
+            AlertDialogHeader: 'Unsupported file',
+            AlertDialogContent: 'The dropped file is unsupported.',
+            Yes: 'Yes',
+            No: 'No'
         };
         this.l10n = new L10n('image-editor', this.defaultLocale, this.parent.locale);
     }
@@ -156,7 +203,7 @@ export class ToolbarModule {
             this.enableDisableTbrBtn();
             break;
         case 'init-main-toolbar':
-            this.initMainToolbar(args.value['isApplyBtn'], args.value['isDevice'], args.value['isOkBtn']);
+            this.initMainToolbar(args.value['isApplyBtn'], args.value['isDevice'], args.value['isOkBtn'], args.value['isResize']);
             break;
         case 'create-bottom-toolbar':
             this.createBottomToolbar();
@@ -264,6 +311,24 @@ export class ToolbarModule {
         case 'reset':
             this.reset();
             break;
+        case 'getLocaleText':
+            args.value['obj']['value'] = this.l10n.getConstant(args.value['obj']['key']);
+            break;
+        case 'initResizeToolbar':
+            this.initResizeToolbar();
+            break;
+        case 'getFrameToolbar':
+            args.value['obj']['bool'] = this.isFrameToolbar;
+            break;
+        case 'callFrameToolbar':
+            this.callFrameToolbar();
+            break;
+        case 'resizeClick':
+            this.resizeClick();
+            break;
+        case 'frameToolbarClick':
+            this.frameToolbarClick();
+            break;
         }
     }
 
@@ -278,9 +343,9 @@ export class ToolbarModule {
     private reset(): void {
         const parent: ImageEditor = this.parent;
         this.defToolbarItems = []; this.toolbarHeight = 46; parent.prevCurrSelectionPoint = null;
-        this.zoomBtnHold = null; this.currToolbar = '';
+        this.zoomBtnHold = null; this.currToolbar = ''; parent.cxtTbarHeight = null;
         this.currentToolbar = 'main'; this.selFhdColor = '#42a5f5'; parent.currentFilter = '';
-        this.preventZoomBtn = parent.isCropToolbar = this.preventEnableDisableUr = false;
+        this.preventZoomBtn = parent.isCropToolbar = this.preventEnableDisableUr = this.isFrameToolbar = false;
         parent.initialAdjustmentValue = parent.canvasFilter =
                 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
                 'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
@@ -421,15 +486,19 @@ export class ToolbarModule {
         }
     }
 
-    private initMainToolbar(isApplyOption?: boolean, isDevice?: boolean, isOkBtn?: boolean): void {
+    private initMainToolbar(isApplyOption?: boolean, isDevice?: boolean, isOkBtn?: boolean, isResize?: boolean, isFrame?: boolean): void {
         const parent: ImageEditor = this.parent;
         if (this.isToolbar()) {
-            const leftItem: ItemModel[] = this.getLeftToolbarItem(isOkBtn);
+            const leftItem: ItemModel[] = this.getLeftToolbarItem(isOkBtn, isResize);
             const rightItem: ItemModel[] = this.getRightToolbarItem(isOkBtn);
-            const mainItem: ItemModel[] = this.getMainToolbarItem(isApplyOption);
+            const mainItem: ItemModel[] = this.getMainToolbarItem(isApplyOption, isFrame);
             const zoomItem: ItemModel[] = this.getZoomToolbarItem();
             if (isDevice) {
-                this.defToolbarItems = [...leftItem, ...rightItem];
+                if (isFrame) {
+                    this.defToolbarItems = mainItem;
+                } else {
+                    this.defToolbarItems = [...leftItem, ...rightItem];
+                }
             } else {
                 this.defToolbarItems = [...leftItem, ...mainItem, ...rightItem, ...zoomItem];
             }
@@ -446,7 +515,11 @@ export class ToolbarModule {
                     parent.trigger('toolbarCreated', {toolbarType: 'main'});
                 }
             });
-            toolbarObj.appendTo('#' + parent.element.id + '_toolbar');
+            if (isDevice && isFrame) {
+                toolbarObj.appendTo('#' + parent.element.id + '_bottomToolbar');
+            } else {
+                toolbarObj.appendTo('#' + parent.element.id + '_toolbar');
+            }
             this.createLeftToolbarControls();
             this.enableDisableTbrBtn();
             if (this.isToolbar() && document.getElementById(parent.element.id + '_toolbar')) {
@@ -479,14 +552,14 @@ export class ToolbarModule {
         }
     }
 
-    private getLeftToolbarItem(isOkBtn?: boolean): ItemModel[] {
+    private getLeftToolbarItem(isOkBtn?: boolean, isResize?: boolean): ItemModel[] {
         const parent: ImageEditor = this.parent;
         const toolbarItems: ItemModel[] = [];
-        if (!isOkBtn) {
+        if (!isOkBtn || isResize) {
             toolbarItems.push({ id: parent.element.id + '_upload', cssClass: 'e-image-upload', align: 'Left', type: 'Input', template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg'}) });
             toolbarItems.push({ visible: false, cssClass: 'e-image-position e-btn e-flat', tooltipText: this.l10n.getConstant('Browse'), align: 'Left' });
         }
-        if (parent.allowUndoRedo) {
+        if (parent.allowUndoRedo && !isResize) {
             if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Undo') > -1)) {
                 toolbarItems.push({ id: parent.element.id + '_undo', prefixIcon: 'e-icons e-undo', cssClass: 'top-icon e-undo',
                     tooltipText: this.l10n.getConstant('Undo'), align: 'Left' });
@@ -496,7 +569,7 @@ export class ToolbarModule {
                     tooltipText: this.l10n.getConstant('Redo'), align: 'Left' });
             }
         }
-        if (!this.preventZoomBtn && (parent.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar) {
+        if (!this.preventZoomBtn && (parent.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar && !isResize) {
             if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('ZoomOut') > -1)) {
                 toolbarItems.push({ id: parent.element.id + '_zoomOut', prefixIcon: 'e-icons e-zoom-out', cssClass: 'top-icon e-dec-zoom',
                     tooltipText: this.l10n.getConstant('ZoomOut'), align: 'Left' });
@@ -540,24 +613,59 @@ export class ToolbarModule {
         return toolbarItems;
     }
 
-    private getMainToolbarItem(isApplyOption?: boolean): ItemModel[] {
+    private getMainToolbarItem(isApplyOption?: boolean, isFrame?: boolean): ItemModel[] {
         const parent: ImageEditor = this.parent;
         const toolbarItems: ItemModel[] = [];
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Crop') > -1)) {
-            toolbarItems.push({ id: parent.element.id + '_cropTransform', prefixIcon: 'e-icons e-crop', cssClass: 'top-icon e-crop',
-                tooltipText: this.l10n.getConstant('CropAndTransform'), align: 'Center' });
-        }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Annotate') > -1)) {
-            toolbarItems.push({ id: parent.element.id + '_annotation', tooltipText: this.l10n.getConstant('Annotation'), align: 'Center',
-                template: '<button id="' + parent.element.id + '_annotationBtn"></button>' });
-        }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Finetune') > -1)) {
-            toolbarItems.push({ id: parent.element.id + '_adjustment', prefixIcon: 'e-icons e-adjustment', cssClass: 'top-icon e-adjustment',
-                tooltipText: this.l10n.getConstant('Finetune'), align: 'Center' });
-        }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Filter') > -1)) {
-            toolbarItems.push({ id: parent.element.id + '_filter', prefixIcon: 'e-icons e-filters', cssClass: 'top-icon e-filters',
-                tooltipText: this.l10n.getConstant('Filter'), align: 'Center' });
+        if (isFrame) {
+            if (isNullOrUndefined(this.parent.toolbar) || (!isNullOrUndefined(this.parent.toolbar) && this.parent.toolbar.indexOf('None') > -1)) {
+                toolbarItems.push({ id: this.parent.element.id + '_none', prefixIcon: 'e-icons e-frame-none', cssClass: 'top-icon e-frame-none',
+                    tooltipText: this.l10n.getConstant('None'), align: 'Center' });
+            }
+            if (isNullOrUndefined(this.parent.toolbar) || (!isNullOrUndefined(this.parent.toolbar) && this.parent.toolbar.indexOf('Mat') > -1)) {
+                toolbarItems.push({ id: this.parent.element.id + '_mat', prefixIcon: 'e-icons e-frame-mat', cssClass: 'top-icon e-frame-mat',
+                    tooltipText: this.l10n.getConstant('Mat'), align: 'Center' });
+            }
+            if (isNullOrUndefined(this.parent.toolbar) || (!isNullOrUndefined(this.parent.toolbar) && this.parent.toolbar.indexOf('Bevel') > -1)) {
+                toolbarItems.push({ id: this.parent.element.id + '_bevel', prefixIcon: 'e-icons e-frame-bevel', cssClass: 'top-icon e-frame-bevel',
+                    tooltipText: this.l10n.getConstant('Bevel'), align: 'Center' });
+            }
+            if (isNullOrUndefined(this.parent.toolbar) || (!isNullOrUndefined(this.parent.toolbar) && this.parent.toolbar.indexOf('Line') > -1)) {
+                toolbarItems.push({ id: this.parent.element.id + '_line', prefixIcon: 'e-icons e-frame-line', cssClass: 'top-icon e-frame-line',
+                    tooltipText: this.l10n.getConstant('Line'), align: 'Center' });
+            }
+            if (isNullOrUndefined(this.parent.toolbar) || (!isNullOrUndefined(this.parent.toolbar) && this.parent.toolbar.indexOf('Inset') > -1)) {
+                toolbarItems.push({ id: this.parent.element.id + '_inset', prefixIcon: 'e-icons e-frame-inset', cssClass: 'top-icon e-frame-inset',
+                    tooltipText: this.l10n.getConstant('Inset'), align: 'Center' });
+            }
+            if (isNullOrUndefined(this.parent.toolbar) || (!isNullOrUndefined(this.parent.toolbar) && this.parent.toolbar.indexOf('Hook') > -1)) {
+                toolbarItems.push({ id: this.parent.element.id + '_hook', prefixIcon: 'e-icons e-frame-hook', cssClass: 'top-icon e-frame-hook',
+                    tooltipText: this.l10n.getConstant('Hook'), align: 'Center' });
+            }
+        } else {
+            if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Crop') > -1)) {
+                toolbarItems.push({ id: parent.element.id + '_cropTransform', prefixIcon: 'e-icons e-crop', cssClass: 'top-icon e-crop',
+                    tooltipText: this.l10n.getConstant('CropAndTransform'), align: 'Center' });
+            }
+            if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Annotate') > -1)) {
+                toolbarItems.push({ id: parent.element.id + '_annotation', tooltipText: this.l10n.getConstant('Annotation'), align: 'Center',
+                    template: '<button id="' + parent.element.id + '_annotationBtn"></button>' });
+            }
+            if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Finetune') > -1)) {
+                toolbarItems.push({ id: parent.element.id + '_adjustment', prefixIcon: 'e-icons e-adjustment', cssClass: 'top-icon e-adjustment',
+                    tooltipText: this.l10n.getConstant('Finetune'), align: 'Center' });
+            }
+            if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Filter') > -1)) {
+                toolbarItems.push({ id: parent.element.id + '_filter', prefixIcon: 'e-icons e-filters', cssClass: 'top-icon e-filters',
+                    tooltipText: this.l10n.getConstant('Filter'), align: 'Center' });
+            }
+            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Frame') > -1)) {
+                toolbarItems.push({ id: parent.element.id + '_frame', prefixIcon: 'e-icons e-border-frame', cssClass: 'top-icon e-border-frame',
+                    tooltipText: this.l10n.getConstant('Frame'), align: 'Center' });
+            }
+            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Resize') > -1)) {
+                toolbarItems.push({ id: parent.element.id + '_resize', prefixIcon: 'e-icons e-resize', cssClass: 'top-icon e-resize',
+                    tooltipText: this.l10n.getConstant('Resize'), align: 'Center' });
+            }
         }
         const tempToolbarItems: ItemModel[] = this.processToolbar('center');
         for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
@@ -598,10 +706,15 @@ export class ToolbarModule {
             if (document.querySelector('#' + parent.element.id + '_contextualToolbar').classList.contains('e-control')) {
                 (getComponent(document.getElementById(parent.element.id + '_contextualToolbar'), 'toolbar') as Toolbar).destroy();
             }
-            this.refreshSlider(); this.renderSlider(cType);
+            this.refreshSlider();
+            if (type === 'frame') {this.initFrameToolbarItem(); }
+            else {this.renderSlider(cType); }
         }
         if (Browser.isDevice) {
-            const cHt: number = (contextualToolbarArea as HTMLElement).offsetHeight;
+            let cHt: number = (contextualToolbarArea as HTMLElement).offsetHeight;
+            if (this.isFrameToolbar && parent.element.querySelector('#' + parent.element.id + '_customizeWrapper')) {
+                cHt = (parent.element.querySelector('#' + parent.element.id + '_customizeWrapper') as HTMLElement).offsetHeight;
+            }
             const ht: number = (parent.element.querySelector('#' + parent.element.id + '_canvasWrapper') as HTMLElement).offsetHeight;
             (contextualToolbarArea as HTMLElement).style.top = this.toolbarHeight + ht - cHt + 'px';
         } else {
@@ -658,6 +771,140 @@ export class ToolbarModule {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private widthAspectRatio(e: MouseEvent & TouchEvent): void {
+        const parent: ImageEditor = this.parent;
+        const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
+        const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
+        const aspectRatioIcon: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_aspectratio');
+        const originalWidth: number = parent.img.destWidth;
+        const originalHeight: number = parent.img.destHeight;
+        const aspectRatioHeightValue: number = parseFloat(aspectRatioHeight.value);
+        const width: number = Math.floor((aspectRatioHeightValue / (originalHeight / originalWidth)));
+        if (aspectRatioIcon) {
+            if (width != null && !isNaN(width)) {
+                (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value = width;
+                (aspectRatioWidth as HTMLInputElement).value = width.toString() + ' px';
+            } else {
+                (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value = 0;
+                (aspectRatioWidth as HTMLInputElement).value = '0 px';
+            }
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private heightAspectRatio(e: MouseEvent & TouchEvent):  void {
+        const parent: ImageEditor = this.parent;
+        const aspectRatioHeight: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
+        const aspectRatioWidth: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
+        const aspectRatioIcon: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_aspectratio');
+        const originalWidth: number = parent.img.destWidth;
+        const originalHeight: number = parent.img.destHeight;
+        const aspectRatioWidthValue: number = parseFloat(aspectRatioWidth.value);
+        const height: number = Math.floor((aspectRatioWidthValue / (originalWidth / originalHeight)));
+        if (aspectRatioIcon && !isNaN(height)) {
+            (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value = height;
+            (aspectRatioHeight as HTMLInputElement).value = height.toString() + ' px';
+        } else {
+            (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value = 0;
+            (aspectRatioHeight as HTMLInputElement).value = '0 px';
+        }
+    }
+
+    private getResizeToolbarItem(): ItemModel[] {
+        const toolbarItems: ItemModel[] = [];
+        const spanWidth: HTMLElement = document.createElement('span');
+        spanWidth.innerHTML = this.l10n.getConstant('W');
+        toolbarItems.push({ id: this.parent.element.id + '_width', cssClass: 'e-ie-resize-width', template: spanWidth, align: 'Center' });
+        toolbarItems.push({ id: this.parent.element.id + '_resizeWidth', prefixIcon: 'e-icons e-anti-clock-wise',
+            tooltipText: this.l10n.getConstant('Width'), align: 'Center', type: 'Input', template: new NumericTextBox({ width: 75, htmlAttributes: {  maxLength: "4" },
+                showSpinButton: false, value: (this.parent.aspectWidth && this.parent.aspectHeight) ? this.parent.aspectWidth : Math.ceil(this.parent.img.destWidth),
+                format: '###.## px' })
+        });
+        const spanHeight: HTMLElement = document.createElement('span');
+        spanHeight.innerHTML = this.l10n.getConstant('H');
+        toolbarItems.push({ id: this.parent.element.id + '_height', cssClass: 'e-ie-resize-height', template: spanHeight , align: 'Center' });
+        toolbarItems.push({ id: this.parent.element.id + '_resizeHeight', prefixIcon: 'e-icons e-clock-wise',
+            tooltipText: this.l10n.getConstant('Height'), align: 'Center', type: 'Input', template: new NumericTextBox({ width: 75, htmlAttributes: {  maxLength: "4" },
+                showSpinButton: false, value: (this.parent.aspectWidth && this.parent.aspectHeight) ? this.parent.aspectHeight : Math.ceil(this.parent.img.destHeight),
+                format: '###.## px' })
+        });
+        if (!this.isAspectRatio) {
+            toolbarItems.push({ id: this.parent.element.id + '_aspectratio', prefixIcon: 'e-icons e-lock', align: 'Center', tooltipText: this.l10n.getConstant('AspectRatio'), type: 'Button'});
+            this.isAspectRatio = true;
+        } else {
+            toolbarItems.push({ id: this.parent.element.id + '_nonaspectratio', prefixIcon: 'e-icons e-unlock', align: 'Center', tooltipText: this.l10n.getConstant('AspectRatio'), type: 'Button'});
+            this.isAspectRatio = false;
+        }
+        if (!Browser.isDevice) {
+            toolbarItems.push({ id: this.parent.element.id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
+                tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+            toolbarItems.push({ id: this.parent.element.id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
+                tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
+        }
+        return toolbarItems;
+    }
+
+    private initResizeToolbar(): void {
+        const leftItem: ItemModel[] = this.getLeftToolbarItem(false, true);
+        const rightItem: ItemModel[] = this.getRightToolbarItem();
+        const mainItem: ItemModel[] = this.getResizeToolbarItem();
+        const zoomItem: ItemModel[] = this.getZoomToolbarItem();
+        if (Browser.isDevice) {
+            this.defToolbarItems = mainItem;
+        } else {
+            this.defToolbarItems = [...leftItem, ...zoomItem, ...mainItem, ...rightItem];
+        }
+        const toolbar: Toolbar = new Toolbar({
+            width: '100%',
+            items: this.defToolbarItems,
+            clicked: this.defToolbarClicked.bind(this),
+            created: () => {
+                this.wireResizeBtnEvents();
+                if (!Browser.isDevice) {
+                    this.renderSaveBtn();
+                }
+                this.parent.trigger('toolbarCreated', {toolbarType: 'shapes'});
+                if (Browser.isDevice) {
+                    if (this.defToolbarItems.length > 0 && (!isNullOrUndefined(document.getElementById(this.parent.element.id + '_bottomToolbar')))) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        (toolbar as any).refreshOverflow();
+                    }
+                } else {
+                    this.createLeftToolbarControls();
+                    if (this.defToolbarItems.length > 0 && (!isNullOrUndefined(document.getElementById(this.parent.element.id + '_toolbar')))) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        (toolbar as any).refreshOverflow();
+                    }
+                }
+            }
+        });
+        if (Browser.isDevice) {
+            toolbar.appendTo('#' + this.parent.element.id + '_bottomToolbar');
+        } else {
+            toolbar.appendTo('#' + this.parent.element.id + '_toolbar');
+        }
+        this.parent.isResize = false;
+        this.enableDisableTbrBtn();
+        this.parent.isResize = true;
+        this.parent.notify('transform', { prop: 'disableZoomOutBtn', value: {isZoomOut: true }});
+    }
+
+    private wireResizeBtnEvents(): void {
+        const parent: ImageEditor = this.parent;
+        const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
+        const aspectRatioWidth: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
+        const aspectRatio: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_aspectratio');
+        if (aspectRatio) {
+            if (!isNullOrUndefined(aspectRatioHeight)) {
+                aspectRatioWidth.addEventListener('keyup', this.heightAspectRatio.bind(this));
+            }
+            if (!isNullOrUndefined(aspectRatioWidth)) {
+                aspectRatioHeight.addEventListener('keyup', this.widthAspectRatio.bind(this));
+            }
+        }
+    }
+
     private enableDisableTbrBtn(): void {
         const parent: ImageEditor = this.parent;
         if (!this.preventEnableDisableUr) {
@@ -665,7 +912,7 @@ export class ToolbarModule {
             parent.notify('undo-redo', {prop: 'getAppliedUndoRedoColl', value: {obj: object }});
             const undoRedoObj: Object = {undoRedoStep: null };
             parent.notify('undo-redo', {prop: 'getUndoRedoStep', value: {obj: undoRedoObj }});
-            const undo: HTMLElement = document.querySelector('#' + parent.element.id + '_undo');
+            const undo: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_undo');
             if (undo && undoRedoObj['undoRedoStep'] === 0) {
                 undo.classList.add('e-disabled');
                 undo.parentElement.classList.add('e-overlay');
@@ -673,7 +920,7 @@ export class ToolbarModule {
                 undo.classList.remove('e-disabled');
                 undo.parentElement.classList.remove('e-overlay');
             }
-            const redo: HTMLElement = document.querySelector('#' + parent.element.id + '_redo');
+            const redo: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_redo');
             if (redo && (undoRedoObj['undoRedoStep'] === object['appliedUndoRedoColl'].length)) {
                 redo.classList.add('e-disabled');
                 redo.parentElement.classList.add('e-overlay');
@@ -701,11 +948,11 @@ export class ToolbarModule {
             zoomOut.classList.remove('e-disabled');
             zoomOut.parentElement.classList.remove('e-overlay');
         }
-        const pan: HTMLElement = document.querySelector('#' + parent.element.id + '_pan');
-        if (pan && parent.zoomSettings.zoomFactor <= parent.zoomSettings.minZoomFactor) {
-            pan.style.display = 'none';
-        } else if (pan) {
-            pan.style.display = 'block';
+        const frame: HTMLElement = document.querySelector('#' + parent.element.id + '_frame');
+        if (frame && ((parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle') || parent.isCircleCrop)) {
+            frame.classList.add('e-disabled');
+        } else if (frame) {
+            frame.classList.remove('e-disabled');
         }
     }
 
@@ -765,6 +1012,9 @@ export class ToolbarModule {
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Text') > -1)) {
             items.push({ text: this.l10n.getConstant('Text'), id: 'text', iconCss: 'e-icons e-add-text' });
         }
+        if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Image') > -1)) {
+            items.push({ text: this.l10n.getConstant('Image'), id: 'image', iconCss: 'e-icons e-image' });
+        }
         const obj: Object = {freehandDrawSelectedId: null };
         parent.notify('freehand-draw', { prop: 'getFreehandDrawSelectedId', onPropertyChange: false, value: {obj: obj }});
         const duplicateElement: HTMLElement = document.querySelector('#' + parent.element.id + '_duplicate');
@@ -774,30 +1024,22 @@ export class ToolbarModule {
             (isNullOrUndefined(parent.activeObj.pointColl) || (parent.activeObj.pointColl
             && parent.activeObj.pointColl.length === 0)) &&
             isNullOrUndefined(obj['freehandDrawSelectedId'])) {
-            if (duplicateElement) {
-                duplicateElement.classList.add('e-disabled');
-            }
-            if (removeElement) {
-                removeElement.classList.add('e-disabled');
-            }
-            if (editTextElement) {
-                editTextElement.classList.add('e-disabled');
-            }
+            if (duplicateElement) {duplicateElement.classList.add('e-disabled'); }
+            if (removeElement) {removeElement.classList.add('e-disabled'); }
+            if (editTextElement) {editTextElement.classList.add('e-disabled'); }
         } else {
-            if (duplicateElement) {
-                duplicateElement.classList.remove('e-disabled');
-            }
-            if (removeElement) {
-                removeElement.classList.remove('e-disabled');
-            }
-            if (editTextElement) {
-                editTextElement.classList.remove('e-disabled');
-            }
+            if (duplicateElement) {duplicateElement.classList.remove('e-disabled'); }
+            if (removeElement) {removeElement.classList.remove('e-disabled'); }
+            if (editTextElement) {editTextElement.classList.remove('e-disabled'); }
         }
         const iconCss: string = isContextualToolbar ? this.getCurrentShapeIcon(parent.activeObj.shape) : 'e-annotation';
         const drpDownBtn: DropDownButton = new DropDownButton({ items: items, iconCss: 'e-icons ' + iconCss,
             cssClass: 'e-image-popup',
             open: (args: OpenCloseMenuEventArgs) => {
+                if (parent.currObjType.isFiltered) {
+                    parent.okBtn();
+                    (parent.element.querySelector('#' + this.parent.element.id + '_annotationBtn') as HTMLInputElement).click();
+                }
                 if (Browser.isDevice) {
                     args.element.parentElement.style.top = drpDownBtn.element.getBoundingClientRect().top -
                     args.element.parentElement.offsetHeight + 'px';
@@ -842,6 +1084,10 @@ export class ToolbarModule {
                     // parent.notify('selection', {prop: 'annotate', value: {shape: args.item.id }});
                     // parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
                     //     isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    break;
+                case 'image':
+                    this.currentToolbar = 'shapes';
+                    (parent.element.querySelector('#' + this.parent.element.id + '_fileUpload') as HTMLInputElement).click();
                     break;
                 default:
                     this.currentToolbar = 'shapes';
@@ -981,28 +1227,20 @@ export class ToolbarModule {
             template: '<button id="' + parent.element.id + '_cropBtn"></button>'
         });
         toolbarItems.push({ align: 'Center', type: 'Separator' });
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 ||
-        parent.toolbar.indexOf('RotateLeft') > -1))) {
-            toolbarItems.push({ id: parent.element.id + '_rotateLeft', prefixIcon: 'e-icons e-anti-clock-wise',
-                tooltipText: this.l10n.getConstant('RotateLeft'), align: 'Center' });
+        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 || parent.toolbar.indexOf('RotateLeft') > -1))) {
+            toolbarItems.push({ id: parent.element.id + '_rotateLeft', prefixIcon: 'e-icons e-anti-clock-wise', tooltipText: this.l10n.getConstant('RotateLeft'), align: 'Center' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 ||
-        parent.toolbar.indexOf('RotateRight') > -1))) {
-            toolbarItems.push({ id: parent.element.id + '_rotateRight', prefixIcon: 'e-icons e-clock-wise',
-                tooltipText: this.l10n.getConstant('RotateRight'), align: 'Center' });
+        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 || parent.toolbar.indexOf('RotateRight') > -1))) {
+            toolbarItems.push({ id: parent.element.id + '_rotateRight', prefixIcon: 'e-icons e-clock-wise', tooltipText: this.l10n.getConstant('RotateRight'), align: 'Center' });
         }
         if (toolbarItems.length > 2) {
             toolbarItems.push({ align: 'Center', type: 'Separator' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 ||
-        parent.toolbar.indexOf('HorizontalFlip') > -1))) {
-            toolbarItems.push({ id: parent.element.id + '_horizontalFlip', prefixIcon: 'e-icons e-horizontal-flip',
-                tooltipText: this.l10n.getConstant('HorizontalFlip'), align: 'Center' });
+        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 || parent.toolbar.indexOf('HorizontalFlip') > -1))) {
+            toolbarItems.push({ id: parent.element.id + '_horizontalFlip', prefixIcon: 'e-icons e-horizontal-flip', tooltipText: this.l10n.getConstant('HorizontalFlip'), align: 'Center' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 ||
-        parent.toolbar.indexOf('VerticalFlip') > -1))) {
-            toolbarItems.push({ id: parent.element.id + '_verticalFlip', prefixIcon: 'e-icons e-vertical-flip',
-                tooltipText: this.l10n.getConstant('VerticalFlip'), align: 'Center' });
+        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Transform') > -1 || parent.toolbar.indexOf('VerticalFlip') > -1))) {
+            toolbarItems.push({ id: parent.element.id + '_verticalFlip', prefixIcon: 'e-icons e-vertical-flip', tooltipText: this.l10n.getConstant('VerticalFlip'), align: 'Center' });
         }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: parent.element.id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
@@ -1041,6 +1279,21 @@ export class ToolbarModule {
         if (items.indexOf('end') > -1) {
             toolbarItems.push({ id: parent.element.id + '_end', cssClass: 'top-icon e-size', tooltipText: 'End', align: 'Center',
                 type: 'Input', template: '<button id="' + parent.element.id + '_endBtn"></button>' });
+        }
+        if (items.indexOf('flip') > -1) {
+            toolbarItems.push({ id: parent.element.id + '_rotLeft', prefixIcon: 'e-anti-clock-wise',
+                tooltipText: this.l10n.getConstant('RotateLeft'), align: 'Center' });
+            toolbarItems.push({ id: parent.element.id + '_rotRight', prefixIcon: 'e-clock-wise',
+                tooltipText: this.l10n.getConstant('RotateRight'), align: 'Center' });
+            toolbarItems.push({ id: parent.element.id + '_hFlip', prefixIcon: 'e-horizontal-flip',
+                tooltipText: this.l10n.getConstant('HorizontalFlip'), align: 'Center' });
+            toolbarItems.push({ id: parent.element.id + '_vFlip', prefixIcon: 'e-vertical-flip',
+                tooltipText: this.l10n.getConstant('VerticalFlip'), align: 'Center' });
+        }
+        toolbarItems.push({ align: 'Center', type: 'Separator' });
+        if (items.indexOf('transparency') > -1) {
+            toolbarItems.push({ id: parent.element.id + '_transparency', prefixIcon: 'e-opacity',
+                tooltipText: this.l10n.getConstant('Transparency'), align: 'Center' });
         }
         toolbarItems.push({ align: 'Center', type: 'Separator' });
         if (items.indexOf('duplicate') > -1) {
@@ -1140,6 +1393,9 @@ export class ToolbarModule {
             break;
         case 'text':
             icon = 'e-add-text';
+            break;
+        case 'image':
+            icon = 'e-image';
             break;
         case 'pen':
             icon = 'e-free-pen';
@@ -1454,15 +1710,15 @@ export class ToolbarModule {
         toolbarItems.push({ align: 'Center', type: 'Separator' });
         if (items.indexOf('duplicate') > -1) {
             toolbarItems.push({ id: parent.element.id + '_duplicate', prefixIcon: 'e-icons e-order', cssClass: 'top-icon e-order',
-                tooltipText: this.l10n.getConstant('Duplicate'), align: 'Center' });
+                tooltipText: this.l10n.getConstant('Duplicate'), align: 'Center', disabled: parent.textArea.style.display === 'block' ? true : false });
         }
         if (items.indexOf('remove') > -1) {
             toolbarItems.push({ id: parent.element.id + '_remove', prefixIcon: 'e-icons e-trash', cssClass: 'top-icon e-trash',
-                tooltipText: this.l10n.getConstant('Remove'), align: 'Center' });
+                tooltipText: this.l10n.getConstant('Remove'), align: 'Center', disabled: parent.textArea.style.display === 'block' ? true : false });
         }
         if (items.indexOf('text') > -1) {
             toolbarItems.push({ id: parent.element.id + '_editText', prefixIcon: 'e-icons e-annotation-edit', cssClass: 'top-icon e-annotation-edit',
-                tooltipText: this.l10n.getConstant('EditText'), align: 'Center' });
+                tooltipText: this.l10n.getConstant('EditText'), align: 'Center', disabled: parent.textArea.style.display === 'block' ? true : false });
         }
         const tempToolbarItems: ItemModel[] = this.processSubToolbar(items);
         for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
@@ -1643,7 +1899,13 @@ export class ToolbarModule {
         }
         const item: string = type === 'shapes' && parent.activeObj.shape ? parent.activeObj.shape : type;
         const args: ToolbarEventArgs = { toolbarType: item };
+        let aspectIcon: HTMLInputElement; let nonAspectIcon: HTMLInputElement;
         if (type !== 'filter' && type !== 'color') {
+            if (document.getElementById(parent.element.id + '_customizeWrapper') &&
+                (getComponent(document.getElementById(parent.element.id + '_customizeWrapper'), 'toolbar')) && this.defToolbarItems.length > 0) {
+                (getComponent(document.getElementById(parent.element.id + '_customizeWrapper'), 'toolbar') as Toolbar).destroy();
+                document.getElementById(parent.element.id + '_customizeWrapper').innerHTML = '';
+            }
             if (document.getElementById(parent.element.id + '_toolbar') && this.defToolbarItems.length > 0) {
                 (getComponent(document.getElementById(parent.element.id + '_toolbar'), 'toolbar') as Toolbar).destroy();
                 document.getElementById(parent.element.id + '_toolbar').innerHTML = '';
@@ -1656,7 +1918,7 @@ export class ToolbarModule {
             }
         }
         this.refreshSlider();
-        parent.isCropTab = false;
+        this.isFrameToolbar = false; parent.isCropTab = false;
         switch (type) {
         case 'main':
             if (Browser.isDevice) {
@@ -1679,6 +1941,8 @@ export class ToolbarModule {
                 args.toolbarItems = ['strokeColor', 'strokeWidth', 'duplicate', 'remove'];
             } else if (parent.activeObj.shape === 'arrow') {
                 args.toolbarItems = ['strokeColor', 'strokeWidth', 'start', 'end', 'duplicate', 'remove'];
+            } else if (parent.activeObj.shape === 'image') {
+                args.toolbarItems = ['flip', 'duplicate', 'remove', 'transparency'];
             } else {
                 args.toolbarItems = ['fillColor', 'strokeColor', 'strokeWidth', 'duplicate', 'remove'];
             }
@@ -1710,16 +1974,50 @@ export class ToolbarModule {
         case 'filter':
             this.updateContextualToolbar(type);
             break;
+        case 'resize':
+            this.initResizeToolbar();
+            if (Browser.isDevice) {
+                this.initMainToolbar(false, true, true, true);
+            }
+            aspectIcon = (parent.element.querySelector('#' + this.parent.element.id + '_aspectratio') as HTMLInputElement);
+            nonAspectIcon = (parent.element.querySelector('#' + this.parent.element.id + '_nonaspectratio') as HTMLInputElement);
+            if (this.parent.aspectWidth && this.parent.aspectHeight) {
+                if (nonAspectIcon) {
+                    parent.notify('transform', {prop: 'resize', value: {width: parent.aspectWidth, height: parent.aspectHeight, isAspectRatio: false }});
+                }
+                else if (aspectIcon) {
+                    parent.notify('transform', {prop: 'resize', value: {width: parent.aspectWidth, height: null, isAspectRatio: true }});
+                }
+            }
+            break;
         case 'color':
             this.updateContextualToolbar(type, cType);
             break;
         case 'croptransform':
+            parent.allowDownScale = false;
             parent.isCropTab = true;
             if (Browser.isDevice) {
                 this.initMainToolbar(false, true, true);
             }
             parent.updateCropTransformItems();
             this.initCropTransformToolbar();
+            break;
+        case 'frame':
+            this.isFrameToolbar = true;
+            if (Browser.isDevice) {
+                this.initMainToolbar(false, true, true);
+                this.initMainToolbar(false, true, true, false, true);
+            } else {
+                this.initMainToolbar(true, null, null, false, true);
+            }
+            if (parent.element.querySelector('#' + parent.element.id + '_' + parent.frameObj.type)) {
+                parent.element.querySelector('#' + parent.element.id + '_' + parent.frameObj.type).classList.add('e-selected-btn');
+            }
+            if (parent.frameObj.type !== 'none') {
+                this.updateContextualToolbar(type, cType);
+                
+            }
+            parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
             break;
         }
         this.currToolbar = type;
@@ -1774,6 +2072,36 @@ export class ToolbarModule {
                 tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
             toolbarItems.push({ id: parent.element.id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
                 tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
+        }
+        return toolbarItems;
+    }
+
+    private getFrameToolbarItem(): ItemModel[] {
+        const parent: ImageEditor = this.parent;
+        const toolbarItems: ItemModel[] = [];
+        toolbarItems.push({ prefixIcon: 'e-icons e-copy', id: parent.element.id + '_frameColor',
+            cssClass: 'top-icon e-stroke', tooltipText: this.l10n.getConstant('Color'), align: 'Center', type: 'Input',
+            template: '<span>' + this.l10n.getConstant('Color') + '</span><button id="' + parent.element.id + '_frameColorBtn"></button>' });
+        toolbarItems.push({ prefixIcon: 'e-icons e-copy', id: parent.element.id + '_frameGradient',
+            cssClass: 'top-icon e-frame-stroke', tooltipText: this.l10n.getConstant('GradientColor'), align: 'Center', type: 'Input',
+            template: '<span>' + this.l10n.getConstant('GradientColor') + '</span><button id="' + parent.element.id + '_frameGradientColorBtn"></button>' });
+        toolbarItems.push({ id: parent.element.id + '_frameSize', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('Size'), align: 'Center',
+            type: 'Input', template: '<span>' + this.l10n.getConstant('Size') + '</span><button id="' + parent.element.id + '_frameSizeBtn"></button>' });
+        if (parent.frameObj.type === 'line' || parent.frameObj.type === 'inset' || parent.frameObj.type === 'hook') {
+            toolbarItems.push({ id: parent.element.id + '_frameInset', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('Inset'), align: 'Center',
+                type: 'Input', template: '<span>' + this.l10n.getConstant('Inset') + '</span><button id="' + parent.element.id + '_frameInsetBtn"></button>' });
+        }
+        if (parent.frameObj.type === 'line' || parent.frameObj.type === 'inset') {
+            toolbarItems.push({ id: parent.element.id + '_frameOffset', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('Offset'), align: 'Center',
+                type: 'Input', template: '<span>' + this.l10n.getConstant('Offset') + '</span><button id="' + parent.element.id + '_frameOffsetBtn"></button>' });
+        }
+        if (parent.frameObj.type === 'line') {
+            toolbarItems.push({ id: parent.element.id + '_frameRadius', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('Radius'), align: 'Center',
+                type: 'Input', template: '<span>' + this.l10n.getConstant('Radius') + '</span><button id="' + parent.element.id + '_frameRadiusBtn"></button>' });
+            toolbarItems.push({ id: parent.element.id + '_frameAmount', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('Amount'), align: 'Center',
+                type: 'Input', template: '<span>' + this.l10n.getConstant('Amount') + '</span><button id="' + parent.element.id + '_frameAmountBtn"></button>' });
+            toolbarItems.push({ id: parent.element.id + '_frameBorder', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('Border'), align: 'Center',
+                type: 'Input', template: '<span>' + this.l10n.getConstant('Border') + '</span><button id="' + parent.element.id + '_frameBorderBtn"></button>' });
         }
         return toolbarItems;
     }
@@ -2066,6 +2394,566 @@ export class ToolbarModule {
         this.enableDisableTbrBtn();
     }
 
+    private initFrameToolbarItem(): void {
+        const parent: ImageEditor = this.parent;
+        const canvasWrapper: HTMLElement = document.querySelector('#' + parent.element.id + '_contextualToolbarArea');
+        let frameWrapper: HTMLElement = document.querySelector('#' + parent.element.id + '_frameWrapper');
+        if (!frameWrapper) {
+            frameWrapper = canvasWrapper.appendChild(parent.createElement('div', {
+                id: parent.element.id + '_frameWrapper',
+                className: 'e-frame-wrapper',
+                styles: 'position: relative'
+            }));
+        } else {
+            frameWrapper.style.display = 'block';
+        }
+        frameWrapper.appendChild(parent.createElement('div', {
+            id: parent.element.id + '_customizeWrapper',
+            styles: 'position: absolute'
+        }));
+        const mainItem: ItemModel[] = this.getFrameToolbarItem();
+        const toolbar: Toolbar = new Toolbar({
+            width: '100%',
+            items: mainItem,
+            clicked: this.defToolbarClicked.bind(this),
+            created: () => {
+                this.createFrameColor();
+                this.createFrameSize();
+                if (parent.frameObj.type === 'line') {
+                    this.createFrameRadius();
+                }
+                if (parent.frameObj.type === 'line' || parent.frameObj.type === 'inset' || parent.frameObj.type === 'hook') {
+                    this.createFrameInset();
+                }
+                if (parent.frameObj.type === 'line' || parent.frameObj.type === 'inset') {
+                    this.createFrameOffset();
+                }
+                if (parent.frameObj.type === 'line') {
+                    this.createFrameAmount();
+                    this.createFrameBorder();
+                }
+                this.createFrameGradientColor();
+                if (Browser.isDevice) {
+                    if (this.defToolbarItems.length > 0 && document.getElementById(parent.element.id + '_bottomToolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        (toolbar as any).refreshOverflow(); (toolbar as any).refreshOverflow(); (toolbar as any).refreshOverflow();
+                    }
+                } else {
+                    this.createLeftToolbarControls();
+                    if (this.defToolbarItems.length > 0 && document.getElementById(parent.element.id + '_toolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        (toolbar as any).refreshOverflow();
+                    }
+                }
+                (parent.element.querySelector('#' + parent.element.id + '_' + parent.frameObj.type) as HTMLElement).focus();
+            }
+        });
+        toolbar.appendTo('#' + this.parent.element.id + '_customizeWrapper');
+    }
+
+    private createFrameGradientColor(): void {
+        const parent: ImageEditor = this.parent; let prevFrameSettings: FrameSettings; let obj: Object = {frameChangeEventArgs: null };
+        parent.element.querySelector('.e-template.e-frame-stroke').appendChild(parent.createElement('input', {
+            id: parent.element.id + '_frame_gradient_fill'
+        }));
+        const fillColor: ColorPicker = new ColorPicker({
+            modeSwitcher: false, noColor: true, value: parent.frameObj.gradientColor,
+            showButtons: false, mode: 'Palette', cssClass: 'e-frame-gradient-fill-color',
+            change: (args: ColorPickerEventArgs): void => {
+                prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
+                    gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
+                    offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
+                    lineCount: parent.frameObj.amount};
+                const temp: string = parent.frameObj.gradientColor;
+                const object: Object = {currObj: {} as CurrentObject };
+                parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+                parent.frameObj.gradientColor = args.currentValue.hex;
+                parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: prevFrameSettings, obj: obj }});
+                if (obj['frameChangeEventArgs'] && !obj['frameChangeEventArgs'].cancel) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                        operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                            previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                            previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                            previousFilter: null, isCircleCrop: null }});
+                    parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                    if (args.currentValue.rgba === '') {
+                        (fillDDB.element.children[0] as HTMLElement).classList.add('e-nocolor-item');
+                    } else {
+                        (fillDDB.element.children[0] as HTMLElement).classList.remove('e-nocolor-item');
+                        (fillDDB.element.children[0] as HTMLElement).style.backgroundColor = args.currentValue.rgba;
+                    } 
+                } else {
+                    parent.frameObj.gradientColor = temp;
+                }
+                fillDDB.toggle();
+            }
+        }, '#' + parent.element.id + '_frame_gradient_fill');
+        const fillDDB: DropDownButton = new DropDownButton({
+            open: (args: OpenCloseMenuEventArgs) => {
+                if (Browser.isDevice) {
+                    args.element.parentElement.style.top = fillDDB.element.getBoundingClientRect().top -
+                    args.element.parentElement.offsetHeight + 'px';
+                    args.element.parentElement.style.left = parent.element.offsetLeft + 'px';
+                }
+            },
+            target: '.e-frame-gradient-fill-color',
+            iconCss: 'e-dropdownbtn-preview'
+        }, '#' + parent.element.id + '_frameGradientColorBtn');
+        fillColor.inline = true;
+        if (parent.frameObj.gradientColor === '') {
+            parent.element.querySelector('.e-frame-stroke.e-template .e-dropdownbtn-preview').classList.add('e-nocolor-item');
+        } else {
+            (parent.element.querySelector('.e-frame-stroke.e-template .e-dropdownbtn-preview') as HTMLElement).style.background = parent.frameObj.gradientColor;
+        }
+    }
+
+    private createFrameColor(): void {
+        const parent: ImageEditor = this.parent; let prevFrameSettings: FrameSettings; let obj: Object = {frameChangeEventArgs: null };
+        parent.element.querySelector('.e-template.e-stroke').appendChild(parent.createElement('input', {
+            id: parent.element.id + '_frame_fill'
+        }));
+        const fillColor: ColorPicker = new ColorPicker({
+            modeSwitcher: false, value: parent.frameObj.color,
+            showButtons: false, mode: 'Palette', cssClass: 'e-frame-fill-color',
+            change: (args: ColorPickerEventArgs): void => {
+                prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
+                    gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
+                    offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
+                    lineCount: parent.frameObj.amount};
+                const temp: string = parent.frameObj.color;
+                const object: Object = {currObj: {} as CurrentObject };
+                parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+                parent.frameObj.color = args.currentValue.hex;
+                parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: prevFrameSettings, obj: obj }});
+                if (obj['frameChangeEventArgs'] && !obj['frameChangeEventArgs'].cancel) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                        operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                            previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                            previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                            previousFilter: null, isCircleCrop: null }});
+                    parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                    if (args.currentValue.rgba === '') {
+                        (fillDDB.element.children[0] as HTMLElement).classList.add('e-nocolor-item');
+                    } else {
+                        (fillDDB.element.children[0] as HTMLElement).classList.remove('e-nocolor-item');
+                        (fillDDB.element.children[0] as HTMLElement).style.backgroundColor = args.currentValue.rgba;
+                    }
+                } else {
+                    parent.frameObj.color = temp;
+                }
+                fillDDB.toggle();
+            }
+        }, '#' + parent.element.id + '_frame_fill');
+        const fillDDB: DropDownButton = new DropDownButton({
+            open: (args: OpenCloseMenuEventArgs) => {
+                if (Browser.isDevice) {
+                    args.element.parentElement.style.top = fillDDB.element.getBoundingClientRect().top -
+                    args.element.parentElement.offsetHeight + 'px';
+                    args.element.parentElement.style.left = parent.element.offsetLeft + 'px';
+                }
+            },
+            target: '.e-frame-fill-color',
+            iconCss: 'e-dropdownbtn-preview'
+        }, '#' + parent.element.id + '_frameColorBtn');
+        fillColor.inline = true;
+        (parent.element.querySelector('.e-stroke.e-template .e-dropdownbtn-preview') as HTMLElement).style.background = parent.frameObj.color;
+    }
+
+    private createFrameSize(): void {
+        const parent: ImageEditor = this.parent; let prevFrameSettings: FrameSettings; let obj: Object = {frameChangeEventArgs: null };
+        const strokeWidthItems: DropDownButtonItemModel[] = [
+            { id: '1', text: this.l10n.getConstant('20') },
+            { id: '2', text: this.l10n.getConstant('40') },
+            { id: '3', text: this.l10n.getConstant('60') },
+            { id: '4', text: this.l10n.getConstant('80') },
+            { id: '5', text: this.l10n.getConstant('100') }
+        ];
+        const strokeWidthBtn: HTMLElement = document.getElementById(parent.element.id + '_frameSizeBtn');
+        const spanElem: HTMLElement = document.createElement('span');
+        spanElem.innerHTML = this.l10n.getConstant(parent.frameObj.size.toString());
+        spanElem.className = 'e-frame-stroke-width';
+        strokeWidthBtn.appendChild(spanElem);
+        // Initialize the DropDownButton component.
+        const drpDownBtn: DropDownButton = new DropDownButton({ items: strokeWidthItems,
+            open: (args: OpenCloseMenuEventArgs) => {
+                if (Browser.isDevice) {
+                    args.element.parentElement.style.top = drpDownBtn.element.getBoundingClientRect().top -
+                    args.element.parentElement.offsetHeight + 'px';
+                }
+                const activeBtn: string = drpDownBtn.element.childNodes[0].textContent;
+                if (activeBtn !== '') {
+                    args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
+                }
+            },
+            select: (args: MenuEventArgs) => {
+                prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
+                    gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
+                    offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
+                    lineCount: parent.frameObj.amount};
+                const temp: number = parent.frameObj.size;
+                const object: Object = {currObj: {} as CurrentObject };
+                parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+                parent.frameObj.size = parseInt(args.item.text, 10);
+                parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: prevFrameSettings, obj: obj }});
+                if (obj['frameChangeEventArgs'] && !obj['frameChangeEventArgs'].cancel) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                        operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                            previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                            previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                            previousFilter: null, isCircleCrop: null }});
+                    parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                    drpDownBtn.content = args.item.text;
+                } else {
+                    parent.frameObj.size = temp;
+                }
+                if (Browser.isDevice) {
+                    if (document.getElementById(parent.element.id + '_bottomToolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_bottomToolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                } else {
+                    if (document.getElementById(parent.element.id + '_toolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_toolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                }
+            }
+        });
+        // Render initialized DropDownButton.
+        drpDownBtn.appendTo('#' + parent.element.id + '_frameSizeBtn');
+    }
+
+    private createFrameInset(): void {
+        const parent: ImageEditor = this.parent; let prevFrameSettings: FrameSettings; let obj: Object = {frameChangeEventArgs: null };
+        const strokeWidthItems: DropDownButtonItemModel[] = [
+            { id: '1', text: this.l10n.getConstant('20') },
+            { id: '2', text: this.l10n.getConstant('40') },
+            { id: '3', text: this.l10n.getConstant('60') },
+            { id: '4', text: this.l10n.getConstant('80') },
+            { id: '5', text: this.l10n.getConstant('100') }
+        ];
+        const strokeWidthBtn: HTMLElement = document.getElementById(parent.element.id + '_frameInsetBtn');
+        const spanElem: HTMLElement = document.createElement('span');
+        spanElem.innerHTML = this.l10n.getConstant(parent.frameObj.inset.toString());
+        spanElem.className = 'e-frame-inset';
+        strokeWidthBtn.appendChild(spanElem);
+        // Initialize the DropDownButton component.
+        const drpDownBtn: DropDownButton = new DropDownButton({ items: strokeWidthItems,
+            open: (args: OpenCloseMenuEventArgs) => {
+                if (Browser.isDevice) {
+                    args.element.parentElement.style.top = drpDownBtn.element.getBoundingClientRect().top -
+                    args.element.parentElement.offsetHeight + 'px';
+                }
+                const activeBtn: string = drpDownBtn.element.childNodes[0].textContent;
+                if (activeBtn !== '') {
+                    args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
+                }
+            },
+            select: (args: MenuEventArgs) => {
+                prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
+                    gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
+                    offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
+                    lineCount: parent.frameObj.amount};
+                const temp: number = parent.frameObj.inset;
+                const object: Object = {currObj: {} as CurrentObject };
+                parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+                parent.frameObj.inset = parseInt(args.item.text, 10);
+                parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: prevFrameSettings, obj: obj }});
+                if (obj['frameChangeEventArgs'] && !obj['frameChangeEventArgs'].cancel) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                        operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                            previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                            previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                            previousFilter: null, isCircleCrop: null }});
+                    parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                    drpDownBtn.content = args.item.text;
+                } else {
+                    parent.frameObj.inset = temp;
+                }
+                if (Browser.isDevice) {
+                    if (document.getElementById(parent.element.id + '_bottomToolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_bottomToolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                } else {
+                    if (document.getElementById(parent.element.id + '_toolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_toolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                }
+            }
+        });
+        // Render initialized DropDownButton.
+        drpDownBtn.appendTo('#' + parent.element.id + '_frameInsetBtn');
+    }
+
+    private createFrameOffset(): void {
+        const parent: ImageEditor = this.parent; let prevFrameSettings: FrameSettings; let obj: Object = {frameChangeEventArgs: null };
+        const strokeWidthItems: DropDownButtonItemModel[] = [
+            { id: '1', text: this.l10n.getConstant('20') },
+            { id: '2', text: this.l10n.getConstant('40') },
+            { id: '3', text: this.l10n.getConstant('60') },
+            { id: '4', text: this.l10n.getConstant('80') },
+            { id: '5', text: this.l10n.getConstant('100') }
+        ];
+        const strokeWidthBtn: HTMLElement = document.getElementById(parent.element.id + '_frameOffsetBtn');
+        const spanElem: HTMLElement = document.createElement('span');
+        spanElem.innerHTML = this.l10n.getConstant(parent.frameObj.offset.toString());
+        spanElem.className = 'e-frame-offset';
+        strokeWidthBtn.appendChild(spanElem);
+        // Initialize the DropDownButton component.
+        const drpDownBtn: DropDownButton = new DropDownButton({ items: strokeWidthItems,
+            open: (args: OpenCloseMenuEventArgs) => {
+                if (Browser.isDevice) {
+                    args.element.parentElement.style.top = drpDownBtn.element.getBoundingClientRect().top -
+                    args.element.parentElement.offsetHeight + 'px';
+                }
+                const activeBtn: string = drpDownBtn.element.childNodes[0].textContent;
+                if (activeBtn !== '') {
+                    args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
+                }
+            },
+            select: (args: MenuEventArgs) => {
+                prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
+                    gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
+                    offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
+                    lineCount: parent.frameObj.amount};
+                const temp: number = parent.frameObj.offset;
+                const object: Object = {currObj: {} as CurrentObject };
+                parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+                parent.frameObj.offset = parseInt(args.item.text, 10);
+                parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: prevFrameSettings, obj: obj }});
+                if (obj['frameChangeEventArgs'] && !obj['frameChangeEventArgs'].cancel) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                        operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                            previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                            previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                            previousFilter: null, isCircleCrop: null }});
+                    parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                    drpDownBtn.content = args.item.text;
+                } else {
+                    parent.frameObj.offset = temp;
+                }
+                if (Browser.isDevice) {
+                    if (document.getElementById(parent.element.id + '_bottomToolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_bottomToolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                } else {
+                    if (document.getElementById(parent.element.id + '_toolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_toolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                }
+            }
+        });
+        // Render initialized DropDownButton.
+        drpDownBtn.appendTo('#' + parent.element.id + '_frameOffsetBtn');
+    }
+
+    private createFrameRadius(): void {
+        const parent: ImageEditor = this.parent; let prevFrameSettings: FrameSettings; let obj: Object = {frameChangeEventArgs: null };
+        const strokeWidthItems: DropDownButtonItemModel[] = [
+            { id: '1', text: this.l10n.getConstant('0') },
+            { id: '2', text: this.l10n.getConstant('20') },
+            { id: '3', text: this.l10n.getConstant('40') },
+            { id: '4', text: this.l10n.getConstant('60') },
+            { id: '5', text: this.l10n.getConstant('80') },
+            { id: '6', text: this.l10n.getConstant('100') }
+        ];
+        const strokeWidthBtn: HTMLElement = document.getElementById(parent.element.id + '_frameRadiusBtn');
+        const spanElem: HTMLElement = document.createElement('span');
+        spanElem.innerHTML = this.l10n.getConstant(parent.frameObj.radius.toString());
+        spanElem.className = 'e-frame-radius';
+        strokeWidthBtn.appendChild(spanElem);
+        // Initialize the DropDownButton component.
+        const drpDownBtn: DropDownButton = new DropDownButton({ items: strokeWidthItems,
+            open: (args: OpenCloseMenuEventArgs) => {
+                if (Browser.isDevice) {
+                    args.element.parentElement.style.top = drpDownBtn.element.getBoundingClientRect().top -
+                    args.element.parentElement.offsetHeight + 'px';
+                }
+                const activeBtn: string = drpDownBtn.element.childNodes[0].textContent;
+                if (activeBtn !== '') {
+                    args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
+                }
+            },
+            select: (args: MenuEventArgs) => {
+                prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
+                    gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
+                    offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
+                    lineCount: parent.frameObj.amount};
+                const temp: number = parent.frameObj.radius;
+                const object: Object = {currObj: {} as CurrentObject };
+                parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+                parent.frameObj.radius = parseInt(args.item.text, 10);
+                parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: prevFrameSettings, obj: obj }});
+                if (obj['frameChangeEventArgs'] && !obj['frameChangeEventArgs'].cancel) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                        operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                            previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                            previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                            previousFilter: null, isCircleCrop: null }});
+                    parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                    drpDownBtn.content = args.item.text;
+                } else {
+                    parent.frameObj.radius = temp;
+                }
+                if (Browser.isDevice) {
+                    if (document.getElementById(parent.element.id + '_bottomToolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_bottomToolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                } else {
+                    if (document.getElementById(parent.element.id + '_toolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_toolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                }
+            }
+        });
+        // Render initialized DropDownButton.
+        drpDownBtn.appendTo('#' + parent.element.id + '_frameRadiusBtn');
+    }
+
+    private createFrameAmount(): void {
+        const parent: ImageEditor = this.parent; let prevFrameSettings: FrameSettings; let obj: Object = {frameChangeEventArgs: null };
+        const strokeWidthItems: DropDownButtonItemModel[] = [
+            { id: '1', text: this.l10n.getConstant('1') },
+            { id: '2', text: this.l10n.getConstant('2') },
+            { id: '3', text: this.l10n.getConstant('3') },
+            { id: '4', text: this.l10n.getConstant('4') },
+            { id: '5', text: this.l10n.getConstant('5') }
+        ];
+        const strokeWidthBtn: HTMLElement = document.getElementById(parent.element.id + '_frameAmountBtn');
+        const spanElem: HTMLElement = document.createElement('span');
+        spanElem.innerHTML = this.l10n.getConstant(parent.frameObj.amount.toString());
+        spanElem.className = 'e-frame-amount';
+        strokeWidthBtn.appendChild(spanElem);
+        // Initialize the DropDownButton component.
+        const drpDownBtn: DropDownButton = new DropDownButton({ items: strokeWidthItems,
+            open: (args: OpenCloseMenuEventArgs) => {
+                if (Browser.isDevice) {
+                    args.element.parentElement.style.top = drpDownBtn.element.getBoundingClientRect().top -
+                    args.element.parentElement.offsetHeight + 'px';
+                }
+                const activeBtn: string = drpDownBtn.element.childNodes[0].textContent;
+                if (activeBtn !== '') {
+                    args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
+                }
+            },
+            select: (args: MenuEventArgs) => {
+                prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
+                    gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
+                    offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
+                    lineCount: parent.frameObj.amount};
+                const temp: number = parent.frameObj.amount;
+                const object: Object = {currObj: {} as CurrentObject };
+                parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+                parent.frameObj.amount = parseInt(args.item.text, 10);
+                parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: prevFrameSettings, obj: obj }});
+                if (obj['frameChangeEventArgs'] && !obj['frameChangeEventArgs'].cancel) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                        operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                            previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                            previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                            previousFilter: null, isCircleCrop: null }});
+                    parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                    drpDownBtn.content = args.item.text;
+                } else {
+                    parent.frameObj.amount = temp;
+                }
+                if (Browser.isDevice) {
+                    if (document.getElementById(parent.element.id + '_bottomToolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_bottomToolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                } else {
+                    if (document.getElementById(parent.element.id + '_toolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_toolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                }
+            }
+        });
+        // Render initialized DropDownButton.
+        drpDownBtn.appendTo('#' + parent.element.id + '_frameAmountBtn');
+    }
+
+    private createFrameBorder(): void {
+        const parent: ImageEditor = this.parent; let prevFrameSettings: FrameSettings; let obj: Object = {frameChangeEventArgs: null };
+        const strokeWidthItems: DropDownButtonItemModel[] = [
+            { id: '1', text: this.l10n.getConstant('Solid') },
+            { id: '2', text: this.l10n.getConstant('Dashed') },
+            { id: '3', text: this.l10n.getConstant('Dotted') },
+        ];
+        const strokeWidthBtn: HTMLElement = document.getElementById(parent.element.id + '_frameBorderBtn');
+        const spanElem: HTMLElement = document.createElement('span');
+        spanElem.innerHTML = this.l10n.getConstant(parent.toPascalCase(parent.frameObj.border));
+        spanElem.className = 'e-frame-border';
+        strokeWidthBtn.appendChild(spanElem);
+        // Initialize the DropDownButton component.
+        const drpDownBtn: DropDownButton = new DropDownButton({ items: strokeWidthItems,
+            open: (args: OpenCloseMenuEventArgs) => {
+                if (Browser.isDevice) {
+                    args.element.parentElement.style.top = drpDownBtn.element.getBoundingClientRect().top -
+                    args.element.parentElement.offsetHeight + 'px';
+                }
+                const activeBtn: string = drpDownBtn.element.childNodes[0].textContent;
+                if (activeBtn !== '') {
+                    args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
+                }
+            },
+            select: (args: MenuEventArgs) => {
+                prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
+                    gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
+                    offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
+                    lineCount: parent.frameObj.amount};
+                const temp: string = parent.frameObj.border;
+                const object: Object = {currObj: {} as CurrentObject };
+                parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+                parent.frameObj.border = args.item.text.toLowerCase();
+                parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: prevFrameSettings, obj: obj }});
+                if (obj['frameChangeEventArgs'] && !obj['frameChangeEventArgs'].cancel) {
+                    parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                        operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                            previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                            previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                            previousFilter: null, isCircleCrop: null }});
+                    parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                    drpDownBtn.content = args.item.text;
+                } else {
+                    parent.frameObj.border = temp;
+                }
+                if (Browser.isDevice) {
+                    if (document.getElementById(parent.element.id + '_bottomToolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_bottomToolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                } else {
+                    if (document.getElementById(parent.element.id + '_toolbar')) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const toolbar: any = getComponent(parent.element.id + '_toolbar', 'toolbar') as Toolbar;
+                        toolbar.refreshOverflow();
+                    }
+                }
+            }
+        });
+        // Render initialized DropDownButton.
+        drpDownBtn.appendTo('#' + parent.element.id + '_frameBorderBtn');
+    }
+
     private initFilterToolbarItem(): void {
         const parent: ImageEditor = this.parent;
         const mainItem: ItemModel[] = this.getFilterToolbarItem();
@@ -2094,6 +2982,14 @@ export class ToolbarModule {
             }
         });
         toolbar.appendTo('#' + parent.element.id + '_contextualToolbar');
+    }
+
+    private drawDashedLine(ctx: CanvasRenderingContext2D): void {
+        ctx.beginPath();
+        ctx.setLineDash([5]);
+        ctx.rect(10, 10, 280, 130);
+        ctx.stroke();
+        ctx.closePath();
     }
 
     private createCanvasFilter(): void {
@@ -2130,6 +3026,7 @@ export class ToolbarModule {
         const args: QuickAccessToolbarEventArgs = {cancel: false, toolbarItems: []};
         const toolbarItems: (string | ItemModel)[] = [];
         if (isNullOrUndefined(isPenEdit)) {
+            if (parent.activeObj.shape === 'image') {toolbarItems.push('Flip'); }
             toolbarItems.push('Clone'); toolbarItems.push('Delete');
             if (parent.activeObj.shape === 'text') {
                 toolbarItems.push('EditText');
@@ -2159,6 +3056,12 @@ export class ToolbarModule {
                     orgToolbarItems.push({ id: parent.element.id + '_editText', prefixIcon: 'e-icons e-annotation-edit', cssClass: 'top-icon e-annotation-edit',
                         tooltipText: this.l10n.getConstant('EditText'), align: 'Left' });
                     break;
+                case 'Flip':
+                    orgToolbarItems.push({ id: parent.element.id + '_hFlip', prefixIcon: 'e-icons e-horizontal-flip',
+                        tooltipText: this.l10n.getConstant('HorizontalFlip'), align: 'Left' });
+                    orgToolbarItems.push({ id: parent.element.id + '_vFlip', prefixIcon: 'e-icons e-vertical-flip',
+                        tooltipText: this.l10n.getConstant('VerticalFlip'), align: 'Left' });
+                    break;
                 default:
                     orgToolbarItems.push(args.toolbarItems[i as number] as ItemModel);
                     break;
@@ -2185,6 +3088,7 @@ export class ToolbarModule {
                 });
                 toolbarObj.appendTo('#' + parent.element.id + '_quickAccessToolbar');
             }
+            const height: number = this.toolbarHeight && this.toolbarHeight !== 0 ? this.toolbarHeight : qtArea.clientHeight;
             if (isNullOrUndefined(isPenEdit)) {
                 qtArea.style.width = 'auto';
                 parent.activeObj.activePoint.width = Math.abs(parent.activeObj.activePoint.width);
@@ -2205,10 +3109,14 @@ export class ToolbarModule {
                     x = path.startX; y = path.startY; width = path.width;
                 }
                 qtArea.style.left = (x + (width / 2)) - (items.length * 25) + 'px';
-                if (y - 60 < parent.img.destTop) {
+                if (parseFloat(qtArea.style.left) + (qtArea.clientWidth / 2) !== x + (width / 2)) {
+                    const diff: number = (x + (width / 2)) - (parseFloat(qtArea.style.left) + (qtArea.clientWidth / 2));
+                    qtArea.style.left = parseFloat(qtArea.style.left) + diff + 'px';
+                }
+                if (y - (height + (height / 1.5)) < parent.img.destTop) {
                     qtArea.style.top = parent.img.destTop + 'px';
                 } else {
-                    qtArea.style.top = y - 60 + 'px';
+                    qtArea.style.top = y - (height + (height / 1.5)) + 'px';
                 }
             } else if (isPenEdit) {
                 const obj: Object = {activePoint: null };
@@ -2219,10 +3127,10 @@ export class ToolbarModule {
                 const point: ActivePoint = obj['activePoint'];
                 qtArea.style.width = 'auto';
                 qtArea.style.left = (point.startX + (point.width / 2)) - (items.length * 27) + 'px';
-                if (point.startY - 60 < parent.img.destTop) {
+                if (point.startY - (height + (height / 1.5)) < parent.img.destTop) {
                     qtArea.style.top = parent.img.destTop + 'px';
                 } else {
-                    qtArea.style.top = point.startY - 60 + 'px';
+                    qtArea.style.top = point.startY - (height + (height / 1.5)) + 'px';
                 }
             }
         }
@@ -2304,15 +3212,20 @@ export class ToolbarModule {
             parent.notify('draw', { prop: 'getPrevActObj', onPropertyChange: false, value: {obj: obj }});
             parent.notify('selection', { prop: 'getTempActObj', onPropertyChange: false, value: {obj: object }});
             object['tempObj']['activePoint']['height'] = Math.abs(object['tempObj']['activePoint']['height']);
-            const pathObject: Object = {isNewPath: null };
+            const pathObject: Object = {isNewPath: null }; let ctx: CanvasRenderingContext2D;
             parent.notify('draw', {prop: 'getNewPath', value: {obj: pathObject}});
             switch (args.item.id.replace(parent.element.id + '_', '').toLowerCase()) {
             case 'duplicate':
                 if (!parent.element.querySelector('#' + parent.element.id + '_duplicate').classList.contains('e-disabled')) {
+                    this.refreshSlider();
                     if (!pathObject['isNewPath'] && JSON.stringify(object['tempObj']) === JSON.stringify(parent.activeObj)) {
                         isPreventUndoRedo = true;
                     }
                     duplicateObj = extend({}, parent.activeObj, {}, true) as SelectionPoint;
+                    if (duplicateObj.shape === 'image') {
+                        objColl = extend([], parent.objColl, [], true) as SelectionPoint[];
+                        parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: objColl}});
+                    }
                     if (isNullOrUndefined(parent.activeObj.currIndex)) {
                         parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: isPreventUndoRedo}});
                     } else if (obj['prevActObj']) {
@@ -2332,20 +3245,44 @@ export class ToolbarModule {
                             duplicateObj.pointColl[i as number].x += 10;
                             duplicateObj.pointColl[i as number].y -= 10;
                         }
+                    } else if (duplicateObj.shape === 'image') {
+                        duplicateObj.imageCanvas = parent.createElement('canvas');
                     }
-                    parent.activeObj = duplicateObj;
+                    parent.activeObj = extend({}, duplicateObj, {}, true) as SelectionPoint;
+                    if (parent.activeObj.shape === 'image') {
+                        if (parent.activeObj.isHorImageFlip && parent.activeObj.isVerImageFlip) {
+                            parent.activeObj.isHorImageFlip = parent.activeObj.isVerImageFlip = false;
+                            parent.notify('draw', { prop: 'downScaleImgCanvas', onPropertyChange: false,
+                                value: {ctx: duplicateObj.imageCanvas.getContext('2d'), isImgAnnotation: true, isHFlip: true, isVFlip: true }});
+                            parent.activeObj.isHorImageFlip = parent.activeObj.isVerImageFlip = true;
+                        } else if (parent.activeObj.isHorImageFlip) {
+                            parent.activeObj.isHorImageFlip = false;
+                            parent.notify('draw', { prop: 'downScaleImgCanvas', onPropertyChange: false,
+                                value: {ctx: duplicateObj.imageCanvas.getContext('2d'), isImgAnnotation: true, isHFlip: true, isVFlip: null }});
+                            parent.activeObj.isHorImageFlip = true;
+                        } else if (parent.activeObj.isVerImageFlip) {
+                            parent.activeObj.isVerImageFlip = false;
+                            parent.notify('draw', { prop: 'downScaleImgCanvas', onPropertyChange: false,
+                                value: {ctx: duplicateObj.imageCanvas.getContext('2d'), isImgAnnotation: true, isHFlip: null, isVFlip: true }});
+                            parent.activeObj.isVerImageFlip = true;
+                        } else {
+                            parent.notify('draw', { prop: 'downScaleImgCanvas', onPropertyChange: false,
+                                value: {ctx: duplicateObj.imageCanvas.getContext('2d'), isImgAnnotation: true, isHFlip: null, isVFlip: null }});
+                        }
+                    }
                     if (parent.activeObj.shape === 'line' || parent.activeObj.shape === 'arrow') {
                         parent.notify('shape', { prop: 'setPointCollForLineArrow', onPropertyChange: false,
                             value: {obj: parent.activeObj }});
                     }
-                    // parent.updateTrianglePoints(parent.activeObj); Invoke
-                    parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: parent.activeObj} });
+                    parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: parent.activeObj,
+                       isCropRatio: null, points: null, isPreventDrag: true }});
                     parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: objColl}});
                     this.renderQAT();
                 }
                 break;
             case 'remove':
                 if (!parent.element.querySelector('#' + parent.element.id + '_remove').classList.contains('e-disabled')) {
+                    this.refreshSlider();
                     parent.notify('selection', { prop: 'deleteItem', onPropertyChange: false});
                 }
                 break;
@@ -2374,6 +3311,25 @@ export class ToolbarModule {
                     }
                 }
                 break;
+            case 'rotleft':
+            case 'rotright':
+                if (!parent.element.querySelector('#' + parent.element.id + '_rotLeft').classList.contains('e-disabled') ||
+                    !parent.element.querySelector('#' + parent.element.id + '_rotRight').classList.contains('e-disabled')) {
+                    parent.rotateImage(args.item.id.replace(parent.element.id + '_', '').toLowerCase());
+                }
+                break;
+            case 'hflip':
+                if (!parent.element.querySelector('#' + parent.element.id + '_hFlip').classList.contains('e-disabled')) {
+                    ctx = parent.activeObj.imageCanvas.getContext('2d');
+                    parent.horizontalFlip(ctx);
+                }
+                break;
+            case 'vflip':
+                if (!parent.element.querySelector('#' + parent.element.id + '_vFlip').classList.contains('e-disabled')) {
+                    ctx = parent.activeObj.imageCanvas.getContext('2d');
+                    parent.verticalFlip(ctx);
+                }
+                break;
             }
         }
         if (isNullOrUndefined(isContextualToolbar)) {
@@ -2385,7 +3341,7 @@ export class ToolbarModule {
         const parent: ImageEditor = this.parent;
         let isContextualToolbar: boolean = false;
         let isFilterFinetune: boolean = false;
-        if (parent.element.querySelector('.e-contextual-toolbar-wrapper')) {
+        if (!this.isFrameToolbar && parent.element.querySelector('.e-contextual-toolbar-wrapper')) {
             if (!parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.contains('e-hide')) {
                 isContextualToolbar = isFilterFinetune = true;
             }
@@ -2393,7 +3349,8 @@ export class ToolbarModule {
         }
         if (args.item) {
             const type: string = args.item.id.replace(parent.element.id + '_', '').toLowerCase();
-            if (type === 'duplicate' || type === 'remove' || type === 'edittext') {
+            if (type === 'duplicate' || type === 'remove' || type === 'edittext' ||
+                type === 'hflip' || type === 'vflip' || type === 'rotleft' || type === 'rotright') {
                 this.quickAccessToolbarClicked(args, true);
                 parent.trigger('toolbarItemClicked', args);
             } else {
@@ -2417,8 +3374,7 @@ export class ToolbarModule {
                                isDisabledFilter: boolean, isFilterFinetune: boolean): void {
         const parent: ImageEditor = this.parent;
         const zoomIn: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_zoomIn');
-        let isCropSelection: boolean = false;  let panBtn: HTMLElement;
-        let splitWords: string[];
+        let isCropSelection: boolean = false;  let panBtn: HTMLElement; let splitWords: string[];
         if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
         if (splitWords === undefined && parent.currObjType.isCustomCrop) {
             isCropSelection = true;
@@ -2474,6 +3430,9 @@ export class ToolbarModule {
                 break;
             case 'reset':
                 parent.reset();
+                this.imageHeight = null; this.imageWidth = null;
+                this.parent.aspectHeight = null; this.parent.aspectWidth = null;
+                this.isAspectRatio = true;
                 this.currentToolbar = 'main';
                 break;
             case 'undo':
@@ -2481,6 +3440,23 @@ export class ToolbarModule {
                 break;
             case 'redo':
                 parent.notify('undo-redo', {prop: 'call-redo'});
+                break;
+            case 'aspectratio':
+                if (!parent.isCircleCrop && (isNullOrUndefined(parent.currSelectionPoint)) ||
+                    (parent.currSelectionPoint && parent.currSelectionPoint.shape !== 'crop-circle')) {
+                    parent.resizeSrc = { startX: parent.img.srcLeft, startY: parent.img.srcTop, width: parent.img.srcWidth,
+                        height: parent.img.srcHeight };
+                    this.refreshToolbar('resize');
+                }
+                break;
+            case 'nonaspectratio':
+                parent.resizeSrc = { startX: parent.img.srcLeft, startY: parent.img.srcTop, width: parent.img.srcWidth,
+                    height: parent.img.srcHeight };
+                this.refreshToolbar('resize');
+                break;
+            case 'resize':
+                if (parent.currObjType.isFiltered) {parent.okBtn(); }
+                this.resizeClick();
                 break;
             case 'adjustment':
                 if (!isDisabledAdjustment) {
@@ -2567,6 +3543,7 @@ export class ToolbarModule {
                 }
                 break;
             case 'croptransform':
+                if (parent.currObjType.isFiltered) {parent.okBtn(); }
                 this.refreshToolbar('croptransform');
                 break;
             case 'rotateleft':
@@ -2584,8 +3561,102 @@ export class ToolbarModule {
                 (parent.element.querySelector('#' + parent.element.id + '_saveBtn') as HTMLElement).classList.add('e-hide');
                 (parent.element.querySelector('#' + parent.element.id + '_saveBtn') as HTMLElement).click();
                 break;
+            case 'transparency':
+                this.updateContextualToolbar('transparency', 'transparency');
+                break;
+            case 'frame':
+                this.frameToolbarClick();
+                break;
+            case 'none':
+            case 'mat':
+            case 'bevel':
+            case 'line':
+            case 'inset':
+            case 'hook':
+                this.unselectFrameBtn();
+                if (parent.element.querySelector('#' + parent.element.id + '_' + type)) {
+                    parent.element.querySelector('#' + parent.element.id + '_' + type).classList.add('e-selected-btn');
+                }
+                parent.frameObj.type = type;
+                parent.frameObj.size = 20;
+                parent.frameObj.inset = 20;
+                parent.frameObj.radius = 0;
+                parent.frameObj.amount = 1;
+                if (type === 'inset') {parent.frameObj.offset = 60; }
+                else {parent.frameObj.offset = 20; }
+                this.refreshToolbar('frame');
+                parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                break;
             }
         }
+    }
+
+    private frameToolbarClick(): void {
+        const parent: ImageEditor = this.parent;
+        const frame: HTMLElement = document.querySelector('#' + parent.element.id + '_frame');
+        let zoom: number; let frameObj: FrameValue; let tempFrameObj: FrameValue;
+        if (parent.currObjType.isFiltered) {parent.okBtn(); }
+            if (frame && !frame.classList.contains('e-disabled')) {
+                zoom = parent.transform.zoomFactor;
+                parent.frameDestPoints = extend({}, parent.img, {}, true) as ImageDimension;
+                if (isNullOrUndefined(parent.cxtTbarHeight)) {
+                    frameObj = extend({}, parent.frameObj, {}, true) as FrameValue;
+                    tempFrameObj = extend({}, parent.tempFrameObj, {}, true) as FrameValue;
+                    this.callFrameToolbar(); parent.frameObj.type = 'mat'; this.callFrameToolbar();
+                    parent.cxtTbarHeight = parent.element.querySelector('#' + parent.element.id + '_customizeWrapper').clientHeight;
+                    parent.frameObj = frameObj; parent.tempFrameObj = tempFrameObj;
+                }
+                this.zoomToFrameRange();
+                parent.tempFrameZoomLevel = zoom;
+                if (Browser.isDevice) {parent.img.destTop -= (parent.cxtTbarHeight / 2); }
+                else {parent.img.destTop += (parent.cxtTbarHeight / 2); }
+                this.callFrameToolbar();
+            }
+    }
+
+    private zoomToFrameRange(): void {
+        const parent: ImageEditor = this.parent;
+        this.isFrameToolbar = false;
+        parent.notify('transform', { prop: 'resetZoom', onPropertyChange: false });
+        while (true) {
+            if (this.toolbarHeight + parent.img.destTop >= (this.toolbarHeight + parent.cxtTbarHeight)) {
+                break;
+            }
+            parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
+                value: { zoomFactor: -.1, zoomPoint: null, isResize: true } });
+        }
+        this.isFrameToolbar = true;
+    }
+
+    private resizeClick(): void {
+        this.parent.upperCanvas.style.cursor = 'default';
+        this.parent.notify('transform', { prop: 'updateResize', value: {bool: false }});
+        if (this.isAspectRatio) {
+            this.isAspectRatio = false;
+        }
+        else {
+            this.isAspectRatio = true;
+        }
+        this.parent.isResize = true;
+        this.refreshToolbar('resize');
+    }
+
+    private callFrameToolbar(): void {
+        const parent: ImageEditor = this.parent;
+        parent.notify('draw', {prop: 'setTempFrame', value: {frame: parent.frameObj.type}});
+        extend(parent.tempFrameObj, parent.frameObj);
+        const undoRedoObj: Object = {appliedUndoRedoColl: [] as Transition[] };
+        parent.notify('undo-redo', {prop: 'getAppliedUndoRedoColl', value: {obj: undoRedoObj }});
+        if (undoRedoObj['appliedUndoRedoColl']['length'] === 0) {
+            const object: Object = {currObj: {} as CurrentObject };
+            parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
+            parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
+                operation: 'frame', previousObj: object['currObj'], previousObjColl: object['currObj']['objColl'],
+                    previousPointColl: object['currObj']['pointColl'], previousSelPointColl: object['currObj']['selPointColl'],
+                    previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
+                    previousFilter: null, isCircleCrop: null }});
+        }
+        this.refreshToolbar('frame');
     }
 
     private contextualToolbarClicked(args: ClickEventArgs): void {
@@ -2619,6 +3690,7 @@ export class ToolbarModule {
     private zoomInBtnClickHandler(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent;
         if ((parent.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar) {
+            if (parent.currObjType.isFiltered) {parent.okBtn(); }
             this.refreshShapeDrawing();
             if (Browser.isDevice && e.type === 'touchstart') {
                 if (!e.returnValue) {
@@ -2643,13 +3715,14 @@ export class ToolbarModule {
             }
             parent.notify('draw', {prop: 'resetCurrentSelectionPoint' });
             parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                value: {zoomFactor: .1, zoomPoint: null}});
+                value: {zoomFactor: .1, zoomPoint: null, isResize: null }});
         }
     }
 
     private zoomOutBtnClickHandler(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent;
         if ((parent.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar) {
+            if (parent.currObjType.isFiltered) {parent.okBtn(); }
             this.refreshShapeDrawing();
             if (Browser.isDevice && e.type === 'touchstart') {
                 if (!e.returnValue) {
@@ -2674,7 +3747,7 @@ export class ToolbarModule {
             }
             parent.notify('draw', {prop: 'resetCurrentSelectionPoint' });
             parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
-                value: {zoomFactor: -.1, zoomPoint: null}});
+                value: {zoomFactor: -.1, zoomPoint: null, isResize: null }});
         }
     }
 
@@ -2730,11 +3803,19 @@ export class ToolbarModule {
                 id: parent.element.id + '_headWrapper',
                 styles: 'position: relative'
             }));
-            labelWrapper = hdrWrapper.appendChild(parent.createElement('label', {
-                id: parent.element.id + '_labelWrapper',
-                styles: Browser.isDevice ? 'position: absolute; top: 25%; left: calc(50% - 150px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
-                    : 'position: absolute; top: 25%; left: calc(50% - 226px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
-            }));
+            if (type === 'transparency') {
+                labelWrapper = hdrWrapper.appendChild(parent.createElement('label', {
+                    id: parent.element.id + '_labelWrapper',
+                    styles: Browser.isDevice ? 'position: absolute; top: 25%; left: calc(50% - 175px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                        : 'position: absolute; top: 25%; left: calc(50% - 250px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                }));
+            } else {
+                labelWrapper = hdrWrapper.appendChild(parent.createElement('label', {
+                    id: parent.element.id + '_labelWrapper',
+                    styles: Browser.isDevice ? 'position: absolute; top: 25%; left: calc(50% - 150px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                        : 'position: absolute; top: 25%; left: calc(50% - 226px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                }));
+            }
         } else {
             hdrWrapper.style.display = 'block';
         }
@@ -2779,6 +3860,9 @@ export class ToolbarModule {
                 min = 0; max = 100;
             }
             slider = this.createSlider(min, max, value, type);
+        } else if (type === 'transparency') {
+            min = 0; max = 100;
+            slider = this.createSlider(min, max, value, type);
         }
         slider.appendTo('#' + parent.element.id + '_sliderWrapper');
         sliderWrapper.style.left = (parseFloat(canvasWrapper.style.width) - parseFloat(slider.width as string)) / 2 + 'px';
@@ -2796,8 +3880,14 @@ export class ToolbarModule {
             width: Browser.isDevice ? '200px' : '300px',
             cssClass: 'e-slider',
             change: (args: SliderChangeEventArgs): void => {
-                parent.setCurrAdjustmentValue(type, args.value as number);
-                this.enableDisableTbrBtn();
+                if (type === 'transparency') {
+                    parent.activeObj.imageTransparency = args.value as number / 100;
+                    this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+                    parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate' }});
+                } else {
+                    parent.setCurrAdjustmentValue(type, args.value as number);
+                    this.enableDisableTbrBtn();
+                }
             }
         });
     }
@@ -2850,6 +3940,25 @@ export class ToolbarModule {
         if (sliderWrapper && slider) {
             slider.ej2_instances[0].destroy();
             sliderWrapper.remove();
+        }
+    }
+
+    private unselectFrameBtn(): void {
+        const parent: ImageEditor = this.parent;
+        const selectors: string[] = [
+            '#' + parent.element.id + '_none',
+            '#' + parent.element.id + '_mat',
+            '#' + parent.element.id + '_line',
+            '#' + parent.element.id + '_inset',
+            '#' + parent.element.id + '_bevel',
+            '#' + parent.element.id + '_hook'
+        ];
+        for (const selector of selectors) {
+            const element: HTMLElement = document.querySelector(selector);
+            if (element.classList.contains('e-selected-btn')) {
+                element.classList.remove('e-selected-btn');
+                break;
+            }
         }
     }
 

@@ -4,7 +4,7 @@ import { attributes, addClass, removeClass, prepend, closest, remove } from '@sy
 import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs, EmitType, compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs, animationMode } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';
@@ -18,6 +18,7 @@ const effectsConfig: { [key: string]: Effect[] } = {
     'Zoom': ['FadeOut', 'FadeZoomOut', 'FadeZoomIn', 'FadeIn'],
     'Fade': ['FadeOut', 'FadeOut', 'FadeIn', 'FadeIn']
 };
+
 
 const effectsRTLConfig: { [key: string]: Effect[] } = {
     'None': [],
@@ -449,10 +450,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * @angularType string | object
      * @reactType string | function | JSX.Element
      * @vueType string | function
-     * @deprecated
+     * @aspType string
      */
     @Property(null)
-    public template: string;
+    public template: string | Function;
 
     /**
      * The ListView has an option to custom design the ListView header title with the help of `headerTemplate` property.
@@ -463,10 +464,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * @angularType string | object
      * @reactType string | function | JSX.Element
      * @vueType string | function
-     * @deprecated
+     * @aspType string
      */
     @Property(null)
-    public headerTemplate: string;
+    public headerTemplate: string | Function;
 
     /**
      * The ListView has an option to custom design the group header title with the help of `groupTemplate` property.
@@ -477,10 +478,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * @angularType string | object
      * @reactType string | function | JSX.Element
      * @vueType string | function
-     * @deprecated
+     * @aspType string
      */
     @Property(null)
-    public groupTemplate: string;
+    public groupTemplate: string | Function;
 
     /**
      * Triggers when we select the list item in the component.
@@ -752,7 +753,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.element.style.overflow = 'hidden';
             this.aniObj.animate(fromView, {
                 name: (reverse === true ? anim[0] : anim[1]),
-                duration: duration,
+                duration: (duration === 0 && animationMode === 'Enable') ? 400: duration,
                 timingFunction: this.animation.easing,
                 // eslint-disable-next-line
                 end: (model: AnimationOptions): void => {
@@ -765,7 +766,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             toView.style.display = '';
             this.aniObj.animate(toView, {
                 name: (reverse === true ? anim[2] : anim[3]),
-                duration: duration,
+                duration: (duration === 0 && animationMode === 'Enable') ? 400 : duration,
                 timingFunction: this.animation.easing,
                 end: (): void => {
                     this.trigger('actionComplete');
@@ -778,7 +779,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     protected preRender(): void {
         if (this.template) {
             try {
-                if (document.querySelectorAll(this.template).length) {
+                if (typeof this.template !== 'function' && document.querySelectorAll(this.template).length) {
                     this.setProperties({ template: document.querySelector(this.template).innerHTML.trim() }, true);
                 }
             } catch (e) {
@@ -790,7 +791,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             headerTemplate: this.headerTemplate,
             groupTemplate: this.groupTemplate, expandCollapse: true, listClass: '',
             ariaAttributes: {
-                itemRole: 'listitem', listRole: 'group', itemText: '',
+                itemRole: 'listitem', listRole: 'list', itemText: '',
                 groupItemRole: 'presentation', wrapperRole: 'presentation'
             },
             // eslint-disable-next-line
@@ -1755,17 +1756,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.enableVirtualization) {
             if (Object.keys(this.dataSource).length) {
                 if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                    if ((this as any).isReact || (this as any).isVue) {
-                        if (typeof this.template == "string") {
-                            this.listBaseOption.template = null;
-                        }
-                        if (typeof this.groupTemplate == "string") {
-                            this.listBaseOption.groupTemplate = null;
-                        }
-                    } else {
-                        this.listBaseOption.template = null;
-                        this.listBaseOption.groupTemplate = null;
-                    }
                     this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
                 }
             }
@@ -1799,7 +1789,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     public render(): void {
         this.element.classList.add(classNames.root);
-        attributes(this.element, { role: 'list', tabindex: '0' });
+        attributes(this.element, { tabindex: '0' });
         this.setCSSClass();
         this.setEnableRTL();
         this.setEnable();
