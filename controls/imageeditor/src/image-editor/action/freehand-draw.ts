@@ -245,6 +245,13 @@ export class FreehandDrawing {
         else {this.freehandDownPoint = {x: e.touches[0].clientX, y: e.touches[0].clientY }; }
         this.isFreehandPointMoved = false;
         EventHandler.add(canvas, 'mousemove touchmove', this.freehandMoveHandler, this);
+        const shapeSettings: ShapeSettings = {id: 'pen_' + (this.currFHDIdx + 1), type: ShapeType.FreehandDraw,
+            startX: this.freehandDownPoint.x, startY: this.freehandDownPoint.y,
+            strokeColor: this.parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.parent.activeObj.strokeSettings.strokeWidth,
+            points: null };
+        const shapeChangingArgs: ShapeChangeEventArgs = {action: 'draw-start', previousShapeSettings: shapeSettings,
+            currentShapeSettings: shapeSettings};
+        this.triggerShapeChanging(shapeChangingArgs);
     }
 
     private freehandUpHandler(e: MouseEvent & TouchEvent, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D): void {
@@ -284,13 +291,21 @@ export class FreehandDrawing {
         this.selPointColl[fhCnt as number] = {};
         this.selPointColl[fhCnt as number].points = extend([], this.selPoints);
         this.selPoints = []; this.pointCounter = 0;
-        parent.freehandCounter++; this.currFHDIdx++;
+        parent.freehandCounter++;
         this.isFreehandDrawing = false;
         parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
             value: {operation: 'freehand-draw', previousObj: prevObj, previousObjColl: prevObj.objColl,
                 previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
                 previousCropObj: prevCropObj, previousText: null,
                 currentText: null, previousFilter: null, isCircleCrop: null}});
+        const shapeSettings: ShapeSettings = {id: 'pen_' + (this.currFHDIdx + 1), type: ShapeType.FreehandDraw,
+            startX: this.freehandDownPoint.x, startY: this.freehandDownPoint.y,
+            strokeColor: this.parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.parent.activeObj.strokeSettings.strokeWidth,
+            points: this.parent.pointColl[this.currFHDIdx].points };
+        const shapeChangingArgs: ShapeChangeEventArgs = {action: 'draw-end', previousShapeSettings: shapeSettings,
+            currentShapeSettings: shapeSettings};
+        this.triggerShapeChanging(shapeChangingArgs);
+        this.currFHDIdx++;
     }
 
     private freehandMoveHandler(e: MouseEvent & TouchEvent): void {
@@ -617,29 +632,7 @@ export class FreehandDrawing {
                 points: parent.pointColl[this.fhdSelIdx].points };
             const shapeChangingArgs: ShapeChangeEventArgs = {action: 'select', previousShapeSettings: shapeSettings,
                 currentShapeSettings: shapeSettings};
-            if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeChangingArgs) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
-                    parent.activeObj.strokeSettings.strokeColor = parent.pointColl[this.fhdSelIdx].strokeColor =
-                        shapeChangingArgs.currentShapeSettings.strokeColor;
-                    parent.activeObj.strokeSettings.strokeWidth = parent.pointColl[this.fhdSelIdx].strokeWidth =
-                        shapeChangingArgs.currentShapeSettings.strokeWidth;
-                    parent.pointColl[this.fhdSelIdx].points = shapeChangingArgs.currentShapeSettings.points;
-                    this.freehandRedraw(this.upperContext);
-                    parent.updateToolbar(parent.element, 'imageLoaded');
-                    parent.updateToolbar(parent.element, 'pen');
-                });
-            } else {
-                parent.trigger('shapeChanging', shapeChangingArgs);
-                parent.activeObj.strokeSettings.strokeColor = parent.pointColl[this.fhdSelIdx].strokeColor =
-                    shapeChangingArgs.currentShapeSettings.strokeColor;
-                parent.activeObj.strokeSettings.strokeWidth = parent.pointColl[this.fhdSelIdx].strokeWidth =
-                    shapeChangingArgs.currentShapeSettings.strokeWidth;
-                parent.pointColl[this.fhdSelIdx].points = shapeChangingArgs.currentShapeSettings.points;
-                this.freehandRedraw(this.upperContext);
-                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
-                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-            }
+            this.triggerShapeChanging(shapeChangingArgs);
         } else {
             parent.okBtn();
         }
@@ -1009,6 +1002,41 @@ export class FreehandDrawing {
                     this.selPoints[l as number].ratioY = (this.selPoints[l as number].y -
                                                        parent.activeObj.activePoint.startY) / parent.activeObj.activePoint.height;
                 }
+            }
+        }
+    }
+
+    private triggerShapeChanging(shapeChangingArgs: ShapeChangeEventArgs) : void {
+        const parent: ImageEditor = this.parent;
+        if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeChangingArgs) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
+                parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+                parent.activeObj.strokeSettings.strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+                if (this.fhdSelID) {
+                    parent.pointColl[this.fhdSelIdx].strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+                    parent.pointColl[this.fhdSelIdx].strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+                    parent.pointColl[this.fhdSelIdx].points = shapeChangingArgs.currentShapeSettings.points;
+                }
+                if (shapeChangingArgs.action === 'select') {
+                    this.freehandRedraw(this.upperContext);
+                    parent.updateToolbar(parent.element, 'imageLoaded');
+                    parent.updateToolbar(parent.element, 'pen');
+                }
+            });
+        } else {
+            parent.trigger('shapeChanging', shapeChangingArgs);
+            parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+            parent.activeObj.strokeSettings.strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+            if (this.fhdSelID) {
+                parent.pointColl[this.fhdSelIdx].strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+                parent.pointColl[this.fhdSelIdx].strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+                parent.pointColl[this.fhdSelIdx].points = shapeChangingArgs.currentShapeSettings.points;
+            }
+            if (shapeChangingArgs.action === 'select') {
+                this.freehandRedraw(this.upperContext);
+                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
+                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
             }
         }
     }

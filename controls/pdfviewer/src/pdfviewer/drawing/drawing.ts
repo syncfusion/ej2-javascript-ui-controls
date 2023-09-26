@@ -1170,10 +1170,8 @@ export class Drawing {
         let annotation: any = this.pdfViewer.selectedItems.annotations[0];
         let allowedInteraction: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
         let isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
-        if(allowedInteraction[0] === 'Select' || !isLock)
-            return true
-        else
-            return false
+        let isSelectInAllowed: any = !isNullOrUndefined(allowedInteraction) && (allowedInteraction.includes('Select') || !isLock);
+        return isSelectInAllowed;
     }
     /**
      * @private
@@ -3055,7 +3053,7 @@ export class Drawing {
                     }
                 }
             }
-            if ((right <= width - 3 && left >= 1 && bottom <= height - 3 && top >= heightDifference) || isSkip) {
+            if ((right <= width - 3 || left >= 1 && bottom <= height - 3 && top >= heightDifference) || isSkip) {
                 return true;
             }
         }

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 23.1.38 (2023-09-26)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I498062` - The console errors with the Tooltip component while dragging a diagram node over another node frequently has been resolved.
+
+## 23.1.36 (2023-09-15)
+
 ### Tooltip
 
 #### Bug Fixes

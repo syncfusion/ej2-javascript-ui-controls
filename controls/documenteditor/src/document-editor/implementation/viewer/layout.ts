@@ -309,8 +309,12 @@ export class Layout {
             const nextSection: BodyWidget = sections[i + 1] as BodyWidget;
             this.viewer.columnLayoutArea.setColumns(section.sectionFormat);
             let lastpage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+            let bodyWidget: BodyWidget;
+            if (!isNullOrUndefined(lastpage) && !isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1]) && lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].childWidgets.length === 0 && !isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].previousSplitWidget)) {
+                bodyWidget = lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].previousSplitWidget as BodyWidget;
+            }
             /* eslint-disable-next-line max-len */
-            if (i > 0 && !isNullOrUndefined(sections[i - 1].lastChild) && !((sections[i - 1] as BodyWidget).lastChild instanceof TableWidget) && (((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithPageBreak || ((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithColumnBreak) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
+            if (i > 0 && !isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.lastChild) && !(bodyWidget.lastChild instanceof TableWidget) && ((this.documentHelper.compatibilityMode === 'Word2013' && (bodyWidget.lastChild as ParagraphWidget).isEndsWithPageBreak || (bodyWidget.lastChild as ParagraphWidget).isEndsWithColumnBreak)) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
                 this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
                 lastpage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
             }
@@ -396,13 +400,15 @@ export class Layout {
                 && !block.tableFormat.allowAutoFit) {
                 block.calculateGrid();
             }
-            this.viewer.updateClientAreaForBlock(block, true, undefined, true);
-            let bodyIndex: number = block.containerWidget.indexInOwner;
-            nextBlock = this.layoutBlock(block, index);
-            index = 0;
-            this.viewer.updateClientAreaForBlock(block, false);
-            prevBlock = block;
-            block = nextBlock;
+            if (!isNullOrUndefined(block)) {
+                this.viewer.updateClientAreaForBlock(block, true, undefined, true);
+                let bodyIndex: number = block.containerWidget.indexInOwner;
+                nextBlock = this.layoutBlock(block, index);
+                index = 0;
+                this.viewer.updateClientAreaForBlock(block, false);
+                prevBlock = block;
+                block = nextBlock;
+            }
         } while (block);
         block = section.firstChild as BlockWidget;
         if (this.viewer instanceof PageLayoutViewer && section.sectionFormat.numberOfColumns > 1 && !isNullOrUndefined(nextSection) && nextSection.sectionFormat.breakCode === 'NoBreak' && (section.sectionFormat.breakCode === 'NoBreak' || (section.sectionIndex === section.page.bodyWidgets[0].sectionIndex))) {
@@ -3289,9 +3295,10 @@ export class Layout {
                 bottomMargin += HelperMethods.convertPointToPixel(borders.bottom.lineWidth + borders.bottom.space);
             }
         }
-        for (let i: number = 0; i < lineWidget.children.length; i++) {
-            const element: ElementBox = lineWidget.children[i];
-            if (i === 0 && element instanceof ListTextElementBox) {
+        let renderedElements: ElementBox[] = lineWidget.renderedElements;
+        for (let i: number = 0; i < renderedElements.length; i++) {
+            const element: ElementBox = renderedElements[i];
+            if (i === 0 && element instanceof ListTextElementBox || (paragraph.paragraphFormat.bidi && renderedElements[renderedElements.length - 1] instanceof ListTextElementBox)) {
                 const textAlignment: TextAlignment = paragraph.paragraphFormat.textAlignment;
                 if (textAlignment === 'Right') {  //Aligns the text as right justified.
                     leftMargin = subWidth;
@@ -3301,6 +3308,7 @@ export class Layout {
                 element.margin = new Margin(leftMargin, topMargin, 0, bottomMargin);
                 element.line = lineWidget;
                 lineWidget.height = topMargin + height + bottomMargin;
+                break;
             }
         }
         lineWidget.margin = new Margin(0, topMargin, 0, bottomMargin);
@@ -4251,6 +4259,9 @@ export class Layout {
                 }
             }
             let prevPage: Page = paragraphWidget.bodyWidget.page;
+            if (isPageBreak && index === 0 && !isNullOrUndefined(paragraphWidget.bodyWidget.lastChild) && paragraphWidget === paragraphWidget.bodyWidget.lastChild && this.endOverlapWidget) {
+                this.isRelayoutOverlap = false;
+            }
             let nextBody: BodyWidget = this.moveBlocksToNextPage(paragraphWidget, index === 0, index);
             if (prevPage !== nextBody.page) {
                 this.viewer.updateClientArea(nextBody, nextBody.page);
@@ -4628,7 +4639,8 @@ export class Layout {
                 this.layoutTable(block as TableWidget, 0);
             }
             this.viewer.updateClientAreaForBlock(block, false);
-            block = block !== endBlock ? block.nextWidget as BlockWidget : undefined;
+            let isTableHasParaVerticalOrigin: boolean = (!isNullOrUndefined(block.nextWidget) && block.nextWidget instanceof TableWidget && block.nextWidget === endBlock && (block.nextWidget.positioning.verticalOrigin === 'Paragraph'));
+            block = block !== endBlock && !isTableHasParaVerticalOrigin ? block.nextWidget as BlockWidget : undefined;
         }
     }
 
@@ -8066,7 +8078,7 @@ export class Layout {
                     (this.viewer as PageLayoutViewer).updateHeaderFooterClientAreaWithTop(bodyWidget.sectionFormat, bodyWidget.headerFooterType.indexOf('Header') !== -1, bodyWidget.page);
                     curretBlock.containerWidget.height -= curretBlock.height;
                 } else if (bodyWidget instanceof TextFrame) {
-                    this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape as ShapeElementBox, true);
+                    this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape as ShapeElementBox, true, !shiftNextWidget);
 
                 } else if (!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget) {
                     this.viewer.updateClientArea(bodyWidget as BodyWidget, (bodyWidget as BodyWidget).page, true);

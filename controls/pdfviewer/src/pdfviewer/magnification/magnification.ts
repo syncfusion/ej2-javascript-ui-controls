@@ -451,6 +451,7 @@ export class Magnification {
 
     private magnifyPages(): void {
         this.clearRerenderTimer();
+        this.pdfViewerBase.showPageLoadingIndicator(this.pdfViewerBase.currentPageNumber-1, true);
         if (!this.isPagesZoomed) {
             this.reRenderPageNumber = this.pdfViewerBase.currentPageNumber;
         }
@@ -489,6 +490,7 @@ export class Magnification {
                 this.magnifyPageRerenderTimer = setTimeout(
                     () => {
                         proxy.rerenderMagnifiedPages();
+                        this.pdfViewerBase.showPageLoadingIndicator(this.pdfViewerBase.currentPageNumber-1, false);
                     }, 800);
             }
         }

@@ -194,8 +194,7 @@ export class WorkbookFormula {
             args.isFormulaDependent = this.refreshCalculate(
                 <number>args.rowIndex, <number>args.colIndex, <string>args.value, <boolean>args.isFormula, <number>args.sheetIndex,
                 <boolean>args.isRefreshing, <boolean>args.isDependentRefresh, <boolean>args.isRandomFormula);
-            args.value = args.value ? args.value.toString().split('-*').join('-').split('/*').join('/').split('*/').
-                join('*').split('-/').join('-').split('*+').join('*').split('+*').join('+') : args.value;
+            args.value = args.value ? args.value.toString().split('^+').join('^').split('&+').join('&') : args.value;
             break
         case 'refreshRandomFormula':
             this.refreshRandomFormula();

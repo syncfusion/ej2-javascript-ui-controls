@@ -1,4 +1,3 @@
-@import 'common/mixin.scss';
 @import 'definition/material3.scss';
 
 @if not variable-exists('is-roboto-loaded') {

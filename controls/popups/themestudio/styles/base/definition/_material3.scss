@@ -1,4 +1,6 @@
 @use 'sass:math';
+@import '../common/mixin.scss';
+
 @function mapcolorvariable($pallete-name){
   @return var(#{'--color-sf-'+  $pallete-name});
 }
@@ -780,3 +782,11 @@ $font-icon-32: 32px !default;
   --color-sf-diagram-palette-background: var(--color-sf-inverse-surface);
   --color-sf-content-text-color-alt2: var(--color-sf-on-secondary);
 }
+
+//definition
+$font-size: 12px !default;
+$font-weight: 400 !default;
+$error-font-color: $danger !default;
+$warning-font-color: $warning !default;
+$success-font-color: $success !default;
+$information-font-color: $info !default;

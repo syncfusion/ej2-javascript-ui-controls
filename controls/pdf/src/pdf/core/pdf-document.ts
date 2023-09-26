@@ -54,6 +54,7 @@ export class PdfDocument {
     _hasUserPasswordOnly: boolean = false;
     _encryptOnlyAttachment: boolean = false;
     _encryptMetaData: boolean = false;
+    private _allowCustomData: boolean = false;
     /**
      * Initializes a new instance of the `PdfDocument` class.
      *
@@ -153,6 +154,12 @@ export class PdfDocument {
             }
         }
         this._crossReference._version = this._version;
+    }
+    get _allowImportCustomData(): boolean {
+        return this._allowCustomData;
+    }
+    set _allowImportCustomData(value: boolean) {
+        this._allowCustomData = value;
     }
     get _linearization(): _Linearization {
         if (!this._linear) {

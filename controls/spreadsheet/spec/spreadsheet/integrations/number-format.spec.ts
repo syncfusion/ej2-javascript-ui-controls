@@ -986,16 +986,16 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 done();
             });
         });
-        describe('EJ2-844735 ->', () => {
+        describe('EJ2-844735, EJ2-846521 ->', () => {
             beforeEach((done: Function) => {
                 model = {
                     sheets: [{
                         rows: [
-                            { cells: [{ value: '1', format: '0.0%' }] },
-                            { cells: [{ value: '1', format: '#,##0' }] },
-                            { cells: [{ value: '1', format: '$#,##0.00' }] },
-                            { cells: [{ value: '1', format: '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)' }] },
-                            { cells: [{ value: '1', format: '0.00%' }] }
+                            { cells: [{ value: '1', format: '0.0%' }, { value: '100'}] },
+                            { cells: [{ value: '1', format: '#,##0' }, { value: '100.00'}] },
+                            { cells: [{ value: '1', format: '$#,##0.00' }, { value: '100.01'}] },
+                            { cells: [{ value: '1', format: '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)' }, { value: '100.010'}] },
+                            { cells: [{ value: '1', format: '0.00%' }, { value: '100%'}] }
                         ]
                     }]
                 };
@@ -1020,6 +1020,14 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(helper.invoke('getCell', [2, 0]).textContent).toBe('$0.01');
                 expect(helper.invoke('getCell', [3, 0]).textContent).toBe(' $0.01 ');
                 expect(helper.invoke('getCell', [4, 0]).textContent).toBe('1.00%');
+                done();
+            });
+            it('The decimal values that contains zeros after decimal point was not parsed properly while loading it using openFromJson method', (done: Function) => {
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('100');
+                expect(helper.invoke('getCell', [1, 1]).textContent).toBe('100');
+                expect(helper.invoke('getCell', [2, 1]).textContent).toBe('100.01');
+                expect(helper.invoke('getCell', [3, 1]).textContent).toBe('100.01');
+                expect(helper.invoke('getCell', [4, 1]).textContent).toBe('100%');
                 done();
             });
         });

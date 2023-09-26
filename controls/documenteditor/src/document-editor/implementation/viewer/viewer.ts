@@ -1069,7 +1069,7 @@ export class DocumentHelper {
     */
     public getImageString(image: ImageElementBox): string {
         let base64ImageString: string[] = this.images.get(parseInt(image.imageString));
-        return image.isMetaFile ? base64ImageString[1] : base64ImageString[0];
+        return image.isMetaFile && HelperMethods.formatClippedString(base64ImageString[0]).extension !== ".svg" ? base64ImageString[1] : base64ImageString[0];
     }
     /**
      * @private
@@ -2346,7 +2346,9 @@ export class DocumentHelper {
                         data.value = (formField.formFieldData as DropDownFormField).selectedIndex;
                     }
                     data.isCanceled = false;
-                    if(this.selection.previousSelectedFormField !== this.selection.getCurrentFormField()){
+                    if(this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Popup' && this.selection.previousSelectedFormField !== this.selection.getCurrentFormField()){
+                        this.owner.trigger(beforeFormFieldFillEvent, data);
+                    } else {
                         this.owner.trigger(beforeFormFieldFillEvent, data);
                     }
                     if (!data.isCanceled) {
@@ -3092,7 +3094,7 @@ export class DocumentHelper {
             if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
                 if (tapCount % 2 === 0) {
                     this.owner.selection.selectCurrentWord();
-                } else {
+                } else if (!this.isDragStarted) {
                     this.owner.selection.selectParagraph();
                 }
             }
@@ -4592,8 +4594,8 @@ export abstract class LayoutViewer {
         }
     }
 
-    public updateClientAreaForTextBoxShape(textBox: ShapeElementBox, beforeLayout: boolean): void {
-        if (textBox.textWrappingStyle === 'Inline' && this.documentHelper.layout.isInitialLoad) {
+    public updateClientAreaForTextBoxShape(textBox: ShapeElementBox, beforeLayout: boolean, shiftNextWidget?: boolean): void {
+        if (textBox.textWrappingStyle === 'Inline' && !shiftNextWidget) {
             textBox.y = this.clientActiveArea.y;
             textBox.x = this.clientActiveArea.x;
         }

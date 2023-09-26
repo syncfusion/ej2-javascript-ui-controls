@@ -133,7 +133,7 @@ export class DrillThroughDialog {
                             count = 0;
                             if (this.parent.dataSourceSettings.mode === 'Server') {
                                 const gridIndex: object[] = [];
-                                let keys: string[] = Object.keys(gridIndexObjects);
+                                const keys: string[] = Object.keys(gridIndexObjects);
                                 for (let len: number = 0; len < keys.length; len++) {
                                     delete this.parent.drillThroughValue.indexObject[gridIndexObjects[keys[len as number]]];
                                     gridIndex.push({ Key: keys[len as number], Value: gridIndexObjects[keys[len as number]] });
@@ -251,11 +251,13 @@ export class DrillThroughDialog {
                 this.parent.trigger(events.editCompleted, eventArgs);
                 if (!eventArgs.cancel) {
                     if (this.parent.dataSourceSettings.mode === 'Server') {
-                        let dataIndex: { [key: string]: Object } = {};
-                            dataIndex[indexObject] = indexObject;
-                            let prevItems = [currentData];
-                        this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, { /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                            'addedData': [], 'removedData': [], 'updatedData': prevItems, indexObject: dataIndex as any 
+                        const dataIndex: { [key: string]: Object } = {};
+                        dataIndex[indexObject as number] = indexObject;
+                        /* eslint-disable-next-line @typescript-eslint/tslint/config*/
+                        const prevItems = [currentData];
+                        this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, {
+                            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                            'addedData': [], 'removedData': [], 'updatedData': prevItems, indexObject: dataIndex as any
                         });
                     }
                     this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);

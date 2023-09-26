@@ -751,7 +751,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                         (item.displayOptions === (DisplayMode.Simplified | DisplayMode.Overflow))) && !isNullOrUndefined(itemContainer)) {
                         itemContainer.setAttribute('data-simplified-width', activeContent.offsetWidth.toString());
                         this.createOverflowPopup(item, tabIndex, group.enableGroupOverflow, group.id
-                            , group.header, itemContainer, groupContainer);
+                            , group.header, itemContainer, groupContainer, true);
                         if (item.activeSize === RibbonItemSize.Small) {
                             const itemEle: HTMLElement = itemContainer.querySelector('#' + item.id);
                             (item as RibbonItem).setProperties({ activeSize: RibbonItemSize.Medium }, true);
@@ -866,7 +866,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private createOverflowPopup(item: RibbonItemModel, tabIndex: number, isGroupOF: boolean, groupId: string, groupHeader: string
-        , itemEle: HTMLElement, groupContainer: HTMLElement): void {
+        , itemEle: HTMLElement, groupContainer: HTMLElement, isResize?: boolean): void {
         let overflowButton: DropDownButton;
         const contentEle: HTMLElement = this.tabObj.items[parseInt(tabIndex.toString(), 10)].content as HTMLElement;
         const isDisabledGroup: HTMLElement = contentEle.querySelector('#' + groupId);
@@ -879,10 +879,12 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             } else {
                 overflowButton = getInstance(overflowDDB, DropDownButton) as DropDownButton;
             }
+            const overflowBtnTarget: HTMLElement = overflowButton.target as HTMLElement;
             if (isDisabledGroup && isDisabledGroup.classList.contains('e-disabled')) {
-                (overflowButton.target as HTMLElement).classList.add('e-disabled');
+                overflowBtnTarget.classList.add('e-disabled');
             }
-            (overflowButton.target as HTMLElement).append(itemEle);
+            isResize ? overflowBtnTarget.insertBefore(itemEle, overflowBtnTarget.querySelector('.' + constants.RIBBON_ITEM)) 
+                : overflowBtnTarget.append(itemEle);
         }
         else {
             if (!this.overflowDDB) {
@@ -904,7 +906,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                         }
                         ofTabContainer.append(ofGroupContainer);
                     }
-                    ofGroupContainer.append(itemEle);
+                    isResize ? ofGroupContainer.insertBefore(itemEle, ofGroupContainer.querySelector('.' + constants.RIBBON_ITEM)) : ofGroupContainer.append(itemEle);
                 }
                 else {
                     this.createOfTabContainer(groupId, groupHeader, itemEle, tabIndex);
@@ -1829,18 +1831,72 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         this.collapseButton = null;
     }
 
-    private reRenderTabs(): void {
+    private reRenderTabs(tabs: RibbonTabModel[]): void {
         this.destroyScroll();
         this.checkID(this.tabs, 'tab', this.element.id);
-        this.destroyTabItems(this.tabsInternal);
-        this.tabsInternal = this.tabs.slice();
-        this.validateItemSize();
-        const tabItems: TabItemModel[] = this.createTabItems(this.tabs);
-        if (this.selectedTab >= this.tabs.length) { this.selectedTab = this.tabs.length - 1; }
-        this.tabObj.setProperties({ items: tabItems, selectedItem: this.selectedTab });
-        const contentEle: HTMLElement = this.tabObj.items[this.selectedTab].content as HTMLElement;
-        if (contentEle.innerHTML === '') {
-            this.renderInitialTab(this.selectedTab);
+        for (const key in tabs) {
+            const index: number = parseInt(key, 10)
+            const tab: RibbonTabModel = tabs[parseInt(index.toString(), 10)];
+            let isNewTab: boolean = false;
+            for (var j: number = 0; j < (this.tabObj.items.length); j++) {
+                if (this.tabs[parseInt(index.toString(), 10)].id === this.tabObj.items[parseInt(j.toString(), 10)].id) {
+                    isNewTab = true;
+                    break;
+                }
+            }
+            if (!isNewTab) {
+                this.destroyTabItems(this.tabsInternal);
+                this.tabsInternal = this.tabs.slice();
+                this.validateItemSize();
+                const tabItems: TabItemModel[] = this.createTabItems(this.tabs);
+                if (this.selectedTab >= this.tabs.length) { this.selectedTab = this.tabs.length - 1; }
+                this.tabObj.setProperties({ items: tabItems, selectedItem: this.selectedTab });
+                break;
+            }
+            else {
+                const groups: RibbonGroupModel[] = this.tabs[parseInt(index.toString(), 10)].groups;
+                const tabEle: HTMLElement = this.tabObj.element;
+                const ribbonTab: RibbonTab = this.tabs[parseInt(index.toString(), 10)] as RibbonTab;
+                ribbonTab.setProperties(tab, true);
+                this.setProperties({ groups: this.checkID(ribbonTab.groups, 'group', ribbonTab.id) }, true);
+                this.validateItemSize();
+                const contentEle: HTMLElement = this.tabObj.items[parseInt(index.toString(), 10)].content as HTMLElement;
+                if (groups) {
+                    // Check whether header is passed by the user and sets the updated values.
+                    if (tab.header) {
+                        (this.tabObj.items[parseInt(index.toString(), 10)].header.text as HTMLElement).innerText = ribbonTab.header;
+                    }
+                    // Check whether cssClass is passed by the user, and if it is, then remove the old values.
+                    if (tab.cssClass) {
+                        if (this.tabObj.items[parseInt(index.toString(), 10)].cssClass) {
+                            contentEle.classList.remove(this.tabObj.items[parseInt(index.toString(), 10)].cssClass);
+                            tabEle.querySelector('.e-active').classList.remove(this.tabObj.items[parseInt(index.toString(), 10)].cssClass);
+                        }
+                        contentEle.classList.add(ribbonTab.cssClass);
+                        tabEle.querySelector('.e-active').classList.add(ribbonTab.cssClass);
+                    }
+                    // Check whether group is passed by the user, and if it is, then remove the old values.
+                    if (tab.groups) {
+                        for (const group of groups) {
+                            const dropdownElement: HTMLElement = group.isCollapsed ? contentEle.querySelector('#' + group.id + constants.OVERFLOW_ID + constants.DROPDOWN_ID) : null;
+                            for (const collection of group.collections) {
+                                for (const item of collection.items) {
+                                    const ele: HTMLElement = dropdownElement ? this.ribbonDropDownModule.getDDBItemElement(dropdownElement, item.id) : contentEle.querySelector('#' + item.id);
+                                    if (ele) {
+                                        this.destroyFunction(item, ele);
+                                    }
+                                }
+                            }
+                            if (dropdownElement) { this.ribbonDropDownModule.removeOverFlowDropDown(dropdownElement); }
+                        }
+                        const groupElements: NodeListOf<HTMLElement> = contentEle.querySelectorAll('.e-ribbon-group');
+                        // eslint-disable-next-line @typescript-eslint/tslint/config
+                        groupElements.forEach(groupEle => { groupEle.remove(); });
+                        const elements: HTMLElement[] = this.createGroups(ribbonTab.groups, index);
+                        append(elements, contentEle);
+                    }
+                }
+            }
         }
     }
 
@@ -3496,7 +3552,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 this.tabObj.setProperties({ animation: newProp.tabAnimation });
                 break;
             case 'tabs':
-                this.reRenderTabs();
+                this.reRenderTabs(newProp.tabs);
                 break;
             case 'width':
                 this.element.style.width = formatUnit(newProp.width);

@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-pivotview/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-pivotview)
+
 # JavaScript Pivot Table control
 
 The [JavaScript Pivot Table](https://www.syncfusion.com/javascript-ui-controls/js-pivot-table?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pivot-table-npm) is a multi-dimensional data visualization control built on top of relational and OLAP data sources. The pivot report can be managed dynamically at runtime, along with other features such as graphical visualization (Pivot Chart), drill down/up, aggregation, filtering, sorting, grouping, conditional formatting, drill through, editing, hyperlink, and more. The large amounts of data are effectively handled by virtualization or paging support.

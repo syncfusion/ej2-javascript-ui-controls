@@ -1,0 +1,137 @@
+@include export-module('dialog-theme') {
+  .e-dialog {
+    background-color: $dialog-bg-color;
+    box-shadow: $dialog-shadow-color;
+  }
+
+  .e-dlg-overlay {
+    background-color: $dialog-overlay-bg-color;
+  }
+
+  .e-footer-content {
+    background-color: $dialog-footer-bg-color;
+
+    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
+      .e-btn.e-primary.e-flat:not([DISABLED]) {
+        background: $dialog-footer-btn-bg-color;
+        border-color: $dialog-footer-btn-border-color;
+        color: $dialog-footer-btn-color;
+      }
+
+      .e-btn:hover.e-primary.e-flat:not([DISABLED]) {
+        @if $skin-name == 'Material3' {
+          background: $dialog-footer-flat-hover-btn-bg-color;
+          color: rgba($primary);
+        }
+        @else {
+          background: $dialog-footer-hover-btn-color;
+        }
+      }
+    }
+
+    @if $skin-name == 'Material3' {
+      .e-btn.e-primary.e-flat:not([DISABLED]):focus-visible,
+      .e-btn.e-primary.e-flat:not([DISABLED]):focus,
+      .e-btn.e-primary.e-flat:not([DISABLED]):focus,
+      .e-btn.e-flat:not([DISABLED]):focus-visible {
+        background: $dialog-footer-flat-hover-btn-bg-color;
+        box-shadow: $shadow-focus-ring1;
+      }
+    }
+
+    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI'or $skin-name == 'Material3' {
+      .e-btn.e-flat:not([DISABLED]) {
+        background: $dialog-footer-flat-btn-bg-color;
+        border-color: $dialog-footer-flat-btn-border-color;
+        color: $dialog-footer-flat-btn-content-color;
+      }
+
+      .e-btn:hover.e-flat:not([DISABLED]) {
+        background: $dialog-footer-flat-hover-btn-bg-color;
+      }
+    }
+  }
+
+  .e-dlg-header,
+  .e-dlg-header * {
+    color: $dialog-header-font-color;
+    font-size: $dialog-header-font-size;
+    font-weight: $dialog-header-font-weight;
+  }
+
+  .e-dlg-content {
+    color: $dialog-content-font-color;
+  }
+
+  .e-device .e-dlg-content {
+    font-size: $dialog-device-content-font-size;
+  }
+
+  .e-dlg-header-content {
+    background-color: $dialog-header-bg-color;
+  }
+
+  .e-dlg-content {
+    background-color: $dialog-content-bg-color;
+  }
+
+  .e-icon-dlg-close {
+    color: $dialog-icon-color;
+  }
+
+  .e-dialog .e-btn.e-dlg-closeicon-btn:hover span {
+    color: $dialog-active-icon-color;
+  }
+
+  .e-dialog .e-btn.e-dlg-closeicon-btn:active span,
+  .e-dialog .e-btn.e-dlg-closeicon-btn:focus span {
+    border-radius: $dialog-header-icon-hover-border-radius;
+    color: $dialog-active-icon-color;
+    opacity: 1;
+  }
+
+  .e-icon-dlg-close:active {
+    border-radius: $dialog-header-icon-hover-border-radius;
+    color: $dialog-active-icon-color;
+    opacity: 1;
+  }
+
+  .e-icon-dlg-close:hover {
+    color: $dialog-hover-icon-color;
+  }
+
+  .e-dlg-header-content .e-dlg-closeicon-btn:hover {
+    background-color: $dialog-closeicon-btn-hover-color;
+  }
+
+  .e-dlg-header-content .e-dlg-closeicon-btn:active {
+    background-color: $dialog-closeicon-btn-active-color;
+    @if $skin-name == 'FluentUI' {
+      outline: none;
+    }
+  }
+
+  .e-south-east {
+    color: $dialog-icon-color;
+  }
+
+  .e-rtl .e-south-east {
+    color: transparent;
+  }
+
+  .e-rtl .e-south-west {
+    color: $dialog-icon-color;
+  }
+
+  .e-south-west,
+  .e-north-east,
+  .e-north-west {
+    color: transparent;
+  }
+
+  @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'bootstrap4'  {
+    .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn.e-ripple {
+      overflow: visible;
+    }
+  }
+}

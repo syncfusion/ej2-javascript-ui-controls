@@ -4,7 +4,7 @@ import { defaultData } from '../util/datasource.spec';
 import { CellModel, SheetModel, getCell, ImageModel } from '../../../src/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { EventHandler } from '@syncfusion/ej2-base';
+import { EventHandler, createElement } from '@syncfusion/ej2-base';
 
 /**
  *  Editing test cases
@@ -1111,7 +1111,29 @@ describe('Editing ->', () => {
                 helper.edit('I6', '$-');
                 expect(helper.invoke('getCell', [5, 8]).textContent).toBe('$-');
                 done();
-            })
-        })
+            });
+        });
+        describe('EJ2-846321', () => {
+            let spreadsheet: SpreadsheetHelper;
+            beforeAll((done: Function) => {
+                document.body.appendChild(createElement('div', { id: 'dialog', className: 'e-dialog' }));
+                document.body.getElementsByClassName('e-dialog')[0].appendChild(createElement('div', { id: 'spreadsheet1' }));
+                spreadsheet = new SpreadsheetHelper('spreadsheet1');
+                spreadsheet.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}] }, done);
+            });
+            afterAll(() => {
+                spreadsheet.invoke('destroy');
+                document.body.removeChild(document.getElementById('dialog'));
+            });
+            it('ESC key down and edit mode functionality gets broke when spreadsheet is rendered inside dialog', (done: Function) => {
+                spreadsheet.triggerKeyEvent('keydown', 65);
+                expect(spreadsheet.getInstance().isEdit).toBeTruthy();
+                spreadsheet.triggerKeyNativeEvent(27);
+                setTimeout(() => {
+                    expect(spreadsheet.getInstance().sheets[0].rows[0].cells[0].value).toBe('Item Name');
+                    done();
+                });
+            });
+        });
     });
 });

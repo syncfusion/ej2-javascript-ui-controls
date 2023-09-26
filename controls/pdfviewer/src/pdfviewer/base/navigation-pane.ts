@@ -331,7 +331,7 @@ export class NavigationPane {
         // eslint-disable-next-line max-len
         const moreOptionButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_annotation_more_icon', className: 'e-pv-more-icon e-pv-icon' });
         annotationButton.appendChild(moreOptionButtonSpan);
-        if (Browser.isDevice && !isBlazor()) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode &&  !isBlazor()) {
             const commentCloseIconDiv: HTMLElement = createElement('button');
             commentCloseIconDiv.setAttribute('aria-label', 'annotation button');
             commentCloseIconDiv.setAttribute('type', 'button');

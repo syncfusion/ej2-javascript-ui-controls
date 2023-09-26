@@ -255,7 +255,12 @@ export class TaskbarEdit extends DateProcessor {
     }
     // eslint-disable-next-line
     private mouseLeaveHandler(e: PointerEvent): void {
-        this.dragMouseLeave = true;
+        if (this.taskBarEditAction === "ChildDrag" ||this.taskBarEditAction === "ParentDrag" || this.taskBarEditAction === "ProgressResizing" || this.taskBarEditAction === "LeftResizing" || this.taskBarEditAction === "RightResizing") {
+            this.dragMouseLeave = false;
+        }
+        else {
+            this.dragMouseLeave = true;
+        }
     }
 
     /**
@@ -1531,7 +1536,7 @@ export class TaskbarEdit extends DateProcessor {
         const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
         pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
         /* To render the milestone in proper date while editing */
-        if (isMilestone && !isNullOrUndefined(property.predecessor) && property.predecessor.length > 0) {
+        if (isMilestone && !isNullOrUndefined(property.predecessorsName) && property.predecessorsName !== '') {
             pStartDate.setDate(pStartDate.getDate()-1);
             this.parent.dateValidationModule.setTime(this.parent.defaultEndTime,pStartDate);
             pStartDate = this.parent.dateValidationModule.checkStartDate(pStartDate,property,true)

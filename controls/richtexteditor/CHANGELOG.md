@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 23.1.36 (2023-09-15)
+
 ### RichTextEditor
 
 #### Features

@@ -1704,15 +1704,6 @@
       padding: 9px 10px;
     }
 
-    .e-text-content {
-      .e-list-text {
-        line-height: 1.5em;
-        // @if ($field-list-skin == 'bootstrap4') {
-        //   line-height: 0;
-        // }
-      }
-    }
-
     &.e-drag-restrict {
       .e-no-drop {
         &::before {

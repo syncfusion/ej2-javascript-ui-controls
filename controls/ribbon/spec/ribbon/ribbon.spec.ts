@@ -508,6 +508,61 @@ describe('Ribbon', () => {
             }
             remove(ribbonEle);
         });
+        it('tabs', () => {
+            let tabs: RibbonTabModel[] = [{
+                id: 'tab1',
+                header: "tab1",
+                cssClass:"tab1_class",
+                groups: [{
+                    header: "group1Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button1',
+                                iconCss: 'e-icons e-cut',
+                            }
+                        }]
+                    }]
+                }]
+            }];
+            ribbon = new Ribbon({
+                tabs: tabs
+            }, ribbonEle);
+            expect(ribbon.tabObj.items.length).toBe(1);
+            expect(ribbon.element.querySelectorAll('.e-tab-header .e-toolbar-item').length).toBe(1);
+            expect(ribbon.element.querySelector('.e-ribbon-collapse-btn') !== null).toBe(true);
+            tabs.push({
+                id: 'tab2',
+                header: "tab2",
+                cssClass:"tab2_class",
+                groups: [{
+                    header: "group2Header",
+                    orientation: ItemOrientation.Row,
+                    collections: [{
+                        items: [{
+                            type: RibbonItemType.Button,
+                            allowedSizes: RibbonItemSize.Large,
+                            buttonSettings: {
+                                content: 'button2',
+                                iconCss: 'e-icons e-copy',
+                            }
+                        }]
+                    }]
+                }]
+            });
+            ribbon.setProperties({ tabs: tabs });
+            expect(ribbon.tabObj.items.length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-tab-header .e-toolbar-item').length).toBe(2);
+            expect(ribbon.element.querySelector('.e-ribbon-collapse-btn') !== null).toBe(true);
+            ribbon.setProperties({ selectedTab: 1 });
+            tabs.splice(1, 1);
+            ribbon.setProperties({ tabs: tabs });
+            expect(ribbon.tabObj.items.length).toBe(2);
+            expect(ribbon.element.querySelectorAll('.e-tab-header .e-toolbar-item').length).toBe(2);
+        });
         it('width', () => {
             ribbon = new Ribbon({
                 cssClass: 'oldCss',
@@ -570,57 +625,6 @@ describe('Ribbon', () => {
             ribbon.setProperties({ cssClass: 'newClass' });
             expect(ribbon.element.classList.contains('newClass')).toBe(true);
             expect(ribbon.element.classList.contains('oldCss')).toBe(false);
-        });
-        it('tabs', () => {
-            let tabs: RibbonTabModel[] = [{
-                header: "tab1",
-                groups: [{
-                    header: "group1Header",
-                    orientation: ItemOrientation.Row,
-                    collections: [{
-                        items: [{
-                            type: RibbonItemType.Button,
-                            allowedSizes: RibbonItemSize.Large,
-                            buttonSettings: {
-                                content: 'button1',
-                                iconCss: 'e-icons e-cut',
-                            }
-                        }]
-                    }]
-                }]
-            }];
-            ribbon = new Ribbon({
-                tabs: tabs
-            }, ribbonEle);
-            expect(ribbon.tabObj.items.length).toBe(1);
-            expect(ribbon.element.querySelectorAll('.e-tab-header .e-toolbar-item').length).toBe(1);
-            expect(ribbon.element.querySelector('.e-ribbon-collapse-btn') !== null).toBe(true);
-            tabs.push({
-                header: "tab2",
-                groups: [{
-                    header: "group2Header",
-                    orientation: ItemOrientation.Row,
-                    collections: [{
-                        items: [{
-                            type: RibbonItemType.Button,
-                            allowedSizes: RibbonItemSize.Large,
-                            buttonSettings: {
-                                content: 'button2',
-                                iconCss: 'e-icons e-copy',
-                            }
-                        }]
-                    }]
-                }]
-            });
-            ribbon.setProperties({ tabs: tabs });
-            expect(ribbon.tabObj.items.length).toBe(2);
-            expect(ribbon.element.querySelectorAll('.e-tab-header .e-toolbar-item').length).toBe(2);
-            expect(ribbon.element.querySelector('.e-ribbon-collapse-btn') !== null).toBe(true);
-            ribbon.setProperties({ selectedTab: 1 });
-            tabs.splice(1, 1);
-            ribbon.setProperties({ tabs: tabs });
-            expect(ribbon.tabObj.items.length).toBe(1);
-            expect(ribbon.element.querySelectorAll('.e-tab-header .e-toolbar-item').length).toBe(1);
         });
         it('enablePersistence', () => {
             ribbon = new Ribbon({
@@ -4822,6 +4826,28 @@ describe('Ribbon', () => {
                             }]
                         }]
                     }]
+                },
+                {
+                    id: "tab3",
+                    header: "tab3",
+                    groups: [{
+                        id: "group23",
+                        header: "group3Header",
+                        priority: 1,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection23",
+                            items: [{
+                                id: "item23",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    content: 'button26',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }]
                 }]
             }, ribbonEle);
             expect(ribbon.element.querySelectorAll('.e-ribbon-row').length).toBe(0);
@@ -4871,6 +4897,9 @@ describe('Ribbon', () => {
             ribbon.selectTab('tab2');
             expect((ribbon.element.querySelector('.e-tab-header .e-active') as HTMLElement).innerText.toLowerCase()).toBe('tab2');
             expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(6);
+            ribbon.selectTab('tab3');
+            expect((ribbon.element.querySelector('.e-tab-header .e-active') as HTMLElement).innerText.toLowerCase()).toBe('tab3');
+            expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(7);
         });
 
         it('Without initial overflow', () => {

@@ -3059,8 +3059,8 @@ export class OlapEngine {
         let drillQuery: string = 'DRILLTHROUGH MAXROWS ' + maxRows + ' Select(' + (columnQuery.length > 0 ? columnQuery : '') +
             (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from ' +
             (filterQuery === '' ? '[' + this.dataSourceSettings.cube + ']' : '(SELECT (' + filterQuery + ') ON COLUMNS FROM [' +
-                this.dataSourceSettings.cube + '])');
-        drillQuery = drillQuery.replace(/&/g, '&amp;');
+                this.dataSourceSettings.cube + '])');   /* eslint-disable-next-line no-useless-escape */
+        drillQuery = drillQuery.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');
         const xmla: string = this.getSoapMsg(this.dataSourceSettings, drillQuery);
         const connectionString: ConnectionInfo =
             this.getConnectionInfo(this.dataSourceSettings.url, this.dataSourceSettings.localeIdentifier);
@@ -3131,7 +3131,7 @@ export class OlapEngine {
         const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         let mdxQuery: string;
         const hasAllMember: boolean = this.fieldList[fieldName as string].hasAllMember;
-        const hierarchy: string = (hasAllMember ? fieldName : fieldName + '.LEVELS(0)').replace(/\&/g, '&amp;');  /* eslint-disable-line no-useless-escape */
+        const hierarchy: string = (hasAllMember ? fieldName : fieldName + '.LEVELS(0)').replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');  /* eslint-disable-line no-useless-escape */
         if (!isAllFilterData) {
             mdxQuery = 'SELECT ({' + (filterParentQuery ?
                 filterParentQuery : (hasAllMember ? hierarchy + ', ' + hierarchy + '.CHILDREN' : hierarchy + '.ALLMEMBERS')) + '})' +
@@ -3155,7 +3155,7 @@ export class OlapEngine {
         // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
         const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         // var mdxQuery = 'SELECT SUBSET({' + memberUQName + '.CHILDREN}, 0, 5000)' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
-        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;') + '.CHILDREN})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';   /* eslint-disable-line no-useless-escape */
+        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;') + '.CHILDREN})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';   /* eslint-disable-line no-useless-escape */
         const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
         const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, action: 'fetchChildMembers' });
@@ -3163,7 +3163,7 @@ export class OlapEngine {
     public getCalcChildMembers(dataSourceSettings: IDataOptions, memberUQName: string): void {
         this.calcChildMembers = [];
         const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
-        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;') + '.MEMBERS})' +   /* eslint-disable-line no-useless-escape */
+        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;') + '.MEMBERS})' +   /* eslint-disable-line no-useless-escape */
             dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
         const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
@@ -3176,7 +3176,7 @@ export class OlapEngine {
         if (searchString !== '') {
             // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
             const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
-            const hierarchy: string = fieldName.replace(/\&/g, '&amp;');   /* eslint-disable-line no-useless-escape */
+            const hierarchy: string = fieldName.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line no-useless-escape */
             const mdxQuery: string = 'WITH SET [SearchMembersSet] AS &#39;FILTER(' + (isAllFilterData ? hierarchy + '.ALLMEMBERS, ' :
                 '{' + (levelCount > 1 ? this.getFilterMembers(dataSourceSettings, fieldName, levelCount, true) :
                     hierarchy + ', ' + hierarchy + '.CHILDREN') + '},') +

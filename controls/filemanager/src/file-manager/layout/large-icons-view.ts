@@ -204,7 +204,7 @@ export class LargeIconsView {
     }
 
     private createDragObj(): void {
-        if (!this.parent.isMobile && this.listObj) {
+        if (this.listObj) {
             if (this.parent.allowDragAndDrop) {
                 if (this.dragObj) { this.dragObj.destroy(); }
                 this.dragObj = new Draggable(this.listElements, {

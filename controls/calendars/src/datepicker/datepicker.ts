@@ -1294,9 +1294,9 @@ export class DatePicker extends Calendar implements IInput {
                 date = this.globalize.parseDate(this.inputElement.value.toLocaleUpperCase(), dateOptions);
             } else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd' };
                 } else {
-                    formatOptions = { type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                    formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
                 date = this.globalize.parseDate(this.inputElement.value, formatOptions);
             }
@@ -1357,7 +1357,7 @@ export class DatePicker extends Calendar implements IInput {
             targetType: 'container',
             enableRtl: this.enableRtl,
             zIndex: this.zIndex,
-            collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : { X: 'flip', Y: 'flip' },
+            collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : (this.enableRtl ? { X: 'fit', Y: 'flip' } : { X: 'flip', Y: 'flip' }),
             open: () => {
                 if (Browser.isDevice && this.fullScreenMode) {
                     this.iconRight = parseInt(window.getComputedStyle(this.calendarElement.querySelector('.e-header.e-month .e-prev')).marginRight, 10) > 16 ? true: false;

@@ -3474,3 +3474,166 @@ describe('Issues in Unscheduled tasks sample', function () {
             triggerMouseEvent(saveRecord, 'click');
         });
     });	
+describe('Update custom field in general tab', function () {
+    let ganttObj: Gantt;
+    const priorityData = [
+        { priorityName: 'Normal', PriorityId: '1' },
+        { priorityName: 'High', PriorityId: '2' },
+        { priorityName: 'Low', PriorityId: '3' },
+        { priorityName: 'Critical', PriorityId: '4' },
+        { priorityName: 'Breaker', PriorityId: '5' }
+    ];
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: projectData1,
+            allowSorting: true,
+            allowReordering: true,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            renderBaseline: true,
+            baselineColor: 'red',
+            editDialogFields: [
+                {
+                    type: 'General',
+                    headerText: 'General',
+                    fields: [
+                        'TaskID',
+                        'TaskName',
+                        'StartDate',
+                        'EndDate',
+                        'Duration',
+                        'Progress',
+                        'CustomField',
+                    ],
+                }
+            ],
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                {
+                    field: 'CustomField',
+                    headerText: 'CustomField',
+                    width: '150',
+                    editType: 'booleanedit',
+                    type: 'boolean',
+                    displayAsCheckBox: true
+                },],
+            sortSettings: {
+                columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowSelection: false,
+            enableVirtualization: false,
+            allowRowDragAndDrop: true,
+            splitterSettings: {
+                position: "50%",
+                // columnIndex: 4
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            filterSettings: {
+                type: 'Menu'
+            },
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            eventMarkers: [
+                {
+                    day: '04/10/2019',
+                    cssClass: 'e-custom-event-marker',
+                    label: 'Project approval and kick-off'
+                }
+            ],
+            holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+
+            }],
+            searchSettings:
+            {
+                fields: ['TaskName', 'Duration']
+            },
+            labelSettings: {
+                leftLabel: 'TaskID',
+                rightLabel: 'Task Name: ${taskData.TaskName}',
+                taskLabel: '${Progress}%'
+            },
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('change custom field value in general tab', () => {
+        ganttObj.actionComplete = (args) => {
+            if (args.requestType === 'save') {
+                expect(args.data.CustomField).toBe(true);
+            }
+        }
+        ganttObj.openEditDialog(3);
+        let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'CustomField')).ej2_instances[0];
+        textObj.checked = true;
+        textObj.dataBind();
+        let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+    });
+});

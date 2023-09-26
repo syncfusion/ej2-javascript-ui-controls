@@ -634,7 +634,10 @@
       display: inline-block;
       line-height: $treeview-text-height;
       margin: $treeview-text-margin;
-      @if $skin-name != 'bootstrap4' {
+      @if $skin-name == 'Material3' {
+        min-height: $treeview-item-height;
+      }
+      @else if $skin-name != 'bootstrap4' {
         min-height: $treeview-text-height;
       }
       @else if $skin-name == 'bootstrap4' {

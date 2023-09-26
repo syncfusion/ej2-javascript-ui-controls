@@ -203,7 +203,9 @@ export class ExcelExport {
                                             : pivotCell.style.color;
                                         lastCell.style.fontName = lastCell.style.fontName ? lastCell.style.fontName
                                             : pivotCell.style.fontFamily;
-                                        lastCell.style.fontSize = lastCell.style.fontSize ? Number(lastCell.style.fontSize) : Number(pivotCell.style.fontSize.split('px')[0]);
+                                        if (!isNullOrUndefined(lastCell.style.fontSize) || !isNullOrUndefined(pivotCell.style.fontSize)) {
+                                            lastCell.style.fontSize = !isNullOrUndefined(lastCell.style.fontSize) ? Number(lastCell.style.fontSize) : Number(pivotCell.style.fontSize.split('px')[0]);
+                                        }
                                     }
                                     lastCell.style.borders = { color: '#000000', lineStyle: 'Thin' };
                                     let excelHeaderQueryCellInfoArgs: ExcelHeaderQueryCellInfoEventArgs;

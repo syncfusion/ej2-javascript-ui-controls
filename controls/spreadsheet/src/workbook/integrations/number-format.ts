@@ -91,15 +91,17 @@ export class WorkbookNumberFormat {
         if ((!args.format || args.format === 'General') && !args.skipFormatCheck && (!cell.formula ||
             !cell.formula.toLowerCase().startsWith('=text('))) {
             args.type = args.format = 'General';
-            const dateEventArgs: DateFormatCheckArgs = { value: fResult, updatedVal: fResult, cell: cell, isEdit: args.isEdit, intl: intl };
-            this.checkDateFormat(dateEventArgs);
-            if (dateEventArgs.isDate || dateEventArgs.isTime) {
-                rightAlign = true;
-                cell.value = args.value = dateEventArgs.updatedVal;
-                if (cell.format && cell.format !== 'General') {
-                    args.format = cell.format;
-                } else {
-                    cell.format = args.format = getFormatFromType(dateEventArgs.isDate ? 'ShortDate' : 'Time');
+            if (!cell.formula || (cell.formula && cell.formula.indexOf('&-') === -1)) { // for 5&-3=>5-3.
+                const dateEventArgs: DateFormatCheckArgs = { value: fResult, updatedVal: fResult, cell: cell, isEdit: args.isEdit, intl: intl };
+                this.checkDateFormat(dateEventArgs);
+                if (dateEventArgs.isDate || dateEventArgs.isTime) {
+                    rightAlign = true;
+                    cell.value = args.value = dateEventArgs.updatedVal;
+                    if (cell.format && cell.format !== 'General') {
+                        args.format = cell.format;
+                    } else {
+                        cell.format = args.format = getFormatFromType(dateEventArgs.isDate ? 'ShortDate' : 'Time');
+                    }
                 }
             }
         } else {
@@ -684,6 +686,7 @@ export class WorkbookNumberFormat {
                 if (isNumber(cellVal)) {
                     options.fResult = options.args.value = cellVal = Number(cellVal).toString();
                     setCell(options.rowIdx, options.colIdx, options.sheet, { value: cellVal }, true);
+                    prevVal = cellVal.replace('.', this.decimalSep);
                 }
             }
         }
@@ -735,6 +738,9 @@ export class WorkbookNumberFormat {
                         options.fResult = prevVal;
                     }
                 }
+                if (isNullOrUndefined(options.fResult) && !isNullOrUndefined(cellVal)) {
+                    options.fResult = cellVal;
+                }
             }
             options.isRightAlign = true;
         }
@@ -766,7 +772,7 @@ export class WorkbookNumberFormat {
                         options.isRightAlign = true;
                     }
                 } else if (this.decimalSep !== '.' && options.args.format === 'General' && isNumber(res) && res.includes('.')) {
-                    options.fResult = res.replace('.', this.decimalSep);
+                    options.fResult = Number(res).toString().replace('.', this.decimalSep);
                 }
             }
         }

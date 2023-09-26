@@ -1797,6 +1797,7 @@ describe('Batch Editing module', () => {
                 {
                     dataSource: datamManager,
                     allowGrouping: false,
+                    allowSorting: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: false, showDeleteConfirmDialog: false },
                     toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
                     allowPaging: true,
@@ -1852,6 +1853,24 @@ describe('Batch Editing module', () => {
             };
             gridObj.cellSave = cellSave;
             gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: cell } as any);
+        });
+
+        it('EJ2-849429-Cell changes not saving when clicking outside grid', (done: Function) => {
+            let cellSave = (args?: any): void => { // must be execute after focus out
+                gridObj.cellSave = null;
+                done();
+            };
+            gridObj.cellSave = cellSave;
+            gridObj['focusOutHandler']({target: null, relatedTarget: null} as any);
+        });
+
+        it('EJ2-846554-Script error when trying to edit after sorting in presence of validation message in Batch mode', () => {
+            gridObj.cellSave = null;
+            (gridObj.editModule as any).editModule.editCell(0, 'CustomerID');
+            let input: HTMLInputElement = gridObj.element.querySelector('.e-editedbatchcell input') as HTMLInputElement;
+            input.value = '';
+            gridObj.sortColumn('CustomerID', 'Ascending');
+            expect(selectAll('#' + gridObj.element.id + 'EditConfirm_dialog-content div', gridObj.element).length).toBeGreaterThan(0);
         });
 
         afterAll(() => {

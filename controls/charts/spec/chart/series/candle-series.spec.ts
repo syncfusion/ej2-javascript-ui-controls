@@ -1218,7 +1218,7 @@ describe('Candle Series ', () => {
                 loaded = (args: Object): void => {
                     let axis1: Element = document.getElementById('containerAxisLine_2');
                     let axisCollection: Element = document.getElementById('containerAxisInsideCollection');
-                    expect(+axisCollection.childElementCount).toEqual(17);
+                    expect(+axisCollection.childElementCount).toEqual(19);
                     let seriesCollection: Element = document.getElementById('containerSeriesCollection');
                     expect(+seriesCollection.childElementCount).toEqual(11);
 
@@ -1244,10 +1244,10 @@ describe('Candle Series ', () => {
                         clientY: 300
                     };
                     chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
-                    expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '1.00').toBe(true);
-                    expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '1.00').toBe(true);
-                    expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.00').toBe(true);
-                    expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.00').toBe(true);
+                    expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                    expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '0.72').toBe(true);
+                    expect(chartObj.primaryXAxis.zoomPosition.toFixed(2) == '0.14').toBe(true);
+                    expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.08').toBe(true);
                     done();
                 };
                 chartObj.zoomSettings.enableMouseWheelZooming = true;
@@ -1264,11 +1264,11 @@ describe('Candle Series ', () => {
                     chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 728, 389, 404, 289, 404, 189));
                     chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 748, 129, 304, 289, 304, 289));
                     let content = chartObj.primaryXAxis.zoomFactor.toFixed(2);
-                    expect(content == '1.00').toBe(true);
+                    expect(content == '0.31').toBe(true);
                     content = chartObj.primaryYAxis.zoomFactor.toFixed(2);
-                    expect(content == '1.00').toBe(true);
+                    expect(content == '0.79').toBe(true);
                     content = chartObj.primaryXAxis.zoomPosition.toFixed(2);
-                    expect(content == '0.00' || content == '0.00').toBe(true);
+                    expect(content == '0.70' || content == '0.70').toBe(true);
                     chartObj.mouseLeave(<PointerEvent>trigger.onTouchLeave(areaElement, 748, 129, 304, 289, 304, 289));
                     done();
                 };

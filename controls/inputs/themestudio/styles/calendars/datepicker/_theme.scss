@@ -1,0 +1,53 @@
+@include export-module('datepicker-theme') {
+  #{&}.e-datepicker,
+  .e-bigger.e-small #{&}.e-datepicker,
+  .e-bigger #{&}.e-datepicker,
+  .e-small #{&}.e-datepicker,
+  .e-bigger.e-small#{&}.e-datepicker,
+  .e-bigger#{&}.e-datepicker,
+  .e-small#{&}.e-datepicker {
+    #{if(&, '&', '*')}.e-popup-wrapper {
+      border: $datepicker-popup-border;
+      box-shadow: $datepicker-popup-box-shadow;
+    }
+
+    #{if(&, '&', '*')} .e-calendar {
+      @if $skin-name != 'Material3' {
+        background-color: $datepicker-popup-bg-color;
+      }
+      @if $skin-name == 'Material3' {
+        background: $datepicker-popup-bg-color;
+      }
+      border: $datepicker-calendar-border-style;
+    }
+  }
+
+  #{if(&, '&', '*')}.e-input-group {
+    #{if(&, '&', '*')}.e-date-wrapper.e-dateinput-active:active:not(.e-success):not(.e-warning):not(.e-error) {
+      border: $datepicker-input-border-style;
+    }
+  }
+
+  .e-date-wrapper {
+    #{if(&, '&', '*')} span.e-input-group-icon {
+      #{if(&, '&', '*')}.e-date-icon.e-icons.e-active {
+        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark') {
+          color: $datepicker-icon-color;
+        }
+      }
+      #{if(&, '&', '*')}.e-date-icon.e-icons.e-active {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' {
+          background: $datepicker-icon-active-bg-color;
+          border-color: $datepicker-active-border-color;
+        }
+        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark') {
+          color: $datepicker-active-icon-color;
+        }
+        @if $skin-name == 'Material3' {
+          border: $datepicker-icon-active-border;
+          background: $datepicker-icon-active-bg-color;
+        }
+      }
+    }
+  }
+}

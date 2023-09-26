@@ -31,6 +31,17 @@
 
       & .e-toolbar-items {
         & .e-toolbar-item {
+          &.e-ie-resize-height span {
+            font-size: 16px;
+          }
+
+          &.e-ie-resize-width span {
+            font-size: 16px;
+          }
+        }
+      }
+      & .e-toolbar-items {
+        & .e-toolbar-item {
           & .e-tbar-btn.e-btn.e-tbtn-txt {
             .e-icons.e-btn-icon {
               @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'boostrap4' {
@@ -107,6 +118,12 @@
     position: relative;
     display: block;
 
+    & .e-quick-access-toolbar-area .e-toolbar {
+      @if $skin-name == 'Material3' {
+        border-radius: 4px;
+      }
+    }
+
     & .e-ie-drop-area {
       height: calc(100% - 18px);
       width: calc(100% - 20px);
@@ -139,6 +156,12 @@
         position: absolute;
         font-size: 14px;
       }
+
+      & .e-ie-min-drop-content {
+        left: calc(50% - 120px);
+        top: 50%;
+        font-size: 14px;
+      }
     }
 
     & .e-toolbar {
@@ -151,6 +174,11 @@
         & .e-toolbar-item {
           &.e-ie-resize-height {
             margin-left: 20px;
+            min-width: 28px !important; /* stylelint-disable-line declaration-no-important */
+          }
+
+          &.e-ie-resize-width {
+            min-width: 28px !important; /* stylelint-disable-line declaration-no-important */
           }
 
           & .e-tbar-btn.e-btn.e-tbtn-txt {

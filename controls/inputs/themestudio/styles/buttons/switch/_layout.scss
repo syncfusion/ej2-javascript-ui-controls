@@ -1,0 +1,637 @@
+@include export-module('switch-layout') {
+
+  /*! switch layout */
+  .e-switch-wrapper,
+  .e-css.e-switch-wrapper {
+    cursor: pointer;
+    display: inline-block;
+    height: $switch-wrapper-height;
+    position: relative;
+    user-select: none;
+    width: $switch-wrapper-width;
+    @if $skin-name == 'FluentUI' {
+      border: 1px solid transparent;
+    }
+
+    &:focus,
+    &.e-focus {
+      @if $skin-name == 'FluentUI' {
+        border: 1px solid $switch-inner-focus-border;
+      }
+    }
+
+    @at-root {
+      & .e-switch {
+        /* stylelint-disable property-no-vendor-prefix */
+        -moz-appearance: none;
+        height: 1px;
+        opacity: 0;
+        position: absolute;
+        width: 1px;
+      }
+
+      & .e-switch-inner {
+        -ms-transition: $switch-inner-transition;
+        -webkit-transition: $switch-inner-transition;
+        border: $switch-inner-border-style;
+        border-radius: $switch-border-radius;
+        box-sizing: border-box;
+        height: $switch-inner-height;
+        left: $switch-inner-left;
+        overflow: hidden;
+        position: absolute;
+        top: $switch-inner-top;
+        transition: $switch-inner-transition;
+        width: $switch-inner-width;
+      }
+
+      & .e-switch-on,
+      & .e-switch-off {
+        -ms-transition: $switch-transition;
+        -webkit-transition: $switch-transition;
+        align-items: center;
+        border-radius: inherit;
+        display: flex;
+        font-family: $switch-font-family;
+        font-size: $switch-font-size;
+        height: $switch-inner-height;
+        justify-content: center;
+        left: $switch-inner-left;
+        position: absolute;
+        transition: $switch-transition;
+        width: $switch-inner-width;
+      }
+
+      & .e-switch-on {
+        @if $skin-name == 'bootstrap4' {
+          top: $switch-inner-text-top;
+        }
+        left: $switch-on-position-left;
+        text-indent: $switch-on-text-indent;
+      }
+
+      & .e-switch-off {
+        @if $skin-name == 'bootstrap4' {
+          top: $switch-inner-text-top;
+        }
+        left: $switch-off-position-left;
+        opacity: $switch-off-opacity;
+        text-indent: $switch-off-text-indent;
+      }
+
+      & .e-switch-handle {
+        -ms-transition: $switch-handle-transition;
+        -webkit-transition: $switch-handle-transition;
+        border-radius: $switch-handle-radius;
+        bottom: $switch-handle-bottom;
+        height: $switch-handle-height;
+        left: $switch-handle-left;
+        margin: $switch-handle-margin;
+        position: absolute;
+        top: $switch-handle-top;
+        transition: $switch-handle-transition;
+        width: $switch-handle-width;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-active-on-position-left;
+        opacity: $switch-active-on-opacity;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-off-active-left;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-handle-active;
+        margin-left: $switch-handle-margin-left;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-active-height;
+          width: $switch-handle-active-width;
+        }
+      }
+
+      &.e-switch-disabled {
+        cursor: default;
+      }
+
+      & .e-ripple-container {
+        border-radius: 50%;
+        bottom: -9px;
+        height: 52px;
+        left: -17px;
+        pointer-events: none;
+        position: absolute;
+        top: -17px;
+        width: 52px;
+        z-index: 1;
+        @if $skin-name == 'Material3' {
+          height: $switch-ripple-height;
+          left: $switch-off-ripple-left;
+          top: $switch-off-ripple-top;
+          width: $switch-ripple-width;
+        }
+
+        &.e-ripple-check {
+          @if $skin-name == 'Material3' {
+            left: $switch-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+            top: $switch-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        & .e-ripple-element {
+          @if $skin-name == 'Material3' {
+            border-radius: 50%;
+          }
+        }
+      }
+
+      &.e-rtl {
+        & .e-switch-handle {
+          left: $switch-handle-active;
+          margin-left: $switch-handle-margin-left;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-on {
+          left: $switch-on-position-left-rtl;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-off {
+          left: $switch-off-position-left-rtl;
+        }
+
+        & .e-switch-on {
+          left: $switch-on-rtl;
+        }
+
+        & .e-switch-off {
+          left: $switch-off-rtl;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          border-radius: $switch-handle-radius;
+          height: $switch-handle-height;
+          left: $switch-handle-left;
+          margin: $switch-handle-margin;
+          position: absolute;
+          top: $switch-handle-top;
+          transition: $switch-handle-transition;
+          width: $switch-handle-width;
+        }
+      }
+
+      &.e-small {
+        height: $switch-small-wrapper-height;
+        width: $switch-small-wrapper-width;
+
+        & .e-switch-handle {
+          height: $switch-small-handle-height;
+          width: $switch-small-handle-width;
+        }
+
+        & .e-ripple-container {
+          border-radius: 50%;
+          height: $switch-small-ripple-height;
+          left: $switch-small-ripple-left;
+          pointer-events: none;
+          position: absolute;
+          top: $switch-small-ripple-top;
+          width: $switch-small-ripple-width;
+          z-index: 1;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          left: $switch-small-handle-active-left;
+          margin-left: $switch-small-handle-margin-left;
+          @if $skin-name == 'Material3' {
+            height: $switch-handle-small-active-height;
+            width: $switch-handle-small-active-width;
+          }
+        }
+
+        & .e-switch-on,
+        & .e-switch-off {
+          font-size: $switch-small-font-size;
+        }
+
+        & .e-switch-on {
+          text-indent: $switch-small-on-text-indent;
+        }
+
+        & .e-switch-off {
+          text-indent: $switch-small-off-text-indent;
+        }
+
+        &.e-rtl {
+          & .e-switch-handle {
+            left: $switch-small-handle-active-left;
+            margin-left: $switch-small-handle-margin-left;
+          }
+
+          & .e-switch-handle {
+            height: $switch-small-handle-height;
+            width: $switch-small-handle-width;
+          }
+
+          & .e-switch-on {
+            left: $switch-small-on-rtl;
+            opacity: $switch-active-on-opacity;
+          }
+
+          & .e-switch-off {
+            left: $switch-small-off-rtl;
+          }
+
+          & .e-switch-inner.e-switch-active .e-switch-on {
+            left: $switch-small-on-position-left-rtl;
+          }
+
+          & .e-switch-inner.e-switch-active .e-switch-off {
+            left: $switch-small-off-position-left-rtl;
+          }
+
+          & .e-switch-handle.e-switch-active {
+            left: $switch-small-handle-active-left-rtl;
+            @if $skin-name == 'Material3' {
+              height: $switch-handle-small-active-height;
+              width: $switch-handle-small-active-width;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  #{if(&, '&', '*')}.e-small .e-switch-wrapper,
+  #{if(&, '&', '*')}.e-small.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-small .e-css.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-small.e-css.e-switch-wrapper {
+    height: $switch-small-wrapper-height;
+    width: $switch-small-wrapper-width;
+
+    & .e-switch-handle {
+      height: $switch-small-handle-height;
+      width: $switch-small-handle-width;
+      @if $skin-name == 'Material3' {
+        left: $switch-small-handle-left;
+        top: $switch-small-handle-top;
+      }
+    }
+
+    & .e-ripple-container {
+      border-radius: 50%;
+      height: $switch-small-ripple-height;
+      left: $switch-small-ripple-left;
+      pointer-events: none;
+      position: absolute;
+      top: $switch-small-ripple-top;
+      width: $switch-small-ripple-width;
+      z-index: 1;
+      @if $skin-name == 'Material3' {
+        left: $switch-small-off-ripple-left;
+        top: $switch-small-off-ripple-top;
+      }
+
+      &.e-ripple-check {
+        @if $skin-name == 'Material3' {
+          left: $switch-small-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+          top: $switch-small-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
+
+    & .e-switch-handle.e-switch-active {
+      left: $switch-small-handle-active-left;
+      margin-left: $switch-small-handle-margin-left;
+      @if $skin-name == 'Material3' {
+        height: $switch-handle-small-active-height;
+        width: $switch-handle-small-active-width;
+      }
+    }
+
+    & .e-switch-on,
+    & .e-switch-off {
+      font-size: $switch-small-font-size;
+    }
+
+    & .e-switch-on {
+      text-indent: $switch-small-on-text-indent;
+    }
+
+    & .e-switch-off {
+      text-indent: $switch-small-off-text-indent;
+    }
+
+    &.e-rtl {
+      & .e-switch-handle {
+        left: $switch-small-handle-active-left;
+        margin-left: $switch-small-handle-margin-left;
+      }
+
+      & .e-switch-handle {
+        height: $switch-small-handle-height;
+        width: $switch-small-handle-width;
+      }
+
+      & .e-switch-on {
+        left: $switch-small-on-rtl;
+        opacity: $switch-active-on-opacity;
+      }
+
+      & .e-switch-off {
+        left: $switch-small-off-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-small-on-position-left-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-small-off-position-left-rtl;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-small-handle-active-left-rtl;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-small-active-height;
+          width: $switch-handle-small-active-width;
+        }
+      }
+    }
+  }
+
+  #{if(&, '&', '*')}.e-bigger.e-small .e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-small.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-small .e-css.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-small.e-css.e-switch-wrapper {
+    height: $switch-bigger-small-wrapper-height;
+    width: $switch-bigger-small-wrapper-width;
+
+    & .e-switch-handle {
+      height: $switch-bigger-small-handle-height;
+      left: $switch-bigger-small-handle-left;
+      top: $switch-bigger-small-handle-to;
+      width: $switch-bigger-small-handle-width;
+    }
+
+    & .e-ripple-container {
+      border-radius: 50%;
+      height: $switch-bigger-small-ripple-height;
+      left: $switch-bigger-small-ripple-left;
+      pointer-events: none;
+      position: absolute;
+      top: $switch-bigger-small-ripple-top;
+      width: $switch-bigger-small-ripple-width;
+      z-index: 1;
+      @if $skin-name == 'Material3' {
+        left: $switch-bigger-small-off-ripple-left;
+        top: $switch-bigger-small-off-ripple-top;
+      }
+
+      &.e-ripple-check {
+        @if $skin-name == 'Material3' {
+          left: $switch-bigger-small-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+          top: $switch-bigger-small-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
+
+    & .e-switch-handle.e-switch-active {
+      left: $switch-bigger-small-handle-active-left;
+      margin-left: $switch-bigger-small-handle-margin-left;
+      @if $skin-name == 'Material3' {
+        height: $switch-handle-bigger-small-active-height;
+        width: $switch-handle-bigger-small-active-width;
+      }
+    }
+
+    & .e-switch-on,
+    & .e-switch-off {
+      font-size: $switch-bigger-small-font-size;
+    }
+
+    & .e-switch-on {
+      text-indent: $switch-bigger-small-on-text-indent;
+    }
+
+    & .e-switch-off {
+      text-indent: $switch-bigger-small-off-text-indent;
+    }
+
+    &.e-rtl {
+      & .e-switch-handle {
+        left: $switch-bigger-small-handle-active-left;
+        margin-left: $switch-bigger-small-handle-margin-left;
+      }
+
+      & .e-switch-handle {
+        height: $switch-bigger-small-handle-height;
+        width: $switch-bigger-small-handle-width;
+      }
+
+      & .e-switch-on {
+        left: $switch-bigger-small-on-rtl;
+        opacity: $switch-active-on-opacity;
+      }
+
+      & .e-switch-off {
+        left: $switch-bigger-small-off-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-bigger-small-on-position-left-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-bigger-small-off-position-left-rtl;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-bigger-small-handle-active-left-rtl;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-bigger-small-active-height;
+          width: $switch-handle-bigger-small-active-width;
+        }
+      }
+    }
+  }
+
+  #{if(&, '&', '*')}.e-bigger .e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger .e-css.e-switch-wrapper,
+  #{if(&, '&', '*')}.e-bigger.e-css.e-switch-wrapper {
+    height: $switch-bigger-wrapper-height;
+    width: $switch-bigger-wrapper-width;
+
+    & .e-switch-handle {
+      height: $switch-bigger-handle-height;
+      left: $switch-bigger-handle-left;
+      top: $switch-bigger-handle-top;
+      width: $switch-bigger-handle-width;
+    }
+
+    & .e-switch-handle.e-switch-active {
+      left: $switch-bigger-handle-active-left;
+      margin-left: $switch-bigger-handle-margin-left;
+      @if $skin-name == 'Material3' {
+        height: $switch-handle-bigger-active-height;
+        width: $switch-handle-bigger-active-width;
+      }
+    }
+
+    & .e-switch-on,
+    & .e-switch-off {
+      font-size: $switch-bigger-font-size;
+    }
+
+    & .e-switch-on {
+      text-indent: $switch-bigger-on-text-indent;
+    }
+
+    & .e-switch-off {
+      text-indent: $switch-bigger-off-text-indent;
+    }
+
+    & .e-ripple-container {
+      height: $switch-bigger-ripple-height;
+      left: $switch-bigger-ripple-left;
+      top: $switch-bigger-ripple-top;
+      width: $switch-bigger-ripple-width;
+      @if $skin-name == 'Material3' {
+        left: $switch-bigger-off-ripple-left;
+        top: $switch-bigger-off-ripple-top;
+      }
+
+      &.e-ripple-check {
+        @if $skin-name == 'Material3' {
+          left: $switch-bigger-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+          top: $switch-bigger-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
+
+    &.e-rtl {
+      & .e-switch-handle {
+        height: $switch-bigger-handle-height;
+        left: $switch-bigger-handle-active-left;
+        margin-left: $switch-bigger-handle-margin-left;
+        top: $switch-bigger-handle-top;
+        width: $switch-bigger-handle-width;
+      }
+
+      & .e-switch-on {
+        left: $switch-bigger-on-rtl;
+        opacity: $switch-active-on-opacity;
+      }
+
+      & .e-switch-off {
+        left: $switch-bigger-off-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-bigger-on-position-left-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-bigger-off-position-left-rtl;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-bigger-handle-active-left-rtl;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-bigger-active-height;
+          width: $switch-handle-bigger-active-width;
+        }
+      }
+    }
+
+    &.e-small {
+      height: $switch-bigger-small-wrapper-height;
+      width: $switch-bigger-small-wrapper-width;
+
+      & .e-switch-handle {
+        height: $switch-bigger-small-handle-height;
+        left: $switch-bigger-small-handle-left;
+        top: $switch-bigger-small-handle-to;
+        width: $switch-bigger-small-handle-width;
+      }
+
+      & .e-ripple-container {
+        border-radius: 50%;
+        height: $switch-bigger-small-ripple-height;
+        left: $switch-bigger-small-ripple-left;
+        pointer-events: none;
+        position: absolute;
+        top: $switch-bigger-small-ripple-top;
+        width: $switch-bigger-small-ripple-width;
+        z-index: 1;
+        @if $skin-name == 'Material3' {
+          left: $switch-bigger-small-off-ripple-left;
+          top: $switch-bigger-small-off-ripple-top;
+        }
+  
+        &.e-ripple-check {
+          @if $skin-name == 'Material3' {
+            left: $switch-bigger-small-ripple-left !important; /* stylelint-disable-line declaration-no-important */
+            top: $switch-bigger-small-ripple-top !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-bigger-small-handle-active-left;
+        margin-left: $switch-bigger-small-handle-margin-left;
+        @if $skin-name == 'Material3' {
+          height: $switch-handle-bigger-small-active-height;
+          width: $switch-handle-bigger-small-active-width;
+        }
+      }
+
+      & .e-switch-on,
+      & .e-switch-off {
+        font-size: $switch-bigger-small-font-size;
+      }
+
+      & .e-switch-on {
+        text-indent: $switch-bigger-small-on-text-indent;
+      }
+
+      & .e-switch-off {
+        text-indent: $switch-bigger-small-off-text-indent;
+      }
+
+      &.e-rtl {
+        & .e-switch-handle {
+          left: $switch-bigger-small-handle-active-left;
+          margin-left: $switch-bigger-small-handle-margin-left;
+        }
+
+        & .e-switch-handle {
+          height: $switch-bigger-small-handle-height;
+          width: $switch-bigger-small-handle-width;
+        }
+
+        & .e-switch-on {
+          left: $switch-bigger-small-on-rtl;
+          opacity: $switch-active-on-opacity;
+        }
+
+        & .e-switch-off {
+          left: $switch-bigger-small-off-rtl;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-on {
+          left: $switch-bigger-small-on-position-left-rtl;
+        }
+
+        & .e-switch-inner.e-switch-active .e-switch-off {
+          left: $switch-bigger-small-off-position-left-rtl;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          left: $switch-bigger-small-handle-active-left-rtl;
+        }
+      }
+    }
+  }
+}

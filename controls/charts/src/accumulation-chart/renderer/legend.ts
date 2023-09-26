@@ -489,6 +489,7 @@ export class AccumulationLegend extends BaseLegend {
                         //To remove the blazor templates
                         blazorTemplatesReset(chart);
                         (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
+                        (<AccumulationChart>this.chart).calculateBounds();
                         (<AccumulationChart>this.chart).renderElements();
                     }
                 } else if ((<AccumulationChart>this.chart).accumulationSelectionModule && !isNaN(pointIndex)) {

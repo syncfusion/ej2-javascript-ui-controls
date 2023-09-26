@@ -1,0 +1,140 @@
+@mixin tab-header-layout {
+  height: 35px;
+  min-height: 35px;
+
+  @if $skin-name == 'Material3' {
+    height: 32px;
+    min-height: 32px;
+  }
+
+  & .e-toolbar-item:not(.e-separator) {
+    height: 35px;
+    min-height: 35px;
+    @if $skin-name == 'Material3' {
+      height: 32px;
+      min-height: 32px;
+    }
+
+    & .e-tab-wrap {
+      height: 35px;
+      @if $skin-name == 'Material3' {
+        height: 32px;
+      }
+    }
+
+    @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+      &.e-active .e-text-wrap,
+      & .e-text-wrap {
+        height: 33px;
+      }
+    }
+    @else {
+      & .e-text-wrap {
+        height: 35px;
+        @if $skin-name == 'Material3' {
+          height: 32px;
+        }
+      }
+    }
+  }
+
+  & .e-toolbar-items {
+    height: 35px;
+    min-height: 35px;
+    @if $skin-name == 'Material3' {
+      height: 32px;
+      min-height: 32px;
+    }
+
+    & .e-scroll-nav {
+      height: 35px;
+      min-height: 35px;
+      @if $skin-name == 'Material3' {
+        height: 36px;
+        min-height: 36px;
+      }
+    }
+  }
+}
+
+@mixin bigger-tab-header-layout {
+  & .e-tab .e-tab-header {
+    height: 41px;
+    min-height: 41px;
+
+    @if $skin-name == 'Material3' {
+      height: 47px;
+      min-height: 47px;
+    }
+
+    & .e-toolbar-item:not(.e-separator) {
+      height: 41px;
+      min-height: 41px;
+
+      @if $skin-name == 'Material3' {
+        height: 48px;
+        min-height: 48px;
+      }
+
+      & .e-tab-wrap {
+        height: 41px;
+        @if $skin-name == 'Material3' {
+          height: 48px;
+        }
+      }
+
+      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        &.e-active .e-text-wrap,
+        & .e-text-wrap {
+          height: 39px;
+        }
+      }
+      @else {
+        & .e-text-wrap {
+          height: 41px;
+          @if $skin-name == 'Material3' {
+            height: 48px;
+          }
+        }
+      }
+    }
+
+    & .e-toolbar-items {
+      height: 41px;
+      min-height: 41px;
+      @if $skin-name == 'Material3' {
+        height: 48px;
+        min-height: 48px;
+      }
+
+      & .e-scroll-nav {
+        height: 41px;
+        min-height: 41px;
+        @if $skin-name == 'Material3' {
+          height: 48px;
+          min-height: 48px;
+        }
+      }
+    }
+  }
+}
+
+@mixin default-props {
+  & .e-tab {
+    & .e-tab-header .e-toolbar-item {
+      user-select: none;
+
+      & .e-tab-text {
+        text-transform: none;
+        @if $skin-name == 'Material3' {
+          font-weight: 500;
+          letter-spacing: .24px;
+        }
+      }
+    }
+
+    &.e-sheet-tab .e-tab-header .e-tab-text {
+      white-space: pre;
+    }
+  }
+}

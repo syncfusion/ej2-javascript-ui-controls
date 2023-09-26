@@ -2734,7 +2734,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.popupObj = new Popup(this.popupWrapper, {
                     width: this.calcPopupWidth(), targetType: 'relative', 
                     position: this.enableRtl ? { X: 'right', Y: 'bottom' } : { X: 'left', Y: 'bottom' },
-                    relateTo: this.overAllWrapper, collision: { X: 'flip', Y: 'flip' }, offsetY: 1,
+                    relateTo: this.overAllWrapper, 
+                    collision: this.enableRtl ? { X: 'fit', Y: 'flip' } : { X: 'flip', Y: 'flip' }, offsetY: 1,
                     enableRtl: this.enableRtl, zIndex: this.zIndex,
                     close: () => {
                         if (this.popupObj.element.parentElement) {

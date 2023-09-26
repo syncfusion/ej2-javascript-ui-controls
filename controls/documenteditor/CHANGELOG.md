@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 23.1.38 (2023-09-26)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I473464` - Resolve the destroy issue in document Editor.
+- `#I490198` - Resolve the Page not responding while press TAB key continuously.
+- `#I494676` - Content is missing after downloading the file as docx.
+- `#I495070` - Issue with cursor position and indentation when in RTL mode.
+- `#I495596` - Issue with pasting from Word to the editor in RTL mode.
+- `#I497629` - Issue in Exported svg image.
+- `#I504069` - Document editor insert image from URL facing issue in reopening the  exported document.
+
 ## 23.1.36 (2023-09-15)
 
 ### Document Editor

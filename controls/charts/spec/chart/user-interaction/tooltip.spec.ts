@@ -644,6 +644,45 @@ describe('Chart Control', () => {  beforeAll(() => {
             };
             chartObj.refresh();
         });
+        it('checking shared tooltip with single point', (done: Function) => {
+            loaded = (args: Object): void => {
+                let target: HTMLElement = document.getElementById('container_Series_0_Point_0_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.primaryXAxis.valueType = 'DateTime';
+            chartObj.primaryXAxis.labelFormat = '';
+            chartObj.series[0].dataSource = [{ x: new Date(2012, 10, 11), y: 70 }]
+            chartObj.tooltip = { enable: true, shared: true };
+            chartObj.tooltip.template = null;
+            chartObj.refresh();
+        });
+        it('checking shared tooltip with one series with single point and other series with multiple point', (done: Function) => {
+            loaded = (args: Object): void => {
+                let target: HTMLElement = document.getElementById('container_Series_1_Point_0_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series = [
+                { type: 'Line', dataSource: [{ x: new Date(2012, 9, 11), y: 80 }, { x: new Date(2012, 10, 11), y: 90 }], xName: 'x', yName: 'y', animation: { enable: false }, marker:{visible: true} },
+                { type: 'Line', dataSource: [{ x: new Date(2012, 11, 11), y: 70 }], xName: 'x', yName: 'y', animation: { enable: false },marker: {visible:true, shape:'Circle'}},
+                { type: 'Line', dataSource: [{ x: new Date(2013, 1, 11), y: 70 }], xName: 'x', yName: 'y', animation: { enable: false },marker: {visible:true, shape:'Circle'}}];
+                
+            chartObj.tooltip = { enable: true, shared: true };
+            chartObj.refresh();
+        });
     });
 
     describe('Chart template', () => {

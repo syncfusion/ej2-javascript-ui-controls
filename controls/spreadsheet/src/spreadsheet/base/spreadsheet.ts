@@ -2220,8 +2220,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
                 node = wrapContent.lastChild;
             }
-            if (node && (node.nodeType === 3 || node.nodeType === 1)) {
-                if (!args.isRowFill) {
+            if (node && (node.nodeType === 3 || node.nodeType === 1 || node.nodeType === 8)) {
+                if (!args.isRowFill && node.nodeType !== 8) {
                     node.nodeValue = value;
                 }
             } else {
@@ -2455,7 +2455,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.element.style.removeProperty('width');
         this.element.style.removeProperty('min-height');
         this.element.style.removeProperty('min-width');
-        this.sheetModule.destroy();
+        if (this.sheetModule) { this.sheetModule.destroy(); }
     }
 
     /**

@@ -53,7 +53,7 @@ export class TriangularBase extends AccumulationBase {
         const gapRatio: number = Math.min(Math.max(series.gapRatio, 0), 1);
 
         //% equivalence of a value 1
-        const coEff: number = 1 / (sumOfPoints * (1 + gapRatio / (1 - gapRatio)));
+        const coEff: number = (sumOfPoints !== 0) ?  1 / (sumOfPoints * (1 + gapRatio / (1 - gapRatio))) : 0;
 
         const spacing: number = gapRatio / (points.length - 1);
         let y: number = 0;

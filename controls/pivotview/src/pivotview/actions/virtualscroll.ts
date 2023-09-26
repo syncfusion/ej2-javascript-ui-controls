@@ -135,7 +135,7 @@ export class VirtualScroll {
             }
             content.scrollLeft = left;
             header.scrollLeft = left;
-            this.previousValues.left = left;
+            // this.previousValues.left = left;
             if (this.parent.isDestroyed) { return; }
         };
     }
@@ -436,14 +436,14 @@ export class VirtualScroll {
                 timeOutObj = setTimeout(() => {
                     let scrollLeft: number = 0;
                     if (this.parent.isAdaptive) {
-                        let contentTable: HTMLElement = ele.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV);
-                        scrollLeft = (ele.scrollLeft === contentTable.scrollLeft) ? ele.scrollLeft :
-                            contentTable.scrollLeft;
+                        const contentTable: HTMLElement = ele.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV);
+                        scrollLeft = (ele.scrollLeft === contentTable.scrollLeft) ? ele.scrollLeft : contentTable.scrollLeft;
                     } else {
                         scrollLeft = ele.scrollLeft;
                     }
-                    this.update(mCont.scrollTop * this.parent.verticalScrollScale,
-                        scrollLeft * this.parent.horizontalScrollScale, e);
+                    this.update(
+                        mCont.scrollTop * this.parent.verticalScrollScale, scrollLeft * this.parent.horizontalScrollScale, e
+                    );
                 }, 300);
             }
             if (this.previousValues.top === top) {

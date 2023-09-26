@@ -1491,10 +1491,6 @@ describe('Chart Control', () => {
         });
         it('Checking multilevel labels', (done: Function) => {
             loaded = (args: Object): void => {
-                svg = document.getElementById('container_BorderLine_4');
-                expect(svg !== null).toBe(true);
-                svg = document.getElementById('container_BorderLine_5');
-                expect(svg !== null).toBe(true);
                 svg = document.getElementById('container_BorderLine_6');
                 expect(svg !== null).toBe(true);
                 svg = document.getElementById('container_BorderLine_7');
@@ -1502,6 +1498,10 @@ describe('Chart Control', () => {
                 svg = document.getElementById('container_BorderLine_8');
                 expect(svg !== null).toBe(true);
                 svg = document.getElementById('container_BorderLine_9');
+                expect(svg !== null).toBe(true);
+                svg = document.getElementById('container_BorderLine_10');
+                expect(svg !== null).toBe(true);
+                svg = document.getElementById('container_BorderLine_11');
                 expect(svg !== null).toBe(true);
                 done();
             };

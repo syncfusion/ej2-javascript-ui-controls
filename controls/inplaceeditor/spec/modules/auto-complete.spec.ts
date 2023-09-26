@@ -337,7 +337,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as "null" with initial render testing', () => {
@@ -388,7 +388,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as "undefined" string with initial render testing', () => {
@@ -439,7 +439,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as empty string with initial render testing', () => {
@@ -466,7 +466,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 'Cricket';
             editorObj.dataBind();
@@ -490,7 +490,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Defined value with initial render testing', () => {
@@ -529,7 +529,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 'Football';
             editorObj.dataBind();
@@ -617,7 +617,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(serverValue).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
@@ -673,7 +673,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(serverValue).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
@@ -729,7 +729,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(serverValue).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
@@ -759,7 +759,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(serverValue).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 'game1';
@@ -785,7 +785,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(serverValue).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
@@ -828,7 +828,7 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(serverValue).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 'game2';

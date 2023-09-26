@@ -85,11 +85,12 @@ export class PDFExport {
         const footer: string = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer) &&
             !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].value)) ?
             pdfExportProperties.footer.contents[0].value : this.exportProperties.footer ? this.exportProperties.footer : '';
-        const themeStyle: PdfThemeStyle = (!isNullOrUndefined(pdfExportProperties.theme) && !isNullOrUndefined(pdfExportProperties.theme.record))
-            ? pdfExportProperties.theme.record : undefined;
-        const fontFamily: number = (!isNullOrUndefined(themeStyle) && !isNullOrUndefined(themeStyle.font) && !isNullOrUndefined(themeStyle.font.name)) ?
-            this.getFontFamily(themeStyle.font.name) : PdfFontFamily.TimesRoman;
-        const fontSize: number = (!isNullOrUndefined(themeStyle) && !isNullOrUndefined(themeStyle.font) && !isNullOrUndefined(themeStyle.font.size)) ? themeStyle.font.size : 10;
+        const themeStyle: PdfThemeStyle = (!isNullOrUndefined(pdfExportProperties.theme) &&
+            !isNullOrUndefined(pdfExportProperties.theme.record)) ? pdfExportProperties.theme.record : undefined;
+        const fontFamily: number = (!isNullOrUndefined(themeStyle) && !isNullOrUndefined(themeStyle.font) &&
+            !isNullOrUndefined(themeStyle.font.name)) ? this.getFontFamily(themeStyle.font.name) : PdfFontFamily.TimesRoman;
+        const fontSize: number = (!isNullOrUndefined(themeStyle) && !isNullOrUndefined(themeStyle.font) &&
+            !isNullOrUndefined(themeStyle.font.size)) ? themeStyle.font.size : 10;
         const fontStyle: PdfFontStyle = !isNullOrUndefined(themeStyle) ? this.getFontStyle(themeStyle) : PdfFontStyle.Regular;
         const font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(fontFamily, fontSize, fontStyle);
         // const font: PdfFont = new PdfStandardFont(PdfFontFamily.TimesRoman, 15, PdfFontStyle.Regular);

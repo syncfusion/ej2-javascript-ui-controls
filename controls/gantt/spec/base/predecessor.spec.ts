@@ -750,3 +750,224 @@ describe('Child Records rendered in incorrect dates', () => {
         destroyGantt(ganttObj);
     });
 });
+describe('GUID predecessor', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+          TaskID: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+          TaskName: 'Parent Task 1',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/21/2019'),
+        },
+        {
+          TaskID: '78A9F47B-580D-49BB-9DF1-311AF2BA678C',
+          TaskName: 'Child Task 1.1',
+          StartDate: new Date('04/02/2019'),
+          Duration: 3,
+          Progress: 30,
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '1962C26C-6DE9-4636-83A6-93F030C6166B',
+          TaskName: 'Child Task 1.2',
+          StartDate: new Date('04/02/2019'),
+          Duration: 3,
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '35DBDA27-8A2E-43E2-99B8-C664484E6E5F',
+          TaskName: 'Sub Child Task 1.2.1',
+          StartDate: new Date('04/02/2019'),
+          Duration: 2,
+          Progress: 30,
+          ParentId: '1962C26C-6DE9-4636-83A6-93F030C6166B',
+        },
+        {
+          TaskID: 'D9851ABA-7794-4553-9491-4E35852C8542',
+          TaskName: 'Sub Child Task 1.2.2',
+          StartDate: new Date('04/02/2019'),
+          Duration: 0,
+          ParentId: '1962C26C-6DE9-4636-83A6-93F030C6166B',
+        },
+        {
+          TaskID: 'D2BAF06C-8F30-416D-9958-DCE241B0D9C4',
+          TaskName: 'Child Task 1.3',
+          StartDate: new Date('04/04/2019'),
+          Duration: 4,
+          Progress: 30,
+          Predecessor: '35DBDA27-8A2E-43E2-99B8-C664484E6E5FFS',
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '4A22967A-E869-4DF0-AECD-F61BA1B1D3B0',
+          TaskName: 'Child Task 1.4',
+          StartDate: new Date('04/04/2019'),
+          Duration: 4,
+          Progress: 30,
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '0FC2EDEC-04C5-4EAF-8186-CF0BE4C2D659',
+          TaskName: 'Sub Child Task 1.4.1',
+          StartDate: new Date('04/04/2019'),
+          Duration: 4,
+          Predecessor: '35DBDA27-8A2E-43E2-99B8-C664484E6E5FSS',
+          ParentId: '4A22967A-E869-4DF0-AECD-F61BA1B1D3B0',
+        },
+        {
+          TaskID: '1CB5D82F-26AF-4C8E-BFE1-5AB0A48CC0E7',
+          TaskName: 'Child Task 1.5',
+          StartDate: new Date('04/06/2019'),
+          Duration: 4,
+          Progress: 30,
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '0D22F66C-FBA3-4BE1-801C-4D9F3A93381C',
+          TaskName: 'Sub Child Task 1.5.1',
+          StartDate: new Date('04/06/2019'),
+          Duration: 4,
+          ParentId: '1CB5D82F-26AF-4C8E-BFE1-5AB0A48CC0E7',
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Predecessor', headerText: 'Predecessor', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('07/06/2019'),
+            }, done);
+    });
+    it('Check predecessor length', () => {
+        expect(ganttObj.currentViewData[3].ganttProperties.predecessor.length).toBe(2);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('Predecessor does not render propely for FF type', () => {
+    let ganttObj: Gantt;
+    let editingData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 10,
+                    Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+                },
+                {
+                    TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2FF',
+                    resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                        'From an engineer or company specializing in soil testing'
+                },
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: editingData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Predecessor', headerText: 'Predecessor', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/06/2019'),
+            }, done);
+    });
+    it('FF type', () => {
+        expect(document.getElementsByClassName('e-connector-line-arrow')[0].getAttribute('d')).toBe('M 595 420 L 587 415 L 587 424 Z');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});

@@ -714,12 +714,36 @@
                 padding: $modal-range-portrait-month-header-padding;
                 line-height: $modal-range-month-header-line-height;
 
-                #{if(&, '&', '*')} .e-prev,
+                #{if(&, '&', '*')} .e-prev {
+                  height: $modal-range-prev-next-icon-size;
+                  width: $modal-range-prev-next-icon-size;
+                  @if ($skin-name == 'Material3') {
+                    margin-right: 60vw;
+                    vertical-align: inherit;
+                    font-size: $modal-range-tablet-font-size
+                  }
+                  @media screen and (orientation: landscape) {
+                    @if ($skin-name == 'Material3') {
+                      margin-right: 78vw;
+                      vertical-align: inherit;
+                    }
+                  }
+
+                  #{if(&, '&', '*')} span {
+                    @media (min-device-width: 768px) {
+                      font-size: 18px;
+                      padding: 11px;
+                    }
+                  }
+                }
                 #{if(&, '&', '*')} .e-next {
                   height: $modal-range-prev-next-icon-size;
                   width: $modal-range-prev-next-icon-size;
+                  @if ($skin-name == 'Material3') {
+                    margin-right: 42px;
+                  }
 
-                  #{if(&, '&', '*')} span{
+                  #{if(&, '&', '*')} span {
                     padding: $modal-range-prev-next-icon-padding;
                     line-height: $modal-range-prev-next-icon-line-height;
                     @media (min-device-width: 768px) {
@@ -730,10 +754,26 @@
 
                 #{if(&, '&', '*')} .e-title {
                   @media (max-height: 600px) {
+                    @if ($skin-name == 'Material3') {
+                      margin-left: $modal-header-month-name-left-width;
+                      position: absolute;
+                      text-align: center;
+                      vertical-align: middle;
+                      width: $modal-header-month-name-width;
+                      line-height: $modal-month-name-line-height;
+                  }
                     line-height: $modal-range-month-landscape-title-line-height;
                   }
           
                   @media (min-height: 600px) {
+                    @if ($skin-name == 'Material3') {
+                      margin-left: $modal-header-month-name-left-width;
+                      position: absolute;
+                      text-align: center;
+                      vertical-align: middle;
+                      width: $modal-header-month-name-width;
+                      line-height: $modal-month-name-line-height;
+                  }
                     line-height: $modal-range-month-header-title-line-height;
                   }       
                   
@@ -942,8 +982,8 @@
           }
 
           #{if(&, '&', '*')} .e-day-span {
-            margin: 5px 0;
-            font-size: 20px;
+            margin: 8px 0;
+            font-size: 16px;
           }
           
         }            

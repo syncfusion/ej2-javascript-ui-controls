@@ -633,7 +633,7 @@ export class FormFieldsBase {
         for (let i: number = 0; i < formFieldAttributes.radiobuttonItem.length; i++) {
             let radiobuttonItem:any = formFieldAttributes.radiobuttonItem[parseInt(i.toString(), 10)];
             let page: PdfPage = this.formFieldLoadedDocument.getPage(radiobuttonItem.pageNumber - 1) as PdfPage;
-            let radioButtonName: string = !(isNullOrUndefined(radiobuttonItem.value) || radiobuttonItem.value === '') ? radiobuttonItem.value : fieldName + i.toString();
+            let radioButtonName: string = !(isNullOrUndefined(radiobuttonItem.value) || radiobuttonItem.value === '') ? radiobuttonItem.value : fieldName;
             let rotationAngle: number = this.getRotateAngle(page.rotation);
             let bounds: any = this.convertFieldBounds(radiobuttonItem);
             let isFieldRotated: boolean = false;

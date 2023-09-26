@@ -1,27 +1,64 @@
 @include export-module('listbox-theme') {
   .e-small .e-listbox-wrapper.e-filter-list .e-list-parent,
   .e-small .e-listbox-container.e-filter-list .e-list-parent {
-    height: $listbox-filter-small-height;
+    height: $listbox-filter-small-height !important; /* stylelint-disable-line declaration-no-important */
   }
 
-  .e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent,
+  .e-bigger .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-list-parent {
+    height: $listbox-filter-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+  .e-bigger .e-listbox-container.e-filter-list .e-list-wrap {
+    height: $listbox-mat-filter-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
   .e-bigger .e-listbox-container.e-filter-list .e-list-parent {
-    height: $listbox-filter-bigger-height;
+    height: 100%;
   }
 
   .e-bigger .e-listbox-wrapper.e-filter-list .e-selectall-parent + .e-list-parent,
   .e-bigger .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent {
-    height: $listbox-filterselect-bigger-height;
+    height: $listbox-filterselect-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent {
+    height: $listbox-filterselect-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-list-parent {
+    height: $listbox-filter-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-bigger .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-list-parent {
+    height: $listbox-filter-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+  .e-bigger .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent {
+    height: 100%;
   }
 
   .e-bigger .e-listbox-wrapper .e-selectall-parent + .e-list-parent,
+  .e-bigger .e-listbox-container .e-selectall-parent + .e-list-wrap {
+    height: $listbox-select-bigger-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
   .e-bigger .e-listbox-container .e-selectall-parent + .e-list-parent {
-    height: $listbox-select-bigger-height;
+    height: 100%;
   }
 
   .e-small.e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent,
+  .e-small.e-bigger .e-listbox-container.e-filter-list .e-list-wrap {
+    height: $listbox-filter-bigger-small-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-selectall-parent + .e-hidden-select + .e-listbox + .e-list-parent {
+    height: $listbox-ej2-filterselect-height !important;/* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-bigger .e-listbox-wrapper.e-filter-list:not(.e-listbox-container) .e-selectall-parent + .e-hidden-select + .e-listbox + .e-list-parent {
+    height: $listbox-ej2-filterselect-bigger-height !important;/* stylelint-disable-line declaration-no-important */
+  }
+
   .e-small.e-bigger .e-listbox-container.e-filter-list .e-list-parent {
-    height: $listbox-filter-bigger-small-height;
+    height: 100%;
   }
 
   .e-listbox-wrapper,
@@ -62,7 +99,7 @@
       }
 
       &.e-filter-list .e-selectall-parent + .e-list-parent {
-        height: $listbox-filterselect-height;
+        height: $listbox-filterselect-height !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-selectall-parent + .e-list-parent {
@@ -311,6 +348,34 @@
           padding-left: $listbox-template-badgewithoutavatar-padding-right;
           padding-right: $listbox-template-badgewithoutavatar-padding-left;
         }
+      }
+    }
+  }
+
+  .e-listbox-container {
+    @at-root {
+      &.e-filter-list .e-list-parent {
+        height: 100%;
+      }
+
+      &.e-filter-list .e-selectall-parent + .e-list-parent {
+        height: 100%;
+      }
+
+      & .e-selectall-parent + .e-list-parent {
+        height: 100%;
+      }
+
+      &.e-filter-list .e-list-wrap {
+        height: $listbox-mat-filter-height !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      &.e-filter-list .e-selectall-parent + .e-list-wrap {
+        height: $listbox-filterselect-height !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      & .e-selectall-parent + .e-list-wrap {
+        height: $listbox-select-height !important; /* stylelint-disable-line declaration-no-important */
       }
     }
   }

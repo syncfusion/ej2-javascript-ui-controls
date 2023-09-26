@@ -890,16 +890,19 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: "Slide", position: "Right" }, ele);
+        expect(ele.classList.contains("e-close")).toEqual(true);
     });
     it("Sidebar position:right && openOnInit , push type Testing", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: "Push", position: "Right" }, ele);
+        expect(ele.classList.contains("e-close")).toEqual(true);
     });
     it("Sidebar position:right && openOnInit and over type Testing", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: "Over", position: "Right" }, ele);
+        expect(ele.classList.contains("e-close")).toEqual(true);
         expect(document.body.clientWidth == sibling.clientWidth).toEqual(true);
     });
     //context property test case

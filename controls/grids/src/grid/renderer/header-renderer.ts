@@ -72,6 +72,12 @@ export class HeaderRender implements IRenderer {
             if (!isNullOrUndefined(col.headerTemplate)) {
                 const colIndex: number = gObj.getColumnIndexByField(col.field);
                 const result: Element[] = col.getHeaderTemplate()(extend({ 'index': colIndex }, col), gObj, 'headerTemplate');
+                const isReactCompiler: boolean = gObj.isReact && typeof (col.headerTemplate) !== 'string';
+                const isReactChild: boolean = gObj.parentDetails && gObj.parentDetails.parentInstObj &&
+                 gObj.parentDetails.parentInstObj.isReact;
+                if (isReactCompiler || isReactChild) {
+                    gObj.renderTemplates();
+                }
                 appendChildren(visualElement, result);
             } else {
                 visualElement.innerHTML = col.headerTemplate as string;

@@ -1,3 +1,5 @@
+@import '../common/mixin.scss';
+
 $accent: #00b0ff !default;
 $accent-font: #000 !default;
 $primary: #3f51b5 !default;
@@ -152,3 +154,45 @@ $appbar-hover-bg-color-alt2: rgba(transparent, .056) !default;
 //shadow
 $appbar-bottom-shadow: 0 2px 4px rgba(0, 0, 0, .1), 0 2px 6px rgba(0, 0, 0, .16) !default;
 $appbar-top-shadow: 0 -2px 3px rgba(0, 0, 0, .1), 0 -2px 6px rgba(0, 0, 0, .2) !default;
+
+$font-family: 'Roboto', 'Segoe UI', 'GeezaPro', 'DejaVu Serif', 'sans-serif', '-apple-system', 'BlinkMacSystemFont' !default;
+
+$font-size: 12px !default;
+$font-weight: normal !default;
+$font-path: 'common-images' !default;
+$header-bg-color: $grey-white !default;
+$header-gradient-color: none !default;
+$header-border-color: $grey-black !default;
+$header-font-color: $grey-light-font !default;
+$header-icon-color: $grey-light-font !default;
+$content-bg-color: $grey-white !default;
+$content-border-color: $grey-black !default;
+$content-font-color: $grey-light-font !default;
+$default-bg-color: $grey-white !default;
+$default-gradient-color: none !default;
+$default-border-color: $grey-black !default;
+$default-font-color: $grey-light-font !default;
+$default-icon-color: $grey-light-font !default;
+$hover-bg-color: $grey-200 !default;
+$hover-gradient-color: none !default;
+$hover-border-color: $grey-black !default;
+$hover-font-color: $grey-light-font !default;
+$hover-icon-color: $grey-light-font !default;
+$active-bg-color: $grey-100 !default;
+$active-gradient-color: none !default;
+$active-border-color: $grey-black !default;
+$active-font-color: $grey-light-font !default;
+$active-icon-color: $grey-light-font !default;
+$error-font-color: $error-font !default;
+$warning-font-color: #ffca1c !default;
+$success-font-color: #22b24b !default;
+$information-font-color: #489bd5 !default;
+$overlay-bg-color: #383838 !default;
+$shadow-color: rgba(0, 0, 0, .4) !default;
+$border-size: 1px !default;
+$border-type: solid !default;
+$border-radius: 0 !default;
+$border-left-radius: 0 !default;
+$border-right-radius: 0 !default;
+$border-top-radius: 0 !default;
+$border-bottom-radius: 0 !default;

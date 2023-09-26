@@ -1,0 +1,37 @@
+.e-content-placeholder.e-textbox.e-placeholder-textbox {
+  background-size: 300px 33px;
+  min-height: 33px;
+}
+
+.e-bigger .e-content-placeholder.e-textbox.e-placeholder-textbox,
+.e-bigger.e-content-placeholder.e-textbox.e-placeholder-textbox {
+  background-size: 300px 40px;
+  min-height: 40px;
+}
+
+.e-input-group.e-input-focus.e-multi-line-input textarea.e-textbox {
+  padding-right: 30px;
+}
+
+.e-input-group.e-input-focus.e-rtl.e-multi-line-input textarea.e-textbox {
+  padding-left: 30px;
+}
+
+.e-bigger .e-input-group.e-input-focus.e-multi-line-input textarea.e-textbox {
+  padding-right: 32px;
+}
+
+.e-bigger .e-input-group.e-input-focus.e-rtl.e-multi-line-input textarea.e-textbox {
+  padding-left: 32px;
+}
+
+.e-input-group.e-multi-line-input .e-clear-icon:not(.e-clear-icon-hide) {
+  position: absolute;
+  right: $multiline-clear-icon-right-position;
+  top: $multiline-clear-icon-top-position;
+}
+
+.e-input-group.e-rtl.e-multi-line-input .e-clear-icon:not(.e-clear-icon-hide) {
+  right: initial;
+  left: $multiline-clear-icon-left-position;
+}

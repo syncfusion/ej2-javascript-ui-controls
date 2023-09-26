@@ -1551,6 +1551,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             stack.length = 0;
             while (i < pFormula.length) {
                 let uFound: boolean = pFormula[i as number] === 'u';    // for 3*-2
+                if (uFound) {
+                    i = i + 1; // for the cell reference cases, like A1*-A2.
+                }
                 if (pFormula[i as number] === this.arithMarker) {
                     i = i + 1;
                     continue;
@@ -1617,6 +1620,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     sheet = '';
                     if (typeof textName === 'string' && this.getErrorStrings().indexOf(textName) > -1) {
                         return textName;
+                    }
+                    if (uFound) {
+                        textName = '-' + textName;
                     }
                     stack.push(textName);
                 } else if (pFormula[i as number] === 'q') {

@@ -427,7 +427,7 @@ export class ConditionalFormatting {
     private renderColorPicker(i: number): void {
         const format: ConditionalFormatSettingsModel = this.newFormat[i as number];
         let value: string = isNaN(format.style.color) ? 'black' : format.style.color;
-        let color: string = this.isHex(value.substr(1)) ? value : this.colourNameToHex(value);
+        let color: string = value.charAt(0) === '#' && this.isHex(value.substr(1)) ? value : this.colourNameToHex(value);
         (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.color = color;
         this.fontColor[i as number] = new ColorPicker({
             cssClass: cls.FORMAT_COLOR_PICKER + ' ' + cls.FORMAT_FONT_COLOR_PICKER +
@@ -438,7 +438,7 @@ export class ConditionalFormatting {
         this.fontColor[i as number].appendTo('#' + this.parentID + 'fontcolor' + i);
         addClass([this.fontColor[i as number].element.nextElementSibling.querySelector('.' + cls.SELECTED_COLOR)], cls.ICON);
         value = isNaN(format.style.backgroundColor) ? 'white' : format.style.backgroundColor;
-        color = this.isHex(value.substr(1)) ? value : this.colourNameToHex(value);
+        color = value.charAt(0) === '#' && this.isHex(value.substr(1)) ? value : this.colourNameToHex(value);
         (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.backgroundColor = color;
         (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.fontFamily = format.style.fontFamily;
         (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.fontSize = format.style.fontSize;

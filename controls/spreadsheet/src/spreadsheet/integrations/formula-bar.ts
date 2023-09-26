@@ -597,13 +597,13 @@ export class FormulaBar {
     }
     public destroy(): void {
         this.removeEventListener();
-        this.comboBoxInstance.destroy();
+        if (this.comboBoxInstance) { this.comboBoxInstance.destroy(); }
         this.comboBoxInstance = null;
         this.categoryCollection = null;
         this.formulaCollection = null;
         this.dialog = null;
         this.isGoto = null;
-        this.insertFnRipple();
+        if (this.insertFnRipple) { this.insertFnRipple(); }
         this.insertFnRipple = null;
         const formulaPanel: Element = this.parent.element.querySelector('.e-formula-bar-panel');
         if (formulaPanel) {

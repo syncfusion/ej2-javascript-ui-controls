@@ -2526,7 +2526,7 @@ export class Selection implements IAction {
     }
 
     private dataSuccess(res: Object[]): void {
-        const data: Object[] = (this.parent.getDataModule().isRemote()) ? res['result'] : res;
+        const data: Object[] = (this.parent.getDataModule().isRemote() && !isNullOrUndefined(res['result'])) ? res['result'] : res;
         for (let i: number = 0; i < data.length; i++) {
             const pkValue: string = this.getPkValue(this.primaryKey, data[parseInt(i.toString(), 10)]);
             if (isNullOrUndefined(this.selectedRowState[`${pkValue}`]) && data[parseInt(i.toString(), 10)][this.chkField]) {

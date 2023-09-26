@@ -1323,6 +1323,77 @@ describe('Column virtualization', () => {
        });
     });
 
+    describe('EJ2-847398 - changeDataSource not working properly when virtualization is enabled => ', () => {
+        let gridObj: Grid;
+        const data: Object[] = [
+            {
+                customer: {
+                    OrderID: 10248,
+                    RoleID: 123,
+                    CustomerID: 'VINET',
+                    CustomerName: 'Maria ',
+                },
+                location: {
+                    ShipCity: 'Reims',
+                    ShipCountry: 'France',
+                },
+            },
+            {
+                customer: {
+                    OrderID: 10249,
+                    RoleID: 456,
+                    CustomerID: 'TOMSP',
+                    CustomerName: 'Ana Trujillo',
+                },
+                location: {
+                    ShipCity: 'Münster',
+                    ShipCountry: 'Germany',
+                },
+            },
+        ];
+        const columns2: any[] = [
+            {
+                field: 'CustomerID', headerText: 'Customer ID',
+                width: 120,
+                textAlign: 'Right'
+            },
+            {
+                field: 'CustomerName',
+                headerText: 'Customer Name',
+                width: 150,
+
+            },
+        ];
+        beforeAll((done: Function) => {    
+          gridObj = createGrid(    
+           {    
+             dataSource: [],    
+             enableVirtualization: true,
+             enableColumnVirtualization: true,
+             height: 300,
+             columns: [
+              {field: 'OrderID', headerText:'OrderID', width:120},
+             ],
+           }, done );
+        });
+
+        it('changedatasource call', (done: Function) => {
+            let dataBound = () => {
+                expect((gridObj as any).columnModel.length).toBe(2);
+                expect(gridObj.headerModule['virtualEle'].wrapper.style.width).toBe('100%');
+                gridObj.dataBound = null;
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.changeDataSource(data, columns2);
+        });
+
+       afterAll(() => {
+           destroy(gridObj);
+           gridObj = null;
+       });
+    });
+
     // used for code coverage
     describe('Column virtualization with freeze and editing testing', () => {
         let gObj: Grid;

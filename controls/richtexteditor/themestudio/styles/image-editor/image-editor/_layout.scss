@@ -156,6 +156,12 @@
         position: absolute;
         font-size: 14px;
       }
+
+      & .e-ie-min-drop-content {
+        left: calc(50% - 120px);
+        top: 50%;
+        font-size: 14px;
+      }
     }
 
     & .e-toolbar {

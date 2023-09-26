@@ -1429,7 +1429,7 @@ export class Annotation {
                     if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
                         this.pdfViewer.annotation.textMarkupAnnotationModule.showHideDropletDiv(true);
                     }
-                    if (Browser.isDevice && !isBlazor()) {
+                    if (Browser.isDevice &&!this.pdfViewer.enableDesktopMode && !isBlazor()) {
                         commentPanel.style.height = this.pdfViewerBase.viewerMainContainer.clientHeight + 'px';
                         if (this.pdfViewer.selectedItems.annotations.length > 0) {
                             // eslint:disable-next-line

@@ -551,11 +551,11 @@ describe('Chart Control', () => {
         });
         it('Axis title trim Checking', (done: Function) => {
             loaded = (args: Object): void => {
-                let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_1');
-                expect(svg.textContent.indexOf('...') > -1 == true);
-                svg = document.getElementById('chartContainer_AxisTitle_2');
+                let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_2');
                 expect(svg.textContent.indexOf('...') > -1 == true);
                 svg = document.getElementById('chartContainer_AxisTitle_3');
+                expect(svg.textContent.indexOf('...') > -1 == true);
+                svg = document.getElementById('chartContainer_AxisTitle_4');
                 expect(svg.textContent.indexOf('...') > -1 == true);
                 done();
             };
@@ -564,15 +564,15 @@ describe('Chart Control', () => {
         });
         it('Axis position Checking', (done: Function) => {
             loaded = (args: Object): void => {
-                let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_1');
+                let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_2');
                 expect(svg.getAttribute('y') == '336.4475' || svg.getAttribute('y') == '340.9525').toBe(true);
                 expect(svg.getAttribute('x') == '68.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
-                svg = document.getElementById('chartContainer_AxisTitle_2');
-                expect(svg.getAttribute('y') == '200.85749999999996' || svg.getAttribute('y') == '216.85749999999996').toBe(true);
-                expect(svg.getAttribute('x') == '68.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
                 svg = document.getElementById('chartContainer_AxisTitle_3');
+                expect(svg.getAttribute('y') == '200.85749999999996' || svg.getAttribute('y') == '216.85749999999996').toBe(true);
+                expect(svg.getAttribute('x') == '68.5' || svg.getAttribute('x') == '47.5' || svg.getAttribute('x') == '74').toBe(true);
+                svg = document.getElementById('chartContainer_AxisTitle_4');
                 expect(svg.getAttribute('y') == '60.65499999999999' || svg.getAttribute('y') == '60.65499999999999').toBe(true);
-                expect(svg.getAttribute('x') == '68.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
+                expect(svg.getAttribute('x') == '68.5' || svg.getAttribute('x') == '47.5' || svg.getAttribute('x') == '74').toBe(true);
                 done();
             };
             chartElem.loaded = loaded;

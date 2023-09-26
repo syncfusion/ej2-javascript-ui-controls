@@ -50,7 +50,7 @@ describe('DropDownList Control', () => {
             expect((<HTMLElement>select('.e-ddl-hidden', ele)).getAttribute('name')).toEqual('DropDownComponent');
         });
         it('Initial focus testing', () => {
-            expect(document.activeElement.tagName === 'INPUT').toEqual(true);
+            expect(document.activeElement.tagName === 'SPAN').toEqual(true);
         });
         it('Clear icon availability testing', () => {
             expect(editorObj.componentObj.showClearButton).toBe(true);

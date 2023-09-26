@@ -1086,7 +1086,7 @@ describe('Chart Control', () => {
         it('Checking with multiple axes ', (done: Function) => {
             loaded = (args: Arg): void => {
                 let axis: Axis[] = args.chart.horizontalAxes;
-                let series1: Series[] = axis[0].series;
+                let series1: Series[] = axis[1].series;
                 let rectcount: number = series1[0].rectCount;
                 expect(rectcount === 3).toBe(true);
                 done();
@@ -1097,7 +1097,7 @@ describe('Chart Control', () => {
         it('Checking with multiple axes with two columns', (done: Function) => {
             loaded = (args: Arg): void => {
                 let axis: Axis[] = args.chart.horizontalAxes;
-                let series1: Series[] = axis[0].series;
+                let series1: Series[] = axis[1].series;
                 let rectcount: number = series1[0].rectCount;
                 expect(rectcount === 2).toBe(true);
                 done();

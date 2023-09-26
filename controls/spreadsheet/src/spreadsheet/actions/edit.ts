@@ -257,7 +257,7 @@ export class Edit {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const actCell: number[] = getCellIndexes(sheet.activeCell);
         const cell: CellModel = getCell(actCell[0], actCell[1], sheet, false, true);
-        if (!closest(trgtElem, '.e-dialog')) {
+        if (!closest(trgtElem, '.e-spreadsheet .e-dialog')) {
             if (!sheet.isProtected || trgtElem.classList.contains('e-sheet-rename') || !isLocked(cell, getColumn(sheet, actCell[1]))) {
                 if (this.isEdit) {
                     const editorElem: HTMLElement = this.getEditElement(sheet);

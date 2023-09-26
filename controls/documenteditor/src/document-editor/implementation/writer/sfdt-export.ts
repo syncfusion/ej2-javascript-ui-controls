@@ -362,6 +362,9 @@ export class SfdtExport {
         this.document[sectionsProperty[this.keywordIndex]].push(section);
         this.writeHeaderFooters(this.documentHelper.headersFooters[bodyWidget.index], section);
         let firstBlock: BlockWidget = bodyWidget.childWidgets[index] as BlockWidget;
+        if (isNullOrUndefined(firstBlock) && bodyWidget.nextRenderedWidget) {
+            firstBlock = bodyWidget.nextRenderedWidget.childWidgets[index] as BlockWidget;
+        }
         do {
             firstBlock = this.writeBlock(firstBlock as BlockWidget, 0, section[blocksProperty[this.keywordIndex]]);
         } while (firstBlock);
@@ -372,7 +375,7 @@ export class SfdtExport {
             if (isNullOrUndefined(next) && !isNullOrUndefined(bodyWidget.page.nextPage) && !isNullOrUndefined(bodyWidget.page.nextPage)) {
                 next = bodyWidget.page.nextPage.bodyWidgets[0];
             }
-        } while (next instanceof BodyWidget && next.index === bodyWidget.index);
+        } while (next instanceof BodyWidget && next.index === bodyWidget.index && !isNullOrUndefined(next.nextRenderedWidget));
         // While importing, If the last paragraph is empty and the section break is present, then the empty paragraph is removed. So, added the empty paragraph at the end of the section while exporting.
         let islastEmptyParagraph: boolean;
         if (!isNullOrUndefined(bodyWidget.lastChild) && bodyWidget.lastChild instanceof ParagraphWidget) {

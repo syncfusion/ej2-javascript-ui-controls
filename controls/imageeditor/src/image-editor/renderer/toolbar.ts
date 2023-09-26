@@ -140,6 +140,7 @@ export class ToolbarModule {
             W: 'W',
             H: 'H',
             DragText: 'Drag and drop your image here or',
+            DropText: 'Drop your image here or',
             BrowseText: 'Browse here...',
             SupportText: 'Supports:',
             Frame: 'Frame',

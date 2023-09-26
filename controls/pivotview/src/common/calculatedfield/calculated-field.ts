@@ -2205,7 +2205,7 @@ export class CalculatedField implements IAction {
 
     private removeErrorDialog(): void {
         const element: HTMLElement = select('#' + this.parentID + '_CalculatedFieldErrorDialog', document);
-        const confirmPopUp: Dialog = getInstance(element, Dialog) as Dialog;
+        const confirmPopUp: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
         if (confirmPopUp && !confirmPopUp.isDestroyed) {
             confirmPopUp.destroy();
         }

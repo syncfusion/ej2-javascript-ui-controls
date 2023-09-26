@@ -5459,6 +5459,9 @@ export class Editor {
             this.reLayout(selection, selection.isEmpty);
         }
         if (layoutWholeDocument) {
+            if (this.selection.pasteElement) {
+                this.selection.pasteElement.style.display = 'none';
+            }
             this.layoutWholeDocument(true);
         }
         this.isPaste = false;
@@ -5863,6 +5866,9 @@ export class Editor {
         } else {
             let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
             endPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        }
+        if (this.selection.start.paragraph.isEmpty() && this.selection.start.paragraph.paragraphFormat.bidi) {
+            this.documentHelper.layout.reLayoutParagraph(this.selection.start.paragraph, 0, 0);
         }
         let startPosition: TextPosition = new TextPosition(this.documentHelper.owner);
         this.setPositionForCurrentIndex(startPosition, insertPosition);
@@ -10113,7 +10119,7 @@ export class Editor {
         // To stop the indentation when the paragraph x position is at the clientArea's x position
         if (value <= 0 && property == 'leftIndent') {
             let x: number = HelperMethods.convertPointToPixel(value as number);
-            if ((currentPara.x + x) < this.viewer.clientArea.x) {
+            if ((currentPara.x + x) < this.viewer.clientArea.x && !currentPara.paragraphFormat.bidi) {
                 this.documentHelper.owner.isShiftingEnabled = false;
                 return;
             }

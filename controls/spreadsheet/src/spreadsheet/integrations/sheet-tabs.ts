@@ -688,13 +688,13 @@ export class SheetTabs {
 
     public destroy(): void {
         this.removeEventListener();
-        this.dropDownInstance.destroy();
+        if (this.dropDownInstance) { this.dropDownInstance.destroy(); }
         this.dropDownInstance = null;
-        this.tabInstance.destroy();
+        if (this.tabInstance) { this.tabInstance.destroy(); }
         this.tabInstance = null;
         this.removeAggregate();
         this.aggregateContent = null;
-        this.addBtnRipple();
+        if (this.addBtnRipple) { this.addBtnRipple(); }
         this.addBtnRipple = null;
         EventHandler.remove(document, 'mousedown touchstart', this.renameInputFocusOut);
         const ele: HTMLElement = document.getElementById(this.parent.element.id + '_sheet_tab_panel');

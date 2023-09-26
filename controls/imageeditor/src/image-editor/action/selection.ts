@@ -271,6 +271,9 @@ export class Selection {
         case 'upgradeImageQuality':
             this.upgradeImageQuality();
             break;
+        case 'triggerShapeChange':
+            this.triggerShapeChange(args.value['shapeResizingArgs'], args.value['shapeMovingArgs'], args.value['type']);
+            break;
         }
     }
 
@@ -1005,8 +1008,13 @@ export class Selection {
         parent.activeObj.activePoint.width = parent.activeObj.activePoint.endX - parent.activeObj.activePoint.startX;
         parent.activeObj.activePoint.height = parent.activeObj.activePoint.endY - parent.activeObj.activePoint.startY;
         const currentShapeSettings: ShapeSettings = this.updatePrevShapeSettings();
-        shapeResizingArgs.currentShapeSettings = this.shapeResizingArgs.currentShapeSettings = currentShapeSettings;
-        shapeMovingArgs.currentShapeSettings =  this.shapeMovingArgs.currentShapeSettings = currentShapeSettings;
+        if (!isNullOrUndefined(this.shapeResizingArgs) && !isNullOrUndefined(this.shapeMovingArgs)) {
+            shapeResizingArgs.currentShapeSettings = this.shapeResizingArgs.currentShapeSettings = currentShapeSettings;
+            shapeMovingArgs.currentShapeSettings =  this.shapeMovingArgs.currentShapeSettings = currentShapeSettings;
+        } else {
+            shapeResizingArgs.currentShapeSettings = currentShapeSettings;
+            shapeMovingArgs.currentShapeSettings = currentShapeSettings;
+        }
         if (type === 'resize') {
             this.isCropSelection = false; let splitWords: string[];
             if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
@@ -1051,6 +1059,18 @@ export class Selection {
                     parent.notify('shape', { prop: 'updSelChangeEventArgs', onPropertyChange: false,
                         value: {selectionSettings: selectionResizingArgs.currentSelectionSettings}});
                 }
+            }
+        } else if (type === 'mouse-down' || type === 'mouse-up') {
+            if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeResizingArgs) as any).then((shapeResizingArgs: ShapeChangeEventArgs) => {
+                    parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
+                        value: {shapeSettings: shapeResizingArgs.currentShapeSettings}});
+                });
+            } else {
+                parent.trigger('shapeChanging', shapeResizingArgs);
+                parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
+                        value: {shapeSettings: shapeResizingArgs.currentShapeSettings}});
             }
         } else {
             if (isBlazor() && isNullOrUndefined(this.parent.eventType) && parent.events &&
@@ -2549,6 +2569,11 @@ export class Selection {
             parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX;
             parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY;
             parent.currObjType.isDragging = true;
+            const previousShapeSettings: ShapeSettings = this.updatePrevShapeSettings();
+            const shapeResizingArgs: ShapeChangeEventArgs = {action: 'draw-start',  previousShapeSettings: previousShapeSettings};
+            const shapeMovingArgs: ShapeChangeEventArgs = {action: 'move', previousShapeSettings: previousShapeSettings};
+            this.shapeResizingArgs = shapeResizingArgs; this.shapeMovingArgs = shapeMovingArgs;
+            this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'mouse-down');
             return;
         }
         parent.notify('draw', { prop: 'resetFrameZoom', onPropertyChange: false });
@@ -2919,7 +2944,7 @@ export class Selection {
         }
         if (this.currentDrawingShape === 'path') {
             const elem: any = e.srcElement;
-            if (e.currentTarget !== parent.upperCanvas && e.currentTarget !== parent.lowerCanvas &&
+            if (e.currentTarget !== parent.upperCanvas && e.currentTarget !== parent.lowerCanvas && parent.activeObj.pointColl.length > 0 &&
                 (elem.classList.contains('e-upload-icon') || elem.parentElement.id === parent.element.id + '_zoomIn' ||
                 elem.parentElement.id === parent.element.id + '_zoomOut' || elem.parentElement.id === parent.element.id + '_annotationBtn' ||
                 elem.parentElement.id === parent.element.id + '_borderColorBtn' || elem.parentElement.id === parent.element.id + '_borderWidthBtn' ||
@@ -2948,6 +2973,11 @@ export class Selection {
                 if (parent.activeObj.activePoint.width === 0 && parent.activeObj.activePoint.height === 0) {
                     parent.notify('draw', {prop: 'performCancel', value: {isContextualToolbar: null }});
                 }
+                const previousShapeSettings: ShapeSettings = this.updatePrevShapeSettings();
+                const shapeResizingArgs: ShapeChangeEventArgs = {action: 'draw-end',  previousShapeSettings: previousShapeSettings};
+                const shapeMovingArgs: ShapeChangeEventArgs = {action: 'move', previousShapeSettings: previousShapeSettings};
+                this.shapeResizingArgs = shapeResizingArgs; this.shapeMovingArgs = shapeMovingArgs;
+                this.triggerShapeChange(shapeResizingArgs, shapeMovingArgs, 'mouse-up');
             }
             this.adjustActObjForLineArrow(); this.updPtCollForShpRot();
             parent.currObjType.shape = parent.currObjType.shape.toLowerCase();

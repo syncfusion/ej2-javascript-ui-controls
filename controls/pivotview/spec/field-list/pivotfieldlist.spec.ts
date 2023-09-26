@@ -226,8 +226,7 @@ describe('PivotFieldList spec', () => {
             it('checked node check axis button', (done: Function) => {
                 setTimeout(() => {
                     let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
-                    let pivotButtons: HTMLElement[] =
-                        [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                    let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
                     expect(pivotButtons.length).toBeGreaterThan(0);
                     expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).toBe('pno');
                     done();

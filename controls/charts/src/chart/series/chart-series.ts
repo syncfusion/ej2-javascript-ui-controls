@@ -2346,9 +2346,9 @@ export class Series extends SeriesBase {
                 options = new RectOption(
                     elementId + '_ChartSeriesClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1,
                     {
-                        x: -markerWidth, y: -markerHeight,
-                        width: this.clipRect.width + markerWidth * 2,
-                        height: this.clipRect.height + markerHeight * 2
+                        x: (this.xAxis.columnIndex === 0) ? -markerWidth : 0, y: (this.yAxis.rowIndex === chart.rows.length - 1) ? -markerHeight : 0,
+                        width: this.clipRect.width + (this.xAxis.columnIndex === chart.columns.length - 1 ? markerWidth * 2 : markerWidth),
+                        height: this.clipRect.height + (this.yAxis.rowIndex === 0 ?  markerHeight * 2 : markerHeight)
                     });
                 this.clipRectElement = appendClipElement(chart.redraw, options, render as SvgRenderer);
             }

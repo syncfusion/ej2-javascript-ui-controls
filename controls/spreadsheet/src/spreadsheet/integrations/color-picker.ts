@@ -114,8 +114,8 @@ export class ColorPicker {
     private destroy(): void {
         if (this.parent) {
             this.removeEventListener();
-            this.fontColorPicker.destroy(); this.fontColorPicker = null;
-            this.filColorPicker.destroy(); this.filColorPicker = null;
+            if (this.fontColorPicker) { this.fontColorPicker.destroy(); } this.fontColorPicker = null;
+            if (this.filColorPicker) { this.filColorPicker.destroy(); } this.filColorPicker = null;
             this.parent = null;
         }
     }
