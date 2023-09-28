@@ -124,12 +124,22 @@ export class FormDesignerToolbar {
                 }
                 this.adjustViewer(false);
                 // eslint-disable-next-line max-len
-                
-                    //this.deselectAllItems();
-                
-                this.toolbarElement.style.display = 'none';
-                this.pdfViewer.formDesignerModule.setMode("edit");
-                this.pdfViewer.designerMode = false;
+
+                //this.deselectAllItems();
+                if (this.pdfViewer.formFieldCollection) {
+                    let filteredFields: any = this.pdfViewer.formFieldCollection.filter((field: any) => {
+                    return field.formFieldAnnotationType === 'Textbox' && field.isMultiline && field.isReadonly;
+                });
+                filteredFields.forEach((field: any) => {
+                    const resize = document.getElementById(field.id);
+                    if (resize) {
+                        (resize as HTMLElement).style.pointerEvents = 'none';
+                    }
+                });
+            }
+            this.toolbarElement.style.display = 'none';
+            this.pdfViewer.formDesignerModule.setMode("edit");
+            this.pdfViewer.designerMode = false;
                 if (!isInitialLoading) {
                     this.pdfViewer.isFormDesignerToolbarVisible = false;
                 }
@@ -150,6 +160,17 @@ export class FormDesignerToolbar {
                 }
                 if (toolBarInitialStatus === 'none') {
                     this.adjustViewer(true);
+                }
+                if (this.pdfViewer.formFieldCollection) {
+                    let filteredFields: any = this.pdfViewer.formFieldCollection.filter((field: any) => {
+                        return field.formFieldAnnotationType === 'Textbox' && field.isMultiline && field.isReadonly;
+                    });
+                    filteredFields.forEach((field: any) => {
+                        const resize = document.getElementById(field.id);
+                        if (resize) {
+                            (resize as HTMLElement).style.pointerEvents = 'auto';
+                        }
+                    });
                 }
             }
             // eslint-disable-next-line max-len

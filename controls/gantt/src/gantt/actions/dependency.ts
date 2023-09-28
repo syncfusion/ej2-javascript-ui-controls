@@ -142,16 +142,58 @@ export class Dependency {
         const collection: IPredecessor[] = [];
         let match: string[];
         let isrelationship: string;
-        let values: string[];
+        let values: string[] = [];
         let offsetValue: string;
         let predecessorText: string;
 
         predecessor.split(',').forEach((el: string): void => {
-            values = el.split('+');
-            offsetValue = '+';
-            if (el.indexOf('-') >= 0) {
-                values = el.split('-');
-                offsetValue = '-';
+            let isGUId: boolean = false
+            var regex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+            let elSplit: string[] = el.split('-');
+            let id: string;
+            if (elSplit.length === 6) {
+               elSplit[4] = elSplit[4] + '-' + elSplit[5];
+               elSplit.pop();
+            }
+            if (elSplit.length === 5 && elSplit[4].length > 12) {
+                id = el.substring(0, 36);
+                if (regex.test(id)) {
+                    isGUId = true;
+                }
+            }
+            if (isGUId) {
+                let split: string[];
+                split = elSplit[4].split('+');
+                let spliceLength: number;;
+                if(split.length === 1) {
+                    values[0] = el;
+                }
+                else {
+                    spliceLength = split[1].length;
+                    values[0] = el.slice(0,-(spliceLength + 1));
+                    values[1] = split[1];
+                }
+                offsetValue = '+';
+                if (elSplit[4].indexOf('-') >= 0) {
+                    split = elSplit[4].split('-');
+                    if (split.length === 1) {
+                        values[0] = el;
+                    }
+                    else {
+                        spliceLength = split[1].length;
+                        values[0] = el.slice(0,-(spliceLength + 1));
+                        values[1] = split[1];
+                    }
+                    offsetValue = '-';
+                }
+            }
+            else {
+                values = el.split('+');
+                offsetValue = '+';
+                if (el.indexOf('-') >= 0) {
+                    values = el.split('-');
+                    offsetValue = '-';
+                }
             }
             match=[];
             const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;

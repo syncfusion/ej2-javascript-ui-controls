@@ -722,7 +722,7 @@ export class ChartRows extends DateProcessor {
         let baselineMilestoneHeight = this.parent.renderBaseline ? 5 : 2;
         const template: string = '<div class="' + cls.baselineMilestoneContainer + '" style="width:' + ((this.parent.renderBaseline ? this.taskBarHeight : this.taskBarHeight - 10)) + 'px;height:' +
             ((this.parent.renderBaseline ? this.taskBarHeight : this.taskBarHeight - 10)) + 'px;position:absolute;transform:rotate(45deg);' + (this.parent.enableRtl ? 'right:' : 'left:') + (this.parent.enableRtl ? (data.ganttProperties.left -
-                (this.milestoneHeight / 2) + 3) : (data.ganttProperties.left - (this.milestoneHeight / 2) + 1)) + 'px;' + (this.baselineColor ? 'background-color: ' + this.baselineColor + ';' : '') + 'margin-top:' + ((-Math.floor(this.parent.rowHeight - this.milestoneMarginTop) + baselineMilestoneHeight) + 2) + 'px"> </div>';
+                (this.milestoneHeight / 2) + 3) : (data.ganttProperties.baselineLeft  - (this.milestoneHeight / 2) + 1)) + 'px;' + (this.baselineColor ? 'background-color: ' + this.baselineColor + ';' : '') + 'margin-top:' + ((-Math.floor(this.parent.rowHeight - this.milestoneMarginTop) + baselineMilestoneHeight) + 2) + 'px"> </div>';
         return this.createDivElement(template);
     }
 
@@ -1703,7 +1703,7 @@ export class ChartRows extends DateProcessor {
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor;
             args.taskbarBorderColor = isNullOrUndefined(childTask) ? null : taskbarElement.classList.contains(cls.traceChildTaskBar) ?
                 getComputedStyle(taskbarElement).backgroundColor :
-                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderColor;
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).outlineColor;
             args.progressBarBgColor = isNullOrUndefined(progressTask) ? null :
                 taskbarElement.classList.contains(cls.traceChildProgressBar) ?
                     getComputedStyle(taskbarElement).backgroundColor :
@@ -1753,7 +1753,7 @@ export class ChartRows extends DateProcessor {
      */
     private updateQueryTaskbarInfoArgs(args: IQueryTaskbarInfoEventArgs, rowElement?: Element, taskBarElement?: Element): void {
         const trElement: Element = args.rowElement;
-        const taskbarElement: Element = args.taskbarElement;
+        const taskbarElement: Element = this.parent.enableVirtualization ? args.rowElement :args.taskbarElement;
         const classCollections: string[] = this.getClassName(args);
         let segmentRowElement: Element;
         if (args.data.ganttProperties.segments && args.data.ganttProperties.segments.length > 0) {
@@ -1773,18 +1773,6 @@ export class ChartRows extends DateProcessor {
                 (trElement.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor = args.baselineColor;
             }
         } else if (taskbarElement) {
-            if (taskbarElement && this.parent.enableVirtualization && !args.data.expanded) {
-                const childElement: Element = trElement.querySelector('.' + cls.collapseParent);
-                if (childElement) {
-                    for (let i: number = 0; i < childElement.childNodes.length; i++) {
-                        const taskbar: Element = childElement.childNodes[i as number] as Element;
-                        const mainTaskbar: HTMLElement = taskbar.querySelector('.' + cls.traceChildTaskBar);
-                        if (mainTaskbar) {
-                            mainTaskbar.style.backgroundColor = args.taskbarBgColor;
-                        }
-                    }
-                }
-            }
             if (taskbarElement.querySelector(classCollections[0]) &&
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor !== args.taskbarBgColor) {
                 (taskbarElement.querySelector(classCollections[0]) as HTMLElement).style.backgroundColor = args.taskbarBgColor;
@@ -2020,8 +2008,7 @@ export class ChartRows extends DateProcessor {
             if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll) {
                 this.parent.treeGrid.grid.setRowData(dataId, data);
             }
-            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar && !this.parent.allowTaskbarOverlap &&
-               !this.parent.ganttChartModule.isCollapseAll && !this.parent.ganttChartModule.isExpandAll) {
+            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar && !this.parent.allowTaskbarOverlap) {
                 this.updateDragDropRecords(selectedItem, tr);
             }
             if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
@@ -2046,6 +2033,10 @@ export class ChartRows extends DateProcessor {
         addClass([cloneElement], 'collpse-parent-border');
         const id: string = (tRow as Element).querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
         const ganttData: IGanttData = this.parent.getRecordByID(id);
+        const mainTaskbar: HTMLElement = (cloneElement.querySelector('.e-gantt-child-taskbar'));
+        if (this.parent.queryTaskbarInfo) {
+            this.triggerQueryTaskbarInfoByIndex(mainTaskbar, ganttData);
+        }
         let zIndex: string = "";
         if (ganttData && !isNullOrUndefined(ganttData.ganttProperties.eOverlapIndex)) {
            zIndex = (ganttData.ganttProperties.eOverlapIndex).toString();

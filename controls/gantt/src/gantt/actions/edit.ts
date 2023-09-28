@@ -3002,6 +3002,9 @@ export class Edit {
                 this.parent.flatData[this.parent.getTaskIds().indexOf('T' + args.data[tasks.id])] : this.parent.getRecordByID(args.data[tasks.id]);
                 if (!isNullOrUndefined(ganttData)) {
                    this.validateUpdateValues(args.newTaskData, ganttData, true);
+                   this.parent.dateValidationModule.calculateEndDate(ganttData);
+                   this.parent.dataOperation.updateWidthLeft(ganttData);
+                   this.parent.dataOperation.updateParentItems(ganttData);
                 }
                 if(!isNullOrUndefined(args.data[`${tempTaskID}`])) {
                     if(args.data[tempTaskID as string] != args.data['ganttProperties']['taskId']) {

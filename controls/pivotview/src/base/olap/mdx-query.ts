@@ -76,8 +76,8 @@ export class MDXQuery {
         this.fieldList = olapEngine.fieldList;
         this.cellSetInfo = '\nDIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         const measureQuery: string = this.getMeasuresQuery(this.values);
-        let rowQuery: string = this.getDimensionsQuery(this.rows, measureQuery, 'rows', drillInfo).replace(/\&/g, '&amp;');   /* eslint-disable-line */
-        let columnQuery: string = this.getDimensionsQuery(this.columns, measureQuery, 'columns', drillInfo).replace(/\&/g, '&amp;');   /* eslint-disable-line */
+        let rowQuery: string = this.getDimensionsQuery(this.rows, measureQuery, 'rows', drillInfo).replace(/\&/g, '&amp;').replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
+        let columnQuery: string = this.getDimensionsQuery(this.columns, measureQuery, 'columns', drillInfo).replace(/\&/g, '&amp;').replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
         if (this.isPaging && refPaging && this.pageSettings !== undefined) {
             const pagingQuery: PagingQuery = this.getPagingQuery(rowQuery, columnQuery);
             rowQuery = pagingQuery.rowQuery;
@@ -89,9 +89,9 @@ export class MDXQuery {
         }
         rowQuery = (rowQuery.length > 0 ? rowQuery + (this.isPaging && !refPaging ? '' : this.cellSetInfo + ' ON ROWS') : '');
         columnQuery = (columnQuery.length > 0 ? columnQuery + (this.isPaging && !refPaging ? '' : this.cellSetInfo + ' ON COLUMNS') : '');
-        const slicerQuery: string = this.getSlicersQuery(this.filters, 'filters').replace(/\&/g, '&amp;');   /* eslint-disable-line */
-        const filterQuery: string = this.getfilterQuery(this.filterMembers, dataSourceSettings.cube).replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;');   /* eslint-disable-line */
-        const caclQuery: string = this.getCalculatedFieldQuery(this.calculatedFieldSettings).replace(/\&/g, '&amp;');   /* eslint-disable-line */
+        const slicerQuery: string = this.getSlicersQuery(this.filters, 'filters').replace(/\&/g, '&amp;').replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
+        const filterQuery: string = this.getfilterQuery(this.filterMembers, dataSourceSettings.cube).replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
+        const caclQuery: string = this.getCalculatedFieldQuery(this.calculatedFieldSettings).replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');   /* eslint-disable-line */
         const query: string = this.frameMDXQuery(rowQuery, columnQuery, slicerQuery, filterQuery, caclQuery, refPaging);
         const args: ConnectionInfo = {
             catalog: dataSourceSettings.catalog,
@@ -101,7 +101,7 @@ export class MDXQuery {
             LCID: dataSourceSettings.localeIdentifier.toString(),
             roles: dataSourceSettings.roles
         };
-        olapEngine.mdxQuery = query.replace(/\&amp;/g, '&').replace(/\&gt;/g, '>').replace(/\&lt;/g, '<').replace(/%280/g, '\"');   /* eslint-disable-line */
+        olapEngine.mdxQuery = query.replace(/\&amp;/g, '&').replace(/\&gt;/g, '>').replace(/\&lt;/g, '<').replace(/%280/g, '\"').replace(/\&apos;/g, '\'');   /* eslint-disable-line */
         // console.log(olapEngine.mdxQuery);
         if (drillInfo) {
             drillInfo.axis = drillInfo.axis === 'rows' ? 'row' : 'column';

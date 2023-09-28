@@ -1,0 +1,92 @@
+@include export-module('tab-highcontrast-light-icons') {
+
+  /*! tab icons */
+  #{&}.e-tab {
+
+    .e-tab-header {
+
+      .e-close-icon::before {
+        content: '\e7fc';
+        position: relative;
+      }
+    }
+
+    &.e-vertical-icon .e-tab-header {
+
+      @media screen and (max-width: 480px) {
+
+        .e-popup-up-icon::before {
+          content: '\e85e';
+        }
+
+        .e-popup-down-icon::before {
+          content: '\e84f';
+        }
+      }
+    }
+
+    &.e-vertical-tab {
+
+      .e-tab-header {
+
+        .e-popup-up-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\ebb8';
+          }
+        }
+
+        .e-popup-down-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\ebb8';
+          }
+        }
+      }
+
+      &.e-icon-tab {
+
+        .e-tab-header {
+
+          .e-popup-up-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\ebb7';
+            }
+          }
+
+          .e-popup-down-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\ebb7';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-tab-clone-element {
+
+    .e-close-icon::before {
+      content: '\e7fc';
+      position: relative;
+    }
+  }
+}

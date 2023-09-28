@@ -908,6 +908,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private dataBoundFunction: Function;
     private dataToBeUpdated: BatchChanges;
     private componentRefresh: Function = Component.prototype.refresh;
+    private isChangeDataSourceCall = false;
     /** @hidden */
     public recordsCount: number;
     /** @hidden */
@@ -1008,6 +1009,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public pageTemplateChange: boolean = false;
     /** @hidden */
     public isAutoGen: boolean = false;
+    /** @hidden */
+    public isAutoGenerateColumns: boolean = false;
     private mediaBindInstance: Object = {};
     /** @hidden */
     public commandDelIndex: number = undefined;
@@ -2996,6 +2999,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.trigger(events.load);
         }
         prepareColumns(this.columns as Column[], this.enableColumnVirtualization, this);
+        if (this.enableColumnVirtualization && this.isChangeDataSourceCall && this.columnModel) {
+            this.columnModel = [];
+            this.updateColumnModel(this.columns as Column[]);
+        }
         this.isPreparedFrozenColumns = true;
         if (this.enablePersistence) {
             this.notify(events.columnsPrepared, {});
@@ -3532,7 +3539,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             addClass([footerContent], ['e-footerpadding']);
         }
         const checkboxColumn: Column[] = this.getColumns().filter((col: Column) => col.type === 'checkbox');
-        if (checkboxColumn.length && this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
+        if (checkboxColumn.length === 0 || checkboxColumn.length && this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
             this.isCheckBoxSelection = false;
         }
         if (this.rowRenderingMode === 'Vertical') {
@@ -3543,6 +3550,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (this.enableAdaptiveUI && this.scrollModule) {
             this.scrollModule.refresh();
+        }
+        if (this.isFrozenGrid() && this.isAutoGenerateColumns) {
+            this.widthService.setWidthToColumns();
+            this.isAutoGenerateColumns = false;
         }
     }
 
@@ -3750,6 +3761,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         parentInstance = currentParentInstance;
                     }
                 }
+                this.headerModule.refreshUI();
                 break;
             case 'toolbar':
                 this.notify(events.uiUpdate, { module: 'toolbar' }); break;
@@ -5302,7 +5314,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (let i: number = 0; i < gcol.length; i++) {
                 const col: Column = gcol[parseInt(i.toString(), 10)];
                 if (isNullOrUndefined(col.width)) {
-                        col.width = Math.max(200, col.minWidth ? parseInt(col.minWidth.toString(), 10) : 0);
+                        col.width = Math.max(200, col.minWidth ? parseFloat(col.minWidth.toString()) : 0);
                 }
                 if (col.width === 'auto') {
                     let tWidth: number = 0;
@@ -5313,29 +5325,29 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                                     autoCol++;
                                 }
                                 if (col.width !== 'auto') {
-                                    tWidth += parseInt(col.width.toString(), 10);
+                                    tWidth += parseFloat(col.width.toString());
                                 }
                             }
                         });
                         let gWidth: number = this.isPercentageWidthGrid() || this.width === 'auto' ? this.element.getBoundingClientRect().width :
-                            parseInt(this.width.toString(), 10);
+                            parseFloat(this.width.toString());
                         difference = this.height === 'auto' ? gWidth - tWidth : ((gWidth - tWidth) - getScrollBarWidth());
                         if (difference < 0) {
                             difference = 0;
                         }
-                        autoWidth = Math.floor(difference / autoCol);
+                        autoWidth = parseFloat((difference / autoCol).toString());
                         gcol.filter((col: Column) => {
                             if (col.visible) {
-                                if (col.minWidth && parseInt(col.minWidth.toString(), 10) > autoWidth) {
-                                    difference = difference - parseInt(col.minWidth.toString(), 10);
+                                if (col.minWidth && parseFloat(col.minWidth.toString()) > autoWidth) {
+                                    difference = difference - parseFloat(col.minWidth.toString());
                                     autoCol--;
                                 }
                             }
                         });
                         isAutoWidth = false;
                     }
-                    if (col.minWidth && parseInt(col.minWidth.toString(), 10) > autoWidth) {
-                        col.width = parseInt(col.minWidth.toString(), 10);
+                    if (col.minWidth && parseFloat(col.minWidth.toString()) > autoWidth) {
+                        col.width = parseFloat(col.minWidth.toString());
                     } else {
                         col.width = difference / autoCol;
                     }
@@ -5347,6 +5359,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private refreshSplitFrozenColumn(): void {
         this.splitFrozenCount(this.columns as Column[]);
         this.updateFrozenColumnsWidth();
+        this.isAutoGenerateColumns = true;
     }
 
     /**
@@ -5550,6 +5563,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (let i: number = 0; i < cols.length; i++) {
                 if (this.frozenColumns > i) {
                     cols[parseInt(i.toString(), 10)].freeze = 'Left';
+                } else if (cols[parseInt(i.toString(), 10)].freeze === 'Right' || cols[parseInt(i.toString(), 10)].freeze === 'Fixed') {
+                    cols[parseInt(i.toString(), 10)].freeze = cols[parseInt(i.toString(), 10)].freeze;
                 } else {
                     cols[parseInt(i.toString(), 10)].freeze = undefined;
                 }
@@ -5879,6 +5894,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      */
     public changeDataSource(dataSource?: Object | DataManager | DataResult, columns?: Column[] | string[] | ColumnModel[]): void {
+        this.isChangeDataSourceCall = true;
         this.setProperties({ sortSettings: { columns: [] } }, true);
         this.setProperties({ filterSettings: { columns: [] } }, true);
         this.setProperties({ searchSettings: { key: '' } }, true);
@@ -5895,6 +5911,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.setProperties({ dataSource: dataSource }, true);
         }
         this.freezeRefresh();
+        this.isChangeDataSourceCall = false;
     }
 
     /**
@@ -7100,7 +7117,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 (ariaOwns)) !== (e.target as Element).getAttribute('aria-owns')))
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
             if (this.editSettings.mode === 'Batch' && !((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
-                parentsUntil(relatedTarget, 'e-input-group')) && (parentsUntil(relatedTarget, 'e-uploader') || !isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group')))) {
+                parentsUntil(relatedTarget, 'e-input-group')) && (parentsUntil(relatedTarget, 'e-uploader')
+                || !(relatedTarget && isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))))) {
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});
             }

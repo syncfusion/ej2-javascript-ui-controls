@@ -636,8 +636,7 @@ describe('Pivot Rendering', () => {
             }, 1000);
         });
         it('close the fieldlist dialog', (done: Function) => {
-            let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Container');
-
+            let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Container') as HTMLElement;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect((fieldListWrapper.querySelector('.e-cancel-btn') as HTMLElement).click()).toBeTruthy;
@@ -645,9 +644,9 @@ describe('Pivot Rendering', () => {
             }, 1000);
         });
         it('check pivot grid aggregation', (done: Function) => {
+            let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="1"]') as HTMLElement;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="1"]');
                 expect(target.querySelector(".e-cellvalue").innerHTML).toEqual('green');
                 done();
             }, 1000);

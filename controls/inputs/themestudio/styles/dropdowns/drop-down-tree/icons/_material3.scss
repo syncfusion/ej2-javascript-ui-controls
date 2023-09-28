@@ -1,0 +1,11 @@
+@include export-module('dropdowntree-material3-icons') {
+  .e-ddt {
+    .e-ddt-icon::before {
+      content: '\e70d';
+    }
+
+    .e-chips-close::before {
+      content: '\e7e7';
+    }
+  }
+}

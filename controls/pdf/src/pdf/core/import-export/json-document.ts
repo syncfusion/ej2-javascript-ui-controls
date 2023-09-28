@@ -1102,6 +1102,11 @@ export class _JsonDocument extends _ExportHelper {
             case 'allowedinteractions':
                 this._addString(dictionary, 'AllowedInteractions', value);
                 break;
+            default:
+                if (this._document._allowImportCustomData && key !== 'type' && key !== 'page') {
+                    this._addString(dictionary, key, value);
+                }
+                break;
             }
         });
         this._addMeasureDictionary(dictionary, annotation, annotationKeys);

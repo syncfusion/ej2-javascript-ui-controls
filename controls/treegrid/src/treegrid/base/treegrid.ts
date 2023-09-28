@@ -3199,6 +3199,18 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.isEditCollapse = false;
         this.notify('checkboxSelection', {target: target});
+        if (this.grid.isCheckBoxSelection && !this.grid.isPersistSelection) {
+            if (this.aggregates.map((ag: AggregateRow) => ag.showChildSummary === true).length) {
+                const checkedTarget: HTMLInputElement = this.grid.getHeaderContent().querySelector('.e-checkselectall');
+                const checkedLen: number = this.grid.getSelectedRowIndexes().length;
+                const totalRecords: number = this.getCurrentViewRecords().length;
+                if (checkedLen === totalRecords){
+                    const spanEle: HTMLElement = checkedTarget.nextElementSibling as HTMLElement;
+                    removeClass([spanEle], ['e-stop', 'e-uncheck']);
+                    addClass([spanEle], ['e-check']);
+                }
+            }
+        }
     }
 
     /**

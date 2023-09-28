@@ -187,16 +187,58 @@ export class ConnectorLineEdit {
     private idFromPredecessor(pre: string): string[] {
         const preArray: string[] = pre.split(',');
         const preIdArray: string[] = [];
-        let values: string[];
+        let values: string[] = [];
         let offsetValue: string;
         let match: string[] = [];
         for (let j: number = 0; j < preArray.length; j++) {
             const strArray: string[] = [];
-            values = preArray[j as number].split('+');
-            offsetValue = '+';
-            if (preArray[j as number].indexOf('-') >= 0) {
-                values = preArray[j as number].split('-');
-                offsetValue = '-';
+            let isGUId: boolean = false
+            var regex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+            let elSplit: string[] = preArray[j as number].split('-');
+            let id: string;
+            if (elSplit.length === 6) {
+                elSplit[4] = elSplit[4] + '-' + elSplit[5];
+                elSplit.pop();
+            }
+            if (elSplit.length === 5 && elSplit[4].length > 12) {
+                id = preArray[j as number].substring(0, 36);
+                if (regex.test(id)) {
+                    isGUId = true;
+                }
+            }
+            if (isGUId) {
+                let split: string[];
+                split = elSplit[4].split('+');
+                let spliceLength: number;
+                if(split.length === 1) {
+                    values[0] = preArray[j as number];
+                }
+                else {
+                    spliceLength = split[1].length;
+                    values[0] = preArray[j as number].slice(0, -(spliceLength + 1));
+                    values[1] = split[1];
+                }
+                offsetValue = '+';
+                if (elSplit[4].indexOf('-') >= 0) {
+                    split = elSplit[4].split('-');
+                    if(split.length === 1) {
+                        values[0] = preArray[j as number];
+                    }
+                    else {
+                        spliceLength = split[1].length;
+                        values[0] = preArray[j as number].slice(0, -(spliceLength + 1));
+                        values[1] = split[1];
+                    }
+                    offsetValue = '-';
+                }
+            }
+            else {
+                values = preArray[j as number].split('+');
+                offsetValue = '+';
+                if (preArray[j as number].indexOf('-') >= 0) {
+                    values = preArray[j as number].split('-');
+                    offsetValue = '-';
+                }
             }
             if (!isNullOrUndefined(values[0])) {
                 const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;

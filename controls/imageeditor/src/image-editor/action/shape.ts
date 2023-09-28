@@ -753,6 +753,7 @@ export class Shape {
         parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
         parent.activeObj.strokeSettings.strokeColor = shapeSettings.strokeColor;
         parent.activeObj.strokeSettings.fillColor = shapeSettings.fillColor;
+        if(isNullOrUndefined(shapeSettings.degree)) { shapeSettings.degree = 0; }
         switch (parent.activeObj.shape) {
         case 'ellipse':
             parent.activeObj.activePoint.width = shapeSettings.radius * 2;
@@ -1513,6 +1514,13 @@ export class Shape {
                 } else {
                     parent.updateToolbar(parent.element, 'quickAccessToolbar', parent.activeObj.shape);
                 }
+                const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
+                parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
+                const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
+                const shapeResizingArgs: ShapeChangeEventArgs = {action: 'draw-end',  previousShapeSettings: shapeSettings};
+                const shapeMovingArgs: ShapeChangeEventArgs = {action: 'move', previousShapeSettings: shapeSettings};
+                parent.notify('selection', { prop: 'triggerShapeChange', onPropertyChange: false,
+                    value: {shapeResizingArgs: shapeResizingArgs, shapeMovingArgs: shapeMovingArgs, type: 'mouse-up'}});
             }
         }
     }
@@ -1929,6 +1937,9 @@ export class Shape {
 
     private applyFontStyle(item: string): void {
         const parent: ImageEditor = this.parent;
+        const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
+        parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
+        const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
         this.pushActItemIntoObj();
         const objColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
         parent.objColl.pop();
@@ -1948,6 +1959,10 @@ export class Shape {
             this.updateFontStyle(item, objColl, 'bold', 'italic');
             break;
         }
+        const shapeChangedArgs: ShapeChangeEventArgs = {action: 'font-style', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+        shapeChangedArgs.currentShapeSettings.fontStyle = [item];
+        parent.triggerShapeChanged(shapeChangedArgs);
     }
 
     private updateFontStyle(item: string, objColl: SelectionPoint[], fontWeight: string, fontStyle: string): void {

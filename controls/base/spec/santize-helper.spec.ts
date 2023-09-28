@@ -98,4 +98,12 @@ describe('Sanitize Html Helper', () => {
         });
     })
 
+    describe('Handle file name when using more then one & sign  : ', () => {
+        var value='Test & Test & Test.jpg'
+        var newValue: string = SanitizeHtmlHelper.sanitize(value);
+        it('check the input and output appears same', () => {
+            expect(newValue).toBe(value);
+        });  
+    })
+    
 });

@@ -1525,9 +1525,11 @@ describe('Tooltip Control', () => {
             });
             tooltip.appendTo('#tstooltip');
             tooltip.open();
+            expect(tooltip.showTipPointer).toBe(false);
+            let arrowEle: HTMLElement = document.querySelector('.e-arrow-tip') as HTMLElement;
+            expect(arrowEle).toBeNull();
             expect(tipFn1).toHaveBeenCalledTimes(1);
             tooltip.close();
-            expect(tooltip.showTipPointer).toBe(false);
         });
         it('cancel before render event', () => {
             function onBeforeRender(args: TooltipEventArgs) {

@@ -2522,6 +2522,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         for (let i: number = 0, len: number = axes.length; i < len; i++) {
             axis = <Axis>axes[i as number]; axis.series = [];
             axis.labels = []; axis.indexLabels = {};
+            axis.orientation = (i == 0) ? (this.requireInvertedAxis ? 'Vertical' : 'Horizontal') :
+                (i == 1) ? (this.requireInvertedAxis ? 'Horizontal' : 'Vertical') : axis.orientation;
             for (const series of this.visibleSeries) {
                 this.initAxis(series, axis, true);
                 if (series.category == 'Pareto' && series.type == 'Line' && series.yAxis) {
@@ -3471,29 +3473,23 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         }
                     }
                     this.currentSeriesIndex = seriesIndexes.indexOf(this.currentSeriesIndex) + (e.code === 'ArrowRight' ? 1 : -1);
-                    this.currentPointIndex = 0;
                     this.currentSeriesIndex = seriesIndexes[this.getActualIndex(this.currentSeriesIndex, seriesIndexes.length)];
-                    groupElement = getElement(this.element.id + 'SeriesGroup' + this.currentSeriesIndex) as HTMLElement;
-                    markerGroup = getElement(this.element.id + 'SymbolGroup' + this.currentSeriesIndex) as HTMLElement;
-                    currentPoint = groupElement.children[1].id.indexOf('_Point_') === -1 && markerGroup ? markerGroup.children[1] :
-                        groupElement.children[1];
                 }
                 else {
                     this.currentPointIndex += e.code === 'ArrowUp' ? 1 : -1;
-                    if (targetId.indexOf('_Symbol') > -1) {
-                        this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
-                                                                     getElement(this.element.id + 'SymbolGroup' + this.currentSeriesIndex).childElementCount - 1);
-                        currentPoint = getElement(this.element.id + '_Series_' + this.currentSeriesIndex + '_Point_' +
-                            this.currentPointIndex + '_Symbol');
-                    }
-                    else if (targetId.indexOf('_Point_') > -1) {
-                        this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
-                                                                     getElement(this.element.id + 'SeriesGroup' + this.currentSeriesIndex).childElementCount - 1);
-                        currentPoint = getElement(this.element.id + '_Series_' + this.currentSeriesIndex + '_Point_' +
-                            this.currentPointIndex);
-                    }
                 }
-
+                if (targetId.indexOf('_Symbol') > -1) {
+                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
+                        getElement(this.element.id + 'SymbolGroup' + this.currentSeriesIndex).childElementCount - 1);
+                    currentPoint = getElement(this.element.id + '_Series_' + this.currentSeriesIndex + '_Point_' +
+                        this.currentPointIndex + '_Symbol');
+                }
+                else if (targetId.indexOf('_Point_') > -1) {
+                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
+                        getElement(this.element.id + 'SeriesGroup' + this.currentSeriesIndex).childElementCount - 1);
+                    currentPoint = getElement(this.element.id + '_Series_' + this.currentSeriesIndex + '_Point_' +
+                        this.currentPointIndex);
+                }
                 targetId = this.focusChild(currentPoint as HTMLElement);
                 actionKey = this.tooltip.enable || this.highlightMode !== 'None' ? 'ArrowMove' : '';
             }

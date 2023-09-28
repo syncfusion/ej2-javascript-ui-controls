@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.38 (2023-09-26)
+
+### Common
+
+#### Bug Fixes
+
+- `#I493496` - Up loader file name with special character issue has been fixed.
+
 ## 23.1.36 (2023-09-15)
 
 ### Common

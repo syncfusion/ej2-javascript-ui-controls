@@ -1,0 +1,85 @@
+$timepicker-skin-name: 'bootstrap4' !default;
+$timepicker-default-text-indent: 20px !default;
+$timepicker-list-bigger-line-height: 32px !default;
+$timepicker-list-normal-line-height: 26px !default;
+$timepicker-list-normal-font-size: 14px !default;
+$timepicker-list-bigger-font-size: 16px !default;
+$timepicker-list-normal-text-indent: $timepicker-default-text-indent !default;
+$timepicker-list-bigger-text-indent: 24px !default;
+$timepicker-popup-border-radius: 4px !default;
+$timepicker-list-font-weight: regular !default;
+$timepicker-popup-shadow: none !default;
+$timepicker-list-default-font-color: $gray-900 !default;
+$timepicker-list-default-border-style: none !default;
+$timepicker-list-hover-border-color: none !default;
+$timepicker-list-border-color: 1px solid rgba($black, .15) !default;
+$timepicker-list-bg-color: $content-popup-bg !default;
+$timepicker-list-active-bg-color: $primary !default;
+$timepicker-list-active-icon-color: $white !default;
+$timepicker-icon-active-bg-color: darken($gray-600, 10%) !default;
+$timepicker-active-border-color: darken($gray-600, 10%) !default;
+$timepicker-list-active-font-color: $primary-font !default;
+$timepicker-list-hover-bg-color: darken($gray-100, 2%) !default;
+$timepicker-list-hover-font-color: $gray-900 !default;
+$timepicker-list-popup-icon-active-color: $white !default;
+$timepicker-list-active-hover-bg-color: darken($gray-100, 2%) !default;
+$timepicker-list-active-hover-font-color: $gray-900 !default;
+$timepicker-list-normal-padding: 0 !default;
+$timepicker-list-bigger-padding: 0 !default;
+$timepicker-font-icon: '\e93e' !default;
+$timepicker-icon-normal-font-size: 14px !default;
+$timepicker-icon-bigger-font-size: 16px !default;
+$timepicker-normal-input-min-height: 29px !default;
+$timepicker-normal-input-min-width: 23px !default;
+$timepicker-bigger-input-min-height: 36px !default;
+$timepicker-bigger-input-min-width: 33px !default;
+$timepicker-disable-text: $gray-500 !default;
+$timepicker-disable-opacity: 1 !default;
+$timepicker-default-overlay: rgba($black, .5) !default;
+
+// mouse small
+$timepicker-list-small-font-size: 13px !default;
+$timepicker-list-small-line-height: 22px !default;
+$timepicker-list-small-text-indent: 12px !default;
+$timepicker-list-small-font-color: $gray-900 !default;
+
+// icon small
+$timepicker-icon-small-font-size: 12px !default;
+
+// Touch small
+$timepicker-list-bigger-small-font-size: 14px !default;
+$timepicker-list-bigger-small-line-height: 34px !default;
+$timepicker-list-bigger-small-text-indent: 20px !default;
+
+// Touch small icon
+$timepicker-icon-bigger-small-font-size: 15px !default;
+
+// modal dialog colors
+$modal-header-bg-color: $content-popup-bg !default;
+$modal-header-text-color: $gray-900 !default;
+
+// modal dialog portrait dimensions
+$modal-header-height: 10% !default;
+$modal-header-padding: 2.5vh 2.5vw 2.5vh 1.5vw !default;
+$modal-header-display-style: flex !default;
+$modal-header-content-align: center !default;
+$modal-header-portrait-font-size: 2vh !default;
+$modal-close-icon-float: left !default;
+$modal-portrait-content-padding: 1vh 2vw !default;
+$modal-content-height: 90% !default;
+$modal-content-overflow: auto !default;
+$modal-header-title-transform: capitalize !default;
+$modal-header-border-bottom: none !default;
+$modal-list-line-height: 5vh !default;
+$modal-landscape-list-line-height: 10vh !default;
+
+// modal dialog landscape dimensions
+$modal-header-landscape-height: 15% !default;
+$modal-content-landscape-height: 85% !default;
+$modal-header-landscape-font-size: 2vw !default;
+$modal-landscape-padding: 1vh 1vw !default;
+$modal-list-item-padding: 1vh 0 !default;
+$modal-mobile-font-size: 14px !default;
+$modal-tablet-font-size: 24px !default;
+
+//enddefault

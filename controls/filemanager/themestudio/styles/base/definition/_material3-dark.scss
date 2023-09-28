@@ -1,5 +1,6 @@
 // color system
 @use 'sass:math';
+@import '../common/mixin.scss';
 
 @function mapcolorvariable($pallete-name){
   @return var(#{'--color-sf-'+  $pallete-name});
@@ -699,3 +700,11 @@ $font-icon-24: 24px !default;
 $font-icon-26: 26px !default;
 $font-icon-28: 28px !default;
 $font-icon-32: 32px !default;
+
+//defintion
+$font-size: 12px !default;
+$font-weight: 400 !default;
+$error-font-color: $danger !default;
+$warning-font-color: $warning !default;
+$success-font-color: $success !default;
+$information-font-color: $info !default;

@@ -1159,6 +1159,23 @@ describe('Ribbon', () => {
             expect(document.querySelectorAll('.e-ribbon-item')[1].id).toBe('copyItem_container');
             expect(document.querySelectorAll('.e-ribbon-item')[2].id).toBe('pasteItem_container');
         });
+        it('check the order of items in overflow popup', () => {
+            containerEle.style.width = '500px';
+            ribbon = new Ribbon({
+                tabs: tabs3,
+                activeLayout: 'Simplified'
+            }, ribbonEle);
+            containerEle.style.width = '100px';
+            ribbon.refreshLayout();
+            expect(document.querySelectorAll('.e-ribbon-item')[0].id).toBe('cutItem_container');
+            expect(document.querySelectorAll('.e-ribbon-item')[1].id).toBe('copyItem_container');
+            expect(document.querySelectorAll('.e-ribbon-item')[2].id).toBe('pasteItem_container');
+            containerEle.style.width = '500px';
+            ribbon.refreshLayout();
+            expect(document.querySelectorAll('.e-ribbon-item')[0].id).toBe('cutItem_container');
+            expect(document.querySelectorAll('.e-ribbon-item')[1].id).toBe('copyItem_container');
+            expect(document.querySelectorAll('.e-ribbon-item')[2].id).toBe('pasteItem_container');
+        });
     });
 
     it('memory leak', () => {

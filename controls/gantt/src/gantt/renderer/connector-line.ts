@@ -12,7 +12,7 @@ export class ConnectorLine {
     private transform: string = '';
     private connectorLinePath: string = '';
     private arrowPath: string = '';
-    private taskLineValue: number;
+    private taskLineValue: number = 0;
     private x1: number;
     private x2: number;
     private x3: number;
@@ -897,11 +897,11 @@ export class ConnectorLine {
      */
     public getConnectorLineTooltipInnerTd(
         fromTaskName: string, fromPredecessorText: string, toTaskName?: string, toPredecessorText?: string): string {
-        let innerTd: string = '<tr  id="fromPredecessor"><td style="padding: 4px;">' + this.parent.localeObj.getConstant('from') + '</td><td> ';
-        innerTd = innerTd + fromTaskName + ' </td><td style="padding: 2px;"> ' + this.parent.localeObj.getConstant(fromPredecessorText) + ' </td> </tr>';
-        innerTd = innerTd + '<tr id="toPredecessor"><td style="padding: 4px;">' + this.parent.localeObj.getConstant('to') + '</td><td> ' + toTaskName;
-        innerTd = innerTd + ' </td><td style="padding: 2px;"> ' + this.parent.localeObj.getConstant(toPredecessorText) + ' </td></tr></tbody><table>';
-        return innerTd;
+            let innerTd: string = '<tr  id="fromPredecessor"><td style="padding: 4px;width: 30px;">' + this.parent.localeObj.getConstant('from') + '</td><td> ';
+            innerTd = innerTd + fromTaskName + ' </td><td style="padding: 2px;"> ' + this.parent.localeObj.getConstant(fromPredecessorText) + ' </td> </tr>';
+            innerTd = innerTd + '<tr id="toPredecessor"><td style="padding: 4px;">' + this.parent.localeObj.getConstant('to') + '</td><td> ' + toTaskName;
+            innerTd = innerTd + ' </td><td style="padding: 2px;width: 30px;"> ' + this.parent.localeObj.getConstant(toPredecessorText) + ' </td></tr></tbody><table>';
+            return innerTd;
     }
     /**
      * Generate aria-label for connectorline

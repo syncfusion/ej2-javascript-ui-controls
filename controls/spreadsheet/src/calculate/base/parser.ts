@@ -90,7 +90,47 @@ export class Parser {
             text = this.checkForNamedRangeAndKeyValue(text);
             this.findNamedRange = false;
         }
-        text = text.split('-+').join('-'); text = text.split('--').join('+'); text = text.split('+-').join('-');
+        text = text.replace(/[-+*\/\&\^]+/g, (operators) => {
+            let firstOp: string = '';
+            while (1 < operators.length) {
+                switch (operators.substring(0, 2)) {
+                    case '++': 
+                        operators = '+' + operators.substring(2);
+                        break;
+                    case '--':
+                        operators = '+' + operators.substring(2);
+                        break;
+                    case '+-': 
+                        operators = '-' + operators.substring(2);
+                        break;
+                    case '-+':
+                        operators = '-' + operators.substring(2);
+                        break;
+                    case '*+': 
+                        operators = '*' + operators.substring(2);
+                        break;
+                    case '/+':
+                        operators = '/' + operators.substring(2);
+                        break;
+                    case '^+':
+                        operators = '^' + operators.substring(2);
+                        break;
+                    case '&+':
+                        operators = '&' + operators.substring(2);
+                        break;
+                    case '*-':
+                    case '/-':
+                    case '^-':
+                    case '&-':
+                        firstOp = operators.substring(0, 1);
+                        operators = operators.substring(1);
+                        break;
+                    default:
+                        throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], true);
+                }
+            }
+            return firstOp + operators;
+        });
         text = text.split('-' + '(' + '-').join('(');
         const formulaString: Map<string, string> = this.storeStrings(text);
         text = this.storedStringText;
@@ -210,11 +250,8 @@ export class Parser {
                 if ((this.parent.isDigit(formula[i as number]) && ((formula.length > i + 1)
                     && (this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) && ((formula.length > i + 2)
                         && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1))) &&
-                    (formula[i + 2] !== '-' || (formula[i + 1] !== '*' && formula[i + 1] !== '/'))) {
-                    if (isNullOrUndefined(args)) {
-                        throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], true);
-                    }
-                    if (args.computeForceCalculate) {
+                    (formula[i + 2] !== '-' || (formula[i + 1] !== '*' && formula[i + 1] !== '/' && formula[i + 1] !== '^' && formula[i + 1] !== '&'))) {
+                    if (args && args.computeForceCalculate) {
                         if (this.parent.isDigit(formula[i as number])) {
                             if (countDigit < 1) {
                                 firstDigit = formula[i as number];
@@ -251,7 +288,7 @@ export class Parser {
                     this.parent.storedData.has(formula[i as number].toUpperCase())) && (isNullOrUndefined(formula[i + 1]) ||
                     this.indexOfAny(formula[i + 1], arithemeticArr)) > -1) {
                     op = isNullOrUndefined(formula[i + 1]) ? this.emptyStr : formula[i + 1];
-                    op = op === '&' ? '' : op;
+                    op = op === '&' && formula[i + 2] !== '-' ? '' : op; // for the cases 5&3=>53 and 5&-3=>5-3.
                     form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i as number] + op : form + formula[i as number] + op;
                     i = i + 2;
                     /* eslint-disable-next-line */
@@ -459,7 +496,7 @@ export class Parser {
         }
         /* eslint-disable */
         text = text.split("---").join("-").split("--").join("+").split(this.parent.getParseArgumentSeparator() + "-").join(this.parent.getParseArgumentSeparator() + "u").split(this.parent.leftBracket + "-").join(this.parent.leftBracket + "u").split("=-").join("=u");
-        text = text.split(',+').join(',').split(this.parent.leftBracket + '+').join(this.parent.leftBracket).split('=+').join('=').split('>+').join('>').split('<+').join('<').split('/+').join('/').split('*+').join('*').split('++').join('+').split("*-").join("*u").toString();;
+        text = text.split(',+').join(',').split(this.parent.leftBracket + '+').join(this.parent.leftBracket).split('=+').join('=').split('>+').join('>').split('<+').join('<').split('/+').join('/').split('*+').join('*').split('++').join('+').split("*-").join("*u").split("/-").join("/u").split("w-").join("wu").split("i-").join("iu").toString();
         /* eslint-enable */
         if (text.length > 0 && text[0] === '-') {
             text = text.substring(1).split('-').join(this.tokenOr);
@@ -493,6 +530,8 @@ export class Parser {
                     let right: string = '';
                     let leftIndex: number = 0;
                     let rightIndex: number = 0;
+                    let isLeftBool: boolean = false;
+                    let arithOp: string[] = ['*', '+', '-', '/', 'w', '=', '<', '>'];
                     const isNotOperator: boolean = text[i as number] === this.charNOTop;
                     let j: number = 0;
                     if (!isNotOperator) {
@@ -545,6 +584,12 @@ export class Parser {
                             if (j === 0 || (j > 0 && !this.parent.isUpperChar(text[j - 1]))) {
                                 left = 'n' + this.parent.substring(text, j, i - j);
                                 leftIndex = j;
+                            } else if (j > 0 && text[j - 1] === 'E' && ((text.substring(j - 4, j) === 'TRUE' && (!isNullOrUndefined(text[j - 5]) ? arithOp.indexOf(text[j - 5]) > -1 : true)) ||
+                                (text.substring(j - 5, j) === 'FALSE' && (!isNullOrUndefined(text[j - 6]) ? arithOp.indexOf(text[j - 6]) > -1 : true))) && (text.substring(j + 1, j + 5) === 'TRUE' || text.substring(j + 1, j + 6) === 'FALSE')) {
+                                j = text.substring(j - 4, j) === 'TRUE' ? j - 4 : j - 5;
+                                left = text.substring(j, i) === 'TRUE' ? 'n1' : (text.substring(j, i) === 'FALSE' ? 'n0' : left);
+                                leftIndex = j;
+                                isLeftBool = true;
                             } else {
                                 j = j - 1;
                                 while (j > -1 && (this.parent.isUpperChar(text[j as number]) || this.parent.isDigit(text[j as number]))) {
@@ -733,6 +778,8 @@ export class Parser {
                                 || (this.parent.storedData.has(right.toUpperCase()))) {
                                 right = 'n' + this.checkForNamedRangeAndKeyValue(right);
                             }
+                            const isPrevArithOp: boolean = ['*', '+', '-', '/', 'w'].indexOf(text[j - right.length]) > -1;
+                            right = right === 'TRUE' && (isLeftBool || isPrevArithOp) ? 'n1' : (right === 'FALSE' && (isLeftBool || isPrevArithOp) ? 'n0' : right);
                             rightIndex = j + 1;
                         }
                     }

@@ -1645,7 +1645,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Method to calculate bounds for accumulation chart
      */
-    private calculateBounds(): void {
+    public calculateBounds(): void {
         this.initialClipRect = new Rect(this.margin.left, this.margin.top, this.availableSize.width, this.availableSize.height);
         this.titleCollection = [];
         this.subTitleCollection = [];

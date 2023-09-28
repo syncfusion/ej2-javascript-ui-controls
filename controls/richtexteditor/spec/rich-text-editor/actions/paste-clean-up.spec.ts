@@ -727,13 +727,16 @@ third line`;
     rteObj.pasteCleanupSettings.prompt = false;
     rteObj.pasteCleanupSettings.plainText = false;
     rteObj.pasteCleanupSettings.keepFormat = true;
+    rteObj.pasteCleanupSettings.deniedTags = [];
+    rteObj.pasteCleanupSettings.deniedAttrs = [];
+    rteObj.pasteCleanupSettings.allowedStyleProps = [];
     rteObj.dataBind();
     setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p><span><a class="e-rte-anchor" href="http://www.google.com?first=a&amp;parameters=foo" title="http://www.google.com?first=a&amp;parameters=foo" target="_blank">http://www.google.com?first=a&amp;parameters=foo </a></span>160</p>`;
+      let expectedElem: string = `<p><span><a class="e-rte-anchor" href="http://www.google.com?first=a&amp;parameters=foo" title="http://www.google.com?first=a&amp;parameters=foo" target="_blank">http://www.google.com?first=a¶meters=foo </a></span>160</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }

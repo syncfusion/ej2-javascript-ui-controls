@@ -758,6 +758,12 @@
       width: 100%;
     }
 
+    th.e-group-row .e-axis-row {
+      display: inline-block;
+      height: 100%;
+      vertical-align: top;
+    }
+
     /* stylelint-disable */
     .e-group-row {
       padding: 0 !important;

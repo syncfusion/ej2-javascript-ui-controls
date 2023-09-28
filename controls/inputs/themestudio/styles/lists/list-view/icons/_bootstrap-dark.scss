@@ -1,0 +1,12 @@
+@include export-module('listview-bootstrap-dark-icons') {
+  .e-listview {
+    .e-icon-collapsible::before {
+      content: '\e943';
+    }
+
+    .e-icon-back::before {
+      content: '\e94b';
+      font-size: $listview-back-icon-font-size;
+    }
+  }
+}

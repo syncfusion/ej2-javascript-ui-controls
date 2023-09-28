@@ -1,0 +1,1438 @@
+@import 'mixin.scss';
+@include export-module('button-theme') {
+
+  /*! button theme */
+  /* stylelint-disable property-no-vendor-prefix */
+  .e-btn,
+  .e-css.e-btn {
+    -webkit-tap-highlight-color: transparent;
+    background: $btn-bgcolor;
+    @if $skin-name == 'Material3' {
+      border-image: $btn-border-color;
+    }
+    @else {
+      border-color: $btn-border-color;
+    }
+    @if $skin-name != 'bootstrap5' {
+      box-shadow: $btn-box-shadow;
+    }
+    color: $btn-color;
+    transition: box-shadow 280ms cubic-bezier(.4, 0, .2, 1);
+    @at-root {
+      &:hover {
+        background: $btn-hover-bgcolor;
+        @if $skin-name == 'Material3' {
+          border-image: $btn-hover-border-color;
+        }
+        @else {
+          border-color: $btn-hover-border-color;
+        }
+        box-shadow: $btn-hover-focus-box-shadow;
+        color: $btn-hover-color;
+      }
+
+      &:focus { // both keyboard and focus
+        @include button-focus;
+      }
+
+      &:focus:not(:focus-visible) { //mouse click
+        @if $skin-name == 'FluentUI' {
+          outline: none !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+
+      &:focus-visible { // only for keybord
+        @if $skin-name == 'FluentUI' {
+          background: $btn-bgcolor;
+        }
+        @if $skin-name == 'Material3' {
+          background: $btn-active-bgcolor;
+          box-shadow: $btn-keyboard-focus-box-shadow;
+        }
+      }
+
+      &:active {
+        @include button-active;
+      }
+
+      &.e-active {
+        background: $btn-active-bgcolor;
+        @if $skin-name == 'Material3' {
+          border-image: $btn-active-border-color;
+        }
+        @else {
+          border-color: $btn-active-border-color;
+        }
+        @if $skin-name != 'bootstrap5' {
+          box-shadow: $btn-active-box-shadow;
+        }
+        color: $btn-active-color;
+      }
+
+      &:disabled,
+      &.e-disabled {
+        background: $btn-disabled-bgcolor;
+        border-color: $btn-disabled-border-color;
+        box-shadow: $btn-flat-box-shadow;
+        color: $btn-disabled-color;
+        @if $skin-name == 'FluentUI' {
+          outline: none;
+        }
+      }
+
+      & .e-ripple-element {
+        background: $btn-ripple-bgcolor;
+      }
+
+      &.e-round,
+      &.e-round-edge {
+        background: $btn-round-bgcolor;
+        border-color: $btn-round-border-color;
+        color: $btn-round-color;
+
+        &:hover {
+          background: $btn-round-hover-bgcolor;
+          border-color: $btn-round-hover-border-color;
+          color: $btn-round-hover-color;
+        }
+
+        &:focus {
+          background: $btn-focus-bgcolor;
+          @if $skin-name == 'Material3' {
+            border-image: $btn-focus-border-color;
+          }
+          @else {
+            border-color: $btn-focus-border-color;
+          }
+          @if ($skin-name == 'tailwind') {
+            box-shadow: $btn-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-box-shadow;
+          }
+          color: $btn-round-focus-color;
+          outline: $btn-focus-outline-round;
+          outline-offset: $btn-focus-outline-offset;
+        }
+
+        &:focus:not(:focus-visible) { //mouse click
+          @if $skin-name == 'FluentUI' {
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'FluentUI' {
+            background: $btn-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            background: $btn-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
+        &:active {
+          background: $btn-active-bgcolor;
+          @if $skin-name == 'Material3' {
+            border-image: $btn-active-border-color;
+          }
+          @else {
+            border-color: $btn-active-border-color;
+          }
+          @if ($skin-name == 'tailwind') {
+            box-shadow: $btn-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-active-box-shadow;
+          }
+          color: $btn-round-active-color;
+          outline: $btn-active-outline;
+          outline-offset: $btn-active-outline-offset;
+        }
+
+        &:disabled,
+        &.e-disabled {
+          background: $btn-disabled-bgcolor;
+          border-color: $btn-disabled-border-color;
+          box-shadow: $btn-flat-box-shadow;
+          color: $btn-disabled-color;
+        }
+
+        &.e-primary {
+          &:hover {
+            border-color: $btn-primary-bgcolor;
+          }
+
+          &:focus {
+            outline: $btn-focus-outline-round;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-primary-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-primary-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+        }
+
+        &.e-success {
+          &:hover {
+            border-color: $btn-success-bgcolor;
+          }
+
+          &:focus {
+            outline: $btn-focus-outline-round;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI'{
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-success-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-success-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+        }
+
+        &.e-info {
+          &:hover {
+            border-color: $btn-info-bgcolor;
+          }
+
+          &:focus {
+            outline: $btn-focus-outline-round;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-info-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-info-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+        }
+
+        &.e-warning {
+          &:hover {
+            border-color: $btn-warning-bgcolor;
+          }
+
+          &:focus {
+            outline: $btn-focus-outline-round;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-warning-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-warning-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+        }
+
+        &.e-danger {
+          &:hover {
+            border-color: $btn-danger-bgcolor;
+          }
+
+          &:focus {
+            outline: $btn-focus-outline-round;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-danger-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-danger-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+            }
+          }
+        }
+      }
+
+      &.e-primary {
+        background: $btn-primary-bgcolor;
+        border-color: $btn-primary-border-color;
+        color: $btn-primary-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
+
+        &:hover {
+          background: $btn-primary-hover-bgcolor;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-primary-hover-border-color;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
+          color: $btn-primary-hover-color;
+        }
+
+        &:focus {
+          @include primary-focus;
+        }
+
+        &:focus:not(:focus-visible) { //mouse click
+          @if $skin-name == 'FluentUI' {
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'FluentUI' {
+            background: $btn-primary-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            background: $btn-primary-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
+        &:active {
+          @include primary-active;
+        }
+
+        &.e-active {
+          background: $btn-primary-active-bgcolor;
+          border-color: $btn-primary-active-border-color;
+          @if $skin-name == 'bootstrap4' {
+            $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, 15%), .5);
+            box-shadow: 0 0 0 .25em $color-rgba;
+          }
+          @else if $skin-name != 'bootstrap5' {
+            box-shadow: $btn-active-box-shadow;
+          }
+          color: $btn-primary-active-color;
+        }
+
+        &:disabled,
+        &.e-disabled {
+          @include primary-disabled;
+        }
+
+        & .e-ripple-element {
+          background: $btn-ripple-primary-bgcolor;
+        }
+      }
+
+      &.e-success {
+        background: $btn-success-bgcolor;
+        border-color: $btn-success-border-color;
+        color: $btn-success-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
+
+        &:hover {
+          background: $btn-success-hover-bgcolor;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-success-hover-border-color;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
+          color: $btn-success-hover-color;
+        }
+
+        &:focus {
+          @include success-focus;
+        }
+
+        &:focus:not(:focus-visible) { //mouse click
+          @if $skin-name == 'FluentUI' {
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'FluentUI' {
+            background: $btn-success-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            background: $btn-success-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
+        &:active,
+        &.e-active {
+          @include success-active;
+        }
+
+        &:disabled,
+        &.e-disabled {
+          @include success-disabled;
+        }
+
+        & .e-ripple-element {
+          background: $btn-ripple-success-bgcolor;
+        }
+      }
+
+      &.e-info {
+        background: $btn-info-bgcolor;
+        border-color: $btn-info-border-color;
+        color: $btn-info-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
+
+        &:hover {
+          background: $btn-info-hover-bgcolor;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-info-hover-border-color;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
+          color: $btn-info-hover-color;
+        }
+
+        &:focus {
+          @include info-focus;
+        }
+
+        &:focus:not(:focus-visible) { //mouse click
+          @if $skin-name == 'FluentUI' {
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'FluentUI' {
+            background: $btn-info-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            background: $btn-info-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
+        &:active,
+        &.e-active {
+          @include info-active;
+        }
+
+        &:disabled,
+        &.e-disabled {
+          @include info-disabled;
+        }
+
+        & .e-ripple-element {
+          background: $btn-ripple-info-bgcolor;
+        }
+      }
+
+      &.e-warning {
+        background: $btn-warning-bgcolor;
+        border-color: $btn-warning-border-color;
+        color: $btn-warning-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
+
+        &:hover {
+          background: $btn-warning-hover-bgcolor;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-warning-hover-border-color;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
+          color: $btn-warning-hover-color;
+        }
+
+        &:focus {
+          @include warning-focus;
+        }
+
+        &:focus:not(:focus-visible) { //mouse click
+          @if $skin-name == 'FluentUI' {
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'FluentUI' {
+            background: $btn-warning-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            background: $btn-warning-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
+        &:active,
+        &.e-active {
+          @include warning-active;
+        }
+
+        &:disabled,
+        &.e-disabled {
+          @include warning-disabled;
+        }
+
+        & .e-ripple-element {
+          background: $btn-ripple-warning-bgcolor;
+        }
+      }
+
+      &.e-danger {
+        background: $btn-danger-bgcolor;
+        border-color: $btn-danger-border-color;
+        color: $btn-danger-color;
+        @if $skin-name == 'Material3' {
+          box-shadow: $btn-focus-box-shadow;
+        }
+
+        &:hover {
+          background: $btn-danger-hover-bgcolor;
+          @if $skin-name != 'Material3' {
+            border-color: $btn-danger-hover-border-color;
+          }
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-primary-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-hover-focus-box-shadow;
+          }
+          color: $btn-danger-hover-color;
+        }
+
+        &:focus {
+          @include danger-focus;
+        }
+
+        &:focus:not(:focus-visible) { //mouse click
+          @if $skin-name == 'FluentUI' {
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'FluentUI' {
+            background: $btn-danger-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            background: $btn-danger-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
+        &:active {
+          @include danger-active;
+        }
+
+        &.e-active {
+          background: $btn-danger-active-bgcolor;
+          border-color: $btn-danger-active-border-color;
+          @if $skin-name == 'bootstrap4' {
+            $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, 15%), .5);
+            box-shadow: 0 0 0 .25em $color-rgba;
+          }
+          @else if $skin-name != 'bootstrap5' {
+            box-shadow: $btn-active-box-shadow;
+          }
+          color: $btn-danger-active-color;
+        }
+
+        &:disabled,
+        &.e-disabled {
+          @include danger-disabled;
+        }
+
+        & .e-ripple-element {
+          background: $btn-ripple-danger-bgcolor;
+        }
+      }
+
+      &.e-flat {
+        background: $btn-flat-bgcolor;
+        border-color: $btn-flat-border-color;
+        box-shadow: $btn-flat-box-shadow;
+        color: $btn-flat-color;
+
+        &:hover {
+          background: $btn-flat-hover-bgcolor;
+          border-color: $btn-flat-hover-border-color;
+          box-shadow: $btn-flat-box-shadow;
+          color: $btn-flat-hover-color;
+        }
+
+        &:focus {
+          background: $btn-flat-focus-bgcolor;
+          border-color: $btn-flat-focus-border-color;
+          color: $btn-flat-focus-color;
+          @if $skin-name == 'bootstrap4' {
+            $color-rgba: rgba(mix(lighten($btn-flat-focus-bgcolor, 50%), $btn-flat-focus-border-color, 15%), .5);
+            box-shadow: 0 0 0 .25em $color-rgba;
+          }
+          @else if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+            box-shadow: $btn-focus-box-shadow;
+          }
+          @else {
+            box-shadow: $btn-flat-box-shadow;
+          }
+        }
+
+        &:focus:not(:focus-visible) { //mouse click
+          @if $skin-name == 'FluentUI' {
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'Material3' {
+            background: $btn-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
+        &:active,
+        &.e-active {
+          background: $btn-flat-active-bgcolor;
+          border-color: $btn-flat-active-border-color;
+          color: $btn-flat-active-color;
+          @if $skin-name == 'bootstrap4' {
+            $color-rgba: rgba(mix(lighten($btn-flat-active-bgcolor, 50%), $btn-flat-active-border-color, 15%), .5);
+            box-shadow: 0 0 0 .25em $color-rgba;
+          }
+          @else if $skin-name != 'bootstrap5' {
+            box-shadow: $btn-flat-active-box-shadow;
+          }
+        }
+
+        &:disabled,
+        &.e-disabled {
+          background: $btn-flat-disabled-bgcolor;
+          border-color: $btn-flat-disabled-border-color;
+          box-shadow: $btn-flat-box-shadow;
+          color: $btn-flat-disabled-color;
+        }
+
+        & .e-ripple-element {
+          background: $btn-ripple-flat-bgcolor;
+        }
+
+        &.e-primary {
+          background: $btn-flat-primary-bgcolor;
+          border-color: $btn-flat-primary-border-color;
+          color: $btn-flat-primary-color;
+
+          &:hover {
+            background: $btn-flat-primary-hover-bgcolor;
+            border-color: $btn-flat-primary-hover-border-color;
+            color: $btn-flat-primary-hover-color;
+          }
+
+          &:focus {
+            background: $btn-flat-primary-focus-bgcolor;
+            border-color: $btn-flat-primary-focus-border-color;
+            color: $btn-flat-primary-focus-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-primary-focus-bgcolor, 50%), $btn-flat-primary-focus-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+            @else if ($skin-name == 'tailwind') {
+              box-shadow: $btn-focus-box-shadow;
+            }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-primary-focus-box-shadow;
+            }
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              background: $btn-primary-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-primary-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            background: $btn-flat-primary-active-bgcolor;
+            border-color: $btn-flat-primary-active-border-color;
+            color: $btn-flat-primary-active-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-primary-active-bgcolor, 50%), $btn-flat-primary-active-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+          }
+
+          &:disabled,
+          &.e-disabled {
+            background: $btn-flat-primary-disabled-bgcolor;
+            border-color: $btn-flat-primary-disabled-border-color;
+            box-shadow: $btn-flat-box-shadow;
+            color: $btn-flat-primary-disabled-color;
+          }
+
+          & .e-ripple-element {
+            background: $btn-ripple-flat-primary-bgcolor;
+          }
+        }
+
+        &.e-success {
+          background: $btn-flat-success-bgcolor;
+          border-color: $btn-flat-success-border-color;
+          color: $btn-flat-success-color;
+
+          &:hover {
+            background: $btn-flat-success-hover-bgcolor;
+            border-color: $btn-flat-success-hover-border-color;
+            box-shadow: $btn-flat-box-shadow;
+            color: $btn-flat-success-hover-color;
+          }
+
+          &:focus {
+            background: $btn-flat-success-focus-bgcolor;
+            border-color: $btn-flat-success-focus-border-color;
+            color: $btn-flat-success-focus-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-success-focus-bgcolor, 50%), $btn-flat-success-focus-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+            @else if ($skin-name == 'tailwind') {
+              box-shadow: $btn-focus-box-shadow;
+            }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-success-focus-box-shadow;
+            }
+            @else {
+              box-shadow: $btn-flat-box-shadow;
+            }
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              background: $btn-success-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-success-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            background: $btn-flat-success-active-bgcolor;
+            border-color: $btn-flat-success-active-border-color;
+            color: $btn-flat-success-active-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-success-active-bgcolor, 50%), $btn-flat-success-active-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+            @else if $skin-name != 'bootstrap5' {
+              box-shadow: $btn-flat-active-box-shadow;
+            }
+          }
+
+          &:disabled,
+          &.e-disabled {
+            background: $btn-flat-success-disabled-bgcolor;
+            border-color: $btn-flat-success-disabled-border-color;
+            color: $btn-flat-success-disabled-color;
+          }
+
+          & .e-ripple-element {
+            background: $btn-ripple-flat-success-bgcolor;
+          }
+        }
+
+        &.e-info {
+          background: $btn-flat-info-bgcolor;
+          border-color: $btn-flat-info-border-color;
+          color: $btn-flat-info-color;
+
+          &:hover {
+            background: $btn-flat-info-hover-bgcolor;
+            border-color: $btn-flat-info-hover-border-color;
+            box-shadow: $btn-flat-box-shadow;
+            color: $btn-flat-info-hover-color;
+          }
+
+          &:focus {
+            background: $btn-flat-info-focus-bgcolor;
+            border-color: $btn-flat-info-focus-border-color;
+            color: $btn-flat-info-focus-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-info-focus-bgcolor, 50%), $btn-flat-info-focus-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+            @else if ($skin-name == 'tailwind') {
+              box-shadow: $btn-focus-box-shadow;
+            }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-info-focus-box-shadow;
+            }
+            @else {
+              box-shadow: $btn-flat-box-shadow;
+            }
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              background: $btn-info-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-info-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            background: $btn-flat-info-active-bgcolor;
+            border-color: $btn-flat-info-active-border-color;
+            color: $btn-flat-info-active-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-info-active-bgcolor, 50%), $btn-flat-info-active-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+            @else if $skin-name != 'bootstrap5' {
+              box-shadow: $btn-flat-active-box-shadow;
+            }
+          }
+
+          &:disabled,
+          &.e-disabled {
+            background: $btn-flat-info-disabled-bgcolor;
+            border-color: $btn-flat-info-disabled-border-color;
+            color: $btn-flat-info-disabled-color;
+          }
+
+          & .e-ripple-element {
+            background: $btn-ripple-flat-info-bgcolor;
+          }
+        }
+
+        &.e-warning {
+          background: $btn-flat-warning-bgcolor;
+          border-color: $btn-flat-warning-border-color;
+          color: $btn-flat-warning-color;
+
+          &:hover {
+            background: $btn-flat-warning-hover-bgcolor;
+            border-color: $btn-flat-warning-hover-border-color;
+            box-shadow: $btn-flat-box-shadow;
+            color: $btn-flat-warning-hover-color;
+          }
+
+          &:focus {
+            background: $btn-flat-warning-focus-bgcolor;
+            border-color: $btn-flat-warning-focus-border-color;
+            color: $btn-flat-warning-focus-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-warning-focus-bgcolor, 50%), $btn-flat-warning-focus-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+            @else if ($skin-name == 'tailwind') {
+              box-shadow: $btn-focus-box-shadow;
+            }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-warning-focus-box-shadow;
+            }
+            @else {
+              box-shadow: $btn-flat-box-shadow;
+            }
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              background: $btn-warning-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-warning-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            background: $btn-flat-warning-active-bgcolor;
+            border-color: $btn-flat-warning-active-border-color;
+            color: $btn-flat-warning-active-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-warning-active-bgcolor, 50%), $btn-flat-warning-active-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+            @else if $skin-name != 'bootstrap5' {
+              box-shadow: $btn-flat-active-box-shadow;
+            }
+          }
+
+          &:disabled,
+          &.e-disabled {
+            background: $btn-flat-warning-disabled-bgcolor;
+            border-color: $btn-flat-warning-disabled-border-color;
+            color: $btn-flat-warning-disabled-color;
+          }
+
+          & .e-ripple-element {
+            background: $btn-ripple-flat-warning-bgcolor;
+          }
+        }
+
+        &.e-danger {
+          background: $btn-flat-danger-bgcolor;
+          border-color: $btn-flat-danger-border-color;
+          color: $btn-flat-danger-color;
+
+          &:hover {
+            background: $btn-flat-danger-hover-bgcolor;
+            border-color: $btn-flat-danger-hover-border-color;
+            box-shadow: $btn-flat-box-shadow;
+            color: $btn-flat-danger-hover-color;
+          }
+
+          &:focus {
+            background: $btn-flat-danger-focus-bgcolor;
+            border-color: $btn-flat-danger-focus-border-color;
+            color: $btn-flat-danger-focus-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-danger-focus-bgcolor, 50%), $btn-flat-danger-focus-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+            @else if ($skin-name == 'tailwind') {
+              box-shadow: $btn-focus-box-shadow;
+            }
+            @else if ($skin-name == 'bootstrap5') {
+              box-shadow: $btn-danger-focus-box-shadow;
+            }
+            @else {
+              box-shadow: $btn-flat-box-shadow;
+            }
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'Material3' {
+              background: $btn-danger-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-danger-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            background: $btn-flat-danger-active-bgcolor;
+            border-color: $btn-flat-danger-active-border-color;
+            color: $btn-flat-danger-active-color;
+            @if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-flat-danger-active-bgcolor, 50%), $btn-flat-danger-active-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba;
+            }
+            @else if $skin-name != 'bootstrap5' {
+              box-shadow: $btn-flat-active-box-shadow;
+            }
+          }
+
+          &:disabled,
+          &.e-disabled {
+            background: $btn-flat-danger-disabled-bgcolor;
+            border-color: $btn-flat-danger-disabled-border-color;
+            color: $btn-flat-danger-disabled-color;
+          }
+
+          & .e-ripple-element {
+            background: $btn-ripple-flat-danger-bgcolor;
+          }
+        }
+      }
+
+      &.e-outline {
+        background: $btn-outline-bgcolor;
+        border-color: $btn-outline-border-color;
+        box-shadow: $btn-flat-box-shadow;
+        color: $btn-outline-color;
+        @if $skin-name == 'Material3' {
+          border: 1px solid;
+        }
+
+        &:hover {
+          @if $skin-name == 'bootstrap4' {
+            background: $btn-bgcolor;
+          }
+          @else {
+            background: $btn-outline-hover-bgcolor;
+          }
+          border-color: $btn-outline-hover-border-color;
+          box-shadow: $btn-flat-box-shadow;
+          color: $btn-outline-hover-color;
+        }
+
+        &:focus {
+          @include outline-focus;
+        }
+
+        &:focus:not(:focus-visible) { //mouse click
+          @if $skin-name == 'FluentUI' {
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'FluentUI' {
+            background: $btn-outline-bgcolor;
+          }
+          @if $skin-name == 'Material3' {
+            background: $btn-active-bgcolor;
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
+        &:active,
+        &.e-active {
+          @include outline-active;
+        }
+
+        &:disabled {
+          @include outline-disabled;
+        }
+
+        &.e-primary {
+          background: $btn-outline-bgcolor;
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: rgba($btn-outline-primary-color);
+          }
+          @else {
+            border-color: $btn-outline-primary-color;
+            color: $btn-outline-primary-color;
+          }
+
+          &:hover {
+            @if $skin-name == 'bootstrap4' {
+              background: $btn-primary-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-primary-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: rgba($btn-outline-primary-color);
+            }
+            @else {
+              background: $btn-primary-hover-bgcolor;
+              border-color: $btn-outline-primary-hover-border-color;
+              color: $btn-primary-hover-color;
+            }
+          }
+
+          &:focus {
+            @include outline-primary-focus;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-primary-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-primary-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            @include outline-primary-active;
+          }
+
+          &:disabled,
+          &.e-disabled {
+            @include outline-primary-disabled;
+          }
+        }
+
+        &.e-success {
+          background: $btn-outline-bgcolor;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+            border-color: $success-outline;
+            color: $success-outline;
+          }
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: rgba($btn-outline-success-color);
+          }
+          @else {
+            border-color: $btn-success-bgcolor;
+            color: $btn-success-bgcolor;
+          }
+
+          &:hover {
+            @if $skin-name == 'bootstrap4' {
+              background: $btn-success-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-success-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: rgba($btn-outline-success-color);
+            }
+            @else {
+              background: $btn-success-hover-bgcolor;
+              border-color: $btn-success-hover-border-color;
+              color: $btn-success-color;
+            }
+          }
+
+          &:focus {
+            @include outline-success-focus;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-success-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-success-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            @include outline-success-active;
+          }
+
+          &:disabled,
+          &.e-disabled {
+            @include outline-success-disabled;
+          }
+        }
+
+        &.e-info {
+          background: $btn-outline-bgcolor;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+            border-color: $info-outline;
+            color: $info-outline;
+          }
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: rgba($btn-outline-info-color);
+          }
+          @else {
+            border-color: $btn-info-bgcolor;
+            color: $btn-info-bgcolor;
+          }
+
+          &:hover {
+            @if $skin-name == 'bootstrap4' {
+              background: $btn-info-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-info-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: rgba($btn-outline-info-color);
+            }
+            @else {
+              background: $btn-info-hover-bgcolor;
+              border-color: $btn-info-hover-border-color;
+              color: $btn-info-color;
+            }
+          }
+
+          &:focus {
+            @include outline-info-focus;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-info-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-info-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            @include outline-info-active;
+          }
+
+          &:disabled,
+          &.e-disabled {
+            @include outline-info-disabled;
+          }
+        }
+
+        &.e-warning {
+          background: $btn-outline-bgcolor;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+            border-color: $warning-outline;
+            color: $warning-outline;
+          }
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: rgba($btn-outline-warning-color);
+          }
+          @else {
+            border-color: $btn-warning-bgcolor;
+            color: $btn-warning-bgcolor;
+          }
+
+          &:hover {
+            @if $skin-name == 'bootstrap4' {
+              background: $btn-warning-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-warning-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: rgba($btn-outline-warning-color);
+            }
+            @else {
+              background: $btn-warning-hover-bgcolor;
+              border-color: $btn-warning-hover-border-color;
+              color: $btn-warning-color;
+            }
+          }
+
+          &:focus {
+            @include outline-warning-focus;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-warning-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-warning-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            @include outline-warning-active;
+          }
+
+          &:disabled,
+          &.e-disabled {
+            @include outline-warning-disabled;
+          }
+        }
+
+        &.e-danger {
+          background: $btn-outline-bgcolor;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+            border-color: $danger-outline;
+            color: $danger-outline;
+          }
+          @if $skin-name == 'Material3' {
+            border: 1px solid $btn-outline-border-color;
+            color: rgba($btn-outline-danger-color);
+          }
+          @else {
+            border-color: $btn-danger-bgcolor;
+            color: $btn-danger-bgcolor;
+          }
+
+          &:hover {
+            @if $skin-name == 'bootstrap4' {
+              background: $btn-danger-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-outline-danger-hover-bgcolor;
+              border: 1px solid $btn-outline-border-color;
+              color: rgba($btn-outline-danger-color);
+            }
+            @else {
+              background: $btn-danger-hover-bgcolor;
+              border-color: $btn-danger-hover-border-color;
+              color: $btn-danger-color;
+            }
+          }
+
+          &:focus {
+            @include outline-danger-focus;
+          }
+
+          &:focus:not(:focus-visible) { //mouse click
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible { // only for keybord
+            @if $skin-name == 'FluentUI' {
+              background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              background: $btn-danger-active-bgcolor;
+              box-shadow: $btn-keyboard-focus-box-shadow;
+              color: $btn-danger-color;
+            }
+          }
+
+          &:active,
+          &.e-active {
+            @include outline-danger-active;
+          }
+
+          &:disabled,
+          &.e-disabled {
+            @include outline-danger-disabled;
+          }
+        }
+      }
+
+      &.e-link {
+        background: $btn-link-bgcolor;
+        border-color: $btn-link-border-color;
+        border-radius: 0;
+        box-shadow: none;
+        color: $btn-link-color;
+
+        &:hover {
+          @include link-hover;
+        }
+
+        &:focus {
+          @include link-focus;
+        }
+
+        &:focus:not(:focus-visible) {
+          outline: none !important; /* stylelint-disable-line declaration-no-important */
+        }
+
+        &:focus-visible { // only for keybord
+          @if $skin-name == 'Material3' {
+            box-shadow: $btn-keyboard-focus-box-shadow;
+          }
+        }
+
+        &:disabled {
+          @include link-disabled;
+        }
+      }
+
+      &.e-inherit {
+        color: inherit;
+        background: inherit;
+        border-color: transparent;
+        box-shadow: none;
+
+        &:hover,
+        &:focus,
+        &:active,
+        &.e-active {
+          background: rgba(transparent, .056);
+          border-color: transparent;
+          box-shadow: none;
+          color: inherit;
+          outline: none;
+        }
+
+        &:disabled {
+          background: inherit;
+          color: inherit;
+          border-color: transparent;
+          box-shadow: none;
+          opacity: .5;
+        }
+      }
+    }
+  }
+}

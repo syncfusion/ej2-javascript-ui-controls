@@ -1,0 +1,100 @@
+@include export-module('tab-bootstrap-dark-icons') {
+
+  /*! tab icons */
+  #{&}.e-tab {
+
+    .e-tab-header {
+
+      .e-close-icon::before {
+        content: '\e7fc';
+        position: relative;
+      }
+
+      .e-popup-up-icon::before {
+        content: '\e988';
+      }
+
+      .e-popup-down-icon::before {
+        content: '\e968';
+      }
+    }
+
+    &.e-vertical-icon .e-tab-header {
+
+      @media screen and (max-width: 480px) {
+
+        .e-popup-up-icon::before {
+          content: '\e918';
+        }
+
+        .e-popup-down-icon::before {
+          content: '\e968';
+        }
+      }
+    }
+
+    &.e-vertical-tab {
+
+      .e-tab-header {
+
+        .e-popup-up-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\eb04';
+          }
+        }
+
+        .e-popup-down-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\eb05';
+          }
+        }
+      }
+
+      &.e-icon-tab {
+
+        .e-tab-header {
+
+          .e-popup-up-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\ebb5';
+            }
+          }
+
+          .e-popup-down-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\ebb5';
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-tab-clone-element {
+
+    .e-close-icon::before {
+      content: '\e7fc';
+      position: relative;
+    }
+  }
+}

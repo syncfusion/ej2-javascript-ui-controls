@@ -1553,6 +1553,9 @@
         @if ($skin-name == 'FluentUI') {
           border-top: 0;
         }
+        @if ($skin-name == 'fabric') or ($skin-name == 'fabric-dark') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+          padding: $field-list-editor-dialog-footer-padding;
+        }
       }
 
       .e-dlg-content {

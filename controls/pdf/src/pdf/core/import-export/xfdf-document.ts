@@ -2062,6 +2062,11 @@ export class _XfdfDocument extends _ExportHelper {
             case 'repeat':
                 dictionary.update('Repeat', (value === 'true' || value === 'yes') ? true : false);
                 break;
+            default:
+                if (this._document._allowImportCustomData) {
+                    this._addString(dictionary, attribute.name, value);
+                }
+                break;
             }
         }
     }
@@ -2519,7 +2524,7 @@ export class _XfdfDocument extends _ExportHelper {
         if (measurement) {
             measureDictionary.update('Type', _PdfName.get('Measure'));
             if (measurement.hasAttribute('rateValue')) {
-                const attribute: string = measurement.getAttribute['rateValue'];
+                const attribute: string = measurement.getAttribute('rateValue');
                 if (attribute && attribute !== '') {
                     measureDictionary.update('R', attribute);
                 }

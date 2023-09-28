@@ -419,7 +419,7 @@
 
         &.e-menu-wrapper ul.e-vertical,
         &.e-menu-wrapper ul.e-ul {
-          min-width: 150px;
+          min-width: 135px;
 
           &.e-menu .e-menu-item {
             &.e-separator {
@@ -432,7 +432,7 @@
             line-height: $ribbon-backstage-menu-item-height;
             padding: 0;
 
-            &.e-focused {
+            &:focus {
               border-style: solid;
               border-width: $ribbon-backstage-menu-hover-border;
             }
@@ -443,7 +443,7 @@
               border-width: $ribbon-backstage-menu-active-border;
             }
 
-            &.e-selected.e-focused {
+            &.e-selected:focus {
               border-style: solid;
               border-width: $ribbon-backstage-menu-hover-border;
             }
@@ -595,6 +595,11 @@
         &:focus {
           outline: none;
         }
+      }
+
+      .e-btn-group .e-btn.e-ribbon-group-button,
+      .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type) {
+        border: $ribbon-items-border;
       }
 
       &.e-ribbon-large-item {

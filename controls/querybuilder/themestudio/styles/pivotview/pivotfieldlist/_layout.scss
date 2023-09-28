@@ -1553,6 +1553,9 @@
         @if ($skin-name == 'FluentUI') {
           border-top: 0;
         }
+        @if ($skin-name == 'fabric') or ($skin-name == 'fabric-dark') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+          padding: $field-list-editor-dialog-footer-padding;
+        }
       }
 
       .e-dlg-content {
@@ -1699,15 +1702,6 @@
     padding: 6px 12px;
     @if ($field-list-skin == 'bootstrap4') {
       padding: 9px 10px;
-    }
-
-    .e-text-content {
-      .e-list-text {
-        line-height: 1.5em;
-        // @if ($field-list-skin == 'bootstrap4') {
-        //   line-height: 0;
-        // }
-      }
     }
 
     &.e-drag-restrict {

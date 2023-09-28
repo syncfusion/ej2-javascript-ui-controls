@@ -1052,7 +1052,7 @@ export class DetailsView {
     }
 
     private createDragObj(): void {
-        if (!this.parent.isMobile && this.gridObj) {
+        if (this.gridObj) {
             if (this.parent.allowDragAndDrop) {
                 if (this.dragObj) { this.dragObj.destroy(); }
                 this.dragObj = new Draggable(this.gridObj.element, {

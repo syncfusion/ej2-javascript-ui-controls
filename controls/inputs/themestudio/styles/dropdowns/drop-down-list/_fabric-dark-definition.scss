@@ -1,0 +1,128 @@
+//default
+$ddl-input-font-size: 14px !default;
+$ddl-input-border: $border-size $border-type !default;
+$ddl-input-font-family: inherit !default;
+$ddl-zero-value: 0 !default;
+$ddl-input-margin-bottom: $ddl-zero-value !default;
+$ddl-input-padding: 8px !default;
+$ddl-input-group-border-width: 1px !default;
+$ddl-clear-icon-margin-right: 0 !default;
+$ddl-active-font-color: $active-font-color !default;
+
+$ddl-list-search-icon-padding: 8px !default;
+$ddl-list-filter-text-indent: 0 12px !default;
+$ddl-list-icon-color: $neutral-primary !default;
+$ddl-bigger-list-font-size: 15px !default;
+$ddl-default-border-color: $neutral-light !default;
+$ddl-popup-background-color: $neutral-lighter-alt !default;
+$ddl-filter-border: 1px solid $neutral-light !default;
+$ddl-list-box-shadow-color: rgba($shadow, .26) !default;
+$ddl-filter-top-border: 0 !default;
+$ddl-filter-padding: 5px !default;
+$ddl-filter-box-shadow: 0 2px 5px 0 rgba($shadow, .26) !default;
+$ddl-filter-background-color: $neutral-white !default;
+$ddl-back-icon-margin: -2px 10px 0 -54px !default;
+$ddl-back-icon-padding: 0 !default;
+$ddl-filter-margin: 0 !default;
+
+//small size
+$ddl-small-list-font-size: 13px !default;
+
+// touch size
+$ddl-bigger-small-list-font-size: 14px !default;
+
+//enddefault
+
+@include export-module('dropdownlist-fabric-dark') {
+  .e-ddl#{&}.e-popup {
+    border: 0;
+    box-shadow: 0 0 5px 0 $ddl-list-box-shadow-color;
+    margin-top: 1px;
+    @at-root {
+      #{if(&, '&', '*')} .e-input-group {
+        #{if(&, '&', '*')} input {
+          line-height: 15px;
+        }
+      }
+    }
+  }
+
+  .e-ddl#{&}.e-popup .e-input-group {
+    display: flex;
+    width: auto;
+  }
+
+  .e-ddl#{&}.e-popup .e-filter-parent {
+    border-left-width: 0;
+    border-right-width: 0;
+  }
+
+  .e-bigger #{&}.e-popup.e-ddl-device-filter {
+    margin-top: 0;
+  }
+
+  #{&}.e-popup.e-ddl .e-dropdownbase {
+    min-height: 26px;
+  }
+
+  .e-bigger .e-ddl#{&}.e-popup {
+    @at-root {
+      #{if(&, '&', '*')} .e-list-item,
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        font-size: 15px;
+        line-height: 45px;
+        padding-left: 0;
+        text-indent: 16px;
+      }
+
+      #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        padding-left: 4px;
+      }
+
+      #{if(&, '&', '*')} .e-input-group {
+        padding: 4px 0;
+      }
+
+      #{if(&, '&', '*')} .e-input-group input,
+      #{if(&, '&', '*')} .e-input-group input.e-input {
+        height: 38px;
+      }
+    }
+  }
+
+  .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:active,
+  .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon:hover,
+  .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:active,
+  .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:hover {
+    background: transparent;
+    color: $ddl-list-icon-color;
+  }
+
+  .e-bigger.e-small .e-ddl#{&}.e-popup,
+  .e-ddl#{&}.e-popup .e-bigger.e-small {
+    @at-root {
+      #{if(&, '&', '*')} .e-list-item,
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        font-size: 14px;
+        line-height: 40px;
+        padding-left: 0;
+        text-indent: 16px;
+      }
+
+      #{if(&, '&', '*')} .e-dd-group .e-list-item {
+        padding-left: 4px;
+      }
+
+      #{if(&, '&', '*')} .e-input-group {
+        padding: 0;
+      }
+
+      #{if(&, '&', '*')} .e-input-group input,
+      #{if(&, '&', '*')} .e-input-group input.e-input {
+        height: 34px;
+      }
+    }
+  }
+}

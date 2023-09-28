@@ -1,4 +1,3 @@
-@import 'common/mixin.scss';
 @import 'definition/tailwind.scss';
 
 @if not variable-exists('is-inter-loaded') {

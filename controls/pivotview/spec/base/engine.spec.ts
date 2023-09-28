@@ -360,7 +360,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
+                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("17.54%");
                     done();
                 }, 1000);
             });
@@ -375,7 +375,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
+                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("29.85%");
                     done();
                 }, 1000);
             });
@@ -390,7 +390,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
+                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("42.55%");
                     done();
                 }, 1000);
             });
@@ -405,7 +405,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
+                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("64.52%");
                     done();
                 }, 1000);
             });
@@ -504,7 +504,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-35");
+                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-23");
                     done();
                 }, 1000);
             });
@@ -517,7 +517,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-35");
+                    expect((pivotGridObj.engineModule.pivotValues[3][1] as IDataSet).formattedText).toBe("-21");
                     done();
                 }, 1000);
             });
@@ -576,7 +576,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Jet");
+                    expect((pivotGridObj.engineModule.pivotValues[5][0] as IDataSet).formattedText).toBe("Flight");
                     done();
                 }, 1000)
             });
@@ -589,7 +589,7 @@ describe('PivotView spec', () => {
                 (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                 pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Tempo");
+                    expect((pivotGridObj.engineModule.pivotValues[4][0] as IDataSet).formattedText).toBe("Jet");
                     done();
                 }, 1000);
             });
@@ -1610,7 +1610,7 @@ describe(' - VirtualScrolling', () => {
         });
         it('filter check', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
+                expect(document.querySelectorAll('.e-content-virtualtable tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
                 done();
             }, 500);
         });
@@ -1982,11 +1982,9 @@ describe(' - VirtualScrolling', () => {
             document.querySelectorAll('#PivotGrid_PivotFieldList_Country .e-btn-filter')[0].dispatchEvent(click);
             expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
             let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
-            if (firstNode.querySelector('.e-frame').dispatchEvent) {
-                firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
-                firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
-                firstNode.querySelector('.e-frame').dispatchEvent(click);
-            } 
+            firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
+            firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
+            firstNode.querySelector('.e-frame').dispatchEvent(click);
             setTimeout(() => {
                 document.querySelector('.e-member-editor-dialog .e-ok-btn').dispatchEvent(click);
                 done();

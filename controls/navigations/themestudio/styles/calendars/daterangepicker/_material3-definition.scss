@@ -249,21 +249,24 @@ $modal-range-landscape-header-height: 27vh !default;
 $modal-range-landscape-conetent-overflow: auto !default;
 $modal-range-table-display: table !default;
 $modal-range-start-end-size: 28px !default;
+$modal-month-name-line-height: 44px !default;
+$modal-header-month-name-left-width: -25vw !default;
+$modal-header-month-name-width: 50vw !default;
 
 // header styles for presets
 $modal-range-presets-header-height: 10% !default;
 $modal-range-presets-portrait-height: 90% !default;
 $modal-range-presets-landscape-height: 85% !default;
-$modal-range-header-padding: 2.5vh 2.5vw !default;
+$modal-range-header-padding: 2.5vh 2.5vw 2.5vh 1.5vw !default;
 $modal-range-header-display-style: flex !default;
 $modal-range-header-content-align: center !default;
-$modal-range-header-portrait-font-size: 3vh !default;
+$modal-range-header-portrait-font-size: 2vh !default;
 $modal-close-icon-float: left !default;
 $modal-portrait-content-padding: 1vh 2vw !default;
 $modal-range-header-title-transform: uppercase !default;
 $modal-range-header-border-bottom: none !default;
 $modal-range-header-landscape-height: 15% !default;
-$modal-range-header-landscape-font-size: 2vw !default;
+$modal-range-header-landscape-font-size: 18px !default;
 $modal-landscape-padding: 1vh 1vw !default;
 
 // modal dialog colors
@@ -271,7 +274,7 @@ $modal-range-header-bg-color: rgba($primary) !default;
 $modal-range-header-text-color: rgba($primary-text-color) !default;
 
 // tablet device style changes for modal popup
-$modal-range-tablet-font-size: 24px !default;
+$modal-range-tablet-font-size: 18px !default;
 
 $range-header-font-size: 16px !default;
 

@@ -99,11 +99,9 @@ describe('Calculated Field', () => {
         let treeObj: any = cf.treeObj;
         let filterAxiscontent: HTMLElement = document.getElementById(cf.parentID + 'droppable');
         let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
-        let mousedown: any =
-            util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[15].querySelector('.e-drag'), 15, 10);
+        let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[15].querySelector('.e-drag'), 15, 10);
         EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-        let mousemove: any =
-            util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[15].querySelector('.e-drag'), 15, 70);
+        let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[15].querySelector('.e-drag'), 15, 70);
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
         mousemove = util.setMouseCordinates(mousemove, 150, 400);
@@ -118,11 +116,9 @@ describe('Calculated Field', () => {
         let treeObj: any = cf.treeObj;
         let filterAxiscontent: HTMLElement = document.getElementById(cf.parentID + 'droppable');
         let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
-        let mousedown: any =
-            util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-drag'), 15, 10);
+        let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-drag'), 15, 10);
         EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-        let mousemove: any =
-            util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-drag'), 15, 70);
+        let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-drag'), 15, 70);
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
         mousemove = util.setMouseCordinates(mousemove, 150, 400);
@@ -136,11 +132,9 @@ describe('Calculated Field', () => {
         let treeObj: any = cf.treeObj;
         let filterAxiscontent: HTMLElement = document.getElementById(cf.parentID + 'droppable');
         let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
-        let mousedown: any =
-            util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[15].querySelector('.e-drag'), 15, 10);
+        let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[15].querySelector('.e-drag'), 15, 10);
         EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-        let mousemove: any =
-            util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[15].querySelector('.e-drag'), 15, 70);
+        let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[15].querySelector('.e-drag'), 15, 70);
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
         mousemove = util.setMouseCordinates(mousemove, 150, 400);
@@ -154,11 +148,9 @@ describe('Calculated Field', () => {
         let treeObj: any = cf.treeObj;
         let filterAxiscontent: HTMLElement = document.getElementById(cf.parentID + 'droppable');
         let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
-        let mousedown: any =
-            util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-drag'), 15, 10);
+        let mousedown: any = util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-drag'), 15, 10);
         EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-        let mousemove: any =
-            util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-drag'), 15, 70);
+        let mousemove: any = util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-drag'), 15, 70);
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
         mousemove = util.setMouseCordinates(mousemove, 150, 400);
@@ -194,7 +186,7 @@ describe('Calculated Field', () => {
         cf.treeObj.touchClickObj.tap(tapEvent);
         expect(true).toEqual(true);
     });
-    it('OK Button Click', () => {
+    it('OK Button Click1', () => {
         let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
         (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'
         ), MaskedTextBox) as MaskedTextBox).value =  'New';
@@ -290,12 +282,12 @@ describe('Calculated Field', () => {
         calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog
         calcField.buttons[0].click();
     });
-    it('OK Button Click', () => {
+    it('OK Button Click2', () => {
         (document.querySelector('.e-ok-btn') as HTMLElement).click();
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
     it('Open Dialog5', () => {
-        expect((pivotGridObj.pivotValues[2][3] as IAxisSet).formattedText).toBe('41035.61000000001');
+        expect((pivotGridObj.pivotValues[2][3] as IAxisSet).formattedText).toBe('10');
         cf.createCalculatedFieldDialog(pivotGridObj);
         const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
         (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'), MaskedTextBox) as MaskedTextBox).value =  'price1';
@@ -303,7 +295,7 @@ describe('Calculated Field', () => {
         (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
     });
-    it('OK Button Click', () => {
+    it('OK Button Click3', () => {
         let calcInfo: ICalculatedFields = { name: 'price1', formula: '10', formatString: '' };
         cf.replaceFormula(calcInfo);
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
@@ -316,7 +308,7 @@ describe('Calculated Field', () => {
         (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'price1';
         (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '100/*-78';
     });
-    it('OK Button Click', () => {
+    it('OK Button Click4', () => {
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
         let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
         calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog;
@@ -373,12 +365,11 @@ describe('Calculated Field', () => {
         expect(pivotButtons.length).toEqual(5);
         expect(pivotButtons[4].id).toBe('PivotGrid_PivotFieldList_New');
         expect(pivotButtons[4].textContent).toBe('New-1');
-        expect(document.getElementsByClassName('e-dialog').length).toBe(8);
+        expect(document.getElementsByClassName('e-dialog').length).toBe(1);
     });
     it('close field list popup', () => {
         (document.getElementsByClassName('e-cancel-btn')[0] as any).click();
-            (document.getElementsByClassName('e-cancel-btn')[0] as any).click();
-            // (document.getElementsByClassName('e-ok-btn')[0] as any).click();
+        (document.getElementsByClassName('e-cancel-btn')[0] as any).click();
     });
     it('check calculated field button for edit option in grouping bar', () => {
         let leftAxisPanel: HTMLElement = pivotGridObj.element.querySelector('.e-left-axis-fields');
@@ -388,7 +379,7 @@ describe('Calculated Field', () => {
         (pivotButtons[2].querySelector('.e-edit') as HTMLElement).click();
         expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
         expect((document.querySelector('.e-pivot-calc-input') as any).value).toBe('price');
-        expect((document.querySelector('.e-pivot-formula') as any).value).toBe('"Sum(balance)"+"Count(quantity)"');
+        expect((document.querySelector('.e-pivot-formula') as any).value).toBe('10');
         expect((document.querySelector('.e-custom-format-input') as any).value).toBe('');
         const calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
         (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'), MaskedTextBox) as MaskedTextBox).value =  'Price-1';

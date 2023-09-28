@@ -1832,9 +1832,38 @@ export class PdfViewerBase {
         }
     }
 
-    private showPageLoadingIndicator(pageIndex: number, isShow: boolean): void {
+    private spinnerPosition(container: HTMLElement, pageIndex: number) {
+        const inner: HTMLElement = container.querySelector('.e-spinner-inner') as HTMLElement;
+        let zoomValue: number = this.getZoomFactor();
+        let width: number = this.pageSize[pageIndex].width * zoomValue;
+        let height: number = this.pageSize[pageIndex].height * zoomValue;
+        inner.style.top = (height / 2) + 'px';
+        inner.style.left = (width / 2) + 'px';
+        const circle = inner.children[0] as HTMLElement;
+        if (zoomValue <= 0.20) {
+            circle.style.width = '20px';
+            circle.style.height = '20px';
+            circle.style.transformOrigin = '10px 10px 10px';
+        } else if (zoomValue <= 0.45) {
+            circle.style.width = '30px';
+            circle.style.height = '30px';
+            circle.style.transformOrigin = '15px 15px 15px';
+        } else {
+            circle.style.width = '48px';
+            circle.style.height = '48px';
+            circle.style.transformOrigin = '24px 24px 24px';
+        }
+    }
+
+    /**
+     * @param {boolean} isShow - Show or hide page loading indicator.
+     * @returns {void}
+     * @private
+     */
+    public showPageLoadingIndicator(pageIndex: number, isShow: boolean): void {
         const waitingPopup: HTMLElement = this.getElement('_pageDiv_' + pageIndex);
         if (waitingPopup != null) {
+            this.spinnerPosition(waitingPopup, pageIndex);
             if (isShow) {
                 showSpinner(waitingPopup);
             } else {
@@ -3043,8 +3072,7 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             let isIE: boolean = !!(document as any).documentMode;
             if (this.pdfViewer.textSelectionModule && !this.isClickedOnScrollBar(event, true) && !this.isTextSelectionDisabled) {
-                if (!isIE && target.className !== 'e-pdfviewer-formFields' && target.className !== 'e-pdfviewer-ListBox' && target.className !== 'e-pv-formfield-dropdown'
-                    && target.className !== 'e-pv-formfield-listbox') {
+                if (!isIE && target.className !== 'e-pdfviewer-formFields' && target.className !== 'e-pdfviewer-ListBox' && target.className !== 'e-pv-formfield-dropdown' && target.className !== 'e-pv-formfield-listbox' && target.className !== 'e-pv-formfield-input') {
                     event.preventDefault();
                 }
                 if (target.className !== 'e-pv-droplet') {
@@ -8544,6 +8572,7 @@ export class PdfViewerBase {
      */
     public diagramMouseMove(evt: MouseEvent | TouchEvent): void {
         let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
+        let pageDiv: any = this.getElement('_pageDiv_' + (this.currentPageNumber - 1));
         this.pdfViewer.enableServerDataBinding(false);
         this.currentPosition = this.getMousePosition(evt);
         this.pdfViewer.firePageMouseover(this.currentPosition.x, this.currentPosition.y);
@@ -8709,13 +8738,29 @@ export class PdfViewerBase {
                                 const point: any = this.getMousePosition(event as any);
                                 formFieldElement.setAttribute('style', 'height:' + bounds.height + 'px; width:' + bounds.width + 'px;left:' + point.x + 'px; top:' + point.y + 'px;' +
                                     'position:absolute;opacity: 0.5;');
-                                if (obj.formFieldAnnotationType === 'Checkbox' && formFieldElement.firstElementChild.firstElementChild.lastElementChild as HTMLElement) {
-                                    (formFieldElement.firstElementChild.firstElementChild.lastElementChild as HTMLElement).style.visibility = 'hidden';
-                                } else if (obj.formFieldAnnotationType === 'SignatureField' || obj.formFieldAnnotationType === 'InitialField') {
-                                    (formFieldElement.firstElementChild.firstElementChild as HTMLElement).style.visibility = 'hidden';
-                                    (formFieldElement.firstElementChild.lastElementChild as HTMLElement).style.visibility = 'hidden';
-                                } else {
-                                    (formFieldElement.firstElementChild.firstElementChild as HTMLElement).style.visibility = 'hidden';
+                                if ((this.currentPosition.x + parseInt(formFieldElement.style.width)) > parseInt(pageDiv.style.width)) {
+                                    if (obj.formFieldAnnotationType === 'Checkbox' && formFieldElement.firstElementChild.firstElementChild.lastElementChild) {
+                                        formFieldElement.firstElementChild.firstElementChild.lastElementChild.style.visibility = 'hidden';
+                                    }
+                                    else if (obj.formFieldAnnotationType === 'SignatureField' || obj.formFieldAnnotationType === 'InitialField') {
+                                        formFieldElement.firstElementChild.firstElementChild.style.visibility = 'hidden';
+                                        formFieldElement.firstElementChild.lastElementChild.style.visibility = 'hidden';
+                                    }
+                                    else {
+                                        formFieldElement.firstElementChild.firstElementChild.style.visibility = 'hidden';
+                                    }
+                                }
+                                else {
+                                    if (obj.formFieldAnnotationType === 'Checkbox' && formFieldElement.firstElementChild.firstElementChild.lastElementChild) {
+                                        formFieldElement.firstElementChild.firstElementChild.lastElementChild.style.visibility = 'visible';
+                                    }
+                                    else if (obj.formFieldAnnotationType === 'SignatureField' || obj.formFieldAnnotationType === 'InitialField') {
+                                        formFieldElement.firstElementChild.firstElementChild.style.visibility = 'visible';
+                                        formFieldElement.firstElementChild.lastElementChild.style.visibility = 'visible';
+                                    }
+                                    else {
+                                        formFieldElement.firstElementChild.firstElementChild.style.visibility = 'visible';
+                                    }
                                 }
                             }
                         }

@@ -4,7 +4,7 @@ import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations'
 import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
 import { Complex, Browser, ChildProperty, compile as templateCompiler, compile } from '@syncfusion/ej2-base';
 import { ImageEditorModel, FinetuneSettingsModel, ZoomSettingsModel, SelectionSettingsModel } from './image-editor-model';
-import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings } from './../index';
+import { ToolbarModule, Crop, Draw, Filter, FreehandDrawing, Selection, Shape, Transform, UndoRedo, Export, SelectionChangeEventArgs, Transition, ArrowheadType, ResizeEventArgs, FrameType, FrameLineStyle, FrameChangeEventArgs, FrameSettings, ShapeType } from './../index';
 import { ZoomEventArgs, PanEventArgs, CropEventArgs, RotateEventArgs, FlipEventArgs, ShapeChangeEventArgs } from './../index';
 import { ToolbarEventArgs, OpenEventArgs, SaveEventArgs, BeforeSaveEventArgs, Point, ShapeSettings, ImageFilterEventArgs } from './../index';
 import { FinetuneEventArgs, QuickAccessToolbarEventArgs, CurrentObject, ImageDimension, TransformValue, PanPoint } from './../index';
@@ -1057,6 +1057,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('toolbar', { prop: 'create-contextual-toolbar', onPropertyChange: false });
         }
         this.createCanvas();
+        if (this.element.offsetWidth > 359 && this.element.querySelector('.e-ie-min-drop-content') && this.element.querySelector('.e-ie-drop-content')) {
+            (this.element.querySelector('.e-ie-min-drop-content') as HTMLElement).style.display = 'none';
+            (this.element.querySelector('.e-ie-drop-content') as HTMLElement).style.display = 'block';
+        }
         this.createDropUploader();
         if (this.showQuickAccessToolbar) {
             const canvasWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_canvasWrapper');
@@ -1216,18 +1220,24 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }));
         const dragObj: Object = { key: 'DragText' };
         this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: dragObj }});
+        const dropObj: Object = { key: 'DropText' };
+        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: dropObj }});
         const browseObj: Object = { key: 'BrowseText' };
         this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: browseObj }});
         const supportObj: Object = { key: 'SupportText' };
         this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: supportObj }});
         const dropAreaElement: HTMLElement = this.createElement('div', { id: this.element.id + '_dropArea', className: 'e-ie-drop-area', attrs: { style: 'position: relative;' }});
         const dropIconElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-icon e-icons e-image', attrs: { style: 'position: absolute;' }});
-        const dropContentElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-content', attrs: { style: 'position: absolute;' }});
+        const dropContentElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-content', attrs: { style: 'position: absolute; display: none;' }});
         dropContentElement.textContent = dragObj['value'] + ' ';
+        const minDropContentElem: HTMLElement = this.createElement('span', { className: 'e-ie-min-drop-content', attrs: { style: 'position: absolute;' }});
+        minDropContentElem.textContent = dropObj['value'] + ' ';
         const dropAnchorElement: HTMLElement = this.createElement('a', { id: this.element.id + '_dropBrowse',  className: 'e-ie-drop-browse'});
         dropAnchorElement.textContent = browseObj['value'];
-        dropContentElement.appendChild(dropAnchorElement);
-        (dropAnchorElement as HTMLAnchorElement).href = '';
+        const minDropAnchorElem: HTMLElement = this.createElement('a', { id: this.element.id + '_dropBrowse',  className: 'e-ie-drop-browse'});
+        minDropAnchorElem.textContent = browseObj['value'];
+        dropContentElement.appendChild(dropAnchorElement); minDropContentElem.appendChild(minDropAnchorElem);
+        (dropAnchorElement as HTMLAnchorElement).href = ''; (minDropAnchorElem as HTMLAnchorElement).href = '';
         const dropInfoElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-info', attrs: { position: 'absolute' }});
         dropInfoElement.textContent = supportObj['value'] + ' SVG, PNG, and JPG';
         const dropUploader: HTMLElement = dropAreaElement.appendChild(this.createElement('input', {
@@ -1235,6 +1245,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         }));
         dropUploader.setAttribute('type', 'file'); dropUploader.setAttribute('accept', 'image/*');
         dropAreaElement.appendChild(dropIconElement); dropAreaElement.appendChild(dropContentElement);
+        dropAreaElement.appendChild(minDropContentElem);
         dropAreaElement.appendChild(dropInfoElement); canvasWrapper.appendChild(dropAreaElement);
         this.lowerCanvas = canvasWrapper.appendChild(this.createElement('canvas', {
             id: this.element.id + '_lowerCanvas', attrs: { name: 'canvasImage' }
@@ -2252,7 +2263,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public okBtn(isMouseDown?: boolean): void {
-        this.element.querySelector('.e-contextual-toolbar-wrapper').classList.remove('e-frame-wrapper');
+        if (this.element.querySelector('.e-contextual-toolbar-wrapper')) {
+            this.element.querySelector('.e-contextual-toolbar-wrapper').classList.remove('e-frame-wrapper');
+        }
         let isCropSelection: boolean = false; let splitWords: string[];
         const aspectIcon: HTMLInputElement = (this.element.querySelector('#' + this.element.id + '_aspectratio') as HTMLInputElement);
         const nonAspectIcon: HTMLInputElement = (this.element.querySelector('#' + this.element.id + '_nonaspectratio') as HTMLInputElement);
@@ -2265,6 +2278,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             isCropSelection = true;
         }
         this.allowDownScale = true;
+        if ((this.activeObj.shape && this.activeObj.shape !== 'image' || this.togglePen) && !isCropSelection) {
+            const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
+            this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
+            const shapeSettings: ShapeSettings = objt['shapeSettingsObj'];
+            if (this.togglePen) {
+                shapeSettings.type = ShapeType.FreehandDraw;
+            }
+            const shapeChangedArgs: ShapeChangeEventArgs = {action: 'apply', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+            this.triggerShapeChanged(shapeChangedArgs);
+        }
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         if (aspectIcon || nonAspectIcon || (isBlazor() && (this as any).currentToolbar === 'resize-toolbar')){
             const obj: Object = {width: null, height: null };
@@ -2548,6 +2572,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('shape', { prop: 'pushActItemIntoObj'});
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
         const object: Object = {currObj: {} as CurrentObject };
+        const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
+        this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
+        const shapeSettings: ShapeSettings = objt['shapeSettingsObj'];
         this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
         const prevObj: CurrentObject = object['currObj'];
         prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
@@ -2579,6 +2606,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 }
             }
         }
+        const shapeChangedArgs: ShapeChangeEventArgs = {action: type, previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+        this.triggerShapeChanged(shapeChangedArgs);
     }
 
     /**
@@ -2593,6 +2623,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('shape', { prop: 'pushActItemIntoObj'});
         const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
+        this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
+        const shapeSettings: ShapeSettings = objt['shapeSettingsObj'];
         const object: Object = {currObj: {} as CurrentObject };
         this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
         const prevObj: CurrentObject = object['currObj'];
@@ -2640,6 +2673,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     currentText: null, previousFilter: null, isCircleCrop: null}});
             this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
         }
+        const shapeChangedArgs: ShapeChangeEventArgs = {action: 'font-family', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+        shapeChangedArgs.currentShapeSettings.fontFamily = this.textArea.style.fontFamily;
+        this.triggerShapeChanged(shapeChangedArgs);
     }
 
     /**
@@ -2654,6 +2691,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('selection', { prop: 'setInitialTextEdit', value: {bool: false }});
         this.notify('shape', { prop: 'pushActItemIntoObj'});
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
+        this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
+        const shapeSettings: ShapeSettings = objt['shapeSettingsObj'];
         const object: Object = {currObj: {} as CurrentObject };
         this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
         const prevObj: CurrentObject = object['currObj'];
@@ -2728,6 +2768,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     currentText: null, previousFilter: null, isCircleCrop: null}});
             this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
         }
+        const shapeChangedArgs: ShapeChangeEventArgs = {action: 'font-size', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+        shapeChangedArgs.currentShapeSettings.fontSize = this.activeObj.textSettings.fontSize;
+        this.triggerShapeChanged(shapeChangedArgs);
     }
 
     /**
@@ -2741,6 +2785,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('selection', { prop: 'setInitialTextEdit', value: {bool: false }});
         this.notify('shape', { prop: 'pushActItemIntoObj'});
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
+        this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
+        const shapeSettings: ShapeSettings = objt['shapeSettingsObj'];
         const object: Object = {currObj: {} as CurrentObject };
         this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
         const prevObj: CurrentObject = object['currObj'];
@@ -2787,6 +2834,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     currentText: null, previousFilter: null, isCircleCrop: null}});
             this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
         }
+        const shapeChangedArgs: ShapeChangeEventArgs = {action: 'font-color', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+        shapeChangedArgs.currentShapeSettings.fillColor = value;
+        this.triggerShapeChanged(shapeChangedArgs);
     }
 
     /**
@@ -2801,6 +2852,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const temp: any = extend([], this.pointColl, [], true);
         this.updateFreehandDrawColorChange();
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
+        this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
+        let shapeSettings: ShapeSettings = objt['shapeSettingsObj'];
         const object: Object = {currObj: {} as CurrentObject };
         this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
         const prevObj: CurrentObject = object['currObj'];
@@ -2831,6 +2885,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     previousCropObj: prevCropObj, previousText: null,
                     currentText: null, previousFilter: null, isCircleCrop: null}});
         }
+        shapeSettings.type = ShapeType.FreehandDraw;
+        const shapeChangedArgs: ShapeChangeEventArgs = {action: 'stroke-width', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+        currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+        shapeChangedArgs.currentShapeSettings.strokeWidth = this.activeObj.strokeSettings.strokeWidth;
+        this.triggerShapeChanged(shapeChangedArgs);
     }
 
     /**
@@ -2845,6 +2904,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const temp: any = extend([], this.pointColl, [], true);
         this.updateFreehandDrawColorChange();
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
+        const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
+        this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
+        const shapeSettings: ShapeSettings = objt['shapeSettingsObj'];
         const object: Object = {currObj: {} as CurrentObject };
         this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
         const prevObj: CurrentObject = object['currObj'];
@@ -2876,6 +2938,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         else if (!this.togglePen) {
             this.notify('selection', { prop: 'redrawShape', value: { obj: this.activeObj }});
         }
+        shapeSettings.type = ShapeType.FreehandDraw;
+        const shapeChangedArgs: ShapeChangeEventArgs = {action: 'stroke-color', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+        shapeChangedArgs.currentShapeSettings.strokeColor = value;
+        this.triggerShapeChanged(shapeChangedArgs);
     }
 
     /**
@@ -2888,6 +2955,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public updateStrokeWidth(id: string): void {
         if (this.activeObj.shape && (this.activeObj.shape !== 'path' || (this.activeObj.shape === 'path' &&
             this.activeObj.pointColl.length > 0))) {
+            const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
+            this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
+            const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
             this.notify('shape', { prop: 'pushActItemIntoObj'});
             const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
             const object: Object = {currObj: {} as CurrentObject };
@@ -2912,6 +2982,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     previousCropObj: prevCropObj, previousText: null,
                     currentText: null, previousFilter: null, isCircleCrop: null}});
             this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
+            const shapeChangedArgs: ShapeChangeEventArgs = {action: 'stroke-width', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+            shapeChangedArgs.currentShapeSettings.strokeWidth = this.activeObj.strokeSettings.strokeWidth;
+            this.triggerShapeChanged(shapeChangedArgs);
         } else if (this.activeObj.shape && (this.activeObj.shape === 'path' &&
             this.activeObj.pointColl.length === 0)) {
             this.activeObj.strokeSettings.strokeWidth = parseInt(id, 10);
@@ -2929,6 +3003,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public updateStrokeColor(value: string): void {
+        const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
+        this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
+        const shapeSettings: ShapeSettings = objt['shapeSettingsObj'];
         if (this.activeObj.shape && (this.activeObj.shape !== 'path' || (this.activeObj.shape === 'path' &&
             this.activeObj.pointColl.length > 0))) {
             this.notify('shape', { prop: 'pushActItemIntoObj'});
@@ -2962,6 +3039,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null, strokeColor:
                 this.activeObj.strokeSettings.strokeColor, fillColor: null, strokeWidth: null }});
         }
+        const shapeChangedArgs: ShapeChangeEventArgs = {action: 'stroke-color', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+        shapeChangedArgs.currentShapeSettings.strokeColor = value;
+        this.triggerShapeChanged(shapeChangedArgs);
     }
 
     /**
@@ -2972,6 +3053,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public updateFillColor(value: string): void {
+        const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
+        this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
+        const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
         this.notify('shape', { prop: 'pushActItemIntoObj'});
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
         const object: Object = {currObj: {} as CurrentObject };
@@ -2996,6 +3080,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 previousCropObj: prevCropObj, previousText: null,
                 currentText: null, previousFilter: null, isCircleCrop: null}});
         this.notify('selection', { prop: 'redrawShape', value: { obj: this.objColl[this.objColl.length - 1] }});
+        const shapeChangedArgs: ShapeChangeEventArgs = {action: 'fill-color', previousShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings,
+            currentShapeSettings:extend({}, shapeSettings, {}, true) as ShapeSettings};
+        shapeChangedArgs.currentShapeSettings.fillColor = value;
+        this.triggerShapeChanged(shapeChangedArgs);
     }
 
     /**
@@ -3194,6 +3282,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (isBlazor() && this.element.querySelector('.place-holder')) {
             this.element.querySelector('.place-holder').remove();
         }
+        if (this.element.offsetWidth > 359 && this.element.querySelector('.e-ie-min-drop-content') && this.element.querySelector('.e-ie-drop-content')) {
+            (this.element.querySelector('.e-ie-min-drop-content') as HTMLElement).style.display = 'none';
+            (this.element.querySelector('.e-ie-drop-content') as HTMLElement).style.display = 'block';
+        }
         if (isBlazor() && this.element.querySelector('.e-ie-drop-area')) {
             (this.element.querySelector('.e-ie-drop-area') as HTMLElement).style.display = 'block';
         }
@@ -3296,5 +3388,19 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     public updateToolbar(element: HTMLDivElement, type: string, value?: string): void  {
 
+    }
+
+    /**
+     * Trigger the shapeChanging event for after the shape applied.
+     *
+     * @param { ShapeChangeEventArgs } shapeChangedArgs - Specifies the shapeChaning event args.
+     * @hidden
+     * @returns {void}.
+     */
+    public triggerShapeChanged(shapeChangedArgs: ShapeChangeEventArgs): void {
+        if (isBlazor() && this.events && this.events.shapeChanged.hasDelegate === true) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            this.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'ShapeChanged', shapeChangedArgs);
+        }
     }
 }

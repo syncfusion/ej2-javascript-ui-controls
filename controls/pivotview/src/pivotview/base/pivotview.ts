@@ -3960,7 +3960,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.trigger(events.beforeExport, args);
         if (this.pdfExportModule) {
             this.pdfExportModule.exportProperties = args;
-        }
+        }   // eslint-disable-next-line max-len
         if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0) || args.height || args.width || Object.keys(args.pdfMargins).length > 0) &&
             (this.dataSourceSettings.mode !== 'Server' || ((this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0) && (this.enableVirtualization || this.enablePaging) && this.dataSourceSettings.mode === 'Server'))) {
             pdfDocument = this.pdfExportModule.exportToPDF(args.pdfExportProperties, args.isMultipleExport, args.pdfDoc, args.isBlob);
@@ -5848,15 +5848,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                                         (((pivotValues[i as number][j as number] as IAxisSet).columnHeaders as string)
                                                             .indexOf(format[k as number].label) > -1))) {
                                         if (format[k as number].style && format[k as number].style.backgroundColor) {
-                                            format[k as number].style.backgroundColor = this.conditionalFormattingModule
-                                                .isHex(format[k as number].style.backgroundColor.substr(1))
+                                            format[k as number].style.backgroundColor = format[k as number].style.backgroundColor.charAt(0) === '#' &&
+                                                this.conditionalFormattingModule.isHex(format[k as number].style.backgroundColor.substr(1))
                                                 ? format[k as number].style.backgroundColor :
                                                 this.conditionalFormattingModule.colourNameToHex(format[k as number].style.backgroundColor);
                                         }
                                         if (format[k as number].style && format[k as number].style.color) {
-                                            format[k as number].style.color = this.conditionalFormattingModule
-                                                .isHex(format[k as number].style.color.substr(1)) ? format[k as number].style.color :
-                                                this.conditionalFormattingModule.colourNameToHex(format[k as number].style.color);
+                                            format[k as number].style.color =
+                                                format[k as number].style.color.charAt(0) === '#' && this.conditionalFormattingModule.isHex(
+                                                    format[k as number].style.color.substr(1)) ? format[k as number].style.color
+                                                    : this.conditionalFormattingModule.colourNameToHex(format[k as number].style.color);
                                         }
                                         (pivotValues[i as number][j as number] as IAxisSet).style = format[k as number].style;
                                         (pivotValues[i as number][j as number] as IAxisSet).cssClass = 'format' + this.element.id + k;

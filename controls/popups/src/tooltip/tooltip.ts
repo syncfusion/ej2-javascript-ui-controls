@@ -690,13 +690,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         addClass(selEle, this.tipClass);
     }
     private adjustArrow(target: HTMLElement, position: Position, tooltipPositionX: string, tooltipPositionY: string): void {
-        if (this.showTipPointer === false) { return; }
+        const arrowEle: HTMLElement = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
+        if (this.showTipPointer === false || arrowEle === null) { return; }
         this.updateTipPosition(position);
         let leftValue: string; let topValue: string;
         this.tooltipEle.style.display = 'block';
         const tooltipWidth: number = this.tooltipEle.clientWidth;
         const tooltipHeight: number = this.tooltipEle.clientHeight;
-        const arrowEle: HTMLElement = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
         const arrowInnerELe: HTMLElement = select('.' + ARROW_TIP_INNER, this.tooltipEle) as HTMLElement;
         const tipWidth: number = arrowEle.offsetWidth; const tipHeight: number = arrowEle.offsetHeight;
         this.tooltipEle.style.display = '';
@@ -1101,8 +1101,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const position: OffsetPosition = this.isBodyContainer ?
             fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: this.windowCollision }, eleOffset) : eleOffset;
         this.tooltipEle.style.display = 'block';
-        if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
-            const arrowEle: HTMLElement = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
+        const arrowEle: HTMLElement = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
+        if (this.showTipPointer && arrowEle != null && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
             let arrowleft: number = parseInt(arrowEle.style.left, 10) - (position.left - elePos.left);
             if (arrowleft < 0) {
                 arrowleft = 0;

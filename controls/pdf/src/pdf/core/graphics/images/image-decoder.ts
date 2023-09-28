@@ -4,12 +4,13 @@ import { _ImageFormat } from './../../enumerator';
 export class _ImageDecoder {
     _stream: Uint8Array;
     _format: _ImageFormat = _ImageFormat.unknown;
-    _height: number;
-    _width: number;
+    _height: number = 0;
+    _width: number = 0;
     _bitsPerComponent: number = 8;
     _imageData: Uint8Array;
     _imageStream: _PdfStream;
     _position: number = 0;
+    _noOfComponents: number = -1;
     static _jpegHeader: number[] = [255, 216];
     /**
      * Initializes a new instance of the `_ImageDecoder` class.
@@ -44,18 +45,30 @@ export class _ImageDecoder {
         this._read(imgData, 0, imgData.byteLength);
         let i: number = 4;
         let length: number = this._getBuffer(i) * 256 + this._getBuffer(i + 1);
+        let isLengthExceed: boolean = false;
         while (i < imgData.byteLength) {
             i += length;
             if (i < imgData.byteLength) {
                 if (this._getBuffer(i + 1) === 192) {
                     this._height = this._getBuffer(i + 5) * 256 + this._getBuffer(i + 6);
                     this._width = this._getBuffer(i + 7) * 256 + this._getBuffer(i + 8);
-                    return;
+                    this._noOfComponents = this._getBuffer(i + 9);
+                    if (this._width !== 0 && this._height !== 0) {
+                        return;
+                    }
                 } else {
                     i += 2;
                     length = this._getBuffer(i) * 256 + this._getBuffer(i + 1);
                 }
+            } else {
+                isLengthExceed = true;
+                break;
             }
+        }
+        if (isLengthExceed) {
+            this._reset();
+            this._seek(2);
+            this._readExceededJpegImage();
         }
     }
     _checkIfJpeg(): boolean {
@@ -113,6 +126,11 @@ export class _ImageDecoder {
         return this._imageStream;
     }
     _getColorSpace(): string {
+        if (this._noOfComponents === 1) {
+            return 'DeviceGray';
+        } else if (this._noOfComponents === 4) {
+            return 'DeviceCMYK';
+        }
         return 'DeviceRGB';
     }
     _getDecodeParams(): _PdfDictionary {
@@ -123,5 +141,79 @@ export class _ImageDecoder {
         decodeParams.set('Predictor', 15);
         decodeParams.set('BitsPerComponent', this._bitsPerComponent);
         return decodeParams;
+    }
+    _seek(length: number): void {
+        this._position += length;
+    }
+    _readByte(): number {
+        if (this._position < this._stream.byteLength) {
+            const value: number = this._getBuffer(this._position);
+            this._position += 1;
+            return value;
+        } else {
+            throw new Error('Error decoding JPEG image. Invalid offset.');
+        }
+    }
+    _skipStream(): void {
+        let length: number = this._getBuffer(this._position) << 8 | this._getBuffer(this._position + 1);
+        this._seek(2);
+        if (length < 2) {
+            throw new Error('Error decoding JPEG image');
+        } else if (length > 0) {
+            this._seek(length - 2);
+        }
+    }
+    _readExceededJpegImage(): void {
+        let isContinueReading: boolean = true;
+        while (isContinueReading) {
+            let marker: number = this._getMarker();
+            switch (marker) {
+            case 0x00C0:
+            case 0x00C1:
+            case 0x00C2:
+            case 0x00C3:
+            case 0x00C5:
+            case 0x00C6:
+            case 0x00C7:
+            case 0x00C9:
+            case 0x00CA:
+            case 0x00CB:
+            case 0x00CD:
+            case 0x00CE:
+            case 0x00CF:
+                this._seek(3);
+                this._height = this._getBuffer(this._position) << 8 | this._getBuffer(this._position + 1);
+                this._seek(2);
+                this._width = this._getBuffer(this._position) << 8 | this._getBuffer(this._position + 1);
+                this._seek(2);
+                this._noOfComponents = this._getBuffer(this._position);
+                this._seek(1);
+                isContinueReading = false;
+                break;
+            default:
+                this._skipStream();
+                break;
+            
+            }
+        }
+    }
+    _toUnsigned16(value: number): number {
+        value = value & 0xFFFF;
+        return value < 0 ? (value + 0x10000) : value;
+    }
+    _getMarker() : number {
+        let skippedByte: number = 0;
+        let marker: number = this._readByte();
+        while (marker != 255) {
+          skippedByte++;
+          marker = this._readByte();
+        }
+        do {
+          marker = this._readByte();
+        } while (marker == 255);
+        if (skippedByte != 0) {
+          throw new Error('Error decoding JPEG image');
+        }
+        return this._toUnsigned16(marker);
     }
 }

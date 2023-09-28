@@ -2222,7 +2222,7 @@ export class DialogEdit {
                     } else {
                         tasksData[fieldName as string] = (column.edit.read as Function)(inputElement, controlObj.value);
                     }
-                } else if (isCustom && column.editType === 'booleanedit') {
+                } else if (column.editType === 'booleanedit') {
                     if (inputElement instanceof HTMLInputElement && inputElement.checked === true) {
                         tasksData[fieldName as string] = true;
                     } else {

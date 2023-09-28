@@ -347,4 +347,8 @@ export class VirtualScroll {
                 focusElement: document.activeElement});
         };
     }
+
+    public destroy(): void {
+        this.removeEventListener();
+    }
 }

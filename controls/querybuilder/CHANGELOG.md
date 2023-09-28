@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.38 (2023-09-26)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I504588` - Issue with Query builder column template not render in Vue3 platform has been fixed.
+
 ## 23.1.36 (2023-09-15)
 
 ### QueryBuilder

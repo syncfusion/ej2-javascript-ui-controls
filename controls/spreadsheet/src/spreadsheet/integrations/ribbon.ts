@@ -3025,32 +3025,32 @@ export class Ribbon {
     }
     public destroy(): void {
         const parentElem: HTMLElement = this.parent.element;
-        const ribbonEle: HTMLElement = this.ribbon.element;
+        const ribbonEle: HTMLElement = this.ribbon ? this.ribbon.element : null;
         const cPickerEle: HTMLElement = this.cPickerEle;
         const id: string = parentElem.id;
         ['bold', 'italic', 'line-through', 'underline'].forEach((name: string): void => {
             destroyComponent(select('#' + `${id}_${name}`, parentElem), Button);
         });
-        this.pasteSplitBtn.destroy(); this.pasteSplitBtn = null;
-        this.mergeSplitBtn.destroy(); this.mergeSplitBtn = null;
-        this.numFormatDDB.destroy(); this.numFormatDDB = null;
-        this.fontSizeDdb.destroy(); this.fontSizeDdb = null;
-        this.fontNameDdb.destroy(); this.fontNameDdb = null;
-        this.textAlignDdb.destroy(); this.textAlignDdb = null;
-        this.verticalAlignDdb.destroy(); this.verticalAlignDdb = null;
-        this.sortingDdb.destroy(); this.sortingDdb = null;
-        this.clearDdb.destroy(); this.clearDdb = null;
-        this.colorPicker.destroy(); this.colorPicker = null;
+        if (this.pasteSplitBtn) { this.pasteSplitBtn.destroy(); } this.pasteSplitBtn = null;
+        if (this.mergeSplitBtn) { this.mergeSplitBtn.destroy(); } this.mergeSplitBtn = null;
+        if (this.numFormatDDB) { this.numFormatDDB.destroy(); } this.numFormatDDB = null;
+        if (this.fontSizeDdb) { this.fontSizeDdb.destroy(); } this.fontSizeDdb = null;
+        if (this.fontNameDdb) { this.fontNameDdb.destroy(); } this.fontNameDdb = null;
+        if (this.textAlignDdb) { this.textAlignDdb.destroy(); } this.textAlignDdb = null;
+        if (this.verticalAlignDdb) { this.verticalAlignDdb.destroy(); } this.verticalAlignDdb = null;
+        if (this.sortingDdb) { this.sortingDdb.destroy(); } this.sortingDdb = null;
+        if (this.clearDdb) { this.clearDdb.destroy(); } this.clearDdb = null;
+        if (this.colorPicker) { this.colorPicker.destroy(); } this.colorPicker = null;
         this.destroyComponent(`${id}_borders_menu`, 'menu');
-        this.bordersDdb.destroy(); this.bordersDdb = null;
-        this.findDdb.destroy(); this.findDdb = null;
+        if (this.bordersDdb) { this.bordersDdb.destroy(); } this.bordersDdb = null;
+        if (this.findDdb) { this.findDdb.destroy(); } this.findDdb = null;
         this.destroyComponent(id + '_chart_menu', 'menu'); this.destroyComponent(id + '_chart_type_menu', 'menu');
         this.destroyComponent(id + '_chart-btn', 'dropdown-btn'); this.destroyComponent(id + '_chart-type-btn', 'dropdown-btn');
         this.destroyComponent(`${id}_cf_menu`, 'menu');
-        this.cfDdb.destroy(); this.cfDdb = null;
+        if (this.cfDdb) { this.cfDdb.destroy(); } this.cfDdb = null;
         this.detachPopupElement(id);
         this.parent.notify('destroyRibbonComponents', null);
-        this.ribbon.destroy();
+        if (this.ribbon) { this.ribbon.destroy(); }
         if (ribbonEle) {
             detach(ribbonEle);
         }
@@ -3062,7 +3062,7 @@ export class Ribbon {
         if (this.findDialog) {
             this.findDialog.hide();
         }
-        this.datavalidationDdb.destroy(); this.datavalidationDdb = null;
+        if (this.datavalidationDdb) { this.datavalidationDdb.destroy(); } this.datavalidationDdb = null;
         this.removeEventListener();
     }
     private destroyComponent(id: string | HTMLElement, moduleName: string): void {

@@ -1167,6 +1167,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             const dayLink: HTMLElement = this.createElement('span');
             const localMonth: boolean = (value && (value).getMonth() === localDate.getMonth());
             const select: boolean = (value && (value).getFullYear() === yr && localMonth);
+            const title: string = this.globalize.formatDate(localDate, { type: 'date', format: 'MMM y' });
             dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, {
                 format: null, type: 'dateTime', skeleton: 'MMM'
             }));
@@ -1184,6 +1185,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             localDate.setMonth(localDate.getMonth() + 1);
             if (!tdEle.classList.contains(DISABLED)) {
                 EventHandler.add(tdEle, 'click', this.clickHandler, this);
+                dayLink.setAttribute('title', '' + title);
             }
             tdEle.appendChild(dayLink);
             tdEles.push(tdEle);
@@ -1239,6 +1241,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             if (!tdEle.classList.contains(DISABLED)) {
                 EventHandler.add(tdEle, 'click', this.clickHandler, this);
+                dayLink.setAttribute('title', '' + dayLink.textContent);
             }
             tdEle.appendChild(dayLink);
             tdEles.push(tdEle);

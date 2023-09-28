@@ -1,0 +1,306 @@
+@import '../context-menu/theme-mixin.scss';
+@include export-module('menu-theme') {
+
+  /*! menu theme */
+  .e-menu-wrapper,
+  .e-menu-container {
+    background: $menu-ul-bgcolor;
+
+    @at-root {
+      & .e-menu {
+        @if $skin-name == 'bootstrap4' {
+          background-color: $cmenu-ul-bgcolor;
+        }
+        @else {
+          background: inherit;
+        }
+        color: $menu-color;
+
+        &.e-menu {
+          &:not(.e-vertical) {
+            & .e-separator {
+              border-right-color: $menu-seperator-border-color;
+            }
+          }
+        }
+
+        & .e-menu-item  {
+          @if $skin-name == 'bootstrap4' {
+            & .e-caret {
+              color: $menu-caret-color;
+            }
+
+            & .e-menu-icon {
+              color: $menu-icon-color;
+            }
+          }
+          @else {
+            @include icon-color;
+          }
+
+          &.e-menu-header {
+            border-bottom-color: $cmenu-li-border-color;
+          }
+
+          & .e-menu-url {
+            color: $menu-color;
+          }
+
+          &.e-focused {
+            color: $menu-icon-hover-color;
+            outline: $menu-li-hover-outline;
+            outline-offset: $menu-li-hover-outline-offset;
+            @if $skin-name == 'bootstrap4' {
+              background: $menu-ul-bgcolor;
+
+              & .e-caret {
+                color: $menu-caret-color;
+              }
+
+              & .e-menu-icon {
+                color: $menu-icon-hover-color;
+              }
+            }
+            @else {
+              @include focused-icon-color;
+              background: $menu-li-bgcolor;
+              @if $skin-name == 'Material3' {
+                border-radius: 2px;
+              }
+            }
+          }
+
+          &.e-selected,
+          &.e-active-item {
+            color: $menu-selected-color;
+            outline: $menu-li-selected-outline;
+            outline-offset: $menu-li-selected-outline-offset;
+            @if $skin-name == 'bootstrap4' {
+              background: $menu-ul-bgcolor;
+            }
+            @if $skin-name == 'FluentUI' {
+              background: $cmenu-li-bgcolor;
+            }
+            @else {
+              background: $menu-li-selection-bgcolor;
+            }
+            @if $skin-name == 'Material3' {
+              border-radius: 2px;
+            }
+
+            & .e-caret {
+              @if $skin-name == 'Material3' {
+                color: $menu-icon-focussed-color;
+              }
+              @else {
+                color: $menu-caret-color;
+              }
+            }
+
+            & .e-menu-icon {
+              @if $skin-name == 'Material3' {
+                color: $menu-icon-focussed-color;
+              }
+              @else {
+                color: $menu-caret-color;
+              }
+            }
+          }
+
+          &.e-separator {
+            border-bottom-color: $menu-seperator-border-color;
+          }
+        }
+
+        @include disabled-color;
+      }
+
+      & .e-ul {
+        background: inherit;
+        color: $submenu-color;
+
+        & .e-menu-item {
+          @if $skin-name == 'bootstrap4' {
+            & .e-caret {
+              color: $submenu-color;
+            }
+
+            & .e-menu-icon {
+              color: $submenu-color;
+            }
+          }
+          @else if $skin-name == 'FluentUI' {
+            & .e-caret {
+              color: $menu-icon-color;
+            }
+
+            & .e-menu-icon {
+              color: $menu-icon-color;
+            }
+          }
+
+          &.e-focused {
+            @if $skin-name == 'bootstrap4' {
+              & .e-caret {
+                color: $menu-caret-color;
+              }
+
+              & .e-menu-icon {
+                color: $submenu-color;
+              }
+            }
+          }
+
+          &.e-selected,
+          &.e-active-item {
+            @if $skin-name == 'bootstrap4' {
+              & .e-caret {
+                color: $menu-icon-focussed-color;
+              }
+
+              & .e-menu-icon {
+                color: $menu-icon-focussed-color;
+              }
+            }
+          }
+
+          & .e-menu-url {
+            color: $submenu-color;
+          }
+
+          &.e-focused {
+            @include focused-color;
+          }
+
+          &.e-selected,
+          &.e-active-item {
+            @include selected-color;
+          }
+
+          &.e-separator {
+            border-bottom-color: $cmenu-li-border-color;
+          }
+        }
+      }
+    }
+
+    &.e-menu-popup {
+      background: $cmenu-ul-bgcolor;
+
+      &.e-sfcontextmenu .e-menu-vscroll {
+        background: inherit;
+      }
+    }
+
+    & .e-menu-hscroll.e-hscroll .e-scroll-nav {
+      background: $menu-ul-bgcolor;
+
+      & .e-nav-arrow.e-icons {
+        color: $cmenu-caret-color;
+      }
+
+      &:hover {
+        @if $skin-name == 'bootstrap4' {
+          background: darken($gray-600, 7.5%);
+          border: 1px inset darken($gray-600, 10%);
+
+          & .e-icons {
+            color: $menu-icon-focussed-color;
+          }
+        }
+        @else if $skin-name == 'Material3' {
+          border-radius: 2px;
+        }
+        @else {
+          background: $menu-li-bgcolor;
+        }
+      }
+
+      &:focus {
+        @if $skin-name == 'bootstrap4' {
+          background: darken($gray-600, 7.5%);
+          border-color: darken($gray-600, 10%);
+
+          & .e-icons {
+            color: $menu-icon-focussed-color;
+          }
+        }
+        @else {
+          background: $menu-li-bgcolor;
+        }
+      }
+
+      &:active {
+        @if $skin-name == 'bootstrap4' {
+          background: darken($gray-600, 7.5%);
+          border: 1px inset darken($gray-600, 10%);
+        }
+        @else {
+          background: $menu-li-bgcolor;
+        }
+      }
+    }
+
+    &.e-menu-popup .e-menu-vscroll.e-vscroll .e-scroll-nav {
+      background: $cmenu-ul-bgcolor;
+      border-color: $menu-seperator-border-color;
+
+      & .e-icons {
+        color: $cmenu-color;
+      }
+
+      &:hover,
+      &:focus {
+        background: $cmenu-li-bgcolor;
+      }
+
+      &:active {
+        background: $cmenu-li-selection-bgcolor;
+      }
+    }
+
+    &.e-inherit {
+      border: 0;
+
+      & .e-menu,
+      & .e-menu .e-menu-item .e-menu-icon,
+      & .e-menu .e-menu-item .e-caret {
+        color: inherit;
+      }
+
+      & .e-menu {
+        background: inherit;
+      }
+
+      & .e-menu .e-menu-item.e-selected,
+      & .e-menu .e-menu-item.e-active-item,
+      & .e-menu .e-menu-item.e-focused {
+        background: rgba(transparent, .056);
+        color: inherit;
+      }
+    }
+  }
+
+  .e-menu-wrapper.e-hamburger,
+  .e-menu-container.e-hamburger {
+    & .e-menu-header {
+      color: $submenu-color;
+
+      & .e-menu-icon {
+        color: $submenu-color;
+      }
+    }
+
+    & ul {
+      color: $submenu-color;
+
+      @if $skin-name == 'bootstrap4' {
+        & .e-selected .e-caret,
+        & .e-active-item .e-caret,
+        & .e-caret {
+          color: $submenu-color;
+        }
+      }
+    }
+  }
+}

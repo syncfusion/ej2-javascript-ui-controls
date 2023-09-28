@@ -51,7 +51,7 @@ export class _XmlDocument extends _ExportHelper {
         if (isAcrobat) {
             this._table.forEach((value: any, key: any) => { // eslint-disable-line
                 if (key.includes(' ')) {
-                    const text: string = key.replace(' ', '');
+                    const text: string = key.replace(/ /g, '');
                     writer._writeStartElement(text.toString());
                     writer._writeAttributeString('original', key.toString(), 'xfdf', null);
                 } else {
@@ -63,7 +63,7 @@ export class _XmlDocument extends _ExportHelper {
         } else {
             this._table.forEach((value: any, key: any) => { // eslint-disable-line
                 if (key.includes(' ')) {
-                    key = key.replace(' ', '_x0020_');
+                    key = key.replace(/ /g, '_x0020_');
                 }
                 writer._writeStartElement(key.toString());
                 writer._writeString(value.toString());
@@ -122,7 +122,7 @@ export class _XmlDocument extends _ExportHelper {
                 }
                 let text: string = key.toString();
                 if (text.indexOf('_x0020_') !== -1) {
-                    text = text.replace('_x0020_', ' ');
+                    text = text.replace(/_x0020_/g, ' ');
                 }
                 const index: number = form._getFieldIndex(text);
                 if (index !== -1 && index < count) {

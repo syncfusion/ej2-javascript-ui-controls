@@ -213,7 +213,36 @@ export class ChartData {
         let closest: number; let data: number;
         const xData: number[] = xvalues ? xvalues : series.xData;
         const xLength: number = xData.length;
-        if (value >= <number>series.xMin - 0.5 && value <= <number>series.xMax + 0.5) {
+        let leftSideNearest: number = 0.5;
+        let rightSideNearest: number = 0.5;
+        if (series.xAxis.valueType === 'DateTime' && series.points.length === 1) {
+            leftSideNearest = series.xAxis.visibleRange.min;
+            rightSideNearest = series.xAxis.visibleRange.max;
+            for (let index: number = 0; index < series.chart.visibleSeries.length; index++) {
+                let visibleSeries: Series = series.chart.visibleSeries[index as number];
+                if (visibleSeries.xMin >= leftSideNearest && visibleSeries.xMin < series.xMin) {
+                    leftSideNearest = visibleSeries.xMin + 0.1;
+                }
+                if (visibleSeries.xMax <= rightSideNearest && visibleSeries.xMax > series.xMax) {
+                    rightSideNearest = visibleSeries.xMax - 0.1;
+                }
+                if (visibleSeries.points.length > 1) {
+                    if (visibleSeries.xMax >= leftSideNearest && visibleSeries.xMax < series.xMin) {
+                        leftSideNearest = visibleSeries.xMax + 0.1;
+                    }
+                    if (visibleSeries.xMin <= rightSideNearest && visibleSeries.xMin > series.xMax) {
+                        rightSideNearest = visibleSeries.xMin - 0.1;
+                    }
+                }
+            }
+            if (leftSideNearest !== series.xAxis.visibleRange.min) {
+                leftSideNearest = Math.abs(series.xMin - leftSideNearest) / 2;
+            }
+            if (rightSideNearest !== series.xAxis.visibleRange.max) {
+                rightSideNearest = Math.abs(series.xMax - rightSideNearest) / 2;
+            }
+        }
+        if (value >= <number>series.xMin - leftSideNearest && value <= <number>series.xMax + rightSideNearest) {
             for (let i: number = 0; i < xLength; i++) {
                 data = xData[i as number];
                 if (closest == null || Math.abs(data - value) < Math.abs(closest - value)) {

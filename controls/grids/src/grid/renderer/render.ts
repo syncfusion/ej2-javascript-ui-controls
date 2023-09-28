@@ -236,10 +236,8 @@ export class Render {
             dataManager = this.getFData(deffered, args);
         }
         if (!dataManager) {
-            if (gObj.allowPaging && args.requestType !== 'paging' && !gObj.getDataModule().dataManager.dataSource.offline
-                && ((gObj.editSettings.mode !== 'Batch' && args.action !== 'add') || (gObj.editSettings.mode === 'Batch'
-                && args.requestType !== 'batchsave')) && gObj.pageSettings && gObj.pageSettings.pageSizes
-                && gObj.pagerModule && gObj.pagerModule.pagerObj && gObj.pagerModule.pagerObj.isAllPage) {
+            if (gObj.allowPaging && !gObj.getDataModule().dataManager.dataSource.offline && gObj.pageSettings
+                && gObj.pageSettings.pageSizes && gObj.pagerModule && gObj.pagerModule.pagerObj && gObj.pagerModule.pagerObj.isAllPage) {
                 gObj.pagerModule.pagerObj.isAllPage = undefined;
             }
             dataManager = this.data.getData(args as NotifyArgs, this.data.generateQuery().requiresCount());
@@ -298,6 +296,13 @@ export class Render {
             if (dataLength) {
                 gObj.setProperties({pageSettings: {pageSize : gObj.pageSettings.pageSize + dataLength }}, true);
             }
+        }
+        if (gObj.allowPaging && ((<{ addedRecords?: Object[] }>(<{ changes?: Object }>args).changes).addedRecords.length ||
+            (<{ deletedRecords?: Object[] }>(<{ changes?: Object }>args).changes).deletedRecords.length ||
+            (<{ changedRecords?: Object[] }>(<{ changes?: Object }>args).changes).changedRecords.length) && gObj.pageSettings
+            && gObj.pageSettings.pageSizes && gObj.pagerModule && gObj.pagerModule.pagerObj
+            && !gObj.getDataModule().dataManager.dataSource.offline && gObj.pagerModule.pagerObj.isAllPage) {
+            gObj.pagerModule.pagerObj.isAllPage = undefined;
         }
         const promise: Promise<Object> = this.data.saveChanges(
             (<{ changes?: Object }>args).changes, this.parent.getPrimaryKeyFieldNames()[0],

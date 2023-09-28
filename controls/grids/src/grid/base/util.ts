@@ -727,8 +727,8 @@ export function isEditable(col: Column, type: string, elem: Element): boolean {
 export function isActionPrevent(inst: IGrid): boolean {
     const dlg: HTMLElement = select('#' + inst.element.id + 'EditConfirm', inst.element) as HTMLElement;
     return inst.editSettings.mode === 'Batch' &&
-        (selectAll('.e-updatedtd', inst.element).length) && inst.editSettings.showConfirmDialog &&
-        (dlg ? dlg.classList.contains('e-popup-close') : true);
+        (selectAll('.e-updatedtd', inst.element).length || selectAll('.e-gridform.e-formvalidator', inst.element).length)
+        && inst.editSettings.showConfirmDialog && (dlg ? dlg.classList.contains('e-popup-close') : true);
 }
 
 /**

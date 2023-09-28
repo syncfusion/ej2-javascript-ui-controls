@@ -951,7 +951,7 @@ export class _PdfCrossReference {
     }
     _writeValue(value: any, buffer: Array<number>, transform?: _CipherTransform, isCrossReference?: boolean): void { // eslint-disable-line
         if (value instanceof _PdfName) {
-            this._writeString(`/${_escapePdfName(value.name)}`, buffer);
+            this._writeString(`/${value.name}`, buffer);
         } else if (value instanceof _PdfReference) {
             this._writeString(`${value.toString()} R`, buffer);
         } else if (Array.isArray(value)) {

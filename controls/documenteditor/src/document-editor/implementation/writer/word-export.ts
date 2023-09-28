@@ -3673,7 +3673,7 @@ export class WordExport {
         }
         let lineWeight: number = shape[lineFormatProperty[this.keywordIndex]][weightProperty[this.keywordIndex]] ? shape[lineFormatProperty[this.keywordIndex]][weightProperty[this.keywordIndex]] * this.emusPerPoint: this.emusPerPoint;
         writer.writeStartElement('a', 'ln', this.aNamespace);
-        writer.writeAttributeString(undefined, 'w', undefined, lineWeight.toString());
+        writer.writeAttributeString(undefined, 'w', undefined, Math.round(lineWeight).toString());
         if ((!isNullOrUndefined(shape[lineFormatProperty[this.keywordIndex]][lineFormatTypeProperty[this.keywordIndex]]) && shape[lineFormatProperty[this.keywordIndex]][lineFormatTypeProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 3 : 'None'))
             && HelperMethods.parseBoolValue(shape[lineFormatProperty[this.keywordIndex]][lineProperty[this.keywordIndex]])) {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);

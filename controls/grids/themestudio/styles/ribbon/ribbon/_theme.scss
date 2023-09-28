@@ -169,7 +169,7 @@
             background: $ribbon-backstage-separator-color;
           }
 
-          &.e-focused {
+          &:focus {
             background: $ribbon-backstage-menu-hover-bg-color;
             border-color: $ribbon-backstage-menu-hover-border-color;
             color: $ribbon-backstage-menu-items-hover-color;
@@ -189,7 +189,7 @@
               color: $ribbon-backstage-menu-icon-active-color;
             }
           }
-          &.e-selected.e-focused {
+          &.e-selected:focus {
             background: $ribbon-backstage-menu-hover-bg-color;
             border-color: $ribbon-backstage-menu-hover-border-color;
             color: $ribbon-backstage-menu-items-hover-color;
@@ -259,6 +259,8 @@
     &.e-ribbon-overflow {
 
       .e-btn:not(.e-ribbon-file-menu),
+      .e-btn-group .e-btn.e-ribbon-group-button,
+      .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type),
       .e-ribbon-group-of-btn {
         color: $ribbon-text-color;
         background: $ribbon-items-background-color;

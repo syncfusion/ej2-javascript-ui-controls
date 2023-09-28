@@ -1519,11 +1519,18 @@ export class VirtualElementHandler {
     }
 
     public setWrapperWidth(width: string, full?: boolean): void {
+        if (width && width.indexOf('%') === -1 && !(this.content.getBoundingClientRect().width < parseInt(width))) {
+            width = undefined;
+            full = true;
+        }
         this.wrapper.style.width = width ? `${width}px` : full ? '100%' : '';
     }
 
     public setVirtualHeight(height?: number, width?: string): void {
         this.placeholder.style.height = !isNullOrUndefined(height) ? `${height}px` : '0px';
+        if (width && width.indexOf('%') === -1 && !(this.content.getBoundingClientRect().width < parseInt(width))) {
+            width = '100%';
+        }
         this.placeholder.style.width = width;
     }
 

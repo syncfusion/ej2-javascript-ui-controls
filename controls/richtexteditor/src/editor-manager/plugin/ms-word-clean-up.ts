@@ -791,9 +791,17 @@ export class MsWordPaste {
                 temp.style.marginLeft = collection[index as number].styleMarginLeft;
                 temp.style.listStyleType = collection[index as number].listStyleTypeName;
             } else if (collection[index as number].nestedLevel === pLevel) {
-                if (prevList.parentElement.tagName.toLowerCase() === collection[index as number].listType) {
+                if (!isNOU(prevList) && !isNOU(prevList.parentElement) && prevList.parentElement.tagName.toLowerCase() === collection[index as number].listType) {
                     prevList.parentElement.appendChild(prevList = createElement('li'));
                     prevList.appendChild(pElement);
+                } else if (isNOU(prevList)) {
+                    temp = createElement(collection[index as number].listType);
+                    temp.style.listStyleType = collection[index as number].listStyleTypeName;
+                    prevList = createElement('li');
+                    prevList.appendChild(pElement);
+                    temp.appendChild(prevList);
+                    temp.setAttribute('level', collection[index as number].nestedLevel.toString());
+                    root.appendChild(temp);
                 } else {
                     temp = createElement(collection[index as number].listType);
                     temp.style.listStyleType = collection[index as number].listStyleTypeName;

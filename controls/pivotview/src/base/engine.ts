@@ -2331,8 +2331,13 @@ export class PivotEngine {
         for (const item of filterItem.items) {
             itemsObj[item as string] = item;
         }
-        const showNoDataItems: boolean = (this.dataSourceSettings.rows[0] && this.dataSourceSettings.rows[0].showNoDataItems) || (
+        let showNoDataItems: boolean = (this.dataSourceSettings.rows[0] && this.dataSourceSettings.rows[0].showNoDataItems) || (
             this.dataSourceSettings.columns[0] && this.dataSourceSettings.columns[0].showNoDataItems);
+        if (showNoDataItems && this.columnKeys[filterItem.name]) {
+            showNoDataItems = (this.dataSourceSettings.columns[0] && this.dataSourceSettings.columns[0].showNoDataItems) ? true : false;
+        } else if (showNoDataItems && headersInfo.axis === 'row') {
+            showNoDataItems = (this.dataSourceSettings.rows[0] && this.dataSourceSettings.rows[0].showNoDataItems) ? true : false;
+        }
         if (showNoDataItems) {
             const filterMembers: number[] = [];
             this.filterPosObj = {};
@@ -3245,7 +3250,11 @@ export class PivotEngine {
                     !isNoData ? true : false) : true;
                 //member.name = members[memInd as number];
                 // member.type = member.hasChild ? 'All' : 'Single';
-                if (!(decisionObj && decisionObj[memInd as number])) {
+                let isFiltered: boolean = false;
+                if (showNoDataItems && childrens.filter.length > 0 && childrens.filterType === 'include') {
+                    isFiltered = true;
+                }   /* eslint-disable-next-line max-len */
+                if ((!(decisionObj && decisionObj[memInd as number])) && (!isFiltered || (isFiltered && childrens.filter.indexOf(headerValue.toString()) > -1))) {
                     decisionObj[memInd as number] = { index: [], indexObject: {} };
                     member.index = decisionObj[memInd as number].index;
                     member.indexObject = decisionObj[memInd as number].indexObject;

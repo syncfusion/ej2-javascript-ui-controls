@@ -2215,8 +2215,6 @@ export class Gantt extends Component<HTMLElement>
         removeClass(ganttChartElement.querySelectorAll('.e-critical-milestone'), cls.criticalMilestone);
         removeClass(this.element.querySelectorAll('.e-connector-line'), cls.criticalConnectorLineSVG);
         removeClass(this.element.querySelectorAll('.e-connector-line-arrow'), cls.criticalConnectorArrowSVG);
-        const innerDivs = document.querySelector('.e-gantt-child-taskbar-inner-div') as HTMLElement;
-        innerDivs.style.outlineColor = "";
     }
     private wireEvents(): void {
         if (this.allowKeyboard) {
@@ -2258,17 +2256,19 @@ export class Gantt extends Component<HTMLElement>
             }
             let criticalModule: CriticalPath = this.criticalPathModule;
             if (this.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
-                this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true,criticalModule.predecessorCollectionTaskIds);
+                this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
             }
             this.calculateDimensions();
             const pane1: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[0] as HTMLElement;
             const pane2: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[1] as HTMLElement;
             this.splitterModule.splitterPreviousPositionGrid = pane1.scrollWidth + 1 + 'px';
             this.splitterModule.splitterPreviousPositionChart = pane2.scrollWidth + 1 + 'px';
-            this.splitterModule.splitterObject.paneSettings[0].size = this.splitterModule['getSpliterPositionInPercentage'](this.splitterModule.splitterPreviousPositionGrid);
-            this.splitterModule.splitterObject.paneSettings[1].size = this.splitterModule.splitterPreviousPositionChart;
-            if(this.timelineModule.isZoomToFit){
-                this.timelineModule.processZoomToFit();
+            this.splitterModule.splitterObject.paneSettings[1].size = (this.ganttWidth - parseInt(this.splitterModule.splitterPreviousPositionGrid) - 4) + 'px';
+            let proxy = this;
+            if (this.timelineModule.isZoomToFit) {
+                setTimeout(() => {
+                    proxy.timelineModule.processZoomToFit();
+                }, 0);
             }
         }
     }

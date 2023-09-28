@@ -194,8 +194,12 @@ export class NavigationPane {
                 }
                 length++;
             }
-            // eslint-disable-next-line
-            this.treeObj.addNodes(directories as { [key: string]: Object; }[], target, null, prevent);
+            const element: Element = select('[data-uid="' + target + '"]', this.treeObj.element);
+            const childElements: Element = select('ul', element);
+            if (isNOU(childElements)) {
+                // eslint-disable-next-line
+                this.treeObj.addNodes(directories as { [key: string]: Object; }[], target, null, prevent);
+            }
         }
     }
 

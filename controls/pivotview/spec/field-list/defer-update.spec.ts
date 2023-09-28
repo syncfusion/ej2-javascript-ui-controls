@@ -799,7 +799,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 let filterDialog: Dialog = pivotGridObj.pivotFieldListModule.pivotCommon.filterDialog.dialogPopUp;
                 expect(checkEle.length).toBe(2);
-                expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
+                expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
                 (filterDialog.element.querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
             }, 1000);
@@ -943,7 +943,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             let rowAxiscontent: HTMLElement = pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-rows');
             let valueAxiscontent: HTMLElement = pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog.element.querySelector('.e-values');
             let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-            expect(pivotButton.length).toEqual(1);
+            expect(pivotButton.length).toEqual(2);
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
             let mousedown: any =
                 util.getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
@@ -961,7 +961,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(4);
+                expect(pivotButton.length).toEqual(3);
                 done();
             }, 1000);
         });

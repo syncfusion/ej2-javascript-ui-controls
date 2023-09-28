@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 23.1.38 (2023-09-26)
+
+### Ribbon
+
+#### Bug Fixes
+
+`#I491455` - Now, the flickering issue raised when dynamically enable/disable the ribbon item is resolved.
+
+`#I499031` - Now, the issue with overflow popup items are arranged in reversal order when being resized is resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### Ribbon

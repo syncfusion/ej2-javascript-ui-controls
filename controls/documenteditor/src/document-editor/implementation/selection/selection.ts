@@ -2497,7 +2497,9 @@ export class Selection {
                     this.owner.editorModule.decreaseIndent();
                 }
                 else {
-                    this.owner.editorModule.increaseIndent();
+                    if (HelperMethods.convertPointToPixel(start.paragraph.paragraphFormat.firstLineIndent + start.paragraph.paragraphFormat.leftIndent) < this.documentHelper.viewer.clientArea.width) {
+                        this.owner.editorModule.increaseIndent();
+                    }
                 }
             }
             else {

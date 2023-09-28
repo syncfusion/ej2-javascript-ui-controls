@@ -1821,4 +1821,106 @@ describe('Context-', () => {
             expect(ganttObj.currentViewData[7]['TaskID']).toBe(8);
         });
     });
+    describe('Bug:844625-Changing values in the actionBegin event does not reflect while rendering issue ', () => {
+        beforeAll((done: Function) => {
+            Gantt.Inject(Selection, Toolbar, Edit, Filter,ContextMenu, Resize,Sort);
+            ganttObj = createGantt({
+                dataSource: [
+                    { TaskID: 1, TaskName: 'Prototype Testing', StartDate: new Date('04/04/2019'), Duration: 12, Progress: 30 },
+                    { TaskID: 2, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 6 },
+                    { TaskID: 3, TaskName: 'Manufacturing', StartDate: new Date('04/04/2019'), Duration: 9, Progress: 30 },
+                    { TaskID: 4, TaskName: 'Assembling materials to finished goods', StartDate: new Date('04/04/2019'), Duration: 12 }
+                ],
+                    allowSorting: true,
+                    allowFiltering: true,
+                    allowResizing: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress'
+
+                    },
+                    splitterSettings: {
+                        columnIndex: 2
+                    },
+                    treeColumnIndex: 1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true,
+                        newRowPosition: 'Bottom',
+                    },
+                    toolbar: ['Add'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    enableContextMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    actionBegin: function actionBegin(args) {
+                        if (args.requestType === 'beforeAdd') {
+                          args.data.TaskName = 'hi';
+                          args.data.ganttProperties.taskName = 'hi';
+                          args.data.taskData.TaskName = 'hi';
+
+                          args.data.Duration = 5;
+                          args.data.ganttProperties.duration = 5;
+                          args.data.taskData.Duration = 5;
+
+                          args.data.Progress = 20;
+                          args.data.ganttProperties.progress = 20;
+                          args.data.taskData.Progress = 20;
+
+                        }
+                      },
+                    columns: [
+                        { field: "TaskID" },
+                        { field: "TaskName", headerText: "Task Name" },
+                        { field: "StartDate" },
+                        { field: "Duration" },
+                        { field: "Progress" },
+                    ],
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress',
+                    },
+                    height: '450px',
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            setTimeout(done, 500);
+        });     
+        it('Adding task Below using contextmenu', () => {
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Below' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.currentViewData.length).toBe(5);
+            expect(ganttObj.currentViewData[2].ganttProperties.taskName).toBe("hi");
+            expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(5);
+            expect(ganttObj.currentViewData[2].ganttProperties.progress).toBe(20);
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/10/2019');
+        });
+    });
 });

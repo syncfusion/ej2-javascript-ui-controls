@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { projectData, sampleData, summaryRowData } from '../base/datasource.spec';
+import { projectData, sampleData, summaryRowData, selectSummaryRowData } from '../base/datasource.spec';
 import { CustomSummaryType, ActionEventArgs } from '@syncfusion/ej2-grids';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Filter } from '../../src/treegrid/actions/filter';
@@ -761,6 +761,52 @@ describe('833721 - Resolved Child aggregates row displays in current view record
     destroy(TreegridObj);
   });
 });
+
+describe('844323 - Resolved header checkbox selection issue when child aggregate enabled. ', () => {
+  let TreegridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreegridObj = createGrid(
+      {
+        dataSource: selectSummaryRowData,
+        childMapping: 'children',
+        treeColumnIndex: 0,
+        height: 260,
+        columns: [
+          { type: 'checkbox', width: 60 },
+            { field: 'FreightID', headerText: 'Freight ID', width: 130 },
+            { field: 'FreightName', width: 195, headerText: 'Freight Name' },
+            { field: 'UnitWeight', headerText: 'Weight Per Unit', type: 'number', width: 130, textAlign: 'Right' },
+            { field: 'TotalUnits', headerText: 'Total Units', type: 'number', width: 125, textAlign: 'Right' }
+        ],
+        aggregates: [{
+            showChildSummary: true,
+            columns: [
+                {
+                    type: 'Max',
+                    field: 'UnitWeight',
+                    columnName: 'UnitWeight',
+                    footerTemplate: 'Maximum: ${Max}'
+                },
+                {
+                type: 'Min',
+                field: 'TotalUnits',
+                columnName: 'TotalUnits',
+                footerTemplate: 'Minimum: ${Min}'
+            }]
+        }]
+      },done);
+  });
+
+  it('Check headerCheckbox selection', () => {
+    (<HTMLElement>TreegridObj.element.querySelectorAll('.e-row')[1].querySelector('.e-rowcell')).click();
+    (<HTMLElement>TreegridObj.element.querySelectorAll('.e-row')[2].querySelector('.e-rowcell')).click();
+    expect((document.getElementsByClassName("e-checkselectall")[0] as HTMLInputElement).checked === true);
+  });
+  afterAll(() => {
+    destroy(TreegridObj);
+  });
+});
+
 
 describe('Child summary after cell editing ', () => {
   let TreegridObj: TreeGrid;

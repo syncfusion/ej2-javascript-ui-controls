@@ -1,0 +1,25 @@
+.e-skeleton {
+  @at-root {
+    &.e-shimmer-wave::after {
+      @if ($skin-name =='Material3') {
+        // Added direct color value to resolve the compile issue
+        background-image: linear-gradient($shimmer-wave-angle, $shimmer-background-color calc($shimmer-wave-pos - $shimmer-wave-length), $shimmer-wave-color $shimmer-wave-pos, $shimmer-background-color calc($shimmer-wave-pos + $shimmer-wave-length));
+      }
+      @else {
+        background-image: linear-gradient($shimmer-wave-angle, $shimmer-background-color calc($shimmer-wave-pos - $shimmer-wave-length), #e6e1e5 $shimmer-wave-pos, $shimmer-background-color calc($shimmer-wave-pos + $shimmer-wave-length));
+      }
+    }
+
+    &.e-skeleton-text,
+    &.e-skeleton-square,
+    &.e-skeleton-rectangle,
+    &.e-skeleton-circle {
+      @if ($skin-name =='Material3') {
+        background: $skeleton-background-color;
+      }
+      @else {
+        background-color: $skeleton-background-color;
+      }
+    }
+  }
+}

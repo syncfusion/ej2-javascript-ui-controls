@@ -404,15 +404,18 @@ export class DiagramEventHandler {
                                 (this.diagram.tooltipObject as Tooltip).open(targetEle);
                             }
                         }
+                        this.diagram.triggerEvent(eventName, arg);
                     }
                     if (eventName === DiagramEvent.onUserHandleMouseDown) {
                         this.userHandleObject = this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name;
+                        this.diagram.triggerEvent(eventName, arg);
                     }
                     const element: HTMLElement = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_userhandle');
 
                     if (eventName === DiagramEvent.onUserHandleMouseUp) {
                         if (this.commandHandler.isUserHandle(this.currentPosition)
                             && element && element.id === this.userHandleObject + '_userhandle') {
+                            //EJ2-838423 -onUserHandleMouseUp event triggers multiple times 
                             this.diagram.triggerEvent(eventName, arg);
                         }
                     }
@@ -420,8 +423,6 @@ export class DiagramEventHandler {
                         if (this.diagram.tooltipObject && (this.diagram.tooltipObject as DiagramTooltipModel).openOn !== 'Custom') {
                             this.diagram.tooltipObject.close();
                         }
-                    }
-                    else {
                         this.diagram.triggerEvent(eventName, arg);
                     }
                 }
@@ -1676,36 +1677,39 @@ export class DiagramEventHandler {
             }
             let objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
             let obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
-            let targetEle :HTMLElement;
-            if (obj instanceof Node && obj.children && obj.children.length > 0) {
-                // EJ2-56981 - If children returned means then update tooltip for child node else update tooltip for group node.
-                obj = children ? children as Node : obj;
-            }
-            //EJ2-62120 - check if the Node has Ports and hoverElement is Port as mousepointer hovered over Port
-            if((obj as Node | Connector).ports && (this.hoverElement instanceof PointPort || this.hoverElement instanceof PathPort)){
-                //executed to set target as port
-                targetEle = document.getElementById( (obj as Node).id + '_'+ (this.hoverElement as any).id);
-            }else{
-                //executed to set target as Node or Connector
-                const idName: string = ((obj as Node).shape && (((obj as Node).shape) instanceof Native)) ? '_content_native_element' : '_groupElement';
-                targetEle = document.getElementById((obj as Node).id + idName);
-            }
-            if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
-                (this.diagram.tooltipObject as Tooltip).close();
-                (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
-                if (isBlazor()) {
-                    (this.diagram.tooltipObject as BlazorTooltip).open(targetEle, {});
+            //848980 - Null exception occurs while hovering the ports
+            if (obj !== null) {
+                let targetEle: HTMLElement;
+                if (obj instanceof Node && obj.children && obj.children.length > 0) {
+                    // EJ2-56981 - If children returned means then update tooltip for child node else update tooltip for group node.
+                    obj = children ? children as Node : obj;
+                }
+                //EJ2-62120 - check if the Node has Ports and hoverElement is Port as mousepointer hovered over Port
+                if ((obj as Node | Connector).ports && (this.hoverElement instanceof PointPort || this.hoverElement instanceof PathPort)) {
+                    //executed to set target as port
+                    targetEle = document.getElementById((obj as Node).id + '_' + (this.hoverElement as any).id);
                 } else {
-                    (this.diagram.tooltipObject as Tooltip).dataBind();
+                    //executed to set target as Node or Connector
+                    const idName: string = ((obj as Node).shape && (((obj as Node).shape) instanceof Native)) ? '_content_native_element' : '_groupElement';
+                    targetEle = document.getElementById((obj as Node).id + idName);
                 }
-            }
-            if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
-                (this.diagram.tooltipObject as Tooltip).target = this.hoverElement.id;
-                if (this.hoverElement.tooltip.relativeMode === 'Mouse'){
-                    (this.diagram.tooltipObject as Tooltip).open(this.diagram.element);
+                if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
+                    (this.diagram.tooltipObject as Tooltip).close();
+                    (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
+                    if (isBlazor()) {
+                        (this.diagram.tooltipObject as BlazorTooltip).open(targetEle, {});
+                    } else {
+                        (this.diagram.tooltipObject as Tooltip).dataBind();
+                    }
                 }
-                else{
-                    (this.diagram.tooltipObject as Tooltip).open(targetEle);
+                if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
+                    (this.diagram.tooltipObject as Tooltip).target = this.hoverElement.id;
+                    if (this.hoverElement.tooltip.relativeMode === 'Mouse') {
+                        (this.diagram.tooltipObject as Tooltip).open(this.diagram.element);
+                    }
+                    else {
+                        (this.diagram.tooltipObject as Tooltip).open(targetEle);
+                    }
                 }
             }
         }

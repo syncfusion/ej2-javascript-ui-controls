@@ -86,6 +86,10 @@ export function getVisiblePoints(series: Series): Points[] {
 
 /** @private */
 export function rotateTextSize(font: FontModel, text: string, angle: number, chart: Chart): Size {
+    let transformValue: string = chart.element.style.transform;
+    if (transformValue) {
+        chart.element.style.transform = '';
+    }
     const renderer: SvgRenderer = new SvgRenderer(chart.element.id);
     let labelText: string; let textCollection: string[] = [];
     let height: number; let dy: number; let label: string;
@@ -129,6 +133,9 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
     }
     chart.svgObject.appendChild(htmlObject);
     const box: ClientRect = htmlObject.getBoundingClientRect();
+    if (transformValue) {
+        chart.element.style.transform = transformValue;
+    }
     remove(htmlObject);
     if (!chart.delayRedraw && !chart.redraw) {
         remove(chart.svgObject);

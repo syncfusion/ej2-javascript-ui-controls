@@ -201,7 +201,7 @@ export function _convertStringToBytes(value: string, destination: number[]): num
  * @param {number[]} second byte array.
  * @returns {boolean} Equal or not
  */
-export function _areArrayEqual(first: Uint8Array, second: Uint8Array): boolean {
+export function _areArrayEqual(first: Uint8Array | number[], second: Uint8Array | number[]): boolean {
     if (first.length !== second.length) {
         return false;
     }
@@ -3553,4 +3553,23 @@ export function _tryParseFontStream(widgetDictionary: _PdfDictionary, crossRefer
         }
     }
     return fontData;
+}
+/**
+ * Gets the boolean if two arrays are equal.
+ *
+ * @param {Array<number[]>} inkPointsCollection Ink points collection.
+ * @param {Array<number[]>} previousCollection Previous collection.
+ * @returns {boolean} result.
+ */
+export function _checkInkPoints(inkPointsCollection: Array<number[]>, previousCollection: Array<number[]>): boolean {
+    if (inkPointsCollection.length !== previousCollection.length) {
+        return false;
+    }
+    for (let i: number = 0; i < inkPointsCollection.length; i++) {
+        if (!_areArrayEqual(inkPointsCollection[Number.parseInt(i.toString(), 10)],
+                            previousCollection[Number.parseInt(i.toString(), 10)])) {
+            return false;
+        }
+    }
+    return true;
 }

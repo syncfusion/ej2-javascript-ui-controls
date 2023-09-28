@@ -1,0 +1,178 @@
+@include export-module('breadcrumb-theme') {
+
+  /*! breadcrumb theme */
+  .e-breadcrumb {
+    .e-breadcrumb-item {
+      .e-breadcrumb-text {
+        color: $breadcrumb-item-color;
+
+        &:hover,
+        &:focus {
+          @if $skin-name == 'Material3' {
+            background: $breadcrumb-item-hover-color;
+            border-radius: 4px;
+          }
+          @else {
+            color: $breadcrumb-item-hover-color;
+          }
+        }
+
+        &:focus {
+          @if $skin-name == 'Material3' {
+            background: $breadcrumb-item-focus-color;
+          }
+        }
+
+        &:active {
+          @if $skin-name == 'Material3' {
+            background: $breadcrumb-item-active-color;
+            border-radius: 4px;
+          }
+          @else {
+            color: $breadcrumb-item-active-color;
+          }
+        }
+      }
+
+      @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
+        &:not([data-active-item]):not(.e-breadcrumb-separator) {
+          &:hover {
+            background: $breadcrumb-item-hover-bgcolor;
+          }
+
+          &:active {
+            background: $breadcrumb-item-active-bgcolor;
+          }
+        }
+      }
+
+      @if $breadcrumb-skin == 'material' or $breadcrumb-skin == 'bootstrap' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
+        &.e-icon-item {
+          &:hover {
+            background: $breadcrumb-collapsed-icon-hover-bgcolor;
+            color: $breadcrumb-collapsed-icon-hover-color;
+          }
+
+          &:active {
+            background: $breadcrumb-collapsed-icon-active-bgcolor;
+            color: $breadcrumb-collapsed-icon-hover-color;
+          }
+
+          @if $breadcrumb-skin == 'material' or $breadcrumb-skin == 'bootstrap' {
+            .e-breadcrumb-text:focus {
+              background: $breadcrumb-collapsed-icon-focus-bgcolor;
+              color: $breadcrumb-collapsed-icon-hover-color;
+            }
+          }
+        }
+      }
+
+      @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
+        .e-breadcrumb-text:focus {
+          border: $breadcrumb-item-focus-border;
+        }
+      }
+
+      &[data-active-item] {
+        .e-breadcrumb-text {
+          color: $breadcrumb-last-item-font-color;
+          font-weight: $breadcrumb-last-item-font-weight;
+        }
+      }
+
+      .e-breadcrumb-icon {
+        color: $breadcrumb-icon-color;
+      }
+
+      @if $breadcrumb-skin == 'highcontrast' {
+        &:hover,
+        .e-breadcrumb-text:focus {
+          .e-breadcrumb-icon {
+            color: $breadcrumb-icon-hover-color;
+          }
+        }
+
+        &:active:not([data-active-item]) {
+          .e-breadcrumb-icon {
+            color: $breadcrumb-icon-active-color;
+          }
+        }
+      }
+
+      @if $breadcrumb-skin == 'bootstrap' {
+        &.e-icon-item {
+          &:hover,
+          &:active,
+          .e-breadcrumb-text:focus {
+            .e-breadcrumb-icon {
+              color: $breadcrumb-icon-interaction-color;
+            }
+          }
+        }
+      }
+    }
+
+    .e-breadcrumb-separator {
+      color: $breadcrumb-separator-color;
+    }
+
+    .e-breadcrumb-collapsed,
+    .e-breadcrumb-menu {
+      color: $breadcrumb-collapsed-icon-color;
+
+      &:hover {
+        background: $breadcrumb-collapsed-icon-hover-bgcolor;
+        color: $breadcrumb-collapsed-icon-hover-color;
+      }
+
+      &:active {
+        background: $breadcrumb-collapsed-icon-active-bgcolor;
+        @if $skin-name == 'FluentUI' {
+          color: $breadcrumb-collapsed-icon-active-color;
+        }
+        @else {
+          color: $breadcrumb-collapsed-icon-hover-color;
+        }
+      }
+
+      &:focus {
+        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $skin-name == 'FluentUI' {
+          border: $breadcrumb-collapsed-icon-focus-border;
+          color: $breadcrumb-collapsed-icon-focus-color;
+        }
+        @else {
+          background: $breadcrumb-collapsed-icon-focus-bgcolor;
+          color: $breadcrumb-collapsed-icon-hover-color;
+        }
+      }
+    }
+
+    &.e-disabled .e-breadcrumb-item .e-breadcrumb-text,
+    .e-disabled.e-breadcrumb-item .e-breadcrumb-text,
+    &.e-disabled .e-breadcrumb-separator {
+      color: $breadcrumb-disabled-item-color;
+
+      .e-breadcrumb-icon {
+        color: $breadcrumb-disabled-item-color;
+      }
+    }
+  }
+
+  .e-breadcrumb-popup {
+    background: $breadcrumb-popup-bgcolor;
+
+    .e-breadcrumb-text {
+      color: $breadcrumb-popup-item-color;
+
+      &:hover {
+        background: $breadcrumb-popup-item-hover-bgcolor;
+        color: $breadcrumb-popup-item-hover-color;
+      }
+    }
+
+    .e-breadcrumb-item .e-breadcrumb-text:focus {
+      background: $breadcrumb-popup-item-hover-bgcolor;
+      color: $breadcrumb-popup-item-hover-color;
+    }
+  }
+}

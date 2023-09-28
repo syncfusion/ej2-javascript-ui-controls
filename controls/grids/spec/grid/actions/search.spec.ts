@@ -467,4 +467,67 @@ describe('Search module=>', () => {
             gridObj = actionComplete = null;
         });
     });
+
+    describe('846444 - Searching value with Trailing Zero not working', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [
+                        {
+                            CategoryName: 17.20,
+                            ProductName: "Chai",
+                            QuantityPerUnit: "10boxes x 20 bags",
+                            UnitsInStock: 17.201,
+                            Discontinued: false,
+                        },
+                        {
+                            CategoryName: 17.201,
+                            ProductName: "Chai",
+                            QuantityPerUnit: "17.10boxes x 20 bags",
+                            UnitsInStock: 17.1,
+                            Discontinued: true,
+                        },
+                        {
+                            CategoryName: 'AVSSDS 17.20',
+                            ProductName: "Chang",
+                            QuantityPerUnit: "24 - 12 oz bottles",
+                            UnitsInStock: 17.10,
+                            Discontinued: true,
+                        }
+                    ],
+                    allowPaging: true,
+                    columns: [
+                        { field: 'CategoryName', headerText: 'Category Name', width: 160 },
+                        { field: 'ProductName', headerText: 'Product Name', width: 170 },
+                        { field: 'QuantityPerUnit', headerText: 'Quantity Per Unit', width: 170, textAlign: 'Right' },
+                        { field: 'UnitsInStock', headerText: 'Units In Stock', width: 170, format: 'C2', textAlign: 'Right' },
+                        {
+                            field: 'Discontinued', headerText: 'Discontinued', width: 150,
+                            textAlign: 'Center', displayAsCheckBox: true, type: 'boolean'
+                        }
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+        it('search a value', (done: Function) => {
+            actionComplete = (args?: Object) => {
+                expect(gridObj.getPager().querySelectorAll('.e-active')[0].innerHTML).toBe('1');
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(2);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.search('17.10');
+        });
+        
+        afterAll((done) => {
+            destroy(gridObj);
+            setTimeout(function () {
+                done();
+            }, 1000);
+            gridObj = actionComplete = null;
+        });
+    });
 });

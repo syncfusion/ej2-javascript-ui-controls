@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 23.1.38 (2023-09-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I498978` - Now, the tooltip will not be displayed when no value is provided for the tooltip on radio buttons and checkboxes fields.
+- `#I498981` - Now, the tooltip is not visible after deleting the tooltip value for the dropdown field.
+- `#I494968` - Now, the annotation toolbar opens properly in mobile mode when 'isAnnotationToolbarOpen' is set to TRUE.
+- `#I495804` - Now, the loading indicator is enabled while the document is being zoomed.
+- `#I497662` - Now, the close button in the comment panel is properly hidden when switching from mobile mode to desktop mode.
+- `#I497663` - Now, the annotation toolbar shows properly if the comment panel is opened while enabling desktop mode on a mobile device.
+- `#I497269` - Now, the read-only multi-line text box field is not resized in form preview mode.
+- `#I498984` - Now, the tabs within the form field properties do not navigate when swiping over labels.
+- `#I498244` - Now, the allowed interaction is respected when creating locked annotations.
+- `#I496823` - Now, the form field hover does not disappears after adding many form fields.
+- `#I497857` - Now, the cursor position is updated properly when clicking the content in the text box field.
+- `#I496823` - Now, it is possible to resize the form fields if placed at the edge of the page.
+- `#I498980` - Now, if the value of the radio button is null, then the name of the radio button is automatically assigned to the value. 
+- `#I502251` - Now, the content of the annotation comment is properly exported in the exported object.
+
+## 23.1.36 (2023-09-15)
+
 ### PDF Viewer
 
 #### New Features

@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-inplace-editor",
-	"version": "21.3.2",
+	"version": "23.1.36",
 	"description": "A package of Essential JS 2 Inplace editor components, which is used to edit and update the value dynamically in server.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -16,6 +16,7 @@
 		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-lists": "*",
 		"@syncfusion/ej2-navigations": "*",
+		"@syncfusion/ej2-notifications": "*",
 		"@syncfusion/ej2-popups": "*",
 		"@syncfusion/ej2-richtexteditor": "*",
 		"@syncfusion/ej2-splitbuttons": "*"

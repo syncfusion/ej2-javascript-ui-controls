@@ -1,3 +1,5 @@
+@import '../common/mixin.scss';
+
 // Bootstrap 4 Variables
 
 $white:    #fff !default;
@@ -37,6 +39,8 @@ $content-bg:    $white !default;
 $content-popup-bg: $white !default;
 $skin-name: 'bootstrap4' !default;
 $theme-name: 'bootstrap4' !default;
+
+$font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif, '-apple-system', 'BlinkMacSystemFont' !default;
 
 //Message component
 
@@ -151,3 +155,13 @@ $appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08) !default;
 //shadow
 $appbar-bottom-shadow: none !default;
 $appbar-top-shadow: none !default;
+
+//defintion
+$font-size: 12px !default;
+$font-weight: normal !default;
+$font-path: 'common-images' !default;
+$error-font-color: $danger !default;
+$warning-font-color: $gray-900 !default;
+$success-font-color: $green !default;
+$information-font-color: $cyan !default;
+$overlay-bg-color: #383838 !default;

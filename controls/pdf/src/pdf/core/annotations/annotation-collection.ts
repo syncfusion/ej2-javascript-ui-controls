@@ -133,7 +133,18 @@ export class PdfAnnotationCollection {
         const index: number = this._annotations.length;
         this._annotations.push(reference);
         this._parsedAnnotations.set(index, annotation);
-        this._page._pageDictionary.set('Annots', this._annotations);
+        let isAdded: boolean = false;
+        if (this._page._pageDictionary.has('Annots')) {
+            const collection: _PdfReference[] = this._page._pageDictionary.get('Annots');
+            if (collection !== null && typeof collection !== 'undefined' && collection.indexOf(reference) === -1) {
+                collection.push(reference);
+                this._page._pageDictionary.set('Annots', collection);
+                isAdded = true;
+            }
+        }
+        if (!isAdded) {
+            this._page._pageDictionary.set('Annots', this._annotations);
+        }
         this._page._pageDictionary._updated = true;
         if (annotation instanceof PdfComment) {
             this._addCommentsAndReview(annotation, annotation._dictionary.get('F'));

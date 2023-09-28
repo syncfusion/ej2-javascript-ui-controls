@@ -1059,7 +1059,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (this.isTemplate) {
             return;
         }
-        this.isExtModule ? this.notify(events.setFocus, {}) : this.componentObj.element.focus();
+        this.isExtModule ? this.notify(events.setFocus, {}) : (this as any).componentObj.getModuleName() === 'dropdownlist' ?  this.componentObj.focusIn() :  this.componentObj.element.focus();
     }
     private removeEditor(isBlazorDestroy?: boolean): void {
         const blazorContain: string[] = Object.keys(window) as string[];

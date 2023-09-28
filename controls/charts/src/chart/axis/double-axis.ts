@@ -404,7 +404,7 @@ export class Double {
      */
 
     public formatValue(axis: Axis, isCustom: boolean, format: string, tempInterval: number): string {
-        let labelValue: Number = !(tempInterval % 1) ? tempInterval : Number(tempInterval.toLocaleString().replace(',', ''));
+        let labelValue: Number = !(tempInterval % 1) ? tempInterval : Number(tempInterval.toLocaleString().split(',').join(''));
         return isCustom ? format.replace('{value}', axis.format(labelValue))
             : format ? axis.format(tempInterval) : axis.format(labelValue);
     }

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 23.1.38 (2023-09-26)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I184493` - The null exception will no longer thrown while hovering over the ports.
+- `#F45135` - Now, onUserHandleMouseUp event triggers for single time.
+- `#I487517` - Now, while enabling virtualization constraints nodes does not disappears.
+
+## 23.1.36 (2023-09-15)
+
 ### Diagram
 
 #### Bug Fixes

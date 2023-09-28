@@ -2585,7 +2585,8 @@ export class DropDownList extends DropDownBase implements IInput {
     private createPopup(element: HTMLElement, offsetValue: number, left: number): void {
         this.popupObj = new Popup(element, {
             width: this.setWidth(), targetType: 'relative',
-            relateTo: this.inputWrapper.container, collision: { X: 'flip', Y: 'flip' }, offsetY: offsetValue,
+            relateTo: this.inputWrapper.container, 
+            collision: this.enableRtl ? { X: 'fit', Y: 'flip' } : { X: 'flip', Y: 'flip' }, offsetY: offsetValue,
             enableRtl: this.enableRtl, offsetX: left, 
             position: this.enableRtl ? { X: 'right', Y: 'bottom' } : { X: 'left', Y: 'bottom' },
             zIndex: this.zIndex,

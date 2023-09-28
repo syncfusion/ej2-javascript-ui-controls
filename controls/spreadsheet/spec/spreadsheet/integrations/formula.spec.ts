@@ -11496,6 +11496,60 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
     });
+    describe('EJ2-844967 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rows: [
+                { cells: [{ formula: '=true+true' }, { formula: '=true-true'}, { formula: '=true*true'}, { formula: '=true/true'}, { value: 'TRUE'}] },
+                { cells: [{ formula:'=true+false' }, { formula: '=true-false'}, { formula: '=true*false'}, { formula: '=true/false'}, { value: 'FALSE'}] },
+                { cells: [{ formula:'=false+false' }, { formula: '=false-false'}, { formula: '=false*false'}, { formula: '=false/false'}] },
+                { cells: [{ formula:'=false+true' }, { formula: '=false-true'}, { formula: '=false*true'}, { formula: '=false/true'}] },
+                { cells: [{ formula:'=TRUE+FALSE+2+TRUE' }, { formula: '=TRUE-FALSE-TRUE-4'}, { formula: '=TRUE>FALSE+TRUE+TRUE+TRUE'}, { formula: '=FLASE>FALSE+TRUE+TRUE+TRUE'}] },
+                { cells: [{ formula:'=FLASE<FALSE+TRUE+TRUE+TRUE' }, { formula: '=4<FALSE+TRUE+TRUE+TRUE'}, { formula: '=TRUE+TRUE<FALSE+TRUE+TRUE+TRUE'}, { formula: '=TRUE+TRUE>FALSE+TRUE+TRUE+TRUE'}] },
+                { cells: [{ formula:'=E1+E2' }, { formula: '=E1-E2'}, { formula: '=E1*E1'}, { formula: '=E1/E1'}] },
+                { cells: [{ formula:'=E2+E1' }, { formula: '=E2-E1'}, { formula: '=E2*E1'}, { formula: '=E1/E2'}] }
+            ] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Arithmetic Operations with boolean values without cell reference throws #VALUE! error', (done: Function) => {
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toEqual('2');
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toEqual('0');
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[1].cells[2].value).toEqual('0');
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toEqual('#DIV/0!');
+                expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toEqual('0');
+                expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toEqual('0');
+                expect(helper.getInstance().sheets[0].rows[2].cells[2].value).toEqual('0');
+                expect(helper.getInstance().sheets[0].rows[2].cells[3].value).toEqual('#DIV/0!');
+                expect(helper.getInstance().sheets[0].rows[3].cells[0].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[3].cells[1].value).toEqual('-1');
+                expect(helper.getInstance().sheets[0].rows[3].cells[2].value).toEqual('0');
+                expect(helper.getInstance().sheets[0].rows[3].cells[3].value).toEqual('0');
+                expect(helper.getInstance().sheets[0].rows[4].cells[0].value).toEqual('4');
+                expect(helper.getInstance().sheets[0].rows[4].cells[1].value).toEqual('-4');
+                expect(helper.getInstance().sheets[0].rows[4].cells[2].value).toEqual('TRUE');
+                expect(helper.getInstance().sheets[0].rows[4].cells[3].value).toEqual('#NAME?');
+                expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#NAME?');
+                expect(helper.getInstance().sheets[0].rows[5].cells[1].value).toEqual('FALSE');
+                expect(helper.getInstance().sheets[0].rows[5].cells[2].value).toEqual('TRUE');
+                expect(helper.getInstance().sheets[0].rows[5].cells[3].value).toEqual('FALSE');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[6].cells[1].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[6].cells[2].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[6].cells[3].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[7].cells[0].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[7].cells[1].value).toEqual('-1');
+                expect(helper.getInstance().sheets[0].rows[7].cells[2].value).toEqual('0');
+                expect(helper.getInstance().sheets[0].rows[7].cells[3].value).toEqual('#DIV/0!');
+                done();
+            });
+        });
+    });
     describe('EJ2-834243', () => {
         const model: SpreadsheetModel = {
             sheets: [{
@@ -11631,6 +11685,96 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [22, 4]).textContent).toBe('#VALUE!');
             expect(helper.invoke('getCell', [23, 4]).textContent).toBe('10/13/2000');
             expect(helper.invoke('getCell', [24, 4]).textContent).toBe('02/10/2009');
+            done();
+        });
+    });
+    describe('EJ2-844325 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rows: [
+                { cells: [{ value:'5' }, { index: 2, formula: '=A2++A1'}, { formula: '=A2--A1'}, { formula: '=A2**A1'}, { formula: '=A2//A1'}, { formula: '=A2^^A1'}, { formula: '=A2&&A1'}] },
+                { cells: [{ value:'3' }, { index: 2, formula: '=A2+-A1'}, { formula: '=A2-+A1'}, { formula: '=A2*/A1'}, { formula: '=A2/*A1'}, { formula: '=A2^+A1'}, { formula: '=A2&+A1'}] },
+                { cells: [{ index: 2, formula: '=A2+*A1'}, { formula: '=A2-*A1'}, { formula: '=A2*+A1'}, { formula: '=A2/+A1'}, { formula: '=A2^-A1'}, { formula: '=A2&-A1'}] },
+                { cells: [{ index: 2, formula: '=A2+/A1'}, { formula: '=A2-/A1'}, { formula: '=A2*-A1'}, { formula: '=A2/-A1'}, { formula: '=A2^*A1'}, { formula: '=A2&*A1'}] },
+                { cells: [{ index: 2, formula: '=A2+^A1'}, { formula: '=A2-^A1'}, { formula: '=A2*^A1'}, { formula: '=A2/^A1'}, { formula: '=A2^/A1'}, { formula: '=A2&/A1'}] },
+                { cells: [{ index: 2, formula: '=A2+&A1'}, { formula: '=A2-&A1'}, { formula: '=A2*&A1'}, { formula: '=A2/&A1'}, { formula: '=A2^&A1'}, { formula: '=A2&^A1'}] }
+            ] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Formula that contains multiple plus operator throws invalid expression error', (done: Function) => {
+            expect(helper.getInstance().sheets[0].rows[0].cells[2].formula).toEqual('=A2++A1');
+            expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toEqual('8');
+            expect(helper.getInstance().sheets[0].rows[0].cells[3].formula).toEqual('=A2--A1');
+            expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toEqual('8');
+            expect(helper.getInstance().sheets[0].rows[0].cells[4].formula).toEqual('=A2**A1');
+            expect(helper.getInstance().sheets[0].rows[0].cells[4].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=A2//A1');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=A2^^A1');
+            expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[0].cells[7].formula).toEqual('=A2&&A1');
+            expect(helper.getInstance().sheets[0].rows[0].cells[7].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[1].cells[2].formula).toEqual('=A2+-A1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[2].value).toEqual('-2');
+            expect(helper.getInstance().sheets[0].rows[1].cells[3].formula).toEqual('=A2-+A1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toEqual('-2');
+            expect(helper.getInstance().sheets[0].rows[1].cells[4].formula).toEqual('=A2*/A1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[4].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[1].cells[5].formula).toEqual('=A2/*A1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[5].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[1].cells[6].formula).toEqual('=A2^+A1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[6].value).toEqual('243');
+            expect(helper.getInstance().sheets[0].rows[1].cells[7].formula).toEqual('=A2&+A1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toEqual('35');
+            expect(helper.getInstance().sheets[0].rows[2].cells[2].formula).toEqual('=A2+*A1');
+            expect(helper.getInstance().sheets[0].rows[2].cells[2].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[2].cells[3].formula).toEqual('=A2-*A1');
+            expect(helper.getInstance().sheets[0].rows[2].cells[3].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[2].cells[4].formula).toEqual('=A2*+A1');
+            expect(helper.getInstance().sheets[0].rows[2].cells[4].value).toEqual('15');
+            expect(helper.getInstance().sheets[0].rows[2].cells[5].formula).toEqual('=A2/+A1');
+            expect(helper.getInstance().sheets[0].rows[2].cells[5].value).toEqual('0.6');
+            expect(helper.getInstance().sheets[0].rows[2].cells[6].formula).toEqual('=A2^-A1');
+            expect(helper.getInstance().sheets[0].rows[2].cells[6].value).toEqual('0.00411522633744856');
+            expect(helper.getInstance().sheets[0].rows[2].cells[7].formula).toEqual('=A2&-A1');
+            expect(helper.getInstance().sheets[0].rows[2].cells[7].value).toEqual('3-5');
+            expect(helper.getInstance().sheets[0].rows[3].cells[2].formula).toEqual('=A2+/A1');
+            expect(helper.getInstance().sheets[0].rows[3].cells[2].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[3].cells[3].formula).toEqual('=A2-/A1');
+            expect(helper.getInstance().sheets[0].rows[3].cells[3].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[3].cells[4].formula).toEqual('=A2*-A1');
+            expect(helper.getInstance().sheets[0].rows[3].cells[4].value).toEqual('-15');
+            expect(helper.getInstance().sheets[0].rows[3].cells[5].formula).toEqual('=A2/-A1');
+            expect(helper.getInstance().sheets[0].rows[3].cells[5].value).toEqual('-0.6');
+            expect(helper.getInstance().sheets[0].rows[3].cells[6].formula).toEqual('=A2^*A1');
+            expect(helper.getInstance().sheets[0].rows[3].cells[6].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[3].cells[7].formula).toEqual('=A2&*A1');
+            expect(helper.getInstance().sheets[0].rows[3].cells[7].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[4].cells[2].formula).toEqual('=A2+^A1');
+            expect(helper.getInstance().sheets[0].rows[4].cells[2].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[4].cells[3].formula).toEqual('=A2-^A1');
+            expect(helper.getInstance().sheets[0].rows[4].cells[3].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[4].cells[4].formula).toEqual('=A2*^A1');
+            expect(helper.getInstance().sheets[0].rows[4].cells[4].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[4].cells[5].formula).toEqual('=A2/^A1');
+            expect(helper.getInstance().sheets[0].rows[4].cells[5].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[4].cells[6].formula).toEqual('=A2^/A1');
+            expect(helper.getInstance().sheets[0].rows[4].cells[6].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[4].cells[7].formula).toEqual('=A2&/A1');
+            expect(helper.getInstance().sheets[0].rows[4].cells[7].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[5].cells[2].formula).toEqual('=A2+&A1');
+            expect(helper.getInstance().sheets[0].rows[5].cells[2].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[5].cells[3].formula).toEqual('=A2-&A1');
+            expect(helper.getInstance().sheets[0].rows[5].cells[3].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[5].cells[4].formula).toEqual('=A2*&A1');
+            expect(helper.getInstance().sheets[0].rows[5].cells[4].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[5].cells[5].formula).toEqual('=A2/&A1');
+            expect(helper.getInstance().sheets[0].rows[5].cells[5].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[5].cells[6].formula).toEqual('=A2^&A1');
+            expect(helper.getInstance().sheets[0].rows[5].cells[6].value).toEqual('invalid expression');
+            expect(helper.getInstance().sheets[0].rows[5].cells[7].formula).toEqual('=A2&^A1');
+            expect(helper.getInstance().sheets[0].rows[5].cells[7].value).toEqual('invalid expression');
             done();
         });
     });

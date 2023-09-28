@@ -2269,7 +2269,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 const validUl: string = isUniqueId ? ul.children[index as number].id : ul.children[index as number].textContent;
                 if (ishide && validUl === items[i as number]) {
                     ul.children[index as number].classList.add(HIDE);
-                } else {
+                } else if (!ishide && validUl === items[i as number]) {
                     ul.children[index as number].classList.remove(HIDE);
                 }
             }

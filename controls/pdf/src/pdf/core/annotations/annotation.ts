@@ -2,7 +2,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage, PdfDestination } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfDestinationMode, PdfBlendMode, PdfDashStyle, PdfLineCap } from './../enumerator';
-import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont } from './../utils';
+import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints } from './../utils';
 import { PdfField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { _TextRenderingMode, PdfBrush, PdfGraphics, PdfPen, PdfGraphicsState, _PdfTransformationMatrix, _PdfUnitConvertor } from './../graphics/pdf-graphics';
@@ -887,6 +887,9 @@ export abstract class PdfAnnotation {
     get rotationAngle(): PdfRotationAngle {
         if (typeof this._rotate === 'undefined' && this._dictionary.has('Rotate')) {
             this._rotate = (this._dictionary.get('Rotate') / 90);
+        }
+        if (this._rotate === null || typeof this._rotate === 'undefined') {
+            this._rotate = PdfRotationAngle.angle0;
         }
         return this._rotate;
     }
@@ -6555,6 +6558,7 @@ export class PdfInkAnnotation extends PdfComment {
     private _inkPointsCollection: Array<number[]> = [];
     private _previousCollection: Array<number[]> = [];
     private _isFlatten: boolean;
+    _isModified: boolean = false;
     /**
      * Initializes a new instance of the `PdfInkAnnotation` class.
      *
@@ -6645,6 +6649,7 @@ export class PdfInkAnnotation extends PdfComment {
     set inkPointsCollection(value: Array<number[]>) {
         if (Array.isArray(value) && value.length > 0 && value !== this._inkPointsCollection) {
             this._inkPointsCollection = value;
+            this._isModified = true;
             if (this._isLoaded) {
                 this._dictionary.update('InkList', value);
             }
@@ -6686,7 +6691,7 @@ export class PdfInkAnnotation extends PdfComment {
         if (this._setAppearance) {
             const appearance: PdfAppearance = new PdfAppearance(this, nativeRectangle);
             appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
-            const template: PdfTemplate =  appearance.normal;
+            const template: PdfTemplate = appearance.normal;
             _setMatrix(template, this._getRotationAngle());
             template._writeTransformation = false;
             this._appearanceTemplate = this._createInkAppearance(template);
@@ -6772,10 +6777,6 @@ export class PdfInkAnnotation extends PdfComment {
                     }
                 }
             }
-            this._previousCollection.forEach((element: number[]) => {
-                this._inkPointsCollection.push(element);
-            });
-            this._previousCollection = [];
         }
         if (typeof this.flattenPopups !== 'undefined' && this.flattenPopups) {
             if (this._isLoaded) {
@@ -6936,31 +6937,32 @@ export class PdfInkAnnotation extends PdfComment {
         return vector;
     }
     _addInkPoints(): number[] {
+        const inkCollection: Array<number[]> = [];
+        if (this._linePoints !== null && (this._previousCollection.length === 0 || this._isModified)) {
+            this._inkPointsCollection.unshift(this._linePoints);
+            this._isModified = false;
+        }
+        const isEqual: boolean = _checkInkPoints(this._inkPointsCollection, this._previousCollection);
+        if (this._inkPointsCollection !== null && !isEqual) {
+            for (let i: number = 0; i < this._inkPointsCollection.length; i++) {
+                const inkList: number[] = this._inkPointsCollection[Number.parseInt(i.toString(), 10)];
+                inkCollection.push(inkList);
+            }
+            this._dictionary.update('InkList', inkCollection);
+        }
         if (this._inkPointsCollection.length > 0) {
             this._inkPointsCollection.forEach((inkList: number[]) => {
                 this._previousCollection.push(inkList);
             });
         }
-        const _inkCollection: Array<number[]> = [];
-        if (this._linePoints !== null) {
-            this._inkPointsCollection.unshift(this._linePoints);
-        }
-        if (this._inkPointsCollection !== null) {
-            for (let i: number = 0; i < this._inkPointsCollection.length; i++) {
-                const inkList: number[] = this._inkPointsCollection[Number.parseInt(i.toString(), 10)];
-                _inkCollection.push(inkList);
-            }
-        }
-        this._dictionary.update('InkList', _inkCollection);
         return this._getInkBoundsValue();
     }
     _getInkBoundsValue(): number[] {
         let bounds: number[] = [0, 0, 0, 0];
-        if (typeof this.bounds === 'undefined') {
-            bounds = [this._points[0], this._points[1], this._points[2], this._points[3]];
-        } else {
-            bounds = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
+        if (this._points) {
+            this.bounds = {x: this._points[0], y: this._points[1], width: this._points[2], height: this._points[3]};
         }
+        bounds = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
         const borderWidth: number = this.border.width;
         if (this._inkPointsCollection !== null) {
             if (this._inkPointsCollection.length > 0) {
@@ -7133,7 +7135,26 @@ export class PdfPopupAnnotation extends PdfComment {
     /**
      * Initializes a new instance of the `PdfPopupAnnotation` class.
      *
-     * @private
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new line annotation
+     * let lineAnnotation: PdfLineAnnotation = new PdfLineAnnotation([10, 50, 250, 50]);
+     * // Create a new popup annotation
+     * let popup: PdfPopupAnnotation = new PdfPopupAnnotation();
+     * // Set the author name
+     * popup.author = 'Syncfusion';
+     * // Set the text
+     * popup.text = 'This is first comment';
+     * // Add comments to the annotation
+     * lineAnnotation.comments.add(popup);
+     * // Add annotation to the page
+     * page.annotations.add(lineAnnotation);
+     * // Destroy the document
+     * document.destroy();
+     * ```
      */
     constructor()
     /**
@@ -7380,7 +7401,7 @@ export class PdfPopupAnnotation extends PdfComment {
     }
     _postProcess(): void {
         if (typeof this.bounds === 'undefined' || this.bounds === null) {
-            throw new Error('Bounds cannot be null or undefined');
+            this._bounds = {x: 0, y: 0, width: 0, height: 0};
         }
         let borderWidth: number;
         if (this._dictionary.has('BS')) {
@@ -10001,7 +10022,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
             }
         } else {
             this._iconString = this._obtainIconName(this._icon);
-            this._dictionary.update('Name', _PdfName.get('#' + this._iconString));
+            this._dictionary.update('Name', _PdfName.get('#23' + this._iconString));
             appearance = new PdfAppearance(this, nativeRectangle);
             appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
         }

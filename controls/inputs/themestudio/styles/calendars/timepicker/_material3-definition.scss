@@ -1,0 +1,99 @@
+$timepicker-skin-name: 'Material3' !default;
+$timepicker-default-text-indent: 16px !default;
+$timepicker-list-bigger-line-height: 40px !default;
+$timepicker-list-normal-line-height: 32px !default;
+$timepicker-list-normal-font-size: 13px !default;
+$timepicker-list-bigger-font-size: 14px !default;
+$timepicker-list-normal-text-indent: $timepicker-default-text-indent !default;
+$timepicker-list-bigger-text-indent: 16px !default;
+$timepicker-popup-border-radius: 4px !default;
+$timepicker-list-font-weight: normal !default;
+$timepicker-popup-shadow: $shadow-md !default;
+$timepicker-list-default-font-color: rgba($flyout-text-color) !default;
+$timepicker-list-default-border-style: none !default;
+$timepicker-list-border-color: none !default;
+$timepicker-list-hover-border-color: none !default;
+$timepicker-list-bg-color: $flyout-bg-color !default;
+$timepicker-list-active-bg-color: rgba($primary) !default;
+$timepicker-list-active-font-color: rgba($primary-text-color) !default;
+$timepicker-list-active-icon-color: rgba($icon-color) !default;
+$timepicker-list-hover-bg-color: $flyout-bg-color-hover !default;
+$timepicker-list-hover-font-color: rgba($flyout-text-color-hover) !default;
+$timepicker-list-popup-icon-active-color: rgba($icon-color) !default;
+$timepicker-list-active-hover-bg-color: rgba($primary) !default;
+$timepicker-list-active-hover-font-color: rgba($primary-text-color) !default;
+$timepicker-list-normal-padding: 0 !default;
+$timepicker-list-bigger-padding: 0 !default;
+$timepicker-font-icon: '\e20c' !default;
+$timepicker-icon-normal-font-size: $font-icon-16 !default;
+$timepicker-icon-bigger-font-size: $font-icon-20 !default;
+$timepicker-normal-input-min-height: 30px !default;
+$timepicker-normal-input-min-width: 30px !default;
+$timepicker-bigger-input-min-height: 38px !default;
+$timepicker-bigger-input-min-width: 38px !default;
+$timepicker-disable-text: $primary-text-disabled !default;
+$timepicker-disable-opacity: 1 !default;
+$timepicker-default-overlay: $content-bg-color-alt1 !default;
+$timepicker-icon-padding: 4px !default;
+$timepicker-normal-icon-border-radius: 16px !default;
+$timepicker-bigger-icon-border-radius: 20px !default;
+
+// icon active
+$timepicker-icon-active-border: 1px !default;
+$timepicker-icon-active-border-radius: 20px;
+$timepicker-icon-active-bg-color: rgba($content-text-color, .12) !default;
+$timepicker-bigger-icon-margin: 0 !default;
+$timepicker-icon-margin: 0 !default;
+$timepicker-time-small-icon-margin: 0 !default;
+$timepicker-bigger-small-icon-margin: 0 !default;
+
+// mouse small
+$timepicker-list-small-font-size: 12px !default;
+$timepicker-list-small-line-height: 26px !default;
+$timepicker-list-small-text-indent: 12px !default;
+$timepicker-list-small-font-color: rgba($content-text-color) !default;
+
+// mouse small icon
+$timepicker-icon-small-font-size: $font-icon-16 !default;
+$timepicker-small-input-min-height: 22px !default;
+$timepicker-small-input-min-width: 22px !default;
+$timepicker-small-icon-border-radius: 14px !default;
+
+// Touch small
+$timepicker-list-bigger-small-font-size: 13px !default;
+$timepicker-list-bigger-small-line-height: 36px !default;
+$timepicker-list-bigger-small-text-indent: 16px !default;
+
+// Touch small icon
+$timepicker-icon-bigger-small-font-size: $font-icon-20 !default;
+$timepicker-bigger-small-input-min-height: 34px !default;
+$timepicker-bigger-small-input-min-width: 34px !default;
+$timepicker-bigger-small-icon-border-radius: 20px !default;
+
+// modal dialog colors
+$modal-header-bg-color: rgba($primary) !default;
+$modal-header-text-color: rgba($primary-text-color) !default;
+
+// modal dialog portrait dimensions
+$modal-header-height: 10% !default;
+$modal-header-padding: 2.5vh 2.5vw 2.5vh 1.5vw !default;
+$modal-header-display-style: flex !default;
+$modal-header-content-align: center !default;
+$modal-header-portrait-font-size: 2vh !default;
+$modal-close-icon-float: left !default;
+$modal-portrait-content-padding: 1vh 2vw !default;
+$modal-content-height: 90% !default;
+$modal-content-overflow: auto !default;
+$modal-header-title-transform: uppercase !default;
+$modal-header-border-bottom: none !default;
+$modal-list-line-height: 5vh !default;
+$modal-landscape-list-line-height: 10vh !default;
+
+// modal dialog landscape dimensions
+$modal-header-landscape-height: 15% !default;
+$modal-content-landscape-height: 85% !default;
+$modal-header-landscape-font-size: 2vw !default;
+$modal-landscape-padding: 1vh 1vw !default;
+$modal-list-item-padding: 1vh 0 !default;
+$modal-mobile-font-size: 14px !default;
+$modal-tablet-font-size: 24px !default;

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 23.1.38 (2023-09-26)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Preservation issues in PDF annotation has been resolved.
+- Preservation issues in JPEG image drawing has been resolved.
+- Preservation issues in PDF Form fields appearance has been resolved.
+- Preservation issues in PDF annotation comments has been resolved.
+
+## 23.1.36 (2023-09-15)
+
 ### PDF Parser
 
 #### Key Features

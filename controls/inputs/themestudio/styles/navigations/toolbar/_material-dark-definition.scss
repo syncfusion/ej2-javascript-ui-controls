@@ -1,0 +1,247 @@
+//default
+$tbar-skin: 'material' !default;
+$tbar-zero-value: 0 !default;
+$tbar-pop-icon-bgr-padding: 0 !default;
+$tbar-pop-btn-txt-bgr-pad: 0 !default;
+$tbar-btn-bgr-minheight: 0 !default;
+$tbar-btn-bgr-line-height: 35px !default;
+$tbar-btn-icon-bgr-line-height: 34px !default;
+$tbar-icons-bgr-font-size: 14px !default;
+$tbar-btn-nrml-minheight: 0 !default;
+$tbar-btn-nrml-line-height: 25px !default;
+$tbar-btn-icon-nrml-line-height: 25px !default;
+$tbar-pop-icon-nrml-padding: 0 !default;
+$tbar-pop-btn-txt-nrml-pad: 0 !default;
+$tbar-btn-icn-nrml-padding: 0 !default;
+$tbar-btn-icn-bgr-padding: 0 !default;
+$tbar-rtl-btn-icn-nrml-padding: 0 !default;
+$tbar-rtl-btn-icn-bgr-padding: 0 !default;
+$tbar-btn-icn-right-bgr-padding: 0 !default;
+$tbar-btn-icn-right-nrml-padding: 0 !default;
+$tbar-rtl-btn-icn-right-nrml-padding: 0 !default;
+$tbar-rtl-btn-icn-right-bgr-padding: 0 !default;
+$tbar-icons-bgr-font-size: 18px !default;
+
+$tbar-separator-bgr-mrgn: 6px 6px !default;
+$tbar-radius: 4px !default;
+$tbar-separator-nrml-mrgn: 7.5px 3px !default;
+$tbar-pop-radius: 4px !default;
+$tbar-border-size: $border-size !default;
+$tbar-separator-border-type: $border-type !default;
+$tbar-pop-box-shadow: 0 2px 2px 1px rgba(0, 0, 0, .21) !default;
+$tbar-hover-border-color: $hover-border-color !default;
+$tbar-pressed-border: $tbar-hover-border-color !default;
+$tbar-pop-btn-bgr-padding: $tbar-zero-value 4px !default;
+$tbar-pop-btn-nrml-padding: $tbar-zero-value 4px !default;
+$tbar-btn-bgr-minwidth: 0 !default;
+$tbar-separator-vertical-bgr-mrgn: 5px 10px !default;
+$tbar-btn-nrml-minwidth: 0 !default;
+$tbar-btn-weight: 400 !default;
+$tbar-border-radius: $border-radius !default;
+$tbar-separator-nrml-height: calc(100% - 15px) !default;
+$tbar-separator-vertical-nrml-mrgn: 3px 7.5px !default;
+$tbar-tab-highlight-color:  rgba(0, 0, 0, 0) !default;
+$tbar-border-nav-type: solid !default;
+$tbar-popup-vertical-border-width: $border-size 0 0 0 !default;
+$tbar-popup-vertical-rtl-border-width: 0 0 $border-size 0 !default;
+$tbar-separator-size: $border-size !default;
+$tba-horizontal-separator: 0 $tbar-separator-size 0 0 !default;
+$tba-vertical-separator: 0 0 $tbar-separator-size 0 !default;
+$tbar-btn-box-shadow: none !default;
+$tbar-press-font: $active-font-color !default;
+$tbar-default-icon-overlay: rgba($grey-dark-font, .3) !default;
+$tbar-popup-rtl-border-width: 0 1px 0 0 !default;
+$tbar-popup-border-width: 0 0 0 $border-size !default;
+$tbar-default-bg: $grey-900 !default;
+$tbar-items-default-bg: $tbar-default-bg !default;
+$tbar-pop-bg: $tbar-default-bg !default;
+$tbar-press-bg: $grey-700 !default;
+$tbar-btn-press-bg: $tbar-press-bg !default;
+$tbar-press-border-color: $grey-700 !default;
+$tbar-active-bg: rgba($grey-white, .22) !default;
+
+$tbar-nrml-size: 42px !default;
+$tbar-bgr-size: 56px !default;
+$tbar-nrml-items-size: 42px !default;
+$tbar-bgr-items-size: 56px !default;
+$tbar-nrml-item-size: 42px !default;
+$tbar-bgr-item-size: 48px !default;
+$tbar-item-nrml-minwidth: 34px !default;
+$tbar-btn-pop-nrml-minheight: 25px !default;
+$tbar-btn-pop-bgr-minheight: 30px !default;
+$tbar-item-nrml-mrgn: 3px !default;
+$tbar-item-bgr-mrgn: 3px !default;
+$tbar-nav-nrml-width: 32px !default;
+$tbar-nav-bgr-width: 40px !default;
+$tbar-popup-padding: 0 !default;
+$tbar-btn-border-radius: 2px !default;
+$tbar-btn-pressed-box-shadow: none !default;
+
+$tbar-item-bgr-padding: 5px !default;
+$tbar-item-nrml-padding: 3.5px !default;
+$btn-txt-nrml-padding: 0 2px 0 2px !default;
+$btn-txt-bgr-padding: 0 2.5px 0 2.5px !default;
+$btn-rtl-txt-nrml-padding: 0 2px 0 2px !default;
+$btn-rtl-txt-bgr-padding: 0 2.5px 0 2.5px !default;
+$tbar-item-pop-nrml-padding: 0 !default;
+$tbar-item-pop-bgr-padding: 0 !default;
+$tbar-multirow-items-mrgn-bigger: 24px !default;
+$tbar-multirow-items-mrgn-small: 18px !default;
+$tbar-multirow-item-top-btm-mrgn-bigger: 0 !default;
+$tbar-multirow-item-top-btm-mrgn-small: 0 !default;
+
+$tbar-btn-nrml-mrgn: 4px 0 !default;
+$tbar-separator-nrml-mrgn: 7.5px 3px !default;
+$tbar-separator-bgr-mrgn: 10px 5px !default;
+$tbar-separator-nrml-height: calc(100% - 15px) !default;
+$tbar-separator-bgr-height: calc(100% - 20px) !default;
+$tbar-separator-nrml-minheight: 27px !default;
+$tbar-separator-bgr-minheight: 36px !default;
+$tbar-btn-icon-bgr-width: 27px !default;
+$tbar-btn-icon-nrml-width: 24px !default;
+$tbar-btn-icon-nrml-height: 25px !default;
+$tbar-right-item-line-height: 24px !default;
+$tbar-btn-bgr-padding: $tbar-zero-value 6px !default;
+$tbar-btn-bgr-focus-padding: 0 6px !default;
+$tbar-item-height: auto !default;
+$tbar-btn-nrml-padding: $tbar-zero-value 1.5px !default;
+$tbar-pop-btn-bgr-padding: $tbar-zero-value 16px !default;
+$tbar-pop-btn-nrml-padding: $tbar-zero-value 16px !default;
+$tbar-item-pop-bg-color: transparent !default;
+
+$tbar-nav-press-border: 0 !default;
+$tbar-nav-hover-border: 1px solid $grey-700 !default;
+$tbar-nav-focus-border: 0 !default;
+$tbar-nav-pressed-box-shadow: none !default;
+$tbar-border-nav-active-type: none !default;
+$tbar-border-size: 1px !default;
+$tbar-border-type: solid !default;
+$tbar-box-shadow: none !default;
+$tbar-separator-size: .5px !default;
+$tbar-btn-font-size: 14px !default;
+$tbar-btn-txt-font-size: $tbar-btn-font-size !default;
+$tbar-hover-bg: rgba($grey-white, .1) !default;
+$tbar-hover-border-color: rgba($grey-white, .1) !default;
+$tbar-focus-border-color: $tbar-hover-border-color !default;
+$tbar-focus-bg: $tbar-hover-bg !default;
+$tbar-default-icon-color: $grey-dark-font !default;
+$tbar-default-font: $grey-dark-font !default;
+$tbar-hover-font: $tbar-default-font !default;
+$tbar-default-font-overlay: rgba($grey-dark-font, .3) !default;
+$tbar-active-font-color: $tbar-default-font !default;
+$tbar-press-font: $tbar-default-font !default;
+
+$tbar-pressed-bg: $tbar-hover-bg !default;
+$tbar-pressed-border: $tbar-hover-border-color !default;
+$tbar-pressed-font: $tbar-hover-font !default;
+$tbar-select-font: $tbar-hover-font !default;
+
+$tbar-default-icon-overlay: rgba($grey-dark-font, .26) !default;
+$tbar-separator-border: rgba($grey-white, .24) !default;
+$tbar-default-border: $grey-700 !default;
+$tbar-btn-border: none !default;
+
+$tbar-bgr-btn-text-font-size: 14px !default;
+$tbar-bgr-btn-icon-font-size: 14px !default;
+$tbar-bgr-btn-focus-padding: 0 6px !default;
+
+$tbar-nrml-btn-border-radius: 2px !default;
+$tbar-nrml-btn-focus-padding: 0 1.5px !default;
+$tbar-nrml-btn-focus-outline: 0 !default;
+
+$tbar-btn-icons-focus-color: $grey-dark-font !default;
+$tbar-btn-text-focus-color: $grey-dark-font !default;
+$tbar-btn-focus-border-color: $tbar-focus-border-color !default;
+$tbar-btn-hover-border-size: $tbar-zero-value !default;
+$tbar-btn-hover-active-icons-color: $grey-dark-font !default;
+$tbar-btn-hover-active-text-color: $grey-dark-font !default;
+$tbar-btn-overlay-opacity: .5 !default;
+$tbar-btn-active-bg: $tbar-press-bg !default;
+$tbar-btn-active-icons-color: $tbar-default-icon-color !default;
+$tbar-btn-active-text-color: $tbar-default-icon-color !default;
+$tbar-btn-text-color: $grey-dark-font !default;
+$tbar-btn-pressed-text-color: $grey-dark-font !default;
+$tbar-btn-pressed-focus-box-shadow: none !default;
+$tbar-btn-pressed-bg: mix($grey-dark-font, transparent, 24%) !default;
+$tbar-flat-btn-active-box-shadow: none !default;
+
+$tbar-ext-btn-focus-padding: 0 1.5px !default;
+$tbar-ext-btn-icon-padding: 0 !default;
+$tbar-ext-btn-icon-font-size: 14px !default;
+$tbar-ext-btn-focus-box-shadow: none !default;
+$tbar-ext-btn-hover-border-color: $tbar-hover-border-color !default;
+$tbar-ext-btn-border: none !default;
+
+$tbar-popup-icon-font-size: 12px !default;
+$tbar-popup-text-btn-icon-padding: 0 !default;
+$tbar-popup-bgr-text-btn-icon-padding: 0 !default;
+$tbar-popup-btn-border: none !default;
+$tbar-popup-btn-border-radius: 2px !default;
+$tbar-popup-bgr-height: 48px !default;
+$tbar-popup-bgr-btn-icon-font-size: 14px !default;
+$tbar-popup-bgr-btn-text-font-size: 14px !default;
+$tbar-popup-nav-active-border-bottom-right-radius: 4px !default;
+$tbar-popup-nav-active-bg: $tbar-default-bg !default;
+$tbar-popup-nav-active-icons-color: $tbar-default-icon-color !default;
+$tbar-popup-nav-hover-bg: $tbar-hover-bg !default;
+$tbar-popup-nav-hover-color: $tbar-hover-font !default;
+$tbar-popup-nav-hover-icons-color: $tbar-default-icon-color !default;
+$tbar-popup-nav-hover-border-color: $tbar-default-border !default;
+$tbar-popup-nav-hover-border-size: 0 0 0 1px !default;
+$tbar-popup-nav-hover-active-bg: $tbar-hover-bg !default;
+$tbar-popup-nav-hover-active-border-color: $tbar-default-border !default;
+$tbar-popup-nav-hover-active-border-size: 0 !default;
+$tbar-popup-nav-focus-bg: $tbar-hover-bg !default;
+$tbar-popup-nav-focus-color: $grey-light-font !default;
+$tbar-popup-nav-focus-border-color: $grey-light-font !default;
+$tbar-popup-nav-focus-border-size: 0 !default;
+$tbar-popup-btn-bg: $tbar-default-bg !default;
+$tbar-popup-btn-hover-bg: $tbar-hover-bg !default;
+$tbar-popup-btn-hover-box-shadow: none !default;
+$tbar-popup-btn-active-bg: $tbar-press-bg !default;
+$tbar-popup-btn-active-box-shadow: none !default;
+$tbar-popup-btn-focus-bg: $tbar-hover-bg !default;
+$tbar-popup-btn-focus-box-shadow: none !default;
+$tbar-popup-nav-pressed-icons-active-color: $tbar-active-font-color !default;
+$tbar-popup-btn-focus-outline: 0 !default;
+$tbar-popup-nav-pressed-border-color: $tbar-pressed-bg !default;
+$tbar-popup-nav-pressed-border-size: 0 !default;
+$tbar-popup-nav-pressed-focus-border-color: $tbar-pressed-bg !default;
+$tbar-popup-nav-pressed-focus-border-size: 0 !default;
+$tbar-popup-btn-hover-border-size: $tbar-zero-value !default;
+
+//enddefault
+//dimensions
+$tbar-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;
+$tbar-ribble-animation-shadow-frame: 0 0 0 0 $tbar-ribble-animation-border-frame !default;
+$tbar-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !default;
+
+@mixin tbar-btn-animation {
+  background-color: transparent;
+  border-radius: 50%;
+  border-width: 1px;
+  box-sizing: border-box;
+  content: '';
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: 1px;
+}
+
+@mixin tbar-btn-animation-after {
+  animation: tbar-popup-shadow .6s ease-out 0ms;
+  visibility: visible;
+}
+
+@keyframes tbar-popup-shadow {
+  0% {
+    border-color: $tbar-ribble-animation-border-frame;
+    box-shadow: $tbar-ribble-animation-shadow-frame;
+  }
+
+  100% {
+    box-shadow: $tbar-ribble-animation-shadow-frame-end;
+  }
+}

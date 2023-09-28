@@ -2742,14 +2742,21 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this as any).isReact) {
                 valElem = this.columnTemplateFn(args, this, ruleID, templateID)[0];
+                target.nextElementSibling.appendChild(valElem as Element);
             } // eslint-disable-next-line @typescript-eslint/no-explicit-any
             else if ((this as any).isAngular) {
                 const valElemColl: Element[] = this.columnTemplateFn(args, this, ruleID, templateID);
                 valElem = (valElemColl[0].nodeType === 3) ? valElemColl[1] : valElemColl[0];
+                target.nextElementSibling.appendChild(valElem as Element);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } else if ((this as any).isVue3) {
+                valElem = this.columnTemplateFn(args, this, 'Template', templateID);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                append(valElem as any, target.nextElementSibling);
             } else {
                 valElem = this.columnTemplateFn(args, this, 'Template', templateID)[0];
+                target.nextElementSibling.appendChild(valElem as Element);
             }
-            target.nextElementSibling.appendChild(valElem as Element);
             addClass([target.nextElementSibling], 'e-template-value');
             this.renderReactTemplates();
             return true;

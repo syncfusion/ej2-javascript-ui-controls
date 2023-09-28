@@ -5493,6 +5493,12 @@ export class FormDesigner {
         this.propertiesDialog.hide();
     }
 
+    private select(e: any): void {
+        if (e.isSwiped) {
+            e.cancel = true; // Prevent swiping between tab items
+        }
+    }
+
     private createAppearanceTab(): HTMLElement {
         const elementID: string = this.pdfViewer.element.id;
         // eslint-disable-next-line max-len
@@ -5522,6 +5528,7 @@ export class FormDesigner {
                         header: { 'text': '<div class="e-pv-form-field-property-header-general"> ' + this.pdfViewer.localeObj.getConstant('Options') + '</div>' }, content: this.createOptionProperties()
                     },
                 ],
+                selecting: this.select,
             }, tabContainer)
         } else if (this.pdfViewer.selectedItems && (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType === 'SignatureField' || this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType === 'InitialField')) {
             // eslint-disable-next-line max-len
@@ -5531,6 +5538,7 @@ export class FormDesigner {
                         header: { 'text': '<div class="e-pv-form-field-property-header-general"> ' + this.pdfViewer.localeObj.getConstant('General') + '</div>' }, content: this.createGeneralProperties()
                     }
                 ],
+                selecting: this.select,
             }, tabContainer)
         } else {
             // eslint-disable-next-line max-len
@@ -5543,6 +5551,7 @@ export class FormDesigner {
                         header: { 'text': '<div class="e-pv-form-field-property-header-general"> ' + this.pdfViewer.localeObj.getConstant('Appearance') + '</div>' }, content: this.createAppearanceProperties()
                     }
                 ],
+                selecting: this.select,
             }, tabContainer)
         }
         (tabContainer.children[1] as HTMLElement).style.height = '100%';
@@ -5650,9 +5659,16 @@ export class FormDesigner {
         tooltip.beforeOpen = this.tooltipBeforeOpen.bind(this);
     }
     private tooltipBeforeOpen(args: any) {
-        let currentFormField: any = (this.pdfViewer.nameTable as any)[args.target.id.split('_')[0]];
+         // eslint-disable-next-line max-len
+         let currentFormField: any = (this.pdfViewer.nameTable as any)[args.target.id.split('_')[0] !== '' ? args.target.id.split('_')[0] : !isNullOrUndefined(args.target.firstElementChild) ? args.target.firstElementChild.id.split('_')[0] : ''];
         if (!isNullOrUndefined(currentFormField)) {
             args.element.children[0].innerHTML = currentFormField.tooltip;
+            if(args.element.children[0].innerHTML !==""){
+                args.element.style.display="block";  
+            }
+            else{
+                args.element.style.display="none"; 
+            }
         }
     }
     private createAppearanceProperties(): any {

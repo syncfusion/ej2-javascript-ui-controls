@@ -692,6 +692,10 @@ export class Toolbar {
                     this.enableToolbarItem(['AnnotationEditTool'], false);
                 }
                 this.updateUndoRedoButtons();
+                if (this.pdfViewer && this.pdfViewer.element && this.pdfViewer.element.id && this.pdfViewer.isAnnotationToolbarOpen) {
+                    let annotationId:string = this.pdfViewer.element.id + '_annotationIcon';
+                    this.annotationToolbarModule.createAnnotationToolbarForMobile(annotationId);
+            }
             }
         }
     }

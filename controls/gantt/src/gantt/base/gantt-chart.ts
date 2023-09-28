@@ -1019,6 +1019,12 @@ export class GanttChart {
         } else {
             this.isCollapseAll = true;
             this.parent.treeGrid.collapseAll();
+            if (this.isCollapseAll && !this.parent.allowTaskbarOverlap && this.parent.viewType === 'ResourceView') {
+                let treeGridContentHeight: number = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
+                                      this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
+                this.parent.contentHeight = treeGridContentHeight;
+                document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
+            }
         }
         this.isExpandAll = false;
         this.isCollapseAll = false;
