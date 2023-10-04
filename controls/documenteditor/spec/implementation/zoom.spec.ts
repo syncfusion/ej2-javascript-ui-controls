@@ -6,7 +6,7 @@ import { TestHelper } from '../test-helper.spec';
 /**
  * Zoom Module Spec
  */
-describe("Zoom constructor and Possible value checking - 1", () => {
+describe('Zoom constructor and Possible value checking - 1', () => {
     let editor: DocumentEditor;
     let zoomModule: Zoom;
     let documentHelper: DocumentHelper;
@@ -66,7 +66,7 @@ console.log('Zoomfactor with possible value as 3 checking');
         }, 100);
     });
 });
-describe("Zoom Module- Mouse wheel event testing-1", () => {
+describe('Zoom Module- Mouse wheel event testing-1', () => {
     let editor: DocumentEditor;
     let zoomModule: Zoom;
     beforeEach(function () {
@@ -115,7 +115,7 @@ console.log('Mouse Wheel Event with control pressed true with zoom factor 1');
 
     });
 });
-describe("Zoom Module- Mouse wheel event testing-2", () => {
+describe('Zoom Module- Mouse wheel event testing-2', () => {
     let editor: DocumentEditor;
     let originalTimeout: number;
     let documentHelper: DocumentHelper;

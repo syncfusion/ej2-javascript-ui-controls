@@ -2536,7 +2536,7 @@ export class Calendar extends CalendarBase {
             this.islamicModule.islamicRenderTemplate(elements, count, classNm, e, this.value);
         }
         this.changedArgs = { value: this.value, values: this.values };
-        this.changeHandler();
+        e && e.type === 'click' && (e.currentTarget as HTMLElement).classList.contains(OTHERMONTH) ? this.changeHandler(e) : this.changeHandler();     
     }
     protected clickHandler(e: MouseEvent): void {
         const eve: Element = <HTMLElement>e.currentTarget;

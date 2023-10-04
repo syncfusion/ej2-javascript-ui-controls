@@ -1726,51 +1726,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /* tslint:disable */
     public onPropertyChanged(newProp: DiagramModel, oldProp: DiagramModel): void {
         // Model Changed
+        // Bug 842506: After multiple group node rotations, the undo functionality is not working.
+        // Below condition is used to restrict onPropertyChange when we rotate group node using button at runtime.
+        if(!(this as any).rotateUsingButton){
         let newValue: NodeModel | ConnectorModel | DiagramModel;
         let oldValue: NodeModel | ConnectorModel | DiagramModel;
         let isPropertyChanged: boolean = true;
         let refreshLayout: boolean = false;
         let refereshColelction: boolean = false;
-         // Bug 842506: After multiple group node rotations, the undo functionality is not working.
-        // Below condition is used to remove width and height of nodes in props when we perform group node rotate using button.
-        if ((this as any).rotateUsingButton && !(this as any).fromUndo) {
-            if (newProp.nodes && Object.keys(newProp.nodes).length > 0) {
-                var nodeId = '';
-                for (var _k = 0, _l = Object.keys(newProp.nodes); _k < _l.length; _k++) {
-                    var key = _l[parseInt(_k.toString(), 10)];
-                    var nodeIndex = parseInt(key);
-                    nodeId = (this.nodes[parseInt(nodeIndex.toString(), 10)].id);
-                }
-                var nodeObj = this.nameTable[`${nodeId}`];
-                if (nodeObj.children && nodeObj.children.length > 0) {
-                    if ((this as any).rotateUsingButton) {
-                        var _l:string[];
-                        for (var _k = 0, _l = Object.keys(newProp.nodes); _k < _l.length; _k++) {
-                            var key = _l[parseInt(_k.toString(), 10)];
-                            var nodeIndex = parseInt(key);
-                           
-                                if (newProp.nodes[parseInt(nodeIndex.toString(), 10)].rotateAngle !== undefined) {
-                                    newProp.nodes[parseInt(nodeIndex.toString(), 10)] = { rotateAngle: newProp.nodes[parseInt(nodeIndex.toString(), 10)].rotateAngle };
-                                    oldProp.nodes[parseInt(nodeIndex.toString(), 10)] = { rotateAngle: newProp.nodes[parseInt(nodeIndex.toString(), 10)].rotateAngle - (this as any).buttonAngle };
-                                    newProp.selectedItems = { rotateAngle: newProp.selectedItems.rotateAngle };
-                                    oldProp.selectedItems = { rotateAngle: newProp.selectedItems.rotateAngle - (this as any).buttonAngle };
-                                    if((this as any).fromUndo === false && _k === _l.length - 1){
-                                        (this as any).buttonAngle = 1;
-                                    }
-                                }
-                                else if((this as any).buttonAngle || newProp.nodes[parseInt(nodeIndex.toString(), 10)].offsetX || newProp.nodes[parseInt(nodeIndex.toString(), 10)].offsetY) {
-                                    newProp = {};
-                                    oldProp = {};
-                                    (this as any).buttonAngle = null;
-                                }
-                        }
-                        if( _l.length > 1){
-                            (this as any).buttonAngle = null;
-                        }
-                    }
-                }
-            }
-        }
         if (this.diagramActions & DiagramAction.Render) {
             for (const prop of Object.keys(newProp)) {
                 switch (prop) {
@@ -2042,6 +2005,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
+    }else{
+        (this as any).rotateUsingButton = false;
+    }
     }
     /* tslint:enable */
     private updateSnapSettings(newProp: DiagramModel): void {
@@ -3478,10 +3444,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public rotate(obj: NodeModel | ConnectorModel | SelectorModel, angle: number, pivot?: PointModel, rotateUsingHandle?: boolean): boolean {
          // Bug 842506: After multiple group node rotations, the undo functionality is not working.
-        // Added below condition to change the negative angle to positive angle and assign button angle value if we rotate using button.
-        if(!rotateUsingHandle){
-            (this as any).buttonAngle = angle;
-            if(angle < 0){
+        // Added below condition to store the current obj to add it as undo element in rotation changed entry.
+        let undoObject: any;
+        let childTable: any = [];
+        if (!rotateUsingHandle) {
+            undoObject = cloneObject(obj);
+            
+            if (undoObject.nodes && undoObject.nodes.length >0 && undoObject.nodes[0].children) {
+                let elements: any = [];
+                if(!(this as any).fromUndo){(this as any).rotateUsingButton = true;};
+                let nodes = this.commandHandler.getAllDescendants(undoObject.nodes[0], elements);
+                for (var i = 0; i < nodes.length; i++) {
+                    var node = this.commandHandler.cloneChild(nodes[parseInt(i.toString(), 10)].id);
+                    childTable[nodes[parseInt(i.toString(), 10)].id] = cloneObject(node);
+                }
+            }
+            if (angle < 0) {
                 angle = (angle + 360) % 360;
             }
         }
@@ -3516,8 +3494,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
             this.commandHandler.getBlazorOldValues();
         }
-        if(!rotateUsingHandle){
-            (this as any).rotateUsingButton = true;
+        if (!rotateUsingHandle && !(this as any).fromUndo) {
+            // To add history entry for group node rotation.
+            if (undoObject.nodes && undoObject.nodes.length >0 && undoObject.nodes[0].children) {
+                let entry: HistoryEntry = {
+                type: 'RotationChanged', redoObject: cloneObject(obj), undoObject: cloneObject(undoObject), category: 'Internal',
+                childTable: childTable
+            };
+            this.commandHandler.addHistoryEntry(entry);
+            this.commandHandler.updateSelector();
+            }
+            
         }
         return checkBoundaryConstraints;
     }
@@ -10111,6 +10098,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             // }
             if (existingInnerBounds.equals(existingInnerBounds, actualObject.wrapper.bounds) === false) {
+                if((this.eventHandler as any).currentAction !== 'Drag'){
+                    this.updateGroupSize(actualObject);
+                }
                 if (actualObject.children) { this.updateGroupOffset(actualObject); }
             }
             if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol && (this.diagramActions & DiagramAction.Render)) {
@@ -10412,7 +10402,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         if (existingBounds.equals(existingBounds, actualObject.wrapper.bounds) === false) {
-            this.updateQuad(actualObject); 
+            this.updateQuad(actualObject);
+            if((this.eventHandler as any).currentAction !== 'Drag'){
+                this.updateGroupSize(actualObject);
+            }
         }
         if (updateSelector === true && this.checkSelectedItem(actualObject) && (!(this.diagramActions & DiagramAction.ToolAction)
             || (this.diagramActions & DiagramAction.UndoRedo))) { this.updateSelector(); }

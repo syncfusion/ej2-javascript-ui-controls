@@ -55,6 +55,10 @@ export class Layout {
     /**
      * @private
      */
+    public isReplacingAll: boolean = false;
+    /**
+     * @private
+     */
     public footHeight: number = 0;
     /**
      * @private
@@ -315,7 +319,8 @@ export class Layout {
             }
             /* eslint-disable-next-line max-len */
             if (i > 0 && !isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.lastChild) && !(bodyWidget.lastChild instanceof TableWidget) && ((this.documentHelper.compatibilityMode === 'Word2013' && (bodyWidget.lastChild as ParagraphWidget).isEndsWithPageBreak || (bodyWidget.lastChild as ParagraphWidget).isEndsWithColumnBreak)) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
-                this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
+                const removedPages = this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
+                removedPages[0].destroy();
                 lastpage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
             }
             if ((i === 0 && !isContinuousSection) || (i !== 0 && (isNullOrUndefined(section.sectionFormat.breakCode) || section.sectionFormat.breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (!isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild) && (lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild as ParagraphWidget).isEndsWithPageBreak)))) {
@@ -7809,7 +7814,9 @@ export class Layout {
         // let isElementMoved: boolean = elementBoxIndex > 0;
         if (paragraphWidget.isInsideTable) {
             this.isBidiReLayout = true;
-            this.reLayoutTable(paragraphWidget);
+            if(!this.isReplacingAll){
+                this.reLayoutTable(paragraphWidget);
+            }
             /* eslint-disable-next-line max-len */
             if (this.isFootnoteContentChanged && (!isNullOrUndefined(paragraphWidget.bodyWidget)) && !isNullOrUndefined(paragraphWidget.bodyWidget.page.footnoteWidget)) {
                 const foot: FootNoteWidget = paragraphWidget.bodyWidget.page.footnoteWidget;
@@ -10378,7 +10385,7 @@ export class Layout {
             let lineElementsBidiValues: boolean[] = [];
             for (let i: number = 0; i < line.children.length; i++) {
                 let element: ElementBox = line.children[i];
-                if (element instanceof TextElementBox && element.height > 0 && !(element.isPageBreak)) {
+                if (element instanceof TextElementBox && element.height > 0 && !(element.isPageBreak) && element.text !== '\v') {
                     let textRange: TextElementBox = element as TextElementBox;
                     lineElementsBidiValues.push(textRange.characterFormat.bidi);
                     if (textRange.text == "\t") {

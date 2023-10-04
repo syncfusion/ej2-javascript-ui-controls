@@ -4664,7 +4664,7 @@
   }
   
   .e-bigger .e-pv-signature-dialog-height {
-    @if ($skin-name == 'FluentUI' $skin-name == 'Material3') {
+    @if ($skin-name == 'FluentUI') {
       min-height: 592px;
     }
   }

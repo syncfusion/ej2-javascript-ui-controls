@@ -2187,4 +2187,94 @@ describe('Row Drag and Drop module', () => {
             gridObj = null;
         });
     })
+
+    describe('EJ2-847896 - DataSource not updated when row drag and drop performed in-between grids', () => {
+        let gridObj1: Grid;
+        let gridObj2: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj1 = createGrid(
+                {
+                    dataSource: data.slice(0, 5),
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    width: '49%',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+        beforeAll((done: Function) => {
+            gridObj2 = createGrid(
+                {
+                    dataSource: [],
+                    allowRowDragAndDrop: true,
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                    height: 400,
+                    width: '49%',
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ]
+                }, done);
+        });
+
+        it('coverage improvement 2nd grid empty data', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'rowdraganddrop') {
+                    expect((gridObj1.dataSource as Object[]).length).toBe(4);
+                    done();
+                } 
+            };
+            gridObj1.actionComplete = actionComplete;
+            gridObj1.element.style.display = 'inline-block';
+            gridObj2.element.style.display = 'inline-block';
+            expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
+            expect((gridObj2.dataSource as Object[]).length).toBe(0);
+            gridObj1.rowDropSettings.targetID = gridObj2.element.id;
+            const dragRowElem: Element = gridObj1.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj2.getContentTable().querySelector('tr');
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            gridObj1.selectRow(0);
+            dragRowElem.classList.add('e-rowcell');
+            (gridObj1.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj1.rowDragAndDropModule as any).helper({
+                target: gridObj1.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj1.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj1.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj1.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj2.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj2.rowDragAndDropModule as any).columnDrop({ target: dropRowElem, droppedElement: dropClone });
+        });
+
+        afterAll(() => {
+            destroy(gridObj1);
+            gridObj1 = actionComplete = null;
+            destroy(gridObj2);
+            gridObj2 = null;
+        });
+    });
 });

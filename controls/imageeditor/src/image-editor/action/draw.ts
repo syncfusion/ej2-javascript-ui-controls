@@ -3105,7 +3105,11 @@ export class Draw {
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 filesData = fileData = (args as any).filesData[0].rawFile;
             }
-            let fileExtension: string = fileData.name && fileData.name.split('.')[1].toLowerCase();
+            let fileExtension: string;
+            if (fileData.name) {
+                let fileExtensionArray: string[] = fileData.name.split('.');
+                fileExtension = fileExtensionArray[fileExtensionArray.length - 1].toLowerCase();
+            }
             if (fileExtension && ['jpg', 'jpeg', 'png', 'svg'].indexOf(fileExtension) === -1) {
                 this.errorLoading();
                 return;

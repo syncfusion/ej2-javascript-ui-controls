@@ -369,7 +369,7 @@ describe('Modify Styles for Heading 1 validation', () => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, StyleDialog, FontDialog, ParagraphDialog, ContextMenu, EditorHistory);
+        DocumentEditor.Inject(Editor, Selection, StyleDialog, FontDialog, ParagraphDialog, ContextMenu, EditorHistory, StylesDialog);
         editor = new DocumentEditor({
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.39 (2023-10-04)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I499313` - The issue with the file renaming in the File Manager component has been resolved.
+
 ## 23.1.38 (2023-09-26)
 
 ### FileManager

@@ -5,12 +5,15 @@
     .e-pivotcell-container {
       align-items: center;
       display: flex;
+      max-height: inherit;
 
       .e-stackedheadertext,
       .e-headertext {
         &.e-cellvalue {
+          align-self: stretch;
           overflow: hidden;
           text-overflow: ellipsis;
+          width: 100%;
         }
       }
 
@@ -181,7 +184,6 @@
         color: $pivotgrid-header-selection-color !important;
       }
     }
-    /* stylelint-enable */
 
     .e-drop-indicator {
       display: block;
@@ -190,7 +192,6 @@
     div {
       div span.e-value-sort-icon {
         @if ($skin-name == 'Material3') {
-        /* stylelint-disable */
           padding: 0 !important;
         }
       }
@@ -229,9 +230,10 @@
 
     .e-stackedheadercelldiv, .e-headercelldiv {
       .e-sortfilterdiv, .e-sortfilterdiv.e-value-sort-align {
-        margin: $pivotgrid-vsort-column-parent-margin !important;
+        margin: $pivotgrid-cell-value-margin !important;
         margin-left: auto !important;
-        margin-top: $pivotgrid-cell-value-margin-top !important;
+        padding-bottom: $pivotgrid-cell-value-margin !important;
+        padding-top: $pivotgrid-cell-value-margin !important;
       }
     }
 
@@ -305,6 +307,7 @@
       }
       .e-spinner-pane.e-pivot-outer-spinner .e-spinner-inner {
         visibility: hidden !important;
+        /* stylelint-enable */
       }
       .e-grid {
         .e-pivot-content-loader {
@@ -314,6 +317,7 @@
           font-size: 20px;
           text-align: center;
           padding: 10%;
+          pointer-events: none;
           
           &.e-hide-loader {
             display: none;
@@ -327,6 +331,7 @@
 
     .e-grid .e-headercelldiv,
     .e-grid .e-columnsheader {
+      /* stylelint-disable */
       padding-left: 8px !important;
 
       @if($skin-name == 'tailwind') or ($skin-name == 'tailwind-dark') {
@@ -755,6 +760,13 @@
       width: 100%;
     }
 
+    th.e-group-row .e-axis-row {
+      display: inline-block;
+      height: 100%;
+      vertical-align: top;
+      width: 100%;
+    }
+
     /* stylelint-disable */
     .e-group-row {
       padding: 0 !important;
@@ -952,8 +964,6 @@
       cursor: pointer;
       display: inline-block;
       height: 18px;
-      margin-top: $pivotgrid-expand-collapse-margin-top;
-      margin-bottom: $pivotgrid-expand-collapse-margin-bottom;
       text-align: center;
       width: 18px;
       @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') or ($skin-name == 'Material3') or ($skin-name == 'tailwind') {
@@ -965,7 +975,10 @@
     th .e-expand,
     th .e-collapse {
       font-size: $pivotgrid-expcoldiv-fontsize !important;
-      margin-left: 0px;
+      margin-left: 0;
+      @if ($skin-name == 'bootstrap4') {
+        display: flex;
+      }
     }
 
     /* stylelint-enable */

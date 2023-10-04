@@ -3740,6 +3740,7 @@ export class WordExport {
             case 'top':
                 return 't';
             case 'middle':
+            case 'center':
                 return 'ctr';
             case 'bottom':
                 return 'b';

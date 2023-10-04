@@ -91,6 +91,7 @@
     }
 
     & .e-stroke.e-template,
+    & .e-frame-stroke.e-template,
     & .e-pen-stroke-color.e-template {
       & .e-caret::before {
         content: '\e739';

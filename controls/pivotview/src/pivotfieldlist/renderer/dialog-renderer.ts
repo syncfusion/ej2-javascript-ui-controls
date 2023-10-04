@@ -250,7 +250,7 @@ export class DialogRenderer {
         }
         if (this.parent.allowDeferLayoutUpdate && this.parent.allowCalculatedField &&
             this.parent.dataType === 'pivot' && !this.parent.isAdaptive) {
-            this.parent.engineModule.fieldList = PivotUtil.getClonedFieldList(this.parent.clonedFieldList);
+            this.parent.engineModule.fieldList = this.parent.pivotFieldList = PivotUtil.getClonedFieldList(this.parent.clonedFieldList);
             const clonedField: string[] = Object.keys(this.parent.engineModule.fieldList);
             if (this.parent.allowCalculatedField && clonedField.length !== this.parent.engineModule.fields.length) {
                 const fields: string[] =  [];

@@ -2603,6 +2603,9 @@ export class DocumentHelper {
                 if (this.owner.enableImageResizerMode && !isNullOrUndefined(this.owner.imageResizerModule.selectedResizeElement)) {
                     this.owner.imageResizerModule.isImageResizing = true;
                 }
+                if (Browser.isDevice) {
+                    this.editableDiv.contentEditable = this.owner.isReadOnlyMode ? 'false' : 'true';
+                }
                 let x: number = this.owner.selection.end.location.x;
                 let y: number = this.selection.getCaretBottom(this.owner.selection.end, this.owner.selection.isEmpty) + 9;
                 //TouchDownOnSelectionMark will be 2 when touch end is pressed
@@ -2896,9 +2899,9 @@ export class DocumentHelper {
             page.footerWidgetIn.page = undefined;
         }
         let index: number = this.pages.indexOf(page);
-        // if (index > -1) {
-        this.pages.splice(index, 1);
-        // }        
+        if (index > -1) {
+            this.pages.splice(index, 1);
+        }        
         //this.removeRenderedPages();
         if (!isNullOrUndefined((this.owner.viewer as PageLayoutViewer).visiblePages)) {
             if (((this.owner.viewer as PageLayoutViewer).visiblePages).indexOf(page) > -1) {

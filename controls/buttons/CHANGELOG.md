@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.38 (2023-09-26)
+## 23.1.39 (2023-10-04)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I505814` - The issue with "Script error thrown in CheckBox While using the change event in React" has been resolved.
+
+## 23.1.36 (2023-09-15)
 
 ### Checkbox
 

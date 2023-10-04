@@ -172,8 +172,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         }
         if (state === 'check') {
-            frameSpan.classList.remove(INDETERMINATE);
-            frameSpan.classList.add(CHECK);
+            if (frameSpan) {
+                frameSpan.classList.remove(INDETERMINATE);
+                frameSpan.classList.add(CHECK);
+            }
             if (rippleSpan) {
                 rippleSpan.classList.remove(RIPPLEINDETERMINATE);
                 rippleSpan.classList.add(RIPPLECHECK);
@@ -187,7 +189,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 this.validCheck = true;
             }
         } else if (state === 'uncheck') {
-            removeClass([frameSpan], [CHECK, INDETERMINATE]);
+            if (frameSpan) {
+                removeClass([frameSpan], [CHECK, INDETERMINATE]);
+            }
             if (rippleSpan) {
                 removeClass([rippleSpan], [RIPPLECHECK, RIPPLEINDETERMINATE]);
             }
@@ -200,8 +204,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 this.validCheck = true;
             }
         } else {
-            frameSpan.classList.remove(CHECK);
-            frameSpan.classList.add(INDETERMINATE);
+            if (frameSpan) {
+                frameSpan.classList.remove(CHECK);
+                frameSpan.classList.add(INDETERMINATE);
+            }
             if (rippleSpan) {
                 rippleSpan.classList.remove(RIPPLECHECK);
                 rippleSpan.classList.add(RIPPLEINDETERMINATE);

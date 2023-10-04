@@ -197,7 +197,7 @@
     .e-gantt-dialog {
       .e-dialog {
         border-radius: 6px;
-        width: $gantt-bigger-dialog-width;
+        //width: $gantt-bigger-dialog-width;
       }
       .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
         padding: 0 16px !important;    /* stylelint-disable-line declaration-no-important */
@@ -822,6 +822,10 @@
         vertical-align: middle;
         z-index: 3;
       }
+
+      .e-taskbar-main-container:hover{
+        z-index: 4;
+      }
       
       .e-taskbar-main-container.e-gantt-multi-taskbar:hover {
         z-index: 4;
@@ -997,28 +1001,24 @@
         height: 16px;
         width: 16px;
         left: 14px;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-innerHTML1 {
         height: 16px;
         width: 16px;
         left: 30px;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-innerHTML2 {
         height: 16px;
         width: 16px;
         left: 60px;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-timelineHeader {
         height: 16px;
         width: 82px;
         left: 20px;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell01 {
@@ -1026,14 +1026,12 @@
         width: 88px;
         left: 14px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell02 {
         height: 18px;
         width: 410px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell03 {
@@ -1041,14 +1039,12 @@
         width: 88px;
         left: 14px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell04 {
         height: 18px;
         width: 208px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell05 {
@@ -1056,7 +1052,6 @@
         width: 108px;
         left: 64px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell06 {
@@ -1064,7 +1059,6 @@
         width: 195px;
         left: 192px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-maskcell07 {
@@ -1072,7 +1066,6 @@
         width: 156px;
         left: 388px;
         border-radius: 0;
-        background: $gantt-masked-table-background-color;
       }
 
       .e-taskbar-left-resizer,
@@ -1580,6 +1573,13 @@
 
   .e-bigger .e-gantt .e-gantt-chart .e-label {
     font-size: $gantt-bigger-label-font-size;
+  }
+  .e-bigger .e-gantt .e-gantt-chart .e-timeline-single-header-outer-div{
+    height: 64px !important; /* stylelint-disable-line declaration-no-important */
+  }
+  .e-bigger .e-timeline-single-header-cell {
+    height: 64px !important; /* stylelint-disable-line declaration-no-important */
+    line-height: 64px !important; /* stylelint-disable-line declaration-no-important */
   }
 
   .e-gantt-tooltip-label {

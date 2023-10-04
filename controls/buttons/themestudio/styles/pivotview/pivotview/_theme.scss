@@ -5,12 +5,15 @@
     .e-pivotcell-container {
       align-items: center;
       display: flex;
+      max-height: inherit;
 
       .e-stackedheadertext,
       .e-headertext {
         &.e-cellvalue {
+          align-self: stretch;
           overflow: hidden;
           text-overflow: ellipsis;
+          width: 100%;
         }
       }
 
@@ -314,6 +317,7 @@
           font-size: 20px;
           text-align: center;
           padding: 10%;
+          pointer-events: none;
           
           &.e-hide-loader {
             display: none;
@@ -756,6 +760,13 @@
       width: 100%;
     }
 
+    th.e-group-row .e-axis-row {
+      display: inline-block;
+      height: 100%;
+      vertical-align: top;
+      width: 100%;
+    }
+
     /* stylelint-disable */
     .e-group-row {
       padding: 0 !important;
@@ -964,7 +975,10 @@
     th .e-expand,
     th .e-collapse {
       font-size: $pivotgrid-expcoldiv-fontsize !important;
-      margin-left: 0px;
+      margin-left: 0;
+      @if ($skin-name == 'bootstrap4') {
+        display: flex;
+      }
     }
 
     /* stylelint-enable */

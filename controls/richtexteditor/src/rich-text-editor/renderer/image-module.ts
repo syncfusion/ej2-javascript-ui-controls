@@ -2274,6 +2274,7 @@ export class Image {
     /* eslint-enable */
     public destroy(): void {
         this.prevSelectedImgEle = undefined;
+        if (isNOU(this.parent)) { return; }
         this.removeEventListener();
     }
 

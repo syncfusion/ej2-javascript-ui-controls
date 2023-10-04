@@ -284,6 +284,7 @@ export class ViewSource {
      * @deprecated
      */
     public destroy(): void {
+        if (isNullOrUndefined(this.parent)) { return; }
         this.removeEventListener();
     }
 

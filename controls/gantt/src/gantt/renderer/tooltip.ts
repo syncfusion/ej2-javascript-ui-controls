@@ -34,7 +34,7 @@ export class Tooltip {
             '.e-gantt-parent-taskbar, .e-gantt-milestone, .e-gantt-unscheduled-taskbar' +
             '.e-event-markers, .e-baseline-bar, .e-event-markers,' +
             '.e-connector-line-container, .e-indicator-span, .e-notes-info, .e-gantt-manualparent-milestone,' +
-            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone, .e-gantt-manualparenttaskbar';
+            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone-container, .e-gantt-manualparenttaskbar';
         this.toolTipObj.position = 'BottomCenter';
         this.toolTipObj.openDelay = 700;
         this.toolTipObj.enableRtl = this.parent.enableRtl;
@@ -102,7 +102,7 @@ export class Tooltip {
                         parent.tooltipModule.getTooltipContent(
                             (data.ganttProperties.isMilestone ? 'milestone' : 'taskbar'), data, parent, args) as any : "";
                 } else if (args.target.classList.contains('e-baseline-bar') ||
-                           args.target.classList.contains('e-baseline-gantt-milestone')) {
+                           args.target.classList.contains('e-baseline-gantt-milestone-container')) {
                     let baseLineTemplateNode: NodeList;
                     if ((parent.tooltipSettings.baseline)) {
                         baseLineTemplateNode = parent.tooltipModule.templateCompiler(
@@ -275,7 +275,7 @@ export class Tooltip {
         case 'milestone':
         {
             let milestoneStartDate: Date;
-            if (args.target.className.includes('e-baseline-gantt-milestone') && !isNullOrUndefined(data.baselineStartDate)) {
+            if (args.target.className.includes('e-baseline-gantt-milestone-container') && !isNullOrUndefined(data.baselineStartDate)) {
                 milestoneStartDate = data.baselineStartDate;
             } else if (!isNullOrUndefined(data.startDate)) {
                 milestoneStartDate = data.startDate;

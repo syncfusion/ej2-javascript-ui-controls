@@ -88,7 +88,7 @@ export function rename(parent: IFileManager, path: string, itemNewName: string):
     }
     // eslint-disable-next-line
     const data: Object = {
-        action: 'rename', path: path, name: name, newName: newName, data: parent.itemData
+        action: 'rename', path: path, name: name, newName: newName, data: parent.itemData, showFileExtension: parent.showFileExtension
     };
     createAjax(parent, data, renameSuccess, path);
 }

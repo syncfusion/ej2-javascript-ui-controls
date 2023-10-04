@@ -670,10 +670,8 @@ export class UndoRedo {
             }
         }
         this.getProperty(diagram as Object, (isRedo ? redoObject : undoObject) as Object);
-        (diagram as any).fromUndo = true;
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         isRedo ? diagram.onPropertyChanged(redoObject, undoObject) : diagram.onPropertyChanged(undoObject, redoObject);
-        (diagram as any).fromUndo = false;
         diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
     }
     private recordOrderCommandChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
@@ -811,6 +809,7 @@ export class UndoRedo {
         if (selectorObj && selectorObj.wrapper) {
             selectorObj.wrapper.rotateAngle = obj.rotateAngle;
         }
+        (diagram as any).fromUndo = true;
         if (obj && obj.nodes && obj.nodes.length > 0) {
             for (i = 0; i < obj.nodes.length; i++) {
                 node = obj.nodes[parseInt(i.toString(), 10)];
@@ -880,6 +879,7 @@ export class UndoRedo {
                 }
             }
         }
+        (diagram as any).fromUndo = false;
         if (obj && obj.connectors && obj.connectors.length > 0) {
             for (i = 0; i < obj.connectors.length; i++) {
                 connector = obj.connectors[parseInt(i.toString(), 10)];

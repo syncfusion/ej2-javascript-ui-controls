@@ -506,6 +506,9 @@ export class BaseHistoryInfo {
         this.lastElementRevision = this.checkAdjacentNodeForMarkedRevision(this.lastElementRevision);
         let currentRevision: TextPosition = this.retrieveEndPosition(this.lastElementRevision);
         let blockInfo: ParagraphInfo = this.owner.selection.getParagraphInfo(currentRevision);
+        if(blockInfo.paragraph.getLength() == blockInfo.offset) {
+            blockInfo.offset++;
+        }
         this.endRevisionLogicalIndex = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         this.lastElementRevision.isMarkedForRevision = false;
     }
@@ -652,6 +655,13 @@ export class BaseHistoryInfo {
                         !isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
                         this.editorHistory.currentHistoryInfo.action === 'PageBreak')) {
                         lastNode = deletedNodes[1];
+                    }
+                    if(lastNode instanceof WCharacterFormat) {
+                        const newParagraph = new ParagraphWidget();
+                        newParagraph.characterFormat = lastNode;
+                        this.owner.editorModule.insertNewParagraphWidget(newParagraph, true);
+                        deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
+                        block = newParagraph;
                     }
                     if (lastNode instanceof ParagraphWidget && this.owner.selection.start.offset > 0) {
                         this.owner.editorModule.insertNewParagraphWidget(lastNode, true);

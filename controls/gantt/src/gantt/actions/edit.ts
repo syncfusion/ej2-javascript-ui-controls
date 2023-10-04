@@ -3023,8 +3023,7 @@ export class Edit {
                         /* tslint:disable-next-line */
                         const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         const adaptor: any = data.adaptor;
-                        const moduleName: string = adaptor.getModuleName();
-                        if (!(moduleName == "WebApiAdaptor" || moduleName == "ODataAdaptor" || moduleName == "ODataV4Adaptor") || data.dataSource.batchUrl) {                            
+                        if (!(adaptor instanceof WebApiAdaptor || adaptor instanceof ODataAdaptor || adaptor instanceof ODataV4Adaptor) || data.dataSource.batchUrl) {
                             /* tslint:disable-next-line */
                             const crud: Promise<Object> =
                                 data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;

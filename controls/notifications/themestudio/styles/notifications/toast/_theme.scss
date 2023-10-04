@@ -12,7 +12,12 @@
       &.e-blazor-toast-close-icon,
       &.e-blazor-toast-close-icon:focus,
       &.e-blazor-toast-close-icon:active {
-        background-color: transparent;
+        @if $skin-name == 'Material3' {
+          background: transparent;
+        }
+        @else {
+          background-color: transparent;
+        }
         border: 0;
         box-shadow: none;
         outline: 0;

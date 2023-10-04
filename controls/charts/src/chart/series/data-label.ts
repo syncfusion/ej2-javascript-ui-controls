@@ -270,7 +270,7 @@ export class DataLabel {
                                     xValue = rect.x;
                                     yValue = rect.y;
                                     xPos -= chart.chartAreaType == 'Cartesian' && xPos + (textSize.width / 2) > clip.width ? (xPos + textSize.width / 2) - clip.width : 0;
-                                    yPos -= yPos + textSize.height > clip.y + clip.height ? (yPos + textSize.height) - (clip.y + clip.height) : 0;
+                                    yPos -= (yPos + textSize.height > clip.y + clip.height && !(series.type.indexOf('Bar') > -1)) ? (yPos + textSize.height) - (clip.y + clip.height) : 0;
                                 }
                                 const textAnchor: string = dataLabel.labelIntersectAction === 'Rotate90' ? (dataLabel.position == 'Top' ? 'start' : (dataLabel.position == 'Middle' ? 'middle' : 'end')) :
                                     ((angle == -90 && dataLabel.enableRotation) ? (dataLabel.position == 'Top' ? 'end' : (dataLabel.position == 'Middle' ? 'middle' : 'start')) : 'middle');

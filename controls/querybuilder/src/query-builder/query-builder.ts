@@ -15,7 +15,7 @@ import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChange
 import { TextBoxModel, NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs, DatePickerModel } from '@syncfusion/ej2-calendars';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { Tooltip, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { compile as templateCompiler } from '@syncfusion/ej2-base';
 
  type ReturnType = { result: Object[], count: number, aggregates?: Object };
@@ -1128,7 +1128,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     private renderToolTip(element: HTMLElement): void {
         const tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'),
-            position: 'BottomCenter', cssClass: 'e-querybuilder-error' });
+            position: 'BottomCenter', cssClass: 'e-querybuilder-error', afterClose: (args: TooltipEventArgs): void => {
+                tooltip.destroy();
+            }});
         tooltip.appendTo(element);
         tooltip.open(element);
     }
@@ -4423,11 +4425,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private enableReadonly(): void {
         const target: Element = this.element;
         const elem: NodeListOf<Element> =
-        target.querySelectorAll('.e-dropdownlist, .e-numerictextbox, .e-textbox, .e-datepicker, .e-multiselect .e-lib, .e-radio');
+        target.querySelectorAll('.e-dropdownlist, .e-dropdowntree, .e-numerictextbox, .e-textbox, .e-datepicker, .e-multiselect .e-lib, .e-radio');
         for (let i: number = 0; i < elem.length; i++ ) {
             if (elem[i as number].classList.contains('e-dropdownlist')) {
                 const dropDownObj: DropDownList = getInstance(elem[i as number] as HTMLElement, DropDownList) as DropDownList;
                 dropDownObj.readonly = this.isReadonly;
+            } else if (elem[i as number].classList.contains('e-dropdowntree')) {
+                const dropDownTreeObj: DropDownTree = getInstance(elem[i as number] as HTMLElement, DropDownTree) as DropDownTree;
+                dropDownTreeObj.readonly = this.isReadonly;
             } else if (elem[i as number].classList.contains('e-numerictextbox')) {
                 const numericTextBoxObj: NumericTextBox = getInstance(elem[i as number] as HTMLElement, NumericTextBox) as NumericTextBox;
                 numericTextBoxObj.readonly = this.isReadonly;

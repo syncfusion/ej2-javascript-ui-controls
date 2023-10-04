@@ -532,6 +532,7 @@ export class Toolbar {
      * @deprecated
      */
     public destroy(): void {
+        if (isNOU(this.parent)) { return; }
         if (this.isToolbarDestroyed()) {
             this.destroyToolbar();
             if (this.keyBoardModule) {

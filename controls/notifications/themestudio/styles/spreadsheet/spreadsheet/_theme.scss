@@ -223,6 +223,14 @@
           }
         }
 
+        &:hover:not(.e-disabled) {
+          @if $skin-name == 'bootstrap4' {
+            & .e-btn-icon {
+              color: $btn-color;
+            }
+          }
+        }
+
         &:hover {
           @if $skin-name == 'bootstrap5' {
             & .e-btn-icon {
@@ -250,6 +258,9 @@
         @if $skin-name == 'Material3' {
           border-radius: 8px;
           background: $sheet-tab-button-active-bg-color;
+        }
+        @if $skin-name == 'bootstrap4' {
+          color: $btn-color;
         }
       }
 

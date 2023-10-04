@@ -5,10 +5,10 @@ import { Revision } from './track-changes';
 import { CommentReviewPane } from '../comments';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButtonModel, DropDownButton, MenuEventArgs, ItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableRowWidget, TableWidget, BlockWidget } from '../viewer/page';
-import { WRowFormat, WCharacterFormat } from '../index';
+import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableRowWidget, TableWidget, BlockWidget, HeaderFooterWidget } from '../viewer/page';
+import { WRowFormat, WCharacterFormat, SelectionSectionFormat } from '../index';
 import { HelperMethods } from '../editor/editor-helper';
-import { Dictionary } from '../../base/index';
+import { Dictionary, HeaderFooterType } from '../../base/index';
 /**
  * Track changes pane
  */
@@ -328,7 +328,7 @@ export class TrackChangesPane {
             if (this.selectedUser === this.locale.getConstant('All') && this.selectedType === this.locale.getConstant('All')) {
                 singleChangesDiv.style.display = 'block';
             } else if (this.selectedUser === this.locale.getConstant('All') && this.selectedType !== this.locale.getConstant('All')) {
-                if (changes.revisionType === this.selectedType) {
+                if (this.locale.getConstant(changes.revisionType) === this.selectedType) {
                     singleChangesDiv.style.display = 'block';
                 } else {
                     singleChangesDiv.style.display = 'none';
@@ -340,7 +340,7 @@ export class TrackChangesPane {
                     singleChangesDiv.style.display = 'none';
                 }
             } else {
-                if (changes.user === this.selectedUser && changes.revisionType === this.selectedType) {
+                if (changes.user === this.selectedUser && this.locale.getConstant(changes.revisionType) === this.selectedType) {
                     singleChangesDiv.style.display = 'block';
                 } else {
                     singleChangesDiv.style.display = 'none';
@@ -406,7 +406,9 @@ export class TrackChangesPane {
                     if (this.renderedChanges.containsKey(revision)) {
                         this.renderedChanges.remove(revision);
                     }
-                    this.changes.remove(revision);
+                    if (this.changes.containsKey(revision)) {
+                        this.changes.remove(revision);
+                    }
                     this.revisions.splice(index, 1);
                 }
                 this.tableRevisions.clear();
@@ -422,6 +424,16 @@ export class TrackChangesPane {
                 for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
                     let revision: Revision = this.owner.revisions.changes[i];
                     let ranges: object = this.owner.revisions.changes[i].range[0];
+                    if (ranges instanceof TextElementBox &&
+                        ranges.paragraph.containerWidget instanceof HeaderFooterWidget) {
+                        let headerFooterType: HeaderFooterType = ranges.paragraph.containerWidget.headerFooterType;
+                        let sectionFormat: SelectionSectionFormat = this.owner.selection.sectionFormat;
+                        if ((headerFooterType === 'EvenFooter' || headerFooterType === 'EvenHeader' || headerFooterType === 'OddFooter' || headerFooterType === 'OddHeader') && !sectionFormat.differentOddAndEvenPages) {
+                            continue;
+                        } else if ((headerFooterType === 'FirstPageHeader' || headerFooterType === 'FirstPageFooter') && !sectionFormat.differentFirstPage) {
+                            continue;
+                        }
+                    }
                     if (this.changes.containsKey(revision)) {
                         continue;
                     }

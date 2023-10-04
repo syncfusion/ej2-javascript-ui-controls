@@ -527,13 +527,23 @@ export class Data implements IDataProcessor {
 
     private addRows(e: { toIndex: number, records: Object[] }): void {
         for (let i: number = e.records.length; i > 0; i--) {
-            this.dataManager.dataSource.json.splice(e.toIndex, 0, e.records[i - 1]);
+            if (this.parent.dataSource instanceof DataManager && this.dataManager.dataSource.offline){
+                this.dataManager.dataSource.json.splice(e.toIndex, 0, e.records[i - 1]);
+            } else if (((!this.parent.getDataModule().isRemote()) && (!isNullOrUndefined(this.parent.dataSource))) &&
+                (!(<{result: object[]}>this.parent.dataSource).result)) {
+                this.parent.dataSource['splice'](e.toIndex, 0, e.records[i - 1]);
+            }
         }
     }
 
     private removeRows(e: { indexes: number[], records: Object[] }): void {
         const json: Object[] = this.dataManager.dataSource.json;
-        this.dataManager.dataSource.json = json.filter((value: Object) => e.records.indexOf(value) === -1);
+        if (this.parent.dataSource instanceof DataManager && this.dataManager.dataSource.offline) {
+            this.dataManager.dataSource.json = json.filter((value: Object) => e.records.indexOf(value) === -1);
+        } else if (((!this.parent.getDataModule().isRemote()) && (!isNullOrUndefined(this.parent.dataSource))) &&
+            (!(<{result: object[]}>this.parent.dataSource).result)) {
+            this.parent.dataSource = json.filter((value: Object) => e.records.indexOf(value) === -1);
+        }
     }
 
     private getColumnByField(field: string): Column {

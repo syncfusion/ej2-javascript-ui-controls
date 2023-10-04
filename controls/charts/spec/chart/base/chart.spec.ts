@@ -250,7 +250,7 @@ describe('Chart Control', () => {
             chart.subTitleStyle.textOverflow = 'Wrap';
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
-            expect(text.childNodes.length == 2).toBe(true);
+            expect(text.childNodes.length == 3).toBe(true);
             expect(text.getAttribute('y') == '51.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
@@ -262,7 +262,7 @@ describe('Chart Control', () => {
                 chart.titleStyle.textOverflow = 'Wrap';
                 chart.dataBind();
                 text = document.getElementById('container_ChartSubTitle');
-                expect(text.textContent.indexOf('...') != -1).toBe(true);
+                expect(text.textContent.indexOf('...') === -1).toBe(true);
                 expect(text.getAttribute('text-anchor')).toBe('middle');
             });
 

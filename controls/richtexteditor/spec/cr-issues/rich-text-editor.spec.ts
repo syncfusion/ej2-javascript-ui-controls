@@ -2267,4 +2267,37 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
+    describe('848791 - The CMD + B Shortcut not working on the Safari browser', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let selectNode: Element;
+        let editNode: HTMLElement;
+        let curDocument: Document;
+        let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
+        let innerHTML: string = `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`;
+        beforeAll(() => {
+            rteObj = renderRTE({ height: 200 });
+            elem = rteObj.element;
+            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            curDocument = rteObj.contentModule.getDocument();
+            editNode.innerHTML = innerHTML;
+        });
+
+        it('Bold action in Mac machin : Command + b', () => {
+            editNode.focus();
+            selectNode = editNode.querySelector('.first-p');
+            setCursorPoint(selectNode, 0);
+            keyBoardEvent.ctrlKey = false;
+            keyBoardEvent.metaKey = true;
+            keyBoardEvent.shiftKey = false;
+            keyBoardEvent.action = 'bold';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect( editNode.querySelector('.first-p').firstChild.nodeName === 'STRONG').toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

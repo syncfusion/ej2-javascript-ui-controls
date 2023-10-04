@@ -48,7 +48,7 @@ export class InsertHtml {
         let range: Range = nodeSelection.getRange(docElement);
         if (range.startContainer === editNode && range.startContainer === range.endContainer && range.startOffset === 0 &&
             range.startOffset === range.endOffset && editNode.textContent.length === 0 &&
-            (editNode.children[0].tagName === 'P' || (editNode.children[0].tagName === 'BR'))) {
+            (editNode.children[0].tagName === 'P' || editNode.children[0].tagName === 'DIV' || (editNode.children[0].tagName === 'BR'))) {
             nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).children[0],
                                            (range.startContainer as HTMLElement).children[0], 0, 0);
             range = nodeSelection.getRange(docElement);

@@ -64,19 +64,24 @@ describe('Chart - ', () => {
         beforeEach((done: Function) => {
             setTimeout(() => { done(); }, 1000);
         });
-        it('Check initial render', (done: Function) => {
+        it('Check initial render 1', (done: Function) => {
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Canada:100, FY 2005');
                 expect(document.getElementById('PivotView_chart_Series_1_Point_0').getAttribute('aria-label')).toBe('Canada:400, FY 2006');
                 expect(document.getElementById('PivotView_chart_Series_0_Point_1').getAttribute('aria-label')).toBe('France:200, FY 2005');
                 expect(document.getElementById('PivotView_chart_Series_3_Point_4').getAttribute('aria-label')).toBe('United States:400, FY 2008');
                 expect(document.getElementById('PivotView_chart_Series_4_Point_4')).toBeNull();
-                expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4').textContent).toBe(' + United States');
-                expect(document.getElementById('PivotView_chart1_AxisLabel_5').textContent).toBe('$500.00');
-                expect(document.getElementById('PivotView_chart_AxisTitle_0').textContent).toBe('Country / State');
-                expect(document.getElementById('PivotView_chart_AxisTitle_1').textContent).toBe('Sum of Amount');
-                expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005');
-                expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2008');
+                done();
+            }, 1000);
+        });
+        it('Check initial render 2', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + United States');
+                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_5')[0].textContent).toBe('$500.00');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_0')[0].textContent).toBe('Country / State');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Sum of Amount');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2008');
                 done();
             }, 1000);
         });
@@ -90,7 +95,7 @@ describe('Chart - ', () => {
         it('chart type changed to column', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Column';
             setTimeout(() => {
-                expect(document.getElementById('PivotView_chart1_AxisLabel_5').textContent).toBe('$500.00');
+                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_5')[0].textContent).toBe('$500.00');
                 done();
             }, 1000);
         });
@@ -99,7 +104,7 @@ describe('Chart - ', () => {
             util.triggerMouseEvent((document.querySelectorAll('.e-sort')[0] as HTMLElement), 'click');
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('United States:400, FY 2005');
-                expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4').textContent).toBe(' + Canada');
+                expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + Canada');
                 done();
             }, 1000);
         })
@@ -108,9 +113,9 @@ describe('Chart - ', () => {
             util.triggerMouseEvent((document.querySelectorAll('.e-remove')[2] as HTMLElement), 'click');
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('United States:300, Bike');
-                expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4').textContent).toBe(' + Canada');
-                expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('Bike');
-                expect(document.getElementById('PivotView_chart_chart_legend_text_2').textContent).toBe('Van');
+                expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + Canada');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('Bike');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_2')[0].textContent).toBe('Van');
                 done();
             }, 1000);
         })
@@ -119,7 +124,7 @@ describe('Chart - ', () => {
             util.triggerMouseEvent((document.querySelectorAll('.e-remove')[2] as HTMLElement), 'click');
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('United States:1450, ');
-                expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4').textContent).toBe(' + Canada');
+                expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + Canada');
                 done();
             }, 1000);
         })
@@ -136,7 +141,7 @@ describe('Chart - ', () => {
             util.triggerMouseEvent((document.querySelectorAll('.e-remove')[0] as HTMLElement), 'click');
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:4600, ');
-                expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_0').textContent).toBe('Total Sum of Amount');
+                expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_0')[0].textContent).toBe('Total Sum of Amount');
                 expect(document.getElementById('PivotView_chart_chart_legend_text_0')).toBe(null);
                 done();
             }, 1000);
@@ -160,71 +165,83 @@ describe('Chart - ', () => {
             pivotGridObj.chartSettings.enableMultipleAxis = true;
         });
         it('perform drill up operation', (done: Function) => {
-            expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0').textContent).toBe(' - United States');
+            expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0')[0].textContent).toBe(' - United States');
             let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             let node: HTMLElement = document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0') as HTMLElement;
             args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             node.dispatchEvent(args);
             setTimeout(function () {
-                expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0').textContent).toBe(' + United States');
+                expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0')[0].textContent).toBe(' + United States');
                 expect(document.getElementById('PivotView_chart_Series_11_Point_0').getAttribute('aria-label')).toBe('United States:4, FY 2007 - Car | Quantity');
                 expect(document.getElementById('PivotView_chart_Series_10_Point_0').getAttribute('aria-label')).toBe('United States:250, FY 2007 - Car | Amount');
                 done();
             }, 3000);
         });
         it('perform drill down operation', (done: Function) => {
-            expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0').textContent).toBe(' + United States');
+            expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0')[0].textContent).toBe(' + United States');
             let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             let node: HTMLElement = document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0') as HTMLElement;
             args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             node.dispatchEvent(args);
             setTimeout(function () {
-                expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0').textContent).toBe(' - United States');
+                expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0')[0].textContent).toBe(' - United States');
                 expect(document.getElementById('PivotView_chart_Series_11_Point_0').getAttribute('aria-label')).toBe('United States - Alabama:4, FY 2007 - Car | Quantity');
                 expect(document.getElementById('PivotView_chart_Series_10_Point_0').getAttribute('aria-label')).toBe('United States - Alabama:250, FY 2007 - Car | Amount');
                 done();
             }, 3000);
         });
-        it('empty rows', () => {
+        it('empty rows1', () => {
             pivotGridObj.dataSourceSettings.rows = [];
         });
-        it('empty rows', (done: Function) => {
+        it('empty rows2', (done: Function) => {
             setTimeout(function () {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600, FY 2005 - Bike | Amount');
                 expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2, FY 2006 - Bike | Quantity');
                 expect(document.getElementById('PivotView_chart_AxisTitle_0')).toBeNull();
-                expect(document.getElementById('PivotView_chart_AxisTitle_1').textContent).toBe('Sum of Amount');
-                expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005 - Bike | Amount');
-                expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2005 - Van | Quantity');
                 done();
             }, 1000);
         });
-        it('chart type changed to stackingarea100', (done: Function) => {
+        it('empty rows3', (done: Function) => {
+            setTimeout(function () {
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Sum of Amount');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005 - Bike | Amount');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2005 - Van | Quantity');
+                done();
+            }, 1000);
+        });
+        it('chart type changed to stackingarea100 1', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'StackingArea100';
             setTimeout(() => {
-                expect(document.getElementById('PivotView_chart1_AxisLabel_1').textContent).toBe('$50.00');
+                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_1')[0].textContent).toBe('$50.00');
                 done();
             }, 1000);
         });
-        it('chart type changed to column', (done: Function) => {
+        it('chart type changed to column 1', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Column';
             setTimeout(() => {
-                expect(document.getElementById('PivotView_chart1_AxisLabel_1').textContent).toBe('$500.00');
+                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_1')[0].textContent).toBe('$500.00');
                 done();
             }, 1000);
         });
-
         it('load y axis properties', () => {
             pivotGridObj.setProperties({ chartSettings: { primaryYAxis: { labelFormat: 'C', title: 'Custom title', plotOffset: 30 } } }, true);
             pivotGridObj.pivotChartModule.refreshChart();
         });
-        it('load y axis properties-update', () => {
-            expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600, FY 2005 - Bike | Amount');
-            expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2, FY 2006 - Bike | Quantity');
-            expect(document.getElementById('PivotView_chart_AxisTitle_0')).toBeNull();
-            expect(document.getElementById('PivotView_chart_AxisTitle_1').textContent).toBe('Custom title');
-            expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005 - Bike | Amount');
-            expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2005 - Van | Quantity');
+        it('load y axis properties-update', (done: Function) => {
+            setTimeout(() => {
+                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600, FY 2005 - Bike | Amount');
+                expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2, FY 2006 - Bike | Quantity');
+                expect(document.getElementById('PivotView_chart_AxisTitle_0')).toBeNull();
+                done();
+            }, 1000);
+        });
+        it('load y axis properties-update', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Custom title');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005 - Bike | Amount');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2005 - Van | Quantity');
+                done();
+            }, 1000);
         });
         it('customize tooltip, legend and zoom properties', () => {
             pivotGridObj.chartSettings = {
@@ -234,13 +251,21 @@ describe('Chart - ', () => {
             };
             expect(true).toBeTruthy();
         });
-        it('customize tooltip, legend and zoom properties-update', () => {
-            expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600, FY 2005 - Bike | Amount');
-            expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2, FY 2006 - Bike | Quantity');
-            expect(document.getElementById('PivotView_chart_AxisTitle_0')).toBeNull();
-            expect(document.getElementById('PivotView_chart_AxisTitle_1').textContent).toBe('Custom title');
-            expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005 - Bike | Amount');
-            expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2005 - Van | Quantity');
+        it('customize tooltip, legend and zoom properties-update', (done: Function) => {
+            setTimeout(() => {
+                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600, FY 2005 - Bike | Amount');
+                expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2, FY 2006 - Bike | Quantity');
+                expect(document.getElementById('PivotView_chart_AxisTitle_0')).toBeNull();
+                done();
+            }, 1000);
+        });
+        it('customize tooltip, legend and zoom properties-update', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Custom title');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005 - Bike | Amount');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2005 - Van | Quantity');
+                done();
+            }, 1000);
         });
         it('display option view as both', (done: Function) => {
             pivotGridObj.displayOption = { view: 'Both' };
@@ -336,7 +361,7 @@ describe('Chart - ', () => {
         beforeEach((done: Function) => {
             setTimeout(() => { done(); }, 1000);
         });
-        it('Check initial render', (done: Function) => {
+        it('Check initial render 1', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries = {
                 type: 'Column', animation: { enable: false }
             };
@@ -346,12 +371,17 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_1').getAttribute('aria-label')).toBe('France:200, FY 2005');
                 expect(document.getElementById('PivotView_chart_Series_3_Point_4').getAttribute('aria-label')).toBe('United States:400, FY 2008');
                 expect(document.getElementById('PivotView_chart_Series_4_Point_4')).toBeNull();
-                expect(document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4').textContent).toBe(' + United States');
-                expect(document.getElementById('PivotView_chart1_AxisLabel_5').textContent).toBe('$500.00');
-                expect(document.getElementById('PivotView_chart_AxisTitle_0').textContent).toBe('X axis title');
-                expect(document.getElementById('PivotView_chart_AxisTitle_1').textContent).toBe('Y axis title');
-                expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005');
-                expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2008');
+                done();
+            }, 1000);
+        });
+        it('Check initial render 2', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + United States');
+                expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_5')[0].textContent).toBe('$500.00');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_0')[0].textContent).toBe('X axis title');
+                expect(document.querySelectorAll('#PivotView_chart_AxisTitle_2')[0].textContent).toBe('Y axis title');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005');
+                expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2008');
                 done();
             }, 1000);
         });

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 23.1.39 (2023-10-04)
+
+### ImageEditor
+
+#### Bug Fixes
+
+- `#I495933` - Resolved the GetImageData method does not return values properly in blazor image editor.
+- `#I507638` - Resolved the image not opening in ImageEditor while the image file name has two dots.
+
 ## 23.1.38 (2023-09-26)
 
 ### ImageEditor

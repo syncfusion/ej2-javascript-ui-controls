@@ -106,6 +106,7 @@ console.log('Copy Paragraph Format');
         paraFormat.copyFormat(sourceFormat);
         paraFormat.copyFormat(undefined);
     });
+});
     describe('Table Format Testing', () => {
         it('constructor testing', () => {
 console.log('constructor testing');
@@ -235,4 +236,3 @@ console.log('constructor testing');
             // expect(bordersObj.ownerRow).toBe(undefined);
         });
     });
-});

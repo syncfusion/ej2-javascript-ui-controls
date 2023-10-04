@@ -5160,6 +5160,15 @@ export class Annotation {
                 if (annotation.thickness && currentAnnotation.thickness !== annotation.thickness) {
                     this.triggerAnnotationPropChange(currentAnnotation, false, false, true, false);
                 }
+                let isCurrentAnnotationLock: any = currentAnnotation.isLock;
+                if (!isNullOrUndefined(annotation.isLock)) {
+                    isCurrentAnnotationLock = annotation.isLock;
+                }
+                else if (!isNullOrUndefined(annotation.annotationSettings.isLock)) {
+                    isCurrentAnnotationLock = annotation.annotationSettings.isLock;
+                }
+                currentAnnotation.annotationSettings.isLock = isCurrentAnnotationLock;
+                currentAnnotation.isLock = isCurrentAnnotationLock;
                 annotation.content = (annotation.content && annotation.content === annotation.dynamicText) ? annotation.content : annotation.dynamicText;
                 if (annotation.content && currentAnnotation.dynamicText !== annotation.content) {
                     this.triggerAnnotationPropChange(currentAnnotation, false, false, false, false, false, false, false, true, currentAnnotation.dynamicText, annotation.content);

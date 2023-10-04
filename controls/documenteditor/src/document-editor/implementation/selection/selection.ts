@@ -10838,11 +10838,13 @@ export class Selection {
                 let endPosition: TextPosition = new TextPosition(this.owner);
                 if (lastElement instanceof WCharacterFormat) {
                     let currentPara: ParagraphWidget = lastElement.ownerBase as ParagraphWidget;
+                    const splittedWidgets = currentPara.getSplitWidgets();
+                    currentPara = splittedWidgets[splittedWidgets.length - 1] as ParagraphWidget;
                     if (currentPara.isEndsWithPageBreak || currentPara.isEndsWithColumnBreak) {
                         this.owner.trackChangesPane.isTrackingPageBreak = true;
                         endPosition.setPositionParagraph(currentPara.nextRenderedWidget.childWidgets[0] as LineWidget, 0);
                     } else {
-                        offset = currentPara.getLength();
+                        offset = (currentPara.lastChild as LineWidget).getEndOffset();
                         endPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset + 1);
                     }
                 } else {

@@ -5430,39 +5430,40 @@ describe('EJ2-23205 Revert the headings and blockquotes format while applying th
     afterAll(() => {
         destroy(rteObj);
     });
+});
 
-    describe('EJ2-23858 Iframe angular destroy issue', () => {
-        let rteObj: RichTextEditor;
-        let elem: HTMLElement;
-        let innerHTML: string = `Lists are a piece of cake
-            They even auto continue as you type
-            A double enter will end them
-            Tabs and shift-tabs work too`;
-        let controlId: string;
-        let isDestroyed: boolean = false;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                iframeSettings: { enable: true },
-                value: innerHTML, toolbarSettings: {
-                    items: ['Formats', 'UnorderedList', 'ClearFormat']
-                },
-                destroyed: () => {
-                    isDestroyed = true;
-                }
-            });
-            elem = rteObj.element;
-            controlId = elem.id;
-            editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
+describe('EJ2-23858 Iframe angular destroy issue', () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    let innerHTML: string = `Lists are a piece of cake
+        They even auto continue as you type
+        A double enter will end them
+        Tabs and shift-tabs work too`;
+    let controlId: string;
+    let isDestroyed: boolean = false;
+    let editNode: HTMLTextAreaElement;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            iframeSettings: { enable: true },
+            value: innerHTML, toolbarSettings: {
+                items: ['Formats', 'UnorderedList', 'ClearFormat']
+            },
+            destroyed: () => {
+                isDestroyed = true;
+            }
         });
+        elem = rteObj.element;
+        controlId = elem.id;
+        editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
+    });
 
-        it(' Check the destroyed event after remove the element from DOM ', () => {
-            rteObj.element.remove();
-            rteObj.destroy();
-            expect(isDestroyed).toBe(false);
-        });
-        afterAll(() => {
-            destroy(rteObj);
-        });
+    it(' Check the destroyed event after remove the element from DOM ', () => {
+        rteObj.element.remove();
+        rteObj.destroy();
+        expect(isDestroyed).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
     });
 });
 

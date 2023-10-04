@@ -19,7 +19,7 @@ import { MouseEvents } from '../base/events.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IZoomingEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, DataEditing, DataLabel, AreaSeries, Category, DateTime, ColumnSeries, Legend, BarSeries, Zoom);
 
 let data: any = tooltipData1;
@@ -1297,6 +1297,26 @@ describe('Chart Control', () => {
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking mouse wheel Zoom factor with onZooming event', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                wheelArgs = {
+                    preventDefault: prevent,
+                    wheelDelta: 120,
+                    detail: 3,
+                    clientX: 210,
+                    clientY: 100
+                };
+                chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.55').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.onZooming = (args : IZoomingEventArgs) =>{
+                args.cancel = true;
+            };
             chartObj.refresh();
         });
     });

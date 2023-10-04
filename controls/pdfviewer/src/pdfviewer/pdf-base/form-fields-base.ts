@@ -598,6 +598,7 @@ export class FormFieldsBase {
                 listBox.selectedIndex = 0;
             }
         }
+        listBox.textAlignment = this.getTextAlignment(formFieldAttributes.textAlign);
         listBox.multiSelect = true;
         listBox.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g, formFieldAttributes.backgroundColor.b];
         if (formFieldAttributes.backgroundColor.r == 0 && formFieldAttributes.backgroundColor.g == 0 && formFieldAttributes.backgroundColor.b == 0 && formFieldAttributes.backgroundColor.a == 0) {
@@ -1305,11 +1306,12 @@ export class FormFieldsBase {
         formFields.IsReadonly = comboBoxField.readOnly;
         formFields.Visible = comboBoxField.visibility;
         formFields.RotationAngle = this.GetRotateAngle(comboBoxField.page.rotation);
+        formFields.Alignment = comboBoxField.textAlignment;
         formFields.TextList = [];
         if (comboBoxField._dictionary.has('Opt')) {
             let options: string[] = comboBoxField._dictionary.get('Opt');
             if (options.length > 0) {
-                formFields.TextList = options;
+                formFields.TextList = options.map(item => (typeof item === "string" ? item : (typeof item === "object" ? item[0] : "")));
             }
         }
         if(formFields.TextList.length === 0 ){
@@ -1433,7 +1435,7 @@ export class FormFieldsBase {
             if (item) {
                 formFields.TextList.push(item.text);
                 if (i === 0) {
-                    formFields.Alignment = item.textAlignment;
+                    formFields.Alignment = listBoxField.textAlignment;
                 }
             }
         }

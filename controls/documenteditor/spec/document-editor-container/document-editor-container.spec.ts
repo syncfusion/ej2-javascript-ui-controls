@@ -179,7 +179,7 @@ describe('Show/Hide properties pane tooltip validation', () => {
     });
 });
 
-describe("insertText API validation when restrictEditing is enabled", () => {
+describe('insertText API validation when restrictEditing is enabled', () => {
     let container: DocumentEditorContainer;
     let element: HTMLElement;
     beforeAll(() => {

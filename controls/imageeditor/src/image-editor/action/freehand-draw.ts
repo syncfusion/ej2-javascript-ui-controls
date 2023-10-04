@@ -247,7 +247,7 @@ export class FreehandDrawing {
         EventHandler.add(canvas, 'mousemove touchmove', this.freehandMoveHandler, this);
         const shapeSettings: ShapeSettings = {id: 'pen_' + (this.currFHDIdx + 1), type: ShapeType.FreehandDraw,
             startX: this.freehandDownPoint.x, startY: this.freehandDownPoint.y,
-            strokeColor: this.parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.parent.activeObj.strokeSettings.strokeWidth,
+            strokeColor: this.parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.penStrokeWidth,
             points: null };
         const shapeChangingArgs: ShapeChangeEventArgs = {action: 'draw-start', previousShapeSettings: shapeSettings,
             currentShapeSettings: shapeSettings};
@@ -300,7 +300,7 @@ export class FreehandDrawing {
                 currentText: null, previousFilter: null, isCircleCrop: null}});
         const shapeSettings: ShapeSettings = {id: 'pen_' + (this.currFHDIdx + 1), type: ShapeType.FreehandDraw,
             startX: this.freehandDownPoint.x, startY: this.freehandDownPoint.y,
-            strokeColor: this.parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.parent.activeObj.strokeSettings.strokeWidth,
+            strokeColor: this.parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.penStrokeWidth,
             points: this.parent.pointColl[this.currFHDIdx].points };
         const shapeChangingArgs: ShapeChangeEventArgs = {action: 'draw-end', previousShapeSettings: shapeSettings,
             currentShapeSettings: shapeSettings};
@@ -318,6 +318,7 @@ export class FreehandDrawing {
             x = e.touches[0].clientX - rect.left; y = e.touches[0].clientY - rect.top;
         }
         if (this.isFreehandDrawing) {
+            this.upperContext.fillStyle = this.parent.activeObj.strokeSettings.strokeColor;
             this.processPoint(x, y, false, this.upperContext);
         }
     }
@@ -1012,7 +1013,7 @@ export class FreehandDrawing {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeChangingArgs) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
                 parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
-                parent.activeObj.strokeSettings.strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+                this.penStrokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
                 if (this.fhdSelID) {
                     parent.pointColl[this.fhdSelIdx].strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
                     parent.pointColl[this.fhdSelIdx].strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
@@ -1027,7 +1028,7 @@ export class FreehandDrawing {
         } else {
             parent.trigger('shapeChanging', shapeChangingArgs);
             parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
-            parent.activeObj.strokeSettings.strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+            this.penStrokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
             if (this.fhdSelID) {
                 parent.pointColl[this.fhdSelIdx].strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
                 parent.pointColl[this.fhdSelIdx].strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;

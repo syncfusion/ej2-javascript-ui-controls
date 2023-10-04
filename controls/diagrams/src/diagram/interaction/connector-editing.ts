@@ -1,6 +1,6 @@
 import { PointModel } from '../primitives/point-model';
 import { Connector } from '../objects/connector';
-import { ConnectorModel, OrthogonalSegmentModel } from '../objects/connector-model';
+import { ConnectorModel, OrthogonalSegmentModel,StraightSegmentModel } from '../objects/connector-model';
 import { Point } from '../primitives/point';
 import { CommandHandler } from './command-manager';
 import { Rect } from '../primitives/rect';
@@ -330,12 +330,21 @@ export class ConnectorEditing extends ToolBase {
      */
     public addOrRemoveSegment(connector: ConnectorModel, point: PointModel, commandHandler?: CommandHandler): void {
         let updateSeg: boolean; let segmentIndex: number;
+        let segmentsChanged: StraightSegmentModel[] = [];
         const oldValues: Connector = { segments: connector.segments } as Connector;
         for (let i: number = 0; i < connector.segments.length; i++) {
             const segment: StraightSegment = (connector.segments)[parseInt(i.toString(), 10)] as StraightSegment;
             if (contains(point, segment.point, connector.hitPadding)) {
                 segmentIndex = i;
                 updateSeg = true;
+                //848696-Trigger SegmentCollectionChange Event for straight connector
+                segmentsChanged.push(segment);
+                let args: ISegmentCollectionChangeEventArgs = {
+                    element: connector, removeSegments: segmentsChanged, type: 'Removal', cancel: false
+                };
+                if (commandHandler) {
+                    commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+                }            
             }
         }
         //827745-support to edit Segment for Straight connector at runtime
@@ -363,6 +372,12 @@ export class ConnectorEditing extends ToolBase {
                 segment.points[0] = point;
                 connector.segments.splice(index, 0, newseg);
                 updateSeg = true;
+                //848696-Trigger SegmentCollectionchange Event for straight connector
+                segmentsChanged.push(segment);
+                let args: ISegmentCollectionChangeEventArgs = {
+                    element: connector, addSegments: segmentsChanged, type: 'Addition', cancel: false
+                };
+                this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
             }
             this.commandHandler.enableServerDataBinding(true);
         }

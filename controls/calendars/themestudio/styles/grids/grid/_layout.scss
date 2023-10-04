@@ -1626,6 +1626,11 @@
       overflow: visible;
     }
 
+    .e-headercell.e-templatecell .e-headercelldiv {
+      height: auto;
+      min-height: $grid-header-height;
+    }
+
     .e-gridheader .e-headercontent .e-rightalign .e-headercelldiv.e-headerchkcelldiv {
       padding: 0 .6em;
     }

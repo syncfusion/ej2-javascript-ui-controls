@@ -106,6 +106,9 @@ export class Table {
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.moduleDestroy, this.moduleDestroy);
+        if (!Browser.isDevice && this.parent.tableSettings.resize) {
+            EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
+        }
     }
 
     private updateCss(currentObj: Button | Dialog | NumericTextBox, e: ICssClassArgs) : void {
@@ -657,7 +660,13 @@ export class Table {
         const columns: HTMLCollectionOf<Element> = table.rows[this.calMaxCol(table)].cells;
         const rows: Element[] = [];
         for (let i: number = 0; i < table.rows.length; i++) {
-            rows.push(Array.prototype.slice.call(table.rows[i as number].cells, 0, 1)[0]);
+            for (let j: number = 0; j < table.rows[i as number].cells.length; j++) {
+                if (!table.rows[i as number].cells[j as number].hasAttribute('rowspan')) {
+                    rows.push(Array.prototype.slice.call(table.rows[i as number].cells, 0,
+                                                         table.rows[i as number].cells.length)[j as number]);
+                    break;
+                }
+            }
         }
         const height: number = parseInt(getComputedStyle(table).height, 10);
         const width: number = parseInt(getComputedStyle(table).width, 10);
@@ -903,6 +912,7 @@ export class Table {
         const currentTdElement: HTMLElement = this.curTable.closest('td');
         const args: ResizeArgs = { event: e, requestType: 'table' };
         let isRowCellsMerged: boolean = false;
+        let isColCellsMerged: boolean  = false;
         let mergedCellIndex: number;
         let mergedElement: HTMLTableDataCellElement;
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
@@ -930,7 +940,7 @@ export class Table {
                     const width: number = parseFloat(this.columnEle.offsetWidth.toString());
                     const cellRow: number = this.curTable.rows[0].cells[0].nodeName === 'TH' ? 1 : 0;
                     let currentTableWidth: number;
-                    if (this.curTable.style.width !== ''){
+                    if (this.curTable.style.width !== '' && this.curTable.style.width.includes('%')) {
                         currentTableWidth =  parseFloat(this.curTable.style.width.split('%')[0]);
                     }
                     else {
@@ -993,10 +1003,17 @@ export class Table {
                                 let isMergedEleResize: boolean = false;
                                 let leftTableCell: HTMLTableDataCellElement;
                                 let rightTableCell: HTMLTableDataCellElement;
+                                isColCellsMerged = false;
+                                isRowCellsMerged = false;
                                 /* eslint-disable */
                                 for (let j: number = 0; j < currentRow.cells.length; j++) {
                                     if (currentRow.cells[j as number].hasAttribute('rowspan') && j <= this.colIndex) {
                                         isRowCellsMerged = true;
+                                        mergedCellIndex = i;
+                                        mergedElement = currentRow.cells[j as number];
+                                    }
+                                    else if (currentRow.cells[j as number].hasAttribute('colspan') && j <= currentRow.cells.length) {
+                                        isColCellsMerged = true;
                                         mergedCellIndex = i;
                                         mergedElement = currentRow.cells[j as number];
                                     }
@@ -1007,14 +1024,14 @@ export class Table {
                                 else {
                                     index = this.colIndex;
                                 }
-                                if (isRowCellsMerged) {
+                                if (isRowCellsMerged || isColCellsMerged) {
                                     let currentResizeRow: HTMLTableRowElement;
                                     if (currentRow.cells.length < cellColl.length) {
-                                        index = currentRow.cells.length === this.colIndex ?
-                                        this.colIndex - 1 : this.colIndex - (this.colIndex - 1);
+                                        index = currentRow.cells.length === this.colIndex || currentRow === this.curTable.rows[this.curTable.rows.length - 1] ?
+                                        this.colIndex - 1 : this.colIndex;
                                         currentResizeRow = this.curTable.rows[!isNullOrUndefined(mergedCellIndex) ?
                                             mergedCellIndex : this.colIndex - 1];
-                                        if (currentResizeRow && (currentResizeRow.cells[this.colIndex - 1] === mergedElement ||
+                                        if (currentResizeRow && currentResizeRow !== currentRow && (currentResizeRow.cells[this.colIndex - 1] === mergedElement ||
                                             currentResizeRow.cells[currentResizeRow.cells.length - 1] === mergedElement)) {
                                             isMergedEleResize = true;
                                         } else {
@@ -1027,10 +1044,10 @@ export class Table {
                                         currentResizeRow.cells[currentResizeRow.cells.length - 1] !== mergedElement) ?
                                             currentResizeRow.cells[this.colIndex - 1] : currentRow.cells[currentRow.cells.length - 1];
                                     rightTableCell = !isMergedEleResize ? currentRow.cells[index as number] : rightTableCell && rightTableCell.hasAttribute('rowspan') ?
-                                        rightTableCell : currentResizeRow && currentResizeRow.cells[currentResizeRow.cells.length - 1] !== mergedElement ?
+                                        currentResizeRow.cells[this.colIndex] : currentResizeRow && currentResizeRow.cells[currentResizeRow.cells.length - 1] !== mergedElement ?
                                         currentRow.cells[index - 1] : currentResizeRow.cells[currentResizeRow.cells.length - 1];
                                 }
-                                if (!isNOU(currentRow.cells[index - 1]) && !isRowCellsMerged) {
+                                if (!isNOU(currentRow.cells[index - 1]) && !isRowCellsMerged  && !isColCellsMerged) {
                                     (currentRow.cells[index - 1] as HTMLTableDataCellElement).style.width =
                                         this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
                                 } else {
@@ -1039,7 +1056,7 @@ export class Table {
                                             this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
                                     }
                                 }
-                                if (!isNOU(currentRow.cells[index as number]) && !isRowCellsMerged) {
+                                if (!isNOU(currentRow.cells[index as number]) && !isRowCellsMerged  && !isColCellsMerged) {
                                     (currentRow.cells[index as number] as HTMLTableDataCellElement).style.width =
                                         this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
                                 } else {
@@ -1066,9 +1083,6 @@ export class Table {
                     }
                     this.updateHelper();
                 } else if (this.resizeBtnStat.tableBox) {
-                    if (!Browser.isDevice) {
-                        EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
-                    }
                     if (currentTdElement) {
                         const tableBoxPosition: number = this.curTable.getBoundingClientRect().left
                         - currentTdElement.getBoundingClientRect().left;
@@ -1079,9 +1093,11 @@ export class Table {
                     this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) + '%'
                         : tableWidth + mouseX + 'px';
                     this.curTable.style.height = tableHeight + mouseY + 'px';
-                    tableReBox.classList.add('e-rbox-select');
-                    tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
-                        'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
+                    if (!isNOU(tableReBox)) {
+                        tableReBox.classList.add('e-rbox-select');
+                        tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
+                            'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
+                    }
                 }
             }
         });
@@ -1120,9 +1136,6 @@ export class Table {
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
         if (this.contentModule.getEditPanel().querySelector('.e-table-box') &&
             this.contentModule.getEditPanel().contains(this.contentModule.getEditPanel().querySelector('.e-table-box'))) {
-            if (!Browser.isDevice) {
-                EventHandler.add(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper, this);
-            }
             this.removeResizeElement();
         }
         if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
@@ -1555,6 +1568,7 @@ export class Table {
      * @deprecated
      */
     public destroy(): void {
+        if (isNOU(this.parent)) { return; }
         this.removeEventListener();
     }
 

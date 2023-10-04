@@ -4044,7 +4044,8 @@ export class AnnotationRenderer {
                         annotation instanceof PdfCircleAnnotation ||
                         annotation instanceof PdfEllipseAnnotation ||
                         annotation instanceof PdfPolygonAnnotation ||
-                        annotation instanceof PdfRectangleAnnotation
+                        annotation instanceof PdfRectangleAnnotation ||
+                        annotation instanceof PdfPolyLineAnnotation
                     ) {
                         oldPageAnnotations.remove(annotation);
                     }

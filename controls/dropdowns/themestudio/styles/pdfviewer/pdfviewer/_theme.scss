@@ -3148,6 +3148,22 @@
     text-align: left;
   }
 
+  .e-pv-mobile-comments-container .e-pv-comment-panel-title {
+    @if $skin-name == 'Material3' {
+      background: $content-bg-color-alt2;
+      border: $border-light;
+      border-width: 0 0 1px 1px;
+      font-size: $text-base;
+      font-weight: $pv-comment-tile-font-weight;
+      line-height: 16px;
+      padding: 0;
+      left: 15px;
+      top: 14px;
+      position: absolute;
+      text-align: left;
+    }
+  }
+
   .e-pv-comment-panel-title-close-div.e-btn {
     background: $pv-title-close-background;
     border: $pv-title-close-border;
@@ -3157,16 +3173,11 @@
     }
     height: $pv-title-close-height;
     position: $pv-title-close-position;
-    @if $skin-name != 'Material3' {
-      right: 11px;
-      top: 5px;
-    }
+    right: 11px;
+    top: 5px;
     width: $pv-title-close-width;
     @if $skin-name == 'FluentUI' {
       padding: 4px;
-    }
-    @if $skin-name == 'Material3' {
-      padding: 12px 12px 12px 270px;
     }
   }
 
@@ -3180,7 +3191,7 @@
     @if $skin-name != 'bootstrap5' {
       color: $pv-comment-text-color;
     }
-    @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI') {
+    @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
       color: $icon-color;
     }
   }
@@ -3188,6 +3199,7 @@
   .e-pv-comments-panel-text {
     font-size: 15px;
     padding-left: 85px;
+    color: rgba(var(--color-sf-on-surface-variant));
   }
 
   .e-pv-comments-content-container {
@@ -4664,7 +4676,7 @@
   }
   
   .e-bigger .e-pv-signature-dialog-height {
-    @if ($skin-name == 'FluentUI' $skin-name == 'Material3') {
+    @if ($skin-name == 'FluentUI') {
       min-height: 592px;
     }
   }

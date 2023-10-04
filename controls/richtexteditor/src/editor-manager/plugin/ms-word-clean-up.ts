@@ -791,7 +791,8 @@ export class MsWordPaste {
                 temp.style.marginLeft = collection[index as number].styleMarginLeft;
                 temp.style.listStyleType = collection[index as number].listStyleTypeName;
             } else if (collection[index as number].nestedLevel === pLevel) {
-                if (!isNOU(prevList) && !isNOU(prevList.parentElement) && prevList.parentElement.tagName.toLowerCase() === collection[index as number].listType) {
+                if (!isNOU(prevList) && !isNOU(prevList.parentElement)
+                    && prevList.parentElement.tagName.toLowerCase() === collection[index as number].listType) {
                     prevList.parentElement.appendChild(prevList = createElement('li'));
                     prevList.appendChild(pElement);
                 } else if (isNOU(prevList)) {

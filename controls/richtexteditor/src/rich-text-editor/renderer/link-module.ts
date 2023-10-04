@@ -550,6 +550,7 @@ export class Link {
      * @deprecated
      */
     public destroy(): void {
+        if (isNOU(this.parent)) { return; }
         this.removeEventListener();
     }
 

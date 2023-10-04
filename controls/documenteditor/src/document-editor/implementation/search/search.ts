@@ -196,6 +196,7 @@ export class Search {
      * @returns {number} - Returns the replace count.
      */
     public replaceAll(replaceText: string, results: TextSearchResults): number {
+        this.documentHelper.layout.isReplacingAll = true;
         if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode || isNullOrUndefined(results)) {
             return 0;
         }

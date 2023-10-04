@@ -1127,9 +1127,6 @@ export class Signature {
             items: items
         });
         this.tabObj.appendTo(tab);
-        if(tab && tab.lastElementChild) {
-            (tab.lastElementChild as any).style.overflow = 'hidden';
-        }
         if(items[0].header.label === 'DRAW') {
             this.signaturetype = 'Draw';
         } else if(items[0].header.label === 'TYPE') {

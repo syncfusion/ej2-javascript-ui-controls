@@ -524,7 +524,7 @@ export class CellRenderer implements ICellRenderer {
                 templateString = template;
             }
             compiledStr = compile(templateString);
-            if (!(this.parent as { isVue?: boolean }).isVue || document.querySelector(template)) {
+            if (!(this.parent as { isVue?: boolean }).isVue || this.isSelector(template)) {
                 return (compiledStr(cell, this.parent, 'ranges', '', true)[0] as HTMLElement).outerHTML;
             } else {
                 return compiledStr(cell, this.parent, 'ranges', '');
@@ -533,6 +533,14 @@ export class CellRenderer implements ICellRenderer {
             compiledStr = compile(template);
             const compiledTemplate: Element | Element[] = compiledStr(cell, this.parent, 'ranges', '');
             return compiledTemplate[0] ? <Element[]>compiledTemplate : [<Element>compiledTemplate];
+        }
+    }
+
+    private isSelector(template: string): boolean {
+        try {
+            return !!document.querySelector(template);
+        } catch (err) {
+            return false;
         }
     }
 

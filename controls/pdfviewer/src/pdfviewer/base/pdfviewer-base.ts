@@ -4267,7 +4267,7 @@ export class PdfViewerBase {
                         // eslint-disable-next-line max-len
                         this.pdfViewer.annotationModule.annotationSelect(currentAnnotation.annotName, currentAnnotation.pageIndex, currentAnnotation, null, true);
                         if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus === false) {
-                            if (this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations) === true) {
+                            if (this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations) === true  && !this.pdfViewer.selectedItems.annotations[0].isLock) {
                                 const elmtPosition: PointModel = {};
                                 elmtPosition.x = this.pdfViewer.selectedItems.annotations[0].bounds.x;
                                 elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
@@ -7318,7 +7318,7 @@ export class PdfViewerBase {
                                     let textDetailsId: string = proxy.documentId + '_' + pageIndex + '_textDetails';
                                     let isTextNeed: boolean = proxy.pageTextDetails ? proxy.pageTextDetails[`${textDetailsId}`] ? false : true : true;
                                     if (viewPortWidth >= pageWidth || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
-                                        this.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: isTextNeed });
+                                        this.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed });
                                     }
                                     else {
                                         this.showPageLoadingIndicator(pageIndex, true);

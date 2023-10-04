@@ -11,31 +11,32 @@ import { EditorHistory } from '../../src/document-editor/implementation/editor-h
 /**
  * Search Module public API
  */
-describe('Search Public API validation Replace All Validation ', () => {
-    let editor: DocumentEditor = undefined;
-    beforeAll(() => {
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.innerHTML = '';
-        document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, Search);
-        editor = new DocumentEditor({
-            enableEditor: true, enableSelection: true, isReadOnly: false, enableSearch: true,
-        });
-        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-    });
-    afterAll((done) => {
-        document.body.removeChild(document.getElementById('container'));
-        editor.destroy();
-        editor = undefined;
-        document.body.innerHTML = '';
-        setTimeout(() => {
-            done();
-        }, 1000);
-    });
+//To-Do-Cases
+// describe('Search Public API validation Replace All Validation ', () => {
+//     let editor: DocumentEditor = undefined;
+//     beforeAll(() => {
+//         let ele: HTMLElement = createElement('div', { id: 'container' });
+//         document.body.innerHTML = '';
+//         document.body.appendChild(ele);
+//         DocumentEditor.Inject(Editor, Selection, Search);
+//         editor = new DocumentEditor({
+//             enableEditor: true, enableSelection: true, isReadOnly: false, enableSearch: true,
+//         });
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         editor.appendTo('#container');
+//     });
+//     afterAll((done) => {
+//         document.body.removeChild(document.getElementById('container'));
+//         editor.destroy();
+//         editor = undefined;
+//         document.body.innerHTML = '';
+//         setTimeout(() => {
+//             done();
+//         }, 1000);
+//     });
 //     it('Replace Operation with out search result', () => {
 // console.log('Replace Operation with out search result');
 //         editor.editorModule.insertText('Syncfusion sft pvt ltd');
@@ -74,5 +75,5 @@ describe('Search Public API validation Replace All Validation ', () => {
 //         editor.search.searchResults.replace("Software");
 //         expect(spy).toHaveBeenCalled();
 //     });
-});
+//});
 

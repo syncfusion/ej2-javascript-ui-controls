@@ -39,6 +39,7 @@ export class MarkdownEditor {
      * @deprecated
      */
     public destroy(): void {
+        if (isNullOrUndefined(this.parent)) { return; }
         this.removeEventListener();
     }
 

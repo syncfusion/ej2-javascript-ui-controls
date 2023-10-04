@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 23.1.39 (2023-10-04)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I497739` - Now, the comment panel close and more buttons are properly displayed in mobile mode.
+- `#I485341` - Now, the free text annotation does not resizes automatically on first click when enable autofit is set to true.
+- `#F184471` - Now, when saving a document with free text annotation, newline characters are properly preserved in the saved document.
+- `#I502323` - Now, the form field names do not get duplicated when we add them programmatically or through the UI.
+- `#I499440`, `#I505546` - Now, the comment panel value for the ink annotation is added with the provided author value.
+
 ## 23.1.38 (2023-09-26)
 
 ### PDF Viewer

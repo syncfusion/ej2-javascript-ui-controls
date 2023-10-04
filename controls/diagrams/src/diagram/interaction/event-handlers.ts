@@ -792,6 +792,11 @@ export class DiagramEventHandler {
     /* tslint:disable */
     /** @private */
     public mouseUp(evt: PointerEvent): void {
+        //EJ2-849817-Dropping nodes in swimlane does not consider as child in angular
+        if(this.eventArgs.target && this.eventArgs.target != this.hoverNode && this.eventArgs.target != this.lastObjectUnderMouse){
+            this.hoverNode = this.eventArgs.target;
+            this.lastObjectUnderMouse = this.eventArgs.target;
+        }
         this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseUp);
         if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
             this.updateVirtualization();

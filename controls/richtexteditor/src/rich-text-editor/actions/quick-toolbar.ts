@@ -363,6 +363,7 @@ export class QuickToolbar {
      * @deprecated
      */
     public destroy(): void {
+        if (isNOU(this.parent)) { return; }
         if (this.linkQTBar) {
             EventHandler.remove(this.linkQTBar.element, 'mousedown', this.onMouseDown);
             EventHandler.remove(this.linkQTBar.element, 'keyup', this.keyUpQT);

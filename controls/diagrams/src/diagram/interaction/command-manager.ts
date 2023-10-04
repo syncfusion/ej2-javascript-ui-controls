@@ -3717,6 +3717,11 @@ export class CommandHandler {
     public drag(obj: NodeModel | ConnectorModel, tx: number, ty: number): void {
         let tempNode: NodeModel | ConnectorModel;
         const elements: (NodeModel | ConnectorModel)[] = [];
+        // EJ2-846953: The below code is added to set current action to drag when we drag objects dynamically using method.
+        // It is used to prevent the updateGroupSize method call for group node while dragging it.
+        if(!(this.diagram as any).rotateUsingButton && obj.shape && obj.shape.type !== 'SwimLane'){
+            (this.diagram as any).eventHandler.currentAction = 'Drag';
+        }
         if (canMove(obj) && this.checkBoundaryConstraints(tx, ty, obj.wrapper.bounds) && canPageEditable(this.diagram)) {
             if (obj instanceof Node) {
                 const oldValues: NodeModel = { offsetX: obj.offsetX, offsetY: obj.offsetY };

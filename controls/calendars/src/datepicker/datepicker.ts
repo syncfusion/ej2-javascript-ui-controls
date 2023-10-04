@@ -547,7 +547,7 @@ export class DatePicker extends Calendar implements IInput {
         const ariaAttrs: object = {
             'aria-atomic': 'true', 'aria-expanded': 'false',
             'role': 'combobox', 'autocomplete': 'off', 'autocorrect': 'off',
-            'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
+            'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false', 'aria-label': this.getModuleName()
         };
         if (this.getModuleName() === 'datepicker') {
             const l10nLocale: object = { placeholder: this.placeholder };
@@ -1833,7 +1833,7 @@ export class DatePicker extends Calendar implements IInput {
         const ariaAttrs: object = {
             'aria-atomic': 'true', 'aria-disabled': 'true',
             'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
-            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
+            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-label': this.getModuleName()
         };
         if (this.inputElement) {
             Input.removeAttributes(<{ [key: string]: string }>ariaAttrs, this.inputElement);

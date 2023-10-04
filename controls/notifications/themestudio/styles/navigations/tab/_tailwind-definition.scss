@@ -386,7 +386,7 @@ $tab-bgr-fill-focused-wrap-height: $tab-focus-big-fill-height !default;
 $tab-bgr-rtl-icon-right-margin: 0 !default;
 $tab-bgr-background-active-padding: 0 9px !default;
 $tab-bgr-fill-active-item-padding: 0 10px !default;
-$tab-bgr-item-text-margin-bottom: 6px !default;
+$tab-bgr-item-text-margin-bottom: 0 !default;
 
 $tab-nrml-hscroll-items-nav-width: 24px !default;
 $tab-nrml-hscroll-items-bdr-radius: 0 !default;
@@ -444,7 +444,7 @@ $tab-nrml-vertical-indicator-width: 2px !default;
 $tab-nrml-bottom-wrap-before-top: unset !default;
 $tab-nrml-background-vertical-indicator-display: block !default;
 $tab-nrml-background-active-padding: 0 7px !default;
-$tab-nrml-item-text-margin-bottom: 5px !default;
+$tab-nrml-item-text-margin-bottom: 0 !default;
 
 @mixin tbar-alt-btn-animation-after {
   animation: tbar-alt-popup-shadow 1s ease-out 0ms;

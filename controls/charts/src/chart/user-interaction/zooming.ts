@@ -179,12 +179,22 @@ export class Zoom {
         const zoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, zoomingEventArgs, () => {
-                this.performDefferedZoom(chart);
+                if (zoomingEventArgs.cancel) {
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                }
+                else {
+                    this.performDefferedZoom(chart);
+                }
             });
         } else {
             this.chart.trigger(onZooming, zoomingEventArgs, () => {
-                this.performDefferedZoom(chart);
-                this.redrawOnZooming(chart, false);
+                if (zoomingEventArgs.cancel) {
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                }
+                else {
+                    this.performDefferedZoom(chart);
+                    this.redrawOnZooming(chart, false);
+                }
             });
         }
     }
@@ -299,12 +309,24 @@ export class Zoom {
 
         const onZoomingEventArg: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
         if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArg, () => { this.zoomingRect = new Rect(0, 0, 0, 0);
-                this.performZoomRedraw(chart); });
+            this.chart.trigger(onZooming, onZoomingEventArg, () => {
+                if (onZoomingEventArg.cancel) {
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                }
+                else {
+                    this.zoomingRect = new Rect(0, 0, 0, 0);
+                    this.performZoomRedraw(chart);
+                }
+            });
         } else {
             this.chart.trigger(onZooming, onZoomingEventArg, () => {
-                this.zoomingRect = new Rect(0, 0, 0, 0);
-                this.redrawOnZooming(chart);
+                if (onZoomingEventArg.cancel) {
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                }
+                else {
+                    this.zoomingRect = new Rect(0, 0, 0, 0);
+                    this.redrawOnZooming(chart);
+                }
             });
         }
     }
@@ -395,9 +417,23 @@ export class Zoom {
         }
         const onZoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.performZoomRedraw(chart); });
+            this.chart.trigger(onZooming, onZoomingEventArgs, () => { 
+                if (onZoomingEventArgs.cancel) {
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                }
+                else {
+                    this.performZoomRedraw(chart)
+                } 
+            });
         } else {
-            this.chart.trigger(onZooming, onZoomingEventArgs, () => { this.redrawOnZooming(chart); });
+            this.chart.trigger(onZooming, onZoomingEventArgs, () => { 
+                if (onZoomingEventArgs.cancel) {
+                    this.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                }
+                else {
+                    this.redrawOnZooming(chart); 
+                }
+            });
         }
     }
 
@@ -449,13 +485,14 @@ export class Zoom {
                 break;
             }
         }
-        this.calculatePinchZoomFactor(chart, pinchRect);
-        this.refreshAxis(<CartesianAxisLayoutPanel>chart.chartAxisLayoutPanel, chart, chart.axisCollections);
-        this.redrawOnZooming(chart, false);
+        if (!this.calculatePinchZoomFactor(chart, pinchRect)) {
+            this.refreshAxis(<CartesianAxisLayoutPanel>chart.chartAxisLayoutPanel, chart, chart.axisCollections);
+            this.redrawOnZooming(chart, false);
+        }
         return true;
     }
 
-    private calculatePinchZoomFactor(chart: Chart, pinchRect: Rect): void {
+    private calculatePinchZoomFactor(chart: Chart, pinchRect: Rect): boolean {
         const mode: ZoomMode = this.zooming.mode;
         let selectionMin: number;
         let selectionMax: number;
@@ -513,7 +550,12 @@ export class Zoom {
         const onZoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!onZoomingEventArgs.cancel) {
             this.chart.trigger(onZooming, onZoomingEventArgs);
+            if (onZoomingEventArgs.cancel) {
+                this.zoomCancel(chart.axisCollections, this.zoomCompleteEvtCollection);
+                return true;
+            }
         }
+        return false;
     }
 
     // Series transformation style applied here.
@@ -707,6 +749,25 @@ export class Zoom {
         }
     }
 
+    /**
+     * To cancel zoom event.
+     *
+     * @returns {void}
+     * @public
+     */
+    public zoomCancel(axes: AxisModel[], zoomCompleteEventCollection: IZoomCompleteEventArgs[]): void {
+        for (const zoomCompleteEvent of (zoomCompleteEventCollection as IZoomCompleteEventArgs[])) {
+            for (const axis of (axes as Axis[])) {
+                if (axis.name === zoomCompleteEvent.axis.name) {
+                    axis.zoomFactor = zoomCompleteEvent.previousZoomFactor;
+                    axis.zoomPosition = zoomCompleteEvent.previousZoomPosition;
+                    axis.visibleRange = zoomCompleteEvent.previousVisibleRange;
+                    break;
+                }
+            }
+        }
+    }
+    
     /**
      * Return boolean property to show zooming toolkit.
      *

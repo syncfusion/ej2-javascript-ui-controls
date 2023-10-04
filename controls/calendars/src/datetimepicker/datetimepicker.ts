@@ -675,6 +675,14 @@ export class DateTimePicker extends DatePicker {
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
         this.dateTimeFormat = this.cldrDateTimeFormat();
         this.initValue = this.value;
+        if (typeof (this.min) === 'string')
+        {
+            this.min = this.checkDateValue(new Date((this as any).min));
+        }
+        if (typeof (this.max) === 'string')
+        {
+            this.max = this.checkDateValue(new Date((this as any).max));
+        }
         if (!isNullOrUndefined(closest(this.element, 'fieldset') as HTMLFieldSetElement) && (closest(this.element, 'fieldset') as HTMLFieldSetElement).disabled) {
             this.enabled = false;
         }

@@ -653,10 +653,12 @@ describe('Command Column ', () => {
 
     describe('EJ2-59729 - Memory leak issue on Command column => ', function () {
         let gridObj: Grid;
+        let actionComplete: () => void;
         beforeAll(function (done) {
             gridObj = createGrid({
                 dataSource: data,
                 height: 300,
+                toolbar: ['Add'],
                 editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true },
                 allowPaging: true,
                 columns: [
@@ -678,6 +680,22 @@ describe('Command Column ', () => {
             };
             gridObj.dataBound = dataBound;
             gridObj.goToPage(2);
+        });
+        it('EJ2-850056: Script error in command column while adding the row', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType == 'add') {
+                    args.form.querySelector('td input').value = 1111111;
+                    (<any>gridObj).getContent().querySelector('.e-unboundcelldiv').children[0].click();   
+                        gridObj.actionComplete = (args: any) => {
+                            if (args.requestType == 'save') {
+                                expect((gridObj.dataSource[0] as any).OrderID).toBe(1111111);
+                                done();
+                            }
+                        };
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
         });
 
         afterAll(function () {

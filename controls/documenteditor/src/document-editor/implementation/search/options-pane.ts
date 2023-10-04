@@ -708,6 +708,7 @@ export class OptionsPane {
             let replace: string = isNullOrUndefined(replaceText) ? '' : replaceText;
             let count: number = isNullOrUndefined(results) ? 0 : results.length;
             this.documentHelper.owner.searchModule.replaceAll(replace, results);
+            this.documentHelper.layout.isReplacingAll = false;
             this.matchDiv.style.display = 'block';
             this.matchDiv.innerHTML = this.localeValue.getConstant('All Done') + '!';
             this.occurrenceDiv.style.display = 'block';

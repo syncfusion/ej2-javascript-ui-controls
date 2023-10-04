@@ -50,7 +50,7 @@ $pivotgrid-vsort-column-parent-margin: -11px 0 !default;
 $pivotgrid-vsort-row-margin: -20px 0 !default;
 $pivotgrid-vsort-row-parent-margin: -12px 0 !default;
 $pivotgrid-tooltip-padding: 3px 2px !default;
-$pivotgrid-tooltip-fontcolor: $grey-light-font !default;
+$pivotgrid-tooltip-fontcolor: $grey-dark-font !default;
 $pivotgrid-tooltip-fontsize: 14px !default;
 $pivotgrid-tooltip-fontfamily: Helvetica !default;
 $pivotgrid-member-filter-list-bigger-height: 121px !default;
@@ -117,7 +117,7 @@ $pivotgrid-rowsheader-cellvalue-margin-left: 8px !default;
 $pivotgrid-rowsheader-cellvalue-margin-top: 5px !default;
 $pivotgrid-excelfilter-member-editor-node-limit-height: 100px !default;
 $pivotgrid-member-editor-node-limit-bigger-height: 450px !default;
-$pivotgrid-cell-value-margin-top: 5px !default;
+$pivotgrid-cell-value-margin: 0 !default;
 
 /*! component's common definitions and variables */
 $pivotgrid-grouping-height: 28px !default;

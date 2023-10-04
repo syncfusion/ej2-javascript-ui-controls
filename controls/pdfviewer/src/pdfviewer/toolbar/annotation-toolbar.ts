@@ -4770,7 +4770,7 @@ export class AnnotationToolbar {
                 // eslint-disable-next-line max-len
                 this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.colorDropDownElement, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.fill, 'fillColor'));
                 this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.strokeDropDownElement, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeColor, 'strokeColor'));
-                if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
+                if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText' && !this.pdfViewer.selectedItems.annotations[0].isLock) {
                     // eslint-disable-next-line
                     this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.fontColorElement, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].fontColor, 'fontColor'));
                     this.pdfViewer.toolbar.annotationToolbarModule.updateFontFamilyInIcon(this.pdfViewer.selectedItems.annotations[0].fontFamily);

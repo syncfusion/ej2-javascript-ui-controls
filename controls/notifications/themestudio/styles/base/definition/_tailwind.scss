@@ -1,3 +1,5 @@
+@import '../common/mixin.scss';
+
 //Color system
 
 //Black
@@ -473,3 +475,11 @@ $font-icon-24: 24px !default;
 $font-icon-26: 26px !default;
 $font-icon-28: 28px !default;
 $font-icon-32: 32px !default;
+
+$font-size: 12px !default;
+$font-weight: normal !default;
+$error-font-color: $danger !default;
+$overlay-bg-color: rgba($cool-gray-500, .75) !default;
+$warning-font-color: $orange-700 !default;
+$success-font-color: $green-700 !default;
+$information-font-color: $cyan-700 !default;

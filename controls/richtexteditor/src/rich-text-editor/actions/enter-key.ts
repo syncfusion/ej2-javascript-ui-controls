@@ -22,6 +22,7 @@ export class EnterKeyAction {
         this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
     private destroy(): void {
+        if (isNOU(this.parent)) { return; }
         this.removeEventListener();
     }
     private moduleDestroy(): void {

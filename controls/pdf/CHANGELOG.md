@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.39 (2023-10-04)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue with invalid cross reference stream exception thrown while parsing particular encrypted PDF document.
+
 ## 23.1.38 (2023-09-26)
 
 ### PDF Parser

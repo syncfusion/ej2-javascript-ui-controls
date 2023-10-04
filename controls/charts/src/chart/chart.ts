@@ -2397,12 +2397,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.titleCollection = getTitle(this.title, this.titleStyle, width, this.themeStyle.chartTitleFont);
             titleHeight = (measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
-                let maxWidth: number = 0;
-                for (const titleText of this.titleCollection) {
-                    titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
-                    maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
-                }
-                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.themeStyle.chartSubTitleFont);
+                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, width, this.themeStyle.chartSubTitleFont);
                 subTitleHeight = (measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length) +
                     padding;
             }
@@ -4546,7 +4541,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             }
                             if (series && (series.dataSource || series.query || series.errorBar || series.xName ||
                                 series.yName || series.size || series.high || series.low || series.open || series.close || series.trendlines ||
-                                series.fill || series.name || series.marker || series.width || blazorProp)) {
+                                series.fill || series.name || series.marker || series.width || series.binInterval || blazorProp)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }

@@ -1241,7 +1241,7 @@
 
         .e-rte-emojipicker-group .e-rte-emojipickerbtn-group {
           display: grid;
-          grid-template-columns: repeat(6, 1fr);
+          grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
           gap: 6px;
 
           .e-btn.e-control {
@@ -1258,7 +1258,7 @@
 
         .e-rte-emojisearch-btn {
           display: grid;
-          grid-template-columns: repeat(6, 1fr);
+          grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
           gap: 6px;
           height: 0;
 

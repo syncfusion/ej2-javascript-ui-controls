@@ -30,7 +30,7 @@ export class SelectionBasedExec {
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
         const validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase'];
-        if (e.event.ctrlKey && validFormats.indexOf(e.event.action) > -1) {
+        if ((e.event.ctrlKey || e.event.metaKey) && validFormats.indexOf(e.event.action) > -1) {
             e.event.preventDefault();
             SelectionCommands.applyFormat(
                 this.parent.currentDocument,

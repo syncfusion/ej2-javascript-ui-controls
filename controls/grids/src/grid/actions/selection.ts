@@ -1220,8 +1220,12 @@ export class Selection implements IAction {
 
     private cellDeselect(type: string, cellIndexes: ISelectedCell[], data: Object, cells: Element[], foreignKeyData: Object[]): void {
         const cancl: string = 'cancel';
-        if (cells[0] && cells[0].classList.contains(literals.gridChkBox)) {
-            this.updateCheckBoxes(closest(cells[0], 'tr'));
+        if (cells && cells.length > 0) {
+            for (const cell of cells) {
+                if (cell && cell.classList.contains(literals.gridChkBox)) {
+                    this.updateCheckBoxes(closest(cell, 'tr'));
+                }
+            }
         }
         const args: Object = {
             cells: cells, data: data, cellIndexes: cellIndexes, foreignKeyData: foreignKeyData, cancel: false

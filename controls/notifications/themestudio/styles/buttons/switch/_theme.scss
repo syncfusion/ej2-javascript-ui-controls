@@ -53,6 +53,12 @@
         }
       }
 
+      & .e-switch-handle:not(.e-switch-active) {
+        @if $skin-name == 'Material3' {
+          background-color: $switch-on-disabled-bg-color;
+        }
+      }
+
       & .e-switch-handle {
         background-color: $switch-handle-disabled-bg-color;
         box-shadow: $switch-handle-shadow-disabled;
@@ -109,6 +115,11 @@
           @else {
             background-color: $switch-on-off-disabled-bg-color;
             border-color: $switch-border-disabled-bg-color;
+          }
+        }
+        & .e-switch-handle:not(.e-switch-active) {
+          @if $skin-name == 'Material3' {
+            background-color: $switch-on-disabled-bg-color;
           }
         }
 

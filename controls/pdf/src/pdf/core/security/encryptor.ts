@@ -112,15 +112,15 @@ export class _PdfEncryptor {
             } else {
                 algorithm = new _BasicEncryption();
             }
-            let password: Uint8Array;
+            let p: Uint8Array;
             if (passwordBytes) {
-                password = passwordBytes.subarray(0, Math.min(127, passwordBytes.length));
+                p = passwordBytes.subarray(0, Math.min(127, passwordBytes.length));
             } else {
-                password = new Uint8Array([]);
+                p = new Uint8Array([]);
             }
-            if (algorithm._checkUserPassword(password, userValidationSalt, userPassword)) {
+            if (algorithm._checkUserPassword(p, userValidationSalt, userPassword)) {
                 encryptionKey = this._createEncryptionKey(true,
-                                                          password,
+                                                          p,
                                                           ownerKeySalt,
                                                           uBytes,
                                                           userKeySalt,
@@ -128,10 +128,10 @@ export class _PdfEncryptor {
                                                           userEncryption,
                                                           algorithm);
                 this._isUserPassword = true;
-                if (password.length && algorithm._checkOwnerPassword(password, ownerValidationSalt, uBytes, ownerPassword)) {
+                if (password.length && algorithm._checkOwnerPassword(p, ownerValidationSalt, uBytes, ownerPassword)) {
                     this._hasUserPasswordOnly = true;
                 }
-            } else if (password.length && algorithm._checkOwnerPassword(password, ownerValidationSalt, uBytes, ownerPassword)) {
+            } else if (password.length && algorithm._checkOwnerPassword(p, ownerValidationSalt, uBytes, ownerPassword)) {
                 encryptionKey = this._createEncryptionKey(false,
                                                           passwordBytes,
                                                           ownerKeySalt,
@@ -159,7 +159,6 @@ export class _PdfEncryptor {
                 throw new Error('Cannot open an encrypted document. The password is invalid.');
             }
         }
-        this._encryptionKey = encryptionKey;
         if (algorithm >= 4) {
             const cipherDictionary: _PdfDictionary = dictionary.get('CF');
             if (cipherDictionary) {
@@ -179,6 +178,10 @@ export class _PdfEncryptor {
             this._string = dictionary.get('StrF') || _PdfName.get('Identity');
             this._eff = dictionary.get('EFF') || this._stream;
         }
+        if (!encryptionKey && !this._encryptOnlyAttachment) {
+            throw new Error('Cannot open an encrypted document. The password is invalid.');
+        }
+        this._encryptionKey = encryptionKey;
     }
     _createEncryptionKey(isUserKey: boolean,
                          password: Uint8Array,
@@ -1549,7 +1552,7 @@ export class _AdvancedEncryption256Cipher extends _AdvancedEncryptionBaseCipher 
                 }
             }
             for (let n: number = 0; n < 4; ++n) {
-                result[Number.parseInt(i.toString(), 10)] = t1 ^= result[j - 32];
+                result[Number.parseInt(j.toString(), 10)] = t1 ^= result[j - 32];
                 result[j + 1] = t2 ^= result[j - 31];
                 result[j + 2] = t3 ^= result[j - 30];
                 result[j + 3] = t4 ^= result[j - 29];

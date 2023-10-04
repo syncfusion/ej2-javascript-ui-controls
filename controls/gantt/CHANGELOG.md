@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.39 (2023-10-04)
+
+### GanttChart
+
+#### Bug Fixes
+
+- `#I502041` - Error throw while adding the record issue has been fixed.
+
 ## 23.1.38 (2023-09-26)
 
 ### GanttChart

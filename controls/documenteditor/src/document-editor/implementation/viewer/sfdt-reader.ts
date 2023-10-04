@@ -1002,8 +1002,30 @@ export class SfdtReader {
         let hasValidElmts: boolean = false;
         let revision: Revision;
         let trackChange: boolean = this.viewer.owner.enableTrackChanges;
+        let count: number = 0;
+        let isCreateTextEleBox: boolean = false;
         for (let i: number = 0; i < data.length; i++) {
             let inline: any = data[i];
+            isCreateTextEleBox = false;
+            if (inline.hasOwnProperty([fieldTypeProperty[this.keywordIndex]])) {
+                if (inline[fieldTypeProperty[this.keywordIndex]] === 2) {
+                    count = i;
+                }
+                if (inline[fieldTypeProperty[this.keywordIndex]] === 1 && count + 1 === i) {
+                        isCreateTextEleBox = true;
+                        count = 0;
+                }
+            }
+            if (isCreateTextEleBox && this.documentHelper.isPageField) {
+                let textElement: any = new FieldTextElementBox();
+                textElement.characterFormat = new WCharacterFormat(textElement);
+                textElement.text = "";
+                textElement.line = lineWidget;
+                lineWidget.children.push(textElement);
+                hasValidElmts = true;
+                i--;
+                continue;
+            }
             if (inline.hasOwnProperty(textProperty[this.keywordIndex]) || inline.hasOwnProperty(breakClearTypeProperty[this.keywordIndex])) {
                 let textElement: any = undefined;
                 if (this.documentHelper.isPageField) {

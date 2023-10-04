@@ -1335,7 +1335,18 @@ export class DropDownList extends DropDownBase implements IInput {
         if(!isNullOrUndefined(previousItem) && previousItem.classList.contains('e-virtual-list')){
             previousItem = this.liCollections[this.skeletonCount];
         }
-        this.setSelection(previousItem, event);
+        this.PageUpDownSelection(previousItem, event);
+    }
+
+    private PageUpDownSelection(previousItem: Element, event: KeyboardEventArgs): void {
+        if (this.enableVirtualization) {
+            if (!isNullOrUndefined(previousItem) && ((this.getModuleName() !== 'autocomplete' && !previousItem.classList.contains('e-active')) || (this.getModuleName() === 'autocomplete' && !previousItem.classList.contains('e-item-focus')))) {
+                this.setSelection(previousItem, event);
+            }
+        }
+        else{
+            this.setSelection(previousItem, event);
+        }
     }
 
     private pageDownSelection(steps: number, event: KeyboardEventArgs, isVirtualKeyAction?: boolean): void {
@@ -1344,7 +1355,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if ((this.enableVirtualization && this.activeIndex == null) || isVirtualKeyAction) {
             previousItem = steps <= list.length ? this.liCollections[steps + this.skeletonCount - 1] : this.liCollections[list.length - 1];
         }
-        this.setSelection(previousItem, event);
+        this.PageUpDownSelection(previousItem, event);
     }
 
     protected unWireEvent(): void {
@@ -1513,6 +1524,9 @@ export class DropDownList extends DropDownBase implements IInput {
             removeClass([focusedItem], dropDownBaseClasses.focus);
         }
         li.setAttribute('aria-selected', 'true');
+        if (isNullOrUndefined(value)) {
+            value = 'null';
+        }
         this.activeIndex = this.getIndexByValue(value);
     }
 
@@ -2148,7 +2162,9 @@ export class DropDownList extends DropDownBase implements IInput {
             const totalSkeletonCount: number = isSkeletonCountChange ? skeletonCount : this.skeletonCount;
             for (let i = 0; i < totalSkeletonCount; i++) {
                 const liElement = this.createElement('li', { className: dropDownListClasses.virtualList, styles: 'overflow: inherit' });
-
+                if(this.enableVirtualization && this.itemTemplate){
+                    liElement.style.height = this.listItemHeight + 'px';
+                }
                 let skeleton: Skeleton = new Skeleton({
                     shape: "Text",
                     height: "10px",
@@ -2423,6 +2439,10 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.setFooterTemplate(popupEle);
                 }
                 document.body.appendChild(popupEle);
+                if(this.enableVirtualization && this.itemTemplate) {
+                    var listitems = popupEle.querySelectorAll('li.e-list-item:not(.e-virtual-list)');
+                    this.listItemHeight = listitems.length > 0 ? Math.ceil(listitems[0].getBoundingClientRect().height) : 0;
+                }
                 if(this.enableVirtualization && !this.list.classList.contains(dropDownBaseClasses.noData)){
                     if(!this.list.querySelector('.e-virtual-ddl-content')){
                         this.list.appendChild(this.createElement('div', {
@@ -2741,7 +2761,12 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (!this.enableVirtualization || this.isKeyBoardAction || isInitialSelection) {
                     if (this.isKeyBoardAction && this.enableVirtualization && lastElementValue && currentElementValue === lastElementValue && keyAction != "end"  && !this.isVirtualScrolling) {
                         this.isPreventKeyAction = true;
-                        this.list.scrollTop += this.selectedLI.offsetHeight * liCount;
+                        if(this.enableVirtualization && this.itemTemplate){
+                            this.list.scrollTop += nextOffset;
+                        }
+                        else{
+                            this.list.scrollTop += this.selectedLI.offsetHeight * liCount;
+                        }
                         this.isPreventKeyAction = this.IsScrollerAtEnd() ? false : this.isPreventKeyAction;
                         this.isKeyBoardAction = false;
                         this.isPreventScrollAction = false;
@@ -3094,7 +3119,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.inputElement.parentElement.insertBefore(this.element, this.inputElement);
         }
         this.hiddenElement = this.createElement('select', {
-            attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': dropDownListClasses.hiddenElement }
+            attrs: { 'aria-hidden': 'true', 'aria-label': this.getModuleName(), 'tabindex': '-1', 'class': dropDownListClasses.hiddenElement }
         }) as HTMLSelectElement;
         prepend([this.hiddenElement], this.inputWrapper.container);
         this.validationAttribute(this.element, this.hiddenElement);

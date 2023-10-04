@@ -967,7 +967,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.wireEvents();
         this.renderComplete();
         if ((this as any).isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
-            this.renderReactTemplates(function () {
+            this.renderReactTemplates(() => {
                 this.refreshOverflow();
             });
         }

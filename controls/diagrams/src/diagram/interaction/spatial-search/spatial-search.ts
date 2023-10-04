@@ -63,7 +63,8 @@ export class SpatialSearch {
     }
 
     private update(quad: Quad): void {
-        if (quad.parent && quad.objects.length === 0 && quad.first && quad.second && quad.third && quad.fourth) {
+        //EJ2-841966-Nodes disappears while enabling virtualization constraints
+        if (quad.parent && quad.objects.length === 0 && quad.first ==null && quad.second ==null && quad.third ==null && quad.fourth ==null) {
             const parent: Quad = quad.parent;
             if (parent.first === quad) {
                 parent.first = null;

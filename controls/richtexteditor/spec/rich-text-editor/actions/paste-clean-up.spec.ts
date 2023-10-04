@@ -3186,3 +3186,59 @@ describe("843341- Indentation is not maintained when the content is copied and p
         destroy(rteObj);
     });
 });
+
+describe("846697 - Pasting content doesn't work properly with enterKey 'BR' in RichTextEditor and after switching pages - ", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            pasteCleanupSettings: {
+                prompt: true
+            },
+            enterKey: 'BR',
+            value: null
+        });
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+        done();
+    });
+    it("Pasting content doesn't work properly with enterKey 'BR' in RichTextEditor and after switching pages - ", (done) => {
+        let localElem: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><h1 style="box-sizing: border-box; margin: 0px 0px 2rem; letter-spacing: var(--heading-letter-spacing); font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-variant-numeric: ; font-variant-east-asian: ; font-variant-alternates: ; font-variant-position: ; font-weight: ; font-stretch: ; font-size: ; line-height: ; font-family: Inter, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, Cantarell, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-optical-sizing: ; font-kerning: ; font-feature-settings: ; font-variation-settings: ; word-break: break-word; color: rgb(27, 27, 27); orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Selection: focusNode property</h1>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        keyBoardEvent.clipboardData = {
+            getData: () => {
+                return localElem;
+            },
+            items: []
+        };
+        rteObj.value = '<div><br></div>';
+        rteObj.pasteCleanupSettings.deniedTags = [];
+        rteObj.pasteCleanupSettings.deniedAttrs = [];
+        rteObj.pasteCleanupSettings.allowedStyleProps = [];
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        editorObj.nodeSelection.setSelectionText(document, (rteObj as any).inputElement, (rteObj as any).inputElement, 0, 0);
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+            if (rteObj.pasteCleanupSettings.prompt) {
+                let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+                keepFormat[0].click();
+                let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+                pasteOK[0].click();
+            }
+            expect((rteObj as any).inputElement.innerHTML === `<div><h1>Selection: focusNode property</h1></div>`).toBe(true)
+            done();
+        }, 50);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

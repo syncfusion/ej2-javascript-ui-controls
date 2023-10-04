@@ -1400,6 +1400,7 @@ describe('Ribbon', () => {
             expect(ribbon.tabs[0].groups.length).toBe(2);
             expect((ribbon.element.querySelectorAll('.e-ribbon-group-header')[0] as HTMLElement).innerText).toBe('group1Header');
             expect((ribbon.element.querySelectorAll('.e-ribbon-group-header')[1] as HTMLElement).innerText).toBe('group2Header');
+            ribbon.addGroup('tab5', group);
 
         });
         it('add/remove collection', () => {
@@ -2916,6 +2917,7 @@ describe('Ribbon', () => {
             expect(ribbon.tabObj.element.querySelector('#e-item-ribbon_tab_0').classList.contains('e-hidden')).toBe(true);
             ribbon.showTab('tab1');
             expect(ribbon.tabObj.element.querySelector('#e-item-ribbon_tab_0').classList.contains('e-hidden')).toBe(false);
+            ribbon.showTab('tab3');
         });
         it('enable/disable tab', () => {
             ribbon = new Ribbon({
@@ -2965,6 +2967,7 @@ describe('Ribbon', () => {
             expect(ribbon.tabObj.element.querySelector('#e-item-ribbon_tab_0').classList.contains('e-disable')).toBe(true);
             ribbon.enableTab('tab1');
             expect(ribbon.tabObj.element.querySelector('#e-item-ribbon_tab_0').classList.contains('e-disable')).toBe(false);
+            ribbon.enableTab('tab3');
         });
         it('hide/show group', () => {
             ribbon = new Ribbon({
@@ -3116,6 +3119,7 @@ describe('Ribbon', () => {
             expect(document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target').classList.contains('e-hidden')).toBe(true);
             ribbon.showGroup('group2');
             expect(document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target').classList.contains('e-hidden')).toBe(false);
+            ribbon.showGroup('group4');
         });
         it('enable/disable group', () => {
             ribbon = new Ribbon({
@@ -3275,6 +3279,7 @@ describe('Ribbon', () => {
             ribbon.refreshLayout();
             expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('#group1_container').classList.contains('e-disabled')).toBe(true);
             expect(document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target').classList.contains('e-disabled')).toBe(true);
+            ribbon.enableGroup('group4');
         });
     });
 
@@ -9550,15 +9555,23 @@ describe('Ribbon', () => {
                             items: [{
                                 id: "item1",
                                 type: RibbonItemType.Button,
-                                allowedSizes: RibbonItemSize.Large,
+                                allowedSizes: null,
                                 buttonSettings: {
                                     content: 'button1',
                                     iconCss: 'e-icons e-cut',
                                 }
                             }]
                         }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        enableGroupOverflow: false,
+                        collections: [{
+                            id: "collection1",
+                        }]
                     }]
-                },],
+                }],
                 ribbonExpanding: (args: ExpandCollapseEventArgs) => {
                     isRibbonExpanding = true;
                 },
@@ -9571,6 +9584,9 @@ describe('Ribbon', () => {
             expect(isRibbonCollapsing).toBe(false);
             (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
             expect(isRibbonExpanding).toBe(false);
+            ribbon.activeLayout = "Simplified";
+            ribbon.refreshLayout();
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
         });
         it('events - tabs switching', () => {
             let isTabSelecting: boolean = false;

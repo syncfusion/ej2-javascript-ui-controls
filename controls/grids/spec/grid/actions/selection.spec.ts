@@ -5875,6 +5875,39 @@ describe('BUG 842498 - In a checkbox with a specified field, if you click the in
             gridObj = null;
         });
     });
+
+    describe('283715 => Checkbox cell selection is not properly cleared on clearSelection method call.', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' }],
+                    selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Flow' },
+                }, done);
+        });
+
+        it('checkbox column cell selection', (done: Function) => {
+            (<any>gridObj.selectionModule).selectCell({ rowIndex: 3, cellIndex: 0 }, true);
+            done();
+        });
+
+        it('checkbox column cell de-selection', (done: Function) => {
+            (<any>gridObj.selectionModule).clearCellSelection();
+            expect((<any>gridObj.selectionModule).selectedRowIndexes.length).toBe(0);
+            expect((<any>gridObj.selectionModule).selectedRowCellIndexes.length).toBe(0);
+            done();
+        });        
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 describe('Code Coverage - left freeze with autofill', () => {

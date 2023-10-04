@@ -288,6 +288,14 @@
       position: relative;
       padding-top: $ribbon-group-padding;
       height: $ribbon-group-height;
+
+      &.e-hidden {
+        display: none;
+      }
+
+      &.e-disabled {
+        pointer-events: none;
+      }
     }
 
     .e-ribbon-group::after {
@@ -411,7 +419,7 @@
 
         &.e-menu-wrapper ul.e-vertical,
         &.e-menu-wrapper ul.e-ul {
-          min-width: 150px;
+          min-width: 135px;
 
           &.e-menu .e-menu-item {
             &.e-separator {
@@ -424,7 +432,7 @@
             line-height: $ribbon-backstage-menu-item-height;
             padding: 0;
 
-            &.e-focused {
+            &:focus {
               border-style: solid;
               border-width: $ribbon-backstage-menu-hover-border;
             }
@@ -435,7 +443,7 @@
               border-width: $ribbon-backstage-menu-active-border;
             }
 
-            &.e-selected.e-focused {
+            &.e-selected:focus {
               border-style: solid;
               border-width: $ribbon-backstage-menu-hover-border;
             }
@@ -572,6 +580,10 @@
       padding: 1px;
       vertical-align: middle;
 
+      &.e-hidden {
+        display: none;
+      }
+
       .e-btn {
         border: $ribbon-items-border;
         border-radius: $ribbon-items-border-radius;
@@ -583,6 +595,11 @@
         &:focus {
           outline: none;
         }
+      }
+
+      .e-btn-group .e-btn.e-ribbon-group-button,
+      .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type) {
+        border: $ribbon-items-border;
       }
 
       &.e-ribbon-large-item {
@@ -813,6 +830,24 @@
     }
 
     .e-ribbon-overflow-target {
+
+      &.e-hidden {
+        display: none;
+      }
+
+      &.e-disabled {
+        pointer-events: none;
+      }
+
+      .e-ribbon-of-tab .e-ribbon-of-group-container {
+        &.e-hidden {
+          display: none;
+        }
+
+        &.e-disabled {
+          pointer-events: none;
+        }
+      }
 
       .e-ribbon-item {
 

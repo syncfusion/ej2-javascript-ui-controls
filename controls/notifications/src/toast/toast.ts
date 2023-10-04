@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation, createElement, animationMode } from '@syncfusion/ej2-base';
+import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation, createElement, animationMode, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { Browser, isNullOrUndefined as isNOU, getUniqueID, formatUnit, EventHandler, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel, L10n } from '@syncfusion/ej2-base';
 import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined } from '@syncfusion/ej2-base';
@@ -874,10 +874,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
                 // eslint-disable-next-line
         prob === 'content' ? this.contentTemplate = clo : this.toastTemplate = clo;
             } else {
-                templateFn = templateCompiler(value);
+                templateFn = typeof value == 'object' ? templateCompiler(value) : templateCompiler(initializeCSPTemplate( function() { return value;}));
             }
         } catch (e) {
-            templateFn = templateCompiler(value);
+            templateFn = typeof value == 'object' ? templateCompiler(value) : templateCompiler(initializeCSPTemplate( function() { return value;}));
             // eslint-disable-next-line
         let templateValue: string | Function = value;
         }

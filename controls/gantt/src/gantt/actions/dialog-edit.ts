@@ -1105,7 +1105,7 @@ export class DialogEdit {
                     else {
                         if (value === "") {
                            this.parent.setRecordValue('duration', null, ganttProp, true);
-                           if (ganttProp.endDate) {
+                           if (ganttProp.endDate && ganttProp.startDate) {
                               this.parent.setRecordValue('endDate', null, ganttProp, true);
                            }
                         }

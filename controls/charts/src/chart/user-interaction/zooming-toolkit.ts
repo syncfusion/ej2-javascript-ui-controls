@@ -409,6 +409,7 @@ export class Toolkit {
             chart.delayRedraw = true;
             let argsData: IZoomCompleteEventArgs;
             this.zoomCompleteEvtCollection = [];
+            const zoomedAxisCollection: IAxisData[] = [];
             for (let axis of (axes as Axis[])) {
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
@@ -430,8 +431,19 @@ export class Toolkit {
                         axis.zoomPosition = argsData.currentZoomPosition;
                         this.zoomCompleteEvtCollection.push(argsData);
                     }
+                    zoomedAxisCollection.push({
+                        zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                        axisRange: axis.visibleRange
+                    });
                 }
             }
+            const zoomingEventArgs: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+            this.chart.trigger(onZooming, zoomingEventArgs, () => {
+                if (zoomingEventArgs.cancel) {
+                    let zoom= new Zoom(chart);
+                    zoom.zoomCancel(axes, this.zoomCompleteEvtCollection)
+                }
+            });
         }
     }
 

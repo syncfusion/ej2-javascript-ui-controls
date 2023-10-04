@@ -338,7 +338,7 @@ export class NavigationPane {
             commentCloseIconDiv.style.borderColor = 'transparent';
             commentCloseIconDiv.style.paddingTop = '11px';
             commentCloseIconDiv.style.paddingBottom = '11px';
-            commentCloseIconDiv.style.backgroundColor = '#fafafa';
+            commentCloseIconDiv.style.backgroundColor = 'transparent';
             commentCloseIconDiv.addEventListener('click', this.closeCommentPanelContainer.bind(this));
             commentpanelTilte.style.left = '37px';
             const commentCloseIcon: HTMLElement = createElement('span', { className: 'e-pv-annotation-tools-close-icon e-pv-icon' });

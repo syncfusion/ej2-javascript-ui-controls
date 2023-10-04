@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 23.1.39 (2023-10-04)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I499363` - Now, the issue with the heading colour set to blue after copying and pasting content from MS Word has been resolved.
+
+- `#I500996` - Now, the issue with the table resize icon is missing when the mouse is dragged out of the editor and clicked outside the table has been resolved.
+
+- `#I493182` - Now, the issue with the `enablePersistence` API not working properly in the Rich Text Editor on page navigation has been resolved.
+
+- `#F184513` - Now, integrating with Mention, the `actionBegin` and `actionComplete` events work properly.
+
+- `#I488206` - Now, pasting contents into the Rich Text Editor when `enterKey` is configured as `DIV` works properly.
+
+- `#I499035` - Now, the Rich Text Editor renders properly without any `sass` compilation errors.
+
 ## 23.1.36 (2023-09-15)
 
 ### RichTextEditor

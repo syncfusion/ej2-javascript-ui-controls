@@ -128,6 +128,8 @@ console.log('Multiple undo and redo after bidi for tabl format is true');
         expect(editor.selection.tableFormat.bidi).toBe(false);
     });
 
+
+}); 
     describe('Selection Paragraph format keepWithNext validation', () => {
         let editor: DocumentEditor;
         let documentHelper: DocumentHelper;
@@ -223,4 +225,3 @@ console.log('Multiple undo and redo after bidi for tabl format is true');
             expect(documentHelper.selection.start.paragraph.paragraphFormat.keepLinesTogether).toBe(false);
         });
     });
-}); 

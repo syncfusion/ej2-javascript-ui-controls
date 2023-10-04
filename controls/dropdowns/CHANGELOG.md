@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.38 (2023-09-26)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I493841` - Issue with "Scrollbar in ListBox while using inside a splitter" has been resolved.
+
 ## 23.1.36 (2023-09-15)
 
 ### ListBox

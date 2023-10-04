@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 23.1.39 (2023-10-04)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I500107` - Resolved the Formatting issue with DocumentEditor.
+- `#I497404` - Script error occurred when loading the document.
+- `#I498661` - Resolved spacing issue while deleting list content on track changes enabled.
+- `#F184319` - Resolved the User's Time zone issue.
+- `#I501695` - Resolved the replace ALL issue to replace the first occurrence.
+- `#FB46595` - Page number is now reflecting.
+- `#I497387` - Resolved the bookmark end is deleted in document production mode.
+- `#I499799` - Resolved the rtl content rendering issue while opening rtf document.
+- `#I495180` - Delete is now working properly for tracked content
+- `#I503264` - Resolved script error issue while inserting text
+- `#I503222` - Resolved track changes issue, when select the inserted changes.
+- `#I493589` - Keypad appearing issue is resolved in mobile view.
+- `#I498520` - Resolved the Text FormField deleting multiple issues.
+
 ## 23.1.38 (2023-09-26)
 
 ### Document Editor

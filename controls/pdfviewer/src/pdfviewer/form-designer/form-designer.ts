@@ -3339,7 +3339,13 @@ export class FormDesigner {
      * @private
     */
     public setFormFieldIndex(): number {
-        this.formFieldIndex = this.formFieldIndex + 1;
+        if (this.pdfViewer.formFieldCollection.length > 0) {
+            let lastFormField: any = this.pdfViewer.formFieldCollection[this.pdfViewer.formFieldCollection.length - 1];
+            let lastFormFieldIndex: any = lastFormField ? parseInt(lastFormField.name.match(/\d+/)) : null;
+            this.formFieldIndex = (lastFormFieldIndex !== null) ? lastFormFieldIndex + 1 : this.formFieldIndex;
+        } else {
+            this.formFieldIndex++;
+        }  
         return this.formFieldIndex;
     }
 

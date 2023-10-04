@@ -830,6 +830,17 @@
     .e-frozenscrollbar {
       background: $pivotgrid-grp-bg-color;
     }
+
+    /* stylelint-disable */
+    & .e-headercontent {
+      & .e-columnheader {
+        & .e-headercell.e-leftfreeze {
+          // For safari browser only
+          -webkit-transform: translate3d(0, 0, 0);
+        }
+      }
+    }
+    /* stylelint-enable */
   }
 
   .e-pivotview-disable-icon {

@@ -4,6 +4,7 @@ import * as events from '../base/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { ContentRender } from '../renderer/content-renderer';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Content module is used to render Rich Text Editor content
@@ -61,6 +62,7 @@ export class Render {
      * @returns {void}
      */
     public destroy(): void {
+        if (isNullOrUndefined(this.parent)) { return; }
         this.removeEventListener();
     }
 

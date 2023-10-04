@@ -380,7 +380,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * The `operators` is used to override the default operators in filter menu. This should be defined by type wise
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
      *
-     * > Check the [`Filter Menu Operator`](../../grid/how-to/#customizing-filter-menu-operators-list/) customization.
+     * > Check the [`Filter Menu Operator`](../../grid/filtering/filter-menu#customizing-filter-menu-operators-list) customization.
      *
      * @default null
      */

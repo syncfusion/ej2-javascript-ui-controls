@@ -8,7 +8,7 @@ import { Connector, OrthogonalSegment } from '../../../src/diagram/objects/conne
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { SnapConstraints, Snapping, ConnectorBridging, IEditSegmentOptions } from '../../../src/diagram/index';
+import { SnapConstraints, Snapping, ConnectorBridging, IEditSegmentOptions, ISegmentChangeEventArgs, ISegmentCollectionChangeEventArgs } from '../../../src/diagram/index';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { ConnectorEditing } from '../../../src/diagram/interaction/connector-editing';
@@ -2121,3 +2121,87 @@ describe('Orthogonal connector segment routing issue-1', () => {
     });
 
 });
+
+//848696-event support to notify when add/remove segment using editSegment method
+describe('Connectors Segments - Add or Remove Segment Runtime', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement; let segmentAdd: boolean = false;
+    let segmentRemoval: boolean = false;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagrameditSegent' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: 1000, height: 1000,
+            connectors: [
+                {
+                    id: 'connector1', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 }, type: 'Straight',
+                    segments: [{ type: 'Straight', point: { x: 100, y: 150 } },
+                    { type: 'Straight', },]
+                },
+                {
+                    id: 'connector2', sourcePoint: { x: 572, y: 40 }, targetPoint: { x: 600, y: 300 }, type: 'Straight',
+                    segments: [{ type: 'Straight', direction: 'Bottom', length: 200 },
+                    ]
+                },
+            ],
+            getConnectorDefaults: (obj: ConnectorModel) => {
+                let connector: ConnectorModel = {};
+                connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                return connector;
+            },
+            snapSettings: { constraints: SnapConstraints.ShowLines },
+            segmentCollectionChange: (args: ISegmentCollectionChangeEventArgs) => {
+                if (args.addSegments) {
+                    segmentAdd = true;
+                } else if (args.removeSegments) {
+                    segmentRemoval = true;
+                }
+            }
+
+        });
+        diagram.appendTo('#diagrameditSegent');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking Straight - segment Add', function (done) {
+        diagram.select([diagram.connectors[0]]);
+        expect(diagram.connectors[0].segments.length == 2).toBe(true);
+        debugger
+        let point: PointModel = { x: 160, y: 180 };
+        let options: IEditSegmentOptions = {
+            connector: diagram.connectors[0],
+            point: point,
+            SegmentEditing: 'Add'
+        }
+        diagram.editSegment(options);
+        expect(diagram.connectors[0].segments.length == 3).toBe(true);
+        expect(segmentAdd).toBe(true);
+        done();
+    });
+    it('Checking Straight - segment Remove - in same point ', function (done) {
+        diagram.select([diagram.connectors[0]]);
+        expect(diagram.connectors[0].segments.length == 3).toBe(true);
+        let point: PointModel = { x: 160, y: 180 };
+        let options: IEditSegmentOptions = {
+            connector: diagram.connectors[0],
+            point: point,
+            SegmentEditing: 'Remove'
+        }
+        diagram.editSegment(options);
+        expect(diagram.connectors[0].segments.length == 2).toBe(true);
+        expect(segmentRemoval).toBe(true);
+        done();
+    });
+
+}); 

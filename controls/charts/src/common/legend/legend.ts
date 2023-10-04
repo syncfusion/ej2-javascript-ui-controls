@@ -1136,9 +1136,9 @@ export class BaseLegend {
     protected renderSymbol(legendOption: LegendOptions, group: Element, legendIndex: number): void {
         const control: BulletChart = this.isBulletChartControl ? this.chart as BulletChart : null;
         const symbolColor: string = legendOption.visible ? legendOption.fill : '#D3D3D3';
-        const isStrokeWidth: boolean = (this.chart.getModuleName() === 'chart' || this.chart.getModuleName() === 'stockChart') && ((legendOption.shape === 'SeriesType') &&
+        const isStrokeWidth: boolean = (this.chart.getModuleName() === 'chart' || this.chart.getModuleName() === 'stockChart') && (((legendOption.shape === 'SeriesType') &&
             (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1)) ||
-            ((legendOption.shape === 'HorizontalLine') || (legendOption.shape === 'VerticalLine') || (legendOption.shape === 'Cross'));
+            ((legendOption.shape === 'HorizontalLine') || (legendOption.shape === 'VerticalLine') || (legendOption.shape === 'Cross')));
         const isCustomBorder: boolean = (this.chart.getModuleName() === 'chart' || this.chart.getModuleName() === 'stockChart') &&
             (legendOption.type === 'Scatter' || legendOption.type === 'Bubble');
         const isCanvas: boolean = this.isStockChartControl ? false : (this.chart as Chart).enableCanvas;

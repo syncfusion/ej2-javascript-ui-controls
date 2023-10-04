@@ -173,6 +173,7 @@ export class FullScreen {
      * @deprecated
      */
     public destroy(): void {
+        if (isNOU(this.parent)) { return; }
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.toggleParentOverflow(false);
         }

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 23.1.39 (2023-10-04)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I501652` - Now, dropping nodes in swimlane consider as child in angular.
+- `#I47014` - The segmentCollectionChange is triggered when editSegment method called.
+
 ## 23.1.38 (2023-09-26)
 
 ### Diagram
