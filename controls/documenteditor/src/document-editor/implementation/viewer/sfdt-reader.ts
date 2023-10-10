@@ -1170,7 +1170,11 @@ export class SfdtReader {
                 if (imgStrValue.toString() === "NaN" ? true : false) {
                     this.documentHelper.addBase64StringInCollection(image);
                 }
-                image.element.src = this.documentHelper.getImageString(image);
+                let imgStr: string = this.documentHelper.getImageString(image);
+                if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
+                    imgStr += `?t=${new Date().getTime()}`;
+                }
+                image.element.src = imgStr;
                 image.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
                 image.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
                 image.top = inline[topProperty[this.keywordIndex]];

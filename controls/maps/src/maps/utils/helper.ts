@@ -1197,10 +1197,13 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         while (0 < clusterGroup.childNodes.length) {
             markerCollection.insertBefore(clusterGroup.childNodes[0], markerCollection.firstChild);
         }
-        if (check) {
-            layerElement.appendChild(markerCollection);
+        if (!check) {
+            getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection); 
+        }
+        const element: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_Polygon_Group');
+        if (isNullOrUndefined(element)) {
+            layerElement.insertBefore(markerCollection, layerElement.firstChild)
         } else {
-            getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection);
             layerElement.appendChild(markerCollection);
         }
         const markerCluster: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster');
@@ -1209,7 +1212,10 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         }
         if (zoomCheck) {
             const layerGroupElement: HTMLElement = document.getElementById(maps.element.id + '_Layer_Collections');
-            if (!isNullOrUndefined(layerGroupElement)) {
+            const element: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + (layerIndex + 1))
+            if (!isNullOrUndefined(layerGroupElement) && !isNullOrUndefined(element)) {
+                layerGroupElement.insertBefore(layerElement, element);
+            } else if (!isNullOrUndefined(layerGroupElement)) {
                 layerGroupElement.appendChild(layerElement);
             }
         }
@@ -2290,6 +2296,8 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
         if (mapObject.isReset && mapObject.mapScaleValue === 1) {
             // eslint-disable-next-line no-self-assign
             mapObject.mapScaleValue = mapObject.mapScaleValue;
+        } else if(!isNullOrUndefined(mapObject.mapScaleValue) && mapObject.mapScaleValue <= mapObject.scale) {
+            mapObject.mapScaleValue = mapObject.scale;
         } else {
             mapObject.mapScaleValue = zoomFactorValue;
         }

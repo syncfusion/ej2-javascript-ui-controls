@@ -55,6 +55,10 @@ export class Layout {
     /**
      * @private
      */
+    public isTextFormat: boolean =false;
+    /**
+     * @private
+     */
     public isReplacingAll: boolean = false;
     /**
      * @private
@@ -405,15 +409,13 @@ export class Layout {
                 && !block.tableFormat.allowAutoFit) {
                 block.calculateGrid();
             }
-            if (!isNullOrUndefined(block)) {
-                this.viewer.updateClientAreaForBlock(block, true, undefined, true);
-                let bodyIndex: number = block.containerWidget.indexInOwner;
-                nextBlock = this.layoutBlock(block, index);
-                index = 0;
-                this.viewer.updateClientAreaForBlock(block, false);
-                prevBlock = block;
-                block = nextBlock;
-            }
+            this.viewer.updateClientAreaForBlock(block, true, undefined, true);
+            let bodyIndex: number = block.containerWidget.indexInOwner;
+            nextBlock = this.layoutBlock(block, index);
+            index = 0;
+            this.viewer.updateClientAreaForBlock(block, false);
+            prevBlock = block;
+            block = nextBlock;
         } while (block);
         block = section.firstChild as BlockWidget;
         if (this.viewer instanceof PageLayoutViewer && section.sectionFormat.numberOfColumns > 1 && !isNullOrUndefined(nextSection) && nextSection.sectionFormat.breakCode === 'NoBreak' && (section.sectionFormat.breakCode === 'NoBreak' || (section.sectionIndex === section.page.bodyWidgets[0].sectionIndex))) {
@@ -10027,38 +10029,48 @@ export class Layout {
             }
         }
         // eslint-disable  no-constant-condition
-        do {
-            let lastBlock: BlockWidget;
-            if (body.lastChild instanceof FootNoteWidget) {
-                lastBlock = body.lastChild.previousWidget as BlockWidget;
-            } else {
-                lastBlock = body.lastChild as BlockWidget;
+        if (this.isTextFormat) {
+            let index = body.childWidgets.indexOf(block);
+            let child = body.childWidgets.slice(index);
+            body.childWidgets.splice(index);
+            for (const obj of child) {
+                nextBody.childWidgets.push(obj);
+                (obj as any).containerWidget = nextBody;
             }
-            if (moveFootnoteFromLastBlock) {
-                const footWidget: BodyWidget[] = this.getFootNoteWidgetsOf(lastBlock);
-                this.moveFootNotesToPage(footWidget, body, nextBody);
-            }
-            if (block === lastBlock) {
-                break;
-            }
-            body.childWidgets.splice(body.childWidgets.indexOf(lastBlock), 1);
-            nextBody.childWidgets.splice(0, 0, lastBlock);
-            if (lastBlock instanceof TableWidget && (body.floatingElements.indexOf(lastBlock) !== -1)) {
-                body.floatingElements.splice(body.floatingElements.indexOf(lastBlock), 1);
-                //nextBody.floatingElements.push(lastBlock);
-            }
-            if (lastBlock instanceof ParagraphWidget && lastBlock.floatingElements.length > 0) {
-                for (let m: number = 0; m < lastBlock.floatingElements.length; m++) {
-                    if (body.floatingElements.indexOf(lastBlock.floatingElements[m]) !== -1 && lastBlock.floatingElements[m].textWrappingStyle !== 'Inline') {
-                        body.floatingElements.splice(body.floatingElements.indexOf(lastBlock.floatingElements[m]), 1);
-                        nextBody.floatingElements.push(lastBlock.floatingElements[m]);
+        } else {
+            do {
+                let lastBlock: BlockWidget;
+                if (body.lastChild instanceof FootNoteWidget) {
+                    lastBlock = body.lastChild.previousWidget as BlockWidget;
+                } else {
+                    lastBlock = body.lastChild as BlockWidget;
+                }
+                if (moveFootnoteFromLastBlock) {
+                    const footWidget: BodyWidget[] = this.getFootNoteWidgetsOf(lastBlock);
+                    this.moveFootNotesToPage(footWidget, body, nextBody);
+                }
+                if (block === lastBlock) {
+                    break;
+                }
+                body.childWidgets.splice(body.childWidgets.indexOf(lastBlock), 1);
+                nextBody.childWidgets.splice(0, 0, lastBlock);
+                if (lastBlock instanceof TableWidget && (body.floatingElements.indexOf(lastBlock) !== -1)) {
+                    body.floatingElements.splice(body.floatingElements.indexOf(lastBlock), 1);
+                    //nextBody.floatingElements.push(lastBlock);
+                }
+                if (lastBlock instanceof ParagraphWidget && lastBlock.floatingElements.length > 0) {
+                    for (let m: number = 0; m < lastBlock.floatingElements.length; m++) {
+                        if (body.floatingElements.indexOf(lastBlock.floatingElements[m]) !== -1 && lastBlock.floatingElements[m].textWrappingStyle !== 'Inline') {
+                            body.floatingElements.splice(body.floatingElements.indexOf(lastBlock.floatingElements[m]), 1);
+                            nextBody.floatingElements.push(lastBlock.floatingElements[m]);
+                        }
                     }
                 }
-            }
-            lastBlock.containerWidget = nextBody;
-            nextBody.height += lastBlock.height;
-            // eslint-disable-next-line no-constant-condition
-        } while (true);
+                lastBlock.containerWidget = nextBody;
+                nextBody.height += lastBlock.height;
+                // eslint-disable-next-line no-constant-condition
+            } while (true);
+        }
         return nextBody;
     }
     private createSplitBody(body: BodyWidget): BodyWidget {

@@ -2859,7 +2859,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (formatType === 'Docx' && this.wordExportModule) {
             if (this.wordExportModule) {
+                this.documentHelper.owner.sfdtExportModule.isWordExport = true;
                 this.wordExportModule.save(this.documentHelper, fileName);
+                this.documentHelper.owner.sfdtExportModule.isWordExport = false;
             }
         } else if (formatType === 'Txt' && this.textExportModule) {
             this.textExportModule.save(this.documentHelper, fileName);

@@ -2365,11 +2365,19 @@ export class Series extends SeriesBase {
                 this.seriesElement.setAttribute('aria-hidden', 'false');
             }
             if (!this.chart.enableCanvas || this.type === 'Bubble') {
-                this.seriesElement.setAttribute('tabindex', index === 0 ? '0' : '');
+                this.seriesElement.setAttribute('tabindex', index === 0 ? '0' : !this.checkTabindex(chart.visibleSeries, index as number) ? '0' : '');
                 this.seriesElement.setAttribute('style', 'outline: none');
                 this.seriesElement.appendChild(this.clipRectElement);
             }
         }
+    }
+
+    private checkTabindex(visibleSeries: Series[], index: number): boolean {
+        for (let i: number = 0; i < index; i++) {
+            if (visibleSeries[i as number].visible)
+                return true;
+        }
+        return false;
     }
     /**
      * To append the series.

@@ -752,7 +752,7 @@ export class InkAnnotation {
         //Creating annotation settings
         let annotationSelectorSettings: any = this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings ? this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
         let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.inkAnnotationSettings);
-        annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('ink', annotationSettings.AnnotationType);
+        annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('ink', annotationSettings.AnnotationType);
         let allowedInteractions: any = this.pdfViewer.inkAnnotationSettings.allowedInteractions ? this.pdfViewer.inkAnnotationSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
         annotationSettings.isLock = annotationObject.isLock ? annotationObject.isLock : annotationSettings.isLock;
         annotationObject.width = annotationObject.width ? annotationObject.width : 150;

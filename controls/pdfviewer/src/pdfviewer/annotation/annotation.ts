@@ -2797,12 +2797,12 @@ export class Annotation {
                 // eslint-disable-next-line max-len
                 returnObj = this.pdfViewerBase.signatureModule.modifySignatureCollection(property, annotationBase.pageIndex, annotationBase);
             } else if (annotationBase.shapeAnnotationType === 'Stamp') {
-                returnObj = this.stampAnnotationModule.modifyInCollection(property, annotationBase.pageIndex, annotationBase);
+                returnObj = this.stampAnnotationModule.modifyInCollection(property, annotationBase.pageIndex, annotationBase, null);
             } else if (annotationBase.shapeAnnotationType === 'Ink') {
                 // eslint-disable-next-line max-len
                 returnObj = this.inkAnnotationModule.modifySignatureInkCollection(property, annotationBase.pageIndex, annotationBase);
             } else {
-                returnObj = this.shapeAnnotationModule.modifyInCollection(property, annotationBase.pageIndex, annotationBase);
+                returnObj = this.shapeAnnotationModule.modifyInCollection(property, annotationBase.pageIndex, annotationBase, null);
             }
         } else if (annotationBase.measureType === 'Distance' || annotationBase.measureType === 'Perimeter' ||
             annotationBase.measureType === 'Radius' || annotationBase.measureType === 'Area' || annotationBase.measureType === 'Volume') {
@@ -3482,8 +3482,10 @@ export class Annotation {
                     }
                 }
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
-            } else if ((this.pdfViewerBase.tool instanceof MoveTool || this.pdfViewerBase.tool instanceof ResizeTool) && isToolMoved) {
-                this.pdfViewerBase.updateDocumentEditedProperty(true);
+            } else if (this.pdfViewerBase.tool instanceof MoveTool || this.pdfViewerBase.tool instanceof ResizeTool) {
+                if (isToolMoved) {
+                    this.pdfViewerBase.updateDocumentEditedProperty(true);
+                }
                 if (pdfAnnotationBase.measureType === '' || isNullOrUndefined(pdfAnnotationBase.measureType)) {
                     if (pdfAnnotationBase.shapeAnnotationType === 'FreeText') {
                         // eslint-disable-next-line max-len
@@ -3496,10 +3498,10 @@ export class Annotation {
                         this.inkAnnotationModule.modifySignatureInkCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
                     } else if (pdfAnnotationBase.shapeAnnotationType === 'Stamp' || pdfAnnotationBase.shapeAnnotationType === 'Image') {
                         // eslint-disable-next-line max-len
-                        this.stampAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
+                        this.stampAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase, isToolMoved);
                     } else {
                         // eslint-disable-next-line max-len
-                        this.pdfViewer.annotation.shapeAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
+                        this.pdfViewer.annotation.shapeAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase, isToolMoved);
                     }
                     // eslint-disable-next-line max-len
                 } else if (pdfAnnotationBase.measureType === 'Distance' || pdfAnnotationBase.measureType === 'Perimeter' || pdfAnnotationBase.measureType === 'Radius' || pdfAnnotationBase.measureType === 'Area' || pdfAnnotationBase.measureType === 'Volume') {
@@ -3517,12 +3519,14 @@ export class Annotation {
                         }
                     }
                 }
-            } else if ((this.pdfViewerBase.tool instanceof ConnectTool) && isToolMoved) {
-                this.pdfViewerBase.updateDocumentEditedProperty(true);
+            } else if (this.pdfViewerBase.tool instanceof ConnectTool) {
+                if (isToolMoved) {
+                    this.pdfViewerBase.updateDocumentEditedProperty(true);
+                }
                 if (pdfAnnotationBase.measureType === '' || isNullOrUndefined(pdfAnnotationBase.measureType)) {
                     // eslint-disable-next-line max-len
                     if ((pdfAnnotationBase.shapeAnnotationType === 'Line' || pdfAnnotationBase.shapeAnnotationType === 'LineWidthArrowHead' || pdfAnnotationBase.shapeAnnotationType === 'Polygon')) {
-                        this.pdfViewer.annotation.shapeAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
+                        this.pdfViewer.annotation.shapeAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase, isToolMoved);
                     }
                     // eslint-disable-next-line max-len
                 } else if (pdfAnnotationBase.measureType === 'Distance' || pdfAnnotationBase.measureType === 'Perimeter' || pdfAnnotationBase.measureType === 'Area' || pdfAnnotationBase.measureType === 'Volume') {

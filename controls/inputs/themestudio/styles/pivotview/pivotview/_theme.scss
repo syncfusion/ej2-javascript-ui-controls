@@ -5,10 +5,12 @@
     .e-pivotcell-container {
       align-items: center;
       display: flex;
+      max-height: inherit;
 
       .e-stackedheadertext,
       .e-headertext {
         &.e-cellvalue {
+          align-self: stretch;
           overflow: hidden;
           text-overflow: ellipsis;
           width: 100%;

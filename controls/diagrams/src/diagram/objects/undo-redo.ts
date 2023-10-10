@@ -403,6 +403,10 @@ export class UndoRedo {
         case 'AddChildToGroupNode':
             this.recordAddChildToGroupNode(entry, diagram, false);
             break;
+        case "ExternalEntry":
+            //EJ2-848643 - Need to consider custom entries in start and end group action
+            diagram.historyManager.undo(entry);
+            break;
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false); diagram.historyChangeTrigger(entry, 'Undo');
@@ -1208,6 +1212,10 @@ export class UndoRedo {
             this.recordOrderCommandChanged(historyEntry, diagram, true); break;
         case 'AddChildToGroupNode':
             this.recordAddChildToGroupNode(historyEntry, diagram, true); break;
+        case "ExternalEntry":
+            //EJ2-848643 - Need to consider custom entries in start and end group action
+            diagram.historyManager.redo(historyEntry);
+            break;
         }
         diagram.protectPropertyChange(false);
         diagram.diagramActions &= ~DiagramAction.UndoRedo;

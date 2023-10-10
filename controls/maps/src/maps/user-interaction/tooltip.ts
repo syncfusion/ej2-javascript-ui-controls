@@ -231,7 +231,8 @@ export class MapsTooltip {
                             areaBounds: this.maps.mapAreaRect,
                             textStyle: option['textStyle'],
                             availableSize: this.maps.availableSize,
-                            fill: option.fill || this.maps.themeStyle.tooltipFillColor
+                            fill: option.fill || this.maps.themeStyle.tooltipFillColor,
+                            enableShadow: true
                         });
                     } else {
                         this.svgTooltip = new Tooltip({
@@ -247,7 +248,8 @@ export class MapsTooltip {
                             areaBounds: this.maps.mapAreaRect,
                             textStyle: tooltipArgs.options['textStyle'],
                             availableSize: this.maps.availableSize,
-                            fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor
+                            fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
+                            enableShadow: true
                         });
                     }
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any

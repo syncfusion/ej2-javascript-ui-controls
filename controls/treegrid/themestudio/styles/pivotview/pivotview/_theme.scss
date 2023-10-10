@@ -5,10 +5,12 @@
     .e-pivotcell-container {
       align-items: center;
       display: flex;
+      max-height: inherit;
 
       .e-stackedheadertext,
       .e-headertext {
         &.e-cellvalue {
+          align-self: stretch;
           overflow: hidden;
           text-overflow: ellipsis;
           width: 100%;
@@ -755,6 +757,13 @@
 
     .e-group-filters,
     .e-group-columns {
+      width: 100%;
+    }
+
+    th.e-group-row .e-axis-row {
+      display: inline-block;
+      height: 100%;
+      vertical-align: top;
       width: 100%;
     }
 

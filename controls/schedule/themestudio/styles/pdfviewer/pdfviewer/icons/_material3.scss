@@ -92,6 +92,7 @@
     .e-pv-title-close-icon::before,
     .e-pv-annotation-tools-close-icon::before,
     .e-pv-annotation-popup-close::before {
+      color: $pv-icon-color;
       content: '\e7e7';
     }
 

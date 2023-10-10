@@ -9,6 +9,7 @@ import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import { ConnectorModel } from '../../../src';
 import { BpmnFlowModel, HierarchicalTree, } from '../../../src/diagram/index';
+import { MouseEvents } from '../interaction/mouseevents.spec';
 
 Diagram.Inject(BpmnDiagrams,HierarchicalTree);
 
@@ -1143,6 +1144,95 @@ describe('BPMN Shapes strokecolor changing', () => {
     });
   
 });
+describe('848061- BPMN group Shape to work as subprocess', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        ele = createElement('div', { id: 'BPMNgroup' });
+        document.body.appendChild(ele);
+        let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
+        let nodes: NodeModel[] = [
+            {
+                id: 'Group', width: 200, height: 200, constraints: NodeConstraints.Default | NodeConstraints.AllowDrop, offsetX: 300, offsetY: 300,
+                shape: { type: 'Bpmn', shape: 'Group', }
+            },
+            {
+                id: 'Intermediate', constraints: NodeConstraints.Default | NodeConstraints.AllowDrop, offsetX: 100, offsetY: 100, width: 100, height: 100,
+                style: { strokeWidth: 2 }, shape: { type: 'Bpmn', shape: 'Event', event: { event: 'Intermediate', trigger: 'None' } },
+            },
+            {
+                id: 'SubProcessEventBased', constraints: NodeConstraints.Default | NodeConstraints.AllowDrop, style: { strokeWidth: 2 }, offsetX: 300, offsetY: 100,
+                width: 200, height: 100,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: { collapsed: false, type: 'Transaction', transaction: { success: { visible: false }, failure: { visible: false }, cancel: { visible: false } } }
+                    },
+                },
+            },
+            {
+                id: 'FlowShape', constraints: NodeConstraints.Default | NodeConstraints.AllowDrop, style: { strokeWidth: 2 }, shape: { type: 'Flow', shape: 'Decision' },
+                offsetX: 100, offsetY: 300, width: 100, height: 100,
+            }];
+        diagram = new Diagram({
+            width: 1000, height: 500, nodes: nodes
+        });
+        diagram.appendTo('#BPMNgroup');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Group Shape have bpmn shapes as children', (done: Function) => {
+        debugger
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, 350, 350);
+        let children: boolean = false;
+        for (var i = 0; i < diagram.nodes[0].wrapper.children.length; i++) {
+            let child_id: string = diagram.nodes[0].wrapper.children[i].id;
+            if (child_id.includes("Intermediate")) {
+                children = true;
+            }
+        }
+        expect(children).toBe(true);
+        done();
+    });
+    it('Group Shape does not allow non-bpmn shapes as  children', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.dragAndDropEvent(diagramCanvas, 100, 300, 350, 350);
+        let children: boolean = false;
+        for (var i = 0; i < diagram.nodes[0].wrapper.children.length; i++) {
+            let child_id: string = diagram.nodes[0].wrapper.children[i].id;
+            if (child_id.includes("FlowShape")) {
+                children = true;
+            }
+        }
+        expect(children).toBe(false);
+        done();      
+    });
+    it(' Group Shape resize when children in the group dragged inside', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let shape_height:number=diagram.nodes[0].height;
+        let shape_width:number=diagram.nodes[0].width;
+        mouseEvents.clickEvent(diagramCanvas, 350, 350);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 350, 350, 550, 350);
+        mouseEvents.clickEvent(diagramCanvas, 350, 350);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 350, 350, 450, 350);
+        expect(diagram.nodes[0].height ===shape_height).toBe(true);
+        expect(diagram.nodes[0].width !== shape_width).toBe(true);
+        done();        
+    });
+});
+
 
 
 

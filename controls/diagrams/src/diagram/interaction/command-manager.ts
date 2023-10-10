@@ -1874,7 +1874,7 @@ export class CommandHandler {
      * @private
      */
     public addText(obj: Node | Connector, currentPosition: PointModel): void {
-        const annotation: DiagramElement = this.diagram.findElementUnderMouse(obj, currentPosition);
+        const annotation: DiagramElement = this.diagram.findElementUnderMouse(obj, currentPosition, this.diagram);
         this.diagram.startTextEdit(obj, annotation instanceof TextElement ? (annotation.id).split('_')[1] : undefined);
     }
 
@@ -5918,6 +5918,10 @@ Remove terinal segment in initial
                 (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'TextAnnotation')) {
                 return true;
             }
+            //848061 - Enabling BPMN Group Nodes to Function Like Subprocess Nodes
+            if (((targetNodes as Node).shape as BpmnShape).shape === 'Group') {
+                ((targetNodes as Node).shape as BpmnShape).activity.subProcess.collapsed = false
+            } 
             if (node && node.shape.type === 'Bpmn') {
                 if ((node.processId === (targetNodes as Node).id) || (node.id === (targetNodes as Node).processId) ||
                     (targetNodes as Node).shape.type === 'Bpmn'

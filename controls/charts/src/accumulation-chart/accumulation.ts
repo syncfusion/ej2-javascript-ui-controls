@@ -836,7 +836,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             const collection: number = document.getElementsByClassName('e-accumulationchart').length;
             this.element.id = 'acc_chart_' + this.chartid + '_' + collection;
         }
-        calculateSize(this);
         this.wireEvents();
         this.element.setAttribute('dir', this.enableRtl ? 'rtl' : '');
     }

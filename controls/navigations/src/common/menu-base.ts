@@ -1631,6 +1631,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (!cli.classList.contains(SEPARATOR)) {
                         this.showSubMenu = true;
                         const cul: Element = cli.parentNode as Element;
+                        if (isNullOrUndefined(cul)) {
+                            return;
+                        }
                         this.cliIdx = this.getIdx(cul, cli);
                         if (this.isMenu || !Browser.isDevice) {
                             const culIdx: number = this.isMenu ? Array.prototype.indexOf.call(

@@ -1495,6 +1495,14 @@ export class Image {
                 this.prevSelectedImgEle.style.outline = '';
             }
         }
+        if (target.tagName !== 'IMG') {
+            let items: NodeListOf<HTMLElement> = this.contentModule.getEditPanel().querySelectorAll('img');
+            for (let i = 0; i < items.length; i++) {
+                removeClass([items[i as number]], 'e-img-focus');
+                removeClass([items[i as number]], 'e-resize');
+                items[i as number].style.maxWidth = '';
+            }
+        }
     }
 
     private removeResizeEle(): void {

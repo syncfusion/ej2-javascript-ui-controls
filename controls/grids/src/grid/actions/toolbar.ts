@@ -390,7 +390,7 @@ export class Toolbar {
         for (const item of items) {
             const element: HTMLElement = select('#' + item, this.element);
             if (element) {
-                this.toolbar.enableItems(element.parentElement, isEnable);
+                this.toolbar.enableItems(element.closest('.e-toolbar-item') as HTMLElement, isEnable);
             }
         }
     }

@@ -1674,7 +1674,7 @@ export class MeasureAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.lineSettings.annotationSelectorSettings ? this.pdfViewer.lineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.lineSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.lineSettings.allowedInteractions ? this.pdfViewer.lineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             measureAnnotationType = 'LineDimension';
             shapeAnnotationType = 'Line';
@@ -1692,7 +1692,7 @@ export class MeasureAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.arrowSettings.annotationSelectorSettings ? this.pdfViewer.arrowSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.arrowSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.arrowSettings.allowedInteractions ? this.pdfViewer.arrowSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             measureAnnotationType = 'PolyLineDimension';
             shapeAnnotationType = 'Polyline';
@@ -1712,7 +1712,7 @@ export class MeasureAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.rectangleSettings.annotationSelectorSettings ? this.pdfViewer.rectangleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.rectangleSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.rectangleSettings.allowedInteractions ? this.pdfViewer.rectangleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             measureAnnotationType = 'PolygonDimension';
             shapeAnnotationType = 'Polygon';
@@ -1732,7 +1732,7 @@ export class MeasureAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.circleSettings.annotationSelectorSettings ? this.pdfViewer.circleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.circleSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.circleSettings.allowedInteractions ? this.pdfViewer.circleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             measureAnnotationType = 'PolygonRadius';
             shapeAnnotationType = 'Circle';
@@ -1746,7 +1746,7 @@ export class MeasureAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.polygonSettings.annotationSelectorSettings ? this.pdfViewer.polygonSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.polygonSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ? this.pdfViewer.polygonSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             measureAnnotationType = 'PolygonVolume';
             shapeAnnotationType = 'Polygon';

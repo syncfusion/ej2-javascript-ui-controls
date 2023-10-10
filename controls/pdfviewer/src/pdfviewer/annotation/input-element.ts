@@ -117,7 +117,7 @@ export class InputElement {
             // eslint-disable-next-line max-len
             if (selectedAnnotation.shapeAnnotationType === 'Rectangle' || selectedAnnotation.shapeAnnotationType === 'Ellipse' || selectedAnnotation.shapeAnnotationType === 'Line'
                 || selectedAnnotation.shapeAnnotationType === 'LineWidthArrowHead') {
-                this.pdfViewer.annotation.shapeAnnotationModule.modifyInCollection('labelContent', pageIndex, selectedAnnotation);
+                this.pdfViewer.annotation.shapeAnnotationModule.modifyInCollection('labelContent', pageIndex, selectedAnnotation, null);
             } else if (selectedAnnotation.shapeAnnotationType === 'Radius' && selectedAnnotation.measureType) {
                 this.pdfViewer.annotation.measureAnnotationModule.modifyInCollection('labelContent', pageIndex, selectedAnnotation);
             }

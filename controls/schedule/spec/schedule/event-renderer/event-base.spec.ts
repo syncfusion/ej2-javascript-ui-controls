@@ -3,10 +3,11 @@
  * Events base methods testing
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel, CallbackFunction } from '../../../src/schedule/index';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel, CallbackFunction, EventClickArgs } from '../../../src/schedule/index';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { resourceData } from '../base/datasource.spec';
 import { EJ2Instance } from '../../../src/schedule/base/interface';
+import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
@@ -996,6 +997,56 @@ describe('Event Base Module', () => {
             const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(app.length).toEqual(5);
             expect((app[0].querySelector('.e-time') as HTMLElement).innerText).toEqual('3:00 PM - 3:30 PM');
+        });
+    });
+
+    describe('ES-847447 - Checking event double click event', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Meeting with customer',
+            StartTime: new Date(2023, 7, 14, 9),
+            EndTime: new Date(2023, 7, 14, 10)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2023, 7, 18),
+                height: '550px'
+            };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking the event double click args', () => {
+            schObj.eventDoubleClick = (args: EventClickArgs) => {
+                expect(args.cancel).toEqual(false);
+                expect(args.element).not.toBeNull();
+                expect(args.event).not.toBeNull();
+                expect((args.event as Record<string, any>).Id).toEqual(1);
+                expect((args.event as Record<string, any>).Subject).toEqual('Meeting with customer');
+                expect(args.name).toEqual('eventDoubleClick');
+                expect((args as Record<string, any>).originalEvent).not.toBeNull();
+            }
+            const app: HTMLElement = schObj.element.querySelector('.e-appointment');
+            util.triggerMouseEvent(app, 'click');
+            util.triggerMouseEvent(app, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(dialogElement.firstElementChild.classList.contains('e-popup-open')).toEqual(true);
+            const closeIcon: HTMLElement = dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement;
+            closeIcon.click();
+        });
+        it('Preventing opening of the editor window by setting up args.cancel value as true', () => {
+            schObj.eventDoubleClick = (args: EventClickArgs) => {
+                expect(args.cancel).toEqual(false);
+                args.cancel = true;
+                expect(args.cancel).toEqual(true);
+            }
+            const app: HTMLElement = schObj.element.querySelector('.e-appointment');
+            util.triggerMouseEvent(app, 'click');
+            util.triggerMouseEvent(app, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(dialogElement.firstElementChild.classList.contains('e-popup-close')).toEqual(true);
         });
     });
 

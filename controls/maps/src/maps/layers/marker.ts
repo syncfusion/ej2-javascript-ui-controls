@@ -118,6 +118,8 @@ export class Marker {
                             maps.element.appendChild(maps.svgObject);
                             if ((currentLayer.layerType === 'OSM' || (currentLayer.urlTemplate.indexOf('openstreetmap') !== -1 && isNullOrUndefined(currentLayer.shapeData)))
                                 && maps.zoomSettings.enable) {
+                                clusterTemplate(currentLayer, this.markerSVGObject,
+                                                maps, layerIndex, this.markerSVGObject, layerElement, true, false);
                                 layerElement.appendChild(this.markerSVGObject);
                             } else {
                                 clusterTemplate(currentLayer, this.markerSVGObject,

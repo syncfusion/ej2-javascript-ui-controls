@@ -71,6 +71,10 @@ export class SfdtExport {
     /**
      * @private
      */
+    public isWordExport: boolean = false;
+    /**
+     * @private
+     */
     public isPartialExport: boolean = false;
     private documentHelper: DocumentHelper;
     private checkboxOrDropdown: boolean = false;
@@ -375,13 +379,13 @@ export class SfdtExport {
             if (isNullOrUndefined(next) && !isNullOrUndefined(bodyWidget.page.nextPage) && !isNullOrUndefined(bodyWidget.page.nextPage)) {
                 next = bodyWidget.page.nextPage.bodyWidgets[0];
             }
-        } while (next instanceof BodyWidget && next.index === bodyWidget.index && !isNullOrUndefined(next.nextRenderedWidget));
+        } while (next instanceof BodyWidget && next.index === bodyWidget.index);
         // While importing, If the last paragraph is empty and the section break is present, then the empty paragraph is removed. So, added the empty paragraph at the end of the section while exporting.
         let islastEmptyParagraph: boolean;
         if (!isNullOrUndefined(bodyWidget.lastChild) && bodyWidget.lastChild instanceof ParagraphWidget) {
             islastEmptyParagraph = (bodyWidget.lastChild as ParagraphWidget).isEmpty();
         } 
-        if (!isNullOrUndefined(next) && next instanceof BodyWidget && bodyWidget.sectionIndex !== next.sectionIndex && islastEmptyParagraph) {
+        if (!isNullOrUndefined(next) && next instanceof BodyWidget && bodyWidget.sectionIndex !== next.sectionIndex && islastEmptyParagraph && !this.isWordExport) {
             var paragraph = {};
             paragraph[inlinesProperty[this.keywordIndex]] = [];
             section[blocksProperty[this.keywordIndex]].push(paragraph);
@@ -779,9 +783,6 @@ export class SfdtExport {
             if (element instanceof ContentControl || this.startContent || this.blockContent) {
                 this.writeInlinesContentControl(element, line, inlines, i);
             } else {
-                if(this.isWriteInlinesFootNote && i == 0) {
-                    (element as TextElementBox).text = "\u0002";
-                }
                 let inline: any = this.writeInline(element);
                 if (!isNullOrUndefined(inline)) {
                     inlines.push(inline);
@@ -1005,7 +1006,10 @@ export class SfdtExport {
                 } else {
                     inline[textProperty[this.keywordIndex]] = element.text;
                 }
-            } else {
+            } else if (this.isWriteInlinesFootNote && element.indexInOwner == 0 && element.paragraph.indexInOwner == 0) {
+                inline[textProperty[this.keywordIndex]] = "\u0002";
+            }
+            else {
                 inline[textProperty[this.keywordIndex]] = element.text;
             }
         } else if (element instanceof EditRangeStartElementBox) {

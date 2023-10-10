@@ -1690,7 +1690,7 @@ export class WordExport {
             } else if (item.hasOwnProperty(footnoteTypeProperty[this.keywordIndex])) {
                 this.serializeEFReference(writer, item);
             } else {
-                if(!isNullOrUndefined(this.isSerializeFootEndNote) && i == 0) {
+                if(!isNullOrUndefined(this.isSerializeFootEndNote) && i == 0 && HelperMethods.checkTextFormat(item.text)) {
                     writer.writeStartElement(undefined, 'r', this.wNamespace);
                     if(this.isSerializeFootEndNote === "Footnote") {
                         writer.writeStartElement(undefined, 'footnoteRef', this.wNamespace);

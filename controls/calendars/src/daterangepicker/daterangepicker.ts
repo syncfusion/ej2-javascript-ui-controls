@@ -3882,7 +3882,7 @@ export class DateRangePicker extends CalendarBase {
             (!isNullOrUndefined(this.targetElement) && !(target === this.targetElement))) &&
             !(closest(target, '[id="' + this.popupWrapper.id + '"]'))
             && !(closest(target, '.' + INPUTCONTAINER) === this.inputWrapper.container)
-            && !(closest(target, '.e-daterangepicker.e-popup') && (!target.classList.contains('e-day')))) {
+            && !(closest(target, '.e-daterangepicker.e-popup') && (!target.classList.contains('e-day'))) && (!target.classList.contains('e-dlg-overlay'))) {
             this.preventBlur = false;
             if (this.isPopupOpen() && document.body.contains(this.popupObj.element)) {
                 this.applyFunction(e);
@@ -4519,6 +4519,11 @@ export class DateRangePicker extends CalendarBase {
                             this.isMobile || Browser.isDevice as any);
                     }
                 });
+                if (Browser.isDevice) {
+                    var dlgOverlay = this.createElement('div', { className: 'e-dlg-overlay'});
+                    dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
+                    this.mobileRangePopupWrap.appendChild(dlgOverlay);
+                }
             }
         }
     }

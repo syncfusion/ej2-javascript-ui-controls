@@ -372,7 +372,12 @@ describe('Schedule header bar', () => {
             schObj.dataBind();
             expect(schObj.currentView).toEqual('Month');
             (schObj.element.querySelector('.e-date-header') as HTMLElement).click();
-            expect(schObj.currentView).toEqual('Month');
+            expect(schObj.currentView).toEqual('Day');
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+            expect(schObj.currentView).toEqual('Week');
+            (schObj.element.querySelector('.e-header-date') as HTMLElement).click();
+            expect(schObj.currentView).toEqual('Day');
         });
     });
 

@@ -24,7 +24,7 @@ export interface RowModel {
      * Specifies height of the row.
      *
      * @default 20
-     * @asptype int
+     * @asptype double
      */
     height?: number;
 

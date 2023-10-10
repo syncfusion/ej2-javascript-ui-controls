@@ -2300,4 +2300,64 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('847101 - The image focus and resize class names are not removed when the editor in focused out. - ', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p><img id="rteImageID" style="width: 300px; height: 300px;" alt="Logo" src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png"></p>'
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it('image focus out - while click on document', () => {
+            let rteEle: HTMLElement = rteObj.element;
+            rteObj.focusIn();
+            let trg = (rteEle.querySelector('#rteImageID') as HTMLElement);
+            let event = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            });
+            trg.dispatchEvent(event);
+            event = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            });
+            trg.dispatchEvent(event);
+            event = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            });
+            document.body.dispatchEvent(event);
+            expect(trg.classList.contains('e-resize')).toBe(false);
+            expect(trg.classList.contains('e-img-focus')).toBe(false);
+            expect(trg.style.maxWidth === '').toBe(true);
+        });
+    });
+
+    describe("848049 - The change event value contains the table resize helper element in the Rich Text Editor", function () {
+        var rteObj: RichTextEditor;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: `<table class=\"e-rte-table\" style=\"width: 100%; min-width: 0px;\"><tbody><tr><td class=\"\" style=\"width: 14.687%;\"><br></td><td style=\"width: 51.9262%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr><tr><td style=\"width: 14.687%;\"><br></td><td style=\"width: 51.9262%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr></tbody></table><p>RTE</p><div class=\"e-table-rhelper null e-column-helper\" style=\"height: 50px; top: 16px; left: 198px;\"></div>`
+            });
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it("The value contains the table resize helper element in Rich Text Editor", function (done) {
+            rteObj.focusIn();
+            rteObj.tableModule.removeResizeElement();
+            expect(rteObj.inputElement.querySelector(".e-table-rhelper") == null).toBe(true);
+            done();
+        });
+    });
 });

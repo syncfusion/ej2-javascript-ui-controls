@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 23.1.40 (2023-10-10)
+
+### Chart
+
+- `#I499384` - Now the chart series is getting focused properly after legend click.
+
 ## 23.1.39 (2023-10-04)
 
 ### Chart

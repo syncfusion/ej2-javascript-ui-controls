@@ -137,7 +137,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Gets or sets the tab index value for the maps.
      *
-     * @default 1
+     * @default 0
      */
     tabIndex?: number;
 

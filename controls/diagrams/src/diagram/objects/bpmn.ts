@@ -122,12 +122,10 @@ export class BpmnDiagrams {
         if (bpmnShape === 'Message' || bpmnShape === 'DataSource') {
             content = this.getBPMNShapes(node);
         }
-        // if (shape.shape === 'Group') {
-        //     content = this.getBPMNGroup(node, diagram);
-        //     content.style.strokeDashArray = '2 2 6 2';
-        //     content.horizontalAlignment = 'Center';
-        //     content.verticalAlignment = 'Center';
-        // }
+        if (bpmnShape === 'Group') {
+            content.style.strokeDashArray = '2 2 6 2';
+            content.cornerRadius = 10;
+        }
         if (bpmnShape === 'Activity') {
             content = this.getBPMNActivityShape(node);
         }
@@ -1748,39 +1746,41 @@ export class BpmnDiagrams {
     public updateBPMNActivity(node: Node, newObject: Node, oldObject: Node, diagram: Diagram): void {
         const bpmnShape: BpmnShapeModel = newObject.shape as BpmnShapeModel;
         const elementWrapper: Canvas = node.wrapper.children[0] as Canvas;
-        const size: Size = this.getSize(node, (elementWrapper.children[0] as Container).children[0] as PathElement);
-        if (bpmnShape) {
-            const oldProp: BpmnActivities = (oldObject.shape as BpmnShape).activity.activity;
-            const actualObjectProp: BpmnActivities = (node.shape as BpmnShape).activity.activity;
-            if ((oldProp === 'SubProcess' || oldProp === 'Task') && (actualObjectProp === 'SubProcess' || actualObjectProp === 'Task')) {
-                diagram.removeElements(node);
-                node.wrapper.children[0] = this.getBPMNActivityShape(node);
-            } else {
-                if (actualObjectProp === 'Task' && bpmnShape.activity.task !== undefined) {
-                    this.updateBPMNActivityTask(node, newObject);
-                    const subChildCount: number = this.getTaskChildCount(node); let x: number;
-                    const childSpace: number = subChildCount * 12;
+        if (elementWrapper && elementWrapper.children && elementWrapper.children.length > 0 && elementWrapper.children[0] as Container) {
+            const size: Size = this.getSize(node, (elementWrapper.children[0] as Container).children[0] as PathElement);
+            if (bpmnShape) {
+                const oldProp: BpmnActivities = (oldObject.shape as BpmnShape).activity.activity;
+                const actualObjectProp: BpmnActivities = (node.shape as BpmnShape).activity.activity;
+                if ((oldProp === 'SubProcess' || oldProp === 'Task') && (actualObjectProp === 'SubProcess' || actualObjectProp === 'Task')) {
+                    diagram.removeElements(node);
+                    node.wrapper.children[0] = this.getBPMNActivityShape(node);
+                } else {
+                    if (actualObjectProp === 'Task' && bpmnShape.activity.task !== undefined) {
+                        this.updateBPMNActivityTask(node, newObject);
+                        const subChildCount: number = this.getTaskChildCount(node); let x: number;
+                        const childSpace: number = subChildCount * 12;
 
-                    const area: number = size.width / 2 - childSpace;
-                    if (subChildCount === 1) { x = area + 8; } else {
-                        x = area + (subChildCount - 1) * 8;
+                        const area: number = size.width / 2 - childSpace;
+                        if (subChildCount === 1) { x = area + 8; } else {
+                            x = area + (subChildCount - 1) * 8;
+                        }
+                        if (bpmnShape.activity.task.loop !== undefined) {
+                            this.updateBPMNActivityTaskLoop(node, newObject, x, subChildCount, area, 2);
+                        }
                     }
-                    if (bpmnShape.activity.task.loop !== undefined) {
-                        this.updateBPMNActivityTaskLoop(node, newObject, x, subChildCount, area, 2);
+                    if (actualObjectProp === 'SubProcess' && bpmnShape.activity.subProcess !== undefined) {
+                        this.updateBPMNActivitySubProcess(node, newObject, oldObject, diagram);
                     }
                 }
-                if (actualObjectProp === 'SubProcess' && bpmnShape.activity.subProcess !== undefined) {
-                    this.updateBPMNActivitySubProcess(node, newObject, oldObject, diagram);
-                }
+                this.setSizeForBPMNActivity(
+                    (node.shape as BpmnShapeModel).activity, elementWrapper,
+                    newObject.width || size.width, newObject.height || size.height, node);
             }
-            this.setSizeForBPMNActivity(
-                (node.shape as BpmnShapeModel).activity, elementWrapper,
-                newObject.width || size.width, newObject.height || size.height, node);
-        }
-        if (newObject.width !== undefined || newObject.height !== undefined) {
-            this.setSizeForBPMNActivity(
-                (node.shape as BpmnShapeModel).activity, elementWrapper,
-                newObject.width || size.width, newObject.height || size.height, node);
+            if (newObject.width !== undefined || newObject.height !== undefined) {
+                this.setSizeForBPMNActivity(
+                    (node.shape as BpmnShapeModel).activity, elementWrapper,
+                    newObject.width || size.width, newObject.height || size.height, node);
+            }
         }
     }
     /** @private */

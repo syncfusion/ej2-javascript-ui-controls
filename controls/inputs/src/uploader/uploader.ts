@@ -2141,7 +2141,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             targetFiles = [].slice.call((<HTMLInputElement>args.target).files);
             this.renderSelectedFiles(args, targetFiles);
         }
-        if (this.isAngular) {
+        if (this.isAngular || (this as any).isReact) {
             args.stopPropagation();
         }
 

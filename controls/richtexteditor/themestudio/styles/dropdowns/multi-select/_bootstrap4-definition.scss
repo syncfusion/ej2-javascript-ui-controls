@@ -32,6 +32,8 @@ $ddl-chip-padding: 0 !default;
 $ddl-closer-margin-top: -2.9em !default;
 $ddl-icon-margin-top: -2.05em !default;
 $ddl-icon-margin-top-bigger: -2.25em !default;
+$ddl-small-ddl-icon-top: -1.85em !default;
+$ddl-bigger-small-ddl-icon-top: -2.85em !default;
 $ddl-clear-margin-top: -2.9em !default;
 $ddl-closer-margin-top-bigger: -3.5em !default;
 $ddl-chip-close-top: 8px !default;
@@ -192,6 +194,25 @@ $multiselect-dropicon-closer-bigger-width: 34px !default;
   .e-multiselect .e-input-group-icon.e-ddl-icon {
     border-radius: 0 4px 4px 0;
     border-right-width: 0;
+  }
+
+  .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 12px;
+  }
+
+  .e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 14px;
+  }
+
+  .e-small .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 10px;
+  }
+
+  .e-small.e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small.e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 12px;
   }
 
   .e-multiselect.e-rtl .e-input-group-icon.e-ddl-icon {

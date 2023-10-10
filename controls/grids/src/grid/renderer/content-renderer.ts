@@ -287,6 +287,9 @@ export class ContentRender implements IRenderer {
     public refreshContentRows(args: NotifyArgs = {}): void {
         const gObj: IGrid = this.parent;
         if (gObj.currentViewData.length === 0) { return; }
+        if (gObj.editSettings.mode === 'Batch' && gObj.editModule.formObj && gObj.editSettings.showConfirmDialog === false) {
+            gObj.editModule.destroyForm();
+        }
         const dataSource: Object = this.currentMovableRows || gObj.currentViewData;
         const isReact: boolean = gObj.isReact && !isNullOrUndefined(gObj.rowTemplate);
         let frag: DocumentFragment | HTMLElement = isReact ? gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } }) : document.createDocumentFragment();

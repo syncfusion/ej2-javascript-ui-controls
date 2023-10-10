@@ -3882,6 +3882,14 @@ export interface PdfViewerModel extends ComponentModel{
     dateTimeFormat?: string;
 
     /**
+     * Set the resource URL for assets or the public directory. The standalone PDF Viewer will load its custom resources from this URL.
+     * 
+     * {% codeBlock src='pdfviewer/resourceUrl/index.md' %}{% endcodeBlock %}
+     * 
+     */
+    resourceUrl?: string;
+
+    /**
      * Defines the settings of the PDF Viewer toolbar.
      * 
      * {% codeBlock src='pdfviewer/toolbarSettings/index.md' %}{% endcodeBlock %}

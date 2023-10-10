@@ -228,6 +228,7 @@ export class WorkbookFormula {
                     const id: string = args.sheetId.toString();
                     this.sheetDeletion(sheetName, id);
                     this.calculateInstance.unregisterGridAsSheet(id, id);
+                    this.defineNamesDeletion(sheetName);
                     break;
                 }
             }
@@ -259,6 +260,16 @@ export class WorkbookFormula {
                 args.isAvailable = this.calculateInstance.getDependentCells().has(<string>args.address);
             }
             break;
+        }
+    }
+    private defineNamesDeletion(sheetName: string): void {
+        const definedNames: DefineNameModel[] = this.parent.definedNames;
+        if (definedNames && definedNames.length > 0) {
+            definedNames.forEach((definedName: DefineNameModel): void => {
+                if (definedName.refersTo.split('=')[1].split('!')[0] === sheetName) {
+                    this.removeDefinedName(definedName.name, definedName.scope);
+                }
+            });
         }
     }
     private referenceError(): string {

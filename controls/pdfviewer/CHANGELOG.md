@@ -2,9 +2,23 @@
 
 ## [Unreleased]
 
+## 23.1.40 (2023-10-10)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I506873` - Now, the `AnnotationMove` and `AnnotationResize` events are triggered for the respective actions of the annotations.
+- `#I503362` - Now, the author name is updated properly in the comment panel when adding annotations programmatically.
+- `#I505753` - Now, the annotation comment text is rendered correctly, and it is possible to add a reply comment after importing the annotation.
+
 ## 23.1.39 (2023-10-04)
 
 ### PDF Viewer
+
+#### New Features
+
+- `#I497356`,`#I505447`,`#I506487` - Now, users can set the resource URL for assets or the public directory. The standalone PDF Viewer will load its custom resources from this URL.
 
 #### Bug Fixes
 

@@ -568,7 +568,16 @@ export class Legend {
                             new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', ''
                         );
                         let pathEle: Element = render.drawRectangle(leftRectPageOptions);
-                        (pathEle as HTMLElement).tabIndex = (page + 1) === 1 ? -1 : (map.tabIndex + 1);
+                        pathEle.setAttribute('aria-label', 'Navigate to the previous legend items');
+                        pathEle.setAttribute('role', 'button');
+                        (pathEle as HTMLElement).tabIndex = (page + 1) === 1 ? -1 : map.tabIndex;
+                        if ((page + 1) === 1) {
+                            (pathEle as HTMLElement).style.cursor = 'default';
+                            (pathEle as HTMLElement).style.setProperty('outline', 'none');
+                        } else {
+                            (pathEle as HTMLElement).style.cursor = 'pointer';
+                            (pathEle as HTMLElement).style.removeProperty('outline');
+                        }
                         leftPageElement.appendChild(pathEle);
                         this.wireEvents(leftPageElement);
                         const rightPageOptions: PathOption = new PathOption(
@@ -580,7 +589,16 @@ export class Legend {
                             new Rect(rightPageX - spacing - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', ''
                         );
                         pathEle = render.drawRectangle(rightRectPageOptions);
-                        (pathEle as HTMLElement).tabIndex = (page + 1) === this.totalPages.length ? -1 : (map.tabIndex + 2);
+                        pathEle.setAttribute('aria-label', 'Navigate to the next legend items');
+                        pathEle.setAttribute('role', 'button');
+                        (pathEle as HTMLElement).tabIndex = (page + 1) === this.totalPages.length ? -1 : map.tabIndex;
+                        if ((page + 1) === this.totalPages.length) {
+                            (pathEle as HTMLElement).style.cursor = 'default';
+                            (pathEle as HTMLElement).style.setProperty('outline', 'none');
+                        } else {
+                            (pathEle as HTMLElement).style.cursor = 'pointer';
+                            (pathEle as HTMLElement).style.removeProperty('outline');
+                        }
                         rightPageElement.appendChild(pathEle);
                         this.wireEvents(rightPageElement);
                         pagingGroup.appendChild(leftPageElement);

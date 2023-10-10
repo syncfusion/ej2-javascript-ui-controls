@@ -641,6 +641,71 @@ export class DocumentHelper {
         return this.containerCanvasIn;
     }
     /**
+     * @private
+     * @param {string} text - Specifies the file name.
+     * @param {string} formatType - Specifies the format type.
+     */
+    public openTextFile(text: string, formatType?: string): void {
+        this.layout.isTextFormat = true;
+        let type: string = formatType;
+        let arr: string[] = [];
+        text = text.replace(/\r\n/g, '\n');
+        arr = text.split('\n');
+        let widget: BlockWidget[] = [];
+        let bodyWidget: BodyWidget = new BodyWidget();
+        bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
+        bodyWidget.childWidgets = widget;
+        let paragraph1 = new ParagraphWidget();
+        let line1 = new LineWidget(paragraph1);
+        for (let i = 0; i < arr.length; i++) {
+            if (i === arr.length - 1 && arr[i].length === 0) {
+                paragraph1.childWidgets.push(line1);
+                paragraph1.containerWidget = bodyWidget;
+                bodyWidget.childWidgets.push(paragraph1);
+                continue;
+            }
+            let paragraph = new ParagraphWidget();
+            let line = new LineWidget(paragraph);
+            if (arr[i].length > 0) {
+                let singleLineLength = 90;
+                if (arr[i].length > singleLineLength) {
+                    let start = 0;
+                    let increment = singleLineLength;
+                    let split;
+                    let lineLength = (arr[i].length / singleLineLength) + 1;
+                    let count = 0;
+                    while (count < lineLength) {
+                        if (lineLength - 1 != count) {
+                            split = arr[i].substring(start, increment);
+                        }
+                        else {
+                            increment = arr[i].length % singleLineLength;
+                            split = arr[i].substring(start, increment);
+                        }
+                        let textElement = new TextElementBox();
+                        textElement.text = split;
+                        line.children.push(textElement);
+                        textElement.line = line;
+
+                        count++;
+                        increment += singleLineLength;
+                        start += singleLineLength;
+                    }
+                } else {
+                    let textElement = new TextElementBox();
+                    textElement.text = arr[i];
+                    line.children.push(textElement);
+                    textElement.line = line;
+                }
+            }
+            paragraph.childWidgets.push(line);
+            paragraph.containerWidget = bodyWidget;
+            bodyWidget.childWidgets.push(paragraph);
+        }
+        this.onDocumentChanged([bodyWidget]);
+        this.layout.isTextFormat = false;
+    }
+    /**
      * Gets selection canvas.
      *
      * @private

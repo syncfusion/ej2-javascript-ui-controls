@@ -525,12 +525,14 @@ export class ShapeAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IShapeAnnotation {
+    public modifyInCollection(property: string, pageNumber: number, annotationBase: any, toolMoved?: any): IShapeAnnotation {
         if (!isNullOrUndefined(annotationBase.formFieldAnnotationType) && annotationBase.formFieldAnnotationType !== "")
             this.pdfViewer.annotationModule.isFormFieldShape = true;
         else
             this.pdfViewer.annotationModule.isFormFieldShape = false;
-        this.pdfViewerBase.updateDocumentEditedProperty(true);
+        if (toolMoved) {
+            this.pdfViewerBase.updateDocumentEditedProperty(true);
+        }
         let currentAnnotObject: IShapeAnnotation = null;
         if (annotationBase) {
             if (property === 'bounds') {
@@ -991,7 +993,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.lineSettings.annotationSelectorSettings ? this.pdfViewer.lineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.lineSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.lineSettings.allowedInteractions ? this.pdfViewer.lineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             shapeAnnotationType = 'Line';
             if(annotationObject.vertexPoints)
@@ -1006,7 +1008,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.arrowSettings.annotationSelectorSettings ? this.pdfViewer.arrowSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.arrowSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.arrowSettings.allowedInteractions ? this.pdfViewer.arrowSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             shapeAnnotationType = 'Line';
             isArrow=true;
@@ -1022,7 +1024,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.rectangleSettings.annotationSelectorSettings ? this.pdfViewer.rectangleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.rectangleSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.rectangleSettings.allowedInteractions ? this.pdfViewer.rectangleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             shapeAnnotationType = 'Square';
             annotationObject.width = annotationObject.width?annotationObject.width : 150;
@@ -1033,7 +1035,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.circleSettings.annotationSelectorSettings ? this.pdfViewer.circleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.circleSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.circleSettings.allowedInteractions ? this.pdfViewer.circleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             shapeAnnotationType = 'Circle';
             annotationObject.width = annotationObject.width?annotationObject.width : 100;
@@ -1044,7 +1046,7 @@ export class ShapeAnnotation {
             //Creating annotation settings
             annotationSelectorSettings = this.pdfViewer.polygonSettings.annotationSelectorSettings ? this.pdfViewer.polygonSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.polygonSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationType);
             allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ? this.pdfViewer.polygonSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             shapeAnnotationType = 'Polygon';
             if(annotationObject.vertexPoints)

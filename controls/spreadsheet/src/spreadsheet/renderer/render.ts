@@ -15,6 +15,7 @@ import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs, focus, getUpdated
  */
 export class Render {
     private parent: Spreadsheet;
+    private colMinWidth: number;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -381,7 +382,7 @@ export class Render {
      *
      * @returns {void}
      */
-    public setSheetPanelSize(): void {
+    public setSheetPanelSize(colMinWidth?: number): void {
         const panel: HTMLElement = document.getElementById(this.parent.element.id + '_sheet_panel');
         const offset: ClientRect = this.parent.element.getBoundingClientRect();
         let height: number;
@@ -393,10 +394,13 @@ export class Render {
             panel.style.height = `${height}px`;
             height -= 32;
         }
+        if (colMinWidth !== undefined) {
+            this.colMinWidth = colMinWidth;
+        }
         this.parent.viewport.height = height;
         this.parent.viewport.width = offset.width - 32;
         this.parent.viewport.rowCount = this.roundValue(height, 20);
-        this.parent.viewport.colCount = this.roundValue(offset.width, 64);
+        this.parent.viewport.colCount = this.roundValue(offset.width, this.colMinWidth || 64);
     }
 
     private roundValue(size: number, threshold: number): number {
@@ -445,6 +449,7 @@ export class Render {
         this.parent.serviceLocator.getService<RowRenderer>('row').destroy();
         this.parent.serviceLocator.getService<CellRenderer>('cell').destroy();
         this.parent = null;
+        this.colMinWidth = null;
     }
 
     private addEventListener(): void {

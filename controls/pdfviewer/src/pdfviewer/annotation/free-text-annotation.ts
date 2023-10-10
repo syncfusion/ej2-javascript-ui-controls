@@ -1462,7 +1462,7 @@ export class FreeTextAnnotation {
         let annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings ? this.pdfViewer.freeTextSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
         let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
         let allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ? this.pdfViewer.freeTextSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
-        annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('freeText', annotationSettings.annotationSubType);
+        annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('freeText', annotationSettings.annotationSubType);
         annotationSettings.isLock = annotationObject.isLock ? annotationObject.isLock : annotationSettings.isLock;
         if (this.pdfViewer.freeTextSettings.isLock || this.pdfViewer.annotationSettings.isLock || this.pdfViewer.freeTextSettings.isReadonly) {
             annotationObject.isReadonly = true;

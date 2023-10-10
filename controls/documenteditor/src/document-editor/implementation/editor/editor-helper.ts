@@ -89,6 +89,23 @@ export class HelperMethods {
         return spellColl;
     }
     /**
+     * Check given string is a valid either roman or arabic number
+     * @private
+     * @param {string} input input string value to check if it is a number
+     * @returns {boolean} weather given string is a number or not
+     */
+    public static checkTextFormat(input: string): boolean {
+        // Regular expression patterns for Roman and Arabic numerals
+        const romanPattern = /^(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i;
+        const arabicPattern = /^[0-9]+$/;
+        // Check if the input matches either pattern
+        if (romanPattern.test(input) || arabicPattern.test(input)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    /**
      * @private
      * Sanitize the string for xss string content
      * @param value
@@ -846,7 +863,11 @@ export class HelperMethods {
         }
         return { 'extension': extension, 'formatClippedString': formatClippedString };
     }
-    private static startsWith(sourceString: string, startString: string): boolean {
+    /**
+     * 
+     * @private
+     */
+    public static startsWith(sourceString: string, startString: string): boolean {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
     }
 

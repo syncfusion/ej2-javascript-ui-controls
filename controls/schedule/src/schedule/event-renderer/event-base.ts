@@ -775,12 +775,12 @@ export class EventBase {
         }
     }
 
-    private eventDoubleClick(e: Event): void {
+    private eventDoubleClick(eventData: Event): void {
         if (this.parent.quickPopup) {
             this.parent.quickPopup.quickPopupHide(true);
         }
-        if (e.type === 'touchstart') {
-            this.activeEventData(e, true);
+        if (eventData.type === 'touchstart') {
+            this.activeEventData(eventData, true);
         }
         this.removeSelectedAppointmentClass();
         this.parent.selectedElements = [];
@@ -788,13 +788,18 @@ export class EventBase {
             (this.parent.activeEventData.element as HTMLElement).querySelector('.' + cls.INLINE_SUBJECT_CLASS)) {
             return;
         }
-        if (!isNullOrUndefined(this.parent.activeEventData.event) &&
-            isNullOrUndefined((<Record<string, any>>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceID])) {
-            this.parent.eventWindow.openEditor(this.parent.activeEventData.event as Record<string, any>, 'Save');
-        } else {
-            this.parent.currentAction = 'EditOccurrence';
-            this.parent.quickPopup.openRecurrenceAlert();
-        }
+        const args: EventClickArgs = <EventClickArgs>extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
+        this.parent.trigger(event.eventDoubleClick, args, (eventDoubleClickArgs: EventClickArgs) => {
+            if (!eventDoubleClickArgs.cancel) {
+                if (!isNullOrUndefined(this.parent.activeEventData.event) &&
+                    isNullOrUndefined((<Record<string, any>>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceID])) {
+                    this.parent.eventWindow.openEditor(this.parent.activeEventData.event as Record<string, any>, 'Save');
+                } else {
+                    this.parent.currentAction = 'EditOccurrence';
+                    this.parent.quickPopup.openRecurrenceAlert();
+                }
+            }
+        });
     }
 
     public getEventByGuid(guid: string): Record<string, any> {

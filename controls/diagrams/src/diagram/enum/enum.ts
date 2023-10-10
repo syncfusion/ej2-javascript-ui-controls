@@ -2048,7 +2048,9 @@ export type EntryType =
     /** SendToBack - Sets the entry type as sendToBack */
     'SendToBack' |
     /** AddChildToGroupNode - Sets the entry type as  AddChildToGroupNode */
-    'AddChildToGroupNode';
+    'AddChildToGroupNode'|
+    /** ExtrenalEntry - Sets the entry type as ExtrenalEntry */
+    'ExternalEntry';
 /**
  * Defines the entry category type
  * Internal - Sets the entry category type as Internal

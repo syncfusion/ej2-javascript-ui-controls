@@ -1123,7 +1123,8 @@ export class DatePicker extends Calendar implements IInput {
         const target: HTMLElement = <HTMLElement>e.target;
         if (!(closest(target, '.e-datepicker.e-popup-wrapper')) && !isNullOrUndefined(this.inputWrapper)
             && !(closest(target, '.' + INPUTCONTAINER) === this.inputWrapper.container)
-            && (!target.classList.contains('e-day'))) {
+            && (!target.classList.contains('e-day'))
+            && (!target.classList.contains('e-dlg-overlay'))) {
             this.hide(e);
             this.focusOut();
         } else if (closest(target, '.e-datepicker.e-popup-wrapper')) {
@@ -1697,6 +1698,11 @@ export class DatePicker extends Calendar implements IInput {
                 }
                 EventHandler.add(document, 'mousedown touchstart', this.documentHandler, this);
             });
+            if (Browser.isDevice) {
+                var dlgOverlay = this.createElement('div', { className: 'e-dlg-overlay'});
+                dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
+                this.mobilePopupWrapper.appendChild(dlgOverlay);
+            }
         }
     }
     /**

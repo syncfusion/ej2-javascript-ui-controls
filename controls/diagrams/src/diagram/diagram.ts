@@ -3587,8 +3587,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {PointModel} position - defines the position. The child element under this position will be found.
      * @param {number} padding - A number representing the padding for the search area around the position.
      */
-    public findElementUnderMouse(obj: IElement, position: PointModel, padding?: number): DiagramElement {
-        return this.eventHandler.findElementUnderMouse(obj, position, padding);
+    public findElementUnderMouse(obj: IElement, position: PointModel, diagram : Diagram, padding?: number): DiagramElement {
+        return this.eventHandler.findElementUnderMouse(obj, position, diagram, padding);
     }
 
     /**

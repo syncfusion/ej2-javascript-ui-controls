@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 23.1.40 (2023-10-10)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I483749` - Resolved the table title and description preservation issue in server side save.
+- `#I504150` - Resolved the svg image issue.
+- `#I485502` - Resolved the URL image refresh issue while opening the exported document.
+- `#I505977` - Heading style destroyed when insert hyperlink.
+- `#I506107` - Resolved the issue, footnote content is disappeared when open saved sfdt.
+- `#I506619` - Resolved the exporting issue of attached sfdt.
+- `#I503945` - Script error occurred when tried to save the document using java server.
+
+- #### New Features
+
+- `#I461227` - Added text importing in client side.
+
 ## 23.1.39 (2023-10-04)
 
 ### Document Editor

@@ -1934,6 +1934,81 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Custom Undo Redo in Start and End group', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let entry: HistoryEntry;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                shape: { type: 'Basic', shape: 'Rectangle' }
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 200,
+                shape: { type: 'Basic', shape: 'Rectangle' }
+            };
+            let connector1: ConnectorModel = {
+                id: 'connector1', sourceID: node1.id, targetID: node2.id
+            };
+            diagram = new Diagram({
+                width: '500px', height: '500px', nodes: [node1, node2],
+                connectors: [connector1]
+            });
+            diagram.appendTo('#diagram');
+            let node5: NodeModel = diagram.nodes[0];
+            node5['customName'] = 'customNode';
+            entry = { undoObject: node5, category: 'External',
+            type:"ExternalEntry" };
+            diagram.historyManager.push(entry);
+            diagram.historyManager.undo = function (args: HistoryEntry) {
+                args.redoObject = cloneObject(args.undoObject) as NodeModel;
+                args.undoObject['customName'] = 'customNodeChange';
+            }
+            diagram.historyManager.redo = function (args: HistoryEntry) {
+                let current: NodeModel = cloneObject(args.undoObject) as NodeModel;
+                args.undoObject['customName'] = args.redoObject['customName'];
+                args.redoObject = current;
+            }
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking custom undo redo', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.undo();
+            var node5 = diagram.nodes[0];
+            expect(node5['customName'] == 'customNodeChange');
+            diagram.redo();
+            expect(node5['customName'] == 'customNode');
+            diagram.startGroupAction();
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Delete');
+            mouseEvents.clickEvent(diagramCanvas, 300, 200);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Delete');
+            diagram.endGroupAction();
+            expect(diagram.nodes.length).toBe(0);
+            expect(diagram.connectors.length).toBe(0);
+            diagram.undo();
+            expect(diagram.nodes.length).toBe(2);
+            expect(diagram.connectors.length).toBe(1);
+            diagram.redo();
+            expect(diagram.nodes.length).toBe(0);
+            expect(diagram.connectors.length).toBe(0);
+            done();
+        });
+    });
     describe('Undo Redo - Add and remove node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

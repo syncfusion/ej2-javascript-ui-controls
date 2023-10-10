@@ -762,12 +762,16 @@ export class Toolbar {
         }
         if (file) {
             let formatType: string = file.name.substr(file.name.lastIndexOf('.'));
-            if (formatType === '.sfdt') {
+            if (formatType === '.sfdt' || formatType === '.txt') {
                 const fileReader: FileReader = new FileReader();
                 fileReader.onload = (): void => {
-                    /* eslint-disable */
-                    this.container.documentEditor.open(fileReader.result as string);
-                    /* eslint-enable */
+                    if (formatType === '.txt') {
+                        this.container.documentEditor.documentHelper.openTextFile(fileReader.result as string, formatType);
+                    } else {
+                        /* eslint-disable */
+                        this.container.documentEditor.open(fileReader.result as string);
+                        /* eslint-enable */
+                    }
                 };
                 fileReader.readAsText(file);
             } else {

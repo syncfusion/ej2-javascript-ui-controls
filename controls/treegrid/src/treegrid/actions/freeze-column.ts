@@ -92,7 +92,7 @@ export class Freeze {
     private dblClickHandler(e: MouseEvent): void {
         if (parentsUntil(e.target as Element, 'e-rowcell') &&
             this.parent.grid.editSettings.allowEditOnDblClick && this.parent.editSettings.mode !== 'Cell' && (!e.target['classList'].contains('e-treegridcollapse') && !e.target['classList'].contains('e-treegridexpand'))) {
-            this.parent.grid.editModule.startEdit(parentsUntil(e.target as Element, 'e-row') as HTMLTableRowElement);
+            this.parent.startEdit(parentsUntil(e.target as Element, 'e-row') as HTMLTableRowElement);
         }
     }
     private dataBoundArg(): void {

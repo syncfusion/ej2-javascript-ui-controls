@@ -1637,6 +1637,8 @@ export interface DetailTemplateCellStyle {
     excelType?: string;
     /** Defines the strike through of the cell */
     strikeThrough?: boolean;
+    /** Defines the text pen color for the pdf cell */
+    pdfTextPenColor?: string;
     /** Defines the horizontal alignment for the pdf cell */
     pdfTextAlignment?: PdfHAlign;
     /** Defines the vertical alignment for the pdf cell */

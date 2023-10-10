@@ -2132,6 +2132,11 @@ export function getRightIdx(parent: Spreadsheet, left: number): number {
     }
 }
 
+/** @hidden */
+export function setColMinWidth(spreadsheet: Spreadsheet, minWidth: number): void {
+    spreadsheet.renderModule.setSheetPanelSize(minWidth);
+}
+
 /**
  * Calculating resolution based windows value
  *

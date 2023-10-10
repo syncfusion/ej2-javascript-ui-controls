@@ -24,6 +24,8 @@ export const renderCell: string = 'renderCell';
 /** @private */
 export const eventClick: string = 'eventClick';
 /** @private */
+export const eventDoubleClick: string = 'eventDoubleClick';
+/** @private */
 export const eventRendered: string = 'eventRendered';
 /** @private */
 export const dataBinding: string = 'dataBinding';

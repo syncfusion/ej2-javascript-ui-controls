@@ -811,7 +811,7 @@ function tooltipOffset(node: NodeModel | ConnectorModel | PointPortModel, mouseP
     else {
         const objects: IElement[] = diagram.findObjectsUnderMouse(mousePosition);
         const obj: IElement = diagram.findObjectUnderMouse(objects, 'Select', false);
-        const portElement: DiagramElement = diagram.findElementUnderMouse(obj, mousePosition);
+        const portElement: DiagramElement = diagram.findElementUnderMouse(obj, mousePosition, diagram);
         bounds = portElement.bounds;
     }
 

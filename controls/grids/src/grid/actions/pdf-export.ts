@@ -1213,7 +1213,7 @@ export class PdfExport {
                                 textAlignment: currentCell.style.pdfTextAlignment,
                                 verticalAlignment: currentCell.style.pdfVerticalAlignment,
                                 textBrushColor: currentCell.style.fontColor,
-                                textPenColor: currentCell.style.fontColor,
+                                textPenColor: currentCell.style.pdfTextPenColor,
                                 fontFamily: currentCell.style.pdfFontFamily,
                                 fontSize: currentCell.style.fontSize,
                                 bold: currentCell.style.bold,

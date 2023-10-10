@@ -3044,7 +3044,7 @@ export class TextMarkupAnnotation {
             //Creating annotation settings
             annotSelectorSettings = this.pdfViewer.highlightSettings.annotationSelectorSettings ? this.pdfViewer.highlightSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.highlightSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
             annotallowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ? this.pdfViewer.highlightSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             textMarkupAnnotationType = 'Highlight';
             color = annotationObject.color?annotationObject.color:'#ffff00';
@@ -3054,7 +3054,7 @@ export class TextMarkupAnnotation {
             //Creating annotation settings
             annotSelectorSettings = this.pdfViewer.underlineSettings.annotationSelectorSettings ? this.pdfViewer.underlineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.underlineSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
             annotallowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ? this.pdfViewer.underlineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             textMarkupAnnotationType = 'Underline';
             color = annotationObject.color?annotationObject.color:'#00ff00';
@@ -3064,7 +3064,7 @@ export class TextMarkupAnnotation {
             //Creating annotation settings
             annotSelectorSettings = this.pdfViewer.strikethroughSettings.annotationSelectorSettings ? this.pdfViewer.strikethroughSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
             annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.strikethroughSettings);
-            annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
             annotallowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ? this.pdfViewer.strikethroughSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             textMarkupAnnotationType = 'Strikethrough';
             color = annotationObject.color?annotationObject.color:'#ff0000';

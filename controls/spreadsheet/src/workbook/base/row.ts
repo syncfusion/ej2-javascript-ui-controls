@@ -44,7 +44,7 @@ export class Row extends ChildProperty<SheetModel> {
      * Specifies height of the row.
      *
      * @default 20
-     * @asptype int
+     * @asptype double
      */
     @Property(20)
     public height: number;

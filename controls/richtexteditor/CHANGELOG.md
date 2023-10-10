@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.40 (2023-10-10)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I502310` - Now, the `value` argument in the `valueChange` event does not include the table resize helper element.
+
 ## 23.1.39 (2023-10-04)
 
 ### RichTextEditor
@@ -19,6 +27,16 @@
 - `#I488206` - Now, pasting contents into the Rich Text Editor when `enterKey` is configured as `DIV` works properly.
 
 - `#I499035` - Now, the Rich Text Editor renders properly without any `sass` compilation errors.
+
+- `#I499071` - Now, the image focus and resize class names are removed properly when the editor is focused out.
+
+- `#I497587` - Now, the RichTextEditor height property works properly in percentage value.
+
+- `#I503797` - Now, the shortcut key 'Command + B' is working fine on a Mac machine.
+
+- `#I840680` - Now, the complex table resizing will work properly for the middle columns in the Rich Text Editor.
+
+- `#I846935` - Now, the last and first column of the table resizing will work properly in the Rich Text Editor.
 
 ## 23.1.36 (2023-09-15)
 

@@ -2,7 +2,32 @@
 
 ## [Unreleased]
 
+## 23.1.40 (2023-10-10)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I184692` - An issue with the date navigation while clicking on the month date on mobile mode has been fixed.
+- `#I504010` - The console error occurs when dragging events outside of the Scheduler area has been fixed.
+
 ## 23.1.39 (2023-10-04)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I503155` - Resolved an accessibility concern by including the necessary form labels in the Scheduler editor window.
+
+## 23.1.38 (2023-09-26)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I501151` - An issue where the `eventDoubleClick` event is not triggering has been fixed.
+
+## 23.1.36 (2023-09-15)
 
 ### Schedule
 

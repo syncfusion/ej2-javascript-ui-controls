@@ -357,6 +357,7 @@ export class Zoom {
         const availSize: Rect = map.mapAreaRect;
         map.previousScale = map.scale;
         map.previousPoint = map.translatePoint;
+        map.previousProjection = map.projectionType; 
         const prevTilePoint: Point = map.tileTranslatePoint;
         const scale: number = calculateScale(<ITouches[]>this.touchStartList, <ITouches[]>this.touchMoveList);
         const touchCenter: Point = getTouchCenter(getTouches(<ITouches[]>this.touchMoveList, this.maps));
@@ -419,6 +420,7 @@ export class Zoom {
                 map.mapLayerPanel.generateTiles(newTileFactor, map.tileTranslatePoint);
             }
         }
+        map.mapScaleValue = zoomCalculationFactor;
         if (!isZoomCancelled) {
             this.applyTransform(map);
         }
@@ -747,7 +749,11 @@ export class Zoom {
                         ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
                     const markerDataLength: number = markerDatas.length - this.maps.markerNullCount;
                     if (markerSVGObject.childElementCount === (markerDataLength - markerTemplateCounts - nullCount) && (type !== 'Template')) {
-                        layerElement.appendChild(markerSVGObject);
+                        if (this.maps.isTileMap) {
+                            layerElement.insertBefore(markerSVGObject, layerElement.firstElementChild)
+                        } else {
+                            layerElement.appendChild(markerSVGObject);
+                        }
                         if (currentLayers.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(markerSVGObject);
                             this.maps.element.appendChild(this.maps.svgObject);
@@ -943,7 +949,7 @@ export class Zoom {
             const lng: number = (!isNullOrUndefined(marker.longitudeValuePath)) ?
                 Number(getValueFromObject(marker.dataSource[dataIndex as number], marker.longitudeValuePath)) :
                 !isNullOrUndefined(marker.dataSource[dataIndex as number]['longitude']) ? parseFloat(marker.dataSource[dataIndex as number]['longitude']) :
-                    !isNullOrUndefined(marker.dataSource[dataIndex as number]['Latitude']) ? parseFloat(marker.dataSource[dataIndex as number]['Latitude']) : 0;
+                    !isNullOrUndefined(marker.dataSource[dataIndex as number]['Longitude']) ? parseFloat(marker.dataSource[dataIndex as number]['Longitude']) : 0;
             const lat: number = (!isNullOrUndefined(marker.latitudeValuePath)) ?
                 Number(getValueFromObject(marker.dataSource[dataIndex as number], marker.latitudeValuePath)) :
                 !isNullOrUndefined(marker.dataSource[dataIndex as number]['latitude']) ? parseFloat(marker.dataSource[dataIndex as number]['latitude']) :
@@ -1128,7 +1134,7 @@ export class Zoom {
         const size: Rect = map.mapAreaRect;
         const translatePoint: Point = map.previousPoint = map.translatePoint;
         const prevTilePoint: Point = map.tileTranslatePoint;
-        map.previousProjection = map.projectionType;
+        map.previousProjection = (type !== 'Reset') ? map.projectionType : null;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
         zoomFactor = (type === 'Reset') ? minZoom : (Math.round(zoomFactor) === 0) ? 1 : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;

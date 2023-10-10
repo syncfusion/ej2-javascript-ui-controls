@@ -4326,7 +4326,16 @@ export class Editor {
         if (selection.start.paragraph.associatedCell !== selection.end.paragraph.associatedCell) {
             return;
         }
-
+        let startPosition: TextPosition = selection.start;
+        let endPosition: TextPosition = selection.end;
+        if (!selection.isForward) {
+            startPosition = selection.end;
+            endPosition = selection.start;
+        }
+        // if selection end is covering paraMark exclude paraMark
+        if(endPosition.offset == endPosition.paragraph.getLength()+1) {
+            endPosition.movePreviousPosition();
+        }
         if (remove) {
             //Empty selection Hyperlink insert
             this.insertHyperlinkInternalInternal(selection, url, displayText, isBookmark);
@@ -4334,12 +4343,6 @@ export class Editor {
             this.documentHelper.layout.allowLayout = false;
             //Non-Empty Selection- change the selected text to Field       
             // this.preservedFontCol = this.getFontColor();
-            let startPosition: TextPosition = selection.start;
-            let endPosition: TextPosition = selection.end;
-            if (!selection.isForward) {
-                startPosition = selection.end;
-                endPosition = selection.start;
-            }
             let fieldStartPosition: TextPosition = new TextPosition(this.documentHelper.owner);
             fieldStartPosition.setPositionInternal(startPosition);
 
@@ -4394,6 +4397,8 @@ export class Editor {
             return;
         }
         let commentStarts: CommentCharacterElementBox[] = this.checkAndRemoveComments();
+        // Preserves the character format for hyperlink field.
+        const temp: WCharacterFormat = this.getCharacterFormat(selection);
         this.initHistory('InsertHyperlink');
         let isRemoved: boolean = true;
         if (!selection.isEmpty) {
@@ -4403,8 +4408,6 @@ export class Editor {
             this.owner.enableTrackChanges = isTrackEnabled;
         }
         if (isRemoved) {
-            // Preserves the character format for hyperlink field.
-            let temp: WCharacterFormat = this.getCharacterFormat(selection);
             let format: WCharacterFormat = new WCharacterFormat();
             format.copyFormat(temp);
             this.insertHyperlinkByFormat(selection, url, displayText, format, isBookmark);
@@ -4434,6 +4437,7 @@ export class Editor {
         element.push(fieldSeparator);
         if (!isNullOrUndefined(displayText) && displayText !== '') {
             span = new TextElementBox();
+            span.characterFormat.copyFormat(format);
             span.characterFormat.underline = 'Single';
             span.characterFormat.fontColor = '#0563c1';
             span.text = displayText;
@@ -16723,7 +16727,11 @@ export class Editor {
                 imageElementBox.imageString = base64String;
                 imageElementBox.element.crossOrigin = 'Anonymous';
                 this.documentHelper.addBase64StringInCollection(imageElementBox);
-                imageElementBox.element.src = this.documentHelper.getImageString(imageElementBox);
+                let imgStr: string = this.documentHelper.getImageString(imageElementBox);
+                if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
+                    imgStr += `?t=${new Date().getTime()}`;
+                }
+                imageElementBox.element.src = imgStr;
                 this.insertPictureInternal(imageElementBox, isUiInteracted);
             }
         }

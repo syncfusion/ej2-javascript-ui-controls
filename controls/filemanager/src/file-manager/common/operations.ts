@@ -268,7 +268,7 @@ function createAjax(
                         setValue('location', location, result.details);
                     }
                     fn(parent, result, event, operation, targetPath);
-                    if (!isNOU(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end')) {
+                    if (!isNOU(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end' || event === 'drop-path')) {
                         parent.notify(events.searchTextChange, result);
                     }
                     if (typeof getValue('onSuccess', beforeSendArgs.ajaxSettings) === 'function') {
@@ -430,15 +430,15 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
         const args: SuccessEventArgs = { action: 'rename', result: result };
         parent.trigger('success', args);
         parent.renamedItem = Array.isArray(result.files) ? result.files[0] : result.files;
-        if (getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1){
-            parent.pathNames[parent.pathNames.length-1]=parent.renameText;
-        }
         if (parent.activeModule === 'navigationpane') {
             parent.pathId.pop();
             parent.itemData = [getValue(parent.pathId[parent.pathId.length - 1], parent.feParent)];
             read(parent, events.renameEndParent, getValue('filterPath', parent.renamedItem).replace(/\\/g, '/'));
             parent.itemData[0] = parent.renamedItem;
             read(parent, events.pathChanged, parent.path ==='/' ? parent.path: getValue('filterPath', parent.renamedItem).replace(/\\/g, '/')+parent.renamedItem.name+'/');
+            if (getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1){
+                parent.pathNames[parent.pathNames.length-1]=parent.renameText;
+            }
         } else {
             parent.itemData = [getPathObject(parent)];
             if (parent.breadcrumbbarModule.searchObj.value !== '') {

@@ -529,6 +529,10 @@
       cursor: move;
     }
 
+    & .e-notallowedcur .e-row:hover .e-rowdragdrop {
+      cursor: not-allowed;
+    }
+
     .e-sortnumber {
       @if $grid-skin == 'material3' {
         background: $grid-sortnumber-bg-color;

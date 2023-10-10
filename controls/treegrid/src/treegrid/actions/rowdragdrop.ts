@@ -729,6 +729,9 @@ export class RowDD {
         if (!tObj.rowDropSettings.targetID && this.canDrop) {
             tObj.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
         }
+        if (isNullOrUndefined(tObj.rowDropSettings.targetID) && !this.canDrop) {
+            this.removetopOrBottomBorder();
+        }
         if (tObj.rowDropSettings.targetID) {
             const dropElement: Element = parentsUntil(args.target, 'e-treegrid');
             if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID) {
@@ -753,7 +756,6 @@ export class RowDD {
                     this.dropPosition = 'Invalid';
                 }
                 setValue('dropPosition', this.dropPosition, args);
-                args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
                 tObj.trigger(events.rowDrop, args);
                 if (!args.cancel) {
                     if (!isCountRequired(this.parent)) {

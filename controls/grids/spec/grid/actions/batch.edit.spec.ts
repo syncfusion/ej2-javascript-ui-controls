@@ -1873,6 +1873,17 @@ describe('Batch Editing module', () => {
             expect(selectAll('#' + gridObj.element.id + 'EditConfirm_dialog-content div', gridObj.element).length).toBeGreaterThan(0);
         });
 
+        it('EJ2-846554-Script error when trying to edit after sorting in presence of validation message in Batch mode and showConfirmDialog as false', () => {
+            gridObj.editSettings.showConfirmDialog = false;
+            gridObj.dataBind();
+            gridObj.cellSave = null;
+            (gridObj.editModule as any).editModule.editCell(0, 'CustomerID');
+            let input: HTMLInputElement = gridObj.element.querySelector('.e-editedbatchcell input') as HTMLInputElement;
+            input.value = '';
+            gridObj.sortColumn('CustomerID', 'Ascending');
+            expect(gridObj.editModule.formObj).toBeUndefined;
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

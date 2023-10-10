@@ -5848,6 +5848,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public dateTimeFormat: string;
 
     /**
+     * Set the resource URL for assets or the public directory. The standalone PDF Viewer will load its custom resources from this URL.
+     * 
+     * {% codeBlock src='pdfviewer/resourceUrl/index.md' %}{% endcodeBlock %}
+     * 
+     */
+    @Property('')
+    public resourceUrl: string;
+
+    /**
      * Defines the settings of the PDF Viewer toolbar.
      * 
      * {% codeBlock src='pdfviewer/toolbarSettings/index.md' %}{% endcodeBlock %}
@@ -7171,6 +7180,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     private getScriptPathForPlatform(): string {
+        if(!isNullOrUndefined(this.resourceUrl) && this.resourceUrl !== '') {
+            if(this.resourceUrl.indexOf('/ej2-pdfviewer-lib') !== -1){
+                return this.resourceUrl;
+            }
+            return this.resourceUrl + "/ej2-pdfviewer-lib";
+        }
         const { protocol, host, pathname } = document.location;
         // Remove trailing slashes from the pathname using a regular expression
         const trimmedPathname = pathname.replace(/\/+$/, '');

@@ -977,6 +977,9 @@ export class StickyNotesAnnotation {
                     if (data.Note !== ' ' && data.Note !== '' && data.Note !== null) {
                         this.createCommentDiv(this.commentsContainer);
                     }
+                    if (data.AnnotType === "Text Box" && data.Text !== ' ' && data.Text !== '' && data.Text !== null) {
+                        this.createCommentDiv(this.commentsContainer);
+                    }
                 }
             }
             this.isNewcommentAdded = true;
@@ -3596,7 +3599,7 @@ export class StickyNotesAnnotation {
         //Creating annotation settings
         let annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ? this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
         let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stickyNotesSettings);
-        annotationObject.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('sticky', annotationSettings.annotationSubType);
+        annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('sticky', annotationSettings.annotationSubType);
         let allowedInteractions: any = this.pdfViewer.stickyNotesSettings.allowedInteractions ? this.pdfViewer.stickyNotesSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
         annotationSettings.isLock = annotationObject.isLock ? annotationObject.isLock: annotationSettings.isLock;
 

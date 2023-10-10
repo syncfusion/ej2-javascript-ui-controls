@@ -777,6 +777,7 @@ export class Filter implements IAction {
 
     private filterDialogOpen(col: Column, target: Element, left?: number, top?: number): void {
         if (this.filterModule) {
+            this.filterModule.isresetFocus = false;
             this.filterModule.closeDialog();
         }
         this.setFilterModel(col);

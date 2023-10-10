@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
+## 23.1.40 (2023-10-10)
+
+### Accordion
+
+#### Bug Fixes
+
+- `#I506740` - An issue with the HTML element within the content of an Accordion item has been fixed.
+
 ## 23.1.39 (2023-10-04)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- The issue with "in mobile mode, script error occurred when context menu item is destroyed" has been resolved.
+
+## 23.1.36 (2023-09-15)
 
 ### Menu
 

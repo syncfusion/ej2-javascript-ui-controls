@@ -1448,14 +1448,16 @@ export class StampAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IStampAnnotation {
+    public modifyInCollection(property: string, pageNumber: number, annotationBase: any, toolMoved?: any): IStampAnnotation {
         if (!isNullOrUndefined(annotationBase.formFieldAnnotationType) && annotationBase.formFieldAnnotationType !== ""){
             this.pdfViewer.annotationModule.isFormFieldShape = true;
         }
         else{
             this.pdfViewer.annotationModule.isFormFieldShape = false;
         }
-        this.pdfViewerBase.updateDocumentEditedProperty(true);
+        if (toolMoved) {
+            this.pdfViewerBase.updateDocumentEditedProperty(true);
+        }
         let currentAnnotObject: IStampAnnotation = null;
         let pageAnnotations: IStampAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {
@@ -1541,7 +1543,7 @@ export class StampAnnotation {
        let author: string = annotationObject.author ? annotationObject.author : 'Guest';
        let annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ? this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
        let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
-       author = this.pdfViewer.annotationModule.updateAnnotationAuthor('stamp', annotationSettings.annotationSubType);
+       author = author ? author : this.pdfViewer.annotationModule.updateAnnotationAuthor('stamp', annotationSettings.annotationSubType);
        let allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ? this.pdfViewer.stampSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
        annotationSettings.isLock = annotationObject.isLock ? annotationObject.isLock: annotationSettings.isLock;
        annotationSettings.minHeight = annotationObject.minHeight ? annotationObject.minHeight: annotationSettings.minHeight;

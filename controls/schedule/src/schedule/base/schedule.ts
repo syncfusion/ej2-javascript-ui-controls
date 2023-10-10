@@ -966,6 +966,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public eventClick: EmitType<EventClickArgs>;
 
     /**
+     * Triggers when the events are double clicked or on double tapping the events on the desktop devices.
+     *
+     * @event 'eventDoubleClick'
+     */
+    @Event()
+    public eventDoubleClick: EmitType<EventClickArgs>;
+
+    /**
      * Triggers before each of the event getting rendered on the scheduler user interface.
      *
      * @event 'eventRendered'

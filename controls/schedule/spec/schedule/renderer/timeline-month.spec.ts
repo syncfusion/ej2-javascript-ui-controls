@@ -180,10 +180,10 @@ describe('Schedule Timeline Month view', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-date-range') as HTMLElement).click();
             const calendarCells: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-cell'));
             expect(calendarCells.length).toEqual(12);
-            expect((calendarCells[0]).innerHTML).toEqual('<span class="e-day">Jan</span>');
-            expect((calendarCells[1]).innerHTML).toEqual('<span class="e-day">Feb</span>');
-            expect((calendarCells[10]).innerHTML).toEqual('<span class="e-day">Nov</span>');
-            expect((calendarCells[11]).innerHTML).toEqual('<span class="e-day">Dec</span>');
+            expect((calendarCells[0]).innerHTML).toEqual('<span title="Jan 2018" class="e-day">Jan</span>');
+            expect((calendarCells[1]).innerHTML).toEqual('<span title="Feb 2018" class="e-day">Feb</span>');
+            expect((calendarCells[10]).innerHTML).toEqual('<span title="Nov 2018" class="e-day">Nov</span>');
+            expect((calendarCells[11]).innerHTML).toEqual('<span title="Dec 2018" class="e-day">Dec</span>');
         });
     });
 

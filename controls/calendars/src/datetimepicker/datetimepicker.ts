@@ -1032,6 +1032,12 @@ export class DateTimePicker extends DatePicker {
                 if(Browser.isDevice && this.fullScreenMode){
                     this.dateTimeWrapper.style.left = '0px';
                 }
+                if (Browser.isDevice) {
+                    var dlgOverlay = this.createElement('div', { className: 'e-dlg-overlay'});
+                    dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
+                    this.timeModal.appendChild(dlgOverlay);
+                }
+
             }
         }
     }
@@ -1068,7 +1074,7 @@ export class DateTimePicker extends DatePicker {
             event.preventDefault();
         }
         if (!(closest(target, '[id="' + (this.popupObject && this.popupObject.element.id + '"]'))) && target !== this.inputElement
-            && target !== this.timeIcon && !isNullOrUndefined(this.inputWrapper) && target !== this.inputWrapper.container) {
+            && target !== this.timeIcon && !isNullOrUndefined(this.inputWrapper) && target !== this.inputWrapper.container && !target.classList.contains('e-dlg-overlay')) {
             if (this.isTimePopupOpen()) {
                 this.hide(event);
                 this.focusOut();

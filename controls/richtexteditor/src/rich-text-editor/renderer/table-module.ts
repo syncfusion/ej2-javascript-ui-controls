@@ -716,7 +716,7 @@ export class Table {
 
     public removeResizeElement(): void {
         const item: NodeListOf<Element> = this.parent.contentModule.getEditPanel().
-            querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
+            querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper');
         if (item.length > 0) {
             for (let i: number = 0; i < item.length; i++) {
                 detach(item[i as number]);

@@ -2993,12 +2993,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 heightValue = heightPercent && rteHeightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
             }
         }
-        if (target !== 'windowResize') {
+        if (target !== 'windowResize' || heightPercent) {
             if (this.iframeSettings.enable) {
                 if (heightValue !== 'auto') {
                     setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
                 }
             } else {
+                if(target === 'windowResize' && heightPercent){
+                    // cntEle hide the borderBottom of RichTextEditor. so removed the 2px of cntEle height. 
+                    heightValue = parseInt(heightValue) - 2 + 'px';
+                }
                 setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
             }
         }
@@ -3208,6 +3212,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.toolbarSettings.enable && !this.inlineMode.enable) {
             this.toolbarModule.refreshToolbarOverflow();
             isExpand = this.toolbarModule.baseToolbar.toolbarObj.element.classList.contains(classes.CLS_EXPAND_OPEN);
+        }
+        if (this.iframeSettings.enable !== true) {
+            // When resize the window,border bottom of cntEle and this.element border visible separatly.so none the cntEle borderBottom.
+            (this.contentModule.getPanel() as HTMLElement).style.borderBottom = 'none';
         }
         this.setContentHeight('windowResize', isExpand);
         this.notify(events.windowResize, null);

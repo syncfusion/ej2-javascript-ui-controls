@@ -280,9 +280,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets or sets the tab index value for the maps.
      *
-     * @default 1
+     * @default 0
      */
-    @Property(1)
+    @Property(0)
     public tabIndex: number;
     /**
      * Gets or sets the center position of the maps.
@@ -1276,7 +1276,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     private addTabIndex(): void {
         this.element.setAttribute('aria-label', this.description || 'Maps Element');
-        this.element.setAttribute('role', '');
+        this.element.setAttribute('role', 'region');
         this.element.tabIndex = this.tabIndex;
     }
 
@@ -1536,7 +1536,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 groupEle
             );
             element.setAttribute('aria-label', this.description || title.text);
-            element.setAttribute('role', '');
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
                 height = Math.abs((titleBounds.y + this.margin.bottom) - this.availableSize.height);
                 this.mapAreaRect = new Rect(this.margin.left, titleBounds.y + 10, width, height - 10);
@@ -2312,6 +2311,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (!this.isDestroyed) {
             this.zoomNotApplied = false;
             let isRefresh: boolean = this.zoomSettings.zoomFactor === zoomFactor;
+            this.previousProjection = null;
             if (!this.isTileMap && this.zoomModule) {
                 if (!isNullOrUndefined(centerPosition)) {
                     this.zoomSettings.zoomFactor = zoomFactor;

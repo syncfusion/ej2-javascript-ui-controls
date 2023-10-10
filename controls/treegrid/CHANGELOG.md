@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.39 (2023-10-04)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I502102` - Fixed the issue where the drop index was displaying as `Nan` when dropping a row in white space.
+
 ## 23.1.36 (2023-09-15)
 
 ### Tree Grid

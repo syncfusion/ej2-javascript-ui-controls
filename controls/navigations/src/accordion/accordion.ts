@@ -902,9 +902,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         } catch (e) {
             if (typeof (value) === 'string') {
                 ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
-            } else if (!isNOU(this.trgtEle) && ((value as any) instanceof (HTMLElement))) {
+            } else if ((value as any) instanceof (HTMLElement)) {
                 ele.appendChild(value as HTMLElement);
-                (<HTMLElement>ele.firstElementChild).style.display = '';
+                if (this.trgtEle) {
+                    (<HTMLElement>ele.firstElementChild).style.display = '';
+                }            
             } else {
                 templateFn = templateCompiler(value);
             }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.40 (2023-10-10)
+
+### Grid
+
+#### Bug fixes
+
+- `#I503161` - The additional default declaration in the `bootstrap4` theme definition file has been removed.
+
 ## 23.1.39 (2023-10-04)
 
 ### Grid
