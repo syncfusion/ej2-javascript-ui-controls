@@ -935,6 +935,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @private
      */
     public onPropertyChanged(newProperties: ImageEditorModel, oldProperties?: ImageEditorModel): void {
+        let indexObj: Object;
         for (const prop of Object.keys(newProperties)) {
             switch (prop) {
             case 'cssClass':
@@ -956,9 +957,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 break;
             case 'height':
                 this.element.style.height = newProperties.height;
+                this.update();
                 break;
             case 'width':
                 this.element.style.width = newProperties.width;
+                this.update();
                 break;
             case 'theme':
                 if (newProperties.theme) {
@@ -969,6 +972,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     }
                     this.upperContext.strokeStyle = this.themeColl[this.theme]['primaryColor'];
                     this.upperContext.fillStyle = this.themeColl[this.theme]['secondaryColor'];
+                    if (isBlazor()) {
+                        this.updateToolbar(this.element, 'imageLoaded');
+                    } else {
+                        this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    }
                 }
                 break;
             case 'finetuneSettings':
@@ -980,8 +989,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             case 'locale':
                 if (newProperties.locale) {
                     this.notify('toolbar', { prop: 'setLocale', onPropertyChange: false, value: {locale: newProperties.locale}});
-                    this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
-                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    if (isBlazor()) {
+                        this.updateToolbar(this.element, 'imageLoaded');
+                    } else {
+                        this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    }
                 }
                 break;
             case 'allowUndoRedo':
@@ -990,17 +1003,41 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 } else {
                     this.allowUndoRedo = false;
                 }
-                this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
-                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                if (isBlazor()) {
+                    this.updateToolbar(this.element, 'imageLoaded');
+                } else {
+                    this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
+                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                }
                 break;
             case 'showQuickAccessToolbar':
                 if (newProperties.showQuickAccessToolbar) {
                     this.showQuickAccessToolbar = true;
-                    this.notify('toolbar', { prop: 'create-qa-toolbar', onPropertyChange: false});
-                    this.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
+                    if (!isBlazor()) {
+                        this.notify('toolbar', { prop: 'create-qa-toolbar', onPropertyChange: false});
+                    }
+                    indexObj = {freehandSelectedIndex: null };
+                    this.notify('freehand-draw', {prop: 'getFreehandSelectedIndex', onPropertyChange: false, value: {obj: indexObj }});
+                    if (this.activeObj.shape) {
+                        if (isBlazor()) {
+                            this.updateToolbar(this.element, 'quickAccessToolbar', this.activeObj.shape);
+                        } else {
+                            this.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
+                        }
+                    } else if (indexObj['freehandSelectedIndex']) {
+                        if (isBlazor()) {
+                            this.updateToolbar(this.element, 'quickAccessToolbar', 'pen');
+                        } else {
+                            this.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
+                        }
+                    }
                 } else {
                     this.showQuickAccessToolbar = false;
-                    this.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
+                    if (isBlazor()) {
+                        this.updateToolbar(this.element, 'destroyQuickAccessToolbar');
+                    } else {
+                        this.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
+                    }
                 }
                 break;
             case 'zoomSettings':
@@ -1010,11 +1047,19 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 if (isNullOrUndefined(this.zoomSettings.zoomTrigger)) {
                     this.zoomSettings.zoomTrigger = (ZoomTrigger.MouseWheel | ZoomTrigger.Pinch | ZoomTrigger.Toolbar |
                         ZoomTrigger.Commands);
-                    this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
-                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    if (isBlazor()) {
+                        this.updateToolbar(this.element, 'imageLoaded');
+                    } else {
+                        this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    }
                 } else if ((newProperties.zoomSettings.zoomTrigger & ZoomTrigger.Toolbar) === ZoomTrigger.Toolbar) {
-                    this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
-                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    if (isBlazor()) {
+                        this.updateToolbar(this.element, 'imageLoaded');
+                    } else {
+                        this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    }
                 }
                 break;
             case 'selectionSettings':
@@ -1023,6 +1068,37 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     if (this.activeObj.shape) {
                         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
                         this.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: this.activeObj }});
+                    }
+                }
+                break;
+            case 'toolbar':
+                if (newProperties.toolbar) {
+                    this.toolbar = newProperties.toolbar;
+                    if (isBlazor()) {
+                        this.updateToolbar(this.element, 'imageLoaded');
+                    } else {
+                        this.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    }
+                }
+                break;
+            case 'toolbarTemplate':
+                if (newProperties.toolbarTemplate) {
+                    if (!isBlazor()) {
+                        this.notify('toolbar', { prop: 'destroy-bottom-toolbar', onPropertyChange: false });
+                        this.notify('toolbar', { prop: 'destroy-top-toolbar', onPropertyChange: false });
+                        this.element.appendChild(this.createElement('div', {
+                            id: this.element.id + '_toolbarArea', className: 'e-toolbar-area'
+                        }));
+                        this.toolbarTemplateFn();
+                    }
+                }
+                break;
+            case 'quickAccessToolbarTemplate':
+                if (newProperties.quickAccessToolbarTemplate) {
+                    if (!isBlazor()) {
+                        this.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
+                        this.quickAccessToolbarTemplateFn();
                     }
                 }
                 break;
@@ -1102,15 +1178,20 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const uploadObj: Uploader = new Uploader({
             dropArea: document.getElementsByClassName('e-canvas-wrapper')[0] as HTMLElement,
             allowedExtensions: '.jpg, .jpeg, .png,.svg',
+            multiple: false,
             selected: (args: ChangeEventArgs) => {
                 if (args.event.type === 'change' || args.event.type === 'drop') {
                     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                     const type: string = (args as any).filesData[0].type;
-                    if (type === 'png' || type === 'jpg' || type === 'jpeg' || type === 'svg') {
+                    let errType: string = 'unsupported';
+                    if ((args.event.type === 'change' || (args.event.type === 'drop' && (args.event as any).dataTransfer.files.length === 1)) && (type === 'png' || type === 'jpg' || type === 'jpeg' || type === 'svg')) {
                         this.notify('draw', {prop: 'fileSelect', value: {inputElement:
                             this.element.querySelector('#' + this.element.id + '_dropfileUpload') as HTMLInputElement, args: args }});
                     } else {
-                        this.showDialogPopup();
+                        if (args.event.type === 'drop' && (args.event as any).dataTransfer.files.length > 1) {
+                            errType = 'multi-select-image';
+                        }
+                        this.showDialogPopup(errType);
                     }
                 }
             }
@@ -1122,20 +1203,37 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         (getComponent(document.getElementById(this.element.id + '_dialog'), 'dialog') as Dialog).destroy();
     }
 
-    private showDialogPopup(): void {
+    /**
+     * Show dialog popup for unsupported files.
+     *
+     * @param { string } type - Specifies the type of error.
+     * @hidden
+     * @returns {void}.
+     */
+    public showDialogPopup(type?: string): void {
+        let content: string = '';
         (this.element.querySelector('#' + this.element.id + '_dialog') as HTMLElement).style.display = 'block';
-        const headerObj: Object = { key: 'AlertDialogHeader' };
-        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: headerObj }});
-        const contentObj: Object = { key: 'AlertDialogContent' };
-        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: contentObj }});
-        const supportObj: Object = { key: 'SupportText' };
-        this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: supportObj }});
-        const okObj: Object = { key: 'OK' };
+        let headerObj: Object; const okObj: Object = { key: 'OK' };
         this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: okObj }});
+        if (type === 'multi-select-image') {
+            headerObj = { key: 'ImageErrorDialogHeader' };
+            this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: headerObj }});
+            const contentObj: Object = { key: 'ImageErrorDialogContent' };
+            this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: contentObj }});
+            content = '<span>' + contentObj['value'] + '</span>';
+        } else {
+            headerObj = { key: 'AlertDialogHeader' };
+            this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: headerObj }});
+            const contentObj: Object = { key: 'AlertDialogContent' };
+            this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: contentObj }});
+            const supportObj: Object = { key: 'SupportText' };
+            this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: supportObj }});
+            content = '<span>' + contentObj['value'] + ' ' + supportObj['value'] + '<b> JPG, PNG, and SVG</b></span>';
+        }
         const dialog: Dialog = new Dialog({
             header: headerObj['value'],
             closeOnEscape: true,
-            content: '<span>' + contentObj['value'] + ' ' + supportObj['value'] + '<b> JPG, PNG, and SVG</b></span>',
+            content: content,
             target: document.getElementById('target'),
             width: '285px',
             isModal: true,
@@ -1582,6 +1680,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public select(type: string, startX?: number, startY?: number, width?: number, height?: number): void {
         this.notify('draw', { prop: 'select', onPropertyChange: false,
             value: {type: type, startX: startX, startY: startY, width: width, height: height}});
+        this.notify('draw', { prop: 'select', onPropertyChange: false,
+            value: {type: type, startX: startX, startY: startY, width: width, height: height}});
     }
 
     /**
@@ -2011,33 +2111,37 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         return isResized;
     }
 
-    /** 
-     * Draw a frame on an image. 
-     * 
-     * @param { FrameType} frameType - Specifies the frame option to be drawn on an image. 
-     * @param {string} color - Specifies the color of a frame on an image. The default value is ‘#fff’. 
-     * @param {string} gradientColor - Specifies the gradient color of a frame on an image. The default value is ‘’. 
-     * @param {number} size - Specifies the size of the frame as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 20 if not specified. 
-     * @param {number} inset - Specifies the inset value for line, hook, and inset type frames, as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 0 if not specified. 
-     * @param {number} offset - Specifies the offset value for line and inset type frames, as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 0 if not specified. 
-     * @param {number} borderRadius - Specifies the border radius for line-type frames, as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 0 if not specified. 
-     * @param {FrameLineStyle} frameLineStyle - Specifies the type of line to be drawn for line-type frames. Default to Solid if not specified. 
+    /**
+     * Draw a frame on an image.
+     *
+     * @param { FrameType} frameType - Specifies the frame option to be drawn on an image.
+     * @param {string} color - Specifies the color of a frame on an image. The default value is ‘#fff’.
+     * @param {string} gradientColor - Specifies the gradient color of a frame on an image. The default value is ‘’.
+     * @param {number} size - Specifies the size of the frame as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 20 if not specified.
+     * @param {number} inset - Specifies the inset value for line, hook, and inset type frames, as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 0 if not specified.
+     * @param {number} offset - Specifies the offset value for line and inset type frames, as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 0 if not specified.
+     * @param {number} borderRadius - Specifies the border radius for line-type frames, as a percentage. It can be provided as an integer percentage (e.g., 10). Defaults to 0 if not specified.
+     * @param {FrameLineStyle} frameLineStyle - Specifies the type of line to be drawn for line-type frames. Default to Solid if not specified.
      * @param {number} lineCount - Specifies the number of lines for line-type frames. Defaults to 0 if not specified.
-     *  
-     * @returns {boolean}. 
-     */ 
-    public drawFrame(frameType: FrameType, color: string, gradientColor: string, size: number, inset: number, offset: number,
-        borderRadius: number, frameLineStyle: FrameLineStyle, lineCount: number): boolean {
-        let isFrame: boolean = false; let obj: Object = {frameChangeEventArgs: null };
+     *
+     * @returns {boolean}.
+     */
+    public drawFrame(frameType: FrameType, color?: string, gradientColor?: string, size?: number, inset?: number, offset?: number,
+                     borderRadius?: number, frameLineStyle?: FrameLineStyle, lineCount?: number): boolean {
+        let isFrame: boolean = false; const obj: Object = {frameChangeEventArgs: null };
+        color = color ? color : '#fff'; gradientColor = gradientColor ? gradientColor : '';
+        size = size ? size : 20; inset = inset ? inset : 0; offset = offset ? offset : 0; borderRadius = borderRadius ? borderRadius : 0;
+        frameLineStyle = frameLineStyle ? frameLineStyle : FrameLineStyle.Solid; lineCount = lineCount ? lineCount : 0;
         const prevFrameSettings: FrameSettings = {type: this.toPascalCase(this.frameObj.type) as FrameType, color: this.frameObj.color,
             gradientColor: this.frameObj.gradientColor, size: this.frameObj.size, inset: this.frameObj.inset,
-            offset: this.frameObj.offset, borderRadius: this.frameObj.radius, frameLineStyle: this.toPascalCase(this.frameObj.border) as FrameLineStyle,
-            lineCount: this.frameObj.amount};
+            offset: this.frameObj.offset, borderRadius: this.frameObj.radius,
+            frameLineStyle: this.toPascalCase(this.frameObj.border) as FrameLineStyle, lineCount: this.frameObj.amount};
         extend(this.tempFrameObj, this.frameObj); this.tempFrameZoomLevel = this.transform.zoomFactor;
         this.frameDestPoints = extend({}, this.img, {}, true) as ImageDimension;
         if (!isBlazor()) {
             this.notify('toolbar', { prop: 'frameToolbarClick' });
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).performFrameClick();
         }
         this.frameObj.type = frameType.toLowerCase();

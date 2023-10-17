@@ -1,0 +1,387 @@
+/* stylelint-disable property-no-vendor-prefix */
+@mixin sibling-theme($left, $right) {
+  @if $skin-name == 'material' {
+    background: $treeview-drag-line-bg;
+  }
+  @else {
+    border-#{$left}-color: $treeview-drag-line-bg;
+    border-#{$right}-color: transparent;
+  }
+}
+
+@mixin active-hover-theme {
+  @if $theme-name =='fluentui-dark' {
+    background-color: lighten($treeview-item-active-bg, 5%);
+  }
+  
+  @else if $theme-name =='tailwind' {
+    background-color: darken($treeview-item-active-hover-bg, 10%);
+  }
+
+  @else {
+    background-color: $treeview-item-active-hover-bg;
+  }
+  border-color: $treeview-item-active-hover-border-color;
+  @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+    -webkit-box-shadow: $treeview-border-shadow;
+    box-shadow: $treeview-border-shadow;
+  }
+}
+
+@mixin active-editing-theme {
+  background-color: $treeview-item-border-color;
+  border-color: $treeview-item-border-color;
+  @if $skin-name == 'bootstrap' {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+  }
+}
+
+@mixin active-font-weight {
+  @if $skin-name == 'highcontrast' {
+    font-weight: $treeview-active-font-weight;
+  }
+}
+
+@include export-module('treeview-theme') {
+  .e-bigger .e-treeview,
+  .e-treeview.e-bigger {
+
+    .e-list-text {
+      font-size: $treeview-big-font-size;
+
+      @if $skin-name == 'bootstrap4' {
+        color: $treeview-big-text-color;
+      }
+    }
+
+    .e-icon-collapsible::before,
+    .e-icon-expandable::before {
+      font-size: $treeview-big-icon-font-size;
+    }
+
+    &.e-drag-item {
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        @if $skin-name == 'bootstrap4' {
+          padding: $treeview-big-drag-icon-padding;
+        }
+      }
+
+      .e-list-text {
+        @if $skin-name == 'bootstrap4' {
+          padding: $treeview-big-drag-text-padding;
+        }
+      }
+    }
+  }
+
+  .e-treeview {
+    -webkit-tap-highlight-color: transparent;
+
+    @if $skin-name == 'bootstrap5' {
+      &.e-disabled {
+        opacity: .5;
+      }
+    }
+
+    .e-text-content,
+    .e-fullrow {
+      border-color: $treeview-item-border-color;
+    }
+
+    .e-list-text {
+      color: $treeview-text-color;
+      font-size: $treeview-font-size;
+
+      .e-input {
+        @include active-font-weight;
+      }
+    }
+
+    .e-list-icon,
+    .e-list-img {
+      font-size: $treeview-image-font-size;
+    }
+
+    .e-icon-collapsible,
+    .e-icon-expandable {
+      color: $treeview-icon-color;
+    }
+
+    .e-icon-collapsible::before,
+    .e-icon-expandable::before {
+      font-size: $treeview-icon-font-size;
+    }
+
+    .e-list-item.e-active,
+    .e-list-item.e-hover,
+    .e-list-item.e-node-focus {
+      background: transparent;
+    }
+
+    .e-list-item.e-hover > .e-text-content,
+    .e-list-item.e-node-focus > .e-text-content {
+      color: $treeview-text-hover-color;
+
+      .e-list-text {
+        color: $treeview-text-hover-color;
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        color: $treeview-icon-hover-color;
+      }
+    }
+
+    .e-list-item.e-active > .e-text-content {
+      color: $treeview-text-active-color;
+
+      .e-list-text {
+        @include active-font-weight;
+        color: $treeview-text-active-color;
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        color: $treeview-icon-active-color;
+      }
+
+      .e-check {
+        @if $skin-name == 'highcontrast' {
+          background-color: $treeview-checkmark-bgcolor;
+          border-color: $treeview-checkmark-border-color;
+          color: $treeview-checkmark-color;
+        }
+        @else if $skin-name == 'bootstrap4' {
+          background-color: $treeview-item-active-check-bg;
+          border-color: $treeview-item-active-check-border-color;
+          color: $treeview-item-active-check-color;
+        }
+        @else if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+          border-color: $content-text-color-selected;
+        }
+      }
+
+      .e-stop {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+          border-color: $content-text-color-selected;
+        }
+      }
+    }
+
+    .e-list-item.e-active.e-hover > .e-text-content,
+    .e-list-item.e-active.e-node-focus > .e-text-content {
+      color: $treeview-text-active-hover-color;
+
+      .e-list-text {
+        color: $treeview-text-active-hover-color;
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        color: $treeview-icon-active-hover-color;
+      }
+    }
+
+    .e-list-item.e-editing.e-active > .e-text-content,
+    .e-list-item.e-editing.e-hover > .e-text-content,
+    .e-list-item.e-editing.e-node-focus > .e-text-content {
+      color: $treeview-text-color;
+
+      .e-list-text {
+        color: $treeview-text-color;
+
+        .e-input {
+          @include active-font-weight;
+        }
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        color: $treeview-icon-color;
+      }
+    }
+
+    .e-list-item.e-hover > .e-fullrow,
+    .e-list-item.e-node-focus > .e-fullrow {
+      background-color: $treeview-item-hover-bg;
+      border-color: $treeview-item-hover-border-color;
+    }
+
+    .e-list-item.e-active {
+      & > .e-fullrow {
+        background-color: $treeview-item-active-bg;
+        border-color: $treeview-item-active-border-color;
+      }
+
+      &.e-animation-active > .e-fullrow {
+        background-color: transparent;
+        border-color: transparent;
+      }
+
+      &.e-animation-active > .e-text-content {
+        color: $treeview-text-color;
+
+        .e-list-text {
+          color: $treeview-text-color;
+        }
+      }
+    }
+
+    .e-list-item.e-active.e-hover > .e-fullrow,
+    .e-list-item.e-active.e-node-focus > .e-fullrow {
+      @include active-hover-theme;
+    }
+
+    .e-list-item.e-editing.e-active > .e-fullrow,
+    .e-list-item.e-editing.e-hover > .e-fullrow,
+    .e-list-item.e-editing.e-node-focus > .e-fullrow {
+      @include active-editing-theme;
+    }
+
+    .e-list-item.e-disable {
+
+      > .e-text-content,
+      > .e-fullrow {
+        color: $treeview-text-disable-color;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+          .e-list-text {
+            color: $treeview-text-disable-color;
+          }
+        }
+      }
+
+      > .e-text-content > .e-icon-collapsible,
+      > .e-text-content > .e-icon-expandable {
+        color: $treeview-icon-disable-color;
+      }
+    }
+
+    .e-sibling {
+      @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'FluentUI') {
+        @include sibling-theme(left, right);
+      }
+      @else {
+        border-top: 2px solid $treeview-drag-line-bg;
+      }
+    }
+
+    .e-sibling::before {
+      background: $treeview-drag-line-color;
+      @if $skin-name == 'bootstrap4' {
+        border: 1px;
+      }
+    }
+
+    .e-popup {
+
+      .e-content {
+        background-color: $treeview-popup-bg-color;
+        border-color: $treeview-popup-border-color;
+      }
+
+      &.e-select {
+
+        .e-icons {
+          border-color: $treeview-popup-border-color;
+        }
+      }
+
+      .e-downtail {
+
+        &::before {
+          border-top-color: $treeview-popup-border-color;
+        }
+
+        &::after {
+          border-top-color: $treeview-popup-bg-color;
+        }
+      }
+    }
+
+    &:not(.e-fullrow-wrap) {
+
+      .e-list-item.e-hover > .e-text-content,
+      .e-list-item.e-node-focus > .e-text-content {
+        background-color: $treeview-item-hover-bg;
+        border-color: $treeview-item-hover-border-color;
+      }
+
+      .e-list-item.e-active > .e-text-content {
+        background-color: $treeview-item-active-bg;
+        border-color: $treeview-item-active-border-color;
+      }
+
+      .e-list-item.e-active.e-hover > .e-text-content,
+      .e-list-item.e-active.e-node-focus > .e-text-content {
+        @include active-hover-theme;
+      }
+
+      .e-list-item.e-editing.e-active > .e-text-content,
+      .e-list-item.e-editing.e-hover > .e-text-content,
+      .e-list-item.e-editing.e-node-focus > .e-text-content {
+        @include active-editing-theme;
+      }
+    }
+
+    &.e-fullrow-wrap {
+
+      .e-text-content {
+        border-color: transparent;
+      }
+    }
+
+    &.e-drag-item {
+      background-color: $treeview-drag-item-bg;
+      font-family: $treeview-font-family;
+      @if ($skin-name == 'Material3') {
+        background: $treeview-drag-item-bg;
+      }
+
+      .e-icon-collapsible::before,
+      .e-icon-expandable::before {
+        font-size: $treeview-drag-icon-font-size;
+      }
+
+      .e-list-text {
+        @include active-font-weight;
+        color: $treeview-drag-item-color;
+        @if $skin-name == 'bootstrap4' {
+          padding: $treeview-drag-text-padding;
+        }
+      }
+
+      .e-text-content {
+        @if $skin-name == 'bootstrap4' {
+          -webkit-box-shadow: $treeview-drag-item-box-shadow;
+          border-radius: .5em;
+          box-shadow: $treeview-drag-item-box-shadow;
+        }
+      }
+
+      .e-icons {
+        color: $treeview-drag-icon-color;
+      }
+
+      .e-drop-count {
+        background-color: $treeview-drop-count-bg;
+        border-color: $treeview-drop-count-border;
+        color: $treeview-drop-count-color;
+      }
+
+      &.e-rtl {
+
+        .e-sibling {
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'FluentUI') {
+            @include sibling-theme(right, left);
+          }
+          @else {
+            border: 1px solid $treeview-drag-line-bg;
+          }
+        }
+      }
+    }
+    /* stylelint-enable property-no-vendor-prefix */
+  }
+}

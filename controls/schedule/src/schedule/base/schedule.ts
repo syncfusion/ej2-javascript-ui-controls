@@ -1812,6 +1812,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             occurenceAlert: 'Cannot reschedule an occurrence of the recurring appointment if it skips over ' +
                 'a later occurrence of the same appointment.',
             editRecurrence: 'Edit Recurrence',
+            recurringEvent: 'Recurring Event',
             repeats: 'Repeats',
             alert: 'Alert',
             startEndError: 'The selected end date occurs before the start date.',
@@ -2326,6 +2327,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             resourceName = this.quickPopup.getResourceText({ event: event } as EventClickArgs, 'event') + constantText;
         }
         const recordSubject: string = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default)) as string;
+        const recordLocation: string = (event[this.eventFields.location] || this.eventSettings.fields.location.default) as string;
         const skeleton: string = 'full';
         const startDateText: string = this.globalize.formatDate(event[this.eventFields.startTime] as Date, {
             type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
@@ -2337,6 +2339,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             + startDateText + ' ' + this.localeObj.getConstant('endAt') + ' ' + endDateText;
         if (resourceName) {
             announcementString = resourceName + ' ' + announcementString;
+        }
+        if (recordLocation && recordLocation !== '') {
+            announcementString = announcementString + ' ' + this.localeObj.getConstant('location') + ' ' + recordLocation;
+        }
+        if (event[this.eventFields.recurrenceRule] && event[this.eventFields.recurrenceRule] !== ''
+            && event[this.eventFields.id] === event[this.eventFields.recurrenceID]) {
+            announcementString = announcementString + ' ' + this.localeObj.getConstant('recurringEvent');
         }
         return announcementString;
     }

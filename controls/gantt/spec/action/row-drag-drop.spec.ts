@@ -1,11 +1,11 @@
 /**
  * Gantt Drag and drop spec
  */
-import { Gantt, Edit, Selection, IGanttData, RowDD, Filter, Toolbar, ColumnMenu} from '../../src/index';
+import { Gantt, Edit, Selection, IGanttData, RowDD, Filter, Toolbar, ColumnMenu, CriticalPath} from '../../src/index';
 import { dragSelfReferenceData, normalResourceData, resourceCollection, editingData, projectData,projectResources } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 
-Gantt.Inject(Edit, Selection, RowDD);
+Gantt.Inject(Edit, Selection, RowDD, CriticalPath);
 describe('Gantt Drag and Drop support', () => {
     describe('SelfReference data binding', () => {
         let ganttObj_self: Gantt;
@@ -1179,5 +1179,133 @@ describe('Outdent Record to be in first Index of modified records', () => {
        ganttObj_self.dataBind();
        ganttObj_self.selectRow(4);
        ganttObj_self.outdent();
+    });
+});
+describe('Drag drop records for critical path', () => {
+    let ganttObj_self: Gantt;
+    let bwData = [
+        {
+          TaskID: '01',
+          TaskName: 'New Task 1',
+          StartDate: new Date('07/11/2023'),
+          EndDate: new Date('07/11/2023'),
+          Progress: 59,
+          Duration: 1,
+          Predecessor: '02FS',
+        },
+        {
+          TaskID: '02',
+          TaskName: 'New Task 2',
+          StartDate: new Date('07/10/2023'),
+          EndDate: new Date('07/10/2023'),
+          Progress: 45,
+          Duration: 1,
+        },
+        {
+          TaskID: '03',
+          TaskName: 'New Task 1',
+          StartDate: new Date('07/12/2023'),
+          EndDate: new Date('07/12/2023'),
+          Progress: 59,
+          Duration: 1,
+          Predecessor: '01FS',
+        },
+        {
+          TaskID: '04',
+          TaskName: 'New Task 2',
+          StartDate: new Date('07/13/2023'),
+          EndDate: new Date('07/13/2023'),
+          Progress: 45,
+          Duration: 1,
+          Predecessor: '03FS',
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj_self = createGantt(
+            {
+                dataSource: bwData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        enableCriticalPath: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            parentID: 'parentID',
+            baselineStartDate: 'BaselineStartDate',
+            baselineEndDate: 'BaselineEndDate'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true
+    }, done);
+    });
+    afterAll(() => {
+        if (ganttObj_self) {
+            destroyGantt(ganttObj_self);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('Drag drop to child position', function () {
+        ganttObj_self.actionComplete= (args) : void => {
+        if(args.requestType == 'refresh') {
+            expect(ganttObj_self.criticalPathModule.criticalTasks.length).toBe(3);
+        }
+       }
+        ganttObj_self.dataBind();
+        ganttObj_self.reorderRows([1],3,'child');
     });
 });

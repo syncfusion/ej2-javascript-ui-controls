@@ -552,6 +552,34 @@ export let localData10: { [key: string]: Object }[] = [
     { nodeId: '02', nodeText: 'Downloads'},
 ];
 
+export let localData11: { [key: string]: Object }[] = [
+    { nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: true, nodeUrl: 'http://npmci.syncfusion.com/', nodeImage1: 'base/spec/images/Shooting.png', nodeExpanded1: true },
+    { nodeId: '01-01', nodePid: '01', nodeText: 'Gouttes.mp3', icons: 'file' },
+    { nodeId: '02', nodeText: 'Videos', icons: 'folder', image: 'base/spec/images/Shooting.png', nodeHtmlAttr: nodeAttr, hasChild: true, nodeImage1: 'base/spec/images/Shooting.png' },
+    { nodeId: '02-01', nodePid: '02',nodeText: 'Naturals.mp4', icons: 'file', image: 'base/spec/images/Shooting.png' },
+    { nodeId: '02-02', nodePid: '02',nodeText: 'Wild.mpeg', icons: 'file' },
+    { nodeId: '03', nodeText: 'Documents', icons: 'folder', hasChild: true },
+    { nodeId: '03-01', nodePid: '03',nodeText: 'Environment Pollution.docx', icons: 'file' },
+    { nodeId: '03-02', nodePid: '03',nodeText: 'Global Water, Sanitation, & Hygiene.docx', icons: 'file' },
+    { nodeId: '03-03', nodePid: '03',nodeText: 'Global Warming.ppt', icons: 'file' },
+    { nodeId: '03-04', nodePid: '03',nodeText: 'Social Network.pdf', icons: 'file' },
+    { nodeId: '03-05', nodePid: '03',nodeText: 'Youth Empowerment.pdf', icons: 'file' },
+    { nodeId: '04', nodeText: 'Pictures', icons: 'folder', hasChild: true, nodeExpanded: 'true', },
+    { nodeId: '04-01', nodePid: '04',nodeText: 'Camera Roll', icons: 'folder', hasChild: true, nodeExpanded: true },
+    { nodeId: '04-01-01', nodePid: '04-01',nodeText: 'WIN_20160726_094117.JPG', icons: 'file' },
+    { nodeId: '04-01-02', nodePid: '04-01',nodeText: 'WIN_20160726_094118.JPG', icons: 'file' },
+    { nodeId: '04-01-03', nodePid: '04-01',nodeText: 'WIN_20160726_094119.JPG', icons: 'file' },
+    { nodeId: '04-02', nodePid: '04',nodeText: 'Wind.jpg', icons: 'file' },
+    { nodeId: '04-03', nodePid: '04',nodeText: 'Stone.jpg', icons: 'file' },
+    { nodeId: '04-04', nodePid: '04',nodeText: 'Home.jpg', icons: 'file' },
+    { nodeId: '04-05', nodePid: '04',nodeText: 'Bridge.png', icons: 'file' },
+    { nodeId: '05', nodeText: 'Downloads', icons: 'folder', hasChild: true },
+    { nodeId: '05-01', nodePid: '05',nodeText: 'UI-Guide.pdf', icons: 'file', hasChild: true, },
+    { nodeId: '05-01-01', nodePid: '05-01',nodeText: 'Tutorials.zip', icons: 'file' },
+    { nodeId: '05-01-02', nodePid: '05-01',nodeText: 'Game.exe', icons: 'file' },
+    { nodeId: '05-01-03', nodePid: '05-01',nodeText: 'TypeScript.7z', icons: 'file' },
+];
+
 export var localData: { [key: string]: Object }[] = [
     { id: 1, text: "Artwork", iconCss: 'folder', imageUrl: 'base/spec/images/Shooting.png', tooltip: 'This is Artwork node', hasChildren: true, selected: 'true', navigateUrl: 'http://npmci.syncfusion.com/', },
     { id: 2, parentID: 1, text: "Abstract", hasChildren: true },

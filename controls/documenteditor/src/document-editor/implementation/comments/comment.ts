@@ -461,6 +461,7 @@ export class CommentReviewPane {
     public clear(): void {
         this.previousSelectedCommentInt = undefined;
         this.isUserClosed = false;
+        this.isNewComment = false;
         this.commentPane.clear();
     }
 
@@ -1381,7 +1382,7 @@ export class CommentView {
         this.textAreaContainer = undefined;
         this.textArea = undefined;
         this.drawerElement = undefined;
-        this.drawerSpanElement = undefined; 
+        this.drawerSpanElement = undefined;
         this.commentPane = undefined;
         this.owner = undefined;
     }

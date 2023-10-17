@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 23.1.41 (2023-10-17)
+
+### MultiSelect
+
+#### Bug fixes
+
+- `#I503091` - Resolved a null exception that was thrown when dynamically changing the `groupBy` fields to undefined.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I498409` - Fixed an issue where the preselected `value` was getting cleared when updating the data source.
+
+- `#I500431` - Fixed issue where the preselected `value` through `index` property was not updated when updating the data source.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I498924` - Issue with the locale property in the Dropdown Tree component has been resolved.
+- `#F184672` - Issue with the `checkAll` and `uncheckAll` status not updated properly has been resolved.
+
 ## 23.1.38 (2023-09-26)
 
 ### ListBox

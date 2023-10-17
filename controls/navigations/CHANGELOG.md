@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 23.1.41 (2023-10-17)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I503763` - The issue with "sub menu closes while click on the vertical scroll of sub menu" has been resolved.
+- The issue with "menu component in ribbon while switching to `arabic` localization" has been resolved
+
 ## 23.1.40 (2023-10-10)
 
 ### Accordion
@@ -9,6 +18,12 @@
 #### Bug Fixes
 
 - `#I506740` - An issue with the HTML element within the content of an Accordion item has been fixed.
+
+### TreeView
+
+#### Bug fixes
+
+- `#I506080` - The issue with the `ensureVisible` method for self-referential data source has been resolved.
 
 ## 23.1.39 (2023-10-04)
 

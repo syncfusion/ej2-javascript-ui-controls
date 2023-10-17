@@ -1,7 +1,7 @@
 /**
  *  ImageEditor spec document
  */
-import { CurrentObject, ImageEditor, Point, SelectionPoint, StrokeSettings, TextSettings } from '../src/image-editor/index';
+import { CurrentObject, FrameType, ImageEditor, Point, SelectionPoint, StrokeSettings, TextSettings } from '../src/image-editor/index';
 import { createElement, remove, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 
 describe('ImageEditor', () => {
@@ -6217,6 +6217,20 @@ describe('ImageEditor', () => {
                 obj = {selPointColl: imageEditor.pointColl };
                 imageEditor.notify('freehand-draw', {prop:'setSelPointColl', value: {obj: obj }});
                 imageEditor.pointColl[imageEditor.freehandCounter - 1].id = 'pen_1';
+                imageEditor.activeObj.strokeSettings = {strokeColor: 'red'};
+                imageEditor.undo();
+                imageEditor.redo();
+                imageEditor.selectShape('pen_1');
+                let penColor: HTMLCanvasElement = document.querySelector('#image-editor_penColorBtn');
+                penColor.click();
+                setTimeout(function () { });
+                (document.getElementById('image-editor_pen_stroke') as any).ej2_instances[0].dataBind();
+                let ul: any = document.querySelector('#image-editor_penColorBtn-popup');
+                (ul.querySelectorAll('.e-tile')[5] as HTMLElement).click();
+                let okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                imageEditor.undo();
+                imageEditor.redo();
                 imageEditor.selectShape('pen_1');
                 obj = {selPointColl: imageEditor.pointColl };
                 imageEditor.notify('freehand-draw', {prop:'setSelPointColl', value: {obj: obj }});
@@ -6228,7 +6242,7 @@ describe('ImageEditor', () => {
                 imageEditor.notify('freehand-draw', {prop:'setSelPointColl', value: {obj: obj }});
                 imageEditor.flip('Vertical');
                 imageEditor.select('square');
-                const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn = document.querySelectorAll('#image-editor_ok')[0];
                 if (!isNullOrUndefined(okBtn)) {okBtn.click(); setTimeout(function () { }); }
                 imageEditor.deleteShape('pen_1');
                 done();
@@ -7410,16 +7424,25 @@ describe('ImageEditor', () => {
             imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
             setTimeout(() => {
                 setTimeout(function () { });
-                    const resizeBtn: any = document.querySelectorAll('#image-editor_resize')[0];
+                    let resizeBtn: any = document.querySelectorAll('#image-editor_resize')[0];
                     resizeBtn.click();
                     setTimeout(function () { });
                     imageEditor.notify('transform', {prop: 'resize', value: {width: 400, height: 300, isAspectRatio: true }});
                     expect(Math.round(imageEditor.img.destWidth)).toEqual(404);
                     expect(Math.round(imageEditor.img.destHeight)).toEqual(307);
-                    const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                    let okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
                     okBtn.click();
                     expect(Math.round(imageEditor.img.destWidth)).toEqual(497);
                     expect(Math.round(imageEditor.img.destHeight)).toEqual(378);
+                    resizeBtn = document.querySelectorAll('#image-editor_resize')[0];
+                    resizeBtn.click();
+                    setTimeout(function () { });
+                    let aspectratiobtn: any = document.querySelectorAll('#image-editor_aspectratio')[0];
+                    aspectratiobtn.click();
+                    setTimeout(function () { });
+                    let cancelBtn: any = document.querySelectorAll('#image-editor_cancel')[0];
+                    cancelBtn.click();
+                    setTimeout(() => {});
                     done();
             }, 100);
         });
@@ -7462,12 +7485,43 @@ describe('ImageEditor', () => {
                     expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(700);
                     expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(252);
                     expect(Math.round(imageEditor.objColl[0].shapeDegree)).toEqual(0);
+                    imageEditor.selectShape('shape_1');
+                    setTimeout(function () { });
+                    let transformBtn: any = document.querySelectorAll('#image-editor_hFlip')[0];
+                    transformBtn.click();
+                    let okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                    okBtn.click();
+                    imageEditor.undo();
+                    setTimeout(function () { });
+                    imageEditor.redo();
+                    setTimeout(function () { });
+                    imageEditor.selectShape('shape_1');
+                    setTimeout(function () { });
+                    transformBtn = document.querySelectorAll('#image-editor_vFlip')[0];
+                    transformBtn.click();
+                    okBtn = document.querySelectorAll('#image-editor_ok')[0];
+                    okBtn.click();
+                    setTimeout(function () { });
+                    imageEditor.selectShape('shape_1');
+                    setTimeout(function () { });
+                    transformBtn = document.querySelectorAll('#image-editor_vFlip')[0];
+                    transformBtn.click();
+                    setTimeout(function () { });
+                    okBtn = document.querySelectorAll('#image-editor_ok')[0];
+                    okBtn.click();
+                    imageEditor.undo();
+                    setTimeout(function () { });
+                    imageEditor.redo();
+                    setTimeout(function () { });
+                    imageEditor.selectShape('shape_1');
+                    transformBtn = document.querySelectorAll('#image-editor_rotLeft')[0];
+                    transformBtn.click();
                     done();
                 }, 500);
                 imageEditor.drawImage('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', 500, 100, 200, 80, true, 90);
             }, 100);
         });
-        it('filter using Toolbar', (done) => {
+        it('frame using Toolbar', (done) => {
             imageEditor = new ImageEditor({
                 height: '450px',
             }, '#image-editor');
@@ -7506,8 +7560,445 @@ describe('ImageEditor', () => {
                 expect(imageEditor.frameObj.type).toEqual('hook');
                 expect(imageEditor.frameObj.inset).toEqual(20);
                 expect(imageEditor.frameObj.offset).toEqual(20);
+                imageEditor.reset();
+                imageEditor.drawFrame(FrameType.Mat, 'red', 'blue', 20, 20, 20, 20, 'solid', 1);
+                expect(imageEditor.frameObj.amount).toEqual(1);
+                expect(imageEditor.frameObj.type).toEqual('mat');
+                expect(imageEditor.frameObj.inset).toEqual(20);
+                expect(imageEditor.frameObj.offset).toEqual(20);
+                expect(imageEditor.frameObj.border).toEqual('solid');
+                expect(imageEditor.frameObj.radius).toEqual(20);
                 done();
             }, 100);
         });
-   });
+        it('rectangle rotate', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                imageEditor.drawRectangle(dimension.x, dimension.y);
+                imageEditor.rotate(180);
+                imageEditor.flip('Vertical');
+                imageEditor.selectShape('shape_1');
+                expect(imageEditor.transform.degree).toEqual(180);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                expect(imageEditor.transform.currFlipState).toEqual('vertical');
+                imageEditor.reset();
+                imageEditor.drawRectangle(dimension.x, dimension.y);
+                setTimeout(() => {});
+                imageEditor.rotate(180);
+                imageEditor.selectShape('shape_1');
+                expect(imageEditor.transform.degree).toEqual(180);
+                imageEditor.reset();
+                imageEditor.drawRectangle(dimension.x, dimension.y);
+                setTimeout(() => {});
+                imageEditor.rotate(270);
+                setTimeout(() => {});
+                imageEditor.flip('Horizontal');
+                setTimeout(() => {});
+                imageEditor.selectShape('shape_1');
+                expect(imageEditor.transform.degree).toEqual(270);
+                expect(imageEditor.transform.currFlipState).toEqual('horizontal');
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.reset();
+                imageEditor.drawRectangle(dimension.x, dimension.y);
+                setTimeout(() => {});
+                imageEditor.rotate(270);
+                imageEditor.selectShape('shape_1');
+                expect(imageEditor.transform.degree).toEqual(270);
+                imageEditor.reset();
+                imageEditor.drawRectangle(dimension.x, dimension.y);
+                setTimeout(() => {});
+                imageEditor.rotate(90);
+                imageEditor.flip('Horizontal');
+                imageEditor.selectShape('shape_1');
+                expect(imageEditor.transform.degree).toEqual(90);
+                expect(imageEditor.transform.currFlipState).toEqual('horizontal');
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.reset();
+                imageEditor.drawRectangle(dimension.x, dimension.y);
+                setTimeout(() => {});
+                imageEditor.rotate(90);
+                imageEditor.selectShape('shape_1');
+                expect(imageEditor.transform.degree).toEqual(90);
+                imageEditor.reset();
+                imageEditor.drawRectangle(dimension.x, dimension.y);
+                setTimeout(() => {});
+                imageEditor.rotate(0);
+                imageEditor.flip('Vertical');
+                imageEditor.selectShape('shape_1');
+                expect(imageEditor.transform.degree).toEqual(0);
+                expect(imageEditor.transform.currFlipState).toEqual('vertical');
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                done();
+            }, 100);
+        });
+        it('image rotate', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                setTimeout(function () {
+                    imageEditor.rotate(90);
+                    imageEditor.rotate(180);
+                    imageEditor.rotate(270);
+                    imageEditor.rotate(0);
+                    expect(imageEditor.currObjType.shape).toEqual('image');
+                    done();
+                }, 600);
+                imageEditor.drawImage('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', 500, 100, 200, 80, true, 90);
+            }, 200);
+        });
+        it('frameLine using toolbar', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                let frameBtn: any = document.querySelectorAll('#image-editor_frame')[0];
+                frameBtn.click();
+                setTimeout(function () { });
+                const lineFrame: HTMLCanvasElement = document.querySelector('#image-editor_line');
+                lineFrame.click();
+                setTimeout(function () { });
+                const frameColor: HTMLCanvasElement = document.querySelector('#image-editor_frameColorBtn');
+                frameColor.click();
+                setTimeout(function () { });
+                (document.getElementById('image-editor_frame_fill') as any).ej2_instances[0].dataBind();
+                let ul: any = document.querySelector('#image-editor_frameColorBtn-popup');
+                (ul.querySelectorAll('.e-tile')[5] as HTMLElement).click();
+                setTimeout(() => {}, 10);
+                const frameGradient: HTMLCanvasElement = document.querySelector('#image-editor_frameGradientColorBtn');
+                frameGradient.click();
+                setTimeout(function () { });
+                (document.getElementById('image-editor_frame_gradient_fill') as any).ej2_instances[0].dataBind();
+                ul = document.querySelector('#image-editor_frameGradientColorBtn-popup');
+                (ul.querySelectorAll('.e-tile')[4] as HTMLElement).click();
+                setTimeout(() => {}, 10);
+                const frameAmount: HTMLCanvasElement = document.querySelector('#image-editor_frameAmountBtn');
+                frameAmount.click();
+                setTimeout(function () { });
+                ul = document.querySelectorAll('#image-editor_frameAmountBtn-popup');
+                ul = document.querySelectorAll('#image-editor_frameAmountBtn-popup')[ul.length - 1];
+                ul.children[0].children[1].click();
+                setTimeout(function () { });
+                const frameBorder: HTMLCanvasElement = document.querySelector('#image-editor_frameBorderBtn');
+                frameBorder.click();
+                setTimeout(function () { });
+                ul = document.querySelectorAll('#image-editor_frameBorderBtn-popup');
+                ul = document.querySelectorAll('#image-editor_frameBorderBtn-popup')[ul.length - 1];
+                ul.children[0].children[1].click();
+                setTimeout(function () { });
+                const frameInset: HTMLCanvasElement = document.querySelector('#image-editor_frameInsetBtn');
+                frameInset.click();
+                setTimeout(function () { });
+                ul = document.querySelectorAll('#image-editor_frameInsetBtn-popup');
+                ul = document.querySelectorAll('#image-editor_frameInsetBtn-popup')[ul.length - 1];
+                ul.children[0].children[1].click();
+                setTimeout(function () { });
+                const frameOffset: HTMLCanvasElement = document.querySelector('#image-editor_frameOffsetBtn');
+                frameOffset.click();
+                setTimeout(function () { });
+                ul = document.querySelectorAll('#image-editor_frameOffsetBtn-popup');
+                ul = document.querySelectorAll('#image-editor_frameOffsetBtn-popup')[ul.length - 1];
+                ul.children[0].children[1].click();
+                setTimeout(function () { });
+                const frameSize: HTMLCanvasElement = document.querySelector('#image-editor_frameSizeBtn');
+                frameSize.click();
+                setTimeout(function () { });
+                ul = document.querySelectorAll('#image-editor_frameSizeBtn-popup');
+                ul = document.querySelectorAll('#image-editor_frameSizeBtn-popup')[ul.length - 1];
+                ul.children[0].children[1].click();
+                setTimeout(function () { });
+                const frameRadius: HTMLCanvasElement = document.querySelector('#image-editor_frameRadiusBtn');
+                frameRadius.click();
+                setTimeout(function () { });
+                ul = document.querySelectorAll('#image-editor_frameRadiusBtn-popup');
+                ul = document.querySelectorAll('#image-editor_frameRadiusBtn-popup')[ul.length - 1];
+                ul.children[0].children[1].click();
+                setTimeout(function () { });
+                const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                imageEditor.undo();
+                imageEditor.redo();
+                expect(imageEditor.frameObj.amount).toEqual(2);
+                expect(imageEditor.frameObj.size).toEqual(40);
+                expect(imageEditor.frameObj.type).toEqual('line');
+                expect(imageEditor.frameObj.inset).toEqual(40);
+                expect(imageEditor.frameObj.offset).toEqual(40);
+                expect(imageEditor.frameObj.radius).toEqual(20);
+                expect(imageEditor.frameObj.border).toEqual('dashed');
+                let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
+                btn.click();
+                setTimeout(() => {});
+                ul = document.querySelectorAll('#image-editor_saveBtn-popup');
+                ul = document.querySelectorAll('#image-editor_saveBtn-popup')[ul.length - 1];
+                ul.children[0].children[0].click();
+                done();
+            }, 100);
+        });
+        it('line arrow vertical flip', (done) => {	
+            imageEditor = new ImageEditor({
+            height:'450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+            let dimension: any = imageEditor.getImageDimension();
+            imageEditor.drawArrow(dimension.x, dimension.y+10, dimension.x+50, dimension.y+10, 10, 'red', 'Arrow', 'SolidArrow');
+            setTimeout(function () { });
+            imageEditor.rotate(90);
+            imageEditor.flip('Vertical');
+            setTimeout(function () { });
+            expect(imageEditor.currObjType.shape).toEqual('arrow');
+            done();
+            }, 100);
+        });       
+        it('text rotation', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 30, true, true, '#40e040');
+                imageEditor.rotate(90);
+                imageEditor.selectShape('shape_1');
+                let qatBtn: any = document.querySelectorAll('#image-editor_editText')[0];
+                qatBtn.click();
+                setTimeout(() => {});
+                let okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                imageEditor.flip('Vertical');
+                imageEditor.selectShape('shape_1');
+                setTimeout(() => {});
+                qatBtn = document.querySelectorAll('#image-editor_editText')[0];
+                qatBtn.click();
+                setTimeout(() => {});
+                okBtn = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                expect(imageEditor.currObjType.shape).toEqual('text');
+                expect(imageEditor.activeObj.strokeSettings.strokeColor).toEqual('#40e040');
+                expect(imageEditor.transform.currFlipState).toEqual('vertical');
+                imageEditor.reset();
+                imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 30, true, true, '#40e040');
+                imageEditor.rotate(180);
+                imageEditor.selectShape('shape_1');
+                setTimeout(() => {});
+                qatBtn = document.querySelectorAll('#image-editor_editText')[0];
+                setTimeout(() => {});
+                qatBtn.click();
+                setTimeout(() => {});
+                okBtn = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                imageEditor.flip('Horizontal');
+                imageEditor.selectShape('shape_1');
+                setTimeout(() => {});
+                qatBtn = document.querySelectorAll('#image-editor_editText')[0];
+                setTimeout(() => {});
+                qatBtn.click();
+                setTimeout(() => {});
+                okBtn = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                expect(imageEditor.currObjType.shape).toEqual('text');
+                expect(imageEditor.activeObj.strokeSettings.strokeColor).toEqual('#40e040');
+                expect(imageEditor.transform.currFlipState).toEqual('horizontal');
+                imageEditor.reset();
+                imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 30, true, true, '#40e040');
+                imageEditor.rotate(270);
+                imageEditor.selectShape('shape_1');
+                setTimeout(() => {});
+                qatBtn = document.querySelectorAll('#image-editor_editText')[0];
+                qatBtn.click();
+                setTimeout(() => {});
+                okBtn = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                imageEditor.flip('Vertical');
+                imageEditor.selectShape('shape_1');
+                setTimeout(() => {});
+                qatBtn = document.querySelectorAll('#image-editor_editText')[0];
+                qatBtn.click();
+                setTimeout(() => {});
+                okBtn = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                expect(imageEditor.currObjType.shape).toEqual('text');
+                expect(imageEditor.activeObj.strokeSettings.strokeColor).toEqual('#40e040');
+                expect(imageEditor.transform.currFlipState).toEqual('vertical');
+                imageEditor.reset();
+                done();
+            }, 100);
+        });
+        it('resize image download', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                let resizeBtn: any = document.querySelectorAll('#image-editor_resize')[0];
+                resizeBtn.click();
+                setTimeout(function () { });
+                imageEditor.notify('transform', {prop: 'resize', value: {width: 400, height: 300, isAspectRatio: true }});
+                setTimeout(function () { });
+                let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
+                btn.click();
+                setTimeout(() => {});
+                let ul: any = document.querySelectorAll('#image-editor_saveBtn-popup');
+                ul = document.querySelectorAll('#image-editor_saveBtn-popup')[ul.length - 1];
+                ul.children[0].children[0].click();
+                setTimeout(() => {});
+                imageEditor.reset();
+                resizeBtn = document.querySelectorAll('#image-editor_resize')[0];
+                resizeBtn.click();
+                setTimeout(function () { });
+                imageEditor.notify('transform', {prop: 'resize', value: {width: 400, height: 300, isAspectRatio: true }});
+                setTimeout(function () { });
+                imageEditor.rotate(90);
+                btn = document.querySelectorAll('#image-editor_saveBtn')[0];
+                btn.click();
+                setTimeout(() => {});
+                ul = document.querySelectorAll('#image-editor_saveBtn-popup');
+                ul = document.querySelectorAll('#image-editor_saveBtn-popup')[ul.length - 1];
+                ul.children[0].children[0].click();
+                setTimeout(() => {});
+                imageEditor.reset();
+                done();
+            }, 100);
+        });
+        it('Text with 360 Rotate and Ver Hor Flip Click', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                const annotationBtn: any = document.querySelectorAll('#image-editor_annotationBtn')[0];
+                annotationBtn.click();
+                setTimeout(() => {});
+                let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
+                ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
+                ul.children[0].children[6].click();
+                expect(imageEditor.activeObj.shape).toEqual('text');
+                let okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                const cropBtn: any = document.querySelectorAll('#image-editor_cropTransform')[0];
+                cropBtn.click();
+                let transformBtn: any = document.querySelectorAll('#image-editor_horizontalFlip')[0];
+                transformBtn.click();
+                transformBtn = document.querySelectorAll('#image-editor_verticalFlip')[0];
+                transformBtn.click();
+                transformBtn = document.querySelectorAll('#image-editor_horizontalFlip')[0];
+                transformBtn.click();
+                imageEditor.selectShape('shape_1');
+                let drpDownBtn: any = document.getElementById('image-editor_fontFamilyBtn');
+                drpDownBtn.click();
+                setTimeout(() => {});
+                ul = document.querySelectorAll('.e-font-family.e-popup-open')[0];
+                const elem: string = ul.children[0].children[1].textContent;
+                ul.children[0].children[1].click();
+                setTimeout(() => {}, 50);
+                expect(imageEditor.activeObj.textSettings.fontFamily).toEqual(elem);
+                setTimeout(() => {});
+               drpDownBtn = document.getElementById('image-editor_bold');
+                drpDownBtn.click();
+                setTimeout(() => {});
+                drpDownBtn = document.getElementById('image-editor_italic');
+                drpDownBtn.click();
+                setTimeout(() => {});
+                drpDownBtn = document.getElementById('image-editor_bold');
+                drpDownBtn.click();
+                setTimeout(() => {});
+                drpDownBtn = document.getElementById('image-editor_italic');
+                drpDownBtn.click();
+                setTimeout(() => {});
+                drpDownBtn = document.getElementById('image-editor_fontSizeBtn');
+                drpDownBtn.click();
+                setTimeout(() => {});
+                ul = document.querySelectorAll('.e-font-size.e-popup-open')[0];
+                ul.children[0].children[1].click();
+                setTimeout(function () { });
+                drpDownBtn = document.getElementById('image-editor_fontColorBtn');
+                drpDownBtn.click();
+                setTimeout(() => {});
+                (document.getElementById('image-editor_text_font') as any).ej2_instances[0].dataBind();
+                ul = document.querySelector('#image-editor_fontColorBtn-popup');
+                (ul.querySelectorAll('.e-tile')[5] as HTMLElement).click();
+                setTimeout(() => {}, 10);
+                okBtn = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                done();
+            }, 100);
+        });
+        it('Image Selection combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                setTimeout(() => {
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'move' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                    value: {x: 0, y: 0, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'nw-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                    value: {x: 1, y: 1, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'nw-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 0, y: 0, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'n-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                          value: {x: -1, y: 1, isCropSelection: false }});
+                    imageEditor.selectShape('shape_1');
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'n-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 0, y: 0, isCropSelection: false }});
+                    let okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                    okBtn.click();
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'w-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 1, y: -1, isCropSelection: false }});
+                    imageEditor.selectShape('shape_1');
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'w-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 0, y: 0, isCropSelection: false }});
+                    okBtn = document.querySelectorAll('#image-editor_ok')[0];
+                    okBtn.click();
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'e-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 1, y: -1, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'e-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 0, y: 0, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'sw-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                        value: {x: 1, y: -1, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'sw-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 0, y: 0, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 's-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                        value: {x: -1, y: -1, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 's-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 0, y: 0, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'se-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                      value: {x: -1, y: -1, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'se-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 0, y: 0, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'ne-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                        value: {x: -1, y: 1, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'ne-resize' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                        value: {x: 0, y: 0, isCropSelection: false }});
+                    imageEditor.notify('selection', {prop: 'setDragElement', onPropertyChange: false, value: {value: 'grabbing' }});
+                    imageEditor.notify('selection', {prop: 'updateActivePoint', onPropertyChange: false,
+                       value: {x: 0, y: 0, isCropSelection: false }});
+                    done();
+                }, 600);
+                imageEditor.drawImage('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', 500, 100, 200, 80, true, 90);
+            }, 200);
+        });
+    });
 });

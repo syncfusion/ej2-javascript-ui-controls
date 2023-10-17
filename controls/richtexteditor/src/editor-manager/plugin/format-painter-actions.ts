@@ -342,9 +342,14 @@ export class FormatPainterActions implements IFormatPainterEditor{
     }
 
     private findCurrentContext (parentElem: HTMLElement) : string | null {
-        if (closest(parentElem, 'p')) {
+        const closestParagraph: Element = closest(parentElem, 'p');
+        const closestList: Element = closest(parentElem, 'li');
+        if (closestParagraph && !closestList) {
             return 'Text';
         } else if (closest(parentElem, 'li')) {
+            if (!isNOU(closestParagraph) && !isNOU(closestList) && closestParagraph.textContent.trim() !== closestList.textContent.trim()) {
+                return 'Text';
+            }
             return 'List';
         }else if (closest(parentElem, 'td') || closest(parentElem, 'tr') || closest(parentElem, 'th')){
             return 'Table';
@@ -402,7 +407,7 @@ export class FormatPainterActions implements IFormatPainterEditor{
         const cloneElementNode: Node = isNOU(cloneListParentNode) ? element : element.firstChild;
         for (let index: number = 0; index < nodes.length; index++) {
             if (this.INVALID_TAGS.indexOf(nodes[index as number].nodeName) > -1  ||
-            (nodes[index as number] as HTMLElement).querySelectorAll('a,img,audio,video,iframe').length > 0) {
+            (nodes[index as number] as HTMLElement).querySelectorAll('img,audio,video,iframe').length > 0) {
                 continue;
             }
             const cloneParentNode: Node = cloneElementNode.cloneNode(false);

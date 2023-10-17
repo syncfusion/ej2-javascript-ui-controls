@@ -282,6 +282,7 @@ export class ToolbarRenderer implements IRenderer {
                     args.cancel = true;
                     return;
                 }
+                proxy.parent.notify(events.selectionRestore, {});
                 const element: HTMLElement = (args.event) ? (args.event.target as HTMLElement) : null;
                 proxy.currentElement = dropDown.element;
                 proxy.currentDropdown = dropDown;
@@ -308,6 +309,12 @@ export class ToolbarRenderer implements IRenderer {
         }
         args.element.tabIndex = -1;
         dropDown.element.removeAttribute('type');
+        dropDown.element.onmousedown = (): void => {
+            proxy.parent.notify(events.selectionSave, {});
+        };
+        dropDown.element.onkeydown = (): void => {
+            proxy.parent.notify(events.selectionSave, {});
+        };
         return dropDown;
     }
     // eslint-disable-next-line

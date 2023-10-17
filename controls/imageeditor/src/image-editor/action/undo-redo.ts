@@ -346,7 +346,8 @@ export class UndoRedo {
                         }
                     }
                     parent.updateCropTransformItems();
-                    parent.select('custom');
+                    parent.notify('draw', { prop: 'select', onPropertyChange: false,
+                        value: {type: 'custom', startX: null, startY: null, width: null, height: null }});
                     if (parent.isCircleCrop) {
                         parent.isCircleCrop = false;
                         this.tempCurrSelPoint = extend({}, parent.currSelectionPoint, {}, true) as SelectionPoint;

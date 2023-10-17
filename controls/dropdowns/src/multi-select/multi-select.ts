@@ -4249,6 +4249,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 this.updateSelectElementData(this.allowFiltering);
                 break;
+            case 'fields':
+                if (isNullOrUndefined(this.fields.groupBy))
+                {
+                    this.removeScrollEvent();
+                }
+                break;
             default: {
                 // eslint-disable-next-line max-len
                 const msProps: { [key: string]: Object } = this.getPropObject(prop, <{ [key: string]: string }>newProp, <{ [key: string]: string }>oldProp);

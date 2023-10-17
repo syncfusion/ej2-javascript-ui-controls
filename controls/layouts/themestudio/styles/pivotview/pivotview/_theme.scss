@@ -5,10 +5,12 @@
     .e-pivotcell-container {
       align-items: center;
       display: flex;
+      max-height: inherit;
 
       .e-stackedheadertext,
       .e-headertext {
         &.e-cellvalue {
+          align-self: stretch;
           overflow: hidden;
           text-overflow: ellipsis;
           width: 100%;
@@ -89,6 +91,12 @@
       border-bottom-width: 1px;
       @if($skin-name == 'bootstrap5') {
         border-bottom-color: $border-light;
+      }
+
+      table th[rowspan = '1'] {
+        padding-bottom: 0;
+        padding-top: 0;
+        vertical-align: middle;
       }
     }
 
@@ -334,11 +342,6 @@
 
       @if($skin-name == 'tailwind') or ($skin-name == 'tailwind-dark') {
         text-transform: none;
-      }
-
-      @if($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') or ($skin-name == 'tailwind') or ($skin-name == 'Material3') {
-        padding-top: 0px !important;
-        padding-bottom: 0px !important;
       }
     }
 
@@ -762,6 +765,7 @@
       display: inline-block;
       height: 100%;
       vertical-align: top;
+      width: 100%;
     }
 
     /* stylelint-disable */

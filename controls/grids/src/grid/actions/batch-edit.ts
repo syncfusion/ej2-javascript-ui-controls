@@ -166,6 +166,10 @@ export class BatchEdit {
             return;
         }
         let [rowIndex, cellIndex]: number[] = e.container.indexes;
+        let actualIndex: number = e.element.getAttribute('data-colindex') ? parseInt(e.element.getAttribute('data-colindex')) : cellIndex;
+        if (actualIndex !== cellIndex) {
+            cellIndex = actualIndex;
+        }
         if (this.parent.frozenRows && e.container.isContent) {
             rowIndex += ((this.parent.getContent().querySelector('.e-hiddenrow') ? 0 : this.parent.frozenRows) +
                 this.parent.getHeaderContent().querySelectorAll('.e-insertedrow').length);

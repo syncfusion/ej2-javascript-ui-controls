@@ -2138,7 +2138,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let dom: HTEle;
         const innerEle: HTEle = this.createElement('div', { className: CLS_ITEM });
         const tempDom: HTEle = this.createElement('div', {
-            innerHTML: this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(item.tooltipText) : item.tooltipText
+            innerHTML: this.enableHtmlSanitizer && !isNOU(item.tooltipText) ?
+                SanitizeHtmlHelper.sanitize(item.tooltipText) : item.tooltipText
         });
         if (!this.tbarEle) {
             this.tbarEle = [];

@@ -135,6 +135,7 @@ export class Layout {
     public isRelayoutFootnote: boolean = false;
 
     private isRelayoutOverlap: boolean = false;
+    private skipRelayoutOverlap: boolean = false;
     private startOverlapWidget: BlockWidget;
     private endOverlapWidget: BlockWidget;
 
@@ -973,6 +974,7 @@ export class Layout {
                 }
                 if (element instanceof FieldTextElementBox &&
                     !isNullOrUndefined(element.previousElement) &&
+                    element.previousElement instanceof FieldElementBox &&
                     element.fieldBegin !== (element.previousElement as FieldElementBox).fieldBegin) {
                     element.fieldBegin = (element.previousElement as FieldElementBox).fieldBegin;
                 }
@@ -1215,8 +1217,10 @@ export class Layout {
             }
             if (this.startOverlapWidget) {
                 this.isRelayoutOverlap = true;
+                this.skipRelayoutOverlap = true;
                 this.layoutStartEndBlocks(this.startOverlapWidget, block);
                 this.isRelayoutOverlap = false;
+                this.skipRelayoutOverlap = false;
             }
             this.startOverlapWidget = undefined;
             this.endOverlapWidget = undefined;
@@ -4347,7 +4351,7 @@ export class Layout {
         if (!isPageBreak) {
             this.updateShapeBaseLocation(paragraphWidget);
         }
-        if (this.isRelayoutOverlap && this.endOverlapWidget) {
+        if (this.isRelayoutOverlap && this.endOverlapWidget && (!this.skipRelayoutOverlap || (this.endOverlapWidget instanceof TableWidget && this.endOverlapWidget.wrapTextAround))) {
             let block: BlockWidget = this.endOverlapWidget.previousRenderedWidget as BlockWidget;
             let para: BlockWidget = line.paragraph;
             this.startOverlapWidget = para;

@@ -112,6 +112,19 @@ export class Render {
         gObj.trigger(events.actionBegin, e, (args: NotifyArgs = { requestType: 'refresh' }) => {
             if (args.cancel) {
                 gObj.notify(events.cancelBegin, args);
+                if (args.action === 'clearFilter' && this.parent.filterSettings.type === 'Menu') {
+                    this.parent.filterSettings.columns[this.parent.filterModule.filterObjIndex] = this.parent.filterModule.prevFilterObject;
+                    const iconClass: string = this.parent.showColumnMenu && this.parent.filterModule['column'].showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
+                    const col: Element = this.parent.element.querySelector('[e-mappinguid="' + this.parent.filterModule['column'].uid + '"]').parentElement;
+                    const flIcon: Element = col.querySelector(iconClass);
+                    if (!isNullOrUndefined(this.parent.filterModule.prevFilterObject)) {
+                        flIcon.classList.add('e-filtered');
+                    }
+
+                }
+                if (args.action === 'clear-filter' && (this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel')){
+                    this.parent.filterSettings.columns = this.parent.filterModule.checkboxPrevFilterObject;
+                }
                 return;
             }
             if (gObj.allowSelection && (args.action === 'clearFilter' || (args.requestType === 'searching' && args.searchString === '') ||

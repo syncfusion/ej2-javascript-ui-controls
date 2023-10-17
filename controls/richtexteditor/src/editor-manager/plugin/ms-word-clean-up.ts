@@ -316,8 +316,10 @@ export class MsWordPaste {
                     } else {
                         continue;
                     }
-                    isCroppedImage = this.extractCropValue('cropl', fullImg[i as number]) > 0 &&
-                        this.extractCropValue('cropt', fullImg[i as number]) > 0 ? true : false;
+                    isCroppedImage = ((this.extractCropValue('cropl', fullImg[i as number]) > 0 &&
+                        this.extractCropValue('cropt', fullImg[i as number]) > 0) ||
+                        (this.extractCropValue('cropr', fullImg[i as number]) > 0 &&
+                        this.extractCropValue('cropb', fullImg[i as number]))) ? true : false;
                     if (isCroppedImage) {
                         goalWidth = this.extractCropValue('wgoal', fullImg[i as number]);
                         goalHeight = this.extractCropValue('hgoal', fullImg[i as number]);
@@ -345,7 +347,7 @@ export class MsWordPaste {
 
     private extractCropValue(crop: string, rtfData: string): number {
         // eslint-disable-next-line security/detect-non-literal-regexp
-        const result: string = new RegExp('\\\\pic' + crop + '(\\-?\\d+)\\\\').exec(rtfData.replace('\r\n\\', '\\'))[1];
+        const result: string = new RegExp('\\\\pic' + crop + '(\\-?\\d+)\\\\').exec(rtfData.replace(/\r\n\\/g, '\\'))[1];
         return parseInt(result, 10);
     }
 

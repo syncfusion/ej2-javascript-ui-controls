@@ -1,0 +1,254 @@
+@include export-module('carousel-layout') {
+
+  /*! carousel component styles */
+  .e-carousel {
+    display: block;
+    margin: 0;
+    padding: 0;
+    position: relative;
+
+    .e-carousel-items,
+    .e-carousel-slide-container {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      padding: 0;
+      position: relative;
+      width: 100%;
+    }
+
+    .e-carousel-items.e-swipe-start {
+      cursor: pointer;
+    }
+
+    &.e-partial {
+      .e-carousel-slide-container {
+        padding: 0 100px;
+
+        @media screen and (max-width: 480px) {
+          padding: 0 75px;
+        }
+
+        @media screen and (max-width: 320px) {
+          padding: 0 50px;
+        }
+      }
+    }
+
+    .e-carousel-items {
+      width: calc(var(--carousel-items-count) * 100%);
+      display: flex;
+      flex-direction: row;
+      transition-property: transform;
+      transition-duration: $carousel-animation-duration;
+      transition-timing-function: $carousel-animation-timing-function;
+
+      .e-carousel-item {
+        height: 100%;
+        overflow: hidden;
+        padding: 0;
+        position: relative;
+        width: calc(100% / var(--carousel-items-count));
+      }
+    }
+
+    &.e-blazor-carousel {
+      .e-carousel-items {
+        transform: translateX(calc((-100%/var(--carousel-items-count)) * var(--carousel-items-current)));
+        transition: transform;
+      }
+    }
+
+    &.e-blazor-carousel.e-rtl {
+      .e-carousel-items {
+        transform: translateX(calc((100%/var(--carousel-items-count)) * var(--carousel-items-current)));
+        transition: transform;
+      }
+    }
+
+    &.e-carousel-fade-animation {
+      .e-carousel-items {
+        &.e-fade-in-out {
+          transition-property: none;
+          animation: fade-in-out $carousel-animation-duration $carousel-animation-timing-function;
+        }
+
+        @keyframes fade-in-out {
+          0% {
+            opacity: 0;
+          }
+
+          100% {
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    &.e-carousel-slide-animation {
+      .e-carousel-items {
+        &.e-slide {
+          transition-duration: $carousel-animation-duration;
+        }
+      }
+    }
+
+    &.e-carousel-custom-animation:not(.e-partial) {
+      .e-carousel-item {
+        display: block;
+        height: 100%;
+        left: 0;
+        opacity: 0;
+        pointer-events: none;
+        top: 0;
+
+        &.e-active {
+          opacity: 1;
+          pointer-events: visible;
+        }
+      }
+    }
+
+    .e-carousel-navigators {
+      align-items: center;
+      display: flex;
+      height: 100%;
+      justify-content: space-between;
+      pointer-events: none;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      z-index: 1;
+
+      .e-play-pause,
+      .e-previous,
+      .e-next {
+        padding: .5em;
+        pointer-events: auto;
+
+        .e-btn {
+          border: 0;
+          box-shadow: none;
+
+          &:hover {
+            border-radius: $carousel-navigator-btn-border-radius-hover;
+          }
+
+          &.e-rtl {
+            transform: rotate(180deg);
+          }
+        }
+
+        &.e-hover-arrows {
+          display: none;
+        }
+      }
+    }
+
+    .e-carousel-indicators {
+      align-items: center;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      min-height: $carousel-indicator-height;
+      padding: 0;
+      pointer-events: none;
+      position: absolute;
+      width: 100%;
+      z-index: 1;
+
+      &.e-default .e-indicator-bars {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        pointer-events: auto;
+
+        .e-indicator-bar {
+          padding: 0;
+
+          .e-indicator {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+            padding: $carousel-indicator-padding;
+          }
+
+          .e-indicator div {
+            border: $carousel-indicator-bar-border;
+            border-radius: $carousel-indicator-bar-border-radius;
+            height: $carousel-indicator-bar-height;
+            transition-duration: $carousel-animation-duration;
+            transition-property: background-color, border-color;
+            transition-timing-function: $carousel-animation-timing-function;
+            width: $carousel-indicator-bar-width;
+          }
+
+          .e-indicator .e-ripple-element {
+            display: none;
+          }
+        }
+      }
+
+      &.e-dynamic {
+        min-height: $carousel-indicator-dynamic-minheight;
+
+        .e-indicator-bars {
+          display: block;
+          overflow: hidden;
+          transition: opacity $carousel-animation-duration $carousel-animation-timing-function;
+          white-space: nowrap;
+          width: 80px;
+
+          .e-indicator-bar {
+            border-radius: 50%;
+            display: inline-block;
+            height: 8px;
+            left: calc(32px - calc(16px * var(--carousel-items-current)));
+            margin: 0 4px;
+            opacity: 1;
+            position: relative;
+            transform: scale(.33);
+            transition-duration: $carousel-animation-duration;
+            transition-property: transform, left;
+            transition-timing-function: $carousel-animation-timing-function;
+            white-space: nowrap;
+            width: 8px;
+
+            &.e-active {
+              transform: scale(1);
+            }
+
+            &.e-prev,
+            &.e-next {
+              transform: scale(.66);
+            }
+          }
+        }
+      }
+
+      &.e-fraction {
+        min-height: $carousel-indicator-fraction-minheight;
+      }
+
+      &.e-progress {
+        min-height: $carousel-indicator-progress-minheight;
+
+        .e-indicator-bars {
+          height: $carousel-indicator-progress-height;
+          width: 100%;
+
+          .e-indicator-bar {
+            height: 100%;
+            left: 0;
+            position: absolute;
+            top: 0;
+            transform: translate3d(0, 0, 0) scaleX(calc(var(--carousel-items-current) / var(--carousel-items-count))) scaleY(1);
+            transition-duration: $carousel-animation-duration;
+            transform-origin: left top;
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}

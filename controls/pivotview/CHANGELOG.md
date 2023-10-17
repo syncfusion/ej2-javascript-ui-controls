@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.41 (2023-10-17)
+
+### PivotTable
+
+#### Bug fixes
+
+- The pivot table will now be exported as a PDF document when the export method is invoked without the `pdFExportProperties` parameter.
+
 ## 23.1.38 (2023-09-26)
 
 ### PivotTable

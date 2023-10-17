@@ -532,6 +532,13 @@ export class Edit {
                     if (ganttData.ganttProperties.baselineEndDate && ganttData.ganttProperties.baselineEndDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
                         ganttObj.dataOperation.setTime(this.parent.defaultEndTime, ganttData.ganttProperties.baselineEndDate);
                     }
+                    if ((ganttData.ganttProperties.baselineStartDate && ganttData.ganttProperties.baselineEndDate &&
+                        (ganttData.ganttProperties.baselineStartDate.getTime() > ganttData.ganttProperties.baselineEndDate.getTime())) ||
+                        ((!isNullOrUndefined(ganttData.ganttProperties.baselineStartDate) && !isNullOrUndefined(ganttData.ganttProperties.startDate) && (ganttData.ganttProperties.baselineStartDate.getTime() === ganttData.ganttProperties.startDate.getTime())) 
+                        && (!isNullOrUndefined(ganttData.ganttProperties.baselineEndDate) && !isNullOrUndefined(ganttData.ganttProperties.endDate) && (ganttData.ganttProperties.baselineEndDate.toLocaleDateString() === ganttData.ganttProperties.endDate.toLocaleDateString())) &&
+                        ganttData.ganttProperties.isMilestone)) {
+                                ganttData.ganttProperties.baselineEndDate = ganttData.ganttProperties.baselineStartDate;
+                    }
                     ganttObj.setRecordValue('baselineEndDate', ganttObj.dataOperation.checkBaselineEndDate(ganttData.ganttProperties.baselineEndDate),ganttData.ganttProperties, true);
                     ganttObj.setRecordValue(
                         'baselineLeft', ganttObj.dataOperation.calculateBaselineLeft(

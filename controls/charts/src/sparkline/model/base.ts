@@ -126,7 +126,7 @@ export class SparklineTooltipSettings extends ChildProperty<SparklineTooltipSett
     /**
      * To configure tooltip text styles.
      */
-    @Complex<SparklineFontModel>({ size: '12px', fontWeight: '400', fontStyle: 'Normal', fontFamily: null}, SparklineFont)
+    @Complex<SparklineFontModel>({ size: '12px', fontWeight: null, fontStyle: 'Normal', fontFamily: null}, SparklineFont)
     public textStyle: SparklineFontModel;
     /**
      * To configure the tracker line options.

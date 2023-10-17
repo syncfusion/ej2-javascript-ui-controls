@@ -914,7 +914,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (isOpen && this.hamburgerMode && ulIndex && !(submenus.length)) {
                         this.afterCloseMenu(e as MouseEvent);
                     } else if (isOpen && !this.hamburgerMode && closedLi && !trgtLi && this.keyType !== 'left' && (this.navIdx.length || !this.isMenu && this.navIdx.length === 0) ) {
-                        let ele: HTMLElement = (e && (e.target as Element).classList.contains('e-vscroll'))
+                        let ele: HTMLElement = (e && ((e.target as Element).classList.contains('e-vscroll') || (e.target as Element).classList.contains('e-scroll-nav')))
                             ? closest(e.target as Element, '.e-menu-wrapper') as HTMLElement : null;
                         if (ele) {
                             ele = ele.querySelector('.e-menu-item');
@@ -922,7 +922,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                                 this.closeMenu(this.navIdx[this.navIdx.length - 1], e, true);
                             }
                         } else {
-                            this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
+                            if (!(e && (e.target as Element).classList.contains('e-nav-arrow'))) {
+                                this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
+                            }
                         }
                     } else if (isOpen && !isIterated && !ulIndex && ((this.hamburgerMode && this.navIdx.length) ||
                         this.navIdx.length === 1 && liElem && trgtpopUp !== liElem.parentElement)) {
@@ -1860,7 +1862,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
                 break;
             case 'enableRtl':
-                wrapper.classList.toggle(RTL);
+                if (this.enableRtl){
+                    wrapper.classList.add(RTL);
+                } else {
+                    wrapper.classList.remove(RTL);
+                }
                 break;
             case 'showItemOnClick':
                 this.unWireEvents();

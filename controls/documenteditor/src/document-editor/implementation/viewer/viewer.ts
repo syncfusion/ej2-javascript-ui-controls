@@ -1293,7 +1293,7 @@ export class DocumentHelper {
     }
     private createEditableDiv(element: HTMLElement): void {
         this.editableDiv = document.createElement('div');
-        this.editableDiv.contentEditable = 'true';
+        this.editableDiv.contentEditable = this.owner.isReadOnlyMode ? 'false' : 'true';
         this.editableDiv.style.position = 'fixed';
         this.editableDiv.style.left = '-150em';
         this.editableDiv.style.width = '100%';
@@ -3598,6 +3598,7 @@ export class DocumentHelper {
      */
     public removeEmptyPages(): void {
         let scrollToLastPage: boolean = false;
+        let pageIndex: number = this.selection.startPage - 1;
         for (let j: number = 0; j < this.pages.length; j++) {
             let page: Page = this.pages[j];
             for (let i = 0; i < page.bodyWidgets.length; i++) {
@@ -3618,6 +3619,15 @@ export class DocumentHelper {
             }
             
         }
+        if (!isNullOrUndefined(this.pages[pageIndex])) {
+            let page: Page = this.pages[pageIndex];
+            if (page.headerWidget) {
+                page.headerWidget.page = page;
+            }
+            if (page.footerWidget) {
+                page.footerWidget.page = page;
+            }
+        }
         if (scrollToLastPage) {
             this.scrollToBottom();
         }
@@ -3634,7 +3644,7 @@ export class DocumentHelper {
         }
     }
     public getFieldResult(fieldBegin: FieldElementBox, page: Page): string {
-        if (!isNullOrUndefined(page) && !isNullOrUndefined(this.selection)) {
+        if (!isNullOrUndefined(page) && !isNullOrUndefined(this.selection) && !isNullOrUndefined(fieldBegin)) {
             let fieldCode: string = this.selection.getFieldCode(fieldBegin);
             let fieldCodes: string[] = fieldCode.split('\*');
             let fieldCategory: string = fieldCodes[0].replace(/[^\w\s]/gi, '').trim().toLowerCase();

@@ -2086,6 +2086,42 @@ describe('Data validation ->', () => {
             expect(helper.invoke('getCell', [4,3]).style.backgroundColor).toBe('rgb(255, 255, 255)')
             expect(helper.invoke('getCell', [4,3]).style.color).toBe('rgb(0, 0, 0)')
             done()
+        });
+    });
+    describe('EJ2-851197 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ranges: [{dataSource : defaultData}]}],
+            }, done)
         })
-    })
+        afterAll(() => {
+            helper.invoke('destroy');
+        })
+        it('Pop-up positioned wrongly to the top left of spreadsheet when entering data greater than the rule applied', (done: Function) => {
+            helper.getInstance().addDataValidation({ type: 'List', value1: 'A,B,C,D', ignoreBlank: true }, 'A2:A11');
+            helper.getInstance().addDataValidation({ type: 'WholeNumber', operator: 'Between', value1: '10', value2: '20', ignoreBlank: true }, 'D2:D11');
+            helper.invoke('selectRange', ['A2']);
+            const td: HTMLElement = helper.invoke('getCell', [1, 0]).children[0];
+            expect(td.classList).toContain('e-validation-list');
+            const coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, document, td);
+            helper.triggerMouseAction('mousedup', { x: coords.left, y: coords.top }, document, td);
+            (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+            setTimeout(() => {
+                helper.invoke('selectRange', ['D2']);
+                let td: HTMLElement = helper.invoke('getCell', [1, 3]);
+                let coords: ClientRect = td.getBoundingClientRect();
+                helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
+                helper.getElement('.e-spreadsheet-edit').textContent = '33';
+                helper.triggerKeyNativeEvent(13);
+                setTimeout(() => {
+                    helper.click('.e-validation-error-dlg .e-primary');
+                    setTimeout(() => {
+                        expect(document.getElementById('spreadsheetlistValid_popup') as HTMLElement).toBeNull();
+                        done()
+                    });
+                });
+            });
+        });
+    });
 });

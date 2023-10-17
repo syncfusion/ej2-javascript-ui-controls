@@ -152,11 +152,22 @@ $ddl-bigger-small-list-font-size: 14px !default;
   }
 
   .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
-    font-size: 8px;
+    font-size: 12px;
   }
 
-  .e-bigger .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
+  .e-bigger .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon,
+  .e-bigger.e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
+    font-size: 14px;
+  }
+
+  .e-small .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon,
+  .e-small.e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
     font-size: 10px;
+  }
+
+  .e-small.e-bigger .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon,
+  .e-small.e-bigger.e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
+    font-size: 12px;
   }
 
   .e-bigger.e-small .e-ddl#{&}.e-popup {

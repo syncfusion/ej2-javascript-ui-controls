@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 23.1.41 (2023-10-17)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I503904` - Now, the missing properties have been included in the form field collections.
+- `#I506233` - Now, the dropdown list does not open when selecting the dropdown field in designer mode. 
+- `#F184471` - Newline characters are now correctly retained in the saved document when saving a document with numerous free text annotations.
+- `#I505498` - Now, the thumbnail highlighting functions correctly when scrolling and viewing rotated pages.
+- `#I507503` - Now, clicking again the same bookmark after scrolling ,the bookmark is navigated correctly.
+- `#I504089` - Now, the search is working when the Enter key is pressed continuously in the Public API.
+- `#I501644` - Now, the stackoverflow exception is not occurred while loading the 6000 bookmarks document.
+
 ## 23.1.40 (2023-10-10)
 
 ### PDF Viewer

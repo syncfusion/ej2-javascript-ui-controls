@@ -223,7 +223,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
                     // evaluate normal expression
                     cnt = cnt !== '' ? '"+' + addNameSpace(
                         cnt.replace(/,/gi, '+' + nameSpace + '.'),
-                        (localKeys.indexOf(cnt) === -1), nameSpace, localKeys, ignorePrefix) + '+"' : ' ';
+                        (localKeys.indexOf(cnt) === -1), nameSpace, localKeys, ignorePrefix) + '+"' : '${}';
                 }
             }
             return cnt;

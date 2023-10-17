@@ -175,7 +175,9 @@ export class ToolbarModule {
             AlertDialogHeader: 'Unsupported file',
             AlertDialogContent: 'The dropped file is unsupported.',
             Yes: 'Yes',
-            No: 'No'
+            No: 'No',
+            ImageErrorDialogHeader: 'Image Selection Error',
+            ImageErrorDialogContent: 'Please select only one image to open.'
         };
         this.l10n = new L10n('image-editor', this.defaultLocale, this.parent.locale);
     }
@@ -381,7 +383,7 @@ export class ToolbarModule {
                 id: parent.element.id + '_toolbarArea', className: 'e-toolbar-area'
             }));
             const toolbarItems: ItemModel = { cssClass: 'e-image-upload', align: 'Left', type: 'Input',
-                tooltipText: this.l10n.getConstant('Browse'), template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg'}) };
+                tooltipText: this.l10n.getConstant('Browse'), template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg', multiple: false}) };
             if (isNullOrUndefined(this.defToolbarItems)) {
                 this.defToolbarItems = [];
             }
@@ -398,6 +400,7 @@ export class ToolbarModule {
                     tooltipText: this.l10n.getConstant('Browse'),
                     template: new Uploader({
                         allowedExtensions: '.jpg, .jpeg, .png,.svg',
+                        multiple: false,
                         selected: () => {
                             if (!parent.disabled) {
                                 if (Browser.isDevice) {
@@ -472,7 +475,7 @@ export class ToolbarModule {
         const parent: ImageEditor = this.parent;
         if (parent.showQuickAccessToolbar) {
             const toolbarItems: ItemModel = { cssClass: 'e-image-upload', align: 'Left', type: 'Input',
-                tooltipText: this.l10n.getConstant('Browse'), template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg'}) };
+                tooltipText: this.l10n.getConstant('Browse'), template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg', multiple: false}) };
             if (isNullOrUndefined(this.defToolbarItems)) {
                 this.defToolbarItems = [];
             }
@@ -557,7 +560,7 @@ export class ToolbarModule {
         const parent: ImageEditor = this.parent;
         const toolbarItems: ItemModel[] = [];
         if (!isOkBtn || isResize) {
-            toolbarItems.push({ id: parent.element.id + '_upload', cssClass: 'e-image-upload', align: 'Left', type: 'Input', template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg'}) });
+            toolbarItems.push({ id: parent.element.id + '_upload', cssClass: 'e-image-upload', align: 'Left', type: 'Input', template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg', multiple: false}) });
             toolbarItems.push({ visible: false, cssClass: 'e-image-position e-btn e-flat', tooltipText: this.l10n.getConstant('Browse'), align: 'Left' });
         }
         if (parent.allowUndoRedo && !isResize) {
@@ -977,7 +980,12 @@ export class ToolbarModule {
     }
 
     private fileSelect(inputElement: HTMLInputElement, args: Event): void {
-        this.parent.notify('draw', {prop: 'fileSelect', value: {inputElement: inputElement, args: args }});
+        const type: string = (inputElement as any).files[0].type.split('/')[1];
+        if (type === 'png' || type === 'jpg' || type === 'jpeg' || type === 'svg') {
+            this.parent.notify('draw', {prop: 'fileSelect', value: {inputElement: inputElement, args: args }});
+        } else {
+            this.parent.showDialogPopup();
+        }
     }
 
     private renderAnnotationBtn(isContextualToolbar?: boolean): void {
@@ -1361,7 +1369,9 @@ export class ToolbarModule {
                     }
                 }
                 if (document.getElementById(parent.element.id + '_cropBtn')) {
-                    parent.select(document.getElementById(parent.element.id + '_cropBtn').textContent.toLowerCase());
+                    parent.notify('draw', { prop: 'select', onPropertyChange: false,
+                        value: {type: document.getElementById(parent.element.id + '_cropBtn').textContent.toLowerCase(),
+                            startX: null, startY: null, width: null, height: null }});
                 }
             }
         });
@@ -3199,7 +3209,8 @@ export class ToolbarModule {
         const text: string = args.item.id;
         this.currentToolbar = 'crop';
         parent.currSelectionPoint = null;
-        parent.select(text);
+        parent.notify('draw', { prop: 'select', onPropertyChange: false,
+            value: {type: text, startX: null, startY: null, width: null, height: null }});
         this.enableDisableTbrBtn();
         parent.notify('transform', { prop: 'disableZoomOutBtn', value: {isZoomOut: true }});
     }

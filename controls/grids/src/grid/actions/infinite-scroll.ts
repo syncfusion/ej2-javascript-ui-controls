@@ -239,11 +239,12 @@ export class InfiniteScroll implements IAction {
         const index: number = !gObj.groupSettings.enableLazyLoading ? getRowIndexFromElement(rows[rows.length - 1]) :
             gObj.contentModule['visibleRows'].length - 1;
         const prevPage: number = this.parent.pageSettings.currentPage;
-        if (prevPage >= this.maxPage) {
+        const nextPage: number = Math.ceil(index / this.parent.pageSettings.pageSize) + 1;
+        if ((prevPage >= this.maxPage) || (nextPage > this.maxPage)) {
             gObj.hideSpinner();
             return;
         }
-        this.parent.pageSettings.currentPage = Math.ceil(index / this.parent.pageSettings.pageSize) + 1;
+        this.parent.pageSettings.currentPage = nextPage;
         const scrollArg: InfiniteScrollArgs = {
             requestType: 'infiniteScroll',
             currentPage: this.parent.pageSettings.currentPage,

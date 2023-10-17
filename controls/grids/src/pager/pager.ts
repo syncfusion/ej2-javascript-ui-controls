@@ -1190,7 +1190,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             /**
              * Condition to hide numeric items when calculated actual width exceeds available pager space.
              */
-             if (pagerWidth !== 0 && (actualWidth >= (pagerWidth - (numericItemWidth ? numericItemWidth : 0)))) {
+             if (pagerWidth > 0 && (actualWidth >= (pagerWidth - (numericItemWidth ? numericItemWidth : 0)))) {
                 this.isPagerResized = true;
                 if (this.currentPage !== this.totalPages) {
                     classList(NP, ['e-numericitem', 'e-pager-default'], ['e-nextprevitemdisabled', 'e-disable']);

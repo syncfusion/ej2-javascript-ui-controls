@@ -1,0 +1,277 @@
+@include export-module('inplaceeditor-theme') {
+
+  /*! inplaceeditor theme */
+
+  .e-inplaceeditor {
+
+    .e-editable-value-wrapper {
+
+      .e-editable-value {
+        border-bottom: $editor-value-text-border;
+        color: $editor-value-text-color;
+      }
+
+      .e-editable-overlay-icon {
+        color: $editor-overlay-icon-color;
+      }
+
+      &.e-loading {
+
+        .e-editable-value {
+          border-bottom: 0;
+        }
+      }
+
+      &:hover {
+        background: $editor-value-hover-bg;
+        border-radius: $editor-tip-content-bdr-radius;
+
+        .e-editable-value {
+          border-bottom-color: transparent;
+        }
+      }
+    }
+
+    .e-editable-value-container {
+
+      .e-editable-value {
+        border-bottom: $editor-value-text-border;
+        color: $editor-value-text-color;
+      }
+
+      .e-editable-overlay-icon {
+        color: $editor-overlay-icon-color;
+      }
+
+      &.e-loading {
+
+        .e-editable-value {
+          border-bottom: 0;
+        }
+      }
+
+      &:hover {
+        background: $editor-value-hover-bg;
+        border-radius: $editor-tip-content-bdr-radius;
+
+        .e-editable-value {
+          border-bottom-color: transparent;
+        }
+      }
+    }
+
+    &[data-underline = 'false'] {
+
+      .e-editable-value-wrapper {
+
+        .e-editable-value {
+          border-bottom: 0;
+        }
+      }
+
+      .e-editable-value-container {
+
+        .e-editable-value {
+          border-bottom: 0;
+        }
+      }
+    }
+
+    &.e-disable {
+      pointer-events: none;
+      touch-action: none;
+
+      .e-editable-value-wrapper {
+
+        .e-editable-value {
+          border-bottom-color: transparent;
+        }
+      }
+
+      .e-editable-value-container {
+
+        .e-editable-value {
+          border-bottom-color: transparent;
+        }
+      }
+    }
+  }
+
+  .e-inplaceeditor,
+  .e-inplaceeditor-tip {
+
+    .e-editable-action-buttons {
+
+      .e-btn-save.e-icon-btn,
+      .e-btn-cancel.e-icon-btn {
+
+        @if $skin-name == 'fabric-dark' or $skin-name == 'bootstrap-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
+          box-shadow: none;
+        }
+        @else if $skin-name == 'fabric' {
+          box-shadow: 0 1px 4px 0 $black-color;
+        }
+        @else if $skin-name == 'bootstrap' {
+          box-shadow: 0 1px 4px 0 $black-color;
+        }
+        @else if $skin-name == 'bootstrap4' {
+          background-color: $content-bg;
+          border: 1px solid $gray-400;
+          box-shadow: 0 1px 4px 0 $black-color;
+        }
+
+        @else if $skin-name == 'bootstrap5' {
+          background-color: $content-bg-color;
+          border: 1px solid $border-light;
+          border-radius: 4px;
+        }
+
+        .e-btn-icon.e-icons {
+          color: $editor-btn-icon-color;
+        }
+
+        @if $skin-name == 'bootstrap4' {
+
+          &:hover {
+            background-color: darken($gray-600, 7.5%);
+            border: 1px solid darken($gray-600, 10%);
+          }
+
+          &:disabled {
+            background-color: $content-bg;
+            border: 1px solid $gray-400;
+            box-shadow: 0 1px 4px 0 $black-color;
+          }
+        }
+        @else if $skin-name == 'bootstrap5' {
+
+          &:hover {
+            background-color: darken($gray-600, 7.5%);
+            border: 1px solid darken($gray-600, 10%);
+          }
+
+          &:disabled{
+            background-color: $content-bg-color;
+            border: 1px solid $border-light;
+            border-radius: 4px;
+          }
+        }
+
+        @if $skin-name == 'bootstrap4' {
+
+          &:focus {
+            background-color: $gray-600;
+            border: 1px solid $gray-600;
+          }
+        }
+
+        @if $skin-name == 'bootstrap4' {
+
+          &:active {
+            background-color: darken($gray-600, 10%);
+            border: 1px solid darken($gray-600, 12.5%);
+          }
+        }
+
+        &:hover,
+        &:active {
+
+          .e-btn-icon.e-icons {
+
+            @if $skin-name == 'bootstrap4' or $skin-name =='bootstrap5' {
+              color: $white;
+            }
+          }
+        }
+
+        &:focus {
+
+          .e-btn-icon.e-icons {
+
+            @if $skin-name == 'bootstrap4' {
+              color: $white;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+    .e-inplaceeditor .e-editable-value-wrapper {
+      background-color: $editor-background-color;
+      border-radius: 4px;
+    }
+
+    .e-inplaceeditor .e-editable-value-wrapper.e-tooltip.e-editable-open {
+      background: $wrapper-background-color;
+    }
+  }
+
+  .e-inplaceeditor-tip {
+
+    &.e-tooltip-wrap.e-popup {
+      background: $editor-tip-bg;
+      box-shadow: $editor-tip-box-shadow;
+      @if $skin-name == 'FluentUI' or $skin-name == 'Material3' {
+        border-radius: $editor-popup-tip-wrapper-bdr-radius;
+      }
+
+      .e-tip-content {
+        border-radius: $editor-popup-tip-content-bdr-radius;
+        color: $editor-value-text-color;
+        @if $skin-name == 'Material3' {
+          background: $editor-tip-title-bg;
+        }
+      }
+
+      .e-arrow-tip-inner {
+        color: $editor-tip-arrow-icon-color;
+      }
+
+      .e-arrow-tip-outer {
+
+        &.e-tip-top {
+          border-bottom-color: $editor-tip-arrow-bdr-color;
+        }
+
+        &.e-tip-bottom {
+          border-top-color: $editor-tip-arrow-bdr-color;
+        }
+      }
+
+      &.e-popup {
+        border: $editor-tip-border;
+        @if $skin-name == 'Material3' {
+          border-radius: 8px;
+        }
+      }
+
+      .e-editable-title {
+        background: $editor-tip-title-bg;
+        border-bottom: $editor-tio-title-border-bottom;
+        color: $editor-tip-title-color;
+      }
+    }
+
+    &.e-editable-tip-title {
+
+      &.e-tooltip-wrap {
+
+        .e-arrow-tip-outer {
+
+          &.e-tip-top {
+            border-bottom-color: $editor-tip-title-arrow-bdr-color;
+          }
+        }
+
+        .e-arrow-tip-inner {
+
+          &.e-tip-top {
+            color: $editor-tip-title-arrow-icon-color;
+          }
+        }
+      }
+    }
+  }
+}

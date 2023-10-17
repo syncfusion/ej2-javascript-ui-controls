@@ -135,7 +135,7 @@ export class Fetch {
             return this.fetchResponse.then((response: Response) => {
                 this.triggerEvent(this['onLoad'], response);
                 if (!response.ok) {
-                    throw new Error(response.statusText);
+                    throw response;
                 }
                 let responseType: string = 'text';
                 for (const key of Object.keys(contentTypes)) {

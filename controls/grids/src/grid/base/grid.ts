@@ -4392,8 +4392,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 return args;
             }
             const cellIndex: number = parseInt(cell.getAttribute(literals.dataColIndex), 10);
-            if (!isNullOrUndefined(cell) && !isNaN(cellIndex)) {
-                const row: Element = closest(cell, '.' + literals.row);
+            const row: Element = closest(cell, '.' + literals.row);
+            if (!isNullOrUndefined(cell) && !isNaN(cellIndex) && !isNullOrUndefined(row)) {
                 const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
                 const rows: Row<{}>[] = <Row<{}>[]>this.contentModule.getRows();
                 const index: number = cellIndex + this.getIndentCount();
@@ -5560,13 +5560,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const cols: Column[] = !this.enableColumnVirtualization || (this.enableColumnVirtualization && this.isPreparedFrozenColumns) ?
                 this.enableColumnVirtualization && this.columnModel && this.columnModel.length ? this.columnModel :
                     this.getColumns() : this.columns as Column[];
-            for (let i: number = 0; i < cols.length; i++) {
-                if (this.frozenColumns > i) {
-                    cols[parseInt(i.toString(), 10)].freeze = 'Left';
-                } else if (cols[parseInt(i.toString(), 10)].freeze === 'Right' || cols[parseInt(i.toString(), 10)].freeze === 'Fixed') {
-                    cols[parseInt(i.toString(), 10)].freeze = cols[parseInt(i.toString(), 10)].freeze;
-                } else {
-                    cols[parseInt(i.toString(), 10)].freeze = undefined;
+            if (!this.changedProperties || (this.changedProperties && !this.changedProperties.frozenColumns)) {
+                for (let i: number = 0; i < cols.length; i++) {
+                    if (this.frozenColumns > i) {
+                        cols[parseInt(i.toString(), 10)].freeze = 'Left';
+                    } else if (cols[parseInt(i.toString(), 10)].freeze === 'Right' || cols[parseInt(i.toString(), 10)].freeze === 'Fixed') {
+                        cols[parseInt(i.toString(), 10)].freeze = cols[parseInt(i.toString(), 10)].freeze;
+                    } else {
+                        cols[parseInt(i.toString(), 10)].freeze = undefined;
+                    }
                 }
             }
         }

@@ -702,7 +702,7 @@ export function parseLocaleNumber(valArr: string[], locale: string): string[] {
     for (let idx: number = 0; idx < valArr.length; idx++) {
         numVal = valArr[idx as number].toString().split(curSymbol).join('');
         groupArr = numVal.split(numObj.group);
-        if (groupArr.length === 1) {
+        if (groupArr.length === 2) {
             numVal = groupArr.join('');
         }
         if (numObj.decimal !== '.' && numVal.includes(numObj.decimal)) {

@@ -1872,7 +1872,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.GetRootColumnName(rule.field) === this.GetRootColumnName(this.previousColumn.field))) {
             const subField: ColumnsModel[] = this.selectedColumn.columns;
             for (let i: number = 0; i < subField.length; i++) {
-                if (rule.field === subField[i as number].field || rule.field.indexOf(subField[i as number].field) > -1) {
+                if (rule.field === subField[i as number].field) {
                     dropDownList.value = subField[i as number].field;
                     this.selectedColumn = subField[i as number];
                     subFieldValue = true;

@@ -259,7 +259,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
 
-    @Complex<TextStyleModel>({ size: '12px', fontWeight: '400', color: null, fontStyle: 'Normal', fontFamily: null }, TextStyle)
+    @Complex<TextStyleModel>({ size: '12px', fontWeight: null, color: null, fontStyle: 'Normal', fontFamily: null }, TextStyle)
     public textStyle: TextStyleModel;
 
     /**
@@ -750,7 +750,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
             const key: string = 'properties';
             const font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key as string];
-            font.fontWeight = '600';
             const headerSize: number = measureText(this.isWrap ? this.wrappedText : this.header, font, this.themeStyle.textStyle).height +
                 (this.marginY * wrapPadding) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : padding); //header padding;
             const xLength: number = (this.marginX * 3) + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0);
@@ -860,7 +859,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.rightSpace = (this.areaBounds.x + this.areaBounds.width) - this.leftSpace;
         const headerContent: string = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
         const isBoldTag: boolean = this.header.indexOf('<b>') > -1 && this.header.indexOf('</b>') > -1;
-        font.fontWeight = '600';
         const headerWidth: number = measureText(this.formattedText[0], font, this.themeStyle.textStyle).width
             + (2 * this.marginX) + this.arrowPadding;
         const isLeftSpace: boolean = (this.location.x - headerWidth) < this.location.x;
@@ -980,7 +978,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         tspanElement.style.fontFamily = 'inherit';
                         tspanElement.style.fontStyle = 'inherit';
                         tspanElement.style.fontSize = (this.header === this.formattedText[k]) ? font.size : this.textStyle.size;
-                        tspanElement.style.fontWeight = (this.header === this.formattedText[k] && (this.header.indexOf('<b>') || this.header.indexOf('</b>')) === -1) ? '600' : line.indexOf('<b>') > -1 || line.indexOf('</b>') > -1 ? 'bold' : this.textStyle.fontWeight;
+                        tspanElement.style.fontWeight = (this.header === this.formattedText[k] && (this.header.indexOf('<b>') || this.header.indexOf('</b>')) === -1) ? (this.textStyle.fontWeight || '600') : line.indexOf('<b>') > -1 || line.indexOf('</b>') > -1 ? 'bold' : (this.textStyle.fontWeight || font.fontWeight);
                         const textFont: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key as string];
                         textFont.fontWeight = tspanElement.style.fontWeight;
                         isRow = false;

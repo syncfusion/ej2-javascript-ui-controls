@@ -49,7 +49,7 @@ export class NodeCutter {
                 node = parent.childNodes[index as number] as HTMLElement;
                 fragment = this.spliceEmptyNode(fragment, false) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
-                    const isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
+                    const isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG' && !(fragment.querySelectorAll('img').length > 0)
                         && this.isRteElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {

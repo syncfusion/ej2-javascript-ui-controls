@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 23.1.41 (2023-10-17)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I504910` - Resolve the script error issue when loading document in blazor.
+- `#I506290` - When performing edit operation and save the document it throws script error document is not saved.
+- `#I506225` - Resolve the issue of reply comments in the comment tab.
+- `#I506000` - Resolve script error issue while opening the attached document.
+
 ## 23.1.40 (2023-10-10)
 
 ### Document Editor
@@ -16,7 +27,7 @@
 - `#I506619` - Resolved the exporting issue of attached sfdt.
 - `#I503945` - Script error occurred when tried to save the document using java server.
 
-- #### New Features
+#### New Features
 
 - `#I461227` - Added text importing in client side.
 

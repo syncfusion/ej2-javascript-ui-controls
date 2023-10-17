@@ -3162,3 +3162,55 @@ describe('EJ2-68692 - Grid Component menu filtering behaves incorrectly ', ()=>{
         gridObj = actionBegin = actionComplete = null;
     });
 });
+
+describe('EJ2-849870 - Checkbox filtering is not working properly while canceling the filtering ', ()=>{
+    let gridObj: Grid;
+    let actionBegin: (args: any) => void;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0,5),
+                allowFiltering: true,
+                filterSettings: { type:'CheckBox' },
+                columns: [
+                    { field: 'OrderID', type: 'number' },
+                    { field: 'EmployeeID', type: 'number' },
+                    { field: 'Freight', format: 'C2', type: 'number' },
+                    { field: 'ShipName' }, 
+                ],
+                actionBegin : (args:any) => {
+                    if (args.requestType === 'filtering') {
+                        args.cancel = true;
+                    }
+                },
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('Click the checkbox filter ', function () {
+        (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[0] as HTMLElement).click();
+    });
+    it('Filtering a records ', function () {
+        (gridObj.element.getElementsByClassName('e-frame e-icons e-check')[1] as HTMLElement).click();
+        (gridObj.element.getElementsByClassName('e-control e-btn e-lib e-primary e-flat')[0] as HTMLElement).click()
+        
+    });
+    it('lick the checkbox filter after filtering', function (done) {
+        var actionComplete = function (args:any) {
+            if (args.requestType == 'filterafteropen') {
+                expect(gridObj.element.getElementsByClassName('e-frame e-icons e-check').length).toBe(6);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.element.querySelectorAll('.e-filtermenudiv')[0] as HTMLElement).click();
+
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionBegin = actionComplete = null;
+    });
+});
+
+

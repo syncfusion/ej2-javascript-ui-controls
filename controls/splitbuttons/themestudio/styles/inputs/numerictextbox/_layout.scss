@@ -1,0 +1,30 @@
+.e-numeric-container {
+  width: 100%;
+}
+
+.e-content-placeholder.e-numeric.e-placeholder-numeric {
+  background-size: 300px 33px;
+  min-height: 33px;
+}
+
+.e-bigger.e-content-placeholder.e-numeric.e-placeholder-numeric,
+.e-bigger .e-content-placeholder.e-numeric.e-placeholder-numeric {
+  background-size: 300px 40px;
+  min-height: 40px;
+}
+
+// Hidden element styles
+.e-float-input.e-input-group.e-control-wrapper.e-numeric .e-numeric-hidden,
+.e-input-group.e-control-wrapper.e-numeric .e-numeric-hidden,
+.e-float-input.e-control-wrapper.e-numeric .e-numeric-hidden,
+.e-float-input.e-input-group.e-control-wrapper.e-numeric.e-input-focus .e-numeric-hidden,
+.e-input-group.e-control-wrapper.e-numeric.e-input-focus .e-numeric-hidden,
+.e-float-input.e-control-wrapper.e-numeric.e-input-focus .e-numeric-hidden {
+  border: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  text-indent: 0;
+  visibility: hidden;
+  width: 0;
+}

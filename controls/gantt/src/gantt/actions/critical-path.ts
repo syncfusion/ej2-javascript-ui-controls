@@ -611,7 +611,7 @@ export class CriticalPath {
             return this.parent.dataOperation.getDuration(startDate, endDate, durationUnit, record.ganttProperties.isAutoSchedule, true);
         }
     }
-    private updateCriticalTasks(record: IGanttData, criticalPathIds: number[]) {
+    private updateCriticalTasks(record: IGanttData, criticalPathIds: any) {
         for (let i: number = 0; i < record.ganttProperties.predecessor.length; i++) {
             let fromRecord: IGanttData;
             if (this.parent.viewType === 'ProjectView') {
@@ -627,8 +627,8 @@ export class CriticalPath {
                 if (record.ganttProperties.progress < 100) {
                    record.isCritical = true;
                    record.ganttProperties.isCritical = true;
-                   if (criticalPathIds.indexOf(parseInt(record.ganttProperties.taskId)) == -1) {
-                      criticalPathIds.push(parseInt(record.ganttProperties.taskId));
+                   if (criticalPathIds.indexOf(record.ganttProperties.taskId) == -1) {
+                      criticalPathIds.push(record.ganttProperties.taskId);
                   }
                }
             }
@@ -650,9 +650,11 @@ export class CriticalPath {
                     fromRecord.slack = record.slack;
                     fromRecord.isCritical = record.ganttProperties.isCritical;
                     fromRecord.ganttProperties.isCritical = record.ganttProperties.isCritical;
-                    if (criticalPathIds.indexOf(parseInt(fromRecord.ganttProperties.taskId)) == -1 && fromRecord.ganttProperties.isCritical && fromRecord.ganttProperties.progress < 100) {
+                    if (criticalPathIds.indexOf(fromRecord.ganttProperties.taskId) === -1 && fromRecord.ganttProperties.isCritical && fromRecord.ganttProperties.progress < 100) {
                         this.validatedids.push(parseInt(fromRecord.ganttProperties.taskId));
-                        criticalPathIds.push(parseInt(fromRecord.ganttProperties.taskId));
+                        if (this.criticalTasks.indexOf(fromRecord) === -1) {
+                           this.criticalTasks.push(fromRecord);
+                        }
                     }
                     if (fromRecord.ganttProperties.predecessorsName) {
                         this.updateCriticalTasks(fromRecord, criticalPathIds)
@@ -663,7 +665,7 @@ export class CriticalPath {
     }
     /* eslint-disable-next-line */
     private finalCriticalPath(collection: object[], taskBeyondEnddate: number[], flatRecords: IGanttData[], modelRecordIds: string[], checkEndDate: Date) {
-        let criticalPathIds: number[] = [];
+        let criticalPathIds: any = [];
         let index: number;
         let predecessorFrom: any;
         for (let x: number = collection.length - 1; x >= 0; x--) {
@@ -736,7 +738,9 @@ export class CriticalPath {
                 if (flatRecords[index as number].ganttProperties.progress < 100) {
                     flatRecords[index as number].isCritical = true;
                     flatRecords[index as number].ganttProperties.isCritical = true;
-                    this.criticalTasks.push(flatRecords[index as number]);
+                    if (this.criticalTasks.indexOf(flatRecords[index as number]) == -1) {
+                       this.criticalTasks.push(flatRecords[index as number]);
+                    }
                     if (criticalPathIds.indexOf(collection[x as number]['taskid']) === -1) {
                        criticalPathIds.push(collection[x as number]['taskid']);
                     }

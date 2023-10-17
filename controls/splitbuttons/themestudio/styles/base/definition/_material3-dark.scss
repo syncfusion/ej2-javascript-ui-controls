@@ -1,0 +1,710 @@
+// color system
+@use 'sass:math';
+@import '../common/mixin.scss';
+
+@function mapcolorvariable($pallete-name){
+  @return var(#{'--color-sf-'+  $pallete-name});
+}
+
+@function darken-color($color, $amount) {
+  @if is-custom-property($color) {
+    @return #{$color}-#{$amount};
+  }
+
+  // maybe there is a way to call the original `darken` instead??
+  @return adjust-color($color, $lightness: -1 * $amount);
+}
+
+@mixin lighten-color($color, $amount) {
+  filter: brightness(#{100% + $amount}) saturate(100%) hue-rotate(0deg);
+  background-color: $color;
+}
+  
+@function rgbaChange($hex, $alpha: 1) {
+  $r: str-slice($hex, 1, 2);
+  $g: str-slice($hex, 3, 4);
+  $b: str-slice($hex, 5, 6);
+  $rgba: rgba(hex($r), hex($g), hex($b), $alpha);
+  @return $rgba;
+}
+
+:root {
+  --color-sf-black: 0, 0, 0;
+  --color-sf-white: 255, 255, 255;
+  --color-sf-primary: 208, 188, 255;
+  --color-sf-primary-container: 79, 55, 139;
+  --color-sf-secondary: 204, 194, 220;
+  --color-sf-secondary-container: 74, 68, 88;
+  --color-sf-tertiary: 239, 184, 200;
+  --color-sf-tertiary-container: 99, 59, 72;
+  --color-sf-surface: 28, 27, 31;
+  --color-sf-surface-variant: 73, 69, 79;
+  --color-sf-background: var(--color-sf-surface);
+  --color-sf-on-primary: 55, 30, 115;
+  --color-sf-on-primary-container: 234, 221, 255;
+  --color-sf-on-secondary: 51, 45, 65;
+  --color-sf-on-secondary-container: 232, 222, 248;
+  --color-sf-on-tertiary: 73, 37, 50;
+  --color-sf-on-tertiary-containe: 255, 216, 228;
+  --color-sf-on-surface: 230, 225, 229;
+  --color-sf-on-surface-variant: 202, 196, 208;
+  --color-sf-on-background: 230, 225, 229;
+  --color-sf-outline: 147, 143, 153;
+  --color-sf-outline-variant: 68, 71, 70;
+  --color-sf-shadow: 0, 0, 0;
+  --color-sf-surface-tint-color: 208, 188, 255;
+  --color-sf-inverse-surface: 230, 225, 229;
+  --color-sf-inverse-on-surface: 49, 48, 51;
+  --color-sf-inverse-primary: 103, 80, 164;
+  --color-sf-scrim: 0, 0, 0;
+  --color-sf-error: 242, 184, 181;
+  --color-sf-error-container: 140, 29, 24;
+  --color-sf-on-error: 96, 20, 16;
+  --color-sf-on-error-container: 249, 222, 220;
+  --color-sf-success: 83, 202, 23;
+  --color-sf-success-container: 22, 62, 2;
+  --color-sf-on-success: 13, 39, 0;
+  --color-sf-on-success-container: 183, 250, 150;
+  --color-sf-info: 71, 172, 251;
+  --color-sf-info-container: 0, 67, 120;
+  --color-sf-on-info: 0, 51, 91;
+  --color-sf-on-info-container: 173, 219, 255;
+  --color-sf-warning: 245, 180, 130;
+  --color-sf-warning-container: 123, 65, 0;
+  --color-sf-on-warning: 99, 52, 0;
+  --color-sf-on-warning-container: 255, 220, 193;
+  --color-sf-spreadsheet-gridline: 231, 224, 236;
+  --color-sf-shadow-focus-ring1: 0 0 0 1px #000000, 0 0 0 3px #ffffff;
+  --color-sf-success-text: 0, 0, 0;
+  --color-sf-warning-text: 0, 0, 0;
+  --color-sf-info-text: 0, 0, 0;
+  --color-sf-danger-text: 0, 0, 0;
+  --color-sf-diagram-palette-background: var(--color-sf-inverse-surface);
+  --color-sf-content-text-color-alt2: var(--color-sf-on-secondary);
+}
+
+// black
+$black: mapcolorvariable('black') !default;
+
+// White
+$white:  mapcolorvariable('white') !default;
+
+// Material3 Light
+$primary :  mapcolorvariable('primary') !default;
+$primary-container: mapcolorvariable('primary-container') !default;
+$secondary:  mapcolorvariable('secondary') !default;
+$secondary-container:  mapcolorvariable('secondary-container') !default;
+$tertiary: mapcolorvariable('tertiary') !default;
+$tertiary-container: mapcolorvariable('tertiary-container') !default;
+$surface: mapcolorvariable('surface') !default;
+$surface-variant: mapcolorvariable('surface-variant') !default;
+$background: mapcolorvariable('background') !default;
+$on-primary: mapcolorvariable('on-primary') !default;
+$on-primary-container: mapcolorvariable('on-primary-container') !default;
+$on-secondary: mapcolorvariable('on-secondary') !default;
+$on-secondary-container: mapcolorvariable('on-secondary-container') !default;
+$on-tertiary: mapcolorvariable('on-tertiary') !default;
+$on-tertiary-containe: mapcolorvariable('on-tertiary-containe') !default;
+$on-surface: mapcolorvariable('on-surface') !default;
+$on-surface-variant: mapcolorvariable('on-surface-variant') !default;
+$on-background: mapcolorvariable('on-background') !default;
+$outline: mapcolorvariable('outline') !default;
+$outline-variant: mapcolorvariable('outline-variant') !default;
+$shadow: mapcolorvariable('shadow') !default;
+$surface-tint-color: mapcolorvariable('surface-tint-color') !default;
+$inverse-surface: mapcolorvariable('inverse-surface') !default;
+$inverse-on-surface: mapcolorvariable('inverse-on-surface') !default;
+$inverse-primary: mapcolorvariable('inverse-primary') !default;
+$scrim:mapcolorvariable('scrim') !default;
+$error: mapcolorvariable('error') !default;
+$error-container: mapcolorvariable('error-container') !default;
+$on-error: mapcolorvariable('on-error') !default;
+$on-error-container: mapcolorvariable('on-error-container') !default;
+$success: mapcolorvariable('success') !default;
+$success-container: mapcolorvariable('success-container') !default;
+$on-success: mapcolorvariable('on-success') !default;
+$on-success-container: mapcolorvariable('on-success-container') !default;
+$info: mapcolorvariable('info') !default;
+$info-container: mapcolorvariable('info-container') !default;
+$on-info: mapcolorvariable('on-info') !default;
+$on-info-container: mapcolorvariable('on-info-container') !default;
+$warning: mapcolorvariable('warning') !default;
+$warning-container: mapcolorvariable('warning-container') !default;
+$on-warning: mapcolorvariable('on-warning') !default;
+$on-warning-container: mapcolorvariable('on-warning-container') !default;
+$success-text: mapcolorvariable('success-text') !default;
+$warning-text: mapcolorvariable('warning-text') !default;
+$info-text: mapcolorvariable('info-text') !default;
+$danger-text: mapcolorvariable('danger-text') !default;
+$spreadsheet-gridline: mapcolorvariable('spreadsheet-gridline') !default;
+
+// opacity
+$opacity0: 0 !default;
+$opacity4: .04 !default;
+$opacity5: .05 !default;
+$opacity6: .06 !default;
+$opacity8: .08 !default;
+$opacity11: .11 !default;
+$opacity12: .12 !default;
+$opacity14: .14 !default;
+$opacity16: .16 !default;
+
+//Material custom variable
+$surface1: linear-gradient(0deg, rgba($primary, $opacity5), rgba($primary, $opacity5)), rgba($surface) !default;
+$surface2: linear-gradient(0deg, rgba($primary, $opacity8), rgba($primary, $opacity8)), rgba($surface) !default;
+$surface3: linear-gradient(0deg, rgba($primary, $opacity11), rgba($primary, $opacity11)), rgba($surface) !default;
+$surface4: linear-gradient(0deg, rgba($primary, $opacity12), rgba($primary, $opacity12)), rgba($surface) !default;
+$surface5: linear-gradient(0deg, rgba($primary, $opacity14), rgba($primary, $opacity14)), rgba($surface) !default;
+$surface6: linear-gradient(0deg, rgba($primary, $opacity16), rgba($primary, $opacity16)), rgba($surface) !default;
+
+//shadow
+$level1: 0 1px 3px 1px rgba(0, 0, 0, .15), 0 1px 2px 0 rgba(0, 0, 0, .3);
+$level2: 0 2px 6px 2px rgba(0, 0, 0, .15), 0 1px 2px 0 rgba(0, 0, 0, .3);
+$level3: 0 1px 3px 0 rgba(0, 0, 0, .3), 0 4px 8px 3px rgba(0, 0, 0, .15);
+$level4: 0 2px 3px 0 rgba(0, 0, 0, .3), 0 6px 10px 4px rgba(0, 0, 0, .15);
+$level5: 0 4px 4px 0 rgba(0, 0, 0, .3), 0 8px 12px 6px rgba(0, 0, 0, .15);
+
+$primary:  $primary !default;
+$primary-text-color: $on-primary !default;
+$primary-light: $primary-container !default;
+$primary-lighter: $primary-light !default;
+$primary-dark: $surface-tint-color !default;
+$primary-darker: $on-primary-container !default;
+$success: $success !default;
+$transparent: transparent !default;
+$info: $info !default;
+$warning: $warning !default;
+$danger: $error !default;
+$success-light: $success-container !default;
+$info-light: $info-container !default;
+$warning-light: $warning-container !default;
+$danger-light: $error-container !default;
+$success-dark: $success !default;
+$info-dark: $info !default;
+$warning-dark: $warning !default;
+$danger-dark:$error !default;
+$success-light-alt: $success-light !default;
+$info-light-alt: $info-light !default;
+$warning-light-alt: $warning-light !default;
+$danger-light-alt: $danger-light !default;
+
+// backgroundcolor
+$content-bg-color: $surface !default;
+$content-bg-color-alt1: $surface1 !default;
+$content-bg-color-alt2: $surface2 !default;
+$content-bg-color-alt3: $surface3 !default;
+$content-bg-color-alt4: $surface4 !default;
+$content-bg-color-alt5: $surface5 !default;
+$content-bg-color-alt6: $surface6 !default;
+$content-bg-color-hover: rgba($on-surface, $opacity5) !default;
+$content-bg-color-pressed: rgba($on-surface, $opacity8) !default;
+$content-bg-color-focus: rgba($on-surface, $opacity4) !default;
+$content-bg-color-selected: $primary-light !default;
+$content-bg-color-dragged: $primary-light !default;
+$content-bg-color-disabled: $white !default;
+$flyout-bg-color: $surface3 !default;
+$flyout-bg-color-hover: rgba($on-surface, $opacity5) !default;
+$flyout-bg-color-pressed: rgba($on-surface, $opacity8) !default;
+$flyout-bg-color-selected: rgba($primary-container, .65) !default;
+$flyout-bg-color-focus: rgba($on-surface, $opacity4) !default;
+$overlay-bg-color: rgba($scrim, .5) !default;
+$table-bg-color-hover: rgba($on-surface, $opacity5) !default;
+$table-bg-color-pressed: rgba($on-surface, $opacity8) !default;
+$table-bg-color-selected: rgba($primary-container, .65) !default;
+
+// all theme common color
+$colorpicker-gradient-1: #f00 !default;
+$colorpicker-gradient-2: #ff0 !default;
+$ccolorpicker-gradient-3: #0f0 !default;
+$colorpicker-gradient-4: #0ff !default;
+$colorpicker-gradient-5: #00f !default;
+$colorpicker-gradient-6: #f0f !default;
+$colorpicker-gradient-7: #ff0004 !default;
+$spreadsheet-selection-1: #673ab8 !default;
+$spreadsheet-selection-2: #9c27b0 !default;
+$spreadsheet-selection-3: #029688 !default;
+$spreadsheet-selection-4: #4caf51 !default;
+$spreadsheet-selection-5: #fe9800 !default;
+$spreadsheet-selection-6: #3f52b5 !default;
+
+// text-color
+$content-text-color: $on-surface !default;
+$content-text-color-alt1: $on-surface-variant !default;
+$content-text-color-alt2: $on-surface-variant !default;
+$content-text-color-alt3: $on-tertiary !default;
+$content-text-color-inverse: $inverse-on-surface !default;
+$content-text-color-hover: $content-text-color !default;
+$content-text-color-pressed: $content-text-color !default;
+$content-text-color-focus: $content-text-color !default;
+$content-text-color-selected: $content-text-color !default;
+$content-text-color-dragged: $content-text-color !default;
+$content-text-color-disabled: rgba($on-surface, .38) !default;
+$placeholder-text-color: $outline !default;
+$flyout-text-color: $content-text-color !default;
+$flyout-text-color-hover: $content-text-color !default;
+$flyout-text-color-pressed: $content-text-color !default;
+$flyout-text-color-selected: $content-text-color !default;
+$flyout-text-color-focus: $content-text-color !default;
+$flyout-text-color-disabled: rgba($on-surface, .38) !default;
+$table-text-color-hover: $content-text-color !default;
+$table-text-color-pressed: $content-text-color !default;
+$table-text-color-selected: $content-text-color !default;
+
+// icon-color
+$icon-color: $on-surface-variant !default;
+$icon-color-hover: $on-surface !default;
+$icon-color-pressed: $on-surface-variant !default;
+$icon-color-disabled: rgba($on-surface-variant, .38) !default;
+
+// border-color
+$border-light: $outline-variant !default;
+$border: $outline !default;
+$border-alt: $on-surface-variant !default;
+$border-dark: rgba($on-surface, .38) !default;
+$border-hover: $border-light !default;
+$border-pressed: $border-light !default;
+$border-focus: $border-light !default;
+$border-selected: $border-light !default;
+$border-dragged: $border-light !default;
+$border-disabled: $border-light !default;
+$border-warning: $warning !default;
+$border-error: $error !default;
+$border-success: $success !default;
+$spreadsheet-gridline: #e7e0ec !default;
+$flyout-border: $border-light !default;
+
+// Tooltip
+$tooltip-bg-color: $inverse-surface !default;
+$tooltip-border: $inverse-surface;
+$tooltip-text-color: $inverse-on-surface !default;
+
+// shadow
+$shadow: 0 .8px 16px rgba($black, .15) !default;
+$shadow-sm: $level1 !default;
+$shadow-md: $level2 !default;
+$shadow-lg: $level3 !default;
+$shadow-xl: $level4 !default;
+$shadow-2xl: $level5 !default;
+$shadow-inner: inset 0 1px 2px rgba($black, .075) !default;
+$shadow-none: 0 0 rgba($black, 0) !default;
+
+$shadow-focus-ring1: 0 0 0 1px #000000, 0 0 0 3px #ffffff !default;
+$shadow-focus-ring2: 0 0 0 1px rgba($black, .95) !default;
+$primary-shadow-focus: 0 0 0 4px rgba($primary, .5) !default;
+$secondary-shadow-focus: 0 0 0 4px rgba($secondary, .5) !default;
+$success-shadow-focus: 0 0 0 4px rgba($success, .5) !default;
+$danger-shadow-focus: 0 0 0 4px rgba($danger, .5) !default;
+$info-shadow-focus: 0 0 0 4px rgba($info, .5) !default;
+$warning-shadow-focus: 0 0 0 4px rgba($warning, .5) !default;
+
+// fontfamily
+$font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif !default;
+
+// default font Size
+$text-xxs: 10px !default;
+$text-xs: 12px !default;
+$text-sm: 14px !default;
+$text-base: 16px !default;
+$text-lg: 18px !default;
+$text-xl: 20px !default;
+$text-2xl: 24px !default;
+$text-3xl: 28px !default;
+$text-4xl: 32px !default;
+$text-5xl: 42px !default;
+$text-6xl: 68px !default;
+$text-7xl: 78px !default;
+$text-8xl: 96px !default;
+$text-9xl: 128px !default;
+
+// heading
+$h1-font-size: 40px !default;
+$h2-font-size: 32px !default;
+$h3-font-size: 28px !default;
+$h4-font-size: $text-2xl !default;
+$h5-font-size: $text-xl !default;
+$h6-font-size: $text-base !default;
+
+// Display
+
+// Line-height
+$leading-none: 1 !default;
+$leading-tight: 1.25 !default;
+$leading-snug: 1.375 !default;
+$leading-normal: 1.5 !default;
+$leading-relaxed: 1.625 !default;
+$leading-loose: 2 !default;
+
+// font Weight
+$font-weight-lighter:         lighter !default;
+$font-weight-light:           300 !default;
+$font-weight-normal:          400 !default;
+$font-weight-medium:          600 !default;
+$font-weight-bold:            700 !default;
+$font-weight-bolder:          bolder !default;
+
+// Secondary-button
+
+$secondary-bg-color: $content-bg-color-alt1 !default;
+$secondary-border-color: linear-gradient(0deg, rgba($primary, $opacity5), rgba($primary, $opacity5)) !default;
+$secondary-text-color: $on-surface !default;
+$secondary-bg-color-hover: linear-gradient(0deg, rgba($secondary-text-color, $opacity8), rgba($secondary-text-color, $opacity8)), rgba($content-bg-color) !default;
+$secondary-border-color-hover: linear-gradient(0deg, rgba($secondary-text-color, $opacity8), rgba($secondary-text-color, $opacity8)) !default;
+$secondary-text-color-hover: $secondary-text-color !default;
+$secondary-bg-color-pressed:linear-gradient(0deg, rgba($secondary-text-color, $opacity12), rgba($secondary-text-color, $opacity12)), rgba($content-bg-color) !default;
+$secondary-border-color-pressed: linear-gradient(0deg, rgba($secondary-text-color, $opacity12), rgba($secondary-text-color, $opacity12)) !default;
+$secondary-text-color-pressed: $secondary-text-color !default;
+$secondary-bg-color-focus: $secondary-bg-color-hover !default;
+$secondary-border-color-focus: $secondary-border-color-hover !default;
+$secondary-text-color-focus: $secondary-text-color-hover !default;
+$secondary-bg-color-disabled: rgba($secondary, .12) !default;
+$secondary-border-color-disabled: rgba($secondary, 0) !default;
+$secondary-text-color-disabled: rgba($on-surface, .38) !default;
+
+// Primary-button
+
+$primary-bg-color: $primary !default;
+$primary-border-color: $primary !default;
+$primary-text: $primary-text-color !default;
+$primary-bg-color-hover: linear-gradient(0deg, rgba($primary-text, $opacity8), rgba($primary-text, $opacity8)), rgba($primary-bg-color) !default;
+$primary-border-color-hover: $primary-bg-color-hover !default;
+$primary-text-hover: $primary-text !default;
+$primary-bg-color-pressed: linear-gradient(0deg, rgba($primary-text, $opacity12), rgba($primary-text, $opacity12)), rgba($primary-bg-color) !default;
+$primary-border-color-pressed: $primary-bg-color-pressed !default;
+$primary-text-pressed: $primary-text-color !default;
+$primary-bg-color-focus: $primary-bg-color-hover !default;
+$primary-border-color-focus: $primary-border-color-hover !default;
+$primary-text-focus: $primary-text !default;
+$primary-bg-color-disabled: rgba($secondary, .12) !default;
+$primary-border-color-disabled: rgba($secondary, 0) !default;
+$primary-text-disabled: rgba($on-surface, .38) !default;
+
+// Success-button
+
+$success-bg-color: $success !default;
+$success-border-color: $success !default;
+$success-text: $black !default;
+$success-bg-color-hover: linear-gradient(0deg, rgba($success-text, $opacity8), rgba($success-text, $opacity8)), rgba($success-bg-color) !default;
+$success-border-color-hover: $success-bg-color-hover !default;
+$success-text-hover: $success-text !default;
+$success-bg-color-pressed: linear-gradient(0deg, rgba($success-text, $opacity12), rgba($success-text, $opacity12)), rgba($success-bg-color) !default;
+$success-border-color-pressed: $success-bg-color-pressed !default;
+$success-text-pressed: $success-text !default;
+$success-bg-color-focus: $success-bg-color-hover !default;
+$success-border-color-focus: $success-border-color-hover !default;
+$success-text-focus: $success-text !default;
+$success-bg-color-disabled: rgba($secondary, .12) !default;
+$success-border-color-disabled: $success-bg-color-disabled !default;
+$success-text-disabled: rgba($on-surface, .38) !default;
+
+// Warning-button
+$warning-bg-color: $warning !default;
+$warning-border-color: $warning !default;
+$warning-text: $black !default;
+$warning-bg-color-hover: linear-gradient(0deg, rgba($warning-text, $opacity8), rgba($warning-text, $opacity8)), rgba($warning-bg-color) !default;
+$warning-border-color-hover: $warning-bg-color-hover !default;
+$warning-text-hover: $warning-text !default;
+$warning-bg-color-pressed: linear-gradient(0deg, rgba($warning-text, $opacity12), rgba($warning-text, $opacity12)), rgba($warning-bg-color) !default;
+$warning-border-color-pressed: $warning-bg-color-pressed !default;
+$warning-text-pressed: $warning-text !default;
+$warning-bg-color-focus: $warning-bg-color-hover !default;
+$warning-border-color-focus: $warning-border-color-hover !default;
+$warning-text-focus: $warning-text !default;
+$warning-bg-color-disabled: rgba($secondary, .12) !default;
+$warning-border-color-disabled: $warning-bg-color-disabled !default;
+$warning-text-disabled: rgba($on-surface, .38) !default;
+
+// danger-button
+$danger-bg-color: $danger !default;
+$danger-border-color: $danger !default;
+$danger-text: $black !default;
+$danger-bg-color-hover: linear-gradient(0deg, rgba($danger-text, $opacity8), rgba($danger-text, $opacity8)), rgba($danger-bg-color) !default;
+$danger-border-color-hover: $danger-bg-color-hover !default;
+$danger-text-hover: $danger-text !default;
+$danger-bg-color-pressed: linear-gradient(0deg, rgba($danger-text, $opacity12), rgba($danger-text, $opacity12)), rgba($danger-bg-color) !default;
+$danger-border-color-pressed: $danger-bg-color-pressed !default;
+$danger-text-pressed: $danger-text !default;
+$danger-bg-color-focus: $danger-bg-color-hover !default;
+$danger-border-color-focus: $danger-border-color-hover !default;
+$danger-text-focus: $danger-text !default;
+$danger-bg-color-disabled: rgba($secondary, .12) !default;
+$danger-border-color-disabled: $danger-bg-color-disabled !default;
+$danger-text-disabled: rgba($on-surface, .38) !default;
+
+// Info-button
+$info-text: $black !default;
+$info-bg-color: $info !default;
+$info-border-color: $info-bg-color !default;
+$info-bg-color-hover: linear-gradient(0deg, rgba($info-text, $opacity8), rgba($info-text, $opacity8)), rgba($info-bg-color) !default;
+$info-border-color-hover: $info-bg-color-hover !default;
+$info-text-hover: $info-text !default;
+$info-bg-color-pressed: linear-gradient(0deg, rgba($info-text, $opacity12), rgba($info-text, $opacity12)), rgba($info-bg-color) !default;
+$info-border-color-pressed: $info-bg-color-pressed !default;
+$info-text-pressed: $info-text !default;
+$info-bg-color-focus: $info-bg-color-hover !default;
+$info-border-color-focus: $info-border-color-hover !default;
+$info-text-focus: $info-text-hover !default;
+$info-bg-color-disabled: rgba($secondary, .12) !default;
+$info-border-color-disabled: $info-bg-color-disabled !default;
+$info-text-disabled: rgba($on-surface, .38) !default;
+
+//Outline button
+$primary-outline: $primary-bg-color !default;
+$primary-outline-border: $outline !default;
+$secondary-outline: $secondary-text-color !default;
+$secondary-outline-border: $outline !default;
+$warning-outline: $warning-bg-color !default;
+$warning-outline-border: $outline !default;
+$danger-outline: $danger-bg-color !default;
+$danger-outline-border: $outline !default;
+$success-outline: $success-bg-color !default;
+$success-outline-border: $outline !default;
+$info-outline: $info-bg-color !default;
+$info-outline-border:$outline !default;
+
+//Toast-text
+$toast-text-color: $content-text-color !default;
+$toast-alt-text-color: $content-text-color !default;
+
+// chart series
+
+$series-1: $surface-variant !default;
+$series-2: $outline-variant !default;
+$series-3: $outline !default;
+$series-4: $on-surface-variant !default;
+$series-5: #6200ee !default;
+$series-6: #e77a16 !default;
+$series-7: #82c100 !default;
+$series-8: #7107dc !default;
+$series-9: #05b3da !default;
+$series-10: #828486 !default;
+$series-11: #b1212d !default;
+$series-12: #38be09 !default;
+$skin-name: 'Material3' !default;
+$theme-name: 'Material3-dark' !default;
+
+//Diagram Palette color
+$diagram-palette-background: $inverse-surface !default;
+$diagram-palette-hover-background: rgba($surface, .05) !default;
+$diagram-palette-selection-background: rgba($surface, .12) !default;
+
+//M3 radius
+$shape-none:0 !default;
+$shape-extra-small:4px !default;
+$shape-small:8px !default;
+$shape-medium:12px !default;
+$shape-Large:16px !default;
+$shape-extra-large:16px !default;
+$shape-full:50% !default;
+
+//border-radius
+$button-radius:$shape-full !default;
+$button-radius-small: $shape-full !default;
+$button-radius-bigger: $shape-full !default;
+$input-radius: $shape-extra-small !default;
+$input-radius-small: $shape-extra-small !default;
+$input-radius-bigger: $shape-extra-small !default;
+$model-radius: $shape-medium !default;
+$model-radius-small: $shape-small !default;
+$model-radius-bigger: $shape-Large !default;
+$flyout-radius: $shape-extra-small !default;
+$flyout-radius-bigger: $shape-extra-small !default;
+$flyout-radius-small: $shape-extra-small !default;
+$chkbox-radius:2px !default;
+$chkbox-radius-small:2px !default;
+$chkbox-radius-bigger:2px !default;
+$card-radius:$shape-small !default;
+$card-radius-small:$shape-extra-small !default;
+$card-radius-bigger:$shape-medium !default;
+$msg-radius:$shape-none !default;
+$msg-radius-small: $msg-radius !default;
+$msg-radius-bigger: $msg-radius !default;
+$toast-radius: $shape-extra-small !default;
+$toast-radius-small: $toast-radius !default;
+$toast-radius-bigger: $toast-radius !default;
+$chip-radius: $shape-extra-small !default;
+$chip-radius-small: $shape-extra-small !default;
+$chip-radius-bigger: $shape-small !default;
+
+//Message component
+
+//Message Default
+$msg-color: rgba($on-surface) !default;
+$msg-bg-color: $content-bg-color-alt1 !default;
+$msg-border-color: linear-gradient(0deg, rgba($primary, $opacity5), rgba($primary, $opacity5)) !default;
+$msg-color-alt1: rgba($on-surface) !default;
+$msg-bg-color-alt1: $transparent !default;
+$msg-border-color-alt1: rgba($outline) !default;
+$msg-color-alt2: rgba($inverse-on-surface) !default;
+$msg-bg-color-alt2: rgba($inverse-surface) !default;
+$msg-border-color-alt2: rgba($inverse-surface) !default;
+
+$msg-icon-color: rgba($on-surface-variant) !default;
+$msg-icon-color-alt1: rgba($on-surface-variant) !default;
+$msg-icon-color-alt2: rgba($inverse-on-surface) !default;
+
+$msg-close-icon-color: rgba($icon-color) !default;
+$msg-close-icon-color-alt1: rgba($icon-color) !default;
+$msg-close-icon-color-alt2: rgba($inverse-on-surface) !default;
+
+//Message success
+$msg-success-color: rgba($on-success-container) !default;
+$msg-success-bg-color: rgba($success-container) !default;
+$msg-success-border-color: rgba($success-container) !default;
+$msg-success-color-alt1: rgba($on-success-container) !default;
+$msg-success-bg-color-alt1: $transparent !default;
+$msg-success-border-color-alt1: rgba($success) !default;
+$msg-success-color-alt2: rgba($on-success) !default;
+$msg-success-bg-color-alt2: rgba($success) !default;
+$msg-success-border-color-alt2: rgba($success) !default;
+
+$msg-success-icon-color: rgba($success) !default;
+$msg-success-icon-color-alt1: rgba($on-success-container) !default;
+$msg-success-icon-color-alt2: rgba($on-success) !default;
+
+$msg-success-close-icon-color: rgba($icon-color) !default;
+$msg-success-close-icon-color-alt1: rgba($icon-color) !default;
+$msg-success-close-icon-color-alt2: rgba($on-success) !default;
+
+//Message danger
+$msg-danger-color: rgba($on-error-container) !default;
+$msg-danger-bg-color: rgba($error-container) !default;
+$msg-danger-border-color: rgba($error-container) !default;
+$msg-danger-color-alt1: rgba($on-error-container) !default;
+$msg-danger-bg-color-alt1: $transparent !default;
+$msg-danger-border-color-alt1: rgba($error) !default;
+$msg-danger-color-alt2: rgba($on-error) !default;
+$msg-danger-bg-color-alt2: rgba($error) !default;
+$msg-danger-border-color-alt2: rgba($error) !default;
+
+$msg-danger-icon-color: rgba($error) !default;
+$msg-danger-icon-color-alt1: rgba($on-error-container) !default;
+$msg-danger-icon-color-alt2: rgba($on-error) !default;
+
+$msg-danger-close-icon-color: rgba($icon-color) !default;
+$msg-danger-close-icon-color-alt1: rgba($icon-color) !default;
+$msg-danger-close-icon-color-alt2: rgba($on-error) !default;
+
+//Message warning
+$msg-warning-color: rgba($on-warning-container) !default;
+$msg-warning-bg-color: rgba($warning-container) !default;
+$msg-warning-border-color: rgba($warning-container) !default;
+$msg-warning-color-alt1: rgba($on-warning-container) !default;
+$msg-warning-bg-color-alt1: $transparent !default;
+$msg-warning-border-color-alt1: rgba($warning) !default;
+$msg-warning-color-alt2: rgba($on-warning) !default;
+$msg-warning-bg-color-alt2: rgba($warning) !default;
+$msg-warning-border-color-alt2: rgba($warning) !default;
+
+$msg-warning-icon-color: rgba($warning) !default;
+$msg-warning-icon-color-alt1: rgba($on-warning-container) !default;
+$msg-warning-icon-color-alt2: rgba($on-warning) !default;
+
+$msg-warning-close-icon-color: rgba($icon-color) !default;
+$msg-warning-close-icon-color-alt1: rgba($icon-color) !default;
+$msg-warning-close-icon-color-alt2: rgba($on-warning) !default;
+
+//Message Info
+$msg-info-color: rgba($on-info-container) !default;
+$msg-info-bg-color: rgba($info-container) !default;
+$msg-info-border-color: rgba($info-container) !default;
+$msg-info-color-alt1: rgba($on-info-container) !default;
+$msg-info-bg-color-alt1: $transparent !default;
+$msg-info-border-color-alt1: rgba($info) !default;
+$msg-info-color-alt2: rgba($on-info) !default;
+$msg-info-bg-color-alt2: rgba($info) !default;
+$msg-info-border-color-alt2: rgba($info) !default;
+
+$msg-info-icon-color: rgba($info) !default;
+$msg-info-icon-color-alt1: rgba($on-info-container) !default;
+$msg-info-icon-color-alt2: rgba($on-info) !default;
+
+$msg-info-close-icon-color: rgba($icon-color) !default;
+$msg-info-close-icon-color-alt1: rgba($icon-color) !default;
+$msg-info-close-icon-color-alt2: rgba($on-info) !default;
+
+//Appbar
+//Light
+$appbar-bg-color-alt1: $content-bg-color-alt2 !default;
+$appbar-color-alt1: rgba($content-text-color) !default;
+$appbar-border-color-alt1: linear-gradient(0deg, rgba($primary, $opacity8), rgba($primary, $opacity8)) !default;
+$appbar-hover-bg-color-alt1: rgba(0, 0, 0, .05) !default;
+
+//Dark
+$appbar-bg-color-alt2: rgba($inverse-surface) !default;
+$appbar-color-alt2: rgba($inverse-on-surface) !default;
+$appbar-border-color-alt2: rgba($inverse-surface) !default;
+$appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08) !default;
+
+//shadow
+$appbar-bottom-shadow: 0 1.6px 3.6px rgba(0, 0, 0, .13), 0 .3px .9px rgba(0, 0, 0, .1) !default;
+$appbar-top-shadow: 0 -1.6px 3.6px rgba(0, 0, 0, .13), 0 -.3px .9px rgba(0, 0, 0, .1) !default;
+
+//rating
+$rating-selected-color: $primary !default;
+$rating-unrated-color: $content-bg-color-alt3 !default;
+$rating-selected-disabled-color: rgba($on-surface, .24) !default;
+$rating-unrated-disabled-color: rgba($on-surface, .08) !default;
+$rating-selected-hover-color: darken-color(rgba($primary), 5%) !default;
+$rating-unrated-hover-color: darken-color(rgba($primary), 10%) !default;
+$rating-pressed-color: darken-color(rgba($primary), 10%) !default;
+
+//skeleton
+$skeleton-wave-color: rgba(73, 69, 79, 1) !default;
+
+//spreadsheet
+$splitbtn-right-border: linear-gradient(to right, rgba($content-bg-color, 1) 25%, rgba($border-light, 1) 75%) 1 !default;
+$splitbtn-right-border-rtl: linear-gradient(to left, rgba($content-bg-color, 1) 25%, rgba($border-light, 1) 75%) 1 !default;
+$splitbtn-right-border-vertical: linear-gradient(to bottom, rgba($content-bg-color, 1) 25%, rgba($border-light, 1) 75%) 1 !default;
+
+//gantt
+$gantt-taskbar-color: linear-gradient(0deg, rgba($primary, .75), rgba($primary, .75)), rgba($content-bg-color) !default;
+
+$grey-white: #fff !default;
+$base-font: #000 !default;
+$grey-50: #fafafa !default;
+$grey-300: #e0e0e0 !default;
+$grey-400: #bdbdbd !default;
+$grey-500: #9e9e9e !default;
+$grey-600: #757575 !default;
+$grey-700: #616161 !default;
+$grey-800: #424242 !default;
+$grey-900: #212121 !default;
+$sd-focus-box-shadow: $secondary-shadow-focus !default;
+$toooltip-text-color: #f9fafb !default;
+
+// from component side
+$range-button-font-color: $info !default;
+$ddl-input-placeholder-padding: 0 0 0 8px !default;
+$theme-light: $primary-light !default;
+$gray-600: #6c757d !default;
+$gray-300: #dee2e6 !default;
+$gray-500: #adb5bd !default;
+$gray-900: #212529 !default;
+$primary-300: #7986cb;
+$gray-400: #ced4da !default;
+
+//font-icons
+$font-icon-8: 8px !default;
+$font-icon-9: 9px !default;
+$font-icon-10: 10px !default;
+$font-icon-12: 12px !default;
+$font-icon-13: 13px !default;
+$font-icon-14: 14px !default;
+$font-icon-15: 15px !default;
+$font-icon-16: 16px !default;
+$font-icon-17: 17px !default;
+$font-icon-18: 18px !default;
+$font-icon-20: 20px !default;
+$font-icon-22: 22px !default;
+$font-icon-24: 24px !default;
+$font-icon-26: 26px !default;
+$font-icon-28: 28px !default;
+$font-icon-32: 32px !default;
+
+//defintion
+$font-size: 12px !default;
+$font-weight: 400 !default;
+$error-font-color: $danger !default;
+$warning-font-color: $warning !default;
+$success-font-color: $success !default;
+$information-font-color: $info !default;

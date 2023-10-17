@@ -268,7 +268,10 @@ export class Transform {
                 value: {collection: parent.rotateFlipColl, isRotateFlipCollection: true, obj: obj }});
             parent.rotateFlipColl = obj['collection'];
             if (parent.cropObj.activeObj.shape && !this.isPreventSelect) {
-                this.isPreventSelect = true; parent.select('custom'); this.isPreventSelect = false;
+                this.isPreventSelect = true;
+                parent.notify('draw', { prop: 'select', onPropertyChange: false,
+                    value: {type: 'custom', startX: null, startY: null, width: null, height: null }});
+                this.isPreventSelect = false;
                 parent.setProperties({zoomSettings: { zoomFactor: 1 }}, true);
                 this.prevZoomValue = parent.zoomSettings.zoomFactor;
             }
@@ -507,7 +510,8 @@ export class Transform {
         parent.rotateFlipColl = obj['collection'];
         if (parent.cropObj.activeObj.shape && !this.isPreventSelect) {
             this.isPreventSelect = true;
-            parent.select('custom');
+            parent.notify('draw', { prop: 'select', onPropertyChange: false,
+                value: {type: 'custom', startX: null, startY: null, width: null, height: null }});
             this.isPreventSelect = false;
             parent.setProperties({zoomSettings: { zoomFactor: 1 }}, true);
             this.prevZoomValue = parent.zoomSettings.zoomFactor;
@@ -1848,12 +1852,17 @@ export class Transform {
         if (activeObj.shape) {
             parent.currSelectionPoint = activeObj;
         } else if (parent.img.srcWidth === parent.baseImgCanvas.width && parent.img.srcHeight === parent.baseImgCanvas.height) {
-            parent.currSelectionPoint = null; parent.select('custom');
+            parent.currSelectionPoint = null;
+            parent.notify('draw', { prop: 'select', onPropertyChange: false,
+                value: {type: 'custom', startX: null, startY: null, width: null, height: null }});
         }
         if (isNullOrUndefined(parent.currSelectionPoint)) {
-            parent.select('custom', parent.img.destLeft, parent.img.destTop, parent.img.destWidth, parent.img.destHeight);
+            parent.notify('draw', { prop: 'select', onPropertyChange: false,
+                value: {type: 'custom', startX: parent.img.destLeft, startY: parent.img.destTop,
+                    width: parent.img.destWidth, height: parent.img.destHeight }});
         } else {
-            parent.select('custom');
+            parent.notify('draw', { prop: 'select', onPropertyChange: false,
+                value: {type: 'custom', startX: null, startY: null, width: null, height: null }});
         }
         width = parent.activeObj.activePoint.width * widthRatio;
         height = parent.activeObj.activePoint.height * heightRatio;
@@ -1861,7 +1870,8 @@ export class Transform {
         const sy: number = (parent.activeObj.activePoint.startY + (parent.activeObj.activePoint.height / 2)) - (height / 2);
         parent.transform.defaultZoomFactor = 0;
         parent.notify('draw', {prop: 'setResizeSelect', value: {bool: true }});
-        parent.select('custom', sx, sy, width, height);
+        parent.notify('draw', { prop: 'select', onPropertyChange: false,
+            value: {type: 'custom', startX: sx, startY: sy, width: width, height: height }});
         parent.notify('draw', {prop: 'setResizeSelect', value: {bool: false }});
         parent.isCropToolbar = true;
         parent.crop();

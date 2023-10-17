@@ -1753,6 +1753,12 @@ describe('Batch Editing module', () => {
             gridObj.editModule.editCell(3, 'CustomerID');
         });
 
+        it('EJ2-283684 editing is not enabled while pressing tab key', () => {
+            gridObj.editModule.editCell(3, 'CustomerID');
+            gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.getContent().querySelectorAll('tr')[3].cells[2]})
+            expect(gridObj.getContent().querySelectorAll('tr')[3].cells[2].classList.contains('e-editedbatchcell')).toBeTruthy();
+        });
+
         it('f2 key', () => {
             let tr = gridObj.getContent().querySelectorAll('tr')[1];
             cell = tr.cells[tr.cells.length - 2];

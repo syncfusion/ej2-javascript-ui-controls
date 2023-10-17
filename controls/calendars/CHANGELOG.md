@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 23.1.41 (2023-10-17)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I506617` - Fixed issue where the previous and next icons were displaying incorrectly in the Fluent Theme.
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I504425` - Fixed an issue where typing "pm" and then focusing out would convert the "pm" extension to "am". This issue has been resolved.
+
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

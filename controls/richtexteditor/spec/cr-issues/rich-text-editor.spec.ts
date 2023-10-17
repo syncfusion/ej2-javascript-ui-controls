@@ -2300,6 +2300,47 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('846885 - NumberFormatList and BulletFormatList not apply in Safari browser', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let selectNode: HTMLElement;
+        let editNode: HTMLElement;
+        let curDocument: Document;
+        let innerHTML: string = `<div><p class='first-p'>description</p><p>NumberFormatList</p></div>`;
+        beforeAll(() => {
+            rteObj = renderRTE({ 
+                toolbarSettings: {
+                    items: ['Undo','Redo','NumberFormatList','BulletFormatList']
+                }
+            });
+            elem = rteObj.element;
+            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            curDocument = rteObj.contentModule.getDocument();
+            editNode.innerHTML = innerHTML;
+        });
+
+        it('list in acion in mac', () => {
+            rteObj.focusIn()
+            selectNode  = (editNode.querySelector('.first-p') as HTMLElement).firstChild as HTMLElement
+            setCursorPoint(selectNode, 1);
+            let trg = document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0].childNodes[0] as HTMLElement
+            let event = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            });
+            trg.dispatchEvent(event);
+            (document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0] as HTMLElement).click();
+            (document.querySelector('.e-dropdown-popup').childNodes[0].childNodes[1] as HTMLElement).click();
+            
+            let result = true;
+            expect((editNode.querySelector('.first-p') as HTMLElement).innerHTML == `<li>description</li>`).toBe(true)
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('847101 - The image focus and resize class names are not removed when the editor in focused out. - ', () => {
         let rteObj: RichTextEditor;
         beforeEach((done: Function) => {
@@ -2340,6 +2381,57 @@ describe('RTE CR issues', () => {
         });
     });
 
+    describe('EJ2-847108 - When pasting contents into the RichTextEditor, the focus gets lost and script error thrown', () => {
+        let rteObject : RichTextEditor ;
+        let defaultRTE : HTMLElement = createElement('div',{id :'defaultRTE'});
+        let innerHTML: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><table class="table-container" style="box-sizing: border-box; border-collapse: collapse; overflow-y: hidden; table-layout: fixed; width: 998.4px; border-bottom: 0px !important; border-right: 0px !important; border-top: 0px !important; color: rgb(0, 0, 0); font-family: Roboto, &quot;open sans&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><tbody style="box-sizing: border-box;"><tr class="public-comment-border" style="box-sizing: border-box; border-radius: 0px; border-left: 4px solid rgb(203, 210, 224) !important;"><td class="width-2 flex-horizontal bd-table-td py-1" style="box-sizing: border-box; padding: 0px 0px 0px 36px; align-items: center; display: flex; flex-direction: row; border: 0px; height: auto; width: 947.4px; color: rgb(45, 55, 72) !important;"><div class="user-detail-container flex-vertical" style="box-sizing: border-box; display: flex; flex-direction: column; width: 656.2px;"><div class="app-user-name primary flex-horizontal" style="box-sizing: border-box; color: var(--primary-color); font-family: var(--font-style) !important; align-items: center; display: flex; flex-direction: row; font-weight: 400; overflow-wrap: anywhere;"><div class="ellipsis no-wrap font-14 font-500 user-preview-section" style="box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; font-size: 14px !important; max-width: 40%;"><span data-title="Divya Ananthanathan" style="box-sizing: border-box;">Divya Ananthanathan</span></div><div class="ellipsis no-wrap" style="box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="secondary-text-color font-13 pl-1 user-detail-container-label" data-title="<span>replied via Customer Portal</span>" style="box-sizing: border-box; padding-left: 0.25rem !important; font-size: 13px !important; color: rgb(96, 111, 133); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><span class="replied-text" style="box-sizing: border-box; color: rgb(96, 111, 133);">replied<span> </span></span>via Customer Portal</span></div></div><div class="date-detail secondary-text-color font-13 ellipsis no-wrap" style="box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px !important; color: rgb(96, 111, 133); width: auto;"><span style="box-sizing: border-box;"><app-date-time suffixstring=")" _nghost-mil-c21="" style="box-sizing: border-box;"><span _ngcontent-mil-c21="" data-non-elliptical="true" data-title="Created on : Sep 07, 2023 05:26 PM (UTC +05:30)" style="box-sizing: border-box;">Sep 07, 2023 05:26 PM ( 3 weeks ago )</span></app-date-time></span></div></div><div id="comments-options" class="align-right flex-horizontal" style="box-sizing: border-box; align-items: center; display: flex; flex-direction: row; float: right; margin-left: auto;"><span class="parma-link mt-1" style="box-sizing: border-box; margin-top: 0.25rem !important;"><i class="bd-icon bd-icon-link action-square-button cursor-pointer padding-8" data-title="Copy Link" style="box-sizing: border-box; cursor: pointer; padding: 6px; align-items: center; color: rgb(74, 85, 104); font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 1; speak: none; text-transform: none; font-family: &quot;Bold desk&quot; !important; list-style-type: none; border-radius: 20px;"></i></span><span class="parma-link flex-horizontal" style="box-sizing: border-box; align-items: center; display: flex; flex-direction: row;"><span style="box-sizing: border-box;"><span class="e-btn e-flat icon-design e-icon-btn more-option-button no-padding no-border" style="box-sizing: border-box; -webkit-font-smoothing: antialiased; border: 1px solid rgb(160, 174, 192); border-radius: 50%; cursor: pointer; display: inline-block; font-family: Roboto, &quot;open sans&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-weight: 500; justify-content: center; line-height: 34px; outline: 0px; padding: 0px 11px; text-align: center; text-decoration: none; text-transform: none; user-select: none; vertical-align: middle; white-space: nowrap; -webkit-tap-highlight-color: transparent; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; background-color: inherit; box-shadow: none; color: rgb(45, 55, 72); transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1) 0s; letter-spacing: 0.3px; height: 32px; width: 32px;"><i class="hd-icon hd-vertical-menu" style="box-sizing: border-box; align-items: center; color: rgba(0, 0, 0, 0.54); font-size: 13px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 1; padding: 5px; speak: none; text-transform: none; font-family: hd-icon !important;"></i></span></span></span></div></td></tr><tr class="public-comment-border" style="box-sizing: border-box; border-radius: 0px; border-left: 4px solid rgb(203, 210, 224) !important;"><td class="width-1 bd-table-td align-baseline" style="box-sizing: border-box; vertical-align: baseline !important; width: 45px; border: 0px; height: auto; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 24px !important;"><span style="box-sizing: border-box;"></span></td><td class="width-2 bd-table-td" style="box-sizing: border-box; border: 0px; height: auto; padding: 0px 0px 0px 36px; width: 949.4px; color: rgb(45, 55, 72) !important;"><div appimageloader="" appimagepreview="" class="detail-summary" style="box-sizing: border-box; padding-top: 10px; padding-right: 10px; padding-bottom: 0px !important; padding-left: 0px; overflow-x: auto;"><div class="table-content" style="box-sizing: border-box; padding-top: 10px;"><div class="comments-description show-more-description primary font-14 e-rte-content" style="box-sizing: border-box; color: var(--primary-color); font-family: var(--font-style) !important; font-size: 14px !important; font-weight: 400;"><p class="show-more-description-child-element" style="box-sizing: border-box; margin: 0px 0px 10px; color: rgb(45, 55, 72); position: relative;"><p style="box-sizing: border-box; margin: 0px 0px 10px;">Hi Team, <br style="box-sizing: border-box;"><br style="box-sizing: border-box;">We are facing an issue while pasting elements into RTE. We have attached a sample and video for your reference.</p></p></div></div></div></td></tr></tbody></table>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObject = new RichTextEditor({
+                pasteCleanupSettings: {
+                    prompt: true
+                }, value: ''
+        });
+            rteObject.appendTo('#defaultRTE');
+        });
+        afterEach( () => {
+            destroy(rteObject);
+            detach(defaultRTE);
+        });
+        it('Test for pasteCleanup', (done : Function) => {
+            let keyBoardEvent: any = {
+                preventDefault: () => { },
+                type: 'keydown',
+                stopPropagation: () => { },
+                ctrlKey: false,
+                shiftKey: false,
+                action: null,
+                which: 64,
+                key: ''
+              };
+            rteObject.dataBind();
+            keyBoardEvent.clipboardData = {
+            getData: () => {
+                return innerHTML;
+            },
+            items: []
+            };
+            setCursorPoint((rteObject as any).inputElement.firstElementChild, 0);
+            rteObject.onPaste(keyBoardEvent);
+            setTimeout(() => {
+                if (rteObject.pasteCleanupSettings.prompt) {
+                    let keepFormat: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-keepformat');
+                    keepFormat[0].click();
+                    let pasteOK: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-pasteok');
+                    pasteOK[0].click();
+                }
+                expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'BR').toEqual(true);
+                expect(window.getSelection().getRangeAt(0).endContainer.nodeName === 'BR').toEqual(true);
+                done();
+            }, 400);
+        });
+    });
+
     describe("848049 - The change event value contains the table resize helper element in the Rich Text Editor", function () {
         var rteObj: RichTextEditor;
         beforeAll(function () {
@@ -2358,6 +2450,101 @@ describe('RTE CR issues', () => {
             rteObj.tableModule.removeResizeElement();
             expect(rteObj.inputElement.querySelector(".e-table-rhelper") == null).toBe(true);
             done();
+        });
+    });
+  
+    describe('849657 - Cancelling undo and redo actions using actionBegin events cancel argument is not working in RichTextEditor', () => {
+        let isCancelled: boolean = false;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj= renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', 'Bold']
+                },
+                value: 'RichTextEditor',
+                actionBegin: function (e: any) {
+                    if ((e.requestType as string).toLowerCase() === 'undo' || (e.requestType as string).toLowerCase()=== 'redo') {
+                        e.cancel = true;
+                        isCancelled = true;
+                    }
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Undo and Redo actions are cancelled', () => {
+            // Bold action
+            const range = new Range();
+            range.setStart(rteObj.contentModule.getEditPanel().querySelector('p'), 0);
+            range.setEnd(rteObj.contentModule.getEditPanel().querySelector('p'), 1);
+            rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
+            const boldKeyAction = new KeyboardEvent('keydown', {
+                cancelable: true,
+                bubbles: true,
+                shiftKey: false,
+                ctrlKey: true,
+                key: 'b',
+                which: 66,
+                keyCode: 66,
+                code: 'KeyB',
+            } as EventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(boldKeyAction);
+            expect(rteObj.contentModule.getEditPanel().querySelector('strong') !== null).toBe(true);
+            // Undo action
+            const undoKeyAction = new KeyboardEvent('keydown', {
+                cancelable: true,
+                bubbles: true,
+                shiftKey: false,
+                ctrlKey: true,
+                key: 'z',
+                keyCode: 90,
+                which: 90,
+                code: 'KeyZ',
+            } as EventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(undoKeyAction);
+            expect(isCancelled).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelector('strong') !== null).toBe(true);
+            isCancelled = false;
+            // Redo action
+            const redoKeyAction = new KeyboardEvent('keydown', {
+                cancelable: true,
+                bubbles: true,
+                shiftKey: false,
+                ctrlKey: true,
+                key: 'y',
+                keyCode: 89,
+                which: 89,
+                code: 'KeyY',
+            } as EventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(redoKeyAction);
+            expect(isCancelled).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelector('strong') !== null).toBe(true);
+        });
+    });
+
+    describe('847097 - Image get duplicated when we press enter key next to the copy pasted image content from Word', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 13, which: 13, shiftKey: false, code : 'Enter'
+        };
+        it('Image gets duplicate paste from ms word ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Formats']
+                },
+                value: '<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><b><span lang="EN-IN" style="font-size:16.0pt;line-height:107%;">Quote 1 -</span></b></p><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span id="msWordImg-clip_image001"><img width="624" height="196" src="blob:http://127.0.0.1:5500/a11f1f65-5f82-4231-bac2-2370d08635d0" v:shapes="Picture_x0020_1" id="msWordImg-clip_image002" class="e-rte-image e-imginline" style="opacity: 1;"></span></p><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><b><span lang="EN-IN" style="font-size:18.0pt;line-height:107%;">Explore 1 -</span></b></p><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span><img width="624" height="163" src="blob:http://127.0.0.1:5500/fd4c90de-5cb5-4ef0-89ba-2105a769bfb5" v:shapes="Picture_x0020_2" id="msWordImg-clip_image004" class="e-rte-image e-imginline" style="opacity: 1;"> </span></p>'
+            });
+            rteEle = rteObj.element;
+            let start: HTMLElement = document.getElementById('msWordImg-clip_image001');;
+            setCursorPoint(start, 1);
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('p').length === 5).toBe(true);
+        });
+        afterEach(() => {
+            destroy(rteObj);
         });
     });
 });

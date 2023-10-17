@@ -1,0 +1,154 @@
+@include export-module('tooltip-layout') {
+
+  /*! tooltip popup container layout */
+  .e-tooltip-popup-container {
+    position: relative;
+  }
+
+  /*! tooltip layout */
+  .e-tooltip-wrap {
+    max-width: 350px;
+    min-width: 30px;
+    padding: 0;
+    position: absolute;
+    visibility: visible;
+
+    /*! tooltip arrow */
+    .e-arrow-tip {
+      overflow: hidden;
+      position: absolute;
+
+      &.e-tip-bottom {
+        height: $tooltip-tip-bottom-height;
+        left: $tooltip-tip-bottom-left;
+        top: $tooltip-tip-bottom-top;
+        width: $tooltip-tip-bottom-width;
+      }
+
+      &.e-tip-top {
+        height: $tooltip-tip-top-height;
+        left: $tooltip-tip-top-left;
+        top: $tooltip-tip-top-top;
+        width: $tooltip-tip-top-width;
+      }
+
+      &.e-tip-left {
+        height: $tooltip-tip-left-height;
+        left: $tooltip-tip-left-left;
+        top: $tooltip-tip-left-top;
+        width: $tooltip-tip-left-width;
+      }
+
+      &.e-tip-right {
+        height: $tooltip-tip-right-height;
+        left: $tooltip-tip-right-left;
+        top: $tooltip-tip-right-top;
+        width: $tooltip-tip-right-width;
+      }
+    }
+
+    /*! tooltip sticky mode close icon */
+    .e-tooltip-close {
+      cursor: pointer;
+      float: right;
+      position: absolute;
+      right: -9px;
+      top: -9px;
+      z-index: inherit;
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
+        border-radius: 9px;
+        border-width: 1px;
+        box-shadow: $shadow-sm;
+        box-sizing: border-box;
+        height: 16px;
+        width: 16px;
+      }
+    }
+
+    /*! tooltip content area */
+    .e-tip-content {
+      background-color: inherit;
+      height: 100%;
+      line-height: $tooltip-line-height;
+      overflow-wrap: break-word;
+      overflow-x: hidden;
+      padding: $tooltip-horizontal-padding $tooltip-vertical-padding;
+      position: relative;
+      white-space: normal;
+      width: 100%;
+      word-break: break-word;
+      z-index: 1;
+      @if $skin-name == 'bootstrap4' {
+        border-radius: inherit;
+      }
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+        font-weight: 500;
+      }
+    }
+
+    &.e-rtl {
+      .e-tooltip-close::before {
+        @if $skin-name == 'bootstrap5' {
+          font-size: 9px;
+          margin-right: 2px;
+        }
+        @if $skin-name == 'tailwind' {
+          font-size: 8px;
+          margin-right: 3px;
+        }
+      }
+    }
+  }
+
+  /*! Bigger Style */
+  .e-bigger .e-tooltip-wrap .e-tip-content,
+  .e-tooltip-wrap.e-bigger .e-tip-content {
+    @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+      line-height: 22px;
+    }
+    @else if ($skin-name == 'Material3') {
+      line-height: 24px;
+    }
+    @else {
+      line-height: 20px;
+    }
+    padding: $tooltip-mobile-horizontal-padding $tooltip-mobile-vertical-padding;
+    @if $skin-name == 'bootstrap4' {
+      line-height: 1.5;
+    }
+  }
+
+  .e-bigger .e-tooltip-wrap,
+  .e-tooltip-wrap.e-bigger {
+
+    .e-tooltip-close {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+        border-radius: 10px;
+        border-width: 1px;
+        height: 20px;
+        width: 20px;
+      }
+    }
+
+    .e-tooltip-close::before {
+      @if ($skin-name == 'tailwind') {
+        font-size: 10px;
+        vertical-align: middle;
+      }
+
+      @if ($skin-name == 'bootstrap5') {
+        font-size: 11px;
+        left: calc(50% - 6px);
+      }
+    }
+
+    &.e-rtl {
+      .e-tooltip-close::before {
+        @if ($skin-name == 'tailwind') {
+          font-size: 10px;
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+}

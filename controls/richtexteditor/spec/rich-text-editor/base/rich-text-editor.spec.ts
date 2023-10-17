@@ -6667,3 +6667,25 @@ describe('842745 - Space Keypress causes the console error and the cursor positi
         destroy(rteObj);
     });
 });
+describe('846696 - Ctrl+Z undo doesn’t works in smart suggestion sample', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: null, which: 65, key: '' };
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Bold']
+            },
+        });
+    });
+    it('Undo with keyboard action initial status', () => {
+        rteObj.value = "Rich Text Editor";
+        keyBoardEvent.which = 65;
+        keyBoardEvent.keyCode = 65;
+        rteObj.keyDown(keyBoardEvent);
+        rteObj.dataBind()
+        expect(rteObj.formatter.editorManager.undoRedoManager.undoRedoStack[0] != null).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

@@ -74,20 +74,20 @@ export class Formatter {
         }
         if (isNOU(args)) {
             const action: string = (event as KeyboardEventArgs).action;
+            args = {};
+            const items: ActionBeginEventArgs = {
+                originalEvent: event, cancel: false,
+                requestType: action || ((event as KeyboardEventArgs).key + 'Key'),
+                itemCollection: value
+            };
+            extend(args, args, items, true);
             if (action !== 'tab' && action !== 'enter' && action !== 'space' && action !== 'escape') {
-                args = {};
                 if (self.editorMode === 'Markdown' && action === 'insert-table') {
                     value  = <{}>{
                         'headingText': self.localeObj.getConstant('TableHeadingText'),
                         'colText': self.localeObj.getConstant('TableColText')
                     };
                 }
-                const items: object = {
-                    originalEvent: event, cancel: false,
-                    requestType: action || ((event as KeyboardEventArgs).key + 'Key'),
-                    itemCollection: value
-                };
-                extend(args, args, items, true);
                 self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                     if (actionBeginArgs.cancel) {
                         if (action === 'paste' || action === 'cut' || action === 'copy') {
@@ -96,20 +96,22 @@ export class Formatter {
                     }
                 });
             }
-            const isTableModule : boolean = isNOU(self.tableModule) ? true : self.tableModule ?
-                self.tableModule.ensureInsideTableList : false;
-            if ((event.which === 9 && isTableModule) || event.which !== 9) {
-                if (event.which === 13 && self.editorMode === 'HTML') {
-                    value =  <{}>{
-                        'enterAction': self.enterKey
-                    };
+            if (!args.cancel) {
+                const isTableModule : boolean = isNOU(self.tableModule) ? true : self.tableModule ?
+                    self.tableModule.ensureInsideTableList : false;
+                if ((event.which === 9 && isTableModule) || event.which !== 9) {
+                    if (event.which === 13 && self.editorMode === 'HTML') {
+                        value =  <{}>{
+                            'enterAction': self.enterKey
+                        };
+                    }
+                    this.editorManager.observer.notify((event.type === 'keydown' ? KEY_DOWN : KEY_UP), {
+                        event: event,
+                        callBack: this.onSuccess.bind(this, self),
+                        value: value,
+                        enterAction: self.enterKey
+                    });
                 }
-                this.editorManager.observer.notify((event.type === 'keydown' ? KEY_DOWN : KEY_UP), {
-                    event: event,
-                    callBack: this.onSuccess.bind(this, self),
-                    value: value,
-                    enterAction: self.enterKey
-                });
             }
         } else if (!isNOU(args) && args.item.command && args.item.subCommand && ((args.item.command !== args.item.subCommand
             && args.item.command !== 'Font')

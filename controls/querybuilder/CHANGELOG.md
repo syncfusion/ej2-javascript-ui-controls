@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.40 (2023-10-10)
+## 23.1.41 (2023-10-17)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F184903` - Issue with `setRules` method of the Query builder not working for complex data binding has been fixed.
+
+## 23.1.39 (2023-10-04)
 
 ### QueryBuilder
 

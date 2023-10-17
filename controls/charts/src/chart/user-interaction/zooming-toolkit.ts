@@ -260,7 +260,7 @@ export class Toolkit {
     /** @private */
     /* eslint-disable */
     public removeTooltip(): void {
-        if(getElement(this.hoveredID)) {
+        if(this.hoveredID && getElement(this.hoveredID)) {
             let rectColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent' : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.chart.themeStyle.toolkitIconRectSelectionFill : 'transparent';
             getElement(this.hoveredID).setAttribute('fill', rectColor);
         }

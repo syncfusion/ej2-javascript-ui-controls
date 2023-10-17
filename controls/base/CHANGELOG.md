@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 23.1.41 (2023-10-17)
+
+### Common
+
+#### Bug Fixes
+
+- The issue with the "Tooltip component displays empty string when setting content as '${}'" has been resolved.
+- `#I495294` - The issue with content sanitization in the tooltip component has been resolved
+- `#I504425` - Issue with date parser designator conversion has been fixed.
+- `#I503487` - The issue with the "action failure event argument is not displayed with full error details" has been resolved.
+
 ## 23.1.38 (2023-09-26)
 
 ### Common

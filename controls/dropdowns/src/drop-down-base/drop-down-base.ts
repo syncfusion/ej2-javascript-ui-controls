@@ -1538,6 +1538,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.initialize(e);
         }
     }
+    protected removeScrollEvent() : void
+    {
+        if (this.list) {
+            EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
+        }
+    }
     /**
      * Return the module name of this component.
      *

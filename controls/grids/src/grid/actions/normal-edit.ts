@@ -330,15 +330,32 @@ export class NormalEdit {
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         this.editRowIndex = null;
-        if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+        if (this.parent.allowGrouping && this.parent.groupSettings.columns.length
+           && this.parent.groupSettings.showGroupedColumn) {
             const dragRow: Element = args.row;
             let rows: Row<Column>[] = this.parent.getRowsObject();
             const dragRowUid: string = dragRow.getAttribute('data-uid');
             const dragRowObject: Row<Column> = this.parent.getRowObjectFromUID(dragRowUid);
             for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
-                rows = rows.filter((data: Row<Column>) =>
-                    data.isDataRow && data.data[this.parent.groupSettings.columns[parseInt(i.toString(), 10)]] ===
-                    args.data[this.parent.groupSettings.columns[parseInt(i.toString(), 10)]] && data !== dragRowObject);
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
+                const thisRef: NormalEdit = this;
+                rows = rows.filter(function (data: Row<Column>): boolean {
+                    const flag: boolean = data.isDataRow && data !== dragRowObject;
+                    if (flag) {
+                        const groupedColumn: string[] = thisRef.parent.groupSettings.columns[parseInt(i.toString(), 10)].split('.');
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        let comparer1: any = data.data[groupedColumn[0] as string];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        let comparer2: any = args.data[groupedColumn[0] as string];
+                        for (let j: number = 1; j < groupedColumn.length; j++) {
+                            comparer1 = comparer1[groupedColumn[j as number] as string];
+                            comparer2 = comparer2[groupedColumn[j as number] as string];
+                        }
+                        return flag && comparer1 === comparer2;
+                    } else {
+                        return flag;
+                    }
+                });
             }
             const dropRowObject: Row<Column> = rows[0];
             if (!isNullOrUndefined(dragRowObject) && !isNullOrUndefined(dropRowObject) &&

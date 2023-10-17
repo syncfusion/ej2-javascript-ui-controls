@@ -369,6 +369,7 @@ export class DateParser {
                         // eslint-disable-next-line
                         matchString = ((prop === 'month') && (!(<any>parseOptions).isIslamic) && ((<any>parseOptions).culture === 'en' || (<any>parseOptions).culture === 'en-GB' || (<any>parseOptions).culture === 'en-US')) 
                             ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
+                        matchString = ((prop !== 'month') && (prop === 'designator') && (<any>parseOptions).culture === 'en-GB') ? matchString.toLowerCase() : matchString;    
                         // eslint-disable-next-line
                         (<any>retOptions)[prop] = (<any>parseOptions)[prop][matchString];
                     }

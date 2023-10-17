@@ -2205,4 +2205,139 @@ describe('Format Painter Module', () => {
             done();
         });
     });
+
+    describe('845440 - Not able to copy paste the list items in format painter in overview', () => {
+        let rteObject : RichTextEditor ;
+        const innerHTML: string = `<p class="goalformatnode1">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/' target='_blank'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/' target='_blank'>markdown</a> of the content</p>
+        <!--Taken from overview content-->
+        <ol>
+            <li>
+                <p class="sourceParentNode">Allows you to insert images from an online source as well as the local computer </p> 
+            </li>
+            <li>
+                <p>You can upload an image </p>
+            </li>
+            <li> 
+                <p>Provides an option to customize the quick toolbar for an image </p> 
+            </li>
+        </ol>`;
+        beforeAll( () => {
+            rteObject = renderRTE({
+                toolbarSettings : { items: ['FormatPainter', 'ClearFormat', 'Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|',
+                    'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                    'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                } , value: innerHTML
+            });
+        });
+
+        afterAll( () => {
+            destroy(rteObject);
+        });
+
+        it('Test for copying and pasting the list to paragraph', () => {
+            rteObject.focusIn();
+            let range = new Range();
+            let startElement = rteObject.inputElement.querySelector('.sourceParentNode');
+            range.setStart(startElement.firstChild, 0);
+            range.setEnd(startElement.firstChild, 10);
+            rteObject.selectRange(range);
+            rteObject.keyDown(copyKeyBoardEventArgs);
+            startElement = rteObject.inputElement.querySelector('.goalformatnode1');
+            range.setStart(startElement.firstChild, 5);
+            range.setEnd(startElement.firstChild, 5);
+            rteObject.selectRange(range);
+            expect(startElement.nodeName).toEqual('P');
+            expect(startElement.classList.contains('goalformatnode1')).toBe(true);
+            expect(startElement.nodeName).toEqual('P');
+            rteObject.keyDown(pasteKeyBoardEventArgs);
+            startElement = rteObject.inputElement.querySelector('.sourceParentNode');
+            expect(startElement.nodeName).toEqual('P');
+            expect(startElement.parentElement.nodeName).toEqual('LI');
+            expect(startElement.parentElement.parentElement.nodeName).toEqual('OL');
+        });
+    });
+
+    describe('847848 - The Format Painter is not working properly while copy the list and apply in normal text', () => {
+        let rteObject : RichTextEditor ;
+        const innerHTML: string = `<div align="center">
+            <table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table">
+                <tbody>
+                    <tr>
+                        <td width="256" style="width: 192.15pt; border-bottom: 1pt solid black; border-right: 1pt solid black; padding: 0in 5.4pt;">
+                            <ol style="list-style-type: none;margin-bottom:0in;">
+                                <li>
+                                    <ol level="2" style="list-style-type: lower-roman;margin-bottom:0in;">
+                                        <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 12pt; font-family: &quot;Times New Roman&quot;, serif;">
+                                            <p><span class="sourceParentNode" style="font-family:&quot;Arial Narrow&quot;,sans-serif;">Mr. Fiaz Hussain,</span></p>
+                                        </li>
+                                    </ol>
+                                </li>
+                            </ol>
+                            <p align="left" style="margin-left:25.5pt;text-align:left;margin-top:0in;margin-right:0in;margin-bottom:0in;font-size:12.0pt;font-family:&quot;Times New Roman&quot;,serif;"><span style="font-family:&quot;Arial Narrow&quot;,sans-serif;">Director (BPS-19)</span></p>
+                            <ol style="list-style-type: none;margin-bottom:0in;">
+                                <li>
+                                    <ol level="2" start="2" style="list-style-type: lower-roman;margin-bottom:0in;">
+                                        <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 12pt; font-family: &quot;Times New Roman&quot;, serif;">
+                                            <p><span style="font-family:&quot;Arial Narrow&quot;,sans-serif;">Mr. Atta-ur-Rehman Wahla,</span></p>
+                                        </li>
+                                    </ol>
+                                </li>
+                            </ol>
+                            <p align="left" style="margin-left:25.5pt;text-align:left;margin-top:0in;margin-right:0in;margin-bottom:0in;font-size:12.0pt;font-family:&quot;Times New Roman&quot;,serif;"><span style="font-family:&quot;Arial Narrow&quot;,sans-serif;">Assistant Director (Admn-I)(BPS-17)</span></p>
+                        </td>
+                        <td width="187" style="width: 140.55pt; border-bottom: 1pt solid black; border-right: 1pt solid black; padding: 0in 5.4pt;">
+                            <p class="goalformatnode1" align="left" style="text-align:left;margin:0in;font-size:12.0pt;font-family:&quot;Times New Roman&quot;,serif;"><span style="font-family:
+                                &quot;Arial Narrow&quot;,sans-serif;">Central Punjab Zone</span></p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>`;
+        beforeAll( () => {
+            rteObject = renderRTE({
+                toolbarSettings : { items: ['FormatPainter', 'ClearFormat', 'Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|',
+                    'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                    'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                } , value: innerHTML
+            });
+        });
+
+        afterAll( () => {
+            destroy(rteObject);
+        });
+
+        it('Test for copying and pasting the list to paragraph', () => {
+            rteObject.focusIn();
+            let range = new Range();
+            let startElement = rteObject.inputElement.querySelector('.sourceParentNode');
+            range.setStart(startElement.firstChild, 0);
+            range.setEnd(startElement.firstChild, 5);
+            rteObject.selectRange(range);
+            rteObject.keyDown(copyKeyBoardEventArgs);
+            startElement = rteObject.inputElement.querySelector('.goalformatnode1');
+            range.setStart(startElement.firstChild.firstChild, 5);
+            range.setEnd(startElement.firstChild.firstChild, 5);
+            rteObject.selectRange(range);
+            expect(startElement.nodeName).toEqual('P');
+            expect(startElement.classList.contains('goalformatnode1')).toBe(true);
+            expect(startElement.nodeName).toEqual('P');
+            rteObject.keyDown(pasteKeyBoardEventArgs);
+            startElement = rteObject.inputElement.querySelectorAll('.sourceParentNode')[1];
+            expect(startElement.nodeName).toEqual('SPAN');
+            expect(startElement.parentElement.nodeName).toEqual('LI');
+            expect(startElement.parentElement.parentElement.nodeName).toEqual('OL');
+        });
+    });
 });

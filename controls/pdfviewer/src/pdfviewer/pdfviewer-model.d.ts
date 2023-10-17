@@ -2582,6 +2582,31 @@ export interface FormFieldModel {
      */
     pageIndex?: number;
 
+    /**
+     * Get the pageNumber of the form field. Default value is 1.
+     */
+    pageNumber?: number;
+
+    /**
+     * Get the isTransparent of the form field. Default value is false.
+     */
+    isTransparent?: boolean;
+
+    /**
+     * Get the rotateAngle of the form field. Default value is 0.
+     */
+    rotateAngle?: number;
+
+    /**
+     * Get the selectedIndex of the form field. Default value is null.
+     */
+    selectedIndex?: number[];
+
+    /**
+     * Get the zIndex of the form field. Default value is 0.
+     */
+    zIndex?: number;
+
 }
 
 /**

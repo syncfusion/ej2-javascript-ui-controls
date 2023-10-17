@@ -1,16 +1,17 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, completeAction } from '../index';
-import { isValidation, checkDateFormat, applyCellFormat, activeCellChanged } from '../../workbook/common/event';
-import { getCell, setCell } from '../../workbook/base/cell';
+import { isValidation, checkDateFormat, applyCellFormat, activeCellChanged, NumberFormatArgs } from '../../workbook/common/index';
+import { getCell, setCell, getFormattedCellObject, getColorCode } from '../../workbook/index';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser } from '@syncfusion/ej2-base';
+import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser, Internationalization } from '@syncfusion/ej2-base';
+import { getNumberDependable, defaultCurrencyCode } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
 import { dialog, locale, initiateDataValidation, invalidData, editOperation, keyUp, focus } from '../common/index';
 import { formulaBarOperation, removeDataValidation, CellValidationEventArgs } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { isHiddenRow, setRow, ColumnModel, beginAction, ActionEventArgs, getSwapRange, checkColumnValidation } from '../../workbook/index';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, cellValidation, updateCell, isInMultipleRange } from '../../workbook/common/index';
+import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, cellValidation, updateCell, isInMultipleRange, isNumber } from '../../workbook/common/index';
 import { CellFormatArgs, DefineNameModel, ExtendedRange, getData, isCellReference, parseLocaleNumber } from '../../workbook/index';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -182,6 +183,9 @@ export class DataValidation {
             const tdEle: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
             if (!tdEle) { return; }
             if (document.getElementsByClassName('e-validation-list')[0]) {
+                if (this.listObj) {
+                    this.listObj.destroy();
+                }
                 remove(document.getElementsByClassName('e-validation-list')[0]);
                 this.data = [];
             }
@@ -1101,17 +1105,56 @@ export class DataValidation {
             }
             let value: string | number = args.value;
             const opt: string = validation.operator || 'Between';
-            const type: string = validation.type || 'WholeNumber';
+            const type: ValidationType = validation.type || 'WholeNumber';
             const ignoreBlank: boolean = isNullOrUndefined(validation.ignoreBlank) ? true : validation.ignoreBlank;
             if (ignoreBlank && enterValue === '') {
                 isValidate = true;
             } else {
+                const isDateTimeType: boolean = type === 'Date' || type === 'Time';
+                if (args.value && !isDateTimeType && !isNumber(args.value)) {
+                    let format: string = cell && cell.format; let numVal: string | number;
+                    if (format) {
+                        if (format !== '@') {
+                            try {
+                                let colorCode: string = getColorCode(format);
+                                while (colorCode) {
+                                    format = format.split(`[${colorCode}]`).join('');
+                                    colorCode = getColorCode(format);
+                                }
+                                const intl: Internationalization = new Internationalization(this.parent.locale);
+                                const curSymbol: string = getNumberDependable(locale, defaultCurrencyCode);
+                                if (curSymbol !== '$' && format.includes('$') && args.value.includes(curSymbol)) {
+                                    format = format.split('$').join(curSymbol);
+                                }
+                                if (format.includes('%') && args.value.indexOf('%') > 0) {
+                                    numVal = <number>intl.getNumberParser({ format: 'n' })(args.value);
+                                    const idx: number = format.indexOf('%');
+                                    if (format[idx - 1] !== '"') {
+                                        numVal /= 100;
+                                    }
+                                } else {
+                                    numVal = intl.getNumberParser({ format: format })(args.value);
+                                }
+                            } catch (error) {
+                                numVal = args.value;
+                            }
+                        }
+                    } else {
+                        const formatArgs: NumberFormatArgs = { formattedText: args.value, value: args.value, format: 'General',
+                            cell: { value: args.value, format: 'General' } };
+                        this.parent.notify(getFormattedCellObject, formatArgs);
+                        numVal = formatArgs.value;
+                    }
+                    if (numVal !== args.value && isNumber(numVal)) {
+                        value = args.value = numVal.toString();
+                    }
+                }
                 const formValidation: { isValidate: boolean, errorMsg: string } = this.formatValidation(args.value, type);
                 isValidate = formValidation.isValidate;
                 errorMsg = formValidation.errorMsg;
                 if (isValidate) {
                     isValidate = false;
-                    if (type === 'Date' || type === 'Time') {
+                    if (isDateTimeType) {
                         args.value = args.value.toString().slice(args.value.toString().indexOf(' ') + 1, args.value.length);
                         for (let idx: number = 0; idx < 3; idx++) {
                             args.value = idx === 0 ? args.value : idx === 1 ? value1 : value2;
@@ -1296,9 +1339,7 @@ export class DataValidation {
             }
         }
         if (!formulaArgs.skip) {
-            const isValid: { isValidate: boolean, errorMsg: string } = this.isValidationHandler({
-                value: args.value, range: args.range, sheetIdx: args.sheetIdx, td: args.td
-            });
+            const isValid: { isValidate: boolean, errorMsg: string } = this.isValidationHandler(args);
             if (!isValid.isValidate && args.isCell) {
                 this.validationErrorHandler(isValid.errorMsg);
             }

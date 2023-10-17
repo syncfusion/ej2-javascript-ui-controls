@@ -1006,7 +1006,7 @@ export class SfdtExport {
                 } else {
                     inline[textProperty[this.keywordIndex]] = element.text;
                 }
-            } else if (this.isWriteInlinesFootNote && element.indexInOwner == 0 && element.paragraph.indexInOwner == 0) {
+            } else if (this.isWriteInlinesFootNote && element.indexInOwner == 0 && element.line.indexInOwner == 0 && element.paragraph.indexInOwner == 0) {
                 inline[textProperty[this.keywordIndex]] = "\u0002";
             }
             else {

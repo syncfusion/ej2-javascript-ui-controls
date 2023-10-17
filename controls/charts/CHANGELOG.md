@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 23.1.41 (2023-10-17)
+
+### RangeNavigator
+
+- `#I502356` - Fixed the console error that throws when we resize the range navigator.
+
 ## 23.1.40 (2023-10-10)
 
 ### Chart

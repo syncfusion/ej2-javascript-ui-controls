@@ -358,13 +358,6 @@ export class FilterMenuRenderer {
     private clearBtnClick(column: Column): void {
         this.filterObj.removeFilteredColsByField(column.field);
         this.closeDialog();
-        const iconClass: string = this.parent.showColumnMenu && column.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
-        const col: Element = this.parent.element.querySelector('[e-mappinguid="' + column.uid + '"]').parentElement;
-        const flIcon: Element = col.querySelector(iconClass);
-        if (flIcon) {
-            flIcon.classList.remove('e-filtered');
-        }
-
     }
 
     public destroy(): void {

@@ -559,7 +559,7 @@ describe('Ribbon', () => {
             expect(ribbon.element.querySelector('.e-ribbon-collapse-btn') !== null).toBe(true);
             ribbon.setProperties({ selectedTab: 1 });
             tabs.splice(1, 1);
-            ribbon.setProperties({ tabs: tabs });
+            ribbon.setProperties({ tabs: tabs, selectedTab: 0 });
             expect(ribbon.tabObj.items.length).toBe(2);
             expect(ribbon.element.querySelectorAll('.e-tab-header .e-toolbar-item').length).toBe(2);
         });

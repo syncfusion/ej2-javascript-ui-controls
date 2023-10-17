@@ -3626,6 +3626,215 @@ describe('EJ2-835777 - Custom data source is not  assigned to the dropdown edit 
     });
 });
 
+describe('EJ2-851524 - Grouped complex data Row Reorder by edit functionalities', () => {
+    let gridObj: Grid;
+    let gdataSource = [
+        {
+          project: {
+            id: 'b27585828a675f5acfef052dd',
+            name: 'Leave',
+            number: '1000000',
+            description:
+              'This project is used for personnel leave only.Please do not use this project unless personnel is going on leave.',
+          },
+          role: {
+            id: 'f1720daf89ee3de12e77dd69c',
+          },
+        },
+        {
+          project: {
+            id: 'c0d3c1454e0eec3d774d0bfe8',
+            name: 'Project C',
+            number: null,
+            description: 'Building the coolest structure ever',
+          },
+          role: {
+            id: '2589b2560b7338f055c0c9be3',
+          },
+        },
+        {
+          project: {
+            id: 'c0d3c1454e0eec3d774d0bfe8',
+            name: 'Project C',
+            number: null,
+            description: 'Building the coolest structure ever',
+          },
+          role: {
+            id: '309068c34805da0a0cec63c6d',
+          },
+        },
+        {
+          project: {
+            id: 'a6c827cce3fb0eee9dfa2395e',
+            name: 'Project A',
+            number: null,
+            description: 'Building the coolest structure ever',
+          },
+          role: {
+            id: 'd8094793b815df82db2c92728',
+          },
+        },
+      ];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: gdataSource,
+                editSettings: { allowEditing: true },
+                allowGrouping: true,
+                toolbar: ['Edit', 'Update', 'Cancel'],
+                groupSettings: { columns: ['project.name'] },
+                columns: [
+                { field: 'role.id', headerText: 'Role Id', width: 250, isPrimaryKey: true },
+                { field: 'project.name', headerText: 'project.name', width: 250 },
+                {
+                    field: 'project.description',
+                    headerText: 'Project Description',
+                    width: 250,
+                },
+                ],
+            }, done);
+    });
+
+    it('edit complex data row', (done: Function) => {
+        let actionComplete = (args?: any): void => {               
+            if (args.requestType === 'beginEdit') {
+                actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionBegin = actionComplete;
+        gridObj.selectRow(1, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
+
+    it('save complex data row', (done: Function) => {
+        (select('#' + gridObj.element.id + 'project___description', gridObj.element) as any).value += 'updated';
+        let actionComplete = (args?: any): void => {               
+            if (args.requestType === 'save') {
+                actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionBegin = actionComplete;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+    });
+
+    it('check not to be reorder', () => {
+        expect((gridObj.getRowByIndex(1).previousSibling as HTMLElement).classList[0]).toBe('e-groupcaptionrow');
+        expect((gridObj.getRowByIndex(1).nextSibling as HTMLElement).classList[0]).toBe('e-groupcaptionrow');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        gdataSource = null;
+    });
+});
+
+describe('Grouped showgroupedcolumn complex data Row Reorder by edit functionalities', () => {
+    let gridObj: Grid;
+    let gdataSource = [
+        {
+          project: {
+            id: 'b27585828a675f5acfef052dd',
+            name: 'Leave',
+            number: '1000000',
+            description:
+              'This project is used for personnel leave only.Please do not use this project unless personnel is going on leave.',
+          },
+          role: {
+            id: 'f1720daf89ee3de12e77dd69c',
+          },
+        },
+        {
+          project: {
+            id: 'c0d3c1454e0eec3d774d0bfe8',
+            name: 'Project C',
+            number: null,
+            description: 'Building the coolest structure ever',
+          },
+          role: {
+            id: '2589b2560b7338f055c0c9be3',
+          },
+        },
+        {
+          project: {
+            id: 'c0d3c1454e0eec3d774d0bfe8',
+            name: 'Project C',
+            number: null,
+            description: 'Building the coolest structure ever',
+          },
+          role: {
+            id: '309068c34805da0a0cec63c6d',
+          },
+        },
+        {
+          project: {
+            id: 'a6c827cce3fb0eee9dfa2395e',
+            name: 'Project A',
+            number: null,
+            description: 'Building the coolest structure ever',
+          },
+          role: {
+            id: 'd8094793b815df82db2c92728',
+          },
+        },
+      ];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: gdataSource,
+                editSettings: { allowEditing: true },
+                allowGrouping: true,
+                toolbar: ['Edit', 'Update', 'Cancel'],
+                groupSettings: { columns: ['project.name'], showGroupedColumn: true },
+                columns: [
+                { field: 'role.id', headerText: 'Role Id', width: 250, isPrimaryKey: true },
+                { field: 'project.name', headerText: 'project.name', width: 250 },
+                {
+                    field: 'project.description',
+                    headerText: 'Project Description',
+                    width: 250,
+                },
+                ],
+            }, done);
+    });
+
+    it('edit grouped column complex data', (done: Function) => {
+        let actionComplete = (args?: any): void => {               
+            if (args.requestType === 'beginEdit') {
+                actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionBegin = actionComplete;
+        gridObj.selectRow(1, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
+
+    it('save grouped column complex data', (done: Function) => {
+        (select('#' + gridObj.element.id + 'project___name', gridObj.element) as any).value = 'Project C';
+        let actionComplete = (args?: any): void => {               
+            if (args.requestType === 'save') {
+                actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionBegin = actionComplete;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+    });
+
+    it('check reordered successfully', () => {
+        expect((gridObj.getRowByIndex(2).previousSibling as HTMLElement).classList[0]).toBe('e-row');
+        expect((gridObj.getRowByIndex(2).nextSibling as HTMLElement).classList[0]).toBe('e-row');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        gdataSource = null;
+    });
+});
 
 describe('Coverage Improvement', () => {
     let gridObj: Grid;

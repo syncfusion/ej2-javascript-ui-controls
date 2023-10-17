@@ -5803,9 +5803,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
             else if(this.dataType == 2){
-                parentsId = this.getHierarchicalParentId(node,this.treeData,parentsId).reverse();
+                parentsId = this.getHierarchicalParentId(node,this.treeData,parentsId);
             }
-        this.expandAll(parentsId);
+        this.expandAll(parentsId.reverse());
         let liEle: Element = this.getElement(node);
         if (!isNOU(liEle)) {
         if(typeof node == 'object'){

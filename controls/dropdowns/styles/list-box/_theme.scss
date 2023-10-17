@@ -103,7 +103,7 @@
       }
 
       & .e-selectall-parent + .e-list-parent {
-        height: $listbox-select-height;
+        height: $listbox-select-height !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-icons {

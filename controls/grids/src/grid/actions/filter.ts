@@ -79,6 +79,9 @@ export class Filter implements IAction {
     private valueFormatter: IValueFormatter;
     private actualPredicate: { [key: string]: PredicateModel[] } = {};
     public prevFilterObject: PredicateModel;
+    public checkboxPrevFilterObject: { field: string; }[];
+    public checkboxFilterObject: Object[];
+    public actualData: string[];
     public filterObjIndex: number;
     /** @hidden */
     public responsiveDialogRenderer: ResponsiveDialogRenderer;
@@ -616,10 +619,26 @@ export class Filter implements IAction {
                 if (this.contentRefresh && this.skipUid(e.properties[`${col}`])) {
                     this.parent.notify(events.modelChanged, args);
                     if ((<{ cancel?: boolean }>args).cancel) {
-                        if (isNullOrUndefined(this.prevFilterObject)) {
-                            this.filterSettings.columns.splice(this.filterSettings.columns.length - 1, 1);
+                        if ((this.filterSettings.type === 'CheckBox' || this.filterSettings.type === 'Excel')){
+                            this.filterSettings.columns = (this.actualData.length <= 1) ? this.checkboxPrevFilterObject :
+                                this.checkboxFilterObject;
+                            this.actualPredicate[this.column.field] = this.filterSettings.columns;
+                            const col: Column = this.parent.getColumnByField(this.column.field);
+                            const iconClass: string = this.parent.showColumnMenu && col.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
+                            const filterIconElement: Element = this.parent.getColumnHeaderByField(this.column.field)
+                                .querySelector(iconClass);
+                            if (this.checkboxPrevFilterObject.length === 0){
+                                filterIconElement.classList.remove('e-filtered');
+                            }
+                            else {
+                                filterIconElement.classList.add('e-filtered');
+                            }
                         } else {
-                            this.filterSettings.columns[this.filterObjIndex] = this.prevFilterObject;
+                            if (isNullOrUndefined(this.prevFilterObject)) {
+                                this.filterSettings.columns.splice(this.filterSettings.columns.length - 1, 1);
+                            } else {
+                                this.filterSettings.columns[this.filterObjIndex] = this.prevFilterObject;
+                            }
                         }
                         return;
                     }
@@ -835,6 +854,10 @@ export class Filter implements IAction {
         }
         const colUid: string[] = cols.map((f: Column) => f.uid);
         const filteredColsUid: string[] = colUid.filter((item: string, pos: number) => colUid.indexOf(item) === pos);
+        const col: Column = this.column.isForeignColumn() ? this.parent.getColumnByUid(this.column.uid) :
+            this.parent.getColumnByField(this.fieldName);
+        this.filterObjIndex =  this.getFilteredColsIndexByField(col);
+        this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
         for (let i: number = 0, len: number = filteredColsUid.length; i < len; i++) {
             cols[parseInt(i.toString(), 10)].uid = cols[parseInt(i.toString(), 10)].uid
             || this.parent.getColumnByField(cols[parseInt(i.toString(), 10)].field).uid;
@@ -1280,7 +1303,7 @@ export class Filter implements IAction {
             }
             if (parentsUntil(target, 'e-filter-popup') || target.classList.contains('e-filtermenudiv')) {
                 return;
-            } else if (this.filterModule && (!parentsUntil(target, 'e-popup-wrapper')
+            } else if (this.filterModule && !parentsUntil(target, 'e-date-overflow') && (!parentsUntil(target, 'e-popup-wrapper')
                 && (!closest(target, '.e-filter-item.e-menu-item'))) && !datepickerEle) {
                 if ((hasDialog && (!parentsUntil(target, 'e-filter-popup'))
                     && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle && hasDialogClosed)) {
@@ -1298,13 +1321,15 @@ export class Filter implements IAction {
         column: Column, actualPredicate: PredicateModel[], requestType: string
     }): void {
         this.actualPredicate[args.field] = args.actualPredicate;
+        this.actualData = Object.keys(this.actualPredicate);
         const dataManager: DataManager = new DataManager(this.filterSettings.columns as JSON[]);
         const query: Query = new Query().where('field', this.filterOperators.equal, args.field);
-        const result: { field: string }[] = dataManager.executeLocal(query) as { field: string }[];
-        for (let i: number = 0; i < result.length; i++) {
+        this.checkboxFilterObject = dataManager.dataSource.json;
+        this.checkboxPrevFilterObject = dataManager.executeLocal(query) as { field: string }[];
+        for (let i: number = 0; i < this.checkboxPrevFilterObject.length; i++) {
             let index: number = -1;
             for (let j: number = 0; j < this.filterSettings.columns.length; j++) {
-                if (result[parseInt(i.toString(), 10)].field === this.filterSettings.columns[parseInt(j.toString(), 10)].field) {
+                if (this.checkboxPrevFilterObject[parseInt(i.toString(), 10)].field === this.filterSettings.columns[parseInt(j.toString(), 10)].field) {
                     index = j;
                     break;
                 }

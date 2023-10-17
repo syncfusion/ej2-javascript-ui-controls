@@ -85,7 +85,7 @@ export class PDFExport {
         const footer: string = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer) &&
             !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].value)) ?
             pdfExportProperties.footer.contents[0].value : this.exportProperties.footer ? this.exportProperties.footer : '';
-        const themeStyle: PdfThemeStyle = (!isNullOrUndefined(pdfExportProperties.theme) &&
+        const themeStyle: PdfThemeStyle = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.theme) &&
             !isNullOrUndefined(pdfExportProperties.theme.record)) ? pdfExportProperties.theme.record : undefined;
         const fontFamily: number = (!isNullOrUndefined(themeStyle) && !isNullOrUndefined(themeStyle.font) &&
             !isNullOrUndefined(themeStyle.font.name)) ? this.getFontFamily(themeStyle.font.name) : PdfFontFamily.TimesRoman;
@@ -256,7 +256,7 @@ export class PDFExport {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         : Promise<any> {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
-        this.gridStyle = this.exportProperties.pdfExportProperties.theme;
+        this.gridStyle = !isNullOrUndefined(this.exportProperties.pdfExportProperties) ? this.exportProperties.pdfExportProperties.theme : undefined;
         const eventParams: { document: PdfDocument, args: EnginePopulatedEventArgs } = this.applyEvent();
         if (!isNullOrUndefined(pdfDoc)) {
             eventParams.document = <PdfDocument>pdfDoc;

@@ -1134,7 +1134,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.submitBtn = undefined;
         }
         if (!isNOU(this.cancelBtn)) {
-            EventHandler.remove(this.cancelBtn.element, 'mouseup', this.cancelBtnClick);
+            EventHandler.remove(this.cancelBtn.element, 'mousedown', this.cancelBtnClick);
             EventHandler.remove(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler);
             this.cancelBtn.destroy();
             this.cancelBtn = undefined;
@@ -1410,7 +1410,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             EventHandler.add(this.submitBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
         if (!isNOU(this.cancelBtn)) {
-            EventHandler.add(this.cancelBtn.element, 'mouseup', this.cancelBtnClick, this);
+            EventHandler.add(this.cancelBtn.element, 'mousedown', this.cancelBtnClick, this);
             EventHandler.add(this.cancelBtn.element, 'keydown', this.btnKeyDownHandler, this);
         }
     }

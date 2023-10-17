@@ -4145,6 +4145,37 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property(-1)
     public pageIndex: number;
+        
+    /**
+     * Get the pageNumber of the form field. Default value is 1.
+     */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * Get the isTransparent of the form field. Default value is false.
+     */
+    @Property(false)
+    public isTransparent: boolean;
+
+    /**
+     * Get the rotateAngle of the form field. Default value is 0.
+     */
+    @Property(0)
+    public rotateAngle: number;
+
+    /**
+     * Get the selectedIndex of the form field. Default value is null.
+     */
+    @Property('')
+    public selectedIndex: number[];
+
+    /**
+     * Get the zIndex of the form field. Default value is 0.
+     */
+    @Property(0)
+    public zIndex: number;
+
 }
 /**
  * The `ContextMenuSettings` is used to show the context menu of PDF document.
@@ -7941,6 +7972,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             target = target ? target : document.getElementById(fieldValue.id + '_content_html_element').children[0].children[0];
             if (target && fieldValue.type === 'Textbox' || fieldValue.type === 'Password' || fieldValue.type === 'PasswordField') {
                 target.value = fieldValue.value;
+                target.multiline = fieldValue.isMultiline;
             } else if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
                 if (fieldValue.type === 'CheckBox') {
                     target.style.appearance = 'auto';
@@ -7971,6 +8003,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.formDesignerModule.updateFormField(fieldValue, dropDownListOption);
                 } else {
                     target.value = fieldValue.value;
+                    target.selectedIndex = fieldValue.selectedIndex;
                 }
             }
             if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
@@ -7996,14 +8029,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     fieldValue.value = currentValue;
                     if (this.viewerBase.isSignaturePathData(fieldValue.value)) {
                         fieldValue.signatureType = 'Path';
+                        target.signatureType = 'Path';
                     }
                     else if (this.viewerBase.isSignatureImageData(fieldValue.value)) {
                         fieldValue.signatureType = 'Image';
+                        target.signatureType = 'Image';
                     }
                     else {
                         fieldValue.signatureType = 'Type';
+                        target.signatureType = 'Type';
                     }
                 }
+                if (fieldValue.tooltip) {
+                    target.tooltip = fieldValue.tooltip;
+                }
+                target.Required = fieldValue.isRequired ? fieldValue.isRequired : false;
                 if(!isSameValue)
                     this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
             } else {

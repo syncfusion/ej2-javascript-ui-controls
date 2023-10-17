@@ -1767,7 +1767,7 @@ export class NodeDrawingTool extends ToolBase {
                     alignment: drawingObject.alignment as TextAlign, visibility: drawingObject.visibility, maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired,
                     // eslint-disable-next-line max-len
                     isPrint: drawingObject.isPrint, isSelected: drawingObject.isSelected, isChecked: drawingObject.isChecked, tooltip: drawingObject.tooltip, bounds: drawingObject.bounds as IFormFieldBound, thickness: drawingObject.thickness, borderColor: drawingObject.borderColor,
-                    signatureIndicatorSettings: drawingObject.signatureIndicatorSettings, pageIndex: drawingObject.pageIndex
+                    signatureIndicatorSettings: drawingObject.signatureIndicatorSettings, pageIndex: drawingObject.pageIndex, pageNumber : drawingObject.pageNumber, isMultiline: drawingObject.isMultiline, insertSpaces: drawingObject.insertSpaces, isTransparent : drawingObject.isTransparent, rotateAngle: drawingObject.rotateAngle, selectedIndex: drawingObject.selectedIndex, options: drawingObject.options ? drawingObject.options : [], signatureType: drawingObject.signatureType, zIndex : drawingObject.zIndex
                 };
                 this.commandHandler.formFieldCollections.push(formField);
                 // eslint-disable-next-line max-len

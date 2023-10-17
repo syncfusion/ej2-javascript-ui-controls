@@ -596,7 +596,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Options to customize the ToolTip text.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
     /**
@@ -740,7 +740,7 @@ export class StockTooltipSettings extends ChildProperty<StockTooltipSettings> {
      * Options to customize the ToolTip text.
      */
 
-    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: '400', color: null}, Font)
+    @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
     /**

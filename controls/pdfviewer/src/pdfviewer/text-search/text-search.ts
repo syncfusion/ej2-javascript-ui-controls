@@ -4,6 +4,7 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel } from '../index';
 import { DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
 import { createSpinner, showSpinner, hideSpinner } from '../index';
+let searchTextCollection: any = [];
 
 /**
  * TextSearch module
@@ -281,6 +282,9 @@ export class TextSearch {
                 } else {
                     this.nextSearch();
                 }
+            }
+            else if (isNullOrUndefined(this.searchMatches[this.searchPageIndex]) && inputString === this.searchString) {
+                this.initSearch(this.searchPageIndex, false);
             } else {
                 this.resetVariables();
                 this.searchIndex = 0;
@@ -324,12 +328,11 @@ export class TextSearch {
             this.clearAllOccurrences();
             this.searchIndex = this.searchIndex + 1;
             if (this.searchMatches[this.searchPageIndex]) {
-                // eslint-disable-next-line max-len
                 if (this.searchIndex >= this.searchMatches[this.searchPageIndex].length) {
                     this.searchIndex = 0;
                     this.searchPageIndex = ((this.searchPageIndex + 1) < this.pdfViewerBase.pageCount) ? (this.searchPageIndex + 1) : 0;
-                    if(this.pdfViewerBase.pageCount > 1) { 
-                        this.initSearch(this.searchPageIndex, false) 
+                    if (this.pdfViewerBase.pageCount > 1) {
+                        this.initSearch(this.searchPageIndex, false);
                     } else {
                         this.initSearch(this.searchPageIndex, true);
                         if (!this.isMessagePopupOpened) {
@@ -339,10 +342,14 @@ export class TextSearch {
                     }
                     this.showLoadingIndicator(true);
                 } else {
-                    this.highlightSearchedTexts(this.searchPageIndex, false,undefined);
+                    this.highlightSearchedTexts(this.searchPageIndex, false, undefined);
                     this.showLoadingIndicator(false);
                 }
                 this.highlightOthers(true);
+            } else if (!this.searchMatches[this.searchPageIndex]) {
+                if (this.pdfViewerBase.pageCount > 1) {
+                    this.initSearch(this.searchPageIndex, false);
+                }
             } else {
                 this.initiateTextSearch(this.searchInput);
             }
@@ -350,8 +357,8 @@ export class TextSearch {
             this.initiateTextSearch(this.searchInput);
         }
     }
-
     private prevSearch(): void {
+        searchTextCollection.push(this.searchPageIndex);
         this.isPrevSearch = true;
         this.isTextSearch = true;
         this.isSearchText = false;
@@ -359,7 +366,7 @@ export class TextSearch {
             this.clearAllOccurrences();
             this.searchIndex = this.searchIndex - 1;
             if (this.searchIndex < 0) {
-                this.searchPageIndex = ((this.searchPageIndex - 1) < 0) ? (this.pdfViewerBase.pageCount - 1) : this.searchPageIndex - 1;
+                this.searchPageIndex = this.findPreviousPageWithText();
                 this.initSearch(this.searchPageIndex, false);
                 this.showLoadingIndicator(true);
             } else {
@@ -374,6 +381,17 @@ export class TextSearch {
             this.textSearch(inputString);
         }
     }
+
+    private findPreviousPageWithText() {
+        let currentPageIndex: any = this.searchPageIndex;
+        for (var i = 1; i < this.pdfViewerBase.pageCount; i++) {
+            let prevPageIndex: any = (currentPageIndex - i + this.pdfViewerBase.pageCount) % this.pdfViewerBase.pageCount;
+            if (this.searchMatches[prevPageIndex] && this.searchMatches[prevPageIndex].length > 0) {
+                return prevPageIndex;
+            }
+        }
+        return currentPageIndex;
+    };
 
     private initSearch(pageIndex: number, isSinglePageSearch: boolean, isCount?: boolean ): void {
         // eslint-disable-next-line
@@ -567,6 +585,11 @@ export class TextSearch {
                             this.onMessageBoxOpen();
                         }
                         this.searchedPages = [this.startIndex];
+                    }
+                    else if(searchTextCollection[0] == this.searchPageIndex) {
+                        if (!this.isMessagePopupOpened) {
+                            this.onMessageBoxOpen();
+                        }
                     }
                     this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
                 }

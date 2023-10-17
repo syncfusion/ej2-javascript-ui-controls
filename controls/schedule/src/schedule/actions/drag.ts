@@ -277,7 +277,7 @@ export class DragAndDrop extends ActionBase {
         if (this.parent.quickPopup) {
             this.parent.quickPopup.quickPopupHide(true);
         }
-        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
+        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList && (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
             return;
         }
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
@@ -366,7 +366,7 @@ export class DragAndDrop extends ActionBase {
         if (this.isAllowDrop(e)) {
             return;
         }
-        const target: HTMLElement = ((!(e.target as Element).classList.contains('e-work-cells') && this.parent.cellTemplate) ?
+        const target: HTMLElement = ((e.target as Element).classList && (!(e.target as Element).classList.contains('e-work-cells') && this.parent.cellTemplate) ?
             closest(e.target as Element, '.e-work-cells') : e.target) as HTMLElement;
         const dragArgs: DragEventArgs = {
             cancel: false, data: this.getChangedData(this.updatedData), selectedData: this.updatedData,

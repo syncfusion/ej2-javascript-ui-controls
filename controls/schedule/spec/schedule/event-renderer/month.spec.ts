@@ -219,12 +219,14 @@ describe('Month Event Render Module', () => {
             Id: 1,
             Subject: 'Normal event',
             StartTime: new Date(2017, 10, 2, 10),
+            Location: 'Chennai',
             EndTime: new Date(2017, 10, 2, 10)
         }, {
             Id: 2,
             Subject: 'Recurrence event',
             StartTime: new Date(2017, 10, 3, 10),
             EndTime: new Date(2017, 10, 3, 10),
+            Location: 'Madurai',
             RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
         }];
         beforeAll((done: DoneFn) => {
@@ -236,6 +238,18 @@ describe('Month Event Render Module', () => {
         });
         it('appointment element present in DOM', () => {
             expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment').length).toEqual(6);
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment')[0].getAttribute('aria-label'))
+                .toEqual('Normal event Begin From Thursday, November 2, 2017 at 10:00:00 AM GMT Ends At Thursday, November 2, 2017 at 10:00:00 AM GMT Location Chennai');
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment')[1].getAttribute('aria-label'))
+                .toEqual('Recurrence event Begin From Friday, November 3, 2017 at 10:00:00 AM GMT Ends At Friday, November 3, 2017 at 10:00:00 AM GMT Location Madurai Recurring Event');
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment')[2].getAttribute('aria-label'))
+                .toEqual('Recurrence event Begin From Saturday, November 4, 2017 at 10:00:00 AM GMT Ends At Saturday, November 4, 2017 at 10:00:00 AM GMT Location Madurai Recurring Event');
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment')[3].getAttribute('aria-label'))
+                .toEqual('Recurrence event Begin From Sunday, November 5, 2017 at 10:00:00 AM GMT Ends At Sunday, November 5, 2017 at 10:00:00 AM GMT Location Madurai Recurring Event');
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment')[4].getAttribute('aria-label'))
+                .toEqual('Recurrence event Begin From Monday, November 6, 2017 at 10:00:00 AM GMT Ends At Monday, November 6, 2017 at 10:00:00 AM GMT Location Madurai Recurring Event');
+            expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment')[5].getAttribute('aria-label'))
+                .toEqual('Recurrence event Begin From Tuesday, November 7, 2017 at 10:00:00 AM GMT Ends At Tuesday, November 7, 2017 at 10:00:00 AM GMT Location Madurai Recurring Event');
         });
     });
 

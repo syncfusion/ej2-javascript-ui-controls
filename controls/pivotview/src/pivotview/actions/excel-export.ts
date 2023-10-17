@@ -93,7 +93,7 @@ export class ExcelExport {
         /** Event trigerring */
         let clonedValues: IAxisSet[][];
         const currentPivotValues: IAxisSet[][] = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
-        const customFileName: string = isFileNameSet ? exportProperties.fileName : 'default.xlsx';
+        const customFileName: string = isFileNameSet ? exportProperties.fileName : type === 'CSV' ? 'default.csv' : 'default.xlsx';
         if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataType !== 'olap') {
             const pageSettings: IPageSettings = this.engine.pageSettings; this.engine.pageSettings = null;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = false;

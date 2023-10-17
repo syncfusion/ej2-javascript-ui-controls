@@ -701,6 +701,30 @@ describe('DateParser', () => {
             );
             expect(ret.timeZone).toBe(-330)
         });
+        it('The "PM" designator is converted to "pm" for en-GB to match parse option', () => {
+            let ret: any = (DateParser as any).internalDateParse(
+                '27/05/2017 11:00 PM',
+                {
+                    culture:"en-GB",
+                    designator: { am: 'am', pm: 'pm'},
+                    evalposition: {
+                        day: { isNumber: true, pos: 1 },
+                        designator: { pos: 11 },
+                        hour: { isNumber: true, pos: 7 },
+                        minute: { isNumber: true, pos: 9 },
+                        month: { isNumber: true, pos: 3 },
+                        year: { isNumber: true, pos: 5 },
+                    },
+                    hour12: true,
+                    isIslamic: false,
+                    pattern: "dd/MM/y hh:mm a",
+                    // tslint:disable-next-line:max-line-length
+                    parserRegex: /^([0-9][0-9])([\D])([0-9][0-9])([\D])([0-9]{1,})([\D])([0-9][0-9])([\D])([0-9][0-9])([\D])(am|pm)$/i,
+                },
+                { "numericPair": { "0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9 }, "numberParseRegex": /0|1|2|3|4|5|6|7|8|9/g, "numericRegex": "[0-9]" }
+            );
+            expect(ret.designator).toBe('pm');
+        });
         it('internalDateParser timzone processing hour only', () => {
             let ret: any = (DateParser as any).internalDateParse(
                 "November 4, 2016 at 2:30:22 PM GMT+5",

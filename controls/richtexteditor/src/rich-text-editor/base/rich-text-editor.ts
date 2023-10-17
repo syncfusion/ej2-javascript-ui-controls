@@ -1893,13 +1893,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.contentModule.getDocument(), range.startContainer as Element, range.startOffset);
             }
         }
-        const notFormatPainterCopy: boolean = !isNOU((e as KeyboardEventArgs).action) && (e as KeyboardEventArgs).action !== 'format-copy';
-        if (this.formatter.getUndoRedoStack().length === 0 && notFormatPainterCopy) {
+        const notFormatPainterCopy: boolean = isNOU((e as KeyboardEventArgs).action) ? true : ((e as KeyboardEventArgs).action !== 'format-copy' ? true : false);
+        if (this.formatter.getUndoRedoStack().length === 0 && notFormatPainterCopy && !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which == 67))) {
             this.formatter.saveData();
         }
         if ((e as KeyboardEventArgs).action !== 'insert-link' &&
         (e as KeyboardEventArgs).action !== 'format-copy' && (e as KeyboardEventArgs).action !== 'format-paste' &&
-        (!(e as KeyboardEvent).target || (((e as KeyboardEvent).target as Element).classList.contains('e-mention') && e.code !== 'Tab')) &&
+        (!(e as KeyboardEvent).target || !(((e as KeyboardEvent).target as Element).classList.contains('e-mention') && e.code === 'Tab')) &&
         ((e as KeyboardEventArgs).action && (e as KeyboardEventArgs).action !== 'paste' && (e as KeyboardEventArgs).action !== 'space'
         || e.which === 9 || (e.code === 'Backspace' && e.which === 8))) {
             let FormatPainterEscapeAction: boolean = false;

@@ -209,9 +209,12 @@ export class ThumbnailView {
             const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[pageNumber] as HTMLAnchorElement;
             if (thumbnailChild) {
                 const thumbnailDiv: HTMLElement = thumbnailChild.children[0] as HTMLElement;
-                if (shouldScroll) {
-                    const offsetTop: number = thumbnailDiv.offsetTop + thumbnailDiv.clientTop - this.thumbnailTopMargin;
-                    this.pdfViewerBase.navigationPane.sideBarContent.scrollTop = offsetTop;
+                var offsetTop: number;
+                if(thumbnailDiv.offsetTop <= 0){
+                    offsetTop = thumbnailDiv.parentElement.offsetTop + thumbnailDiv.clientTop - this.thumbnailTopMargin;
+                }
+                else{
+                    offsetTop = thumbnailDiv.offsetTop + thumbnailDiv.clientTop - this.thumbnailTopMargin;
                 }
                 if (!this.isThumbnailClicked) {
                     if (this.previousElement) {

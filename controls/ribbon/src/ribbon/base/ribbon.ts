@@ -1898,6 +1898,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 }
             }
         }
+        const activeContent: HTMLElement = this.tabObj.element.querySelector('#' + this.tabs[this.selectedTab].id + constants.CONTENT_ID);
+        this.checkOverflow(this.selectedTab, activeContent);
     }
 
     private switchLayout(): void {

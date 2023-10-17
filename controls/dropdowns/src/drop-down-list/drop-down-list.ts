@@ -177,6 +177,8 @@ export class DropDownList extends DropDownBase implements IInput {
     protected virtualItemStartIndex: number;
     private virtualItemEndIndex: number;
     private generatedDataObject: GeneratedData = {};
+    private preselectedIndex: number;
+    private isTouched: boolean = false;
     protected virtualListInfo: VirtualInfo = {
         currentPageNumber: null,
         direction: null,
@@ -2261,7 +2263,13 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.updateActionCompleteDataValues(ulElement, list);
                     }
                 }
-                if(!this.enableVirtualization){
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if(((this as any).allowCustom || (this.allowFiltering && !this.isValueInList(list, this.value) && this.dataSource instanceof DataManager)) &&!this.enableVirtualization){
+                    this.addNewItem(list, selectedItem);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                else if(((this as any).allowCustom || (this.allowFiltering && this.isValueInList(list, this.value))) && !this.enableVirtualization)
+                {
                     this.addNewItem(list, selectedItem);
                 }
                 if (!isNullOrUndefined(this.itemData) || (isNullOrUndefined(this.itemData) && this.enableVirtualization)) {
@@ -2295,6 +2303,23 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private isValueInList(list: any[] | { [key: string]: any }, valueToFind: any): boolean {
+        if (Array.isArray(list)) {
+          for (let i = 0; i < list.length; i++) {
+            if (list[i as number] === valueToFind) {
+              return true;
+            }
+          }
+        } else if (typeof list === 'object' && list !== null) {
+          for (const key in list) {
+            if (Object.prototype.hasOwnProperty.call(list, key) && list[key as any] === valueToFind) {
+              return true;
+            }
+          }
+        }
+        return false;
+    }             
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private checkFieldValue(list: { [key: string]: boolean | string | number }, fieldValue: string[]): any {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3073,6 +3098,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * @returns {void}
      */
     public render(): void {
+        this.preselectedIndex = !isNullOrUndefined(this.index)? this.index : null;
         if (this.element.tagName === 'INPUT') {
             this.inputElement = this.element as HTMLInputElement;
             if (isNullOrUndefined(this.inputElement.getAttribute('role'))) {
@@ -3313,7 +3339,6 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.allowFiltering && newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
             this.actionData = this.actionCompleteData;
-            this.itemData = null;
         } else if (this.allowFiltering && newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
             this.actionCompleteData = this.getModuleName() === 'combobox' ?
                 { ulElement: null, list: null, isUpdated: false } : this.actionCompleteData;
@@ -3357,6 +3382,13 @@ export class DropDownList extends DropDownBase implements IInput {
      * @returns {void}
      */
     public onPropertyChanged(newProp: DropDownListModel, oldProp: DropDownListModel): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!isNullOrUndefined(newProp.dataSource) && !this.isTouched && (isNullOrUndefined(newProp.value) && isNullOrUndefined(newProp.index)) && !isNullOrUndefined(this.preselectedIndex)) {
+            newProp.index = this.preselectedIndex;
+        }
+        if (!isNullOrUndefined(newProp.value) || !isNullOrUndefined(newProp.index)) {
+            this.isTouched = true;
+        }
         if (this.getModuleName() === 'dropdownlist') {
             this.checkData(newProp);
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string });

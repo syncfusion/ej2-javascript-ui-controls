@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { PdfViewerBase, PdfViewer } from '../index';
 import { createElement, Browser, isBlazor, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { TreeView, NodeSelectEventArgs, DrawNodeEventArgs } from '@syncfusion/ej2-navigations';
+import { TreeView, NodeSelectEventArgs, DrawNodeEventArgs, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { ListView } from '@syncfusion/ej2-lists';
 import { AjaxHandler } from '../index';
 
@@ -172,7 +172,7 @@ export class BookmarkView {
                     nodeTemplate:  initializeCSPTemplate(
                         function (data: any): string { return bookmarkIconView.outerHTML.replace('${Title}', data.Title); }
                     ),
-                    nodeSelected: this.nodeClick.bind(this),
+                    nodeClicked: this.nodeClick.bind(this),
                     drawNode: this.bookmarkPanelBeforeOpen.bind(this)
                 });
                 this.treeObj.isStringTemplate = true;
@@ -236,11 +236,11 @@ export class BookmarkView {
         return false;
     };
 
-    private nodeClick = (args: NodeSelectEventArgs): boolean => {
+    private nodeClick = (args: NodeClickEventArgs): boolean => {
         this.setHeight(args.node);
-        const bookid: number = Number(args.nodeData.id);
         // eslint-disable-next-line
         let data: any[] = this.treeObj.getTreeData(args.node);
+        const bookid: number = Number(data[0].Id);
         this.navigateToBookmark(bookid, args.node.textContent, data[0].FileName);
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
             // eslint-disable-next-line

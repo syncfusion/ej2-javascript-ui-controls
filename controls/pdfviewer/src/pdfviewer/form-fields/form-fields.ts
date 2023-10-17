@@ -734,7 +734,7 @@ export class FormFields {
             let fieldProperties: any = {
                 bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
                 value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline,
-                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'],insertSpaces: currentData['InsertSpaces'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
+                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'],insertSpaces: currentData['InsertSpaces'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false, pageIndex : currentData['PageIndex'], isTransparent : currentData['IsTransparent'], rotationAngle : currentData['RotationAngle'],signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : "", signatureIndicatorSettings : currentData['SignatureIndicatorSettings'], zIndex: currentData['zIndex'] }
             };
             if (currentData.Name === 'DropDown' || currentData.Name === 'ListBox') {
                 fieldProperties.value = currentData['SelectedValue']
@@ -760,7 +760,9 @@ export class FormFields {
         let type: FormFieldType = formField['Name'];
         let formFieldCollection: FormFieldModel = {
             name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly, isRequired: formField.IsRequired, isSelected: type === 'CheckBox' ? false : formField.Selected,
-            isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ? formField.SelectedValue : formField.Value, fontName: formField.FontFamily ? formField.FontFamily : ''
+            isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ? formField.SelectedValue : formField.Value, fontName: formField.FontFamily ? formField.FontFamily : '', pageIndex: formField.PageIndex, pageNumber: formField.PageIndex + 1, isMultiline: formField.isMultiline ? formField.isMultiline : formField.Multiline, insertSpaces: formField.insertSpaces ? formField.insertSpaces : formField.InsertSpaces, isTransparent: formField.isTransparent ? formField.isTransparent : formField.IsTransparent, rotateAngle: formField.rotateAngle ? formField.rotateAngle : formField.RotationAngle,
+            selectedIndex: formField.selectedIndex ? formField.selectedIndex : formField.SelectedList, options: formField.options ? formField.options : formField.TextList ? formField.TextList : [],
+            signatureType: formField.signatureType, zIndex: formField.zIndex, tooltip: formField.tooltip ? formField.tooltip : formField.ToolTip ? formField.ToolTip : "", signatureIndicatorSettings: formField.signatureIndicatorSettings ? formField.signatureIndicatorSettings : ""
         };
         this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === formFieldCollection.id)] = formFieldCollection;
     }
@@ -1732,6 +1734,7 @@ export class FormFields {
                         } else {
                             currentData.Text = target.value;
                             currentData.Value = target.value;
+                            currentData.Multiline = target.multiline;
                         }
                     } else if (target.type === 'radio') {
                         if(target.checked){
@@ -1750,7 +1753,10 @@ export class FormFields {
                                 currentData.Selected = false;
                             }
                         }
-                        if(currentData.Value == ""){
+                        if (target.selected) {
+                            currentData.Selected = true;
+                        }
+                        if (currentData.Value == "" || currentData.Value !== target.value) {
                             currentData.Value = target.value;
                         }
                     } else if (target.type === 'checkbox') {
@@ -1780,6 +1786,9 @@ export class FormFields {
                             currentData.Value = target.value;
                         }
                     } else if (target.type === 'select-one' && target.size === 0) {
+                        if (target.selectedIndex < 0) {
+                            target.selectedIndex = currentData.selectedIndex;
+                        }
                         // eslint-disable-next-line
                         let currentValue: any = target.options[target.selectedIndex].text;
                         // eslint-disable-next-line
@@ -1788,6 +1797,7 @@ export class FormFields {
                         for (let k: number = 0; k < childrens.length; k++) {
                             if (childrens[k].text === currentValue) {
                                 currentData.SelectedValue = currentValue;
+                                currentData.selectedIndex = target.selectedIndex;
                             }
                         }
                     } else if (target.type === 'select-multiple' || target.size > 0) {
@@ -1811,6 +1821,8 @@ export class FormFields {
                     if(target.disabled) {
                         currentData.IsReadonly = true;
                     }
+                    currentData.IsRequired = target.Required ? target.Required : false;
+                    currentData.ToolTip = target.tooltip ? target.tooltip : "";
                     this.updateFormFieldsCollection(currentData);
                     filterArrayLength--;
                     if (filterArrayLength == 0)

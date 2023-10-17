@@ -1,0 +1,263 @@
+@mixin bigger-header-style {
+  font-size: $panel-bigger-header-font-size;
+  font-weight: $panel-bigger-header-font-weight;
+  height: $panel-bigger-header-height;
+  padding: $panel-bigger-header-padding;
+  @if ($skin-name == 'tailwind') {
+    line-height: $panel-bigger-header-line-height;
+  }
+}
+
+@include export-module('dashboardlayout-layout') {
+  .e-dashboardlayout.e-control {
+
+    .e-dashboard-gridline-table {
+      background: $gridline-background;
+      border-collapse: collapse;
+      height: $panel-full-height;
+      width: $panel-full-width;
+    }
+
+    .e-dashboard-gridline-table tbody tr td.e-dashboard-gridline {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
+        border: 1px dashed $gridline-border;
+      }
+      @else {
+        border: 1px dotted $gridline-border;
+      }
+
+      @if ($skin-name == 'bootstrap5') {
+        border-radius: $gridline-border-radius;
+      }
+      position: absolute;
+    }
+
+    &.e-responsive {
+      width: $element-width-complete;
+    }
+
+    &.e-prevent {
+      user-select: $panel-drag-prevent;
+    }
+
+    & .e-panel {
+
+      & .e-resize.e-dl-icon {
+        @if ($skin-name == 'tailwind') {
+          line-height: 9px;
+        }
+      }
+
+      &:hover {
+        @if ($skin-name != 'tailwind') {
+          border: $panel-hover-border;
+        }
+
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
+          box-shadow: $panel-hover-box-shadow;
+        }
+
+        & .e-panel-container {
+          & .e-resize.e-dl-icon {
+            display: block;
+          }
+        }
+      }
+
+      &:active {
+        @if ($skin-name != 'tailwind') {
+          border: $panel-active-border;
+        }
+      }
+
+      & .e-panel-container {
+        & .e-resize.e-dl-icon {
+          display: none;
+        }
+      }
+
+      @if $skin-name != 'highcontrast' {
+        border-radius: $panel-border-radius;
+      }
+
+      &.e-panel-transition {
+        transition: top .5s, left .5s;
+      }
+
+      & .e-panel-header {
+        border-bottom: $panel-header-border-bottom;
+        color: $panel-header-color;
+        font-family: $panel-header-font-family;
+        font-size: $panel-header-font-size;
+        font-weight: $panel-header-font-weight;
+        height: $panel-header-height;
+        padding: $panel-header-padding;
+        @if ($skin-name == 'tailwind') {
+          line-height: $panel-header-line-height;
+        }
+
+        @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'Material3') {
+          border-top-left-radius: $panel-header-border-radius;
+          border-top-right-radius: $panel-header-border-radius;
+        }
+
+        & div {
+          overflow: $panel-header-overflow;
+          text-overflow: $panel-header-text-overflow;
+          white-space: $panel-header-white-space;
+        }
+
+        & .e-header-content {
+          display: inline-block;
+        }
+
+        & .e-header-template {
+          float: right;
+        }
+      }
+
+      & .e-panel-container {
+        height: $panel-full-height;
+        width: $panel-full-width;
+
+        & .e-panel-content .e-blazor-template {
+          height: $panel-content-template-height;
+          width: $panel-content-template-width;
+        }
+      }
+
+      & .e-panel-content {
+        @if $skin-name == 'tailwind' {
+          padding: $panel-content-padding;
+        }
+      }
+    }
+
+    & .e-panel {
+      border: $panel-border;
+      height: $panel-full-height;
+      user-select: none;
+      width: $panel-full-width;
+
+      & .e-resize.e-single,
+      & .e-resize.e-double {
+        position: $panel-position;
+        touch-action: none;
+
+        &.e-east,
+        &.e-west,
+        &.e-north,
+        &.e-south {
+          border: $panel-resize-one-dimensional-icon-border;
+        }
+
+        &.e-east:hover {
+          cursor: e-resize;
+        }
+
+        &.e-west:hover {
+          cursor: w-resize;
+        }
+
+        &.e-north:hover {
+          cursor: n-resize;
+        }
+
+        &.e-south:hover {
+          cursor: s-resize;
+        }
+
+        &.e-north-west:hover {
+          cursor: nw-resize;
+        }
+
+        &.e-north-east:hover {
+          cursor: ne-resize;
+        }
+
+        &.e-south-west:hover {
+          cursor: sw-resize;
+        }
+
+        &.e-south-east:hover {
+          cursor: se-resize;
+        }
+      }
+
+      & .e-resize.e-single::before,
+      & .e-resize.e-double::before {
+        font-family: 'e-icons';
+        position: $panel-position;
+      }
+    }
+
+    & .e-drag:hover {
+      cursor: $panel-dragging-cursor;
+    }
+
+    & .e-drag-restrict {
+      &.e-drag:hover,
+      .e-drag:hover {
+        cursor: default;
+      }
+    }
+
+    & .e-panel.e-dragging,
+    & .e-panel.e-item-moving {
+      cursor: $panel-dragging-cursor;
+      z-index: $panel-dragging-zindex;
+    }
+
+    & .e-panel.e-rtl {
+
+      & .e-panel-header {
+
+        & .e-header-template {
+          float: left;
+        }
+      }
+    }
+
+    .e-holder {
+      background: $panel-drop-background;
+      border: $panel-drop-border;
+      border-radius: $panel-drop-border-radius;
+      position: $panel-position;
+
+      &.e-holder-transition {
+        transition: top .3s, left .3s;
+      }
+
+      @if $skin-name != 'highcontrast' {
+        border-radius: $panel-border-radius;
+      }
+    }
+
+    .e-panel.e-bigger {
+      & .e-panel-header {
+        @include bigger-header-style;
+      }
+    }
+  }
+
+  .e-bigger {
+    .e-dashboardlayout.e-control {
+      & .e-panel {
+        & .e-panel-header {
+          @include bigger-header-style;
+        }
+
+        & .e-panel-content {
+          @if $skin-name == 'tailwind' {
+            padding: $panel-bigger-content-padding;
+          }
+        }
+      }
+    }
+  }
+
+  .e-content-placeholder.e-dashboardlayout.e-placeholder-dashboardlayout {
+    height: $panel-full-height;
+    width: $panel-full-width;
+  }
+}

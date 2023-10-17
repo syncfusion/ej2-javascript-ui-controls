@@ -932,7 +932,9 @@ export class Edit {
                 this.parent.notify(isValidation, validEventArgs);
                 isValidCellValue = validEventArgs.isValid;
                 if (isValidCellValue) {
-                    this.editCellData.value = value;
+                    if ((cell.format && value !== validEventArgs.value) || (!this.editCellData.value && validEventArgs.value)) {
+                        this.editCellData.value = validEventArgs.value;
+                    }
                 } else {
                     this.isCellEdit = true;
                 }

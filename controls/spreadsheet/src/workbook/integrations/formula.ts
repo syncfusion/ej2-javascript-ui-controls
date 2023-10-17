@@ -224,11 +224,12 @@ export class WorkbookFormula {
         case 'deleteSheetTab':
             for (let i: number = 0; i < this.sheetInfo.length; i++) {
                 if (this.sheetInfo[i as number].index === <number>args.sheetId) {
+                    const visibleName: string = this.sheetInfo[i as number].visibleName;
                     const sheetName: string = this.sheetInfo[i as number].sheet; this.sheetInfo.splice(i, 1);
                     const id: string = args.sheetId.toString();
                     this.sheetDeletion(sheetName, id);
                     this.calculateInstance.unregisterGridAsSheet(id, id);
-                    this.defineNamesDeletion(sheetName);
+                    this.definedNamesDeletion(visibleName);
                     break;
                 }
             }
@@ -262,14 +263,14 @@ export class WorkbookFormula {
             break;
         }
     }
-    private defineNamesDeletion(sheetName: string): void {
+    private definedNamesDeletion(sheetName: string): void {
         const definedNames: DefineNameModel[] = this.parent.definedNames;
         if (definedNames && definedNames.length > 0) {
-            definedNames.forEach((definedName: DefineNameModel): void => {
-                if (definedName.refersTo.split('=')[1].split('!')[0] === sheetName) {
-                    this.removeDefinedName(definedName.name, definedName.scope);
+            for (let i: number = definedNames.length - 1; i >= 0; i--) {
+                if (definedNames[i as number].refersTo.split('=')[1].split('!')[0].split("'").join('') === sheetName) {
+                    this.removeDefinedName(definedNames[i as number].name, definedNames[i as number].scope);
                 }
-            });
+            }
         }
     }
     private referenceError(): string {
